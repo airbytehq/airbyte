@@ -7,22 +7,25 @@ This page guides you through the process of setting up the [Milvus](https://milv
 There are three parts to this:
 
 - Processing - split up individual records in chunks so they will fit the context window and decide which fields to use as context and which are supplementary metadata.
-- Embedding - convert the text into a vector representation using a pre-trained model (Currently, OpenAI's `text-embedding-ada-002` and Cohere's `embed-english-light-v2.0` are supported.)
+- Embedding - convert the text into a vector representation using a pre-trained model. See [Embedding](#embedding) for the available services and models.
 - Indexing - store the vectors in a vector database for similarity search
 
 ## Prerequisites
 
 To use the Milvus destination, you'll need:
 
-- An account with API access for OpenAI or Cohere (depending on which embedding method you want to use)
-- Either a running self-managed Milvus instance or a [Zilliz](https://zilliz.com/) account
+- Either a running self-managed Milvus instance or a [Zilliz Cloud](https://zilliz.com/) account.
+- Access to an embedding service, unless you use the Fake embedder for testing. Depending on the embedding method you choose, this is an OpenAI account, an Azure OpenAI deployment, a Cohere account, or a service that exposes an OpenAI-compatible embedding API.
 
 You'll need the following information to configure the destination:
 
-- **Embedding service API Key** - The API key for your OpenAI or Cohere account
-- **Milvus Endpoint URL** - The URL of your Milvus instance
-- Either **Milvus API token** or **Milvus Instance Username and Password**
-- **Milvus Collection name** - The name of the collection to load data into
+- **Public Endpoint** - The endpoint of your Milvus instance, for example `https://my-instance.zone.zillizcloud.com` or `tcp://my-local-milvus:19530`.
+- **Authentication** - An API token, a username and password, or no authentication. Zilliz Cloud clusters use an API token. Self-managed instances use a username and password if you [enabled authentication](https://milvus.io/docs/authenticate.md), and no authentication otherwise.
+- **Collection Name** - The name of the collection to load data into.
+- **Database Name** - Optional. Leave empty to use the default database.
+- The credentials for your embedding service, such as an OpenAI API key.
+
+On Airbyte Cloud, the endpoint must start with `https://` and authentication must be enabled. The connection check fails otherwise. Self-managed Airbyte has no such restriction.
 
 ## Supported sync modes
 
@@ -38,7 +41,7 @@ You'll need the following information to configure the destination:
 
 ### Processing
 
-Each record will be split into text fields and meta fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Options around configuring the chunking process use the [Langchain Python library](https://python.langchain.com/docs/get_started/introduction).
+Each record will be split into text fields and meta fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Options around configuring the chunking process use the [LangChain Python library](https://python.langchain.com/docs/concepts/text_splitters/).
 
 When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.
 
@@ -50,11 +53,17 @@ The stream name gets added as a metadata field `_ab_stream` to each document. If
 
 The connector can use one of the following embedding methods:
 
-1. OpenAI - using [OpenAI API](https://beta.openai.com/docs/api-reference/text-embedding) , the connector will produce embeddings using the `text-embedding-ada-002` model with **1536 dimensions**. This integration will be constrained by the [speed of the OpenAI embedding API](https://platform.openai.com/docs/guides/rate-limits/overview).
+1. OpenAI - using the [OpenAI API](https://platform.openai.com/docs/api-reference/embeddings), the connector will produce embeddings using the `text-embedding-ada-002` model with **1536 dimensions**. This integration will be constrained by the [rate limits of your OpenAI account](https://platform.openai.com/docs/guides/rate-limits).
 
-2. Cohere - using the [Cohere API](https://docs.cohere.com/reference/embed), the connector will produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**.
+2. Azure OpenAI - using an [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/reference) deployment of the `text-embedding-ada-002` model with **1536 dimensions**. Configure the API key, the resource base URL, and the name of your model deployment.
 
-For testing purposes, it's also possible to use the [Fake embeddings](https://python.langchain.com/docs/modules/data_connection/text_embedding/integrations/fake) integration. It will generate random embeddings and is suitable to test a data pipeline without incurring embedding costs.
+3. Cohere - using the [Cohere API](https://docs.cohere.com/reference/embed), the connector will produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**.
+
+4. OpenAI-compatible - using any service that implements the OpenAI embedding API. Configure the base URL, the model name, and the number of dimensions the model produces. Use this option for self-hosted embedding services. The API key is optional, so this also works with services that don't require authentication.
+
+5. Fake - generates random embeddings with **1536 dimensions**. Use it to test a pipeline without incurring embedding costs. Don't use it in production, because the vectors are meaningless for similarity search.
+
+The number of dimensions produced by your embedding configuration must match the dimensionality of the vector field in the collection. The connection check fails if they don't match.
 
 ### Indexing
 
@@ -62,25 +71,15 @@ If the specified collection doesn't exist, the connector will create it for you 
 
 If you want to change any of these settings, create a new collection in your Milvus instance yourself. Make sure that
 
-- The primary key field is set to [auto_id](https://milvus.io/docs/create_collection.md)
-- There is a vector field with the correct dimensionality (1536 for OpenAI, 1024 for Cohere) and [a configured index](https://milvus.io/docs/build_index.md)
+- The primary key field is set to [auto_id](https://milvus.io/docs/create_collection.md). Collections without `auto_id` are not supported.
+- There is a float vector field with the dimensionality your embedding configuration produces, and [a configured index](https://milvus.io/docs/build_index.md) on it. Set the **Vector Field** option to its name if it isn't `vector`.
+- Dynamic fields are enabled, so the connector can write chunk text and metadata fields that aren't part of the schema.
 
 If the record contains a field with the same name as the primary key, it will be prefixed with an underscore so Milvus can control the primary key internally.
 
 ### Setting up a collection
 
-When using the Zilliz cloud, this can be done using the UI - in this case only the collection name and the vector dimensionality needs to be configured, the vector field with index will be automatically created under the name `vector`. Using the REST API, the following command will create the index:
-
-```
-POST /v1/vector/collections/create
-{
-  "collectionName": "my-collection",
-  "dimension": 1536,
-  "metricType": "L2",
-  "vectorField": "vector",
-  “primaryField”: “pk”
-}
-```
+When using Zilliz Cloud, this can be done using the UI - in this case only the collection name and the vector dimensionality needs to be configured, the vector field with index will be automatically created under the name `vector`. You can also use the [Create Collection API](https://docs.zilliz.com/reference/restful/create-collection-v2), which accepts the same options.
 
 When using a self-hosted Milvus cluster, the collection needs to be created using the Milvus CLI or Python client. The following commands will create a collection set up for loading data via Airbyte:
 
@@ -96,15 +95,22 @@ collection = Collection(name="test_collection", schema=schema)
 collection.create_index(field_name="vector", index_params={ "metric_type":"L2", "index_type":"IVF_FLAT", "params":{"nlist":1024} })
 ```
 
-### Langchain integration
+### LangChain integration
 
-To initialize a langchain vector store based on the indexed data, use the following code:
+To query the indexed data from a [LangChain](https://docs.langchain.com/oss/python/integrations/vectorstores/milvus) vector store, use the following code. It requires the `langchain-milvus` and `langchain-openai` packages.
 
 ```python
-embeddings = OpenAIEmbeddings(openai_api_key="my-key")
-vector_store = Milvus(embeddings=embeddings, collection_name="my-collection", connection_args={"uri": "my-zilliz-endpoint", "token": "my-api-key"})
+from langchain_milvus import Milvus
+from langchain_openai import OpenAIEmbeddings
+
+embeddings = OpenAIEmbeddings(api_key="my-key", model="text-embedding-ada-002")
+vector_store = Milvus(
+    embedding_function=embeddings,
+    collection_name="my-collection",
+    connection_args={"uri": "my-zilliz-endpoint", "token": "my-api-key"},
+)
 vector_store.fields.append("text")
-# call  vs.fields.append() for all fields you need from the metadata
+# append every metadata field you need, for example "_ab_stream"
 
 vector_store.similarity_search("test")
 ```
