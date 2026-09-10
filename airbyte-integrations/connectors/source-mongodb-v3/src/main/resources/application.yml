@@ -1,0 +1,33 @@
+---
+airbyte:
+  connector:
+    data-channel:
+      medium: ${DATA_CHANNEL_MEDIUM:STDIO}
+      format: ${DATA_CHANNEL_FORMAT:JSONL}
+      socket-paths: ${DATA_CHANNEL_SOCKET_PATHS}
+    output:
+      buffer-byte-size-threshold-for-flush: 8192
+    exception-classifiers:
+      regex:
+        # Rules are applied in order to a Throwable's message and to the messages of its causes.
+        # See airbyte-cdk/bulk/core/base/src/main/kotlin/io/airbyte/cdk/output/ExceptionClassifier.kt
+        rules:
+          - pattern: (?i).*Exception authenticating MongoCredential.*
+            input-example: >-
+              com.mongodb.MongoSecurityException: Exception authenticating
+              MongoCredential{mechanism=SCRAM-SHA-256, userName='root', source='admin', password=<hidden>, mechanismProperties=<hidden>}
+            error: config
+            # Same user-facing message as the legacy source-mongodb-v2 connector.
+            output: "Authentication failed.  Please check the source's configured credentials."
+
+          - pattern: (?i).*Command failed with error 13 \(Unauthorized\).*
+            input-example: >-
+              com.mongodb.MongoCommandException: Command failed with error 13 (Unauthorized):
+              'not authorized on test_db to execute command { listCollections: 1, authorizedCollections: true, nameOnly: true }' on server mongo:27017.
+            error: config
+
+          - pattern: (?i).*Timed out.*while waiting for a server that matches.*
+            input-example: >-
+              com.mongodb.MongoTimeoutException: Timed out while waiting for a server that matches
+              ReadPreferenceServerSelector{readPreference=primary}. Client view of cluster state is {type=UNKNOWN, ...}
+            error: config
