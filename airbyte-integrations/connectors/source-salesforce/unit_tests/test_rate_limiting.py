@@ -382,6 +382,27 @@ class SalesforceErrorHandlerTest(TestCase):
         # 401 is a 4xx that is NOT in _RETRYABLE_400_STATUS_CODES, so it should FAIL
         assert error_resolution.response_action == ResponseAction.FAIL
 
+    def test_is_query_locator_request_detects_locator_and_rejects_others(self) -> None:
+        """Locator detection must match a real nextRecordsUrl (including future API versions), and reject
+        the initial query/queryAll and bulk-job URLs, so a resumable query is never wrongly restarted and
+        a bulk job or fresh query is never mistaken for an orphaned locator."""
+        locator = f"{_ANY_BASE_URL}/services/data/{API_VERSION}/query/01gRO0000016PIYYA2-500"
+        # A future API version (three-digit major, two-digit minor) must still be recognized.
+        future_locator = f"{_ANY_BASE_URL}/services/data/v100.10/query/01gRO0000016PIYYA2-500"
+
+        assert SalesforceErrorHandler._is_query_locator_request(self._create_response("GET", locator, 200, {}))
+        assert SalesforceErrorHandler._is_query_locator_request(self._create_response("GET", future_locator, 200, {}))
+        # Initial query/queryAll ends at /query/ with no locator id -> not a locator resume.
+        assert not SalesforceErrorHandler._is_query_locator_request(
+            self._create_response("GET", f"{_ANY_BASE_URL}/services/data/{API_VERSION}/query/", 200, {})
+        )
+        # A POSTed query is never a locator resume.
+        assert not SalesforceErrorHandler._is_query_locator_request(self._create_response("POST", locator, 200, {}))
+        # Bulk job status URLs must not be treated as locators.
+        assert not SalesforceErrorHandler._is_query_locator_request(
+            self._create_response("GET", f"{self._url_for_job_creation()}/750RO00000AbcdeYAB", 200, {})
+        )
+
     def _create_response(self, http_method: str, url: str, status_code: int, json: Any) -> requests.Response:
         with requests_mock.Mocker() as mocker:
             mocker.register_uri(
