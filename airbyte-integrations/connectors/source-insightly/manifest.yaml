@@ -16,7 +16,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -293,7 +293,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -680,7 +680,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -745,7 +745,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -815,7 +815,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -990,7 +990,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -1199,7 +1199,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -1312,7 +1312,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -1441,7 +1441,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -1661,7 +1661,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -1743,7 +1743,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -1828,7 +1828,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -1960,7 +1960,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -2120,7 +2120,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -2423,7 +2423,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -2505,7 +2505,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -2582,7 +2582,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -2941,7 +2941,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -3026,7 +3026,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -3123,7 +3123,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -3205,7 +3205,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -3470,7 +3470,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -3755,7 +3755,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -3852,7 +3852,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -3936,7 +3936,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -4235,7 +4235,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -4310,7 +4310,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -4400,7 +4400,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.na1.insightly.com/v3.1/
+          url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
           authenticator:
             type: BasicHttpAuthenticator
             username: "{{ config['token'] }}"
@@ -4574,7 +4574,7 @@ definitions:
           additionalProperties: true
   base_requester:
     type: HttpRequester
-    url_base: https://api.na1.insightly.com/v3.1/
+    url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
     authenticator:
       type: BasicHttpAuthenticator
       username: "{{ config['token'] }}"
@@ -4588,7 +4588,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -4862,7 +4862,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -5248,7 +5248,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -5312,7 +5312,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -5381,7 +5381,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -5555,7 +5555,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -5763,7 +5763,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -5873,7 +5873,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -5999,7 +5999,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -6216,7 +6216,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -6297,7 +6297,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -6381,7 +6381,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -6510,7 +6510,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -6669,7 +6669,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -6968,7 +6968,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -7047,7 +7047,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -7121,7 +7121,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -7476,7 +7476,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -7560,7 +7560,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -7655,7 +7655,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -7734,7 +7734,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -7994,7 +7994,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -8276,7 +8276,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -8370,7 +8370,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -8453,7 +8453,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -8751,7 +8751,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -8825,7 +8825,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -8914,7 +8914,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api.na1.insightly.com/v3.1/
+        url_base: "{{ (config.get('base_url') or 'https://api.na1.insightly.com/v3.1').rstrip('/') }}/"
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['token'] }}"
@@ -9115,6 +9115,18 @@ spec:
         description: Your Insightly API token.
         airbyte_secret: true
         order: 1
+      base_url:
+        type: string
+        title: API URL
+        description: >-
+          Insightly API origin including the `/v3.1` path, from User Settings → API
+          (for example `https://api.na1.insightly.com/v3.1`). Other pods use a
+          different host (`api.eu1`, `api.au1`, …).
+        default: https://api.na1.insightly.com/v3.1
+        order: 2
+        examples:
+          - https://api.na1.insightly.com/v3.1
+          - https://api.eu1.insightly.com/v3.1
     additionalProperties: true
 metadata:
   autoImportSchema:
