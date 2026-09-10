@@ -479,7 +479,10 @@ jobs:
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe lint-check
-        # Most connectors can't pass lint checks, so this is non-blocking for now
+        # Non-blocking on purpose: most connectors don't yet pass `ruff check` and
+        # `mypy`, so making this required would block unrelated connector PRs until
+        # those backlogs are cleared. `continue-on-error` still surfaces failures as
+        # a red step with annotations in the run summary, so regressions stay visible.
         continue-on-error: true
 
   pre-release-checks:
