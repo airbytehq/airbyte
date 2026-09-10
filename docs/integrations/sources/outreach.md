@@ -60,6 +60,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.1.43 | 2026-09-08 | [85592](https://github.com/airbytehq/airbyte/pull/85592) | Update dependencies |
 | 1.1.42 | 2026-08-18 | [84700](https://github.com/airbytehq/airbyte/pull/84700) | Update dependencies |
 | 1.1.41 | 2026-08-11 | [84057](https://github.com/airbytehq/airbyte/pull/84057) | Update dependencies |
 | 1.1.40 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
