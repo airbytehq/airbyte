@@ -2,11 +2,20 @@
 
 This page guides you through the process of setting up the [Qdrant](https://qdrant.tech/documentation/) destination connector.
 
-#### Output Schema
+## Output schema
 
-Only one stream will exist to collect payload and vectors (optional) from all source streams. This will be in a [collection](https://qdrant.tech/documentation/concepts/collections/) in [Qdrant](https://qdrant.tech/documentation/) whose name will be defined by the user. If the collection does not already exist in the Qdrant instance, a new collection with the same name will be created.
+The connector writes every source stream into a single Qdrant [collection](https://qdrant.tech/documentation/concepts/collections/), which you name in the connector configuration. If that collection doesn't exist, the connector creates it, using the vector size of your embedding model and the distance metric you select.
 
-For each [point](https://qdrant.tech/documentation/concepts/points/) in the collection, a UUID string is generated and used as the [point id](https://qdrant.tech/documentation/concepts/points/#point-ids). The embeddings generated as defined or extracted from the source stream will be stored as the point vectors. The point payload will contain primarily the record metadata. The text field will then be stored in a field (as defined in the config) in the point payload.
+If the collection already exists, its vector size must match the dimensions of your embedding model and its distance metric must match the **Distance Metric** you select. Otherwise, the connection check fails. To change either setting, create a new collection or select a different collection name.
+
+Each record is chunked, and each chunk becomes a [point](https://qdrant.tech/documentation/concepts/points/) with a randomly generated UUID as its [point id](https://qdrant.tech/documentation/concepts/points/#point-ids). The chunk's embedding is the point vector. The point payload contains the record's metadata fields and, unless you enable **Do not store raw text**, the embedded text in the field named by **Text Field**.
+
+The connector adds and indexes two payload fields it uses to manage records:
+
+- `_ab_stream`: the source stream, prefixed with the namespace when the stream has one, as `namespace_stream`.
+- `_ab_record_id`: the record's primary key. Present only for streams in append + deduped mode that have a primary key.
+
+In overwrite mode, the connector deletes all points matching `_ab_stream` for that stream before the sync, rather than dropping the collection. Points from other streams in the same collection are untouched.
 
 ## Supported sync modes
 
@@ -18,59 +27,67 @@ For each [point](https://qdrant.tech/documentation/concepts/points/) in the coll
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
-## Getting Started
+## Requirements
 
-You can connect to a Qdrant instance either in local mode or cloud mode.
+To use this destination, you need:
 
-- For the local mode, you will need to set it up using Docker. Check the Qdrant docs [here](https://qdrant.tech/documentation/guides/installation/#docker) for an official guide. After setting up, you would need your host, port and if applicable, your gRPC port.
-- To setup to an instance in Qdrant cloud, check out [this official guide](https://qdrant.tech/documentation/cloud/) to get started. After setting up the instance, you would need the instance url and an API key to connect.
+- A running Qdrant server, either in [Qdrant Cloud](https://qdrant.tech/documentation/cloud-intro/) or self-hosted. The connector always connects over the network, so Qdrant's embedded local mode and on-disk local persistence aren't supported. To try the connector locally, run Qdrant in Docker.
+- The endpoint URL of that server, and an API key if the server requires authentication.
+- Credentials for the embedding service you choose, unless you use the **Fake** embedder for testing.
 
-Note that this connector does not support a local persistent mode. To test, use the docker option.
+## Set up Qdrant
 
-#### Requirements
+### Qdrant Cloud
 
-To use the Qdrant destination, you'll need:
+1. Create a cluster by following Qdrant's [cloud quickstart](https://qdrant.tech/documentation/quickstart-cloud/).
+2. Copy the cluster endpoint URL. It looks like `https://xyz-example.eu-central.aws.cloud.qdrant.io:6333`.
+3. Create a [database API key](https://qdrant.tech/documentation/cloud/authentication/) for the cluster. Qdrant shows the key only once, so store it before closing the dialog. Give the key permission to write to the cluster, and, if you scope the key to specific collections, include the collection this connector writes to.
 
-- An account with API access for OpenAI, Cohere (depending on which embedding method you want to use) or neither (if you want to extract the vectors from the source stream)
-- A Qdrant db instance (local mode or cloud mode)
-- Qdrant API Credentials (for cloud mode)
-- Host and Port (for local mode)
-- gRPC port (if applicable in local mode)
+### Self-hosted Qdrant
 
-#### Configure Network Access
+1. Start Qdrant, for example with [Docker](https://qdrant.tech/documentation/quickstart/): `docker run -p 6333:6333 -p 6334:6334 qdrant/qdrant`.
+2. Use `http://<host>:6333` as the endpoint URL. Qdrant serves its REST API on port `6333` and its gRPC API on port `6334`.
+3. Self-hosted Qdrant has no authentication by default. If you haven't [set an API key](https://qdrant.tech/documentation/guides/security/), select the no-authentication option in the connector. Anyone who can reach an unauthenticated server has full access to it, so don't expose one to the internet.
 
-Make sure your Qdrant database can be accessed by Airbyte. If your database is within a VPC, you may need to allow access from the IP you're using to expose Airbyte.
+### Configure network access
 
-### Setup the Qdrant Destination in Airbyte
+Airbyte must be able to reach your Qdrant server. If the server is in a VPC, allow access from the IP address Airbyte connects from.
 
-You should now have all the requirements needed to configure Qdrant as a destination in the UI. You'll need the following information to configure the Qdrant destination:
+Airbyte connects to the REST port in the endpoint URL. When **Prefer gRPC** is enabled, it also connects to gRPC port `6334` on the same host. The connector can't change the gRPC port, so make sure `6334` is reachable, and that gRPC is enabled on a self-hosted server. If you can only expose the REST port, disable **Prefer gRPC**.
 
-- (Required) **Text fields to embed**
-- (Optional) **Text splitter** Options around configuring the chunking process provided by the [Langchain Python library](https://python.langchain.com/docs/get_started/introduction).
-- (Required) **Fields to store as metadata**
-- (Required) **Collection** The name of the collection in Qdrant db to store your data
-- (Required) **The field in the payload that contains the embedded text**
-- (Required) **Prefer gRPC** Whether to prefer gRPC over HTTP.
-- (Required) **Distance Metric** The Distance metrics used to measure similarities among vectors. Select from:
-  - [Dot product](https://en.wikipedia.org/wiki/Dot_product)
-  - [Cosine similarity](https://en.wikipedia.org/wiki/Cosine_similarity)
-  - [Euclidean distance](https://en.wikipedia.org/wiki/Euclidean_distance)
-- (Required) Authentication method
-  - For local mode
-    - **Host** for example localhost
-    - **Port** for example 8000
-    - **gRPC Port** (Optional)
-  - For cloud mode
-    - **Url** The url of the cloud Qdrant instance.
-    - **API Key** The API Key for the cloud Qdrant instance
-- (Optional) Embedding
-  - **OpenAI API key** if using OpenAI for embedding
-  - **Cohere API key** if using Cohere for embedding
-  - Embedding **Field name** and **Embedding dimensions** if getting the embeddings from stream records
+## Set up the Qdrant destination in Airbyte
+
+Configure the following fields.
+
+### Processing
+
+- (Required) **Chunk size**: The maximum number of tokens per chunk. Keep it within the context window of your embedding model.
+- (Optional) **Chunk overlap**: The number of tokens repeated between consecutive chunks. Defaults to `0`.
+- (Optional) **Text fields to embed**: The record fields to embed. If you leave this empty, the connector embeds all fields.
+- (Optional) **Fields to store as metadata**: The record fields to write to the point payload. If you leave this empty, the connector stores all fields.
+- (Optional) **Text splitter**: How to split long text into chunks. Choose splitting by separator, by Markdown headers, or by code syntax.
+- (Optional) **Field name mappings**: Rename source fields before they're written to the payload.
+
+### Embedding
+
+(Required) Choose how to produce vectors. Options are **OpenAI**, **Azure OpenAI**, **Cohere**, **OpenAI-compatible** (for self-hosted or third-party services that implement the OpenAI embedding API), and **Fake** (random vectors, for testing only). Each option has its own configuration fields, including credentials or vector dimensions where applicable.
+
+### Indexing
+
+- (Required) **Public Endpoint**: The URL of your Qdrant server, such as `https://xyz-example.eu-central.aws.cloud.qdrant.io:6333` or `http://localhost:6333`.
+- (Optional) **Authentication Method**: Either API key authentication, with your Qdrant API key, or no authentication. Defaults to API key authentication. When you use an API key, the endpoint must start with `https://`.
+- (Optional) **Prefer gRPC**: Whether to prefer gRPC over HTTP. Enabled by default, and recommended for Qdrant Cloud clusters.
+- (Required) **Collection Name**: The collection to write to.
+- (Optional) **Distance Metric**: The metric used to compare vectors. Choose [Dot product](https://en.wikipedia.org/wiki/Dot_product), [Cosine similarity](https://en.wikipedia.org/wiki/Cosine_similarity), or [Euclidean distance](https://en.wikipedia.org/wiki/Euclidean_distance). Defaults to cosine similarity. The connector applies this only when it creates the collection. For an existing collection, the value must match the collection's metric.
+- (Optional) **Text Field**: The payload field that holds the embedded text. Defaults to `text`.
+
+### Advanced
+
+- (Optional) **Do not store raw text**: Write only the vector and metadata, without the text that was embedded.
 
 ## Namespace support
 
-This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). All streams share one collection, so a stream's namespace appears in the `_ab_stream` payload field instead of creating a separate collection.
 
 ## Changelog
 
