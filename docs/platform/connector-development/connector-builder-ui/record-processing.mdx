@@ -266,6 +266,10 @@ This response format is used for API responses that return data in CSV format. A
 
 The CSV decoder converts each row of the CSV into a JSON object, using the header row to determine field names. CSV files can be delimited with characters other than commas. Set a different delimiter if your file isn't comma-delimited.
 
+:::warning
+A single CSV field value is limited to roughly 131,000 characters. Values exceeding this limit cause CSV decoding to fail rather than being truncated. If you see this error, use a different response format, request fewer or smaller fields, or contact Airbyte Support.
+:::
+
 For the preceding example, the CSV response format would result in the following normalized JSON output:
 
 ```json
