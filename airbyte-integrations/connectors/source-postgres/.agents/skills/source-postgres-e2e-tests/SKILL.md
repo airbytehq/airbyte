@@ -43,7 +43,7 @@ You do not need GSM or Cloud admin credentials. Local-only mode (no
 source-postgres-e2e-tests/
 ├── SKILL.md
 ├── scripts/
-│   ├── start-backend.sh        # docker run postgres:16
+│   ├── start-backend.sh        # docker run postgres:16 with logical replication
 │   ├── apply-sql.sh            # docker exec psql on stdin
 │   ├── reset-databases.sh      # drop and recreate non-system databases
 │   └── run.sh                  # engine shim to db-harness-lib orchestration
@@ -171,9 +171,11 @@ in single-version mode.
 
 ## Common gotchas
 
-- **CDC is not included in this pilot.** The lifecycle starts a standard
-  PostgreSQL 16 server without WAL or replication settings, and CDC fixtures
-  are not yet stood up.
+- **CDC is not included in this skill.** The lifecycle starts PostgreSQL 16
+  with logical replication enabled so the composed
+  [`source-postgres-e2e-cdc-tests`](../source-postgres-e2e-cdc-tests/SKILL.md)
+  skill can use the same backend. CDC fixtures and case scripts live in that
+  skill.
 - **PostgreSQL config shapes are specific.** `ssl_mode.mode` uses
   `prefer` for the local plaintext backend. The
   `replication_method.method` value for a standard sync is `Standard`.

@@ -12,7 +12,7 @@ Airbyte Agents bills you based on a unit of measurement called [agent operations
 
 ## Manage payments
 
-Manage payment methods, billing information, and your maximum bill from the Billing page.
+Manage payment methods and billing information from the Billing page.
 
 ### Add a payment method
 
@@ -40,30 +40,13 @@ Your billing information is the email address and mailing address Airbyte uses o
 2. Update the contact email or address.
 3. Click **Save**.
 
-### Set a maximum bill {#maximum-bill}
-
-A maximum bill is a spending cap for a single billing period. If your bill reaches the amount you set, Airbyte pauses all agent operations and stops adding charges until the next billing period begins.
-
-1. On the Billing page, in the Maximum Bill card, click **Edit**.
-2. Enter an amount in U.S. dollars.
-3. Click **Save**.
-
-To remove your maximum bill, click **Edit**, clear the value, and click **Save**. The card shows **No limit set** when no cap is in place.
-
-:::tip
-Set a maximum bill even if you don't expect to exceed your included AOs. This protects you from unexpected charges caused by stuck loops or mistakes in an agent configuration.
-:::
-
 ## Monitor usage
 
 The Usage panel on the Billing page shows how your activity consumes AOs and tool calls over time. Chat usage includes AOs from tool calls and reasoning. MCP, API, SDK, and CLI usage includes AOs from tool calls only.
 
 ### View usage
 
-Use the toggle to switch between a table view and a chart view.
-
-- **Chart**: A stacked bar chart of included AOs and overage AOs over the selected time range. Click a legend item to hide or show that series. Hover over a bar to see the AO and tool call breakdown for that bucket.
-- **Table**: Individual entries for each session or invocation, with the date, source, AO count, and tool call count. Entries that exceed your monthly included AOs display an **Overage** badge.
+The Usage panel displays a stacked bar chart of included AOs and overage AOs over the selected time range. Click a legend item to hide or show that series. Hover over a bar to see the AO breakdown for that day.
 
 ### Filter usage
 
@@ -73,7 +56,7 @@ Filter the Usage panel to focus on a specific source or time range:
 - **Billing period**: Choose the current billing period or one of the last five billing periods.
 - **Custom range**: Pick any start and end date to view usage across an arbitrary window.
 
-Usage from Chat links to the originating session, so you can investigate the tool calls and reasoning that drove a particular spike.
+To investigate the tool calls and reasoning that drove a particular spike, use the [Sessions](./sessions.md) and [Tool calls](./tool-calls.md) pages.
 
 ### Understand included and overage AOs
 
@@ -113,14 +96,9 @@ In the Invoices panel, click the download icon next to an invoice to save a copy
 
 If your charges for a billing period reach $10,000, Airbyte automatically issues an invoice and bills the payment method on file. This is in addition to your regular monthly invoice. After the automatic invoice, charges continue to accrue normally for the rest of the billing period.
 
-The $10,000 automatic invoice is independent of your [maximum bill](#maximum-bill). The automatic invoice is how Airbyte collects what you already owe. The maximum bill is how you tell Airbyte to stop adding charges.
-
 ## Avoid billing surprises
 
-To avoid billing surprises, Airbyte offers two capabilities. Airbyte strongly encourages you to rely on these tools to avoid unexpected charges.
-
-- If your charges reach $10,000 in a billing period, Airbyte [automatically generates an invoice and bills you](#auto-bill).
-- You can set a [maximum bill](#maximum-bill) so you're never charged more than you're willing to pay in a billing period.
+To avoid unexpected charges, monitor the [Usage panel](#monitor-usage) regularly and review your invoices as they arrive. If your charges reach $10,000 in a billing period, Airbyte [automatically generates an invoice and bills you](#auto-bill).
 
 ## Cancel your subscription
 

@@ -92,11 +92,12 @@ internal class RedshiftSqlGeneratorTest {
     }
 
     @Test
-    fun `namespaceExists queries information_schema`() {
+    fun `namespaceExists queries svv_all_schemas`() {
         val sql = sqlGenerator.namespaceExists("my_schema")
 
         assertTrue(sql.contains("SELECT EXISTS("))
-        assertTrue(sql.contains("FROM information_schema.schemata"))
+        assertTrue(sql.contains("FROM svv_all_schemas"))
+        assertTrue(sql.contains("database_name = current_database()"))
         assertTrue(sql.contains("schema_name = 'my_schema'"))
     }
 
