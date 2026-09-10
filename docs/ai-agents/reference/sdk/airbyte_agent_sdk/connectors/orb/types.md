@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.orb.types.CustomersEqCondition | airbyte_agent_sdk.connectors.orb.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.orb.types.CustomersGtCondition | airbyte_agent_sdk.connectors.orb.types.CustomersGteCondition | airbyte_agent_sdk.connectors.orb.types.CustomersLtCondition | airbyte_agent_sdk.connectors.orb.types.CustomersLteCondition | airbyte_agent_sdk.connectors.orb.types.CustomersInCondition | airbyte_agent_sdk.connectors.orb.types.CustomersStartswithCondition | airbyte_agent_sdk.connectors.orb.types.CustomersEndswithCondition | airbyte_agent_sdk.connectors.orb.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.orb.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.orb.types.CustomersNotCondition | airbyte_agent_sdk.connectors.orb.types.CustomersAndCondition | airbyte_agent_sdk.connectors.orb.types.CustomersOrCondition | airbyte_agent_sdk.connectors.orb.types.CustomersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.orb.types.CustomersEqCondition | airbyte_agent_sdk.connectors.orb.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.orb.types.CustomersGtCondition | airbyte_agent_sdk.connectors.orb.types.CustomersGteCondition | airbyte_agent_sdk.connectors.orb.types.CustomersLtCondition | airbyte_agent_sdk.connectors.orb.types.CustomersLteCondition | airbyte_agent_sdk.connectors.orb.types.CustomersInCondition | airbyte_agent_sdk.connectors.orb.types.CustomersStartswithCondition | airbyte_agent_sdk.connectors.orb.types.CustomersEndswithCondition | airbyte_agent_sdk.connectors.orb.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.orb.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.orb.types.CustomersArrayContainsCondition | airbyte_agent_sdk.connectors.orb.types.CustomersNotCondition | airbyte_agent_sdk.connectors.orb.types.CustomersAndCondition | airbyte_agent_sdk.connectors.orb.types.CustomersOrCondition | airbyte_agent_sdk.connectors.orb.types.CustomersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CustomersAnyCondition"></a>
@@ -118,10 +118,24 @@ Classes
     `timezone: Any`
     :   The timezone setting of the customer
 
+<a id="CustomersArrayContainsCondition"></a>
+
+`CustomersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.orb.types.CustomersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CustomersContainsCondition"></a>
 
 `CustomersContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -371,7 +385,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.orb.types.CustomersEqCondition | airbyte_agent_sdk.connectors.orb.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.orb.types.CustomersGtCondition | airbyte_agent_sdk.connectors.orb.types.CustomersGteCondition | airbyte_agent_sdk.connectors.orb.types.CustomersLtCondition | airbyte_agent_sdk.connectors.orb.types.CustomersLteCondition | airbyte_agent_sdk.connectors.orb.types.CustomersInCondition | airbyte_agent_sdk.connectors.orb.types.CustomersStartswithCondition | airbyte_agent_sdk.connectors.orb.types.CustomersEndswithCondition | airbyte_agent_sdk.connectors.orb.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.orb.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.orb.types.CustomersNotCondition | airbyte_agent_sdk.connectors.orb.types.CustomersAndCondition | airbyte_agent_sdk.connectors.orb.types.CustomersOrCondition | airbyte_agent_sdk.connectors.orb.types.CustomersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.orb.types.CustomersEqCondition | airbyte_agent_sdk.connectors.orb.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.orb.types.CustomersGtCondition | airbyte_agent_sdk.connectors.orb.types.CustomersGteCondition | airbyte_agent_sdk.connectors.orb.types.CustomersLtCondition | airbyte_agent_sdk.connectors.orb.types.CustomersLteCondition | airbyte_agent_sdk.connectors.orb.types.CustomersInCondition | airbyte_agent_sdk.connectors.orb.types.CustomersStartswithCondition | airbyte_agent_sdk.connectors.orb.types.CustomersEndswithCondition | airbyte_agent_sdk.connectors.orb.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.orb.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.orb.types.CustomersArrayContainsCondition | airbyte_agent_sdk.connectors.orb.types.CustomersNotCondition | airbyte_agent_sdk.connectors.orb.types.CustomersAndCondition | airbyte_agent_sdk.connectors.orb.types.CustomersOrCondition | airbyte_agent_sdk.connectors.orb.types.CustomersAnyCondition`
     :   The type of the None singleton.
 
 <a id="CustomersOrCondition"></a>
@@ -393,7 +407,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.orb.types.CustomersEqCondition | airbyte_agent_sdk.connectors.orb.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.orb.types.CustomersGtCondition | airbyte_agent_sdk.connectors.orb.types.CustomersGteCondition | airbyte_agent_sdk.connectors.orb.types.CustomersLtCondition | airbyte_agent_sdk.connectors.orb.types.CustomersLteCondition | airbyte_agent_sdk.connectors.orb.types.CustomersInCondition | airbyte_agent_sdk.connectors.orb.types.CustomersStartswithCondition | airbyte_agent_sdk.connectors.orb.types.CustomersEndswithCondition | airbyte_agent_sdk.connectors.orb.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.orb.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.orb.types.CustomersNotCondition | airbyte_agent_sdk.connectors.orb.types.CustomersAndCondition | airbyte_agent_sdk.connectors.orb.types.CustomersOrCondition | airbyte_agent_sdk.connectors.orb.types.CustomersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.orb.types.CustomersEqCondition | airbyte_agent_sdk.connectors.orb.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.orb.types.CustomersGtCondition | airbyte_agent_sdk.connectors.orb.types.CustomersGteCondition | airbyte_agent_sdk.connectors.orb.types.CustomersLtCondition | airbyte_agent_sdk.connectors.orb.types.CustomersLteCondition | airbyte_agent_sdk.connectors.orb.types.CustomersInCondition | airbyte_agent_sdk.connectors.orb.types.CustomersStartswithCondition | airbyte_agent_sdk.connectors.orb.types.CustomersEndswithCondition | airbyte_agent_sdk.connectors.orb.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.orb.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.orb.types.CustomersArrayContainsCondition | airbyte_agent_sdk.connectors.orb.types.CustomersNotCondition | airbyte_agent_sdk.connectors.orb.types.CustomersAndCondition | airbyte_agent_sdk.connectors.orb.types.CustomersOrCondition | airbyte_agent_sdk.connectors.orb.types.CustomersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CustomersSearchFilter"></a>
@@ -448,7 +462,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.orb.types.CustomersEqCondition | airbyte_agent_sdk.connectors.orb.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.orb.types.CustomersGtCondition | airbyte_agent_sdk.connectors.orb.types.CustomersGteCondition | airbyte_agent_sdk.connectors.orb.types.CustomersLtCondition | airbyte_agent_sdk.connectors.orb.types.CustomersLteCondition | airbyte_agent_sdk.connectors.orb.types.CustomersInCondition | airbyte_agent_sdk.connectors.orb.types.CustomersStartswithCondition | airbyte_agent_sdk.connectors.orb.types.CustomersEndswithCondition | airbyte_agent_sdk.connectors.orb.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.orb.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.orb.types.CustomersNotCondition | airbyte_agent_sdk.connectors.orb.types.CustomersAndCondition | airbyte_agent_sdk.connectors.orb.types.CustomersOrCondition | airbyte_agent_sdk.connectors.orb.types.CustomersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.orb.types.CustomersEqCondition | airbyte_agent_sdk.connectors.orb.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.orb.types.CustomersGtCondition | airbyte_agent_sdk.connectors.orb.types.CustomersGteCondition | airbyte_agent_sdk.connectors.orb.types.CustomersLtCondition | airbyte_agent_sdk.connectors.orb.types.CustomersLteCondition | airbyte_agent_sdk.connectors.orb.types.CustomersInCondition | airbyte_agent_sdk.connectors.orb.types.CustomersStartswithCondition | airbyte_agent_sdk.connectors.orb.types.CustomersEndswithCondition | airbyte_agent_sdk.connectors.orb.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.orb.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.orb.types.CustomersArrayContainsCondition | airbyte_agent_sdk.connectors.orb.types.CustomersNotCondition | airbyte_agent_sdk.connectors.orb.types.CustomersAndCondition | airbyte_agent_sdk.connectors.orb.types.CustomersOrCondition | airbyte_agent_sdk.connectors.orb.types.CustomersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.orb.types.CustomersSortFilter]`
@@ -569,7 +583,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.orb.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesInCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesStartswithCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesEndswithCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.orb.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesInCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesStartswithCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesEndswithCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesArrayContainsCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="InvoicesAnyCondition"></a>
@@ -650,10 +664,24 @@ Classes
     `total: Any`
     :   The total amount of the invoice
 
+<a id="InvoicesArrayContainsCondition"></a>
+
+`InvoicesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.orb.types.InvoicesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="InvoicesContainsCondition"></a>
 
 `InvoicesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -942,7 +970,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.orb.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesInCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesStartswithCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesEndswithCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.orb.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesInCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesStartswithCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesEndswithCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesArrayContainsCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesAnyCondition`
     :   The type of the None singleton.
 
 <a id="InvoicesOrCondition"></a>
@@ -964,7 +992,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.orb.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesInCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesStartswithCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesEndswithCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.orb.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesInCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesStartswithCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesEndswithCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesArrayContainsCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="InvoicesSearchFilter"></a>
@@ -1034,7 +1062,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.orb.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesInCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesStartswithCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesEndswithCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.orb.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesInCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesStartswithCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesEndswithCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesArrayContainsCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.orb.types.InvoicesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.orb.types.InvoicesSortFilter]`
@@ -1185,7 +1213,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.orb.types.PlansEqCondition | airbyte_agent_sdk.connectors.orb.types.PlansNeqCondition | airbyte_agent_sdk.connectors.orb.types.PlansGtCondition | airbyte_agent_sdk.connectors.orb.types.PlansGteCondition | airbyte_agent_sdk.connectors.orb.types.PlansLtCondition | airbyte_agent_sdk.connectors.orb.types.PlansLteCondition | airbyte_agent_sdk.connectors.orb.types.PlansInCondition | airbyte_agent_sdk.connectors.orb.types.PlansStartswithCondition | airbyte_agent_sdk.connectors.orb.types.PlansEndswithCondition | airbyte_agent_sdk.connectors.orb.types.PlansFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.PlansKeywordCondition | airbyte_agent_sdk.connectors.orb.types.PlansContainsCondition | airbyte_agent_sdk.connectors.orb.types.PlansNotCondition | airbyte_agent_sdk.connectors.orb.types.PlansAndCondition | airbyte_agent_sdk.connectors.orb.types.PlansOrCondition | airbyte_agent_sdk.connectors.orb.types.PlansAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.orb.types.PlansEqCondition | airbyte_agent_sdk.connectors.orb.types.PlansNeqCondition | airbyte_agent_sdk.connectors.orb.types.PlansGtCondition | airbyte_agent_sdk.connectors.orb.types.PlansGteCondition | airbyte_agent_sdk.connectors.orb.types.PlansLtCondition | airbyte_agent_sdk.connectors.orb.types.PlansLteCondition | airbyte_agent_sdk.connectors.orb.types.PlansInCondition | airbyte_agent_sdk.connectors.orb.types.PlansStartswithCondition | airbyte_agent_sdk.connectors.orb.types.PlansEndswithCondition | airbyte_agent_sdk.connectors.orb.types.PlansFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.PlansKeywordCondition | airbyte_agent_sdk.connectors.orb.types.PlansContainsCondition | airbyte_agent_sdk.connectors.orb.types.PlansArrayContainsCondition | airbyte_agent_sdk.connectors.orb.types.PlansNotCondition | airbyte_agent_sdk.connectors.orb.types.PlansAndCondition | airbyte_agent_sdk.connectors.orb.types.PlansOrCondition | airbyte_agent_sdk.connectors.orb.types.PlansAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PlansAnyCondition"></a>
@@ -1239,10 +1267,24 @@ Classes
     `product: Any`
     :   The product associated with the plan
 
+<a id="PlansArrayContainsCondition"></a>
+
+`PlansArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.orb.types.PlansAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="PlansContainsCondition"></a>
 
 `PlansContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1480,7 +1522,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.orb.types.PlansEqCondition | airbyte_agent_sdk.connectors.orb.types.PlansNeqCondition | airbyte_agent_sdk.connectors.orb.types.PlansGtCondition | airbyte_agent_sdk.connectors.orb.types.PlansGteCondition | airbyte_agent_sdk.connectors.orb.types.PlansLtCondition | airbyte_agent_sdk.connectors.orb.types.PlansLteCondition | airbyte_agent_sdk.connectors.orb.types.PlansInCondition | airbyte_agent_sdk.connectors.orb.types.PlansStartswithCondition | airbyte_agent_sdk.connectors.orb.types.PlansEndswithCondition | airbyte_agent_sdk.connectors.orb.types.PlansFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.PlansKeywordCondition | airbyte_agent_sdk.connectors.orb.types.PlansContainsCondition | airbyte_agent_sdk.connectors.orb.types.PlansNotCondition | airbyte_agent_sdk.connectors.orb.types.PlansAndCondition | airbyte_agent_sdk.connectors.orb.types.PlansOrCondition | airbyte_agent_sdk.connectors.orb.types.PlansAnyCondition`
+    `not: airbyte_agent_sdk.connectors.orb.types.PlansEqCondition | airbyte_agent_sdk.connectors.orb.types.PlansNeqCondition | airbyte_agent_sdk.connectors.orb.types.PlansGtCondition | airbyte_agent_sdk.connectors.orb.types.PlansGteCondition | airbyte_agent_sdk.connectors.orb.types.PlansLtCondition | airbyte_agent_sdk.connectors.orb.types.PlansLteCondition | airbyte_agent_sdk.connectors.orb.types.PlansInCondition | airbyte_agent_sdk.connectors.orb.types.PlansStartswithCondition | airbyte_agent_sdk.connectors.orb.types.PlansEndswithCondition | airbyte_agent_sdk.connectors.orb.types.PlansFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.PlansKeywordCondition | airbyte_agent_sdk.connectors.orb.types.PlansContainsCondition | airbyte_agent_sdk.connectors.orb.types.PlansArrayContainsCondition | airbyte_agent_sdk.connectors.orb.types.PlansNotCondition | airbyte_agent_sdk.connectors.orb.types.PlansAndCondition | airbyte_agent_sdk.connectors.orb.types.PlansOrCondition | airbyte_agent_sdk.connectors.orb.types.PlansAnyCondition`
     :   The type of the None singleton.
 
 <a id="PlansOrCondition"></a>
@@ -1502,7 +1544,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.orb.types.PlansEqCondition | airbyte_agent_sdk.connectors.orb.types.PlansNeqCondition | airbyte_agent_sdk.connectors.orb.types.PlansGtCondition | airbyte_agent_sdk.connectors.orb.types.PlansGteCondition | airbyte_agent_sdk.connectors.orb.types.PlansLtCondition | airbyte_agent_sdk.connectors.orb.types.PlansLteCondition | airbyte_agent_sdk.connectors.orb.types.PlansInCondition | airbyte_agent_sdk.connectors.orb.types.PlansStartswithCondition | airbyte_agent_sdk.connectors.orb.types.PlansEndswithCondition | airbyte_agent_sdk.connectors.orb.types.PlansFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.PlansKeywordCondition | airbyte_agent_sdk.connectors.orb.types.PlansContainsCondition | airbyte_agent_sdk.connectors.orb.types.PlansNotCondition | airbyte_agent_sdk.connectors.orb.types.PlansAndCondition | airbyte_agent_sdk.connectors.orb.types.PlansOrCondition | airbyte_agent_sdk.connectors.orb.types.PlansAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.orb.types.PlansEqCondition | airbyte_agent_sdk.connectors.orb.types.PlansNeqCondition | airbyte_agent_sdk.connectors.orb.types.PlansGtCondition | airbyte_agent_sdk.connectors.orb.types.PlansGteCondition | airbyte_agent_sdk.connectors.orb.types.PlansLtCondition | airbyte_agent_sdk.connectors.orb.types.PlansLteCondition | airbyte_agent_sdk.connectors.orb.types.PlansInCondition | airbyte_agent_sdk.connectors.orb.types.PlansStartswithCondition | airbyte_agent_sdk.connectors.orb.types.PlansEndswithCondition | airbyte_agent_sdk.connectors.orb.types.PlansFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.PlansKeywordCondition | airbyte_agent_sdk.connectors.orb.types.PlansContainsCondition | airbyte_agent_sdk.connectors.orb.types.PlansArrayContainsCondition | airbyte_agent_sdk.connectors.orb.types.PlansNotCondition | airbyte_agent_sdk.connectors.orb.types.PlansAndCondition | airbyte_agent_sdk.connectors.orb.types.PlansOrCondition | airbyte_agent_sdk.connectors.orb.types.PlansAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PlansSearchFilter"></a>
@@ -1545,7 +1587,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.orb.types.PlansEqCondition | airbyte_agent_sdk.connectors.orb.types.PlansNeqCondition | airbyte_agent_sdk.connectors.orb.types.PlansGtCondition | airbyte_agent_sdk.connectors.orb.types.PlansGteCondition | airbyte_agent_sdk.connectors.orb.types.PlansLtCondition | airbyte_agent_sdk.connectors.orb.types.PlansLteCondition | airbyte_agent_sdk.connectors.orb.types.PlansInCondition | airbyte_agent_sdk.connectors.orb.types.PlansStartswithCondition | airbyte_agent_sdk.connectors.orb.types.PlansEndswithCondition | airbyte_agent_sdk.connectors.orb.types.PlansFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.PlansKeywordCondition | airbyte_agent_sdk.connectors.orb.types.PlansContainsCondition | airbyte_agent_sdk.connectors.orb.types.PlansNotCondition | airbyte_agent_sdk.connectors.orb.types.PlansAndCondition | airbyte_agent_sdk.connectors.orb.types.PlansOrCondition | airbyte_agent_sdk.connectors.orb.types.PlansAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.orb.types.PlansEqCondition | airbyte_agent_sdk.connectors.orb.types.PlansNeqCondition | airbyte_agent_sdk.connectors.orb.types.PlansGtCondition | airbyte_agent_sdk.connectors.orb.types.PlansGteCondition | airbyte_agent_sdk.connectors.orb.types.PlansLtCondition | airbyte_agent_sdk.connectors.orb.types.PlansLteCondition | airbyte_agent_sdk.connectors.orb.types.PlansInCondition | airbyte_agent_sdk.connectors.orb.types.PlansStartswithCondition | airbyte_agent_sdk.connectors.orb.types.PlansEndswithCondition | airbyte_agent_sdk.connectors.orb.types.PlansFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.PlansKeywordCondition | airbyte_agent_sdk.connectors.orb.types.PlansContainsCondition | airbyte_agent_sdk.connectors.orb.types.PlansArrayContainsCondition | airbyte_agent_sdk.connectors.orb.types.PlansNotCondition | airbyte_agent_sdk.connectors.orb.types.PlansAndCondition | airbyte_agent_sdk.connectors.orb.types.PlansOrCondition | airbyte_agent_sdk.connectors.orb.types.PlansAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.orb.types.PlansSortFilter]`
@@ -1642,7 +1684,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.orb.types.SubscriptionsEqCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsNeqCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsGtCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsGteCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsLtCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsLteCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsInCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsStartswithCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsEndswithCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsKeywordCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsContainsCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsNotCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsAndCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsOrCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.orb.types.SubscriptionsEqCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsNeqCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsGtCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsGteCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsLtCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsLteCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsInCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsStartswithCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsEndswithCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsKeywordCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsContainsCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsArrayContainsCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsNotCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsAndCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsOrCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SubscriptionsAnyCondition"></a>
@@ -1693,10 +1735,24 @@ Classes
     `status: Any`
     :   The current status of the subscription
 
+<a id="SubscriptionsArrayContainsCondition"></a>
+
+`SubscriptionsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.orb.types.SubscriptionsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="SubscriptionsContainsCondition"></a>
 
 `SubscriptionsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1940,7 +1996,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.orb.types.SubscriptionsEqCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsNeqCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsGtCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsGteCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsLtCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsLteCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsInCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsStartswithCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsEndswithCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsKeywordCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsContainsCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsNotCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsAndCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsOrCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.orb.types.SubscriptionsEqCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsNeqCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsGtCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsGteCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsLtCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsLteCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsInCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsStartswithCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsEndswithCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsKeywordCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsContainsCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsArrayContainsCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsNotCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsAndCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsOrCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsAnyCondition`
     :   The type of the None singleton.
 
 <a id="SubscriptionsOrCondition"></a>
@@ -1962,7 +2018,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.orb.types.SubscriptionsEqCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsNeqCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsGtCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsGteCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsLtCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsLteCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsInCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsStartswithCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsEndswithCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsKeywordCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsContainsCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsNotCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsAndCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsOrCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.orb.types.SubscriptionsEqCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsNeqCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsGtCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsGteCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsLtCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsLteCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsInCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsStartswithCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsEndswithCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsKeywordCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsContainsCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsArrayContainsCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsNotCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsAndCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsOrCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SubscriptionsSearchFilter"></a>
@@ -2002,7 +2058,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.orb.types.SubscriptionsEqCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsNeqCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsGtCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsGteCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsLtCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsLteCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsInCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsStartswithCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsEndswithCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsKeywordCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsContainsCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsNotCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsAndCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsOrCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.orb.types.SubscriptionsEqCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsNeqCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsGtCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsGteCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsLtCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsLteCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsInCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsStartswithCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsEndswithCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsKeywordCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsContainsCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsArrayContainsCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsNotCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsAndCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsOrCondition | airbyte_agent_sdk.connectors.orb.types.SubscriptionsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.orb.types.SubscriptionsSortFilter]`
