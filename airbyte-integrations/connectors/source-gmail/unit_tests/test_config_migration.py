@@ -2,6 +2,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import json
 
 import pytest
@@ -116,6 +117,15 @@ def test_incomplete_legacy_config_is_not_migrated(config, capsys):
                 "client_id": "old",
                 "client_secret": "old",
                 "client_refresh_token": "old",
+                "credentials": {"auth_type": "Service", "service_account_info": "{}"},
+            },
+            id="nested_service_with_stale_legacy_fields",
+        ),
+        pytest.param(
+            {
+                "client_id": "old",
+                "client_secret": "old",
+                "client_refresh_token": "old",
                 "credentials": {
                     "auth_type": "Client",
                     "client_id": "id",
@@ -128,7 +138,7 @@ def test_incomplete_legacy_config_is_not_migrated(config, capsys):
     ],
 )
 def test_already_nested_config_is_unchanged(config, capsys):
-    migrated, control_messages = _migrate(config, capsys)
+    migrated, control_messages = _migrate(copy.deepcopy(config), capsys)
 
     assert migrated == config
     assert control_messages == []
