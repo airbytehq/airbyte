@@ -48,9 +48,7 @@ class BigqueryCopyMetadata(
         val table =
             requireNotNull(
                 if (raw) tableInfo.tableNames.rawTableName else tableInfo.tableNames.finalTableName
-            ) {
-                "Missing logical BigQuery table for ${stream.mappedDescriptor}"
-            }
+            ) { "Missing logical BigQuery table for ${stream.mappedDescriptor}" }
         // These are the same helpers used by both formatting writers and the bulk loader factory.
         val headers = stream.schema.withAirbyteMeta(!raw).toCsvHeader().toList()
         val fields =
@@ -94,7 +92,8 @@ class BigqueryCopyMetadata(
             configuredCatalog?.streams?.singleOrNull {
                 it.stream.namespace == stream.unmappedNamespace &&
                     it.stream.name == stream.unmappedName
-            } ?: stream.asProtocolObject()
+            }
+                ?: stream.asProtocolObject()
         val primaryKey = configured.primaryKey.orEmpty()
         val cursor = configured.cursorField.orEmpty()
         val layout =
@@ -278,9 +277,7 @@ class BigqueryCopyMetadata(
             stream.generationId >= 0 &&
                 (stream.minimumGenerationId == 0L ||
                     stream.minimumGenerationId == stream.generationId)
-        ) {
-            "BigQuery S3 copy supports minimum generation zero or equal to current generation"
-        }
+        ) { "BigQuery S3 copy supports minimum generation zero or equal to current generation" }
     }
 
     private fun hash(value: Any): String {

@@ -8,6 +8,7 @@ import com.google.cloud.bigquery.*
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.LoadJobConfiguration
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.config.DataChannelMedium
@@ -40,6 +41,10 @@ import jakarta.inject.Singleton
 
 private val logger = KotlinLogging.logger {}
 
+@SuppressFBWarnings(
+    value = ["NP_NONNULL_PARAM_VIOLATION"],
+    justification = "Kotlin coroutine resume stubs pass null placeholders for saved arguments",
+)
 class BigQueryBulkLoader(
     private val storageClient: GcsClient,
     private val bigQueryClient: BigQuery,
