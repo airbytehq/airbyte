@@ -1,45 +1,122 @@
 ---
 id: airbyte-types
-title: airbyte.types
+title: "airbyte.types Module"
+sidebar_label: "airbyte.types"
+toc_max_heading_level: 5
 ---
 
-Module airbyte.types
-====================
+# `airbyte.types` Module
+
 Type conversion methods for SQL Caches.
 
-Classes
--------
+### `SQLTypeConversionError` {#airbyte.types.SQLTypeConversionError}
 
-`SQLTypeConversionError(*args, **kwargs)`
-:   An exception to be raised when a type conversion fails.
+<ApiMember kind="class">
 
-    ### Ancestors (in MRO)
+<ApiSignature>
 
-    * builtins.Exception
-    * builtins.BaseException
+```python
+class SQLTypeConversionError(*args, **kwargs)
+```
 
-`SQLTypeConverter(conversion_map: dict | None = None)`
-:   A base class to perform type conversions.
-    
-    Initialize the type converter.
+</ApiSignature>
 
-    ### Descendants
+An exception to be raised when a type conversion fails.
 
-    * airbyte._processors.sql.bigquery.BigQueryTypeConverter
-    * airbyte._processors.sql.snowflake.SnowflakeTypeConverter
+#### Bases {#airbyte.types.SQLTypeConversionError--bases}
 
-    ### Static methods
+`builtins.Exception`
 
-    `get_failover_type() ‑> sqlalchemy.sql.type_api.TypeEngine`
-    :   Get the 'last resort' type to use if no other type is found.
+</ApiMember>
 
-    `get_json_type() ‑> sqlalchemy.sql.type_api.TypeEngine`
-    :   Get the type to use for nested JSON data.
+### `SQLTypeConverter` {#airbyte.types.SQLTypeConverter}
 
-    `get_string_type() ‑> sqlalchemy.sql.type_api.TypeEngine`
-    :   Get the type to use for string data.
+<ApiMember kind="class">
 
-    ### Methods
+<ApiSignature>
 
-    `to_sql_type(self, json_schema_property_def: dict[str, str | dict | list]) ‑> sqlalchemy.sql.type_api.TypeEngine`
-    :   Convert a value to a SQL type.
+```python
+class SQLTypeConverter(conversion_map: dict | None = None)
+```
+
+</ApiSignature>
+
+A base class to perform type conversions.
+
+Initialize the type converter.
+
+#### Descendants {#airbyte.types.SQLTypeConverter--descendants}
+
+`airbyte._processors.sql.bigquery.BigQueryTypeConverter`, `airbyte._processors.sql.snowflake.SnowflakeTypeConverter`
+#### Static Methods {#airbyte.types.SQLTypeConverter--static-methods}
+
+##### `get_failover_type` {#airbyte.types.SQLTypeConverter.get_failover_type}
+
+<ApiMember kind="method">
+
+<ApiSignature>
+
+```python
+def get_failover_type() -> sqlalchemy.sql.type_api.TypeEngine
+```
+
+</ApiSignature>
+
+Get the 'last resort' type to use if no other type is found.
+
+</ApiMember>
+
+##### `get_json_type` {#airbyte.types.SQLTypeConverter.get_json_type}
+
+<ApiMember kind="method">
+
+<ApiSignature>
+
+```python
+def get_json_type() -> sqlalchemy.sql.type_api.TypeEngine
+```
+
+</ApiSignature>
+
+Get the type to use for nested JSON data.
+
+</ApiMember>
+
+##### `get_string_type` {#airbyte.types.SQLTypeConverter.get_string_type}
+
+<ApiMember kind="method">
+
+<ApiSignature>
+
+```python
+def get_string_type() -> sqlalchemy.sql.type_api.TypeEngine
+```
+
+</ApiSignature>
+
+Get the type to use for string data.
+
+</ApiMember>
+
+#### Methods {#airbyte.types.SQLTypeConverter--methods}
+
+##### `to_sql_type` {#airbyte.types.SQLTypeConverter.to_sql_type}
+
+<ApiMember kind="method">
+
+<ApiSignature>
+
+```python
+def to_sql_type(
+    self,
+    json_schema_property_def: dict[str, str | dict | list],
+) -> sqlalchemy.sql.type_api.TypeEngine
+```
+
+</ApiSignature>
+
+Convert a value to a SQL type.
+
+</ApiMember>
+
+</ApiMember>
