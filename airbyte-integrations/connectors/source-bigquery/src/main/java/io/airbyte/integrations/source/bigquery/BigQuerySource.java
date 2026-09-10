@@ -9,6 +9,8 @@ import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryU
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.cloud.bigquery.BigQueryException;
+import com.google.cloud.bigquery.DatasetId;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
@@ -23,6 +25,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
@@ -48,6 +51,9 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySource.class);
   private static final String QUOTE = "`";
+  private static final int HTTP_STATUS_NOT_FOUND = 404;
+  private static final String DATASET_NOT_FOUND_ERROR_MESSAGE =
+      "BigQuery dataset is not accessible. Verify the dataset exists and credentials have access.";
 
   public static final String CONFIG_DATASET_ID = "dataset_id";
   public static final String CONFIG_PROJECT_ID = "project_id";
@@ -121,8 +127,7 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   @Override
   protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(final BigQueryDatabase database, final String schema) {
     final String projectId = dbConfig.get(CONFIG_PROJECT_ID).asText();
-    final List<Table> tables =
-        (isDatasetConfigured(database) ? database.getDatasetTables(getConfigDatasetId(database)) : database.getProjectTables(projectId));
+    final List<Table> tables = getTables(database, projectId);
     final List<TableInfo<CommonField<StandardSQLTypeName>>> result = new ArrayList<>();
     tables.stream().map(table -> TableInfo.<CommonField<StandardSQLTypeName>>builder()
         .nameSpace(table.getTableId().getDataset())
@@ -141,6 +146,41 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
         .build())
         .forEach(result::add);
     return result;
+  }
+
+  private List<Table> getTables(final BigQueryDatabase database, final String projectId) {
+    try {
+      return isDatasetConfigured(database) ? database.getDatasetTables(getConfigDatasetId(database)) : getProjectTables(database, projectId);
+    } catch (final BigQueryException e) {
+      if (e.getCode() == HTTP_STATUS_NOT_FOUND) {
+        throw new ConfigErrorException(DATASET_NOT_FOUND_ERROR_MESSAGE, e);
+      }
+      throw e;
+    }
+  }
+
+  private List<Table> getProjectTables(final BigQueryDatabase database, final String projectId) {
+    final List<Table> tableList = new ArrayList<>();
+    database.getBigQuery()
+        .listDatasets(projectId)
+        .iterateAll()
+        .forEach(dataset -> addDatasetTables(database, tableList, dataset.getDatasetId()));
+    return tableList;
+  }
+
+  private void addDatasetTables(final BigQueryDatabase database, final List<Table> tableList, final DatasetId datasetId) {
+    try {
+      database.getBigQuery()
+          .listTables(datasetId)
+          .iterateAll()
+          .forEach(table -> tableList.add(database.getBigQuery().getTable(table.getTableId())));
+    } catch (final BigQueryException e) {
+      if (e.getCode() == HTTP_STATUS_NOT_FOUND) {
+        LOGGER.warn("Skipping BigQuery dataset because it is not found.", e);
+        return;
+      }
+      throw e;
+    }
   }
 
   @Override
