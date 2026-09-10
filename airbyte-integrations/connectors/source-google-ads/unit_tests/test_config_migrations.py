@@ -4,9 +4,12 @@
 
 
 import json
+import logging
 from typing import Any, Mapping
+from unittest.mock import patch
 
-from source_google_ads.config_migrations import MigrateCustomQuery
+import pytest
+from source_google_ads.config_migrations import MigrateAuthType, MigrateCustomQuery
 from source_google_ads.source import SourceGoogleAds
 
 from airbyte_cdk.models import OrchestratorType, Type
@@ -80,3 +83,103 @@ def test_should_not_migrate_new_config():
     new_config = load_config(NEW_TEST_CONFIG_PATH)
     migration_instance = MigrateCustomQuery()
     assert not migration_instance.should_migrate(new_config)
+
+
+def test_migrate_auth_type_adds_client_marker_for_legacy_oauth_config():
+    legacy_config = {
+        "credentials": {
+            "developer_token": "dev",
+            "client_id": "client",
+            "client_secret": "secret",
+            "refresh_token": "refresh",
+        }
+    }
+
+    assert MigrateAuthType.should_migrate(legacy_config)
+    migrated = MigrateAuthType.update_config(legacy_config)
+    assert migrated["credentials"]["auth_type"] == "Client"
+
+
+def test_migrate_auth_type_skips_already_migrated_configs():
+    oauth_config = {
+        "credentials": {
+            "auth_type": "Client",
+            "developer_token": "dev",
+            "client_id": "client",
+            "client_secret": "secret",
+            "refresh_token": "refresh",
+        }
+    }
+    service_config = {
+        "credentials": {
+            "auth_type": "Service",
+            "developer_token": "dev",
+            "service_account_info": "{}",
+            "impersonated_email": "user@example.com",
+        }
+    }
+
+    assert not MigrateAuthType.should_migrate(oauth_config)
+    assert not MigrateAuthType.should_migrate(service_config)
+
+
+def test_migrate_auth_type_skips_configs_without_credentials():
+    assert not MigrateAuthType.should_migrate({})
+
+
+def test_source_init_backfills_auth_type_for_legacy_in_memory_config():
+    legacy_config = {
+        "credentials": {
+            "developer_token": "dev",
+            "client_id": "client",
+            "client_secret": "secret",
+            "refresh_token": "refresh",
+        },
+        "customer_id": "1234567890",
+        "start_date": "2021-01-01",
+    }
+
+    source = SourceGoogleAds(catalog=None, config=legacy_config, state=None)
+
+    assert source._config["credentials"]["auth_type"] == "Client"
+
+
+def _legacy_oauth_config():
+    """An on-disk config from before the OAuth / Service Account `oneOf` split: no `auth_type`."""
+    return {
+        "credentials": {
+            "developer_token": "dev",
+            "client_id": "client",
+            "client_secret": "secret",
+            "refresh_token": "refresh",
+        },
+        "customer_id": "1234567890",
+        "start_date": "2021-01-01",
+    }
+
+
+def test_legacy_oauth_config_can_discover_after_in_memory_backfill():
+    legacy_config = _legacy_oauth_config()
+
+    source = SourceGoogleAds(catalog=None, config=legacy_config, state=None)
+    catalog = source.discover(logging.getLogger("airbyte"), legacy_config)
+
+    assert catalog.streams
+    assert source.streams(config=legacy_config)
+    # The caller's config is left alone; only the source's own copy is backfilled.
+    assert "auth_type" not in legacy_config["credentials"]
+
+
+def test_legacy_oauth_config_fails_discover_without_the_in_memory_backfill():
+    """Negative control for the test above.
+
+    The manifest resolves auth through a `SelectiveAuthenticator` keyed on
+    `credentials.auth_type`, and the CDK raises when that path is absent. Without
+    `_backfill_auth_type`, every legacy OAuth config breaks on DISCOVER - the regression that
+    sank the first attempt at this feature. This test fails if the backfill is ever dropped.
+    """
+    with patch.object(SourceGoogleAds, "_backfill_auth_type", staticmethod(lambda config: config)):
+        source = SourceGoogleAds(catalog=None, config=_legacy_oauth_config(), state=None)
+
+        with pytest.raises(ValueError, match="authenticator_selection_path"):
+            source.discover(logging.getLogger("airbyte"), _legacy_oauth_config())

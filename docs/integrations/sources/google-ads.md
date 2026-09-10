@@ -12,7 +12,7 @@ This page contains the setup guide and reference information for the [Google Ads
 <!-- env:oss -->
 - (For Airbyte Open Source):
   - A Developer Token
-  - OAuth credentials to authenticate your Google account
+  - OAuth credentials or a service account key to authenticate your Google account
   <!-- /env:oss -->
 
 ## Setup guide
@@ -39,9 +39,11 @@ To set up the Google Ads source connector with Airbyte Open Source, you will nee
 You will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token; it has to be at least a basic developer token. The approval process typically takes around 24 hours.
 :::
 
-#### Step 2: (For Airbyte Open Source) Obtain your OAuth credentials
+#### Step 2: (For Airbyte Open Source) Choose an authentication method
 
-If you are using Airbyte Open Source, you will need to obtain the following OAuth credentials to authenticate your Google Ads account:
+If you are using Airbyte Open Source, you can authenticate with either OAuth credentials or a service account key.
+
+To use OAuth, obtain the following credentials:
 
 - Client ID
 - Client Secret
@@ -54,6 +56,16 @@ A single access token can grant varying degrees of access to multiple APIs. A va
 The scope for the Google Ads API is: https://www.googleapis.com/auth/adwords
 
 Each Google Ads API developer token is assigned an access level and "permissible use". The access level determines whether you can affect production accounts and the number of operations and requests that you can execute daily. Permissible use determines the specific Google Ads API features that the developer token is allowed to use. Read more about it and apply for higher access [here](https://developers.google.com/google-ads/api/docs/access-levels#access_levels_2).
+
+To use a service account instead:
+
+1. Create a Google Cloud service account and download its JSON key file. See [Google's service account guide](https://developers.google.com/google-ads/api/docs/oauth/service-accounts) for details.
+2. Grant the service account access to your Google Ads account. Either:
+   - **Direct access (recommended)**: sign in to Google Ads as an administrator, go to **Admin > Access and security**, and add the service account email (`name@project.iam.gserviceaccount.com`) as a user. Leave **Impersonated Email** blank.
+   - **Domain-wide delegation**: if you use a Google Workspace domain and prefer to act on behalf of an existing Google Ads user, [delegate domain-wide authority](https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority) to the service account for the `https://www.googleapis.com/auth/adwords` scope, then enter that user's address in **Impersonated Email**.
+3. Paste the full JSON key into **Service Account JSON Key**.
+
+A Developer Token is still required for service account authentication, exactly as it is for OAuth. The connector requests the Google Ads API scope `https://www.googleapis.com/auth/adwords`.
 
 ### Step 3: Set up the Google Ads connector in Airbyte
 
@@ -132,8 +144,8 @@ If you are accessing your account through a Google Ads Manager account, you must
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Ads** from the list of available sources.
 4. Enter a **Source name** of your choosing.
-5. Enter the **Developer Token** you obtained from Google.
-6. To authenticate your Google account, enter your Google application's **Client ID**, **Client Secret**, **Refresh Token**, and optionally, the **Access Token**.
+5. Select **OAuth Credentials** or **Service Account Key Authentication**.
+6. Enter the **Developer Token** you obtained from Google. Then, for OAuth, enter your Google application's **Client ID**, **Client Secret**, **Refresh Token**, and optionally, the **Access Token**. For service account authentication, paste the full service account JSON key into **Service Account JSON Key**, and enter an **Impersonated Email** only if you are using domain-wide delegation.
 7. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field blank will replicate data from all connected accounts.
 8. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v23/CustomerStatusEnum.CustomerStatus) for more info.
 9. (Optional) Enter a **Start Date** using the provided datepicker, or by programmatically entering the date in YYYY-MM-DD format. The data added on and after this date will be replicated. (Default start date is 2 years ago)
@@ -396,6 +408,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.2.0-rc.1 | 2026-08-28 | [80305](https://github.com/airbytehq/airbyte/pull/80305) | Add service account key authentication. |
 | 6.1.1 | 2026-08-25 | [85023](https://github.com/airbytehq/airbyte/pull/85023) | Fixed multi-byte UTF-8 characters being corrupted at chunk boundaries in large streamed responses. |
 | 6.1.0 | 2026-07-06 | [80952](https://github.com/airbytehq/airbyte/pull/80952) | Add `ad_performance` and `geo_performance` streams. |
 | 6.0.0 | 2026-05-29 | [78504](https://github.com/airbytehq/airbyte/pull/78504) | Clamp incremental report dates to Google Ads' 37-month granular data retention window. |

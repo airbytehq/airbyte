@@ -4,6 +4,7 @@
 
 
 import json
+from copy import deepcopy
 from datetime import date
 
 import pendulum
@@ -56,11 +57,123 @@ EXPECTED_CRED = {
     "use_proto_plus": True,
 }
 
+SERVICE_ACCOUNT_KEY_DICT = {
+    "type": "service_account",
+    "project_id": "test-project",
+    "private_key_id": "key-id",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nfake\n-----END PRIVATE KEY-----\n",
+    "client_email": "sa@test-project.iam.gserviceaccount.com",
+    "client_id": "1234567890",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+}
+
+SAMPLE_SERVICE_ACCOUNT_CONFIG = {
+    "credentials": {
+        "auth_type": "Service",
+        "developer_token": "developer_token",
+        "service_account_info": json.dumps(SERVICE_ACCOUNT_KEY_DICT),
+        "impersonated_email": "user@example.com",
+    }
+}
+
 
 def test_google_ads_init(mocker):
     google_client_mocker = mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
     _ = GoogleAds(**SAMPLE_CONFIG)
     assert google_client_mocker.load_from_dict.call_args[0][0] == EXPECTED_CRED
+
+
+def test_google_ads_init_with_service_account_credentials(mocker):
+    """The service account key is handed to the SDK in memory - never written to disk."""
+    google_client_mocker = mocker.patch("source_google_ads.google_ads.GoogleAdsClient")
+    service_account_mocker = mocker.patch("source_google_ads.google_ads.service_account.Credentials")
+    delegated = service_account_mocker.from_service_account_info.return_value.with_subject.return_value
+
+    _ = GoogleAds(**deepcopy(SAMPLE_SERVICE_ACCOUNT_CONFIG))
+
+    # No `load_from_dict`, so no `json_key_file_path` and no temp file to leak.
+    google_client_mocker.load_from_dict.assert_not_called()
+    service_account_mocker.from_service_account_info.assert_called_once_with(
+        SERVICE_ACCOUNT_KEY_DICT, scopes=["https://www.googleapis.com/auth/adwords"]
+    )
+    service_account_mocker.from_service_account_info.return_value.with_subject.assert_called_once_with("user@example.com")
+    delegated.refresh.assert_called_once()
+
+    kwargs = google_client_mocker.call_args.kwargs
+    assert kwargs["credentials"] is delegated
+    assert kwargs["developer_token"] == "developer_token"
+    assert kwargs["use_proto_plus"] is True
+    assert kwargs["login_customer_id"] is None
+
+
+def test_service_account_credentials_are_not_mutated_or_persisted(mocker):
+    """Building the SDK client must not rewrite the live config.
+
+    `components.GoogleAdsServiceAccountAuthenticator` reads `credentials.service_account_info`
+    lazily from the same config mapping, so dropping the key here would break the declarative
+    HTTP auth path for any config that also uses custom GAQL queries.
+    """
+    google_client_mocker = mocker.patch("source_google_ads.google_ads.GoogleAdsClient")
+    mocker.patch("source_google_ads.google_ads.service_account.Credentials")
+    config = deepcopy(SAMPLE_SERVICE_ACCOUNT_CONFIG)
+
+    google_ads_client = GoogleAds(**config)
+    google_ads_client.get_client("9999999999")
+
+    assert config["credentials"]["service_account_info"] == json.dumps(SERVICE_ACCOUNT_KEY_DICT)
+    assert "json_key_file_path" not in config["credentials"]
+    assert google_client_mocker.call_args.kwargs["login_customer_id"] == "9999999999"
+
+
+def test_service_account_credentials_invalid_json_raises_config_error(mocker):
+    mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        GoogleAds(
+            credentials={
+                "auth_type": "Service",
+                "developer_token": "developer_token",
+                "service_account_info": "not json",
+                "impersonated_email": "user@example.com",
+            }
+        )
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert "service_account_info" in exc_info.value.message
+
+
+def test_service_account_credentials_non_object_json_raises_config_error(mocker):
+    mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        GoogleAds(
+            credentials={
+                "auth_type": "Service",
+                "developer_token": "developer_token",
+                "service_account_info": "[]",
+                "impersonated_email": "user@example.com",
+            }
+        )
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert "service_account_info" in exc_info.value.message
+
+
+def test_service_account_credentials_missing_info_raises_config_error(mocker):
+    mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        GoogleAds(
+            credentials={
+                "auth_type": "Service",
+                "developer_token": "developer_token",
+                "impersonated_email": "user@example.com",
+            }
+        )
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert "service_account_info" in exc_info.value.message
 
 
 def test_google_ads_wrong_permissions(mocker):
