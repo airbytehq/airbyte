@@ -41,11 +41,10 @@ When authenticating with a **service account** (Airbyte Open Source), you must a
 
 #### Enable the Google Analytics APIs
 
-Before you can use the service account to access Google Analytics data, you need to enable the required APIs:
+Before the service account can read Google Analytics data, enable the APIs the connector calls in the Google Cloud project that owns the service account:
 
-1. Go to the [Google Analytics Reporting API dashboard](https://console.developers.google.com/apis/api/analyticsreporting.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API. You can also set quotas and check usage.
-2. Go to the [Google Analytics API dashboard](https://console.developers.google.com/apis/api/analytics.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API.
-3. Go to the [Google Analytics Data API dashboard](https://console.developers.google.com/apis/api/analyticsdata.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API.
+1. Go to the [Google Analytics Data API dashboard](https://console.developers.google.com/apis/api/analyticsdata.googleapis.com/overview), confirm the correct project is selected, and click **Enable**. All report streams use this API. You can also review quotas and usage here.
+2. Go to the [Google Analytics Admin API dashboard](https://console.developers.google.com/apis/api/analyticsadmin.googleapis.com/overview) and enable it. Only the `property_metadata` stream uses this API; if you don't enable it, that stream fails with a `403 SERVICE_DISABLED` error and the report streams still work.
 
 <!-- /env:oss -->
 
@@ -58,15 +57,17 @@ Before you can use the service account to access Google Analytics data, you need
 3. On the Set up the source page, select Google Analytics 4 (GA4) from the Source type dropdown.
 4. Enter a name for the Google Analytics 4 (GA4) connector.
 5. Select **Authenticate via Google (Oauth)** from the dropdown menu and click **Authenticate your Google Analytics 4 (GA4) account**. This will open a pop-up window where you can log in to your Google account and grant Airbyte access to your Google Analytics account.
-6. Enter the **Property ID** whose events are tracked. This ID should be a numeric value, such as `123456789`. If you are unsure where to find this value, refer to [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id).
+6. In **Property IDs**, enter one or more numeric GA4 property IDs, such as `123456789`. Each ID produces its own set of report streams unless you enable **One Stream per Report**. If you are unsure where to find this value, refer to [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id).
    :::note
    If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denotes that the property is a Universal Analytics property, and the Analytics data for that property cannot be reported on using this connector. You can create a new Google Analytics 4 property by following [these instructions](https://support.google.com/analytics/answer/9744165?hl=en).
    :::
 
 7. (Optional) In the **Start Date** field, use the provided datepicker or enter a date programmatically in the format `YYYY-MM-DD`. All data added from this date onward will be replicated. Note that this setting is _not_ applied to custom Cohort reports.
-8. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
-9. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
-10. (Optional) Enable **One Stream per Report** to create one stream per report covering all configured property IDs, instead of one stream per report per property. Recommended when syncing many properties. See the [One Stream per Report](#one-stream-per-report) section below &mdash; enabling it on an existing connection requires a full re-sync.
+8. (Optional) Toggle **Keep Empty Rows** if you want rows where every metric is 0 to be returned.
+9. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
+10. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
+11. (Optional) In the **Lookback window (Days)** field, specify how many days of past data to refresh on every run (2 to 60, default 2). Because attribution changes after the event date, and Google Analytics has data processing latency, this helps keep your data consistent. For example, setting this to 5 causes every sync to re-fetch data from the last bookmark date minus 5 days.
+12. (Optional) Enable **One Stream per Report** to create one stream per report covering all configured property IDs, instead of one stream per report per property. Recommended when syncing many properties. See the [One Stream per Report](#one-stream-per-report) section below &mdash; enabling it on an existing connection requires a full re-sync.
 
 :::caution
 
@@ -76,7 +77,8 @@ To mitigate this, we recommend adjusting the **Data Request Interval (Days)** va
 
 :::
 
-11. Click **Set up source** and wait for the tests to complete.
+13. (Optional) Set **Subscription Plan/Tier** to **Analytics 360 Property** only if every configured property belongs to a Google Analytics 360 subscription. This selects the per-property rate-limit budget the connector applies locally. Leave it at **Standard Property** otherwise.
+14. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:cloud -->
 
@@ -88,7 +90,7 @@ To mitigate this, we recommend adjusting the **Data Request Interval (Days)** va
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Analytics 4 (GA4)** from the list of available sources.
 4. Select **Service Account Key Authentication** from the dropdown list and enter the **Service Account JSON Key** from Step 1.
-5. Enter the **Property ID** whose events are tracked. This ID should be a numeric value, such as `123456789`. If you are unsure where to find this value, refer to [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id).
+5. In **Property IDs**, enter one or more numeric GA4 property IDs, such as `123456789`. Each ID produces its own set of report streams unless you enable **One Stream per Report**. If you are unsure where to find this value, refer to [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id).
    :::note
    If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denotes that the property is a Universal Analytics property, and the Analytics data for that property cannot be reported on in the Data API. You can create a new Google Analytics 4 property by following [these instructions](https://support.google.com/analytics/answer/9744165?hl=en).
    :::
@@ -106,7 +108,7 @@ Many analyses and data investigations may require 24-48 hours to process informa
 7. (Optional) Toggle the switch **Keep Empty Rows** if you want each row with all metrics equal to 0 to be returned.
 8. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
 9. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
-10. (Optional) In the **Lookback window (Days)** field, specify how many days of past data to refresh on every run. Because attribution changes after the event date, and Google Analytics has data processing latency, this helps keep your data consistent. For example, setting this to 5 causes every sync to re-fetch data from the last bookmark date minus 5 days.
+10. (Optional) In the **Lookback window (Days)** field, specify how many days of past data to refresh on every run (2 to 60, default 2). Because attribution changes after the event date, and Google Analytics has data processing latency, this helps keep your data consistent. For example, setting this to 5 causes every sync to re-fetch data from the last bookmark date minus 5 days.
 11. (Optional) Enable **One Stream per Report** to create one stream per report covering all configured property IDs, instead of one stream per report per property. Recommended when syncing many properties. See the [One Stream per Report](#one-stream-per-report) section below &mdash; enabling it on an existing connection requires a full re-sync.
 
 :::caution
@@ -117,7 +119,8 @@ To mitigate this, we recommend adjusting the **Data Request Interval (Days)** va
 
 :::
 
-12. Click **Set up source** and wait for the tests to complete.
+12. (Optional) Set **Subscription Plan/Tier** to **Analytics 360 Property** only if every configured property belongs to a Google Analytics 360 subscription. This selects the per-property rate-limit budget the connector applies locally. Leave it at **Standard Property** otherwise.
+13. Click **Set up source** and wait for the tests to complete.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -202,6 +205,10 @@ The `property_metadata` stream is full-refresh and uses the Admin API [`properti
 The `property_metadata` stream requires the Google Analytics Admin API (`analyticsadmin.googleapis.com`) to be enabled for the GCP project associated with the credentials; service-account users must enable it in their own project. If it is not enabled, this stream fails with a `403 SERVICE_DISABLED` error, while report streams continue to work.
 
 ## Connector-specific features
+
+### Configuring authentication programmatically
+
+If you create the source through the Airbyte API, Terraform, or PyAirbyte instead of the UI, set `credentials.auth_type` explicitly: `Client` for OAuth (`client_id`, `client_secret`, `refresh_token`) or `Service` for a service account key (`credentials_json`). The connector selects the authenticator from this field. If `auth_type` is missing, the connector infers it from whichever of `client_id` or `credentials_json` is set to a non-empty value; an empty string doesn't count.
 
 ### Custom Reports
 
@@ -332,12 +339,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.11.1 | 2026-09-09 | [85797](https://github.com/airbytehq/airbyte/pull/85797) | Stop inferring the credentials `auth_type` from empty `client_id` / `credentials_json` values |
+| 2.11.1 | 2026-09-10 | [85797](https://github.com/airbytehq/airbyte/pull/85797) | Stop inferring the credentials `auth_type` from empty `client_id` / `credentials_json` values |
 | 2.11.0 | 2026-09-09 | [85761](https://github.com/airbytehq/airbyte/pull/85761) | Promoted release candidate to GA |
-| 2.11.0-rc.1 | 2026-08-11 | [83783](https://github.com/airbytehq/airbyte/pull/83783) | Add an opt-in **One Stream per Report** mode that combines all configured property IDs into one stream per report named `<report_name>Consolidated`, with schemas merged across properties. Off by default; existing connections are unchanged |
-| 2.10.2 | 2026-08-11 | [83343](https://github.com/airbytehq/airbyte/pull/83343) | Preserve nested `name` fields when resolving dynamic streams |
+| 2.11.0-rc.1 | 2026-08-17 | [83783](https://github.com/airbytehq/airbyte/pull/83783) | Add an opt-in **One Stream per Report** mode that combines all configured property IDs into one stream per report named `<report_name>Consolidated`, with schemas merged across properties. Off by default; existing connections are unchanged |
+| 2.10.2 | 2026-08-12 | [83343](https://github.com/airbytehq/airbyte/pull/83343) | Preserve nested `name` fields when resolving dynamic streams |
 | 2.10.1 | 2026-08-11 | [83952](https://github.com/airbytehq/airbyte/pull/83952) | Update dependencies |
-| 2.10.0 | 2026-07-30 | [83273](https://github.com/airbytehq/airbyte/pull/83273) | Add the `property_metadata` stream with GA4 property metadata from the Admin API |
+| 2.10.0 | 2026-08-10 | [83273](https://github.com/airbytehq/airbyte/pull/83273) | Add the `property_metadata` stream with GA4 property metadata from the Admin API |
 | 2.9.45 | 2026-07-28 | [82938](https://github.com/airbytehq/airbyte/pull/82938) | Update dependencies |
 | 2.9.44 | 2026-07-21 | [82436](https://github.com/airbytehq/airbyte/pull/82436) | Update dependencies |
 | 2.9.43 | 2026-07-14 | [81845](https://github.com/airbytehq/airbyte/pull/81845) | Update dependencies |
@@ -347,17 +354,17 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 2.9.39 | 2026-06-09 | [79340](https://github.com/airbytehq/airbyte/pull/79340) | Update dependencies |
 | 2.9.38 | 2026-06-02 | [77618](https://github.com/airbytehq/airbyte/pull/77618) | Infer `auth_type` from credentials when missing to fix OAuth connection failures |
 | 2.9.37 | 2026-06-02 | [77243](https://github.com/airbytehq/airbyte/pull/77243) | Update dependencies |
-| 2.9.36 | 2026-05-27 | [77877](https://github.com/airbytehq/airbyte/pull/77877) | Update the connector runtime to the latest CDK version and reduce intermittent stream read hangs |
-| 2.9.35 | 2026-05-19 | [PR-pending](https://github.com/airbytehq/airbyte/pull/PR-pending) | Restore `default_concurrency` to 4 after c=6 rollout showed heartbeat timeout outliers |
+| 2.9.36 | 2026-06-01 | [77877](https://github.com/airbytehq/airbyte/pull/77877) | Update the connector runtime to the latest CDK version and reduce intermittent stream read hangs |
+| 2.9.35 | 2026-05-20 | [78275](https://github.com/airbytehq/airbyte/pull/78275) | Restore `default_concurrency` to 4 after c=6 rollout showed heartbeat timeout outliers |
 | 2.9.34 | 2026-05-18 | [78161](https://github.com/airbytehq/airbyte/pull/78161) | Promoted release candidate to GA |
-| 2.9.34-rc.2 | 2026-05-01 | [PR-pending](https://github.com/airbytehq/airbyte/pull/PR-pending) | Phase 1 step 3: bump `default_concurrency` 5 to 6 (tier-aware `api_budget` stays live) |
+| 2.9.34-rc.2 | 2026-05-06 | [77781](https://github.com/airbytehq/airbyte/pull/77781) | Phase 1 step 3: bump `default_concurrency` 5 to 6 (tier-aware `api_budget` stays live) |
 | 2.9.34-rc.1 | 2026-04-29 | [77550](https://github.com/airbytehq/airbyte/pull/77550) | Phase 1 step 2: bump `default_concurrency` 4 to 5 and activate the tier-aware `api_budget` (Standard 10 req/s, Analytics 360 50 req/s on opt-in via `subscription_tier`) |
-| 2.9.33-rc.1 | 2026-04-23 | [76956](https://github.com/airbytehq/airbyte/pull/76956) | Add `concurrency_level` (default 4, max 16) and `subscription_tier` spec field (Standard or Analytics 360) for the Path B concurrency tuning rollout (RC); existing and tier-aware `api_budget` kept commented during tuning |
+| 2.9.33-rc.1 | 2026-04-27 | [76956](https://github.com/airbytehq/airbyte/pull/76956) | Add `concurrency_level` (default 4, max 16) and `subscription_tier` spec field (Standard or Analytics 360) for the Path B concurrency tuning rollout (RC); existing and tier-aware `api_budget` kept commented during tuning |
 | 2.9.31 | 2026-04-20 | [76185](https://github.com/airbytehq/airbyte/pull/76185) | Surface the GA4 API error message on 400 and 403 responses, and stop retrying permission errors |
 | 2.9.30 | 2026-04-14 | [76190](https://github.com/airbytehq/airbyte/pull/76190) | Add access_token to extract_output and complete_oauth_output_specification to fix OAuth secretId 422 regression |
 | 2.9.32 | 2026-04-21 | [76600](https://github.com/airbytehq/airbyte/pull/76600) | Update dependencies |
-| 2.9.31 | 2026-04-09 | [76185](https://github.com/airbytehq/airbyte/pull/76185) | Improve error messages for HTTP 400/403 responses; use predicate-based 403 handling to distinguish permission errors (config_error) from other 403s (retry) |
-| 2.9.30 | 2026-04-09 | [76190](https://github.com/airbytehq/airbyte/pull/76190) | Add access_token to extract_output and complete_oauth_output_specification to fix OAuth secretId 422 regression |
+| 2.9.31 | 2026-04-20 | [76185](https://github.com/airbytehq/airbyte/pull/76185) | Improve error messages for HTTP 400/403 responses; use predicate-based 403 handling to distinguish permission errors (config_error) from other 403s (retry) |
+| 2.9.30 | 2026-04-14 | [76190](https://github.com/airbytehq/airbyte/pull/76190) | Add access_token to extract_output and complete_oauth_output_specification to fix OAuth secretId 422 regression |
 | 2.9.29 | 2026-04-01 | [75580](https://github.com/airbytehq/airbyte/pull/75580) | Add `oauth_connector_input_specification` with granular scopes |
 | 2.9.28 | 2026-03-31 | [75678](https://github.com/airbytehq/airbyte/pull/75678) | Update dependencies |
 | 2.9.27 | 2026-03-24 | [74568](https://github.com/airbytehq/airbyte/pull/74568) | Update dependencies |
@@ -365,7 +372,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 2.9.25 | 2026-02-24 | [73750](https://github.com/airbytehq/airbyte/pull/73750) | Update dependencies |
 | 2.9.24 | 2026-02-17 | [73404](https://github.com/airbytehq/airbyte/pull/73404) | Update dependencies |
 | 2.9.23 | 2026-02-10 | [73067](https://github.com/airbytehq/airbyte/pull/73067) | Update dependencies |
-| 2.9.22 | 2026-02-03 | [72590](https://github.com/airbytehq/airbyte/pull/72590) | Update dependencies |
+| 2.9.22 | 2026-02-06 | [72590](https://github.com/airbytehq/airbyte/pull/72590) | Update dependencies |
 | 2.9.21 | 2026-01-20 | [71924](https://github.com/airbytehq/airbyte/pull/71924) | Update dependencies |
 | 2.9.20 | 2026-01-14 | [71432](https://github.com/airbytehq/airbyte/pull/71432) | Update dependencies |
 | 2.9.19 | 2025-12-18 | [70693](https://github.com/airbytehq/airbyte/pull/70693) | Update dependencies |
@@ -374,7 +381,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 2.9.16 | 2025-11-12 | [69279](https://github.com/airbytehq/airbyte/pull/69279) | Flag authentication issues as config_error |
 | 2.9.15 | 2025-10-29 | [69011](https://github.com/airbytehq/airbyte/pull/69011) | Update dependencies |
 | 2.9.14 | 2025-10-21 | [68302](https://github.com/airbytehq/airbyte/pull/68302) | Update dependencies |
-| 2.9.13 | 2025-10-14 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd)     | Promoting release candidate 2.9.13-rc.1 to a main version. |
+| 2.9.13 | 2025-10-14 | [67722](https://github.com/airbytehq/airbyte/pull/67722)     | Promoting release candidate 2.9.13-rc.1 to a main version. |
 | 2.9.13-rc.1 | 2025-10-08 | [67148](https://github.com/airbytehq/airbyte/pull/67148) | Add dimensionFilter into the body of requests for custom reports and custom DimensionFilterConfigTransformation component                                              |
 | 2.9.12 | 2025-10-07 | [67262](https://github.com/airbytehq/airbyte/pull/67262) | Update dependencies |
 | 2.9.11 | 2025-09-30 | [66306](https://github.com/airbytehq/airbyte/pull/66306) | Update dependencies |
@@ -396,7 +403,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 2.8.1          | 2025-06-12 | [61555](https://github.com/airbytehq/airbyte/pull/61555) | Fixes time data parsing issue |
 | 2.8.0          | 2025-06-11 | [61533](https://github.com/airbytehq/airbyte/pull/61533) | Promoting release candidate 2.8.0-rc.2 to a main version. |
 | 2.8.0-rc.2     | 2025-06-11 | [61491](https://github.com/airbytehq/airbyte/pull/61491) | Fixed cohort check, record extractor and discovery                                                                                                                     |
-| 2.8.0-rc.1     | 2025-05-20 | [60342](https://github.com/airbytehq/airbyte/pull/60342) | Migrate to low-code                                                                                                                                                    |
+| 2.8.0-rc.1     | 2025-06-06 | [60342](https://github.com/airbytehq/airbyte/pull/60342) | Migrate to low-code                                                                                                                                                    |
 | 2.7.7          | 2025-05-17 | [60708](https://github.com/airbytehq/airbyte/pull/60708) | Update dependencies                                                                                                                                                    |
 | 2.7.6          | 2025-05-10 | [59870](https://github.com/airbytehq/airbyte/pull/59870) | Update dependencies                                                                                                                                                    |
 | 2.7.5          | 2025-05-03 | [59225](https://github.com/airbytehq/airbyte/pull/59225) | Update dependencies                                                                                                                                                    |
