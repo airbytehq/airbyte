@@ -1,5 +1,52 @@
 # Amazon Seller Partner Migration Guide
 
+## Upgrading to 6.0.0
+
+The primary key has been removed from two streams:
+
+- `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` (All Orders report by order date)
+- `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` (All Orders report by last update)
+
+These reports contain **one row per order item**, but the connector previously declared `amazon-order-id` as the primary key. In **Incremental | Append + Deduped** sync mode, this caused the destination to keep only one row per order, silently dropping every additional item of multi-item orders and under-reporting quantities and revenue.
+
+No other column or combination of columns can serve as a reliable primary key: Amazon does not include `order-item-id` in the delivered report, and rows for different items of the same order can be fully identical. Removing the primary key is the only correct option. These streams now sync in **Incremental | Append** (or Full Refresh) mode; if you need deduplication, apply it downstream.
+
+To check whether you were affected, compare the record count in the source report against the record count in your destination table — fewer destination rows means multi-item orders were collapsed.
+
+### Action Required
+
+If you have either of these streams enabled in your connection:
+
+1. **Refresh the source schema** to pick up the change.
+2. **Clear or reset the affected streams** if they were synced in Incremental | Append + Deduped mode, so previously dropped order items are backfilled.
+
+### Steps to Update
+
+1. Select **Connections** in the main navbar.
+   1. Select the connection(s) affected by the update.
+2. Select the **Replication** tab.
+   1. Select **Refresh source schema**.
+   2. Select **OK**.
+
+```note
+Any detected schema changes will be listed for your review.
+```
+
+3. Select **Save changes** at the bottom of the page.
+   1. Ensure the **Reset affected streams** option is checked to clear the affected stream data.
+
+```note
+Depending on destination type you may not be prompted to reset your data. In that case, [clear the streams manually](/platform/operator-guides/clear) after upgrading.
+```
+
+4. Select **Save connection**.
+
+```note
+This will reset the data in your destination and initiate a fresh sync.
+```
+
+For more information on clearing your data in Airbyte, see [this page](/platform/operator-guides/clear).
+
 ## Upgrading to 5.0.0
 
 Two deprecated FBA Subscribe and Save report types have been removed from the connector per Amazon SP-API deprecation:
