@@ -53,6 +53,7 @@ internal const val DATA_SOURCE_PROPERTY_TRACING = "tracing"
 internal const val DATA_SOURCE_PROPERTY_WAREHOUSE = "warehouse"
 internal const val JSON_FORMAT = "JSON"
 internal const val NETWORK_TIMEOUT_MINUTES: Long = 1L
+/** Relative to the process working directory. */
 internal const val PRIVATE_KEY_FILE_NAME: String = "rsa_key.p8"
 
 @Factory
