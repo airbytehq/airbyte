@@ -1,6 +1,41 @@
+# The JDK the runtime is jlink'd from, and the OS the runtime is copied into.
+# These two are coupled and must stay on the same libc and OS generation: the linked
+# runtime is a native binary built against the JDK image's libc. Swapping JDK_IMAGE for a
+# musl (Alpine) JDK while RUNTIME_IMAGE stays glibc produces an image that builds cleanly
+# and fails at exec time. Change them together.
 # https://hub.docker.com/_/amazoncorretto/tags?name=21-al2023
-ARG BASE_IMAGE=docker.io/amazoncorretto:21-al2023
-FROM ${BASE_IMAGE}
+ARG JDK_IMAGE=docker.io/amazoncorretto:21-al2023
+ARG RUNTIME_IMAGE=docker.io/amazonlinux:2023
+
+# Build a trimmed Java runtime. Connectors only ever run Java, so shipping a full JDK
+# costs ~230MB per image for compilers and tooling that are never invoked.
+#
+# The module list is maintained by hand and is deliberately generous. jdeps cannot infer
+# it, because JDBC drivers, crypto providers and SSH backends are all loaded reflectively
+# at runtime, so a missing module does not fail the build -- it throws NoClassDefFoundError
+# later, on whichever code path happens to need it, sometimes only for users on a specific
+# auth or SSL configuration. Adding a module is cheap. Validate against live sources before
+# removing one.
+#
+# java.security.jgss and java.security.sasl are not sufficient for Kerberos: the JDK's
+# Krb5LoginModule lives in jdk.security.auth and the GSSAPI SaslClientFactory in
+# jdk.security.jgss. Without both, source-kafka and destination-kafka fail GSSAPI auth with
+# 'No LoginModule found for com.sun.security.auth.module.Krb5LoginModule' before any network
+# I/O. This is the canonical example of why this list needs live validation, not jdeps.
+#
+# The jdk.jcmd/jdk.jfr/jdk.attach modules are not needed to run a connector. They are kept
+# deliberately so that a connector stuck in production can still be thread-dumped, heap-
+# dumped and profiled; a runtime you cannot diagnose is not worth the megabytes saved.
+FROM ${JDK_IMAGE} AS jre-builder
+# jlink --strip-debug shells out to objcopy, which the Corretto image does not ship.
+RUN dnf install -y binutils && dnf clean all
+RUN jlink \
+      --add-modules java.base,java.sql,java.sql.rowset,java.naming,java.management,java.instrument,java.logging,java.xml,java.xml.crypto,java.scripting,java.desktop,java.security.jgss,java.security.sasl,java.transaction.xa,java.net.http,java.compiler,java.rmi,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.security.auth,jdk.security.jgss,jdk.unsupported,jdk.zipfs,jdk.management,jdk.management.agent,jdk.net,jdk.jcmd,jdk.jfr,jdk.attach \
+      --strip-debug --no-man-pages --no-header-files --compress=zip-6 \
+      --output /jre && \
+    /jre/bin/java --version
+
+FROM ${RUNTIME_IMAGE}
 
 # Install dependencies
 RUN set -o xtrace && \
@@ -10,6 +45,11 @@ RUN set -o xtrace && \
     dnf update --releasever=latest -y --security && \
     dnf clean all && \
     rm -rf /var/cache/dnf
+
+# Install the trimmed runtime built above
+COPY --from=jre-builder /jre /opt/jre
+ENV JAVA_HOME=/opt/jre
+ENV PATH="/opt/jre/bin:${PATH}"
 
 # Set-up groups, users, and directories
 RUN groupadd --gid 1000 airbyte && \
