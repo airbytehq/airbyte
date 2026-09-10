@@ -1,6 +1,6 @@
 <!-- progressive-rollout-gate:{{ .connector }} -->
 
-## Detected `{{ .connector }}` Active Rollout: `{{ .active_rollout }}`
+## Detected `{{ .connector }}` Advertised Rollout Candidate: `{{ .active_rollout }}`
 
 > [!IMPORTANT]
 > Active progressive rollout warning for `{{ .connector }}`.
@@ -9,10 +9,11 @@
 >
 > > {{ .ack_checkbox_text }}
 
-- Rollout version: `{{ .rollout_docker_image_tag }}`
-- Rollout state: `{{ .rollout_state }}`
-- Rollout last updated by: `{{ .rollout_updated_by }}`
+- Rollout candidate version: `{{ .rollout_docker_image_tag }}`
+- Rollout mode: `{{ .rollout_mode }}`
 - [Open Connector Rollout Manager in Retool]({{ .retool_url }}) to clean up or close out this rollout if appropriate.
+
+This status comes from the public connector registry, which advertises a release candidate while a progressive rollout is pending or in progress. Live rollout state (paused, errored, percentage) is only visible in Connector Rollout Manager.
 
 ### Version on `master` Branch: `{{ .master_version }}`
 
@@ -48,7 +49,7 @@ The new rollout still has to be started before those actors move. With `defaultR
 
 <details><summary>If the connector version changes from RC to non-RC (GA) version...</summary>
 
-You should not merge the PR unless/until the RC has been finalized as canceled. See above `Rollout state` for detected status.
+You should not merge the PR unless/until the RC has been finalized as canceled. Check the rollout state in Connector Rollout Manager.
 
 > [!Warning]
 > This PR should not be merged if the RC rollout is still active. First finalize the active rollout as successful or cancel it in [Connector Rollout Manager]({{ .retool_url }}).
