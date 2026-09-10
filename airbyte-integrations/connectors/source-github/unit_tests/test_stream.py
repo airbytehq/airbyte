@@ -15,7 +15,7 @@ from attr.validators import matches_re
 from responses import matchers
 from source_github import SourceGithub, constants
 from source_github.components import _extract_database_id_from_node_id
-from source_github.errors_handlers import GitHubGraphQLErrorHandler, is_conflict_with_empty_repository, is_gone_with_feature_disabled
+from source_github.errors_handlers import is_conflict_with_empty_repository, is_gone_with_feature_disabled
 from source_github.streams import (
     Branches,
     Comments,
@@ -27,17 +27,14 @@ from source_github.streams import (
     GithubStreamABCBackoffStrategy,
     IssueEvents,
     IssueMilestones,
-    IssueReactions,
     Issues,
     IssueTimelineEvents,
     ProjectCards,
     ProjectColumns,
     Projects,
-    PullRequestCommentReactions,
     PullRequestCommits,
     PullRequests,
     RepositoryStats,
-    Reviews,
     Stargazers,
     TeamMembers,
     TeamMemberships,
@@ -73,85 +70,6 @@ def test_internal_server_error_retry(time_mock, requests_mock):
 
     sleep_delays = [delay[0][0] for delay in time_mock.call_args_list]
     assert sleep_delays == DEFAULT_BACKOFF_DELAYS
-
-
-@pytest.mark.parametrize(
-    ("http_status", "response_headers", "expected_backoff_time"),
-    [
-        (HTTPStatus.BAD_GATEWAY, {}, None),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, {}, None),
-        (HTTPStatus.SERVICE_UNAVAILABLE, {}, None),
-        (HTTPStatus.FORBIDDEN, {"Retry-After": "0"}, 60),
-        (HTTPStatus.FORBIDDEN, {"Retry-After": "30"}, 60),
-        (HTTPStatus.FORBIDDEN, {"Retry-After": "120"}, 120),
-        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1655804454"}, 60.0),
-        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1655804724"}, 300.0),
-    ],
-)
-@patch("time.time", return_value=1655804424.0)
-def test_backoff_time(time_mock, http_status, response_headers, expected_backoff_time):
-    response_mock = MagicMock(spec=requests.Response)
-    response_mock.status_code = http_status
-    response_mock.headers = response_headers
-    args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
-    stream = PullRequestCommentReactions(**args)
-    assert stream.get_backoff_strategy().backoff_time(response_mock) == expected_backoff_time
-
-
-def test_non_rate_limited_404_does_not_wait_for_reset():
-    response_mock = MagicMock(spec=requests.Response)
-    response_mock.status_code = HTTPStatus.NOT_FOUND
-    response_mock.headers = {"X-RateLimit-Reset": "1655808024"}
-    args = {"authenticator": None, "repositories": ["test_repo"], "page_size_for_large_streams": 30}
-    stream = PullRequestCommentReactions(**args)
-
-    with patch("time.time", return_value=1655804424.0):
-        assert stream.get_backoff_strategy().backoff_time(response_mock) is None
-
-
-def test_retry_after_takes_precedence_over_reset():
-    response_mock = MagicMock(spec=requests.Response)
-    response_mock.status_code = HTTPStatus.FORBIDDEN
-    response_mock.headers = {
-        "Retry-After": "120",
-        "X-RateLimit-Remaining": "0",
-        "X-RateLimit-Reset": "1655808024",
-    }
-    args = {"authenticator": None, "repositories": ["test_repo"], "page_size_for_large_streams": 30}
-    stream = PullRequestCommentReactions(**args)
-
-    with patch("time.time", return_value=1655804424.0):
-        assert stream.get_backoff_strategy().backoff_time(response_mock) == 120.0
-
-
-def test_rate_limit_wait_is_bounded():
-    response_mock = MagicMock(spec=requests.Response)
-    response_mock.status_code = HTTPStatus.FORBIDDEN
-    response_mock.headers = {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1655804724"}
-    args = {
-        "authenticator": None,
-        "repositories": ["test_repo"],
-        "start_date": "start_date",
-        "page_size_for_large_streams": 30,
-        "max_wait_time_seconds": 120,
-    }
-    stream = PullRequestCommentReactions(**args)
-
-    with patch("time.time", return_value=1655804424.0):
-        assert stream.get_backoff_strategy().backoff_time(response_mock) is None
-
-
-def test_graphql_rate_limit_wait_applies():
-    response_mock = MagicMock(spec=requests.Response)
-    response_mock.status_code = HTTPStatus.OK
-    response_mock.headers = {"X-RateLimit-Resource": "graphql", "X-RateLimit-Reset": "1655804724"}
-    response_mock.json.return_value = {"errors": [{"type": "RATE_LIMITED"}]}
-    args = {"authenticator": None, "repositories": ["test_repo"], "page_size_for_large_streams": 30}
-    # Any `GitHubGraphQLStream` subclass will do; `IssueReactions` is one that is still Python.
-    stream = IssueReactions(**args)
-
-    with patch("time.time", return_value=1655804424.0):
-        assert stream.get_backoff_strategy().backoff_time(response_mock) == 300.0
 
 
 @pytest.mark.parametrize(
@@ -487,41 +405,6 @@ def test_read_records_410_projects_disabled_message(time_mock, caplog, requests_
 
     list(read_full_refresh(stream))
     assert any("Projects are disabled for this repository" in msg for msg in caplog.messages)
-
-
-@patch("time.sleep")
-@patch("time.time", return_value=1655804424.0)
-def test_graphql_rate_limited(time_mock, sleep_mock, requests_mock):
-    first_request = True
-
-    def request_callback(request, context):
-        nonlocal first_request
-        if first_request:
-            first_request = False
-            context.status_code = HTTPStatus.OK
-            context.headers = {"X-RateLimit-Limit": "5000", "X-RateLimit-Resource": "graphql", "X-RateLimit-Reset": "1655804724"}
-            context.text = json.dumps({"errors": [{"type": "RATE_LIMITED"}]})
-
-            return context.text
-
-        context.status_code = HTTPStatus.OK
-        context.headers = {"X-RateLimit-Limit": "5000", "X-RateLimit-Resource": "graphql", "X-RateLimit-Reset": "1655808324"}
-        context.text = json.dumps({"data": {"repository": None}})
-
-        return context.text
-
-    requests_mock.post(
-        "https://api.github.com/graphql",
-        text=request_callback,
-    )
-
-    stream = IssueReactions(repositories=["airbytehq/airbyte"], page_size_for_large_streams=30)
-    records = list(read_full_refresh(stream))
-    assert records == []
-    assert requests_mock.call_count == 2
-    assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/graphql"
-    assert [r.url for r in requests_mock._adapter.request_history][1] == "https://api.github.com/graphql"
-    assert sum([c[0][0] for c in sleep_mock.call_args_list]) > 300
 
 
 @patch("time.sleep")
@@ -1245,41 +1128,6 @@ def test_releases_extract_database_id_from_node_id(node_id, expected_id):
     assert _extract_database_id_from_node_id(node_id) == expected_id
 
 
-def test_stream_reviews_incremental_read(requests_mock):
-    repository_args_with_start_date = {
-        "start_date": "2000-01-01T00:00:00Z",
-        "page_size_for_large_streams": 30,
-        "repositories": ["airbytehq/airbyte"],
-    }
-    stream = Reviews(**repository_args_with_start_date)
-    stream.page_size = 2
-
-    f = Path(__file__).parent / "responses/graphql_reviews_responses.json"
-    response_objects = json.load(open(f))
-
-    def request_callback(request, context):
-        context.status_code = 200
-        context.headers = {"Content-Type": "application/json"}
-        return json.dumps(response_objects.pop(0))
-
-    requests_mock.post(
-        "https://api.github.com/graphql",
-        text=request_callback,
-    )
-
-    stream_state = {}
-    records = read_incremental(stream, stream_state)
-    assert [r["id"] for r in records] == [1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008]
-    assert stream_state == {"airbytehq/airbyte": {"updated_at": "2000-01-01T00:00:01Z"}}
-    assert requests_mock.call_count == 4
-
-    requests_mock.reset_mock()
-    records = read_incremental(stream, stream_state)
-    assert [r["id"] for r in records] == [1000, 1007, 1009]
-    assert stream_state == {"airbytehq/airbyte": {"updated_at": "2000-01-01T00:00:02Z"}}
-    assert requests_mock.call_count == 4
-
-
 @patch("time.sleep")
 def test_stream_team_members_full_refresh(time_mock, caplog, rate_limit_mock_response, requests_mock):
     organization_args = {"organizations": ["org1"]}
@@ -1586,54 +1434,6 @@ def test_stream_workflow_jobs_read(requests_mock):
         {"id": 3, "completed_at": "2022-09-02T09:08:00Z", "run_id": 2, "repository": "org/repo"},
         {"id": 6, "completed_at": "2022-09-02T09:15:00Z", "run_id": 3, "repository": "org/repo"},
     ]
-
-
-def test_stream_pull_request_comment_reactions_read(requests_mock):
-    repository_args_with_start_date = {
-        "start_date": "2022-01-01T00:00:00Z",
-        "page_size_for_large_streams": 2,
-        "repositories": ["airbytehq/airbyte"],
-    }
-    stream = PullRequestCommentReactions(**repository_args_with_start_date)
-    stream.page_size = 2
-
-    f = Path(__file__).parent / "responses/pull_request_comment_reactions.json"
-    response_objects = json.load(open(f))
-
-    def request_callback(request, context):
-        context.status_code = 200
-        context.headers = {"Content-Type": "application/json"}
-        return json.dumps(response_objects.pop(0))
-
-    requests_mock.post(
-        "https://api.github.com/graphql",
-        text=request_callback,
-    )
-
-    stream_state = {}
-    records = read_incremental(stream, stream_state)
-    records = [{"comment_id": r["comment_id"], "created_at": r["created_at"], "node_id": r["node_id"]} for r in records]
-    assert records == [
-        {"comment_id": "comment1", "created_at": "2022-01-01T00:00:01Z", "node_id": "reaction1"},
-        {"comment_id": "comment1", "created_at": "2022-01-01T00:00:01Z", "node_id": "reaction2"},
-        {"comment_id": "comment2", "created_at": "2022-01-01T00:00:01Z", "node_id": "reaction3"},
-        {"comment_id": "comment2", "created_at": "2022-01-01T00:00:01Z", "node_id": "reaction4"},
-        {"comment_id": "comment2", "created_at": "2022-01-01T00:00:01Z", "node_id": "reaction5"},
-        {"comment_id": "comment5", "created_at": "2022-01-01T00:00:01Z", "node_id": "reaction6"},
-        {"comment_id": "comment7", "created_at": "2022-01-01T00:00:01Z", "node_id": "reaction7"},
-        {"comment_id": "comment8", "created_at": "2022-01-01T00:00:01Z", "node_id": "reaction8"},
-    ]
-
-    assert stream_state == {"airbytehq/airbyte": {"created_at": "2022-01-01T00:00:01Z"}}
-    records = read_incremental(stream, stream_state)
-    records = [{"comment_id": r["comment_id"], "created_at": r["created_at"], "node_id": r["node_id"]} for r in records]
-
-    assert records == [
-        {"comment_id": "comment2", "created_at": "2022-01-02T00:00:01Z", "node_id": "reaction9"},
-        {"comment_id": "comment8", "created_at": "2022-01-02T00:00:01Z", "node_id": "reaction10"},
-    ]
-
-    assert stream_state == {"airbytehq/airbyte": {"created_at": "2022-01-02T00:00:01Z"}}
 
 
 def test_stream_contributor_activity_parse_empty_response(caplog, requests_mock):
@@ -2015,30 +1815,6 @@ def test_graphql_rate_limit_check_with_html_response():
     assert result.response_action != ResponseAction.RATE_LIMITED
 
 
-def test_graphql_error_handler_with_html_response():
-    """GitHubGraphQLErrorHandler._safe_json_get_errors should not crash on non-JSON."""
-    stream = MagicMock()
-    stream.name = "test_stream"
-    stream.large_stream = False
-    stream.page_size = 100
-    handler = GitHubGraphQLErrorHandler(stream=stream, logger=MagicMock(), error_mapping={})
-    resp = MagicMock(spec=requests.Response)
-    resp.status_code = 200
-    resp.headers = {}
-    resp.text = "<html>Error</html>"
-    resp.ok = True
-    resp.json = MagicMock(side_effect=ValueError("No JSON"))
-    assert handler._safe_json_get_errors(resp) is False
-
-
-def test_graphql_error_handler_with_valid_errors():
-    """GitHubGraphQLErrorHandler._safe_json_get_errors returns True when errors present."""
-    handler = GitHubGraphQLErrorHandler(stream=MagicMock(), logger=MagicMock(), error_mapping={})
-    resp = MagicMock(spec=requests.Response)
-    resp.json = MagicMock(return_value={"errors": [{"type": "SOME_ERROR"}]})
-    assert handler._safe_json_get_errors(resp) is True
-
-
 def test_graphql_rate_limit_check_with_valid_rate_limited_body():
     """When response has graphql rate-limit header AND a valid body with RATE_LIMITED error,
     handler should return RATE_LIMITED action."""
@@ -2052,48 +1828,6 @@ def test_graphql_rate_limit_check_with_valid_rate_limited_body():
     resp.json = MagicMock(return_value={"errors": [{"type": "RATE_LIMITED"}]})
     result = handler.interpret_response(resp)
     assert result.response_action == ResponseAction.RATE_LIMITED
-
-
-@pytest.mark.parametrize("status_code", [requests.codes.BAD_GATEWAY, requests.codes.GATEWAY_TIMEOUT])
-def test_graphql_error_handler_502_504_message_includes_stream_name(status_code):
-    """502/504 responses should produce an error message that names the stream and
-    explains that the page size is being reduced — not the generic
-    'Response status code: 504. Retrying...' string."""
-    stream = MagicMock()
-    stream.name = "releases"
-    stream.large_stream = True
-    stream.page_size = 10
-    handler = GitHubGraphQLErrorHandler(stream=stream, logger=MagicMock(), error_mapping={})
-    resp = MagicMock(spec=requests.Response)
-    resp.status_code = status_code
-    resp.headers = {}
-    resp.text = ""
-    resp.ok = False
-    resp.json = MagicMock(return_value={})
-    resolution = handler.interpret_response(resp)
-    assert resolution.response_action == ResponseAction.RETRY
-    assert resolution.failure_type == FailureType.transient_error
-    assert "`releases`" in resolution.error_message
-    assert str(status_code) in resolution.error_message
-    assert "Reducing GraphQL page size" in resolution.error_message
-
-
-def test_graphql_error_handler_504_floors_page_size_at_one():
-    """The 502/504 page-size halving must never let page_size drop below 1.
-    A page_size of 0 would request no records and stall the stream."""
-    stream = MagicMock()
-    stream.name = "releases"
-    stream.large_stream = True
-    stream.page_size = 1
-    handler = GitHubGraphQLErrorHandler(stream=stream, logger=MagicMock(), error_mapping={})
-    resp = MagicMock(spec=requests.Response)
-    resp.status_code = requests.codes.GATEWAY_TIMEOUT
-    resp.headers = {}
-    resp.text = ""
-    resp.ok = False
-    resp.json = MagicMock(return_value={})
-    handler.interpret_response(resp)
-    assert stream.page_size == 1
 
 
 class _RequestLoopDetected(Exception):
@@ -2155,3 +1889,82 @@ def test_read_records_404_on_a_parent_read_leaves_shared_cursor_untouched(time_m
     assert records == []
     # No `{"partition": {}}` entry: the empty partition was never closed.
     assert stream.get_cursor().get_stream_state() == {"states": []}
+
+
+@pytest.mark.parametrize(
+    ("http_status", "response_headers", "expected_backoff_time"),
+    [
+        (HTTPStatus.BAD_GATEWAY, {}, None),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, {}, None),
+        (HTTPStatus.SERVICE_UNAVAILABLE, {}, None),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "0"}, 60),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "30"}, 60),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "120"}, 120),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1655804454"}, 60.0),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1655804724"}, 300.0),
+    ],
+)
+@patch("time.time", return_value=1655804424.0)
+def test_backoff_time(time_mock, http_status, response_headers, expected_backoff_time):
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = http_status
+    response_mock.headers = response_headers
+    args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
+    stream = Deployments(**args)
+    assert stream.get_backoff_strategy().backoff_time(response_mock) == expected_backoff_time
+
+
+def test_graphql_rate_limit_wait_applies():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.OK
+    response_mock.headers = {"X-RateLimit-Resource": "graphql", "X-RateLimit-Reset": "1655804724"}
+    response_mock.json.return_value = {"errors": [{"type": "RATE_LIMITED"}]}
+    args = {"authenticator": None, "repositories": ["test_repo"], "page_size_for_large_streams": 30}
+    # Any `GitHubGraphQLStream` subclass will do; `IssueReactions` is one that is still Python.
+    stream = Deployments(**args)
+
+    with patch("time.time", return_value=1655804424.0):
+        assert stream.get_backoff_strategy().backoff_time(response_mock) == 300.0
+
+
+def test_non_rate_limited_404_does_not_wait_for_reset():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.NOT_FOUND
+    response_mock.headers = {"X-RateLimit-Reset": "1655808024"}
+    args = {"authenticator": None, "repositories": ["test_repo"], "page_size_for_large_streams": 30}
+    stream = Deployments(**args)
+
+    with patch("time.time", return_value=1655804424.0):
+        assert stream.get_backoff_strategy().backoff_time(response_mock) is None
+
+
+def test_rate_limit_wait_is_bounded():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.FORBIDDEN
+    response_mock.headers = {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1655804724"}
+    args = {
+        "authenticator": None,
+        "repositories": ["test_repo"],
+        "start_date": "start_date",
+        "page_size_for_large_streams": 30,
+        "max_wait_time_seconds": 120,
+    }
+    stream = Deployments(**args)
+
+    with patch("time.time", return_value=1655804424.0):
+        assert stream.get_backoff_strategy().backoff_time(response_mock) is None
+
+
+def test_retry_after_takes_precedence_over_reset():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.FORBIDDEN
+    response_mock.headers = {
+        "Retry-After": "120",
+        "X-RateLimit-Remaining": "0",
+        "X-RateLimit-Reset": "1655808024",
+    }
+    args = {"authenticator": None, "repositories": ["test_repo"], "page_size_for_large_streams": 30}
+    stream = Deployments(**args)
+
+    with patch("time.time", return_value=1655804424.0):
+        assert stream.get_backoff_strategy().backoff_time(response_mock) == 120.0

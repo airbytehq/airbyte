@@ -495,3 +495,405 @@ def test_streams_post_to_the_graphql_endpoint(stream_name, rate_limit_mock_respo
     assert len(requests) == 1
     assert requests[0].method == "POST"
     assert "query" in json.loads(requests[0].body)
+
+
+# --- Reviews (two-level traversal) ---------------------------------------------------------
+
+
+def _review_node(node_id="PRR_1", database_id=101):
+    return {
+        "node_id": node_id,
+        "id": database_id,
+        "body": "looks good",
+        "state": "APPROVED",
+        "html_url": f"https://github.com/{REPOSITORY}/pull/1#pullrequestreview-{database_id}",
+        "author_association": "MEMBER",
+        "submitted_at": "2022-03-01T00:00:00Z",
+        "created_at": "2022-03-01T00:00:00Z",
+        "updated_at": "2022-03-02T00:00:00Z",
+        "commit": {"oid": "deadbeef"},
+        "user": {"type": "User", "node_id": "U_1", "id": 7, "login": "octocat"},
+    }
+
+
+def _pull_request_node(number, reviews, reviews_has_next=False, reviews_cursor=None):
+    return {
+        "number": number,
+        "url": f"https://github.com/{REPOSITORY}/pull/{number}",
+        "reviews": {"pageInfo": {"hasNextPage": reviews_has_next, "endCursor": reviews_cursor}, "nodes": reviews},
+    }
+
+
+def _reviews_listing(pull_requests, has_next_page=False, end_cursor=None):
+    return {
+        "data": {
+            "repository": {
+                "name": REPOSITORY.split("/")[1],
+                "owner": {"login": REPOSITORY.split("/")[0]},
+                "pullRequests": {"pageInfo": {"hasNextPage": has_next_page, "endCursor": end_cursor}, "nodes": pull_requests},
+            }
+        }
+    }
+
+
+def _reviews_drilldown(pull_request):
+    return {
+        "data": {
+            "repository": {
+                "name": REPOSITORY.split("/")[1],
+                "owner": {"login": REPOSITORY.split("/")[0]},
+                "pullRequest": pull_request,
+            }
+        }
+    }
+
+
+def test_reviews_record_keeps_the_rest_compatible_shape(rate_limit_mock_response, requests_mock):
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(GRAPHQL_URL, json=_reviews_listing([_pull_request_node(4, [_review_node()])]))
+
+    records, error = _read(_config(), "reviews")
+
+    assert error is None
+    assert len(records) == 1
+    record = records[0]
+    assert record["repository"] == REPOSITORY
+    assert record["pull_request_url"] == f"https://github.com/{REPOSITORY}/pull/4"
+    # `commit { oid }` collapsed to the REST field name, and the nested object removed.
+    assert record["commit_id"] == "deadbeef"
+    assert "commit" not in record
+    # `_links` never came from GraphQL; it is rebuilt for backward compatibility.
+    assert record["_links"] == {
+        "html": {"href": record["html_url"]},
+        "pull_request": {"href": record["pull_request_url"]},
+    }
+
+
+def test_reviews_drills_into_a_pull_request_with_more_reviews(rate_limit_mock_response, requests_mock):
+    """The traversal the legacy `self.reviews_cursors` dict drove, now carried in the token."""
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(
+        GRAPHQL_URL,
+        [
+            {
+                "json": _reviews_listing(
+                    [_pull_request_node(4, [_review_node("PRR_1", 101)], reviews_has_next=True, reviews_cursor="REVIEW_CUR")]
+                )
+            },
+            {"json": _reviews_drilldown(_pull_request_node(4, [_review_node("PRR_2", 102)]))},
+        ],
+    )
+
+    records, error = _read(_config(), "reviews")
+
+    assert error is None
+    assert sorted(record["id"] for record in records) == [101, 102]
+    requests = _graphql_requests(requests_mock)
+    assert len(requests) == 2
+    # The second request roots at the single pull request and carries the review cursor.
+    second = json.loads(requests[1].body)
+    assert "pullRequest(number: 4)" in second["query"]
+    assert second["variables"]["after"] == "REVIEW_CUR"
+
+
+def test_reviews_resumes_the_listing_after_the_drilldowns(rate_limit_mock_response, requests_mock):
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(
+        GRAPHQL_URL,
+        [
+            {
+                "json": _reviews_listing(
+                    [_pull_request_node(4, [_review_node("PRR_1", 101)], reviews_has_next=True, reviews_cursor="REVIEW_CUR")],
+                    has_next_page=True,
+                    end_cursor="LIST_CUR",
+                )
+            },
+            {"json": _reviews_drilldown(_pull_request_node(4, [_review_node("PRR_2", 102)]))},
+            {"json": _reviews_listing([_pull_request_node(5, [_review_node("PRR_3", 103)])])},
+        ],
+    )
+
+    records, error = _read(_config(), "reviews")
+
+    assert error is None
+    assert sorted(record["id"] for record in records) == [101, 102, 103]
+    requests = _graphql_requests(requests_mock)
+    assert len(requests) == 3
+    # Third request is back on the listing, resuming from the parked cursor.
+    third = json.loads(requests[2].body)
+    assert "pullRequests(" in third["query"]
+    assert third["variables"]["after"] == "LIST_CUR"
+
+
+def test_reviews_reduces_the_page_size_on_gateway_timeout(rate_limit_mock_response, requests_mock):
+    """Proves REDUCE_PAGE_SIZE reaches a CustomPaginationStrategy. The CDK originally
+    allowlisted strategies by type, which excluded every custom one."""
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(
+        GRAPHQL_URL,
+        [
+            {"status_code": 504, "json": {"message": "Gateway Timeout"}},
+            {"json": _reviews_listing([_pull_request_node(4, [_review_node()])])},
+        ],
+    )
+
+    records, error = _read(_config(), "reviews")
+
+    assert error is None
+    assert len(records) == 1
+    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [10, 5]
+
+
+# --- IssueReactions (two-level traversal) ---------------------------------------------------
+
+
+def _reaction_node(node_id="REA_1", database_id=201):
+    return {
+        "node_id": node_id,
+        "id": database_id,
+        "content": "THUMBS_UP",
+        "created_at": "2022-04-01T00:00:00Z",
+        "user": {"type": "User", "node_id": "U_1", "id": 7, "login": "octocat"},
+    }
+
+
+def _issue_node(number, reactions, has_next=False, cursor=None):
+    return {"number": number, "reactions": {"pageInfo": {"hasNextPage": has_next, "endCursor": cursor}, "nodes": reactions}}
+
+
+def _issues_listing(issues, has_next_page=False, end_cursor=None):
+    return {
+        "data": {
+            "repository": {
+                "name": REPOSITORY.split("/")[1],
+                "owner": {"login": REPOSITORY.split("/")[0]},
+                "issues": {"pageInfo": {"hasNextPage": has_next_page, "endCursor": end_cursor}, "nodes": issues},
+            }
+        }
+    }
+
+
+def test_issue_reactions_stamps_repository_and_issue_number(rate_limit_mock_response, requests_mock):
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(GRAPHQL_URL, json=_issues_listing([_issue_node(12, [_reaction_node()])]))
+
+    records, error = _read(_config(), "issue_reactions")
+
+    assert error is None
+    assert len(records) == 1
+    assert records[0]["repository"] == REPOSITORY
+    assert records[0]["issue_number"] == 12
+    assert records[0]["user"]["type"] == "User"
+
+
+def test_issue_reactions_drills_into_an_issue_with_more_reactions(rate_limit_mock_response, requests_mock):
+    _mock_repository_resolution(requests_mock)
+    drilldown = {
+        "data": {
+            "repository": {
+                "name": REPOSITORY.split("/")[1],
+                "owner": {"login": REPOSITORY.split("/")[0]},
+                "issue": _issue_node(12, [_reaction_node("REA_2", 202)]),
+            }
+        }
+    }
+    requests_mock.post(
+        GRAPHQL_URL,
+        [
+            {"json": _issues_listing([_issue_node(12, [_reaction_node("REA_1", 201)], has_next=True, cursor="REACT_CUR")])},
+            {"json": drilldown},
+        ],
+    )
+
+    records, error = _read(_config(), "issue_reactions")
+
+    assert error is None
+    assert sorted(record["id"] for record in records) == [201, 202]
+    second = json.loads(_graphql_requests(requests_mock)[1].body)
+    assert "issue(number: 12)" in second["query"]
+    assert second["variables"]["after"] == "REACT_CUR"
+
+
+# --- PullRequestCommentReactions (four-level traversal) --------------------------------------
+
+
+def _pr_comment(node_id, database_id, reactions, has_next=False, cursor=None):
+    return {
+        "node_id": node_id,
+        "id": database_id,
+        "reactions": {"pageInfo": {"hasNextPage": has_next, "endCursor": cursor}, "totalCount": len(reactions), "nodes": reactions},
+    }
+
+
+def _pr_review(node_id, database_id, comments, has_next=False, cursor=None):
+    return {
+        "node_id": node_id,
+        "id": database_id,
+        "comments": {"pageInfo": {"hasNextPage": has_next, "endCursor": cursor}, "totalCount": len(comments), "nodes": comments},
+    }
+
+
+def _pr_with_reviews(node_id, reviews, has_next=False, cursor=None):
+    return {
+        "node_id": node_id,
+        "reviews": {"pageInfo": {"hasNextPage": has_next, "endCursor": cursor}, "totalCount": len(reviews), "nodes": reviews},
+    }
+
+
+def _deep_listing(pull_requests, has_next_page=False, end_cursor=None):
+    return {
+        "data": {
+            "repository": {
+                "name": REPOSITORY.split("/")[1],
+                "owner": {"login": REPOSITORY.split("/")[0]},
+                "pullRequests": {
+                    "pageInfo": {"hasNextPage": has_next_page, "endCursor": end_cursor},
+                    "totalCount": len(pull_requests),
+                    "nodes": pull_requests,
+                },
+            }
+        }
+    }
+
+
+def test_pull_request_comment_reactions_reads_the_four_level_listing(rate_limit_mock_response, requests_mock):
+    _mock_repository_resolution(requests_mock)
+    payload = _deep_listing(
+        [_pr_with_reviews("PR_1", [_pr_review("PRR_1", 11, [_pr_comment("PRRC_1", 21, [_reaction_node("REA_1", 301)])])])]
+    )
+    requests_mock.post(GRAPHQL_URL, json=payload)
+
+    records, error = _read(_config(), "pull_request_comment_reactions")
+
+    assert error is None
+    assert len(records) == 1
+    assert records[0]["id"] == 301
+    assert records[0]["repository"] == REPOSITORY
+    # The comment the reaction hangs off, by database id -- as the legacy record had it.
+    assert records[0]["comment_id"] == 21
+
+
+def test_pull_request_comment_reactions_drills_deepest_first(rate_limit_mock_response, requests_mock):
+    """Depth-first is the property that matters: a comment's remaining reactions are drained
+    before the pull request listing advances, so nothing is left behind when the sync ends."""
+    _mock_repository_resolution(requests_mock)
+    listing = _deep_listing(
+        [
+            _pr_with_reviews(
+                "PR_1",
+                [
+                    _pr_review(
+                        "PRR_1",
+                        11,
+                        [_pr_comment("PRRC_1", 21, [_reaction_node("REA_1", 301)], has_next=True, cursor="REACT_CUR")],
+                        has_next=True,
+                        cursor="COMMENT_CUR",
+                    )
+                ],
+                has_next=True,
+                cursor="REVIEW_CUR",
+            )
+        ],
+        has_next_page=True,
+        end_cursor="LIST_CUR",
+    )
+    empty_comment = {
+        "data": {
+            "node": {
+                "__typename": "PullRequestReviewComment",
+                "node_id": "PRRC_1",
+                "id": 21,
+                "repository": {"name": REPOSITORY.split("/")[1], "owner": {"login": REPOSITORY.split("/")[0]}},
+                "reactions": {"pageInfo": {"hasNextPage": False, "endCursor": None}, "totalCount": 0, "nodes": []},
+            }
+        }
+    }
+    empty_review = {
+        "data": {
+            "node": {
+                "__typename": "PullRequestReview",
+                "node_id": "PRR_1",
+                "id": 11,
+                "repository": {"name": REPOSITORY.split("/")[1], "owner": {"login": REPOSITORY.split("/")[0]}},
+                "comments": {"pageInfo": {"hasNextPage": False, "endCursor": None}, "totalCount": 0, "nodes": []},
+            }
+        }
+    }
+    empty_pull_request = {
+        "data": {
+            "node": {
+                "__typename": "PullRequest",
+                "node_id": "PR_1",
+                "repository": {"name": REPOSITORY.split("/")[1], "owner": {"login": REPOSITORY.split("/")[0]}},
+                "reviews": {"pageInfo": {"hasNextPage": False, "endCursor": None}, "totalCount": 0, "nodes": []},
+            }
+        }
+    }
+    requests_mock.post(
+        GRAPHQL_URL,
+        [
+            {"json": listing},
+            {"json": empty_comment},
+            {"json": empty_review},
+            {"json": empty_pull_request},
+            {"json": _deep_listing([])},
+        ],
+    )
+
+    records, error = _read(_config(), "pull_request_comment_reactions")
+
+    assert error is None
+    assert [record["id"] for record in records] == [301]
+    queries = [json.loads(request.body)["query"] for request in _graphql_requests(requests_mock)]
+    assert len(queries) == 5
+    # Reaction -> comment -> review -> pull request listing: deepest pending first.
+    assert 'node(id: "PRRC_1")' in queries[1]
+    assert 'node(id: "PRR_1")' in queries[2]
+    assert 'node(id: "PR_1")' in queries[3]
+    assert "pullRequests(" in queries[4]
+    cursors = [_variables(request).get("after") for request in _graphql_requests(requests_mock)]
+    assert cursors == [None, "REACT_CUR", "COMMENT_CUR", "REVIEW_CUR", "LIST_CUR"]
+
+
+def test_pull_request_comment_reactions_omits_owner_and_name_on_drilldowns(rate_limit_mock_response, requests_mock):
+    """The drill-down documents root at `node(id:)` and declare no `$owner`/`$name`. GraphQL
+    rejects a document sent variables it does not declare, so they must not be sent."""
+    _mock_repository_resolution(requests_mock)
+    listing = _deep_listing(
+        [_pr_with_reviews("PR_1", [_pr_review("PRR_1", 11, [_pr_comment("PRRC_1", 21, [], has_next=True, cursor="REACT_CUR")])])]
+    )
+    empty_comment = {
+        "data": {
+            "node": {
+                "__typename": "PullRequestReviewComment",
+                "node_id": "PRRC_1",
+                "id": 21,
+                "repository": {"name": REPOSITORY.split("/")[1], "owner": {"login": REPOSITORY.split("/")[0]}},
+                "reactions": {"pageInfo": {"hasNextPage": False, "endCursor": None}, "totalCount": 0, "nodes": []},
+            }
+        }
+    }
+    requests_mock.post(GRAPHQL_URL, [{"json": listing}, {"json": empty_comment}])
+
+    _read(_config(), "pull_request_comment_reactions")
+
+    requests = _graphql_requests(requests_mock)
+    assert set(_variables(requests[0])) == {"owner", "name", "first"}
+    assert set(_variables(requests[1])) == {"after", "first"}
+
+
+def test_pull_request_comment_reactions_reduces_the_page_size_on_gateway_timeout(rate_limit_mock_response, requests_mock):
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(
+        GRAPHQL_URL,
+        [
+            {"status_code": 502, "json": {"message": "Bad Gateway"}},
+            {"json": _deep_listing([])},
+        ],
+    )
+
+    records, error = _read(_config(), "pull_request_comment_reactions")
+
+    assert error is None
+    assert records == []
+    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [10, 5]
