@@ -182,6 +182,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.0 | 2026-09-11 | [85833](https://github.com/airbytehq/airbyte/pull/85833) | Add `advanced_auth` with declarative OAuth (data-center-aware consent and token URLs) |
 | 0.1.5 | 2026-08-25 | [79062](https://github.com/airbytehq/airbyte/pull/79062) | Update dependencies |
 | 0.1.4 | 2026-08-24 | [80278](https://github.com/airbytehq/airbyte/pull/80278) | Fix incremental sync: tolerate `Z`-suffixed (UTC) cursor values and resolve cursor field per module instead of hardcoding `Modified_Time` |
 | 0.1.3 | 2025-02-05 | [42864](https://github.com/airbytehq/airbyte/pull/42864) | Migrate to Poetry |
