@@ -113,8 +113,8 @@ class BigquerySpecification : ConfigurationSpecification() {
     property = "method",
 )
 @JsonSubTypes(
-    JsonSubTypes.Type(value = BatchedStandardInsertSpecification::class, name = "Standard"),
     JsonSubTypes.Type(value = GcsStagingSpecification::class, name = "GCS Staging"),
+    JsonSubTypes.Type(value = BatchedStandardInsertSpecification::class, name = "Standard"),
 )
 sealed class LoadingMethodSpecification(@JsonProperty("method") val method: LoadingMethod) {
     enum class LoadingMethod(@get:JsonValue val typeName: String) {
@@ -125,14 +125,14 @@ sealed class LoadingMethodSpecification(@JsonProperty("method") val method: Load
 
 @JsonSchemaTitle("Batched Standard Inserts")
 @JsonSchemaDescription(
-    "Direct loading using batched SQL INSERT statements. This method uses the BigQuery driver to convert large INSERT statements into file uploads automatically.",
+    "Simpler setup with no external staging required. Uses the BigQuery SDK to stream data directly. Suitable for smaller data volumes or quick testing.",
 )
 class BatchedStandardInsertSpecification :
     LoadingMethodSpecification(LoadingMethod.BATCHED_STANDARD_INSERT)
 
-@JsonSchemaTitle("GCS Staging")
+@JsonSchemaTitle("GCS Staging (Recommended)")
 @JsonSchemaDescription(
-    "Writes large batches of records to a file, uploads the file to GCS, then uses COPY INTO to load your data into BigQuery.",
+    "Recommended for production workloads. Uploads data to a GCS bucket, then loads it into BigQuery using a COPY job. Provides better performance for large data volumes.",
 )
 class GcsStagingSpecification :
     GcsCommonSpecification, LoadingMethodSpecification(LoadingMethod.GCS) {
