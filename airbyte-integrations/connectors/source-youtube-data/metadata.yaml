@@ -42,7 +42,7 @@ data:
     breakingChanges:
       1.0.0:
         message: "Version 1.0.0 declares primary keys on the `comments`, `videos`, and `channel_comments` streams, adds `date-time` formats to nine timestamp fields, and restricts the `videos` stream to actual video results (it previously also returned channel and playlist id records). After upgrading, refresh the source schema and reset the affected streams. For more information, see the [migration guide](https://docs.airbyte.com/integrations/sources/youtube-data-migrations)."
-        upgradeDeadline: "2026-09-14"
+        upgradeDeadline: "2026-10-31"
         deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
