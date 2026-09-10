@@ -47,6 +47,8 @@ Reviews typically take under a week.
 
 You can also export the YAML manifest file for your connector and share it with others. The manifest file contains all the connector configuration structured according to the declarative component schema, including the global configuration, streams, and user inputs.
 
+To publish and version a Builder connector through the API from CI, see [Manage connector definitions with the API](/developers/connector-definitions).
+
 ## Disabled in low-resource mode
 
 If you install Airbyte with abctl using low-resource mode, you are unable to access the Connector Builder. To access the Connector Builder, allocate Airbyte's [suggested resources](/platform/using-airbyte/getting-started/oss-quickstart#suggested-resources) and re-deploy Airbyte without setting the `--low-resource-mode` flag.
