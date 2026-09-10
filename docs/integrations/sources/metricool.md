@@ -1,29 +1,56 @@
 # Metricool
-The Metricool connector enables you to extract comprehensive social media analytics data from multiple platforms through Metricool’s unified API. This connector supports data extraction from Facebook, Instagram, TikTok, LinkedIn, Twitter (X), and YouTube, providing detailed insights into your social media performance.
 
-Key Features:
-- Multi-Platform Support: Extract data from 6 major social media platforms in a single connector
-- Comprehensive Analytics: Access post-level metrics, timeline data, competitor analysis, and content performance
-- Flexible Date Range: Configure custom date ranges for data extraction (defaults to 60 days if not specified)
-- Multiple Content Types: Supports various content formats including posts, reels, stories, and videos
+The Metricool source connector pulls social media analytics from the [Metricool REST API](https://app.metricool.com/resources/apidocs/index.html). For each brand you configure, it reads post-level and story-level statistics and daily metric timelines for Facebook, Instagram, TikTok, LinkedIn, Twitter (X), and YouTube, plus competitor benchmarks for Facebook and Instagram.
 
-Supported Data Streams:
-- Brand Information: Basic account and profile data
-- Content Analytics: Posts, reels, stories, and videos with engagement metrics
-- Timeline Data: Historical performance metrics tracked over time
-- Competitor Analysis: Available for Facebook and Instagram
+## Prerequisites
+
+- A Metricool account on the **Advanced** or **Custom** plan. Metricool only exposes its API on these plans; Free and Starter accounts have no API token.
+- Your Metricool API token, user ID, and the brand ID of each brand you want to sync. See [Get your credentials](#get-your-credentials).
+
+## Setup guide
+
+### Get your credentials
+
+The connector authenticates every request with your API token (sent in the `X-Mc-Auth` header) and scopes requests with your user ID and brand IDs (sent as the `userId` and `blogId` query parameters).
+
+1. **API token** (`user_token`): In Metricool, go to **Account Settings** > **API** and copy the REST API access token. If you regenerate the token in Metricool, update it in Airbyte too, because the old token stops working.
+2. **User ID** (`user_id`): Open any brand in the Metricool web app and copy the number after `userId=` in the browser URL. For example, in `https://app.metricool.com/evolution/web?blogId=11111&userId=2222222`, the user ID is `2222222`.
+3. **Brand IDs** (`blog_ids`): In the same URL, the number after `blogId=` is the ID of the brand you have open. Repeat for each brand you want to sync. Metricool calls these "blogs" in its API, which is why the field is named `blog_ids`.
+
+You can also sync only the `brands` stream first: it lists every brand your user ID has access to along with its `id`, so you can copy the IDs from there and add them to `blog_ids` afterward.
+
+### Set up the connector in Airbyte
+
+1. In Airbyte, add a new **Metricool** source.
+2. Enter your **User Token**, **User ID**, and one or more **Blog IDs**.
+3. Optionally set a **Start Date** and **End Date**. Both must be UTC timestamps in the format `YYYY-MM-DDTHH:mm:ssZ`, for example `2026-01-01T00:00:00Z`.
+4. Test and save the source.
+
+### Date range behavior
+
+Every stream except `brands` requests data for a date range. The connector derives the range from **Start Date** and **End Date** as follows:
+
+- If you set neither, the range is the 60 days before the current UTC time.
+- If you set only **End Date**, the range is the single day before that end date.
+- If you set only **Start Date**, the range runs from that date to the current UTC time.
+- If you set both and **Start Date** is earlier than **End Date**, the connector uses them as given. If **Start Date** is the same as or later than **End Date**, the connector ignores it and uses the day before **End Date** instead.
+
+Incremental timeline streams use this range only for the first sync. Later syncs start from the saved cursor, and the connector caps the range at **End Date** if you set one, so a fixed **End Date** stops incremental streams from advancing past it.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `user_token` | `string` | User Token. User token to authenticate API requests. Find it in the Account Settings menu, API section of your Metricool account. |  |
-| `user_id` | `string` | User ID. Account ID |  |
-| `blog_ids` | `array` | Blog IDs. Brand IDs |  |
-| `start_date` | `string` | Start Date. If not set, defaults to 60 days back. If below &quot;End Date&quot;, defaults to 1 day before &quot;End Date&quot; |  |
-| `end_date` | `string` | End Date. If not set, defaults to current datetime. |  |
+| `user_token` | `string` | Metricool REST API access token from **Account Settings** > **API**. Requires an Advanced or Custom plan. |  |
+| `user_id` | `string` | Your Metricool user ID (the `userId` value in the app URL). |  |
+| `blog_ids` | `array` | Metricool brand IDs (the `blogId` value in the app URL). Each ID is synced as its own partition. |  |
+| `start_date` | `string` | Start of the date range, in `YYYY-MM-DDTHH:mm:ssZ` format. See [Date range behavior](#date-range-behavior). | 60 days before the current time |
+| `end_date` | `string` | End of the date range, in `YYYY-MM-DDTHH:mm:ssZ` format. | Current UTC time |
 
 ## Streams
+
+The connector reads each stream once per brand in `blog_ids`, except `brands`, which is read once per account. Timeline streams are additionally read once per metric.
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | brands | id | No pagination | ✅ |  ❌  |
@@ -47,6 +74,25 @@ Supported Data Streams:
 | linkedin_posts | postId | No pagination | ✅ |  ❌  |
 | twitter_posts | id | No pagination | ✅ |  ❌  |
 | youtube_posts | videoId | No pagination | ✅ |  ❌  |
+
+### Brands
+
+`brands` lists the brands (Metricool "blogs") your user ID can access, including each brand's `id`, `title`, and `url`, and which social networks are connected to it. It doesn't use `blog_ids` or the date range.
+
+### Content streams
+
+The `*_posts`, `*_stories`, and `*_reels` streams return one record per piece of content published in the date range, with that content's engagement statistics. `facebook_competitors` and `instagram_competitors` return the competitor profiles you track in Metricool for each brand; the connector requests at most 100 competitors per brand and does not paginate beyond that.
+
+### Timeline streams
+
+The `*_timelines` streams return daily values for a fixed list of metrics. Each record holds one metric for one brand on one day: the `datetime` field is the day (normalized to UTC), `metric` is the metric name, `blogId` is the brand, and `value` is the number. To build a wide table with one column per metric, pivot on `metric` downstream.
+
+The timeline streams are the only incremental streams. They use `datetime` as the cursor.
+
+## Limitations
+
+- Metricool's public API documentation doesn't list rate limits. You can see your current API usage under **Account Settings** > **API** in Metricool.
+- No stream paginates. Competitor streams are capped at 100 records per brand, and content streams return whatever the API returns for the requested date range in a single response.
 
 ## IP allow list
 
