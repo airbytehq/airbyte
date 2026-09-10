@@ -227,6 +227,50 @@ def test_permission_403_fails_immediately():
     assert "SAML SSO authorization" in result.error_message
 
 
+def test_authentication_401_retries_with_actionable_message():
+    """
+    Verify that a 401 Unauthorized response results in ResponseAction.RETRY
+    and returns an actionable authentication error message rather than 'Conflict.'.
+    """
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.UNAUTHORIZED
+    response_mock.headers = {}
+    response_mock.text = '{"message": "Bad credentials"}'
+    response_mock.ok = False
+    response_mock.json = lambda: json.loads(response_mock.text)
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.RETRY
+    assert result.failure_type == FailureType.config_error
+    assert "GitHub authentication failed (HTTP 401)" in result.error_message
+    assert "expired" in result.error_message
+    assert "revoked" in result.error_message
+    assert "missing required scopes" in result.error_message
+    assert "renew" in result.error_message
+    assert "Conflict." not in result.error_message
+
+
+def test_resource_not_found_404_retries_with_actionable_message():
+    """
+    Verify that a 404 Not Found response results in ResponseAction.RETRY
+    and returns an actionable resource not found message rather than 'Conflict.'.
+    """
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.NOT_FOUND
+    response_mock.headers = {}
+    response_mock.text = '{"message": "Not Found"}'
+    response_mock.ok = False
+    response_mock.json = lambda: json.loads(response_mock.text)
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.RETRY
+    assert result.failure_type == FailureType.config_error
+    assert "GitHub resource not found (HTTP 404)" in result.error_message
+    assert "Conflict." not in result.error_message
+
+
 @pytest.mark.parametrize(
     ("response_headers",),
     [
