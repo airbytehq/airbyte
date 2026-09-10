@@ -110,7 +110,7 @@ class SalesforceErrorHandler(ErrorHandler):
                             return ErrorResolution(
                                 ResponseAction.FAIL,
                                 FailureType.config_error,
-                                AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"],
+                                self._token_provider.authentication_error_message,
                             )
                     return ErrorResolution(
                         ResponseAction.RETRY,
@@ -130,11 +130,7 @@ class SalesforceErrorHandler(ErrorHandler):
                 return ErrorResolution(
                     ResponseAction.FAIL,
                     FailureType.config_error,
-                    (
-                        AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(error_message)
-                        if error_message in AUTHENTICATION_ERROR_MESSAGE_MAPPING
-                        else f"An error occurred: {response.content.decode()}"
-                    ),
+                    AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(error_message.lower()) or f"An error occurred: {response.content.decode()}",
                 )
 
             if self._is_bulk_job_creation(response) and response.status_code in [

@@ -275,6 +275,22 @@ class SalesforceErrorHandlerTest(TestCase):
         handler.interpret_response(response)
         sf._perform_login.assert_called_once()
 
+    def test_first_401_with_dead_jwt_grant_reports_jwt_wording(self) -> None:
+        """Same path for a JWT Bearer config. The refresh-token wording would send the user looking for
+        a re-authentication that does not exist in this flow: it issues no refresh token, so the
+        connected app or the JWT inputs are what must change."""
+        sf = Salesforce(auth_type="JWT", client_id="a_client_id", username="a_user", private_key="a_private_key")
+        sf._perform_login = MagicMock(side_effect=AirbyteTracedException(failure_type=FailureType.config_error))
+        handler = SalesforceErrorHandler(token_provider=SalesforceTokenProvider(sf))
+        response = self._create_response("GET", self._url_for_job_creation(), 401, [{"errorCode": "INVALID_SESSION_ID", "message": _ANY}])
+
+        resolution = handler.interpret_response(response)
+
+        assert resolution.response_action == ResponseAction.FAIL
+        assert resolution.failure_type == FailureType.config_error
+        assert "Re-authenticate" not in resolution.error_message
+        assert "JWT Bearer" in resolution.error_message
+
     def test_given_invalid_entity_with_bulk_not_supported_message_on_job_creation_when_interpret_response_then_raise_bulk_not_supported(
         self,
     ) -> None:
