@@ -108,12 +108,19 @@ poe e2e-local --test-version=dev --control-version=5.0.0 \
 
 # Target vs. control comparison, CDC (per-image reset between the two runs).
 poe e2e-local --test-version=dev --control-version=5.0.0 --reset=fixture \
+  --config-template=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/configs/cdc.template.json \
+  --sync-mode=incremental --cursor-field=_ab_cdc_cursor --streams=users \
   --fixture=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/00-init-cdc.sql \
   --fixture=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/<per-bug>.sql
 
 # One command only.
 poe e2e-local --command=read --test-version=5.0.0
 ```
+
+The CDC example needs an incremental catalog (`--sync-mode=incremental
+--cursor-field=_ab_cdc_cursor`) restricted with `--streams` to exclude
+`dbo.systranschemas`; the general rule is in the
+[db-harness-lib README](../../../../../db-harness-lib/README.md#cdc-config-templates-need-an-incremental-catalog).
 
 The sweep runs every command against the one backend and reports each
 result rather than stopping at the first failure, then prints a summary

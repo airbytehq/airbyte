@@ -6,7 +6,6 @@ This page contains the setup guide and reference information for the Pipedrive s
 
 - A Pipedrive account with API access enabled for your user
 - Your Pipedrive API Token
-- A Start Date (in UTC) from which to begin replicating data
 
 ## Setup guide
 
@@ -36,7 +35,7 @@ If the **API** tab isn't visible, your company admin hasn't enabled API access f
 
 <FieldAnchor field="replication_start_date">
 
-**Start Date**: A UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2017-01-25T00:00:00Z`. Streams that support incremental sync only replicate records modified on or after this date. Streams that don't support incremental sync ignore it and always return all records, except `deal_products`, which only expands the deals returned by the `deals` stream. A space instead of `T`, as in the example shown in the UI, also works. See [Incremental sync and Start Date](#incremental-sync-and-start-date).
+**Start Date** (optional): A UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2017-01-25T00:00:00Z`. Defaults to `2010-01-01T00:00:00Z` when left empty. Streams that support incremental sync only replicate records modified on or after this date. Streams that don't support incremental sync ignore it and always return all records, except `deal_products`, which only expands the deals returned by the `deals` stream. A space instead of `T`, as in the example shown in the UI, also works. See [Incremental sync and Start Date](#incremental-sync-and-start-date).
 
 </FieldAnchor>
 
@@ -111,7 +110,7 @@ Pipedrive lets you add custom fields to deals, persons, organizations, products,
 
 ## Performance considerations
 
-Pipedrive enforces per-company, token-based [rate limits](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting) that depend on your plan and the number of seats. The connector throttles itself to 20 requests per rolling 2 seconds across all streams, the burst limit of Pipedrive's lowest plan, so bursts rarely trigger a 429 no matter how many workers you configure. When Pipedrive answers with HTTP 429, the connector waits for the window reported in the `x-ratelimit-reset` header, falls back to exponential backoff when the header is missing, and retries up to ten times before failing the sync. Two limits apply per API token: a rolling 2-second burst window (20 to 120 requests depending on your plan) that recovers after a short wait, and a daily token budget (30,000 tokens times the plan multiplier and the number of seats) that, once exhausted, rejects every request until midnight in Pipedrive's server timezone. Waiting does not help in the second case; the failure message says so. If your account is close to its limits, run fewer streams per connection or schedule syncs less often.
+Pipedrive enforces per-company, token-based [rate limits](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting) that depend on your plan and the number of seats. The connector throttles itself to 20 requests per rolling 2 seconds across all streams, the burst limit of Pipedrive's lowest plan, so bursts rarely trigger a 429 no matter how many workers you configure. When Pipedrive answers with HTTP 429, the connector waits for the window reported in the `x-ratelimit-reset` header, falls back to exponential backoff when the header is missing, and retries up to ten times before failing the sync. If the header asks for a wait of 300 seconds or more, the connector stops the sync with a retryable error instead of waiting. Two limits apply per API token: a rolling 2-second burst window (20 to 120 requests depending on your plan) that recovers after a short wait, and a daily token budget (30,000 tokens times the plan multiplier and the number of seats) that, once exhausted, rejects every request until midnight in Pipedrive's server timezone. Waiting does not help in the second case; the failure message says so. If your account is close to its limits, run fewer streams per connection or schedule syncs less often.
 
 Two streams make one request per parent record and can be slow on large accounts:
 
@@ -131,11 +130,10 @@ How the connector treats Pipedrive HTTP errors:
 
 | HTTP status | Behavior |
 |:------------|:---------|
-| 401, 402, 403 | The sync fails with a configuration error that includes Pipedrive's error text. For `deal_products` and `mail`, a 403 on a single parent record is skipped and the sync continues. |
+| 401, 402, 403 | The sync fails with a configuration error that includes Pipedrive's error text. For `deal_products` and `mail`, a 403 on a single parent record is skipped and the sync continues. If the token can't read any deal products or mail messages at all, those two streams finish empty rather than failing. |
 | 404, 410 | For `deal_products` and `mail`, a parent deal or mail thread deleted after the parent stream was read is skipped. On other streams these fail the sync. |
-| 429 | Rate limited; retried as described under Performance considerations. |
+| 429 | Rate limited; retried as described under [Performance considerations](#performance-considerations). |
 | 500, 502, 503, 504 | Temporary Pipedrive errors; retried with backoff. |
-
 
 - The connector doesn't replicate deletes. A record deleted in Pipedrive stays in your destination until you clear and resync the stream.
 - Only the ten streams marked Incremental above track state. The other sixteen streams are re-read in full on every sync.
@@ -147,12 +145,11 @@ How the connector treats Pipedrive HTTP errors:
 
 ### Troubleshooting
 
-- **401 Unauthorized during setup**: Check that the API token was copied in full and that API access is enabled for your user (see Step 1).
 - **Missing streams or empty streams**: Records are limited to what the token's user can see in Pipedrive. Use a token from a user with broader visibility, or from an admin. `mail` and `mailThreads` are empty unless that user has a mailbox connected in Pipedrive.
 - **Records missing from incremental streams**: The Recents endpoint only returns records modified within the last month, so older records are not backfilled even with an earlier Start Date. Records that haven't been modified since the Start Date are excluded as well.
 - **Custom fields appear as hash keys**: This is expected. See [Custom fields](#custom-fields).
 - **Syncs fail with HTTP 429**: The retries were exhausted, which usually means the daily token budget is spent. Reduce the number of enabled streams, increase the interval between syncs, or upgrade the plan.
-- **Syncs fail with HTTP 401, 402 or 403**: The message carries Pipedrive's own error text. 401 means the token is invalid or API access is disabled for the user, 402 means the company account is not active, 403 means the token owner lacks permission for that data (or Cloudflare blocked the token after repeated rate-limit violations).
+- **Setup or syncs fail with HTTP 401, 402 or 403**: The message carries Pipedrive's own error text. 401 means the token was not copied in full, has been regenerated, or API access is disabled for the user (see Step 1). 402 means the company account is not active. 403 means the token owner lacks permission for that data, or Cloudflare blocked the token after repeated rate-limit violations.
 
 </details>
 
@@ -165,6 +162,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 2.5.0 | 2026-09-09 | [85772](https://github.com/airbytehq/airbyte/pull/85772) | Throttle requests to Pipedrive's burst limit with one shared API budget and add the `num_workers` option for parallel streams |
+| 2.4.7 | 2026-09-09 | [85774](https://github.com/airbytehq/airbyte/pull/85774) | Make Start Date optional with a default, rewrite the spec tooltips and migrate pre-2.0.0 configurations automatically |
 | 2.4.6 | 2026-09-09 | [85770](https://github.com/airbytehq/airbyte/pull/85770) | Classify Pipedrive HTTP errors, wait on `x-ratelimit-reset` for 429s and skip inaccessible parent records in `deal_products` and `mail` |
 | 2.4.5 | 2026-09-09 | [85767](https://github.com/airbytehq/airbyte/pull/85767) | Restructure the documentation and add contributor guides |
 | 2.4.4 | 2026-09-09 | [85763](https://github.com/airbytehq/airbyte/pull/85763) | Set the heartbeat timeout, add a CODEOWNERS entry and tidy the changelog |
