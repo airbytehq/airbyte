@@ -216,13 +216,13 @@ The Salesforce connector syncs formula field outputs from Salesforce. If the for
 
 ### Deleted, renamed, or restricted fields
 
-The connector queries every field that Salesforce describes for an object. If Salesforce can't resolve one of those fields when the query runs, because the field was deleted or renamed, or the authenticated user lost field-level read access to it, Salesforce rejects the query with an `INVALID_FIELD` error and the sync fails with a message like:
+The connector builds each stream's query from the fields in the object's describe response, excluding binary (`base64`) and compound object fields. If Salesforce can't resolve one of those fields when the query runs, because the field was deleted or renamed, or the authenticated user lost field-level read access to it, Salesforce rejects the query with an `INVALID_FIELD` error and the sync fails with a message like:
 
 ```text
 Field 'Foo__c' requested by stream 'Account' does not exist in Salesforce or is not visible to the authenticated user. Restore the field or grant it field-level read access, then refresh the connection schema.
 ```
 
-This is reported as a configuration error because it reflects a change in your Salesforce org rather than a connector fault. To fix it, restore the field or grant the Airbyte user field-level read access to it, then refresh the source schema on the connection. Starting in version 2.9.2, the error names the stream and field. Earlier versions reported the raw Salesforce response as a system error.
+This is reported as a configuration error because it reflects a change in your Salesforce org rather than a connector fault. To fix it, restore the field or grant the Airbyte user field-level read access to it, then run the sync again. If you want the connection's catalog to reflect the current set of fields, also refresh the source schema. Starting in version 2.9.2, the error names the stream and, when Salesforce's response identifies the column, the field. Earlier versions reported the raw Salesforce response as a system error.
 
 ### Syncing Deletes
 
