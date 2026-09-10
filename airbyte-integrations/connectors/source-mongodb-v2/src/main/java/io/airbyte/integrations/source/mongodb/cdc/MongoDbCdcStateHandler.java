@@ -31,7 +31,8 @@ public class MongoDbCdcStateHandler implements CdcStateHandler {
   @Override
   public AirbyteMessage saveState(final Map<String, String> offset, final AirbyteSchemaHistoryStorage.SchemaHistory<String> ignored) {
     final Boolean previousStateSchemaEnforced = stateManager.getCdcState() != null ? stateManager.getCdcState().schema_enforced() : null;
-    final MongoDbCdcState cdcState = new MongoDbCdcState(Jsons.jsonNode(offset), previousStateSchemaEnforced);
+    final Map<String, String> normalizedOffset = MongoDbDebeziumStateUtil.normalizeOffset(offset);
+    final MongoDbCdcState cdcState = new MongoDbCdcState(Jsons.jsonNode(normalizedOffset), previousStateSchemaEnforced);
 
     LOGGER.info("Saving Debezium state {}...", cdcState);
     stateManager.updateCdcState(cdcState);

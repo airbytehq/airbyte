@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Test;
 class MongoDbResumeTokenHelperTest {
 
   private static final String DATABASE = "test-database";
+  private static final String RESUME_TOKEN = "8264BEB9F3000000012B0229296E04";
 
   @Test
   void testRetrievingResumeToken() {
@@ -96,6 +97,15 @@ class MongoDbResumeTokenHelperTest {
   void testTimestampExtractionTimestampNotPresent() {
     final JsonNode changeEvent = Jsons.deserialize("{\"source\":{}}");
     assertThrows(IllegalStateException.class, () -> MongoDbResumeTokenHelper.extractTimestampFromEvent(changeEvent));
+  }
+
+  @Test
+  void testResumeTokenFromOffsetValueAcceptsHexAndBase64Forms() {
+    final BsonDocument resumeToken = ResumeTokens.fromData(RESUME_TOKEN);
+
+    assertEquals(resumeToken, MongoDbResumeTokenHelper.resumeTokenFromOffsetValue(RESUME_TOKEN));
+    assertEquals(resumeToken, MongoDbResumeTokenHelper.resumeTokenFromOffsetValue(ResumeTokens.toBase64(resumeToken)));
+    assertEquals(RESUME_TOKEN, MongoDbResumeTokenHelper.resumeTokenData(resumeToken));
   }
 
 }

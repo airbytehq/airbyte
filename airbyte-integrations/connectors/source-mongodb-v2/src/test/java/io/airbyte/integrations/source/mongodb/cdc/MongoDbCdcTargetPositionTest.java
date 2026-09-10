@@ -297,4 +297,36 @@ class MongoDbCdcTargetPositionTest {
     assertFalse(targetPosition.isSameOffset(offsetB, offsetC));
   }
 
+  @Test
+  void testOffsetsWithDebeziumBase64ResumeToken() {
+    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
+    final String base64ResumeToken = ResumeTokens.toBase64(resumeTokenDocument);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+        mock(MongoChangeStreamCursor.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+
+    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
+    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+    when(mongoClient.watch(PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+    when(mongoDatabase.watch(PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
+
+    // Debezium 3.x emits offsets with a base64-encoded resume token and unset timestamp fields
+    final Map<String, String> hexOffset =
+        Jsons.object(MongoDbDebeziumStateUtil.formatState(null, RESUME_TOKEN), new TypeReference<>() {});
+    final Map<String, String> base64Offset = Map.of(hexOffset.keySet().iterator().next(),
+        Jsons.serialize(Map.of("sec", -1, "ord", -1, MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, base64ResumeToken)));
+
+    final MongoDbCdcTargetPosition targetPosition =
+        new MongoDbCdcTargetPosition(
+            MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(CATALOG.getStreams())));
+
+    assertTrue(targetPosition.isSameOffset(hexOffset, base64Offset));
+    assertTrue(targetPosition.isSameOffset(base64Offset, hexOffset));
+    assertEquals(ResumeTokens.getTimestamp(resumeTokenDocument),
+        targetPosition.extractPositionFromHeartbeatOffset(Map.of(MongoDbDebeziumConstants.ChangeEvent.SOURCE_RESUME_TOKEN, base64ResumeToken)));
+  }
+
 }
