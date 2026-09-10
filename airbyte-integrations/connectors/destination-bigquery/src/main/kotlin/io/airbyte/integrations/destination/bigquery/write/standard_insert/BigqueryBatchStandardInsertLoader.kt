@@ -10,6 +10,7 @@ import com.google.cloud.bigquery.FormatOptions
 import com.google.cloud.bigquery.JobId
 import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.JobStatistics
+import com.google.cloud.bigquery.JobStatus
 import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.TableDataWriteChannel
 import com.google.cloud.bigquery.TableId
@@ -27,6 +28,8 @@ import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.cdk.load.write.DirectLoaderFactory
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
+import io.airbyte.integrations.destination.bigquery.copy.BigqueryS3Copy
+import io.airbyte.integrations.destination.bigquery.copy.StandardInsertArchiveBatch
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.airbyte.integrations.destination.bigquery.formatter.ProtoToBigQueryStandardInsertRecordFormatter
 import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
@@ -42,8 +45,11 @@ import io.micronaut.context.condition.ConditionContext
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 
 private val logger = KotlinLogging.logger {}
 
@@ -56,6 +62,7 @@ class BigqueryBatchStandardInsertsLoader(
     private val writeChannelConfiguration: WriteChannelConfiguration,
     private val job: JobId,
     private val recordFormatter: RecordFormatter,
+    private val archiveBatch: StandardInsertArchiveBatch? = null,
 ) : DirectLoader {
     // a TableDataWriteChannel holds (by default) a 15MB buffer in memory.
     // so we start out by writing to a BAOS, which grows dynamically.
@@ -67,48 +74,121 @@ class BigqueryBatchStandardInsertsLoader(
     // so we can't just flush+close a TableDataWriteChannel as soon as we reach 15MB.
     private var buffer: ByteArrayOutputStream? = ByteArrayOutputStream()
     private lateinit var writer: TableDataWriteChannel
+    private var writerClosed = false
+    private var closed = false
 
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
-        val formattedRecord = recordFormatter.formatRecord(record)
-        val byteArray =
-            "$formattedRecord${System.lineSeparator()}".toByteArray(StandardCharsets.UTF_8)
+        check(!closed) { "BigQuery standard insert loader is closed" }
+        try {
+            currentCoroutineContext().ensureActive()
+            val formattedRecord = recordFormatter.formatRecord(record)
+            val byteArray =
+                "$formattedRecord${System.lineSeparator()}".toByteArray(StandardCharsets.UTF_8)
+            archiveBatch?.append(byteArray)
 
-        if (this::writer.isInitialized) {
-            writer.write(ByteBuffer.wrap(byteArray))
-        } else {
-            buffer!!.write(byteArray)
-            // the default chunk size on the TableDataWriteChannel is 15MB,
-            // so switch to writing to a real writechannel when we reach that size
-            if (buffer!!.size() > 15 * 1024 * 1024) {
-                switchToWriteChannel()
+            if (this::writer.isInitialized) {
+                writeFully(byteArray)
+            } else {
+                buffer!!.write(byteArray)
+                // the default chunk size on the TableDataWriteChannel is 15MB,
+                // so switch to writing to a real writechannel when we reach that size
+                if (buffer!!.size() > 15 * 1024 * 1024) {
+                    switchToWriteChannel()
+                }
             }
-        }
 
-        // rely on the CDK to tell us when to finish()
-        return DirectLoader.Incomplete
+            // rely on the CDK to tell us when to finish()
+            return DirectLoader.Incomplete
+        } catch (t: Throwable) {
+            closeResources(t)
+            throw t
+        }
     }
 
     override suspend fun finish() {
-        if (!this::writer.isInitialized) {
-            switchToWriteChannel()
-        }
-        writer.close()
-        BigQueryUtils.waitForJobFinish(writer.job)
-        val stats = writer.job.reload().getStatistics<JobStatistics.LoadStatistics>()
-        logger.info {
-            "Finished loading data into table ${writeChannelConfiguration.destinationTable.toPrettyString()}. ${stats.outputRows} rows loaded; ${stats.badRecords} bad records."
-        }
-        if (stats.badRecords > 0) {
-            // This should be impossible: the load job uses the default setting of maxBadRecords=0,
-            // so the job is supposed to fail if there were any bad records.
-            throw RuntimeException(
-                "${writeChannelConfiguration.destinationTable.toPrettyString()}: Nonzero bad records detected: ${stats.badRecords}"
-            )
+        check(!closed) { "BigQuery standard insert loader is closed" }
+        try {
+            currentCoroutineContext().ensureActive()
+            if (!this::writer.isInitialized) {
+                switchToWriteChannel()
+            }
+            writer.close()
+            writerClosed = true
+            val loadJob = checkNotNull(writer.job) { "BigQuery load job is missing" }
+            BigQueryUtils.waitForJobFinish(loadJob)
+            val completedJob = checkNotNull(loadJob.reload()) { "BigQuery load job disappeared" }
+            check(
+                completedJob.status.state == JobStatus.State.DONE &&
+                    completedJob.status.error == null
+            ) { "BigQuery load job did not complete successfully: ${completedJob.status}" }
+            val stats = completedJob.getStatistics<JobStatistics.LoadStatistics>()
+            if (stats.badRecords > 0) {
+                // This should be impossible: the load job uses the default setting of
+                // maxBadRecords=0,
+                // so the job is supposed to fail if there were any bad records.
+                throw RuntimeException(
+                    "${writeChannelConfiguration.destinationTable.toPrettyString()}: Nonzero bad records detected: ${stats.badRecords}"
+                )
+            }
+            currentCoroutineContext().ensureActive()
+            archiveBatch?.complete(stats.outputRows)
+            currentCoroutineContext().ensureActive()
+            closeResources()
+            logger.info {
+                "Finished loading data into table ${writeChannelConfiguration.destinationTable.toPrettyString()}. ${stats.outputRows} rows loaded; ${stats.badRecords} bad records."
+            }
+        } catch (t: Throwable) {
+            closeResources(t)
+            throw t
         }
     }
 
-    override fun close() {}
+    override fun close() = closeResources()
+
+    @SuppressFBWarnings(
+        value = ["RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"],
+        justification =
+            "The lateinit channel is intentionally absent for buffered or failed batches",
+    )
+    private fun closeResources(primary: Throwable? = null) {
+        if (closed) return
+        closed = true
+        buffer = null
+        var failure = primary
+        try {
+            archiveBatch?.close()
+        } catch (t: Throwable) {
+            if (failure == null) failure = t else if (failure !== t) failure.addSuppressed(t)
+        }
+        try {
+            // Closing an active channel may load partial data. This loader is abandoned and must
+            // never complete its archive or report success to the CDK in that case.
+            if (this::writer.isInitialized && !writerClosed) {
+                writer.close()
+                writerClosed = true
+            }
+        } catch (t: Throwable) {
+            if (failure == null) failure = t else if (failure !== t) failure.addSuppressed(t)
+        }
+        if (primary == null) failure?.let { throw it }
+    }
+
+    private fun writeFully(bytes: ByteArray) {
+        val source = ByteBuffer.wrap(bytes)
+        var stalledWrites = 0
+        while (source.hasRemaining()) {
+            val position = source.position()
+            writer.write(source)
+            if (source.position() <= position) {
+                if (++stalledWrites >= 3) {
+                    throw IOException("BigQuery write channel made no progress after 3 attempts")
+                }
+            } else {
+                stalledWrites = 0
+            }
+        }
+    }
 
     // Somehow spotbugs thinks that `writer.write(ByteBuffer.wrap(byteArray))` is a redundant null
     // check...
@@ -127,7 +207,7 @@ class BigqueryBatchStandardInsertsLoader(
         val byteArray = buffer!!.toByteArray()
         // please GC this object :)
         buffer = null
-        writer.write(ByteBuffer.wrap(byteArray))
+        writeFully(byteArray)
     }
 }
 
@@ -147,7 +227,8 @@ class BigqueryBatchStandardInsertsLoaderFactory(
     private val tableCatalog: TableCatalogByDescriptor,
     private val typingDedupingStreamStateStore: StreamStateStore<TypingDedupingExecutionConfig>?,
     private val directLoadStreamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>?,
-    @Named("dataChannelFormat") private val dataChannelFormat: DataChannelFormat
+    @Named("dataChannelFormat") private val dataChannelFormat: DataChannelFormat,
+    private val archive: BigqueryS3Copy,
 ) : DirectLoaderFactory<BigqueryBatchStandardInsertsLoader> {
     override fun create(
         streamDescriptor: DestinationStream.Descriptor,
@@ -221,6 +302,9 @@ class BigqueryBatchStandardInsertsLoaderFactory(
             writeChannelConfiguration,
             jobId,
             formatter,
+            archive
+                .context(catalog.getStream(streamDescriptor))
+                ?.let(archive::startStandardInsertBatch),
         )
     }
 

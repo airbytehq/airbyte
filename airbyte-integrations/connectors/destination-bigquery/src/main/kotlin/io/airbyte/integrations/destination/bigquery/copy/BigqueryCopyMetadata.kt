@@ -18,6 +18,7 @@ import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogByDescriptor
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
+import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -35,11 +36,10 @@ class BigqueryCopyMetadata(
 ) {
     private val mapper = ObjectMapper()
     private val raw = bigqueryConfiguration.legacyRawTablesOnly
+    private val gcs = bigqueryConfiguration.loadingMethod is GcsStagingConfiguration
+    private val formatVersion = if (gcs) FORMAT_VERSION else STANDARD_INSERT_FORMAT_VERSION
 
     fun descriptor(stream: DestinationStream): Map<String, Any?> {
-        require(bigqueryConfiguration.loadingMethod is GcsStagingConfiguration) {
-            "BigQuery S3 copy metadata only supports GCS staging"
-        }
         validateGeneration(stream)
         val tableInfo =
             requireNotNull(names[stream.mappedDescriptor]) {
@@ -49,42 +49,83 @@ class BigqueryCopyMetadata(
             requireNotNull(
                 if (raw) tableInfo.tableNames.rawTableName else tableInfo.tableNames.finalTableName
             ) { "Missing logical BigQuery table for ${stream.mappedDescriptor}" }
-        // These are the same helpers used by both formatting writers and the bulk loader factory.
-        val headers = stream.schema.withAirbyteMeta(!raw).toCsvHeader().toList()
+        // Use the same schemas as the loader factories. Standard raw inserts include loaded-at
+        // in their target schema, even though neither standard formatter writes that field.
+        val headers =
+            if (gcs) stream.schema.withAirbyteMeta(!raw).toCsvHeader().toList() else emptyList()
         val fields =
-            if (raw) BigQueryRecordFormatter.CSV_SCHEMA.fields.toList()
+            if (raw)
+                (if (gcs) BigQueryRecordFormatter.CSV_SCHEMA else BigQueryRecordFormatter.SCHEMA_V2)
+                    .fields
+                    .toList()
             else
                 BigQueryRecordFormatter.getDirectLoadSchema(stream, tableInfo.columnNameMapping)
                     .fields
                     .toList()
-        check(headers.size == fields.size) { "BigQuery CSV header and load schema disagree" }
+        check(!gcs || headers.size == fields.size) {
+            "BigQuery CSV header and load schema disagree"
+        }
         val columns =
-            headers.mapIndexed { ordinal, header ->
-                fieldDescriptor(fields[ordinal]) +
-                    mapOf(
-                        "csv_ordinal" to ordinal,
-                        "csv_header" to header,
-                        "source_path" to
-                            if (raw || ordinal < AIRBYTE_COLUMN_COUNT) emptyList<String>()
-                            else listOf(header),
-                    )
+            fields.mapIndexed { ordinal, field ->
+                val sourcePath =
+                    if (raw || ordinal < AIRBYTE_COLUMN_COUNT) emptyList<String>()
+                    else if (gcs) listOf(headers[ordinal])
+                    else
+                        listOf(
+                            stream.schema.asColumns().keys.elementAt(ordinal - AIRBYTE_COLUMN_COUNT)
+                        )
+                fieldDescriptor(field) +
+                    if (gcs)
+                        mapOf(
+                            "csv_ordinal" to ordinal,
+                            "csv_header" to headers[ordinal],
+                            "source_path" to sourcePath,
+                        )
+                    else
+                        mapOf(
+                            "source_path" to sourcePath,
+                            "json_field" to
+                                field.name.takeUnless {
+                                    raw && it == Meta.COLUMN_NAME_AB_LOADED_AT
+                                },
+                            "presence" to
+                                when {
+                                    raw && field.name == Meta.COLUMN_NAME_AB_LOADED_AT ->
+                                        "omitted; loads as SQL NULL"
+                                    sourcePath.isNotEmpty() &&
+                                        dataChannelFormat != DataChannelFormat.PROTOBUF ->
+                                        "omitted when missing, null, or nulled by validation"
+                                    else -> "always emitted"
+                                },
+                        )
             }
 
         fun pathMapping(path: List<String>): Map<String, Any?> {
             require(path.isNotEmpty()) { "Configured BigQuery key paths must not be empty" }
             val header = if (raw) Meta.COLUMN_NAME_DATA else path.first()
-            val ordinal = headers.indexOf(header)
-            require(ordinal >= 0) { "Configured key/cursor field $header is absent from the CSV" }
-            val target = fields[ordinal].name
+            val ordinal = if (gcs) headers.indexOf(header) else -1
+            val target =
+                if (gcs) {
+                    require(ordinal >= 0) {
+                        "Configured key/cursor field $header is absent from the CSV"
+                    }
+                    fields[ordinal].name
+                } else {
+                    val mapped =
+                        if (raw) Meta.COLUMN_NAME_DATA else tableInfo.columnNameMapping[header]
+                    requireNotNull(mapped?.takeIf { name -> fields.any { it.name == name } }) {
+                        "Configured key/cursor field $header is absent from the standard insert schema"
+                    }
+                }
             val withinColumn = if (raw) path else path.drop(1)
-            return mapOf(
-                "source_path" to path,
-                "csv_ordinal" to ordinal,
-                "csv_header" to header,
-                "target_column" to target,
-                "path_within_column" to withinColumn,
-                "target_path" to (listOf(target) + withinColumn),
-            )
+            return mapOf("source_path" to path) +
+                (if (gcs) mapOf("csv_ordinal" to ordinal, "csv_header" to header)
+                else mapOf("json_field" to target)) +
+                mapOf(
+                    "target_column" to target,
+                    "path_within_column" to withinColumn,
+                    "target_path" to (listOf(target) + withinColumn),
+                )
         }
 
         // Append/overwrite DestinationStreams do not retain configured keys or cursors.
@@ -98,11 +139,15 @@ class BigqueryCopyMetadata(
         val cursor = configured.cursorField.orEmpty()
         val layout =
             mapOf(
-                "format_version" to FORMAT_VERSION,
-                "loading_strategy" to "GCS_STAGING",
+                "format_version" to formatVersion,
+                "loading_strategy" to
+                    when (bigqueryConfiguration.loadingMethod) {
+                        is GcsStagingConfiguration -> "GCS_STAGING"
+                        BatchedStandardInsertConfiguration -> "BATCHED_STANDARD_INSERT"
+                    },
                 "table_mode" to if (raw) "raw" else "direct",
                 "input_format" to dataChannelFormat.name,
-                "csv" to csvDescriptor(),
+                (if (gcs) "csv" to csvDescriptor() else "ndjson" to ndjsonDescriptor()),
                 "columns" to columns,
                 "source_schema" to AirbyteTypeToJsonSchema().convert(stream.schema),
                 "import_type" to configured.destinationSyncMode.name,
@@ -133,21 +178,28 @@ class BigqueryCopyMetadata(
                         "archive_deletes_rows" to false,
                     ),
                 "load_options" to
-                    mapOf(
-                        "format" to "CSV",
-                        "skipLeadingRows" to 1,
-                        "allowQuotedNewLines" to true,
-                        "allowJaggedRows" to true,
-                        "preserveAsciiControlCharacters" to true,
-                        "nullMarker" to BigQueryConsts.NULL_MARKER,
-                        "writeDisposition" to "WRITE_APPEND",
-                        "unspecified_options" to "inherited BigQuery server defaults",
-                    ),
+                    if (gcs)
+                        mapOf(
+                            "format" to "CSV",
+                            "skipLeadingRows" to 1,
+                            "allowQuotedNewLines" to true,
+                            "allowJaggedRows" to true,
+                            "preserveAsciiControlCharacters" to true,
+                            "nullMarker" to BigQueryConsts.NULL_MARKER,
+                            "writeDisposition" to "WRITE_APPEND",
+                            "unspecified_options" to "inherited BigQuery server defaults",
+                        )
+                    else
+                        mapOf(
+                            "format" to "NEWLINE_DELIMITED_JSON",
+                            "createDisposition" to "CREATE_IF_NEEDED",
+                            "unspecified_options" to "inherited BigQuery server defaults",
+                        ),
             )
         val result =
             identity(stream) +
                 mapOf(
-                    "format_version" to FORMAT_VERSION,
+                    "format_version" to formatVersion,
                     "connector_version" to
                         (System.getenv("AIRBYTE_CONNECTOR_VERSION")
                             ?: javaClass.`package`.implementationVersion),
@@ -160,7 +212,13 @@ class BigqueryCopyMetadata(
                     "layout" to layout,
                     "scope" to "load inputs; not final table publication or a final table snapshot",
                     "loaded_record_count_meaning" to "BigQuery load job outputRows",
-                )
+                ) +
+                if (gcs) emptyMap()
+                else
+                    mapOf(
+                        "input_record_count_meaning" to
+                            "Successful formatter-byte appends to the standard insert archive batch"
+                    )
         return result + ("schema_id" to schemaId(result))
     }
 
@@ -194,7 +252,7 @@ class BigqueryCopyMetadata(
         }
         return identity(stream) +
             mapOf(
-                "format_version" to FORMAT_VERSION,
+                "format_version" to formatVersion,
                 "event_type" to "generation_cutoff_requested",
                 "event_id" to UUID.randomUUID().toString(),
                 "discard" to
@@ -263,6 +321,48 @@ class BigqueryCopyMetadata(
                 },
         )
 
+    private fun ndjsonDescriptor(): Map<String, Any?> =
+        mapOf(
+            "encoding" to "UTF-8",
+            "compression" to "none",
+            "content_type" to "application/x-ndjson",
+            "batch_path" to "batches/<uuid>.jsonl",
+            "record_separator" to System.lineSeparator(),
+            "trailing_record_separator" to true,
+            "null_representation" to
+                when {
+                    raw && dataChannelFormat != DataChannelFormat.PROTOBUF ->
+                        "Source JSON null and absent fields are preserved inside the serialized _airbyte_data string"
+                    raw ->
+                        "Missing, null, and nulled invalid declared fields become JSON null inside the serialized _airbyte_data string"
+                    dataChannelFormat == DataChannelFormat.PROTOBUF ->
+                        "Missing, null, and nulled invalid declared fields are emitted as JSON null"
+                    else -> "Missing, null, and nulled invalid declared fields are omitted"
+                },
+            "conversions" to
+                listOfNotNull(
+                    "Empty strings and literal \\N strings are preserved; there is no CSV null marker",
+                    "_airbyte_extracted_at uses BigQuery timestamp text from emitted-at milliseconds; generation ID is a JSON number",
+                    if (raw)
+                        "_airbyte_data and _airbyte_meta are JSON strings containing serialized JSON; _airbyte_loaded_at is omitted and loads as SQL NULL"
+                    else
+                        "_airbyte_meta is a JSON object; user fields use mapped target names and objects/arrays are JSON values",
+                    if (raw && dataChannelFormat != DataChannelFormat.PROTOBUF)
+                        "Payload preserves source JSON fields, including undeclared fields, without destination validation; metadata preserves source changes and adds sync_id"
+                    else
+                        "Declared fields are formatted and validated; undeclared top-level fields are unavailable in the output; validation changes are included in _airbyte_meta",
+                    if (dataChannelFormat == DataChannelFormat.PROTOBUF)
+                        "Payload is reconstructed from declared fields in proxy order"
+                    else null,
+                    if (!raw || dataChannelFormat == DataChannelFormat.PROTOBUF)
+                        "Legacy unions use their selected type; date/time values are normalized by BigQuery formatters; timezone-bearing TIME is stored as STRING"
+                    else null,
+                    if (!raw || dataChannelFormat == DataChannelFormat.PROTOBUF)
+                        "INT64 overflow becomes null; NUMERIC is bounded to precision 38 and rounded HALF_UP to scale 9"
+                    else null,
+                ),
+        )
+
     private fun fieldDescriptor(field: Field): Map<String, Any?> =
         mapOf(
             "target_field" to field.name,
@@ -321,6 +421,7 @@ class BigqueryCopyMetadata(
 
     companion object {
         const val FORMAT_VERSION = "bigquery-gcs-load-csv-gzip-v1"
+        const val STANDARD_INSERT_FORMAT_VERSION = "bigquery-load-ndjson-v1"
         private const val AIRBYTE_COLUMN_COUNT = 4
     }
 }

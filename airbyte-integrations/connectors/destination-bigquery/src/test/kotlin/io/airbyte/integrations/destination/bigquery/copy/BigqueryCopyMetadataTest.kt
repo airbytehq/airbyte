@@ -5,12 +5,14 @@
 package io.airbyte.integrations.destination.bigquery.copy
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.command.Overwrite
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
@@ -31,6 +33,7 @@ import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableNameInfo
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
+import io.airbyte.integrations.destination.bigquery.formatter.ProtoToBigQueryStandardInsertRecordFormatter
 import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryRegion
@@ -50,6 +53,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.StringReader
+import java.math.BigInteger
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.OffsetDateTime
@@ -96,6 +100,172 @@ class BigqueryCopyMetadataTest {
         Jsons.readTree(
             """{"z field":"É雪,\"quoted\"\nnext","id":7,"empty":"","literal":"\\N","nil":null,"nested":{"key":"value"},"ts":"2026-09-10T01:02:03+02:00","undeclared":"preserved in raw JSON"}"""
         )
+
+    @ParameterizedTest
+    @CsvSource(
+        "false,JSONL,f9bc0dd5c01afd458d4ee0c1fee112a21c5cca2ef90b96754c4704de462869aa",
+        "false,PROTOBUF,639c9faa10ee36822748ca7233b96e09829578cf3b994c4be82208dfc429c1a5",
+        "true,JSONL,6e342a4b5a88d8ec723a943d95f0c3627315ea1ac198a29a890217d22357dbf7",
+        "true,PROTOBUF,7cee41a5b62db3b21ce838f1eb1287961344afeacefb7b81b2b2469c11432330",
+    )
+    fun `GCS layout hashes remain compatible`(
+        raw: Boolean,
+        format: DataChannelFormat,
+        expected: String
+    ) {
+        val stream =
+            stream()
+                .copy(
+                    importType = Dedupe(listOf(listOf("id"), listOf("nested", "key")), listOf("ts"))
+                )
+        assertEquals(expected, metadata(stream, raw, format).descriptor(stream)["schema_id"])
+    }
+
+    @ParameterizedTest
+    @CsvSource("false,JSONL", "false,PROTOBUF", "true,JSONL", "true,PROTOBUF")
+    fun `standard descriptor matches real formatter fields and null semantics`(
+        raw: Boolean,
+        format: DataChannelFormat,
+    ) {
+        val stream = stream()
+        val descriptor = tree(metadata(stream, raw, format, standard = true).descriptor(stream))
+        val layout = descriptor["layout"]
+        val ndjson = layout["ndjson"]
+        assertEquals("bigquery-load-ndjson-v1", descriptor["format_version"].asText())
+        assertEquals(
+            "BigQuery load job outputRows",
+            descriptor["loaded_record_count_meaning"].asText()
+        )
+        assertEquals(
+            "Successful formatter-byte appends to the standard insert archive batch",
+            descriptor["input_record_count_meaning"].asText()
+        )
+        assertEquals(descriptor["format_version"], layout["format_version"])
+        assertEquals("BATCHED_STANDARD_INSERT", layout["loading_strategy"].asText())
+        assertEquals(format.name, layout["input_format"].asText())
+        assertEquals("UTF-8", ndjson["encoding"].asText())
+        assertEquals("none", ndjson["compression"].asText())
+        assertEquals("application/x-ndjson", ndjson["content_type"].asText())
+        assertEquals("batches/<uuid>.jsonl", ndjson["batch_path"].asText())
+        assertEquals(System.lineSeparator(), ndjson["record_separator"].asText())
+        assertTrue(ndjson["trailing_record_separator"].asBoolean())
+        assertFalse(layout.has("csv"))
+        assertEquals(
+            setOf("format", "createDisposition", "unspecified_options"),
+            layout["load_options"].fieldNames().asSequence().toSet()
+        )
+        assertEquals("NEWLINE_DELIMITED_JSON", layout["load_options"]["format"].asText())
+        assertEquals("CREATE_IF_NEEDED", layout["load_options"]["createDisposition"].asText())
+
+        val output = standardRecord(stream, raw, format, record(stream, format))
+        val columns = layout["columns"]
+        val targetSchema =
+            if (raw) BigQueryRecordFormatter.SCHEMA_V2
+            else
+                BigQueryRecordFormatter.getDirectLoadSchema(
+                    stream,
+                    names(stream)[stream.mappedDescriptor]!!.columnNameMapping
+                )
+        assertEquals(
+            targetSchema.fields.map { it.name },
+            columns.map { it["target_field"].asText() }
+        )
+        assertEquals(
+            targetSchema.fields.map { it.type.standardType.name },
+            columns.map { it["type"].asText() }
+        )
+        columns.forEach {
+            assertFalse(it.has("csv_ordinal"))
+            assertFalse(it.has("csv_header"))
+        }
+        assertEquals(runId.toString(), output["_airbyte_raw_id"].asText())
+        assertTrue(output["_airbyte_generation_id"].isIntegralNumber)
+        assertEquals(9, output["_airbyte_generation_id"].asInt())
+        assertEquals("1970-01-01 00:00:01.234000+00:00", output["_airbyte_extracted_at"].asText())
+        val data = if (raw) Jsons.readTree(output["_airbyte_data"].asText()) else output
+        val meta =
+            if (raw) Jsons.readTree(output["_airbyte_meta"].asText()) else output["_airbyte_meta"]
+        assertEquals(42, meta["sync_id"].asInt())
+        if (raw) {
+            assertTrue(output["_airbyte_data"].isTextual)
+            assertTrue(output["_airbyte_meta"].isTextual)
+            assertFalse(output.has("_airbyte_loaded_at"))
+            val loadedAt = columns.single { it["target_field"].asText() == "_airbyte_loaded_at" }
+            assertTrue(loadedAt["json_field"].isNull)
+            assertEquals("omitted; loads as SQL NULL", loadedAt["presence"].asText())
+            assertTrue(loadedAt["nullable"].asBoolean())
+            assertEquals(
+                columns
+                    .filter { !it["json_field"].isNull }
+                    .map { it["json_field"].asText() }
+                    .toSet(),
+                output.fieldNames().asSequence().toSet()
+            )
+            assertEquals(format == DataChannelFormat.JSONL, data.has("undeclared"))
+            assertEquals(format == DataChannelFormat.PROTOBUF, data.has("missing"))
+            assertTrue(data["nil"].isNull)
+            assertEquals(payload["nested"], data["nested"])
+        } else {
+            assertTrue(output["_airbyte_meta"].isObject)
+            assertEquals(payload["nested"], data["mapped_6"])
+            val expectedFields =
+                columns.map { it["json_field"].asText() }.toSet() -
+                    if (format == DataChannelFormat.JSONL) setOf("mapped_4", "mapped_5")
+                    else emptySet()
+            assertEquals(expectedFields, output.fieldNames().asSequence().toSet())
+            listOf("mapped_4", "mapped_5").forEach {
+                if (format == DataChannelFormat.PROTOBUF) assertTrue(data[it].isNull)
+                else assertFalse(data.has(it))
+            }
+            assertEquals(listOf("z field"), columns[4]["source_path"].map(JsonNode::asText))
+            assertEquals("mapped_0", columns[4]["json_field"].asText())
+        }
+        assertEquals("", data[if (raw) "empty" else "mapped_2"].asText())
+        assertEquals("\\N", data[if (raw) "literal" else "mapped_3"].asText())
+        assertEquals(payload["z field"], data[if (raw) "z field" else "mapped_0"])
+        assertEquals(
+            if (raw) "raw_table" else "mapped_table",
+            descriptor["logical_table"]["table"].asText()
+        )
+    }
+
+    @ParameterizedTest
+    @CsvSource("false,JSONL", "false,PROTOBUF", "true,JSONL", "true,PROTOBUF")
+    fun `standard descriptor reflects validation in direct JSON and both protobuf modes`(
+        raw: Boolean,
+        format: DataChannelFormat
+    ) {
+        val stream = stream()
+        val invalid = payload.deepCopy<ObjectNode>().put("id", BigInteger("9223372036854775808"))
+        val output = standardRecord(stream, raw, format, record(stream, format, invalid))
+        val layout =
+            tree(metadata(stream, raw, format, standard = true).descriptor(stream))["layout"]
+        if (raw && format == DataChannelFormat.JSONL) {
+            assertEquals(invalid, Jsons.readTree(output["_airbyte_data"].asText()))
+            assertTrue(
+                layout["ndjson"]["conversions"].any {
+                    it.asText().contains("without destination validation")
+                }
+            )
+        } else {
+            val data = if (raw) Jsons.readTree(output["_airbyte_data"].asText()) else output
+            if (format == DataChannelFormat.JSONL) assertFalse(data.has("mapped_1"))
+            else assertTrue(data[if (raw) "id" else "mapped_1"].isNull)
+            val meta =
+                if (raw) Jsons.readTree(output["_airbyte_meta"].asText())
+                else output["_airbyte_meta"]
+            assertTrue(
+                meta["changes"].any {
+                    it["field"].asText() == "id" && it["change"].asText() == "NULLED"
+                }
+            )
+            assertTrue(
+                layout["ndjson"]["conversions"].any {
+                    it.asText().contains("INT64 overflow becomes null")
+                }
+            )
+        }
+    }
 
     @ParameterizedTest
     @CsvSource("false,JSONL", "false,PROTOBUF", "true,JSONL", "true,PROTOBUF")
@@ -349,6 +519,123 @@ class BigqueryCopyMetadataTest {
         }
     }
 
+    @ParameterizedTest
+    @CsvSource("false,JSONL", "false,PROTOBUF", "true,JSONL", "true,PROTOBUF")
+    fun `standard keys and cursors retain original paths for append overwrite and dedupe`(
+        raw: Boolean,
+        format: DataChannelFormat
+    ) {
+        val keys = listOf(listOf("id"), listOf("nested", "key"))
+        val cursor = listOf("nested", "key")
+        for (importType in listOf(Append, Overwrite, Dedupe(keys, cursor))) {
+            val stream =
+                stream()
+                    .copy(
+                        importType = importType,
+                        namespaceMapper = NamespaceMapper(streamPrefix = "destination_")
+                    )
+            val configured = stream.asProtocolObject().withPrimaryKey(keys).withCursorField(cursor)
+            val metadata =
+                BigqueryCopyMetadata(
+                    config,
+                    bigquery(raw).copy(loadingMethod = BatchedStandardInsertConfiguration),
+                    names(stream),
+                    runId,
+                    format,
+                    ConfiguredAirbyteCatalog().withStreams(listOf(configured))
+                )
+            val layout = tree(metadata.descriptor(stream))["layout"]
+            assertEquals(configured.destinationSyncMode.name, layout["import_type"].asText())
+            assertEquals(keys, layout["primary_key"].map { it.map(JsonNode::asText) })
+            assertEquals(cursor, layout["cursor"].map(JsonNode::asText))
+            val nested = layout["primary_key_mapping"][1]
+            assertEquals(layout["cursor_mapping"][0], nested)
+            assertEquals(if (raw) "_airbyte_data" else "mapped_6", nested["target_column"].asText())
+            assertEquals(nested["target_column"], nested["json_field"])
+            assertEquals(
+                if (raw) listOf("_airbyte_data", "nested", "key") else listOf("mapped_6", "key"),
+                nested["target_path"].map(JsonNode::asText)
+            )
+            assertEquals(
+                if (raw) cursor else listOf("key"),
+                nested["path_within_column"].map(JsonNode::asText)
+            )
+            assertFalse(nested.has("csv_header"))
+            assertFalse(nested.has("csv_ordinal"))
+            if (importType is Dedupe) {
+                assertEquals(
+                    nested["target_column"],
+                    layout["deduplication_cursor"]["target_column"]
+                )
+                assertEquals(
+                    nested["path_within_column"],
+                    layout["deduplication_cursor"]["path_within_column"]
+                )
+                assertFalse(layout["deduplication_cursor"]["performed_in_raw_mode"].asBoolean())
+            } else assertTrue(layout["deduplication_cursor"].isNull)
+        }
+        val fallback = stream().copy(importType = Dedupe(keys, emptyList()))
+        val layout =
+            tree(metadata(fallback, raw, format, standard = true).descriptor(fallback))["layout"]
+        assertEquals(
+            "_airbyte_extracted_at",
+            layout["deduplication_cursor"]["target_column"].asText()
+        )
+        assertTrue(layout["deduplication_cursor"]["path_within_column"].isEmpty)
+        assertTrue(layout["cursor_mapping"].isEmpty)
+    }
+
+    @Test
+    fun `standard layout hashes distinguish strategies modes formats and mappings but ignore retries`() {
+        val stream = stream()
+        val hashes = mutableSetOf<Any?>()
+        for (standard in listOf(false, true)) {
+            for (raw in listOf(false, true)) {
+                for (format in listOf(DataChannelFormat.JSONL, DataChannelFormat.PROTOBUF)) {
+                    val metadata = metadata(stream, raw, format, standard = standard)
+                    val descriptor = metadata.descriptor(stream)
+                    assertTrue(hashes.add(descriptor["schema_id"]))
+                    val retry =
+                        stream.copy(syncId = 43, generationId = 10, minimumGenerationId = 10)
+                    val retried =
+                        metadata(retry, raw, format, UUID.randomUUID(), standard = standard)
+                    assertEquals(descriptor["schema_id"], retried.descriptor(retry)["schema_id"])
+                    assertEquals(
+                        descriptor["format_version"],
+                        retried.cutoff(retry)["format_version"]
+                    )
+                    assertEquals(
+                        descriptor["schema_id"],
+                        metadata.schemaId(mapOf("layout" to tree(descriptor)["layout"]))
+                    )
+                    if (!raw)
+                        assertNotEquals(
+                            descriptor["schema_id"],
+                            metadata(
+                                    stream,
+                                    raw,
+                                    format,
+                                    mappingPrefix = "other_",
+                                    standard = standard
+                                )
+                                .descriptor(stream)["schema_id"]
+                        )
+                }
+            }
+        }
+        val metadata = metadata(stream, standard = true)
+        val descriptor = metadata.descriptor(stream)
+        val changed =
+            stream.copy(schema = ObjectType(linkedMapOf("id" to FieldType(StringType, true))))
+        assertNotEquals(
+            descriptor["schema_id"],
+            metadata(changed, standard = true).descriptor(changed)["schema_id"]
+        )
+        val layout = tree(descriptor)["layout"].deepCopy<ObjectNode>()
+        (layout["ndjson"] as ObjectNode).put("compression", "gzip")
+        assertNotEquals(descriptor["schema_id"], metadata.schemaId(mapOf("layout" to layout)))
+    }
+
     @Test
     fun `canonical hash ignores attempts and map insertion order but preserves array order`() {
         val stream = stream()
@@ -498,7 +785,7 @@ class BigqueryCopyMetadataTest {
     }
 
     @Test
-    fun `schema identifies CDC and rejects unsupported strategy or absent mappings`() {
+    fun `schema identifies CDC and rejects absent mappings`() {
         val stream =
             stream()
                 .copy(
@@ -512,15 +799,6 @@ class BigqueryCopyMetadataTest {
         val descriptor = tree(metadata(stream).descriptor(stream))
         assertTrue(descriptor["layout"]["cdc"]["deleted_at_field_present"].asBoolean())
         assertEquals("HARD_DELETE", descriptor["layout"]["cdc"]["deletion_mode"].asText())
-        val unsupported =
-            BigqueryCopyMetadata(
-                config,
-                bigquery().copy(loadingMethod = BatchedStandardInsertConfiguration),
-                names(stream),
-                runId,
-                DataChannelFormat.JSONL,
-            )
-        assertThrows(IllegalArgumentException::class.java) { unsupported.descriptor(stream) }
         val missing =
             BigqueryCopyMetadata(
                 config,
@@ -583,12 +861,44 @@ class BigqueryCopyMetadataTest {
         format: DataChannelFormat = DataChannelFormat.JSONL,
         run: UUID = runId,
         mappingPrefix: String = "mapped_",
-    ) = BigqueryCopyMetadata(config, bigquery(raw), names(stream, mappingPrefix), run, format)
+        standard: Boolean = false,
+    ) =
+        BigqueryCopyMetadata(
+            config,
+            if (standard) bigquery(raw).copy(loadingMethod = BatchedStandardInsertConfiguration)
+            else bigquery(raw),
+            names(stream, mappingPrefix),
+            run,
+            format
+        )
 
     private fun tree(value: Map<String, Any?>): JsonNode =
         Jsons.readTree(metadata(stream()).serialize(value))
 
-    private fun record(stream: DestinationStream, format: DataChannelFormat): DestinationRecordRaw {
+    private fun standardRecord(
+        stream: DestinationStream,
+        raw: Boolean,
+        format: DataChannelFormat,
+        record: DestinationRecordRaw
+    ): JsonNode {
+        val mapping = names(stream)[stream.mappedDescriptor]!!.columnNameMapping
+        val formatter =
+            if (format == DataChannelFormat.PROTOBUF)
+                ProtoToBigQueryStandardInsertRecordFormatter(
+                    stream.airbyteValueProxyFieldAccessors,
+                    mapping,
+                    stream,
+                    raw
+                )
+            else BigQueryRecordFormatter(mapping, raw)
+        return Jsons.readTree(formatter.formatRecord(record))
+    }
+
+    private fun record(
+        stream: DestinationStream,
+        format: DataChannelFormat,
+        payload: JsonNode = this.payload
+    ): DestinationRecordRaw {
         val source: DestinationRecordSource =
             if (format == DataChannelFormat.JSONL) {
                 DestinationRecordJsonSource(
@@ -602,7 +912,10 @@ class BigqueryCopyMetadataTest {
                         val node = payload[accessor.name]
                         when (accessor.type) {
                             IntegerType ->
-                                encoder.encode(node.asLong(), LeafAirbyteSchemaType.INTEGER)
+                                encoder.encode(
+                                    node.bigIntegerValue(),
+                                    LeafAirbyteSchemaType.INTEGER
+                                )
                             TimestampTypeWithTimezone ->
                                 encoder.encode(
                                     OffsetDateTime.parse(node.asText()),
