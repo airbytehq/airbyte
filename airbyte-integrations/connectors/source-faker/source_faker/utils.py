@@ -4,11 +4,15 @@
 
 import datetime
 import json
+import logging
 
 from airbyte_cdk.models import AirbyteEstimateTraceMessage, AirbyteTraceMessage, EstimateType, TraceType
 
+logger = logging.getLogger(__name__)
+
 
 def read_json(filepath):
+    logger.debug("Reading JSON from %s", filepath)
     with open(filepath, "r") as f:
         return json.loads(f.read())
 
