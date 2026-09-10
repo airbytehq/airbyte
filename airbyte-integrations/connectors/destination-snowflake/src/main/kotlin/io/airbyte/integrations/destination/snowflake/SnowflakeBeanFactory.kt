@@ -23,7 +23,6 @@ import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeSchemaR
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
-import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.File
 import java.io.PrintWriter
@@ -53,7 +52,6 @@ internal const val DATA_SOURCE_PROPERTY_TRACING = "tracing"
 internal const val DATA_SOURCE_PROPERTY_WAREHOUSE = "warehouse"
 internal const val JSON_FORMAT = "JSON"
 internal const val NETWORK_TIMEOUT_MINUTES: Long = 1L
-internal const val PRIVATE_KEY_FILE_NAME: String = "rsa_key.p8"
 
 @Factory
 class SnowflakeBeanFactory {
@@ -102,8 +100,6 @@ class SnowflakeBeanFactory {
     @Requires(property = Operation.PROPERTY, notEquals = "spec")
     fun snowflakeDataSource(
         snowflakeConfiguration: SnowflakeConfiguration,
-        @Named("snowflakePrivateKeyFileName")
-        snowflakePrivateKeyFileName: String = PRIVATE_KEY_FILE_NAME,
         @Value("\${airbyte.edition:COMMUNITY}") airbyteEdition: String,
     ): HikariDataSource {
         val snowflakeJdbcUrl =
@@ -125,7 +121,7 @@ class SnowflakeBeanFactory {
                 jdbcUrl = snowflakeJdbcUrl
                 when (snowflakeConfiguration.authType) {
                     is KeyPairAuthConfiguration -> {
-                        val privateKeyFile = File(snowflakePrivateKeyFileName)
+                        val privateKeyFile = File.createTempFile("rsa_key_", ".p8")
                         privateKeyFile.deleteOnExit()
                         privateKeyFile.writeText(
                             snowflakeConfiguration.authType.privateKey,
@@ -133,7 +129,7 @@ class SnowflakeBeanFactory {
                         )
                         addDataSourceProperty(
                             DATA_SOURCE_PROPERTY_PRIVATE_KEY_FILE,
-                            snowflakePrivateKeyFileName
+                            privateKeyFile.absolutePath
                         )
                         snowflakeConfiguration.authType.privateKeyPassword?.let { password ->
                             addDataSourceProperty(
@@ -190,10 +186,6 @@ class SnowflakeBeanFactory {
 
         return HikariDataSource(datasourceConfig)
     }
-
-    @Singleton
-    @Named("snowflakePrivateKeyFileName")
-    fun snowflakePrivateKeyFileName() = PRIVATE_KEY_FILE_NAME
 
     @Singleton
     fun snowflakeRecordFormatter(
