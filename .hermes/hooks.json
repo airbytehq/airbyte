@@ -1,0 +1,25 @@
+{
+  "afterFileEdit": {
+    "commands": [
+      {
+        "name": "format",
+        "command": "gradle spotlessApply",
+        "description": "Format code (Java, Python, etc)"
+      }
+    ]
+  },
+  "beforeCommit": {
+    "commands": [
+      {
+        "name": "lint",
+        "command": "gradle spotlessCheck",
+        "description": "Check code formatting and linting"
+      },
+      {
+        "name": "test",
+        "command": "gradle test",
+        "description": "Run tests"
+      }
+    ]
+  }
+}
