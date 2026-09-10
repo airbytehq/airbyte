@@ -569,4 +569,4 @@ def test_flat_file_all_orders_streams_have_no_primary_key(connector_config_witho
     """
     streams = get_source(connector_config_without_start_date).streams(connector_config_without_start_date)
     stream = next(stream for stream in streams if stream.name == stream_name)
-    assert not stream.primary_key
+    assert not stream.as_airbyte_stream().source_defined_primary_key
