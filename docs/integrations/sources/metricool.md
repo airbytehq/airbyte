@@ -1,6 +1,10 @@
 # Metricool
 
-The Metricool source connector pulls social media analytics from the [Metricool REST API](https://app.metricool.com/resources/apidocs/index.html). For each brand you configure, it reads post-level and story-level statistics and daily metric timelines for Facebook, Instagram, TikTok, LinkedIn, Twitter (X), and YouTube, plus competitor benchmarks for Facebook and Instagram.
+The Metricool source connector pulls social media analytics from the [Metricool REST API](https://app.metricool.com/resources/apidocs/index.html). For each brand you configure, it reads:
+
+- Facebook and Instagram: posts, stories, reels, daily metric timelines, and competitor benchmarks
+- TikTok: posts and daily video and account timelines
+- LinkedIn, Twitter (X), and YouTube: posts
 
 ## Prerequisites
 
@@ -11,7 +15,7 @@ The Metricool source connector pulls social media analytics from the [Metricool 
 
 ### Get your credentials
 
-The connector authenticates every request with your API token (sent in the `X-Mc-Auth` header) and scopes requests with your user ID and brand IDs (sent as the `userId` and `blogId` query parameters).
+The connector authenticates every request with your API token (sent in the `X-Mc-Auth` header). All streams except `brands` also send your user ID and one brand ID per request (as the `userId` and `blogId` query parameters).
 
 1. **API token** (`user_token`): In Metricool, go to **Account Settings** > **API** and copy the REST API access token. If you regenerate the token in Metricool, update it in Airbyte too, because the old token stops working.
 2. **User ID** (`user_id`): Open any brand in the Metricool web app and copy the number after `userId=` in the browser URL. For example, in `https://app.metricool.com/evolution/web?blogId=11111&userId=2222222`, the user ID is `2222222`.
@@ -28,12 +32,12 @@ You can also sync only the `brands` stream first: it lists every brand your user
 
 ### Date range behavior
 
-Every stream except `brands` requests data for a date range. The connector derives the range from **Start Date** and **End Date** as follows:
+Every stream except `brands` requests data for a date range. The API works in whole UTC days: in most streams the connector drops the time part of **Start Date** and **End Date** and sends calendar-day boundaries, so use midnight timestamps (`T00:00:00Z`) to get predictable results. It derives the range as follows:
 
-- If you set neither, the range is the 60 days before the current UTC time.
+- If you set neither, the range is the 60 days before the current UTC date.
 - If you set only **End Date**, the range is the single day before that end date.
-- If you set only **Start Date**, the range runs from that date to the current UTC time.
-- If you set both and **Start Date** is earlier than **End Date**, the connector uses them as given. If **Start Date** is the same as or later than **End Date**, the connector ignores it and uses the day before **End Date** instead.
+- If you set only **Start Date**, the range runs from that date to the current UTC date.
+- If you set both and **Start Date** is earlier than **End Date**, the connector uses those dates. If **Start Date** is the same as or later than **End Date**, the connector ignores it and uses the day before **End Date** instead.
 
 Incremental timeline streams use this range only for the first sync. Later syncs start from the saved cursor, and the connector caps the range at **End Date** if you set one, so a fixed **End Date** stops incremental streams from advancing past it.
 
@@ -44,8 +48,8 @@ Incremental timeline streams use this range only for the first sync. Later syncs
 | `user_token` | `string` | Metricool REST API access token from **Account Settings** > **API**. Requires an Advanced or Custom plan. |  |
 | `user_id` | `string` | Your Metricool user ID (the `userId` value in the app URL). |  |
 | `blog_ids` | `array` | Metricool brand IDs (the `blogId` value in the app URL). Each ID is synced as its own partition. |  |
-| `start_date` | `string` | Start of the date range, in `YYYY-MM-DDTHH:mm:ssZ` format. See [Date range behavior](#date-range-behavior). | 60 days before the current time |
-| `end_date` | `string` | End of the date range, in `YYYY-MM-DDTHH:mm:ssZ` format. | Current UTC time |
+| `start_date` | `string` | Start of the date range, in `YYYY-MM-DDTHH:mm:ssZ` format. See [Date range behavior](#date-range-behavior). | 60 days before the current UTC date |
+| `end_date` | `string` | End of the date range, in `YYYY-MM-DDTHH:mm:ssZ` format. | Current UTC date |
 
 ## Streams
 
@@ -81,11 +85,11 @@ The connector reads each stream once per brand in `blog_ids`, except `brands`, w
 
 ### Content streams
 
-The `*_posts`, `*_stories`, and `*_reels` streams return one record per piece of content published in the date range, with that content's engagement statistics. `facebook_competitors` and `instagram_competitors` return the competitor profiles you track in Metricool for each brand; the connector requests at most 100 competitors per brand and does not paginate beyond that.
+The `*_posts`, `*_stories`, and `*_reels` streams return one record per piece of content published in the date range. The fields are platform-specific: most include engagement statistics, but `facebook_stories` only carries story and media metadata (IDs, media type, URLs, and creation time). `facebook_competitors` and `instagram_competitors` return the competitor profiles you track in Metricool for each brand; the connector requests at most 100 competitors per brand and does not paginate beyond that.
 
 ### Timeline streams
 
-The `*_timelines` streams return daily values for a fixed list of metrics. Each record holds one metric for one brand on one day: the `datetime` field is the day (normalized to UTC), `metric` is the metric name, `blogId` is the brand, and `value` is the number. To build a wide table with one column per metric, pivot on `metric` downstream.
+The `*_timelines` streams return daily values for a fixed list of metrics. Each record holds one metric for one brand on one day: the `datetime` field is the day (normalized to UTC), `metric` is the metric name, `blogId` is the brand, and `value` is the metric value, which can be null. To build a wide table with one column per metric, pivot on `metric` downstream.
 
 The timeline streams are the only incremental streams. They use `datetime` as the cursor.
 
