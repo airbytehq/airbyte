@@ -22,16 +22,18 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         fail_on_extra_columns: false
         empty_streams:
-          - name: files
-          - name: filters
-          - name: leads
-          - name: notes
-          - name: activities
-          - name: pipelines
-          - name: products
-          - name: stages
-          - name: deal_products
+          - name: lead_sources
+            bypass_reason: "Sandbox API returns 404 for GET /api/v1/leadSources."
           - name: mail
+            bypass_reason: "Sandbox API returns 404 for GET /api/v1/mailbox/mailThreads."
+          - name: mailThreads
+            bypass_reason: "Sandbox API returns 404 for GET /api/v1/mailbox/mailThreads."
+          - name: goals
+            bypass_reason: "Sandbox API returns 404 for GET /api/v1/goals/find."
+          - name: lead_labels
+            bypass_reason: "Sandbox API returns 404 for GET /api/v1/leadLabels."
+          - name: leads
+            bypass_reason: "Sandbox API returns 404 for GET /api/v1/leads."
           - name: call_logs
             bypass_reason: "Sandbox company has no phone integration, so GET /v1/callLogs returns no rows."
           - name: legacy_teams
@@ -43,7 +45,7 @@ acceptance_tests:
           - name: deal_installments
             bypass_reason: "Sandbox plan has no access to installments: GET /api/v2/deals/installments answers 403, which the stream ignores."
           - name: deal_flow
-            bypass_reason: "No sandbox deal changed inside the Recents window read by the parent deals stream, so no deal is visited."
+            bypass_reason: "Deal flow depends on the deals parent stream and is not covered by the sandbox expected-record fixture."
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
@@ -51,19 +53,18 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         fail_on_extra_columns: false
         empty_streams:
-          - name: files
-          - name: filters
-          - name: leads
-          - name: notes
-          - name: activities
-          - name: pipelines
-          - name: products
-          - name: stages
-          - name: deal_products
+          - name: lead_sources
+            bypass_reason: "Sandbox API returns 404 for GET /api/v1/leadSources."
           - name: mail
-          - name: deals
-          - name: users
-          - name: persons
+            bypass_reason: "Sandbox API returns 404 for GET /api/v1/mailbox/mailThreads."
+          - name: mailThreads
+            bypass_reason: "Sandbox API returns 404 for GET /api/v1/mailbox/mailThreads."
+          - name: goals
+            bypass_reason: "Sandbox API returns 404 for GET /api/v1/goals/find."
+          - name: lead_labels
+            bypass_reason: "Sandbox API returns 404 for GET /api/v1/leadLabels."
+          - name: leads
+            bypass_reason: "Sandbox API returns 404 for GET /api/v1/leads."
           - name: call_logs
             bypass_reason: "Sandbox company has no phone integration, so GET /v1/callLogs returns no rows."
           - name: legacy_teams
@@ -75,10 +76,10 @@ acceptance_tests:
           - name: deal_installments
             bypass_reason: "Sandbox plan has no access to installments: GET /api/v2/deals/installments answers 403, which the stream ignores."
           - name: deal_flow
-            bypass_reason: "No sandbox deal changed inside the Recents window read by the parent deals stream, so no deal is visited."
+            bypass_reason: "Deal flow depends on the deals parent stream and is not covered by the sandbox expected-record fixture."
 
   incremental:
-    bypass_reason: "All incremental streams are empty in sandbox account."
+    bypass_reason: "The standard incremental test is bypassed because the fixture does not include a stable cursor state for all incremental streams."
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

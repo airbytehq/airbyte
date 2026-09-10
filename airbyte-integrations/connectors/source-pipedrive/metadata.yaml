@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8286229-c680-4063-8c59-23b9b391c700
-  dockerImageTag: 2.6.0
+  dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-pipedrive
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   githubIssueLabel: source-pipedrive
@@ -27,6 +27,38 @@ data:
   name: Pipedrive
   releases:
     breakingChanges:
+      "3.0.0":
+        upgradeDeadline: "2026-09-24"
+        message: >-
+          Pipedrive core streams now use API v2 and list endpoints, which changes record shapes,
+          primary keys, sync modes, and timestamp types. Refresh schemas, clear the affected streams,
+          and rerun your sync; see the migration guide for details.
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - deals
+              - persons
+              - organizations
+              - activities
+              - products
+              - pipelines
+              - stages
+              - notes
+              - files
+              - filters
+              - users
+              - deal_products
+              - deal_fields
+              - activity_fields
+              - organization_fields
+              - person_fields
+              - product_fields
+              - lead_labels
+              - leads
+              - activity_types
+              - currencies
+              - permission_sets
+              - roles
       2.0.0:
         upgradeDeadline: 2023-10-04
         message:

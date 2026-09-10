@@ -1,35 +1,26 @@
 {
   "deals": {
-    "update_time": "2017-06-01 10:10:10"
+    "update_time": "2017-06-01T10:10:10Z"
   },
   "files": {
-    "update_time": "2017-06-01 10:10:10"
-  },
-  "filters": {
-    "update_time": "2017-06-01 10:10:10"
+    "update_time": "2017-06-01T10:10:10Z"
   },
   "notes": {
-    "update_time": "2017-06-01 10:10:10"
-  },
-  "activites": {
-    "update_time": "2017-06-01 10:10:10"
-  },
-  "oragnizations": {
-    "update_time": "2017-06-01 10:10:10"
+    "update_time": "2017-06-01T10:10:10Z"
   },
   "persons": {
-    "update_time": "2017-06-01 10:10:10"
-  },
-  "pipelines": {
-    "update_time": "2017-06-01 10:10:10"
+    "update_time": "2017-06-01T10:10:10Z"
   },
   "products": {
-    "update_time": "2017-06-01 10:10:10"
+    "update_time": "2017-06-01T10:10:10Z"
   },
-  "stages": {
-    "update_time": "2017-06-01 10:10:10"
+  "activities": {
+    "update_time": "2017-06-01T10:10:10Z"
   },
-  "users": {
-    "update_time": "2017-06-01 10:10:10"
+  "organizations": {
+    "update_time": "2017-06-01T10:10:10Z"
+  },
+  "deal_flow": {
+    "log_time": "2017-06-01T10:10:10Z"
   }
 }

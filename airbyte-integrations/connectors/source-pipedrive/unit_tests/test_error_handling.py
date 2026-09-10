@@ -46,7 +46,7 @@ def test_401_fails_as_config_error_with_pipedrive_error_text() -> None:
 def test_check_with_invalid_token_returns_401_config_message() -> None:
     with HttpMocker() as http_mocker:
         # The check stream is `currencies` (#85764); `deals` is kept for manifests that still check on it.
-        http_mocker.get(request("v1/currencies"), pipedrive_error(401, "unauthorized access"))
+        http_mocker.get(request("v1/currencies", {"limit": "50"}), pipedrive_error(401, "unauthorized access"))
         http_mocker.get(deals_request(), pipedrive_error(401, "unauthorized access"))
 
         status = get_source().check(logging.getLogger("airbyte"), CONFIG)
@@ -148,7 +148,7 @@ def test_5xx_is_retried(status_code: int) -> None:
 
 
 def _deal_products_request(deal_id: int):
-    return request(f"v1/deals/{deal_id}/products")
+    return request(f"v2/deals/{deal_id}/products", {"limit": "500"})
 
 
 @pytest.mark.parametrize(
@@ -191,11 +191,11 @@ def test_deal_products_still_fails_on_401() -> None:
 
 
 def _mail_threads_request(folder: str):
-    return request("v1/mailbox/mailThreads", {"folder": folder})
+    return request("v1/mailbox/mailThreads", {"folder": folder, "limit": "50"})
 
 
 def _mail_messages_request(thread_id: int):
-    return request(f"v1/mailbox/mailThreads/{thread_id}/mailMessages")
+    return request(f"v1/mailbox/mailThreads/{thread_id}/mailMessages", {"limit": "50"})
 
 
 def test_mail_skips_missing_parent_thread() -> None:

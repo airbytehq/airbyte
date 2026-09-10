@@ -13,71 +13,66 @@ definitions:
       type: DeclarativeStream
       name: deals
       primary_key:
-        - id
+      - id
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
-          path: v1/recents
+          $ref: '#/definitions/base_requester'
+          path: v2/deals
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: deal
+            api_token: '{{ config[''api_token''] }}'
+            limit: '500'
+            sort_by: update_time
+            sort_direction: asc
+            status: open,won,lost,deleted
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
-              - data
-              - "*"
-            nullable_nested_field: data
+            - data
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+          $ref: '#/definitions/v2_cursor_paginator'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
         cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+        - '%Y-%m-%dT%H:%M:%SZ'
+        - '%Y-%m-%dT%H:%M:%S.%fZ'
+        - '%Y-%m-%d %H:%M:%S'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
+          datetime: '{{ format_datetime(config.get(''replication_start_date'') or ''2010-01-01T00:00:00Z'',
+            ''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
-          field_name: since_timestamp
+          field_name: updated_since
           inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/deals"
+          $ref: '#/schemas/deals'
     deal_fields:
       type: DeclarativeStream
       name: deal_fields
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: '#/definitions/base_requester'
           path: v1/dealFields
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
+            api_token: '{{ config[''api_token''] }}'
+            limit: '50'
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - data
+            - data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -86,11 +81,14 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+            cursor_value: '{{ ((response.get(''additional_data'') or {}).get(''pagination'')
+              or {}).get(''next_start'') }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/deal_fields"
+          $ref: '#/schemas/deal_fields'
+      primary_key:
+      - key
     goals:
       type: DeclarativeStream
       name: goals
@@ -120,26 +118,23 @@ definitions:
       type: DeclarativeStream
       name: files
       primary_key:
-        - id
+      - id
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
-          path: v1/recents
+          $ref: '#/definitions/base_requester'
+          path: v1/files
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: file
+            api_token: '{{ config[''api_token''] }}'
+            limit: '100'
+            sort: update_time ASC
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
-              - data
-              - "*"
-            nullable_nested_field: data
+            - data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -148,116 +143,88 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+            cursor_value: '{{ ((response.get(''additional_data'') or {}).get(''pagination'')
+              or {}).get(''next_start'') }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
         cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+        - '%Y-%m-%d %H:%M:%S'
+        datetime_format: '%Y-%m-%d %H:%M:%S'
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: since_timestamp
-          inject_into: request_parameter
+          datetime: '{{ format_datetime(config.get(''replication_start_date'') or now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ''), ''%Y-%m-%d %H:%M:%S'') }}'
+          datetime_format: '%Y-%m-%d %H:%M:%S'
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/files"
+          $ref: '#/schemas/files'
     filters:
       type: DeclarativeStream
       name: filters
       primary_key:
-        - id
+      - id
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
-          path: v1/recents
+          $ref: '#/definitions/base_requester'
+          path: v1/filters
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: filter
+            api_token: '{{ config[''api_token''] }}'
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
-              - data
-              - "*"
-            nullable_nested_field: data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: update_time
-        cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: since_timestamp
-          inject_into: request_parameter
+            - data
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/filters"
+          $ref: '#/schemas/filters'
     lead_labels:
       type: DeclarativeStream
       name: lead_labels
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: '#/definitions/base_requester'
           path: v1/leadLabels
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
+            api_token: '{{ config[''api_token''] }}'
+            limit: '50'
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - data
+            - data
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/lead_labels"
+          $ref: '#/schemas/lead_labels'
+      primary_key:
+      - id
     leads:
       type: DeclarativeStream
       name: leads
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: '#/definitions/base_requester'
           path: v1/leads
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
+            api_token: '{{ config[''api_token''] }}'
+            limit: '50'
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - data
+            - data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -266,35 +233,35 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+            cursor_value: '{{ ((response.get(''additional_data'') or {}).get(''pagination'')
+              or {}).get(''next_start'') }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/leads"
+          $ref: '#/schemas/leads'
+      primary_key:
+      - id
     notes:
       type: DeclarativeStream
       name: notes
       primary_key:
-        - id
+      - id
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
-          path: v1/recents
+          $ref: '#/definitions/base_requester'
+          path: v1/notes
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: note
+            api_token: '{{ config[''api_token''] }}'
+            limit: '500'
+            sort: update_time ASC
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
-              - data
-              - "*"
-            nullable_nested_field: data
+            - data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -303,116 +270,110 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+            cursor_value: '{{ ((response.get(''additional_data'') or {}).get(''pagination'')
+              or {}).get(''next_start'') }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
         cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+        - '%Y-%m-%d %H:%M:%S'
+        datetime_format: '%Y-%m-%d %H:%M:%S'
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: since_timestamp
-          inject_into: request_parameter
+          datetime: '{{ format_datetime(config.get(''replication_start_date'') or now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ''), ''%Y-%m-%d %H:%M:%S'') }}'
+          datetime_format: '%Y-%m-%d %H:%M:%S'
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/notes"
+          $ref: '#/schemas/notes'
     activities:
       type: DeclarativeStream
       name: activities
       primary_key:
-        - id
+      - id
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
-          path: v1/recents
+          $ref: '#/definitions/base_requester'
+          path: v2/activities
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: activity
+            api_token: '{{ config[''api_token''] }}'
+            limit: '500'
+            sort_by: update_time
+            sort_direction: asc
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
-              - data
-              - "*"
-            nullable_nested_field: data
+            - data
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+          $ref: '#/definitions/v2_cursor_paginator'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
         cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+        - '%Y-%m-%dT%H:%M:%SZ'
+        - '%Y-%m-%dT%H:%M:%S.%fZ'
+        - '%Y-%m-%d %H:%M:%S'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
+          datetime: '{{ format_datetime(config.get(''replication_start_date'') or ''2010-01-01T00:00:00Z'',
+            ''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
-          field_name: since_timestamp
+          field_name: updated_since
           inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/activities"
+          $ref: '#/schemas/activities'
     activity_types:
       type: DeclarativeStream
       name: activity_types
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: '#/definitions/base_requester'
           path: v1/activityTypes
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
+            api_token: '{{ config[''api_token''] }}'
+            limit: '50'
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - data
+            - data
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/activity_types"
+          $ref: '#/schemas/activity_types'
+      primary_key:
+      - id
     activity_fields:
       type: DeclarativeStream
       name: activity_fields
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: '#/definitions/base_requester'
           path: v1/activityFields
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
+            api_token: '{{ config[''api_token''] }}'
+            limit: '50'
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - data
+            - data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -421,33 +382,38 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+            cursor_value: '{{ ((response.get(''additional_data'') or {}).get(''pagination'')
+              or {}).get(''next_start'') }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/activity_fields"
+          $ref: '#/schemas/activity_fields'
+      primary_key:
+      - key
     currencies:
       type: DeclarativeStream
       name: currencies
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: '#/definitions/base_requester'
           path: v1/currencies
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
+            api_token: '{{ config[''api_token''] }}'
+            limit: '50'
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - data
+            - data
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/currencies"
+          $ref: '#/schemas/currencies'
+      primary_key:
+      - id
     mail:
       type: DeclarativeStream
       name: mail
@@ -498,54 +464,65 @@ definitions:
       type: DeclarativeStream
       name: organizations
       primary_key:
-        - id
+      - id
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
-          path: v1/organizations
+          $ref: '#/definitions/base_requester'
+          path: v2/organizations
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: organization
+            api_token: '{{ config[''api_token''] }}'
+            limit: '500'
+            sort_by: update_time
+            sort_direction: asc
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - data
+            - data
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+          $ref: '#/definitions/v2_cursor_paginator'
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/organizations"
+          $ref: '#/schemas/organizations'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%SZ'
+        - '%Y-%m-%dT%H:%M:%S.%fZ'
+        - '%Y-%m-%d %H:%M:%S'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ format_datetime(config.get(''replication_start_date'') or ''2010-01-01T00:00:00Z'',
+            ''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
     organization_fields:
       type: DeclarativeStream
       name: organization_fields
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: '#/definitions/base_requester'
           path: v1/organizationFields
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
+            api_token: '{{ config[''api_token''] }}'
+            limit: '50'
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - data
+            - data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -554,102 +531,101 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+            cursor_value: '{{ ((response.get(''additional_data'') or {}).get(''pagination'')
+              or {}).get(''next_start'') }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/organization_fields"
+          $ref: '#/schemas/organization_fields'
+      primary_key:
+      - key
     permission_sets:
       type: DeclarativeStream
       name: permission_sets
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: '#/definitions/base_requester'
           path: v1/permissionSets
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
+            api_token: '{{ config[''api_token''] }}'
+            limit: '50'
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - data
+            - data
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/permission_sets"
+          $ref: '#/schemas/permission_sets'
+      primary_key:
+      - id
     persons:
       type: DeclarativeStream
       name: persons
       primary_key:
-        - id
+      - id
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
-          path: v1/recents
+          $ref: '#/definitions/base_requester'
+          path: v2/persons
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: person
+            api_token: '{{ config[''api_token''] }}'
+            limit: '500'
+            sort_by: update_time
+            sort_direction: asc
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
-              - data
-              - "*"
-            nullable_nested_field: data
+            - data
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+          $ref: '#/definitions/v2_cursor_paginator'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
         cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+        - '%Y-%m-%dT%H:%M:%SZ'
+        - '%Y-%m-%dT%H:%M:%S.%fZ'
+        - '%Y-%m-%d %H:%M:%S'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
+          datetime: '{{ format_datetime(config.get(''replication_start_date'') or ''2010-01-01T00:00:00Z'',
+            ''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
-          field_name: since_timestamp
+          field_name: updated_since
           inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/persons"
+          $ref: '#/schemas/persons'
     person_fields:
       type: DeclarativeStream
       name: person_fields
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: '#/definitions/base_requester'
           path: v1/personFields
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
+            api_token: '{{ config[''api_token''] }}'
+            limit: '50'
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - data
+            - data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -658,131 +634,103 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+            cursor_value: '{{ ((response.get(''additional_data'') or {}).get(''pagination'')
+              or {}).get(''next_start'') }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/person_fields"
+          $ref: '#/schemas/person_fields'
+      primary_key:
+      - key
     pipelines:
       type: DeclarativeStream
       name: pipelines
       primary_key:
-        - id
+      - id
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
-          path: v1/recents
+          $ref: '#/definitions/base_requester'
+          path: v2/pipelines
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: pipeline
+            api_token: '{{ config[''api_token''] }}'
+            limit: '500'
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
-              - data
-              - "*"
-            nullable_nested_field: data
+            - data
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: update_time
-        cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: since_timestamp
-          inject_into: request_parameter
+          $ref: '#/definitions/v2_cursor_paginator'
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/pipelines"
+          $ref: '#/schemas/pipelines'
     products:
       type: DeclarativeStream
       name: products
       primary_key:
-        - id
+      - id
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
-          path: v1/recents
+          $ref: '#/definitions/base_requester'
+          path: v2/products
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: product
+            api_token: '{{ config[''api_token''] }}'
+            limit: '500'
+            sort_by: update_time
+            sort_direction: asc
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
-              - data
-              - "*"
-            nullable_nested_field: data
+            - data
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+          $ref: '#/definitions/v2_cursor_paginator'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
         cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+        - '%Y-%m-%dT%H:%M:%SZ'
+        - '%Y-%m-%dT%H:%M:%S.%fZ'
+        - '%Y-%m-%d %H:%M:%S'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
+          datetime: '{{ format_datetime(config.get(''replication_start_date'') or ''2010-01-01T00:00:00Z'',
+            ''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
-          field_name: since_timestamp
+          field_name: updated_since
           inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/products"
+          $ref: '#/schemas/products'
     product_fields:
       type: DeclarativeStream
       name: product_fields
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: '#/definitions/base_requester'
           path: v1/productFields
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
+            api_token: '{{ config[''api_token''] }}'
+            limit: '50'
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - data
+            - data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -791,29 +739,32 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+            cursor_value: '{{ ((response.get(''additional_data'') or {}).get(''pagination'')
+              or {}).get(''next_start'') }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/product_fields"
+          $ref: '#/schemas/product_fields'
+      primary_key:
+      - key
     roles:
       type: DeclarativeStream
       name: roles
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: '#/definitions/base_requester'
           path: v1/roles
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
+            api_token: '{{ config[''api_token''] }}'
+            limit: '50'
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - data
+            - data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -822,157 +773,102 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+            cursor_value: '{{ ((response.get(''additional_data'') or {}).get(''pagination'')
+              or {}).get(''next_start'') }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/roles"
+          $ref: '#/schemas/roles'
+      primary_key:
+      - id
     stages:
       type: DeclarativeStream
       name: stages
       primary_key:
-        - id
+      - id
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
-          path: v1/recents
+          $ref: '#/definitions/base_requester'
+          path: v2/stages
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: stage
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
-            field_path:
-              - data
-              - "*"
-            nullable_nested_field: data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: update_time
-        cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: since_timestamp
-          inject_into: request_parameter
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/stages"
-    users:
-      type: DeclarativeStream
-      name: users
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: v1/recents
-          http_method: GET
-          request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: user
+            api_token: '{{ config[''api_token''] }}'
+            limit: '500'
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - data
-              - "*"
-              - data
-              - "*"
+            - data
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: modified
-        cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: since_timestamp
-          inject_into: request_parameter
+          $ref: '#/definitions/v2_cursor_paginator'
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/users"
+          $ref: '#/schemas/stages'
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: v1/users
+          http_method: GET
+          request_parameters:
+            api_token: '{{ config[''api_token''] }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/users'
     deal_products:
       type: DeclarativeStream
       name: deal_products
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
-          path: v1/deals/{{ stream_slice.parent_id }}/products
+          $ref: '#/definitions/base_requester'
+          path: v2/deals/{{ stream_slice['parent_id'] }}/products
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
+            api_token: '{{ config[''api_token''] }}'
+            limit: '500'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
-              - $ref: "#/definitions/substream_missing_parent_error_handler"
-              - $ref: "#/definitions/base_error_handler"
+            - $ref: '#/definitions/substream_missing_parent_error_handler'
+            - $ref: '#/definitions/base_error_handler'
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - data
+            - data
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+          $ref: '#/definitions/v2_cursor_paginator'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: parent_id
-              stream:
-                $ref: "#/definitions/streams/deals"
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: parent_id
+            stream:
+              $ref: '#/definitions/streams/deals'
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/deal_products"
+          $ref: '#/schemas/deal_products'
+      primary_key:
+      - id
     mailThreads:
       type: DeclarativeStream
       name: mailThreads
@@ -1114,86 +1010,90 @@ definitions:
       type: DeclarativeStream
       name: projects
       primary_key:
-        - id
+      - id
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
-          path: api/v2/{{ stream_slice['path_segment'] }}
+          $ref: '#/definitions/base_requester'
+          path: v2/{{ stream_slice['path_segment'] }}
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "500"
+            api_token: '{{ config[''api_token''] }}'
+            limit: '500'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 402
-                      - 403
-                      - 404
-                    error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read projects ({{ response.get('error', 'not available') }}); skipping projects."
-              - $ref: "#/definitions/base_error_handler"
+            - type: DefaultErrorHandler
+              response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                - 402
+                - 403
+                - 404
+                error_message: The Projects add-on is not included in this Pipedrive plan
+                  or the token cannot read projects ({{ response.get('error', 'not available')
+                  }}); skipping projects.
+            - $ref: '#/definitions/base_error_handler'
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - data
+            - data
         paginator:
-          $ref: "#/definitions/v2_cursor_paginator"
+          $ref: '#/definitions/v2_cursor_paginator'
         partition_router:
           type: ListPartitionRouter
           cursor_field: path_segment
           values:
-            - projects
-            - projects/archived
+          - projects
+          - projects/archived
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/projects"
+          $ref: '#/schemas/projects'
     tasks:
       type: DeclarativeStream
       name: tasks
       primary_key:
-        - id
+      - id
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
-          path: api/v2/tasks
+          $ref: '#/definitions/base_requester'
+          path: v2/tasks
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "500"
+            api_token: '{{ config[''api_token''] }}'
+            limit: '500'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 402
-                      - 403
-                      - 404
-                    error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read tasks ({{ response.get('error', 'not available') }}); skipping tasks."
-              - $ref: "#/definitions/base_error_handler"
+            - type: DefaultErrorHandler
+              response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                - 402
+                - 403
+                - 404
+                error_message: The Projects add-on is not included in this Pipedrive plan
+                  or the token cannot read tasks ({{ response.get('error', 'not available')
+                  }}); skipping tasks.
+            - $ref: '#/definitions/base_error_handler'
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - data
+            - data
         paginator:
-          $ref: "#/definitions/v2_cursor_paginator"
+          $ref: '#/definitions/v2_cursor_paginator'
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/tasks"
+          $ref: '#/schemas/tasks'
     deal_installments:
       type: DeclarativeStream
       name: deal_installments
@@ -1203,7 +1103,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: api/v2/deals/installments
+          path: v2/deals/installments
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -1230,7 +1130,7 @@ definitions:
         paginator:
           $ref: "#/definitions/v2_cursor_paginator"
         partition_router:
-          # GET /api/v2/deals/installments accepts up to 100 deal ids per request.
+          # GET /v2/deals/installments accepts up to 100 deal ids per request.
           type: GroupingPartitionRouter
           group_size: 100
           deduplicate: true
@@ -1250,31 +1150,30 @@ definitions:
       type: DeclarativeStream
       name: deal_flow
       primary_key:
-        - id
+      - id
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: '#/definitions/base_requester'
           path: v1/deals/{{ stream_slice['parent_id'] }}/flow
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "500"
-            items: dealChange
-            all_changes: "1"
+            api_token: '{{ config[''api_token''] }}'
+            limit: '500'
+            all_changes: '1'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
-              - $ref: "#/definitions/substream_missing_parent_error_handler"
-              - $ref: "#/definitions/base_error_handler"
+            - $ref: '#/definitions/substream_missing_parent_error_handler'
+            - $ref: '#/definitions/base_error_handler'
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - data
-              - "*"
-              - data
+            - data
+            - '*'
+            - data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -1283,31 +1182,33 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+            cursor_value: '{{ ((response.get(''additional_data'') or {}).get(''pagination'')
+              or {}).get(''next_start'') }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: parent_id
-              incremental_dependency: true
-              stream:
-                $ref: "#/definitions/streams/deals"
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: parent_id
+            incremental_dependency: true
+            stream:
+              $ref: '#/definitions/streams/deals'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: log_time
         cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+        - '%Y-%m-%d %H:%M:%S'
+        datetime_format: '%Y-%m-%d %H:%M:%S'
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
+          datetime: '{{ format_datetime(config.get(''replication_start_date'') or ''2010-01-01T00:00:00Z'',
+            ''%Y-%m-%d %H:%M:%S'') }}'
+          datetime_format: '%Y-%m-%d %H:%M:%S'
         is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/deal_flow"
+          $ref: '#/schemas/deal_flow'
     permission_set_assignments:
       type: DeclarativeStream
       name: permission_set_assignments
@@ -1363,7 +1264,7 @@ definitions:
           $ref: "#/schemas/permission_set_assignments"
   base_requester:
     type: HttpRequester
-    url_base: https://api.pipedrive.com/
+    url_base: https://api.pipedrive.com/api/
     error_handler:
       $ref: "#/definitions/base_error_handler"
   base_error_handler:
@@ -1992,7 +1893,8 @@ schemas:
         type:
           - "null"
           - string
-        format: "%Y-%m-%d %H:%M:%S"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       add_visible_flag:
         type:
           - "null"
@@ -2111,7 +2013,8 @@ schemas:
         type:
           - "null"
           - string
-        format: "%Y-%m-%d %H:%M:%S"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       use_field:
         type:
           - "null"

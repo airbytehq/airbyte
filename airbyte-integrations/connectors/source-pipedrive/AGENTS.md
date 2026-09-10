@@ -1,22 +1,16 @@
 # source-pipedrive: Unique Connector Behaviors
 
-## 1. Incremental Streams Read From the Recents Endpoint, Not the Entity Endpoints
+## 1. Incremental Streams Use API v2 Entity Endpoints
 
-Ten of the eleven incremental streams (`activities`, `deals`, `files`, `filters`, `notes`, `persons`, `pipelines`, `products`, `stages`, `users`) do not call their entity endpoints (`/deals`, `/persons`, and so on). They all call [`GET /v1/recents`](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with an `items=<type>` parameter and a `since_timestamp` derived from the `DatetimeBasedCursor`. The start date is reformatted from the spec's `YYYY-MM-DDTHH:MM:SSZ` to the `YYYY-MM-DD HH:MM:SS` format that `/recents` requires. Every one of these streams uses `update_time` as the cursor except `users`, whose records expose `modified` instead, and `users` also unwraps one extra `data` level (`data.*.data.*`) because `/recents?items=user` nests an array under each item. The eleventh, `deal_flow`, reads [`GET /v1/deals/{id}/flow`](https://developers.pipedrive.com/docs/api/v1/Deals#getDealUpdates) for every deal returned by `deals` and filters the `dealChange` entries client-side on `log_time`, so it only covers deals that `/recents` returned for the current window. Its state is kept per parent deal (`incremental_dependency: true`); above `SWITCH_TO_GLOBAL_LIMIT` (10,000 deal partitions) the CDK falls back to one global cursor.
+The incremental core streams (`activities`, `deals`, `organizations`, `persons`, and `products`) call their API v2 entity endpoints with cursor pagination and an inclusive `updated_since` filter. `notes` and `files` use v1 list endpoints and filter records client-side by `update_time`. Pipelines, stages, filters, and users are full refresh. `deal_flow` remains a child stream of `deals`.
 
-**Why this matters:** `/recents` returns anything modified since the timestamp, so these streams see edits to old records but never see records that were created before the start date and not touched since. Switching a stream to its entity endpoint changes the record scope (and would need a different cursor and pagination), so that is a data-scope change, not a refactor. Since 2024-12-01 Pipedrive caps `since_timestamp` on `/recents` at one month of history, so these streams never backfill records last modified earlier than that; the API v2 migration ([airbyte-internal-issues#17204](https://github.com/airbytehq/airbyte-internal-issues/issues/17204)) removes the cap. The remaining sixteen streams are full refresh and ignore `replication_start_date` entirely, except `deal_products`, whose parent is the recents-fed `deals` stream.
+## 2. API v2 Records and Custom Fields
 
-## 2. Null-Payload Records From Recents Are Kept as Tombstones
+API v2 list responses contain records under `data` and the next cursor under `additional_data.next_cursor`. Core v2 records expose custom values under a nullable `custom_fields` object and may include `is_deleted`.
 
-`/recents` wraps each item as `{"item": "deal", "id": 123, "data": {...}}`, and `data` can be `null`. The custom `NullCheckedDpathExtractor` in `components.py` returns `record["data"]` when it is present and otherwise returns the wrapper object itself, so a `null` payload becomes a record containing only `item` and `id`. Airbyte added this in [#31147](https://github.com/airbytehq/airbyte/pull/31147) after syncs crashed on `null` payloads.
+## 3. Custom Fields Are Nested Under `custom_fields`
 
-**Why this matters:** Downstream tables for the incremental streams can contain sparse rows with just `id` and `item`. Do not add a `RecordFilter` to drop them without confirming users are not relying on them, and do not replace the extractor with a plain `DpathExtractor` on `data.*.data` (that would fail again on `null`). Issue [airbyte-internal-issues#17204](https://github.com/airbytehq/airbyte-internal-issues/issues/17204) owns moving these streams to API v2, which will remove the extractor; until then this behavior is intentional.
-
-## 3. Custom Fields Arrive as Hash Keys Outside the Declared Schema
-
-Pipedrive returns custom fields on deals, persons, organizations, products, and activities as 40-character hash keys (for example `dcf558aac1ae4e8c4f849ba5e668430d8df9be12`) alongside the built-in properties. The stream schemas set `additionalProperties: true` ([#31151](https://github.com/airbytehq/airbyte/pull/31151)) so those keys pass through, and the `*_fields` streams (`deal_fields`, `person_fields`, `organization_fields`, `product_fields`, `activity_fields`) expose the mapping from hash key to label and type.
-
-**Why this matters:** Turning on `autoImportSchema`, tightening `additionalProperties`, or adding schema normalization would silently drop every custom field. Because the keys differ per Pipedrive account, they can never be listed in the static schema.
+Pipedrive returns custom fields on deals, persons, organizations, products, and activities as account-specific hash keys. API v2 records place those values under the nullable `custom_fields` object, and the schemas preserve them with `additionalProperties: true`. The `*_fields` streams expose the mapping from each hash key to its label and type; join on the `key` column when a readable field name is needed.
 
 ## 4. Authentication Is a Query Parameter, Not an Authenticator
 
@@ -58,8 +52,8 @@ The manifest declares a top-level `api_budget` (`HTTPAPIBudget` with one `Moving
 
 **Why this matters:** Every stream shares the one budget, so more workers never exceed the burst limit and rarely make a sync faster. The daily token budget (30,000 tokens x plan multiplier x seats) is not modeled and remains the dominant limit for large accounts; see section 6 for how a 429 from an exhausted daily budget is reported. Do not add per-stream budgets or a second policy; tune the single `Rate` if the floor ever changes. Parent streams that the CDK caches (`deals`, `mailThreads`) share one HTTP session across partitions, so keep `max_concurrency` modest.
 
-## 8. Deletes Are Not Replicated
+## 8. Deletes
 
-No stream emits deletion markers or filters on a deleted flag. `/recents` reflects edits, not deletions, and the full refresh streams re-read the live collection. Issue [airbyte-internal-issues#17204](https://github.com/airbytehq/airbyte-internal-issues/issues/17204) owns the API v2 migration that may change how deleted records surface.
+The deals stream requests `status=open,won,lost,deleted`; deleted deals are emitted with `is_deleted: true` for up to 30 days after deletion. API v2 records include `is_deleted` where provided, and users may expose their deletion flag. Other streams do not replicate deletion markers.
 
-**Why this matters:** Destinations keep rows for records deleted in Pipedrive until the user clears the stream. Do not describe the tombstone rows from section 2 as deletions in user-facing docs; the relationship between `null` payloads and deletions has not been confirmed against the API.
+Child streams tolerate missing or deleted parent records through their stream-specific `CompositeErrorHandler`, which ignores documented parent-level 403/404/410 responses before falling through to the shared base handler.

@@ -16,7 +16,7 @@ from airbyte_cdk.models import Status
 
 
 _CONFIG = {"api_token": "test-token", "replication_start_date": "2017-01-25 00:00:00Z"}
-_BASE_URL = "https://api.pipedrive.com"
+_BASE_URL = "https://api.pipedrive.com/api"
 
 
 def _run_check():
@@ -33,7 +33,7 @@ def test_check_uses_currencies_stream():
         status = _run_check()
 
         assert status.status == Status.SUCCEEDED
-        assert [request.path for request in mocker.request_history] == ["/v1/currencies"]
+        assert [request.path for request in mocker.request_history] == ["/api/v1/currencies"]
         assert "api_token=test-token" in mocker.request_history[0].query
 
 
@@ -48,4 +48,4 @@ def test_check_fails_on_invalid_token():
         status = _run_check()
 
         assert status.status == Status.FAILED
-        assert [request.path for request in mocker.request_history] == ["/v1/currencies"]
+        assert [request.path for request in mocker.request_history] == ["/api/v1/currencies"]

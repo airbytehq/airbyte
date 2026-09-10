@@ -12,7 +12,7 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 
-BASE_URL = "https://api.pipedrive.com/"
+BASE_URL = "https://api.pipedrive.com/api/"
 CONFIG = {"api_token": "tok", "replication_start_date": "2017-01-25 00:00:00Z"}
 V1_PAGE_DONE = {"pagination": {"start": 0, "limit": 500, "more_items_in_collection": False}}
 
@@ -38,22 +38,24 @@ def _deals_response():
     return {
         "success": True,
         "data": [
-            {"item": "deal", "id": 1, "data": {"id": 1, "update_time": "2024-01-01 00:00:00"}},
-            {"item": "deal", "id": 2, "data": {"id": 2, "update_time": "2024-01-02 00:00:00"}},
+            {"id": 1, "update_time": "2024-01-01T00:00:00Z"},
+            {"id": 2, "update_time": "2024-01-02T00:00:00Z"},
         ],
-        "additional_data": {"pagination": {"more_items_in_collection": False}},
+        "additional_data": {"next_cursor": None},
     }
 
 
 def _mock_deals(http_mocker):
     http_mocker.get(
         _request(
-            "v1/recents",
+            "v2/deals",
             {
                 "api_token": "tok",
-                "limit": "50",
-                "items": "deal",
-                "since_timestamp": "2017-01-25 00:00:00",
+                "limit": "500",
+                "sort_by": "update_time",
+                "sort_direction": "asc",
+                "status": "open,won,lost,deleted",
+                "updated_since": "2017-01-25T00:00:00Z",
             },
         ),
         _response(_deals_response()),
@@ -138,15 +140,15 @@ def test_legacy_teams_ignores_unavailable_endpoint(status_code, body):
 def test_projects_paginates_active_and_archived_projects():
     with HttpMocker() as http_mocker:
         http_mocker.get(
-            _request("api/v2/projects", {"api_token": "tok", "limit": "500"}),
+            _request("v2/projects", {"api_token": "tok", "limit": "500"}),
             _response({"data": [{"id": 1}], "additional_data": {"next_cursor": "abc"}}),
         )
         http_mocker.get(
-            _request("api/v2/projects", {"api_token": "tok", "limit": "500", "cursor": "abc"}),
+            _request("v2/projects", {"api_token": "tok", "limit": "500", "cursor": "abc"}),
             _response({"data": [{"id": 2}], "additional_data": {"next_cursor": None}}),
         )
         http_mocker.get(
-            _request("api/v2/projects/archived", {"api_token": "tok", "limit": "500"}),
+            _request("v2/projects/archived", {"api_token": "tok", "limit": "500"}),
             _response({"data": [{"id": 3}], "additional_data": {"next_cursor": None}}),
         )
 
@@ -164,9 +166,9 @@ def test_projects_paginates_active_and_archived_projects():
 )
 def test_projects_ignores_unavailable_endpoints(status_code, body):
     with HttpMocker() as http_mocker:
-        http_mocker.get(_request("api/v2/projects", {"api_token": "tok", "limit": "500"}), _response(body, status_code=status_code))
+        http_mocker.get(_request("v2/projects", {"api_token": "tok", "limit": "500"}), _response(body, status_code=status_code))
         http_mocker.get(
-            _request("api/v2/projects/archived", {"api_token": "tok", "limit": "500"}), _response(body, status_code=status_code)
+            _request("v2/projects/archived", {"api_token": "tok", "limit": "500"}), _response(body, status_code=status_code)
         )
 
         output = _read_stream("projects")
@@ -178,11 +180,11 @@ def test_projects_ignores_unavailable_endpoints(status_code, body):
 def test_tasks_paginates():
     with HttpMocker() as http_mocker:
         http_mocker.get(
-            _request("api/v2/tasks", {"api_token": "tok", "limit": "500"}),
+            _request("v2/tasks", {"api_token": "tok", "limit": "500"}),
             _response({"data": [{"id": 1}], "additional_data": {"next_cursor": "abc"}}),
         )
         http_mocker.get(
-            _request("api/v2/tasks", {"api_token": "tok", "limit": "500", "cursor": "abc"}),
+            _request("v2/tasks", {"api_token": "tok", "limit": "500", "cursor": "abc"}),
             _response({"data": [{"id": 2}]}),
         )
 
@@ -195,7 +197,7 @@ def test_tasks_paginates():
 def test_tasks_ignores_missing_projects_suite():
     with HttpMocker() as http_mocker:
         http_mocker.get(
-            _request("api/v2/tasks", {"api_token": "tok", "limit": "500"}),
+            _request("v2/tasks", {"api_token": "tok", "limit": "500"}),
             _response({"success": False, "error": "Required suites missing", "errorCode": 402}, status_code=402),
         )
 
@@ -209,7 +211,7 @@ def test_deal_installments_batches_parent_deals_into_one_request():
     with HttpMocker() as http_mocker:
         _mock_deals(http_mocker)
         http_mocker.get(
-            _request("api/v2/deals/installments", {"api_token": "tok", "deal_ids": "1,2", "limit": "500"}),
+            _request("v2/deals/installments", {"api_token": "tok", "deal_ids": "1,2", "limit": "500"}),
             _response(
                 {
                     "data": [{"id": 11, "deal_id": 1}, {"id": 22, "deal_id": 2}],
@@ -227,7 +229,7 @@ def test_deal_installments_ignores_plan_without_installments():
     with HttpMocker() as http_mocker:
         _mock_deals(http_mocker)
         http_mocker.get(
-            _request("api/v2/deals/installments", {"api_token": "tok", "deal_ids": "1,2", "limit": "500"}),
+            _request("v2/deals/installments", {"api_token": "tok", "deal_ids": "1,2", "limit": "500"}),
             _response({"success": False, "error": "The company does not have access to this feature"}, status_code=403),
         )
 
@@ -238,7 +240,7 @@ def test_deal_installments_ignores_plan_without_installments():
 
 
 def _flow_request(deal_id, start=None):
-    params = {"api_token": "tok", "limit": "500", "items": "dealChange", "all_changes": "1"}
+    params = {"api_token": "tok", "limit": "500", "all_changes": "1"}
     if start is not None:
         params["start"] = str(start)
     return _request(f"v1/deals/{deal_id}/flow", params)
@@ -375,3 +377,113 @@ def test_discover_lists_new_streams():
     assert streams["deal_flow"].source_defined_primary_key == [["id"]]
     assert streams["deal_flow"].default_cursor_field == ["log_time"]
     assert streams["permission_set_assignments"].source_defined_primary_key == [["permission_set_id"], ["user_id"]]
+
+
+def test_deals_v2_cursor_pagination_and_deleted_records():
+    with HttpMocker() as http_mocker:
+        first = {
+            "data": [
+                {"id": 1, "update_time": "2024-01-01T00:00:00Z"},
+                {"id": 2, "update_time": "2024-01-02T00:00:00Z", "is_deleted": True, "status": "deleted"},
+            ],
+            "additional_data": {"next_cursor": "abc"},
+        }
+        http_mocker.get(
+            _request(
+                "v2/deals",
+                {
+                    "api_token": "tok",
+                    "limit": "500",
+                    "sort_by": "update_time",
+                    "sort_direction": "asc",
+                    "status": "open,won,lost,deleted",
+                    "updated_since": "2017-01-25T00:00:00Z",
+                },
+            ),
+            _response(first),
+        )
+        http_mocker.get(
+            _request(
+                "v2/deals",
+                {
+                    "api_token": "tok",
+                    "limit": "500",
+                    "sort_by": "update_time",
+                    "sort_direction": "asc",
+                    "status": "open,won,lost,deleted",
+                    "updated_since": "2017-01-25T00:00:00Z",
+                    "cursor": "abc",
+                },
+            ),
+            _response(
+                {
+                    "data": [{"id": 3, "update_time": "2024-01-03T00:00:00Z"}],
+                    "additional_data": {"next_cursor": None},
+                }
+            ),
+        )
+
+        output = _read_stream("deals", SyncMode.incremental)
+
+    assert _ids(output) == [1, 2, 3]
+    assert output.records[1].record.data["is_deleted"] is True
+
+
+@pytest.mark.parametrize(
+    "stream, path, query",
+    [
+        ("pipelines", "v2/pipelines", {"api_token": "tok", "limit": "500"}),
+        ("stages", "v2/stages", {"api_token": "tok", "limit": "500"}),
+        ("filters", "v1/filters", {"api_token": "tok"}),
+        ("users", "v1/users", {"api_token": "tok"}),
+    ],
+)
+def test_full_refresh_streams_use_list_endpoints(stream, path, query):
+    with HttpMocker() as http_mocker:
+        http_mocker.get(_request(path, query), _response({"data": [{"id": 1}]}))
+
+        output = _read_stream(stream)
+
+    assert _ids(output) == [1]
+
+
+@pytest.mark.parametrize(
+    "stream, expected",
+    [
+        ("deal_fields", [["key"]]),
+        ("activity_fields", [["key"]]),
+        ("organization_fields", [["key"]]),
+        ("person_fields", [["key"]]),
+        ("product_fields", [["key"]]),
+        ("lead_labels", [["id"]]),
+        ("leads", [["id"]]),
+        ("activity_types", [["id"]]),
+        ("currencies", [["id"]]),
+        ("permission_sets", [["id"]]),
+        ("roles", [["id"]]),
+        ("deal_products", [["id"]]),
+    ],
+)
+def test_migrated_primary_keys(stream, expected):
+    catalog = get_source(CONFIG).discover(logging.getLogger(__name__), CONFIG)
+    discovered = {item.name: item for item in catalog.streams}
+
+    assert discovered[stream].source_defined_primary_key == expected
+
+
+def test_deal_products_uses_v2_nested_endpoint():
+    with HttpMocker() as http_mocker:
+        _mock_deals(http_mocker)
+        http_mocker.get(
+            _request("v2/deals/1/products", {"api_token": "tok", "limit": "500"}),
+            _response({"data": [{"id": 10, "deal_id": 1}], "additional_data": {"next_cursor": None}}),
+        )
+        http_mocker.get(
+            _request("v2/deals/2/products", {"api_token": "tok", "limit": "500"}),
+            _response({"data": [], "additional_data": {"next_cursor": None}}),
+        )
+
+        output = _read_stream("deal_products")
+
+    assert _ids(output) == [10]
+    assert output.errors == []

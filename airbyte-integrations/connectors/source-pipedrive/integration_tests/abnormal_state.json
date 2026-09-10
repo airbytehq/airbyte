@@ -3,7 +3,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "update_time": "2217-06-26 21:20:07"
+        "update_time": "2217-06-26T21:20:07Z"
       },
       "stream_descriptor": {
         "name": "deals"
@@ -14,7 +14,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "update_time": "2217-06-26 21:20:07"
+        "update_time": "2217-06-26T21:20:07Z"
       },
       "stream_descriptor": {
         "name": "files"
@@ -36,7 +36,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "update_time": "2217-06-26 21:20:07"
+        "update_time": "2217-06-26T21:20:07Z"
       },
       "stream_descriptor": {
         "name": "notes"
@@ -47,7 +47,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "update_time": "2217-06-26 21:20:07"
+        "update_time": "2217-06-26T21:20:07Z"
       },
       "stream_descriptor": {
         "name": "activities"
@@ -69,7 +69,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "update_time": "2217-06-26 21:20:07"
+        "update_time": "2217-06-26T21:20:07Z"
       },
       "stream_descriptor": {
         "name": "persons"
@@ -91,7 +91,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "update_time": "2217-06-26 21:20:07"
+        "update_time": "2217-06-26T21:20:07Z"
       },
       "stream_descriptor": {
         "name": "products"
@@ -124,7 +124,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "update_time": "2217-06-26 21:20:07"
+        "update_time": "2217-06-26T21:20:07Z"
       },
       "stream_descriptor": {
         "name": "organizations"

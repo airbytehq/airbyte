@@ -11,7 +11,7 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 
 _CONFIG = {"api_token": "test_token", "replication_start_date": "2024-01-01 00:00:00"}
-_MAIL_THREADS_URL = "https://api.pipedrive.com/v1/mailbox/mailThreads"
+_MAIL_THREADS_URL = "https://api.pipedrive.com/api/v1/mailbox/mailThreads"
 _MAIL_MESSAGES_URL = f"{_MAIL_THREADS_URL}/1/mailMessages"
 
 
