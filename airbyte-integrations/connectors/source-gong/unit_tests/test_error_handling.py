@@ -2,13 +2,15 @@
 
 """Unit tests for the 1.4.0 error-handling semantics in `manifest.yaml`.
 
-Every stream composes the same three response filters:
+Every stream composes the same four response filters:
 
 1. IGNORE on the Gong "no results" message (previously any 404 was ignored;
    now the body must contain "found corresponding to the provided filters").
 2. `auth_error_filter`: 401/403 fail immediately with `config_error` so bad
    credentials surface to the user instead of being retried.
-3. `transient_error_filter`: 429 and 5xx are retried, honoring `Retry-After`.
+3. `rate_limit_filter`: 429 is retried honoring `Retry-After` and flagged as
+   RATE_LIMITED so the platform reports the stream as rate limited.
+4. `transient_error_filter`: 5xx are retried, honoring `Retry-After`.
 
 These tests mock the `calls` endpoint and assert each path at sync time.
 """

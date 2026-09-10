@@ -23,14 +23,15 @@ The Gong API exposes incremental filtering via `fromDateTime` on the calls and s
 
 ## Error handling
 
-All requesters share the same response mappings, defined in `manifest.yaml` (`definitions.auth_error_filter`, `definitions.transient_error_filter`) and appended to each stream's error handler:
+All requesters share the same response mappings, defined in `manifest.yaml` (`definitions.auth_error_filter`, `definitions.rate_limit_filter`, `definitions.transient_error_filter`) and appended to each stream's error handler:
 
 | Response | Action | Failure type | Rationale |
 |---|---|---|---|
 | 404 with "… found corresponding to the provided filters" | IGNORE (empty stream) | — | Gong signals an empty result set as a 404 with this message; only that 404 is treated as empty. Warning: a key whose user lacks call visibility gets a byte-identical 404, so a misconfigured key looks like an empty source; this is indistinguishable server-side. |
 | Any other 404 | FAIL (terminal) | `system_error` | CDK default mapping ("Not found. The requested resource was not found on the server."). Catches bad paths and removed resources instead of silently emptying the stream. |
 | 401, 403 | FAIL | `config_error` | Invalid, expired, or scope-limited credentials. Surfaced with an actionable message instead of a raw exception. |
-| 429, 500, 502, 503, 504 | RETRY | `transient_error` | Backoff honors the `Retry-After` header (`WaitTimeFromHeader`). Retry-After can reach hours when the 10,000 requests/day quota is exhausted, which is why `maxSecondsBetweenMessages` is 86400. |
+| 429 | RATE_LIMITED | `transient_error` | Retried with the same `Retry-After` backoff as 5xx, but the CDK also emits a `RUNNING` stream status with reason `RATE_LIMITED`, so the platform shows the sync as rate limited instead of stalled. Retry-After can reach hours when the 10,000 requests/day quota is exhausted, which is why `maxSecondsBetweenMessages` is 86400. |
+| 500, 502, 503, 504 | RETRY | `transient_error` | Backoff honors the `Retry-After` header (`WaitTimeFromHeader`) and otherwise falls back to the CDK exponential backoff. |
 | Any other error response | FAIL (terminal) | `system_error` | CDK `DefaultErrorHandler` fallback. An explicit catch-all FAIL filter is deliberately omitted: `HttpResponseFilter` predicates are evaluated against every response, including HTTP 200s, so a match-anything rule would fail successful requests. |
 
 ## Competitor parity (Fivetran Gong schema)

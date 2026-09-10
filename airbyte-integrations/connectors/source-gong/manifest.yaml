@@ -34,6 +34,7 @@ definitions:
                     action: IGNORE
                     error_message_contains: found corresponding to the provided filters
                   - $ref: "#/definitions/auth_error_filter"
+                  - $ref: "#/definitions/rate_limit_filter"
                   - $ref: "#/definitions/transient_error_filter"
         record_selector:
           type: RecordSelector
@@ -83,6 +84,7 @@ definitions:
                     action: IGNORE
                     error_message_contains: found corresponding to the provided filters
                   - $ref: "#/definitions/auth_error_filter"
+                  - $ref: "#/definitions/rate_limit_filter"
                   - $ref: "#/definitions/transient_error_filter"
         record_selector:
           type: RecordSelector
@@ -147,6 +149,7 @@ definitions:
                     action: IGNORE
                     error_message_contains: found corresponding to the provided filters
                   - $ref: "#/definitions/auth_error_filter"
+                  - $ref: "#/definitions/rate_limit_filter"
                   - $ref: "#/definitions/transient_error_filter"
           request_body_json:
             contentSelector:
@@ -265,6 +268,7 @@ definitions:
                     action: IGNORE
                     error_message_contains: found corresponding to the provided filters
                   - $ref: "#/definitions/auth_error_filter"
+                  - $ref: "#/definitions/rate_limit_filter"
                   - $ref: "#/definitions/transient_error_filter"
         record_selector:
           type: RecordSelector
@@ -314,6 +318,7 @@ definitions:
                     action: IGNORE
                     error_message_contains: found corresponding to the provided filters
                   - $ref: "#/definitions/auth_error_filter"
+                  - $ref: "#/definitions/rate_limit_filter"
                   - $ref: "#/definitions/transient_error_filter"
         record_selector:
           type: RecordSelector
@@ -383,6 +388,7 @@ definitions:
                     action: IGNORE
                     error_message_contains: found corresponding to the provided filters
                   - $ref: "#/definitions/auth_error_filter"
+                  - $ref: "#/definitions/rate_limit_filter"
                   - $ref: "#/definitions/transient_error_filter"
           request_body_json:
             filter:
@@ -465,12 +471,17 @@ definitions:
       Access Key Secret (or OAuth credentials) are valid and active, and that
       the Gong user who created them has API access and visibility into the
       requested data.
+  rate_limit_filter:
+    type: HttpResponseFilter
+    action: RATE_LIMITED
+    failure_type: transient_error
+    http_codes:
+      - 429
   transient_error_filter:
     type: HttpResponseFilter
     action: RETRY
     failure_type: transient_error
     http_codes:
-      - 429
       - 500
       - 502
       - 503
