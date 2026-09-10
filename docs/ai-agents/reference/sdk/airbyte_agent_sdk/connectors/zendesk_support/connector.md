@@ -1933,7 +1933,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            subdomain: Your Zendesk subdomain
     Examples:
         # Local mode (direct API calls)
-        connector = ZendeskSupportConnector(auth_config=ZendeskSupportAuthConfig(access_token="...", refresh_token="..."))
+        connector = ZendeskSupportConnector(auth_config=ZendeskSupportAuthConfig(access_token="...", refresh_token="..."), subdomain="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = ZendeskSupportConnector(
             auth_config=AirbyteAuthConfig(
