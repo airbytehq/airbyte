@@ -35,7 +35,7 @@ If the **API** tab isn't visible, your company admin hasn't enabled API access f
 
 <FieldAnchor field="replication_start_date">
 
-**Start Date** (optional): A UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2017-01-25T00:00:00Z`. Defaults to `2010-01-01T00:00:00Z` when left empty. Streams that support incremental sync only replicate records modified on or after this date. Streams that don't support incremental sync ignore it and always return all records, except `deal_products`, which only expands the deals returned by the `deals` stream. A space instead of `T`, as in the example shown in the UI, also works. See [Incremental sync and Start Date](#incremental-sync-and-start-date).
+**Start Date** (optional): A UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2017-01-25T00:00:00Z`. Defaults to `2010-01-01T00:00:00Z` when left empty. Streams that support incremental sync only replicate records modified on or after this date. Streams that don't support incremental sync ignore it and always return all records, except `deal_products` and `deal_installments`, which only expand the deals returned by the `deals` stream. A space instead of `T`, as in the example shown in the UI, also works. See [Incremental sync and Start Date](#incremental-sync-and-start-date).
 
 </FieldAnchor>
 
@@ -72,7 +72,7 @@ Most streams read the [Pipedrive API v1](https://developers.pipedrive.com/docs/a
 | `currencies`          | Full Refresh              | [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies)                                                                                                                                                          |
 | `deal_fields`         | Full Refresh              | [DealFields](https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields)                                                                                                                                                          |
 | `deal_flow`           | Full Refresh, Incremental | Field change history of each deal returned by the `deals` stream ([Deals getDealUpdates](https://developers.pipedrive.com/docs/api/v1/Deals#getDealUpdates)), one request per deal, so it is slow on large accounts. Cursor: `log_time`. Only deals that the `deals` stream returns (changed within Pipedrive's Recents window) are visited. |
-| `deal_installments`   | Full Refresh              | Payment installments of the deals returned by the `deals` stream ([DealInstallments](https://developers.pipedrive.com/docs/api/v1/DealInstallments#getInstallments)), 100 deals per request. Requires a Pipedrive plan with installments; the stream is empty otherwise. Only deals that the `deals` stream returns are visited. |
+| `deal_installments`   | Full Refresh              | Payment installments of the deals returned by the `deals` stream ([DealInstallments](https://developers.pipedrive.com/docs/api/v1/DealInstallments#getInstallments)), 100 deals per request. Installments are only available on Pipedrive's Growth plan and higher; the stream is empty on other plans. Only deals that the `deals` stream returns are visited. |
 | `deal_products`       | Full Refresh              | Products attached to each deal, fetched with one request per deal ([DealProducts](https://developers.pipedrive.com/docs/api/v1/DealProducts#getDealProducts)). The connector still calls the v1 path `GET /v1/deals/{id}/products`, which Pipedrive stopped supporting on 2026-08-01, and only expands deals returned by the `deals` stream. |
 | `deals`               | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=deal`. Cursor: `update_time`.                                                                                                                |
 | `files`               | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=file`. Cursor: `update_time`.                                                                                                                |
@@ -142,14 +142,14 @@ How the connector treats Pipedrive HTTP errors:
 
 | HTTP status | Behavior |
 |:------------|:---------|
-| 401, 402, 403 | The sync fails with a configuration error that includes Pipedrive's error text. For `deal_products`, `deal_flow` and `mail`, a 403 on a single parent record is skipped and the sync continues. If the token can't read any deal products, deal changes or mail messages at all, those three streams finish empty rather than failing. `legacy_teams`, `projects`, `tasks`, `deal_installments` and `permission_set_assignments` treat a 402 or 403 on the whole endpoint as a feature that isn't available on the account and return no records instead of failing. |
+| 401, 402, 403 | The sync fails with a configuration error that includes Pipedrive's error text. For `deal_products`, `deal_flow` and `mail`, a 403 on a single parent record is skipped and the sync continues. If the token can't read any deal products, deal changes or mail messages at all, those three streams finish empty rather than failing. `projects`, `tasks` and `deal_installments` treat a 402 or 403 on the whole endpoint, and `legacy_teams` and `permission_set_assignments` a 403, as a feature that isn't available on the account or to the token's user, and return no records instead of failing. |
 | 404, 410 | For `deal_products`, `deal_flow` and `mail`, a parent deal or mail thread deleted after the parent stream was read is skipped. `legacy_teams` returns no records on 404 or 410, and `projects` and `tasks` on 404. On other streams these fail the sync. |
 | 429 | Rate limited; retried as described under [Performance considerations](#performance-considerations). |
 | 500, 502, 503, 504 | Temporary Pipedrive errors; retried with backoff. |
 
 - The connector doesn't replicate deletes. A record deleted in Pipedrive stays in your destination until you clear and resync the stream.
 - Only the eleven streams marked Incremental above track state. The other twenty-three streams are re-read in full on every sync.
-- Full refresh streams ignore the Start Date, except `deal_products`, which only expands the deals returned by the `deals` stream.
+- Full refresh streams ignore the Start Date, except `deal_products` and `deal_installments`, which only expand the deals returned by the `deals` stream.
 - The incremental streams read Pipedrive's Recents endpoint, which returns at most one month of history. Records last modified more than a month before a sync are not backfilled, whatever the Start Date.
 - `organizations` and `deal_products` call v1 endpoints that Pipedrive stopped supporting on 2026-08-01. They may stop working until the connector moves to API v2.
 - The connector authenticates with a personal API token only. It doesn't support OAuth.
@@ -157,7 +157,7 @@ How the connector treats Pipedrive HTTP errors:
 
 ### Troubleshooting
 
-- **Missing streams or empty streams**: Records are limited to what the token's user can see in Pipedrive. Use a token from a user with broader visibility, or from an admin. `mail` and `mailThreads` are empty unless that user has a mailbox connected in Pipedrive.
+- **Missing streams or empty streams**: Records are limited to what the token's user can see in Pipedrive. Use a token from a user with broader visibility, or from an admin. `mail` and `mailThreads` are empty unless that user has a mailbox connected in Pipedrive. `projects`, `tasks`, `deal_installments`, `legacy_teams` and `permission_set_assignments` finish with no records, and an info-level log line naming the stream, when your plan or the token's user can't access that feature.
 - **Records missing from incremental streams**: The Recents endpoint only returns records modified within the last month, so older records are not backfilled even with an earlier Start Date. Records that haven't been modified since the Start Date are excluded as well.
 - **Custom fields appear as hash keys**: This is expected. See [Custom fields](#custom-fields).
 - **Syncs fail with HTTP 429**: The retries were exhausted, which usually means the daily token budget is spent. Reduce the number of enabled streams, increase the interval between syncs, or upgrade the plan.
