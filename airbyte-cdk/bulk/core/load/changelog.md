@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.0.26 — 2026-08-29
+
+[#85188](https://github.com/airbytehq/airbyte/pull/85188) — Nested `_airbyte_meta` fields are now written as optional rather than required, and existing tables migrate nested `_airbyte_meta` fields, including list-element members, to optional on the next sync.
+
 ### 1.0.25 — 2026-08-20
 
 Fix: truncate-refresh dedup syncs no longer replace an already-committed real table with an empty or partial result on a later job attempt.

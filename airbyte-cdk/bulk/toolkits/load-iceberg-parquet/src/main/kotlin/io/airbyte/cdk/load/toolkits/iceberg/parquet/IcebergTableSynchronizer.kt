@@ -166,7 +166,22 @@ class IcebergTableSynchronizer(
         }
 
         // 3) Mark columns newly optional
-        diff.newlyOptionalColumns.forEach { columnName -> update.makeColumnOptional(columnName) }
+        diff.newlyOptionalColumns.forEach { columnName ->
+            // A column name may itself contain the separator, in which case it is a literal
+            // top-level name rather than a nested path.
+            val isLiteralName = existingSchema.findField(columnName) != null
+            val rootColumnName =
+                if (isLiteralName) columnName
+                else columnName.substringBefore(PARENT_CHILD_SEPARATOR)
+            // A replaced column is dropped above (and re-added with the incoming optionality),
+            // so its nested paths no longer exist to be updated.
+            if (rootColumnName !in replacedColumns) {
+                update.makeColumnOptional(
+                    if (isLiteralName) columnName
+                    else columnName.replace(PARENT_CHILD_SEPARATOR, '.')
+                )
+            }
+        }
 
         // 4) Add new columns, sorted by nesting depth (so that parents are created before children)
         val sortedNewColumns =
