@@ -158,6 +158,7 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 - [Conversions](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversion-tracking?view=li-lms-2023-05&tabs=curl#find-conversions-by-ad-account)
 - [Lead forms](https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2024-06&tabs=http#lead-forms-1)
 - [Lead form responses](https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2024-06&tabs=http#get-lead-form-responses)
+- [Videos](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/videos-api#get-a-video)
 - [Ad Analytics by Campaign](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Creative](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Impression Device](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
@@ -218,6 +219,19 @@ The LinkedIn Ads API does not return records that have no values for any of the 
 
 The **Lead forms** and **Lead form responses** streams support Full Refresh sync mode only. Incremental sync is not available for these streams due to limitations in how the LinkedIn API handles time-range filtering for lead data.
 
+### Videos
+
+The **Videos** stream returns the videos referenced by each sponsored account's ad creatives, including the video `duration` (in milliseconds). For every creative, the connector resolves the sponsored-content post the creative references and then fetches the video that post embeds, so the stream covers the videos actually used in ads and can be joined with the **Creatives** stream through the creative's `content.reference`. It supports Full Refresh sync mode only, as the LinkedIn API does not expose a modification timestamp usable for filtering.
+
+Keep in mind the following limitations:
+
+- A video used by several creatives or posts is emitted once per reference; deduplicate on the primary key `id` if you need one row per video.
+- Legacy media assets uploaded through the deprecated Assets API (`urn:li:digitalmediaAsset:` URNs) cannot be retrieved through the Videos API and are skipped.
+- Posts or videos that were deleted, or that the authenticated user is not allowed to read, are skipped with a log message rather than failing the sync.
+- Resolving a creative's post requires the `r_organization_social` scope ([Posts API permissions](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/posts-api#permissions)). The connector's OAuth flow requests it; if you authenticate with a raw access token that lacks this scope, the stream completes with zero records because every post lookup is skipped.
+- Message Ads (Sponsored InMail) creatives reference InMail content rather than a post; they cannot carry videos retrievable through the Videos API and are skipped.
+- The stream intentionally does not use the Videos API `associatedAccount` finder (the account's whole media library): LinkedIn gates that finder at the application level, and applications holding only the `r_ads` scope receive `403 ACCESS_DENIED` from it. Fetching each video by URN works with the standard scopes this connector already requests.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -229,6 +243,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.0 | 2026-08-20 | [81509](https://github.com/airbytehq/airbyte/pull/81509) | Add `videos` stream |
 | 6.0.2 | 2026-07-31 | [83268](https://github.com/airbytehq/airbyte/pull/83268) | Fix `pivot` in custom analytics report streams to contain the configured pivot category. |
 | 6.0.1 | 2026-07-31 | [83269](https://github.com/airbytehq/airbyte/pull/83269) | Fix invalid `error_handlers` manifest key so the custom error handler and exponential backoff are actually applied |
 | 6.0.0 | 2026-07-30 | [74334](https://github.com/airbytehq/airbyte/pull/74334) | Batch analytics requests for `ad_campaign_analytics`, `ad_creative_analytics`, and `ad_impression_device_analytics` in groups of up to 50, reducing sync time by approximately 98% for large accounts. Breaking change for `ad_impression_device_analytics` only: its primary key now includes `sponsoredCampaign`, preventing records from different campaigns from being collapsed in deduplication mode. Refresh the source schema after upgrading; deduplication users should refresh this stream to rebuild destination data. |
