@@ -22,8 +22,12 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         fail_on_extra_columns: false
         empty_streams:
-          - name: leads
           - name: mail
+            bypass_reason: "Sandbox user has no Pipedrive mail connection: GET /v1/mailbox/mailThreads returns data: [] for every folder."
+          - name: mailThreads
+            bypass_reason: "Sandbox user has no Pipedrive mail connection, so there are no threads to list."
+          - name: deals_archived
+            bypass_reason: "Sandbox company has no archived deals: GET /api/v2/deals/archived returns no rows."
           - name: call_logs
             bypass_reason: "Sandbox company has no phone integration, so GET /v1/callLogs returns no rows."
           - name: legacy_teams
@@ -41,8 +45,12 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         fail_on_extra_columns: false
         empty_streams:
-          - name: leads
           - name: mail
+            bypass_reason: "Sandbox user has no Pipedrive mail connection: GET /v1/mailbox/mailThreads returns data: [] for every folder."
+          - name: mailThreads
+            bypass_reason: "Sandbox user has no Pipedrive mail connection, so there are no threads to list."
+          - name: deals_archived
+            bypass_reason: "Sandbox company has no archived deals: GET /api/v2/deals/archived returns no rows."
           - name: call_logs
             bypass_reason: "Sandbox company has no phone integration, so GET /v1/callLogs returns no rows."
           - name: legacy_teams
@@ -55,8 +63,8 @@ acceptance_tests:
             bypass_reason: "Sandbox plan has no access to installments: GET /api/v2/deals/installments answers 403, which the stream ignores."
 
   incremental:
-    bypass_reason: "All incremental streams are empty in sandbox account."
-  full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
