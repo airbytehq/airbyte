@@ -300,9 +300,12 @@ def test_streams_page_size(rate_limit_mock_response, requests_mock):
                 "access_token": "test_token",
                 "repository": "airbyte/test",
             },
-            30,
+            # `SourceGithub.streams()` returns the Python streams only; the manifest streams
+            # come from `super().streams()`. Dropped from 30 to 24 in Step 9, when all six
+            # GraphQL streams moved to the manifest.
+            24,
         ),
-        ({"access_token": "test_token", "repository": "airbyte/test"}, 30),
+        ({"access_token": "test_token", "repository": "airbyte/test"}, 24),
     ),
 )
 def test_streams_config_start_date(config, expected, rate_limit_mock_response, requests_mock):
