@@ -164,9 +164,7 @@ def test_projects_paginates_active_and_archived_projects():
 def test_projects_ignores_unavailable_endpoints(status_code, body):
     with HttpMocker() as http_mocker:
         http_mocker.get(_request("api/v2/projects", {"limit": "500"}), _response(body, status_code=status_code))
-        http_mocker.get(
-            _request("api/v2/projects/archived", {"limit": "500"}), _response(body, status_code=status_code)
-        )
+        http_mocker.get(_request("api/v2/projects/archived", {"limit": "500"}), _response(body, status_code=status_code))
 
         output = _read_stream("projects")
 
