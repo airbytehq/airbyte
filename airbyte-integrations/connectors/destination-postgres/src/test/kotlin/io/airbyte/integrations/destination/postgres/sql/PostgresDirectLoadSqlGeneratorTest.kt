@@ -793,6 +793,33 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     }
 
     @Test
+    fun testAddMetaColumns() {
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columns =
+            linkedMapOf(
+                "_airbyte_meta" to ColumnType("jsonb", false),
+                "_airbyte_generation_id" to ColumnType("bigint", false),
+            )
+
+        val sql = postgresDirectLoadSqlGenerator.addMetaColumns(tableName, columns)
+
+        assert(sql.contains("BEGIN TRANSACTION;"))
+        assert(sql.contains("COMMIT;"))
+        // Intentionally no NOT NULL: preexisting records have no value for these columns.
+        assert(
+            sql.contains(
+                """ALTER TABLE "test_schema"."test_table" ADD COLUMN IF NOT EXISTS "_airbyte_meta" jsonb;"""
+            )
+        )
+        assert(
+            sql.contains(
+                """ALTER TABLE "test_schema"."test_table" ADD COLUMN IF NOT EXISTS "_airbyte_generation_id" bigint;"""
+            )
+        )
+        assert(!sql.contains("NOT NULL"))
+    }
+
+    @Test
     fun testMatchSchemasAddColumns() {
         val tableName = TableName(namespace = "test_schema", name = "test_table")
         val columnsToAdd =
