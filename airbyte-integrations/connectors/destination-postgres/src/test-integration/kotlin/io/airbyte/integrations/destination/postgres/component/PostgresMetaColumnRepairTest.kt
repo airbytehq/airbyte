@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.Isolated
 
 /**
  * Tables created by pre-direct-load connector versions lack the `_airbyte_meta` and
@@ -25,7 +26,13 @@ import org.junit.jupiter.api.Test
  * tables during `ensureSchemaMatches` when the repair feature flag (off by default) is enabled,
  * tolerates the missing generation id column before the repair has run, and reads the generation id
  * correctly afterwards (legacy rows keep a NULL generation id, which reads as 0).
+ *
+ * The class is [Isolated] because Micronaut iterates the `System.getenv()` map while starting the
+ * test context, and that map is mocked by system-stubs in the CDK's `IntegrationTest`, whose
+ * subclasses mutate it in their `@BeforeAll`. Running concurrently with them races into a
+ * `ConcurrentModificationException` at context startup.
  */
+@Isolated
 @MicronautTest(environments = ["component"], resolveParameters = false)
 @Property(name = "airbyte.destination.postgres.meta-column-repair", value = "true")
 class PostgresMetaColumnRepairTest(
