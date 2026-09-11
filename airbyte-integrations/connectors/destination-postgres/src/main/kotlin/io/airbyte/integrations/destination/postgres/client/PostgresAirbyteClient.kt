@@ -75,25 +75,11 @@ class PostgresAirbyteClient(
 
     /**
      * Answers the emptiness question with an existence check instead of `COUNT(*)`, which scales
-     * with table size. A missing table is reported as empty.
+     * with table size.
      */
     override suspend fun tableIsEmpty(tableName: TableName): Boolean =
-        try {
-            executeQuery(sqlGenerator.tableIsEmpty(tableName)) { resultSet ->
-                !resultSet.next() || resultSet.getBoolean(TABLE_IS_EMPTY_ALIAS)
-            }
-        } catch (e: Exception) {
-            if (isMissingRelation(e)) {
-                log.debug(e) {
-                    "Table ${tableName.namespace}.${tableName.name} does not exist. Reporting it as empty."
-                }
-                true
-            } else {
-                log.error(e) {
-                    "Failed to check whether table ${tableName.namespace}.${tableName.name} is empty."
-                }
-                throw e
-            }
+        executeQuery(sqlGenerator.tableIsEmpty(tableName)) { resultSet ->
+            !resultSet.next() || resultSet.getBoolean(TABLE_IS_EMPTY_ALIAS)
         }
 
     override suspend fun namespaceExists(namespace: String): Boolean {

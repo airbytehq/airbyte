@@ -238,28 +238,6 @@ internal class PostgresAirbyteClientTest {
     }
 
     @Test
-    fun testTableIsEmptyMissingTable() {
-        val tableName = TableName(namespace = "namespace", name = "name")
-        val statement =
-            mockk<Statement> {
-                every { executeQuery(any()) } throws SQLException("table does not exist", "42P01")
-            }
-        val mockConnection =
-            mockk<Connection> {
-                every { close() } just Runs
-                every { createStatement() } returns statement
-            }
-
-        every { dataSource.connection } returns mockConnection
-        every { sqlGenerator.tableIsEmpty(tableName) } returns MOCK_SQL_QUERY
-
-        runBlocking {
-            assertTrue(client.tableIsEmpty(tableName))
-            verify(exactly = 1) { mockConnection.close() }
-        }
-    }
-
-    @Test
     fun testTableIsEmptyConnectionError() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val exception = SQLException("connection failure", "08006")
