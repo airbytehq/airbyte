@@ -13,8 +13,14 @@ To set up the source, you need:
 
 The consent flow requests these scopes; approve all of them:
 
+- `harvest:application_stages:list`
 - `harvest:applications:list`
+- `harvest:applied_candidate_tags:list`
 - `harvest:approval_flows:list`
+- `harvest:attachments:list`
+- `harvest:candidate_attribute_types:list`
+- `harvest:candidate_educations:list`
+- `harvest:candidate_employments:list`
 - `harvest:candidate_tags:list`
 - `harvest:candidates:list`
 - `harvest:close_reasons:list`
@@ -35,7 +41,10 @@ The consent flow requests these scopes; approve all of them:
 - `harvest:offers:list`
 - `harvest:offices:list`
 - `harvest:openings:list`
+- `harvest:prospect_details:list`
 - `harvest:prospect_pools:list`
+- `harvest:referrers:list`
+- `harvest:rejection_details:list`
 - `harvest:rejection_reasons:list`
 - `harvest:scorecards:list`
 - `harvest:sources:list`
@@ -43,7 +52,7 @@ The consent flow requests these scopes; approve all of them:
 - `harvest:user_roles:list`
 - `harvest:users:list`
 
-Harvest v3 rejects requests to its list endpoints from any user who isn't a Site Admin, and the connector fails the sync with a configuration error. A missing scope produces the same failure for the streams that depend on it, so grant every scope in the list unless you plan to leave the corresponding streams disabled. Grant `harvest:users:list` in every case: the connection check reads the `users` stream, so the source fails to set up without it even if you never sync that stream.
+Harvest v3 rejects requests to its list endpoints from any user who isn't a Site Admin, and the connector fails the sync with a configuration error. A missing scope produces the same failure for the streams that depend on it, so grant every scope in the list unless you plan to leave the corresponding streams disabled. Version 1.1.0 added nine scopes for the new candidate and application detail streams; sources authorized on an earlier version need to re-run the consent flow before enabling those streams. Grant `harvest:users:list` in every case: the connection check reads the `users` stream, so the source fails to set up without it even if you never sync that stream.
 
 ## Set up the Greenhouse connector in Airbyte
 
@@ -76,8 +85,14 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | Stream | Sync mode | Notes |
 | :--- | :--- | :--- |
 | [`activity_feed`](https://harvestdocs.greenhouse.io/reference/get_v3-notes) | Full refresh | Notes for each candidate in `candidates` |
+| [`application_stages`](https://harvestdocs.greenhouse.io/reference/get_v3-application-stages) | Incremental (`updated_at`) | One record for each stage an application has occupied; usually the highest-volume stream |
 | [`applications`](https://harvestdocs.greenhouse.io/reference/get_v3-applications) | Incremental (`updated_at`) | |
+| [`applied_candidate_tags`](https://harvestdocs.greenhouse.io/reference/get_v3-applied-candidate-tags) | Incremental (`updated_at`) | Which `tags` are applied to each candidate |
 | [`approvals`](https://harvestdocs.greenhouse.io/reference/get_v3-approval-flows) | Full refresh | |
+| [`attachments`](https://harvestdocs.greenhouse.io/reference/get_v3-attachments) | Incremental (`updated_at`) | Resumes, cover letters, and other files; `url` expires 7 days after the sync |
+| [`candidate_attribute_types`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-attribute-types) | Incremental (`updated_at`) | Scorecard attribute types configured per job |
+| [`candidate_educations`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-educations) | Incremental (`updated_at`) | |
+| [`candidate_employments`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-employments) | Incremental (`updated_at`) | |
 | [`candidates`](https://harvestdocs.greenhouse.io/reference/get_v3-candidates) | Incremental (`updated_at`) | |
 | [`close_reasons`](https://harvestdocs.greenhouse.io/reference/get_v3-close-reasons) | Full refresh | |
 | [`custom_field_options`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Full refresh | Every custom field option in the account |
@@ -100,7 +115,10 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | [`jobs_openings`](https://harvestdocs.greenhouse.io/reference/get_v3-openings) | Full refresh | Openings for each job in `jobs` |
 | [`offers`](https://harvestdocs.greenhouse.io/reference/get_v3-offers) | Incremental (`updated_at`) | |
 | [`offices`](https://harvestdocs.greenhouse.io/reference/get_v3-offices) | Full refresh | |
+| [`prospect_details`](https://harvestdocs.greenhouse.io/reference/get_v3-prospect-details) | Incremental (`updated_at`) | Pool, stage, and owner for each prospect application |
 | [`prospect_pools`](https://harvestdocs.greenhouse.io/reference/get_v3-prospect-pools) | Full refresh | |
+| [`referrers`](https://harvestdocs.greenhouse.io/reference/get_v3-referrers) | Incremental (`updated_at`) | |
+| [`rejection_details`](https://harvestdocs.greenhouse.io/reference/get_v3-rejection-details) | Incremental (`updated_at`) | Reason, note, and rejecting user for each rejected application |
 | [`rejection_reasons`](https://harvestdocs.greenhouse.io/reference/get_v3-rejection-reasons) | Full refresh | Includes the reasons Greenhouse ships with |
 | [`schools`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Full refresh | Custom field options for the `school_name` field |
 | [`scorecards`](https://harvestdocs.greenhouse.io/reference/get_v3-scorecards) | Incremental (`updated_at`) | |
@@ -123,6 +141,8 @@ The connector requests 500 records per page, the Harvest v3 maximum, and then fo
 - **`custom_field_options`** reads every custom field option in your account, which makes it a superset of `degrees`, `disciplines`, and `schools`. Those three streams read the same Greenhouse endpoint filtered to one field key and share the same primary keys, so enabling all four writes the same option rows to four destination tables. Enable only the ones you need.
 - **`users`** includes integration service users, which Greenhouse hides by default. Service accounts have no email address, so `primary_email` is empty for those records.
 - **`rejection_reasons`** includes the default reasons Greenhouse ships with, not only the ones your organization added.
+- **`attachments`** returns a time-limited download link in `url` that Greenhouse expires 7 days after it was generated. Download the file within that window or re-sync the record to get a fresh link; the connector doesn't store file contents.
+- **`application_stages`** writes one record for each stage every application has passed through, so it is usually the largest stream in the account. Set a **Start date** if you only need recent stage history.
 
 ## Troubleshooting
 
@@ -152,6 +172,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.0 | 2026-09-11 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add the `attachments`, `candidate_educations`, `candidate_employments`, `applied_candidate_tags`, `candidate_attribute_types`, `referrers`, `application_stages`, `rejection_details`, and `prospect_details` streams |
 | 1.0.2 | 2026-09-02 | [85306](https://github.com/airbytehq/airbyte/pull/85306) | Clarify in the spec that OAuth credentials come from Airbyte's Greenhouse partner application and must not be requested from Greenhouse |
 | 1.0.1 | 2026-09-02 | [85300](https://github.com/airbytehq/airbyte/pull/85300) | Surface expired or rotated refresh tokens (`invalid_grant`) as a re-authenticate config error instead of a system error |
 | 1.0.0 | 2026-08-28 | [84846](https://github.com/airbytehq/airbyte/pull/84846) | Breaking migration from Harvest v1 to Harvest v3 with OAuth. See the [migration guide](https://docs.airbyte.com/integrations/sources/greenhouse-migrations). |

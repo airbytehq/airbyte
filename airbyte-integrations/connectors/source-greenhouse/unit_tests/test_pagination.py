@@ -751,6 +751,73 @@ def test_email_templates_incremental_stateful_cursor_pagination(requests_mock, g
     assert vars(output.most_recent_state.stream_state) == {"updated_at": "2026-08-24T13:00:00.000Z"}
 
 
+CANDIDATE_AND_APPLICATION_DETAIL_STREAMS = [
+    "attachments",
+    "candidate_educations",
+    "candidate_employments",
+    "applied_candidate_tags",
+    "candidate_attribute_types",
+    "referrers",
+    "application_stages",
+    "rejection_details",
+    "prospect_details",
+]
+
+
+@pytest.mark.parametrize("stream_name", CANDIDATE_AND_APPLICATION_DETAIL_STREAMS)
+def test_candidate_and_application_detail_streams_paginate_with_cursor_only_follow_up(requests_mock, get_source, stream_name):
+    token_requests = _register_token(requests_mock)
+    stream_requests = []
+    url = f"https://harvest.greenhouse.io/v3/{stream_name}"
+
+    def stream_callback(request, context):
+        stream_requests.append(request)
+        context.status_code = 200
+        if len(stream_requests) == 1:
+            context.headers["Link"] = f'<{url}?cursor=cursor-2>; rel="next"'
+            return [{"id": 2, "created_at": "2024-01-02T00:00:00.000Z", "updated_at": "2024-01-02T00:00:00.000Z"}]
+        return [{"id": 1, "created_at": "2024-01-01T00:00:00.000Z", "updated_at": "2024-01-01T00:00:00.000Z"}]
+
+    requests_mock.get(url, json=stream_callback)
+
+    source = get_source(CONFIG_WITH_EPOCH_START_DATE)
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
+
+    assert not output.errors
+    assert stream_requests[0].qs == {
+        "per_page": ["500"],
+        "updated_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"],
+    }
+    assert parse_qs(stream_requests[1].query) == {"cursor": ["cursor-2"]}
+    assert [record.record.data["id"] for record in output.records] == [2, 1]
+    assert vars(output.most_recent_state.stream_state) == {"updated_at": "2024-01-02T00:00:00.000Z"}
+    assert len(stream_requests) == 2
+    assert len(token_requests) == 1
+
+
+def test_candidate_and_application_detail_streams_are_declared_incremental_with_scopes(connector_path):
+    manifest = yaml.safe_load((connector_path / "manifest.yaml").read_text())
+    scopes = manifest["spec"]["advanced_auth"]["oauth_config_specification"]["oauth_connector_input_specification"]["scope"].split()
+    top_level_refs = {stream["$ref"] for stream in manifest["streams"]}
+
+    for stream_name in CANDIDATE_AND_APPLICATION_DETAIL_STREAMS:
+        assert f"#/definitions/streams/{stream_name}" in top_level_refs
+        stream = manifest["definitions"]["streams"][stream_name]
+        assert stream["primary_key"] == ["id"]
+        assert stream["incremental_sync"]["cursor_field"] == "updated_at"
+        assert stream["retriever"]["requester"]["url"] == f"https://harvest.greenhouse.io/v3/{stream_name}"
+        assert f"harvest:{stream_name}:list" in scopes
+        schema = manifest["schemas"][stream_name]
+        assert schema["additionalProperties"] is True
+        for field_name, field in schema["properties"].items():
+            if field_name.endswith("_at"):
+                assert field["format"] == "date-time", (stream_name, field_name)
+            if field_name in ("start_date", "end_date"):
+                assert field["format"] == "date", (stream_name, field_name)
+
+
 def test_lookback_window_widens_resume_bound(requests_mock, get_source):
     _register_token(requests_mock)
     candidate_requests = []
