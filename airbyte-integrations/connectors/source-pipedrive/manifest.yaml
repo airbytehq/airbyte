@@ -1028,6 +1028,7 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
+                  - $ref: "#/definitions/scope_mismatch_filter"
                   - type: HttpResponseFilter
                     action: IGNORE
                     http_codes:
@@ -1064,6 +1065,7 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
+                  - $ref: "#/definitions/scope_mismatch_filter"
                   - type: HttpResponseFilter
                     action: IGNORE
                     http_codes:
@@ -1108,6 +1110,7 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
+                  - $ref: "#/definitions/scope_mismatch_filter"
                   - type: HttpResponseFilter
                     action: IGNORE
                     http_codes:
@@ -1147,6 +1150,7 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
+                  - $ref: "#/definitions/scope_mismatch_filter"
                   - type: HttpResponseFilter
                     action: IGNORE
                     http_codes:
@@ -1270,6 +1274,7 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
+                  - $ref: "#/definitions/scope_mismatch_filter"
                   - type: HttpResponseFilter
                     action: IGNORE
                     http_codes:
@@ -1392,6 +1397,8 @@ definitions:
           or Pipedrive's Cloudflare protection blocked the token after repeated rate-limit violations. Use an
           API token from a user with access to this data, upgrade the plan, or reduce the sync frequency and
           retry later.
+          With OAuth, "Scope and URL mismatch" means the Airbyte Pipedrive app has not been granted the scope
+          this endpoint needs; API-token users are unaffected.
       - type: HttpResponseFilter
         http_codes: [410]
         action: FAIL
@@ -1411,10 +1418,24 @@ definitions:
         http_codes: [500, 502, 503, 504]
         action: RETRY
         error_message: Pipedrive returned a temporary server error; retrying.
+  # Pipedrive answers 403 "Scope and URL mismatch" when the OAuth app was not granted the scope an
+  # endpoint needs. That is a setup problem, not a per-record permission, so it must fail loudly
+  # even on streams that otherwise ignore 403; list this filter first wherever 403 is ignored.
+  scope_mismatch_filter:
+    type: HttpResponseFilter
+    # no http_codes here: the CDK ORs the criteria, so a code list would also catch ordinary 403s
+    error_message_contains: "Scope and URL mismatch"
+    action: FAIL
+    failure_type: config_error
+    error_message: >-
+      The OAuth app used by this connection lacks the Pipedrive scope this endpoint requires
+      (403: Scope and URL mismatch). Grant the scope to the app in the Pipedrive Developer Hub and
+      re-authenticate, or disable this stream.
   substream_missing_parent_error_handler:
     type: DefaultErrorHandler
     max_retries: 10
     response_filters:
+      - $ref: "#/definitions/scope_mismatch_filter"
       - type: HttpResponseFilter
         http_codes: [404, 410]
         action: IGNORE
