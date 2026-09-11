@@ -405,6 +405,32 @@ public class MongoUtil {
   }
 
   /**
+   * Checks if the given exception is caused by a ChangeStreamFatalError (MongoDB error code 280).
+   * This error occurs when the resume token references an oplog entry that has been rotated out,
+   * making it impossible to resume the change stream.
+   *
+   * @param exception The exception to check.
+   * @return true if the exception is caused by a ChangeStreamFatalError, false otherwise.
+   */
+  public static boolean isChangeStreamFatalException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException) {
+        if (mongoException.getErrorCode() == MongoConstants.CHANGE_STREAM_FATAL_ERROR_CODE) {
+          return true;
+        }
+      }
+      if (current.getMessage() != null &&
+          (current.getMessage().contains("ChangeStreamFatalError") ||
+              current.getMessage().contains("resume token was not found"))) {
+        return true;
+      }
+      current = current.getCause();
+    }
+    return false;
+  }
+
+  /**
    * Checks if the given exception is caused by a BSONObjectTooLarge error (MongoDB error code 10334).
    * This error occurs when a BSON document exceeds the 16MB size limit, which can happen during CDC
    * (Change Data Capture) operations when change stream events become too large.
