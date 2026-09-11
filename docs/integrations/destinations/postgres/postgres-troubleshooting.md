@@ -17,9 +17,9 @@ Postgres, while an excellent relational database, is not a data warehouse. Pleas
    destination to 'lock up', and incur high usage costs with large sync volumes.
 2. When attempting to scale a postgres database to handle larger data volumes, scaling IOPS (disk throughput) is as important as increasing memory and compute capacity.
 3. Postgres limits identifiers to 63 bytes, so highly nested and flattened sources produce table and
-   column names that the connector has to shorten. It appends a hash of the original name when it
-   shortens one, so two long names that share a prefix don't collide, but the names in your
-   destination won't match the ones in your source. See
+   column names that the connector has to shorten. It appends a hash of the shortened name, which
+   makes collisions between long names unlikely but isn't a uniqueness guarantee, and the names in
+   your destination won't match the ones in your source. See
    [Naming limitations](/integrations/destinations/postgres#naming-limitations) for the exact rules.
 
 ### Vendor-Specific Connector Limitations
