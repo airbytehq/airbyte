@@ -85,9 +85,9 @@ class Config(AbstractFileBasedSpec, BaseModel):
     sanitize_signed_urls: Optional[bool] = Field(
         title="Sanitize File URLs",
         description=(
-            "Deprecated — this option has no effect as of 0.10.29. "
+            "Deprecated - this option has no effect. "
             "The connector no longer generates signed URLs for Service Account authentication; "
-            "_ab_source_file_url now always contains the clean canonical HTTPS path."
+            "_ab_source_file_url always contains the clean canonical HTTPS path."
         ),
         default=False,
         order=4,

@@ -37,7 +37,7 @@ def test_transform_record(zip_file, mocked_reader, logger):
 def test_transform_record_service_account_uses_canonical_https_url():
     """Service Account auth sets _ab_source_file_url to the canonical HTTPS path.
 
-    As of 0.10.29, the stream reader sets displayed_uri to the clean HTTPS URL
+    The stream reader sets displayed_uri to the clean HTTPS URL
     (no credentials, no query string) for Service Account auth. transform_record
     prefers displayed_uri over uri, so _ab_source_file_url is always credential-free.
     """
