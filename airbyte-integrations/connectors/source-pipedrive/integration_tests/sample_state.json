@@ -1,32 +1,112 @@
-{
-  "deals": {
-    "update_time": "2017-06-01T10:10:10Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "deals"
+      },
+      "stream_state": {
+        "update_time": "2017-06-01T10:10:10Z"
+      }
+    }
   },
-  "files": {
-    "update_time": "2017-06-01 10:10:10"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "files"
+      },
+      "stream_state": {
+        "update_time": "2017-06-01 10:10:10"
+      }
+    }
   },
-  "notes": {
-    "update_time": "2017-06-01T10:10:10Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "notes"
+      },
+      "stream_state": {
+        "update_time": "2017-06-01T10:10:10Z"
+      }
+    }
   },
-  "persons": {
-    "update_time": "2017-06-01T10:10:10Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "persons"
+      },
+      "stream_state": {
+        "update_time": "2017-06-01T10:10:10Z"
+      }
+    }
   },
-  "products": {
-    "update_time": "2017-06-01T10:10:10Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "products"
+      },
+      "stream_state": {
+        "update_time": "2017-06-01T10:10:10Z"
+      }
+    }
   },
-  "activities": {
-    "update_time": "2017-06-01T10:10:10Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "activities"
+      },
+      "stream_state": {
+        "update_time": "2017-06-01T10:10:10Z"
+      }
+    }
   },
-  "organizations": {
-    "update_time": "2017-06-01T10:10:10Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "organizations"
+      },
+      "stream_state": {
+        "update_time": "2017-06-01T10:10:10Z"
+      }
+    }
   },
-  "deal_flow": {
-    "log_time": "2017-06-01 10:10:10"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "deal_flow"
+      },
+      "stream_state": {
+        "log_time": "2017-06-01 10:10:10"
+      }
+    }
   },
-  "deals_archived": {
-    "update_time": "2017-06-01T10:10:10Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "deals_archived"
+      },
+      "stream_state": {
+        "update_time": "2017-06-01T10:10:10Z"
+      }
+    }
   },
-  "leads": {
-    "update_time": "2017-06-01T10:10:10Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "leads"
+      },
+      "stream_state": {
+        "update_time": "2017-06-01T10:10:10Z"
+      }
+    }
   }
-}
+]
