@@ -86,6 +86,7 @@ Classes
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[UsersSearchData]
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[ViewerRepositoriesSearchData]
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[ViewerSearchData]
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -3475,6 +3476,9 @@ Classes
 
     ### Class variables
 
+    `body: str | None`
+    :   Markdown body (description) of the issue
+
     `closed_at: str | None`
     :   ISO 8601 timestamp when the issue was closed, if applicable
 
@@ -4362,6 +4366,9 @@ Classes
     * pydantic.main.BaseModel
 
     ### Class variables
+
+    `body: str | None`
+    :   Markdown body (description) of the pull request
 
     `closed_at: str | None`
     :   ISO 8601 timestamp when the pull request was closed, if applicable

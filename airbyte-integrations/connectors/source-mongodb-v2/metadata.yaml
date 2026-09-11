@@ -88,6 +88,13 @@ data:
 
           "
         upgradeDeadline: "2023-12-01"
+    rolloutConfiguration:
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: slow
   supportLevel: certified
   tags:
     - language:java
@@ -101,4 +108,7 @@ data:
     - title: MongoDB authentication
       url: https://www.mongodb.com/docs/manual/core/authentication/
       type: authentication_guide
+    - title: MongoDB server source code
+      url: https://github.com/mongodb/mongo
+      type: code_repository
 metadataSpecVersion: "1.0"

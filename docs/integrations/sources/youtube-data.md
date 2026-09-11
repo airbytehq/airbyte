@@ -91,12 +91,12 @@ The YouTube Data API source connector supports the following sync modes:
 ## Supported streams
 
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
+| --- | --- | --- | --- | --- |
 | video | videoId | DefaultPaginator | Yes | No |
-| videos | | DefaultPaginator | Yes | No |
+| videos | videoId | DefaultPaginator | Yes | No |
 | channels | id | DefaultPaginator | Yes | No |
-| comments | | DefaultPaginator | Yes | No |
-| channel_comments | | DefaultPaginator | Yes | No |
+| comments | videoId, id | DefaultPaginator | Yes | No |
+| channel_comments | channelId, id | DefaultPaginator | Yes | No |
 
 ### Stream descriptions
 
@@ -130,8 +130,15 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request | Subject                                                                                                                                                                |
-|---------|------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| --- | --- | --- | --- |
+| 1.0.0 | 2026-08-31 | [85214](https://github.com/airbytehq/airbyte/pull/85214) | Breaking: promote connector to certified — declare primary keys and timestamp formats and restrict `videos` to video results (see the [migration guide](/integrations/sources/youtube-data-migrations)) |
+| 0.0.66 | 2026-09-08 | [85721](https://github.com/airbytehq/airbyte/pull/85721) | Update dependencies |
+| 0.0.65 | 2026-08-18 | [84813](https://github.com/airbytehq/airbyte/pull/84813) | Update dependencies |
+| 0.0.64 | 2026-08-11 | [84181](https://github.com/airbytehq/airbyte/pull/84181) | Update dependencies |
+| 0.0.63 | 2026-08-04 | [83693](https://github.com/airbytehq/airbyte/pull/83693) | Update dependencies |
+| 0.0.62 | 2026-07-28 | [83186](https://github.com/airbytehq/airbyte/pull/83186) | Update dependencies |
+| 0.0.61 | 2026-07-21 | [82663](https://github.com/airbytehq/airbyte/pull/82663) | Update dependencies |
 | 0.0.60 | 2026-07-14 | [82070](https://github.com/airbytehq/airbyte/pull/82070) | Update dependencies |
 | 0.0.59 | 2026-06-30 | [81317](https://github.com/airbytehq/airbyte/pull/81317) | Update dependencies |
 | 0.0.58 | 2026-06-23 | [80730](https://github.com/airbytehq/airbyte/pull/80730) | Update dependencies |

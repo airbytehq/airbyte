@@ -26,6 +26,9 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -71,6 +74,9 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -129,6 +135,9 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -242,6 +251,9 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -287,6 +299,9 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -351,6 +366,9 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -358,8 +376,10 @@ definitions:
                       - 404
           request_body_json:
             filter:
-              callIds:
-                - "{{ stream_partition.call_id }}"
+              # stream_partition.call_id is a list of up to `group_size` call
+              # ids supplied by the GroupingPartitionRouter below, so a single
+              # request fetches transcripts for many calls at once.
+              callIds: "{{ stream_partition.call_id }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -377,16 +397,23 @@ definitions:
             cursor_value: "{{ response.records.cursor }}"
             stop_condition: "{{ 'records' not in response }}"
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: call_id
-              stream:
-                $ref: "#/definitions/streams/calls"
-              incremental_dependency: true
-              extra_fields:
-                - - started
+          # Batch call ids so one POST /calls/transcript request covers up to
+          # `group_size` calls instead of one request per call. This avoids
+          # exhausting Gong's rate limit and daily quota on large backfills.
+          type: GroupingPartitionRouter
+          group_size: 100
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: call_id
+                stream:
+                  $ref: "#/definitions/streams/calls"
+                incremental_dependency: true
+                extra_fields:
+                  - - started
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: started
@@ -406,7 +433,11 @@ definitions:
           fields:
             - path:
                 - started
-              value: "{{ stream_slice.extra_fields['started'] }}"
+              # After grouping, partition.call_id and extra_fields['started'] are
+              # index-aligned lists (one entry per batched call). Look up each
+              # record's own call by its callId so every transcript keeps its
+              # real call start time instead of a single batch-wide value.
+              value: "{{ stream_slice.extra_fields['started'][stream_slice.partition['call_id'].index(record['callId'])] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -458,6 +489,19 @@ concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 4) }}"
   max_concurrency: 10
+
+# Gong documents 3 requests/second and 10,000 requests/day.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 3
+          interval: PT1S
+      matchers: []
+  ratelimit_reset_header: Retry-After
+  status_codes_for_ratelimit_hit:
+    - 429
 
 spec:
   type: Spec

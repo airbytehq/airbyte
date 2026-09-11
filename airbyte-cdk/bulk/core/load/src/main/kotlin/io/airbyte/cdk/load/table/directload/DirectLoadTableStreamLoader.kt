@@ -44,7 +44,8 @@ class DirectLoadTableAppendStreamLoader(
 ) : StreamLoader {
     override suspend fun start() {
         logger.info {
-            "AppendStreamLoader starting for stream ${stream.mappedDescriptor.toPrettyString()}"
+            "AppendStreamLoader starting for stream ${stream.mappedDescriptor.toPrettyString()} " +
+                "(generationId=${stream.generationId}, minimumGenerationId=${stream.minimumGenerationId})"
         }
         if (initialStatus.realTable == null) {
             tableOperationsClient.createTable(
@@ -96,7 +97,10 @@ class DirectLoadTableDedupStreamLoader(
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : StreamLoader {
     override suspend fun start() {
-        logger.info { "DedupStreamLoader starting for stream: ${stream.mappedDescriptor}" }
+        logger.info {
+            "DedupStreamLoader starting for stream: ${stream.mappedDescriptor} " +
+                "(generationId=${stream.generationId}, minimumGenerationId=${stream.minimumGenerationId})"
+        }
 
         if (initialStatus.tempTable != null) {
             schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
@@ -171,12 +175,15 @@ class DirectLoadTableAppendTruncateStreamLoader(
             "AppendTruncateStreamLoader starting for stream ${stream.mappedDescriptor.toPrettyString()}"
         }
 
+        var tempTableGenerationId: Long? = null
+        var realTableGenerationId: Long? = null
+
         if (initialStatus.tempTable != null) {
             if (initialStatus.tempTable.isEmpty) {
                 schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
             } else {
-                val generationId = tableOperationsClient.getGenerationId(tempTableName)
-                if (generationId >= stream.minimumGenerationId) {
+                tempTableGenerationId = tableOperationsClient.getGenerationId(tempTableName)
+                if (tempTableGenerationId == stream.minimumGenerationId) {
                     schemaEvolutionClient.ensureSchemaMatches(
                         stream,
                         tempTableName,
@@ -184,7 +191,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                     )
                 } else {
                     logger.info {
-                        "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $generationId) for stream ${stream.mappedDescriptor.toPrettyString()}"
+                        "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $tempTableGenerationId) for stream ${stream.mappedDescriptor.toPrettyString()}"
                     }
                     tableOperationsClient.createTempTable(
                         stream,
@@ -211,30 +218,41 @@ class DirectLoadTableAppendTruncateStreamLoader(
                     replace = true,
                 )
                 isWritingToTemporaryTable = false
-            } else if (
-                initialStatus.realTable.isEmpty ||
-                    tableOperationsClient.getGenerationId(realTableName) >=
-                        stream.minimumGenerationId
-            ) {
-                schemaEvolutionClient.ensureSchemaMatches(stream, realTableName, columnNameMapping)
-                isWritingToTemporaryTable = false
             } else {
-                logger.info {
-                    "Creating temp table ${tempTableName.toPrettyString()} (real table has old generation ID) for stream ${stream.mappedDescriptor.toPrettyString()}"
+                if (!initialStatus.realTable.isEmpty) {
+                    realTableGenerationId = tableOperationsClient.getGenerationId(realTableName)
                 }
-                tableOperationsClient.createTempTable(
-                    stream,
-                    tempTableName,
-                    columnNameMapping,
-                    replace = true,
-                )
-                isWritingToTemporaryTable = true
+                if (
+                    initialStatus.realTable.isEmpty ||
+                        realTableGenerationId == stream.minimumGenerationId
+                ) {
+                    schemaEvolutionClient.ensureSchemaMatches(
+                        stream,
+                        realTableName,
+                        columnNameMapping,
+                    )
+                    isWritingToTemporaryTable = false
+                } else {
+                    logger.info {
+                        "Creating temp table ${tempTableName.toPrettyString()} (real table has old generation ID) for stream ${stream.mappedDescriptor.toPrettyString()}"
+                    }
+                    tableOperationsClient.createTempTable(
+                        stream,
+                        tempTableName,
+                        columnNameMapping,
+                        replace = true,
+                    )
+                    isWritingToTemporaryTable = true
+                }
             }
         }
 
         val targetTableName = if (isWritingToTemporaryTable) tempTableName else realTableName
         logger.info {
-            "Target table: ${targetTableName.toPrettyString()} for stream ${stream.mappedDescriptor.toPrettyString()}"
+            "AppendTruncateStreamLoader for stream ${stream.mappedDescriptor.toPrettyString()}: " +
+                "targetTable=${targetTableName.toPrettyString()} " +
+                "(generationId=${stream.generationId}, minimumGenerationId=${stream.minimumGenerationId}, " +
+                "realTableGenerationId=$realTableGenerationId, tempTableGenerationId=$tempTableGenerationId)"
         }
         streamStateStore.put(
             stream.mappedDescriptor,
@@ -283,28 +301,18 @@ class DirectLoadTableDedupTruncateStreamLoader(
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val tempTableNameGenerator: TempTableNameGenerator,
 ) : StreamLoader {
-    // can't use lateinit because of weird kotlin reasons.
-    /**
-     * Indicates whether the real table potentially has the correct generation ID. This is
-     * determined during start() based on whether we had a temp table initially.
-     * - true: Real table may have correct generation, will check in close() before deciding final
-     * approach
-     * - false: Real table definitely has incorrect generation, will use temp-temp approach in
-     * close()
-     */
-    private var shouldCheckRealTableGeneration: Boolean = false
-
     override suspend fun start() {
         logger.info {
             "DedupTruncateStreamLoader starting for stream ${stream.mappedDescriptor.toPrettyString()}"
         }
+        var tempTableGenerationId: Long? = null
 
         if (initialStatus.tempTable != null) {
             if (initialStatus.tempTable.isEmpty) {
                 schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
             } else {
-                val generationId = tableOperationsClient.getGenerationId(tempTableName)
-                if (generationId >= stream.minimumGenerationId) {
+                tempTableGenerationId = tableOperationsClient.getGenerationId(tempTableName)
+                if (tempTableGenerationId == stream.minimumGenerationId) {
                     schemaEvolutionClient.ensureSchemaMatches(
                         stream,
                         tempTableName,
@@ -312,7 +320,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
                     )
                 } else {
                     logger.info {
-                        "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $generationId) for stream ${stream.mappedDescriptor.toPrettyString()}"
+                        "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $tempTableGenerationId) for stream ${stream.mappedDescriptor.toPrettyString()}"
                     }
                     tableOperationsClient.createTempTable(
                         stream,
@@ -322,7 +330,6 @@ class DirectLoadTableDedupTruncateStreamLoader(
                     )
                 }
             }
-            shouldCheckRealTableGeneration = false
         } else {
             logger.info {
                 "Creating new temp table: ${tempTableName.toPrettyString()} for stream ${stream.mappedDescriptor.toPrettyString()}"
@@ -333,15 +340,19 @@ class DirectLoadTableDedupTruncateStreamLoader(
                 columnNameMapping,
                 replace = true,
             )
-            shouldCheckRealTableGeneration = true
         }
 
+        logger.info {
+            "DedupTruncateStreamLoader for stream ${stream.mappedDescriptor.toPrettyString()} " +
+                "(generationId=${stream.generationId}, minimumGenerationId=${stream.minimumGenerationId}, " +
+                "tempTableGenerationId=$tempTableGenerationId)"
+        }
         streamStateStore.put(stream.mappedDescriptor, DirectLoadTableExecutionConfig(tempTableName))
     }
 
     override suspend fun teardown(completedSuccessfully: Boolean) {
         if (completedSuccessfully) {
-            if (shouldCheckRealTableGeneration && shouldUpsertDirectly()) {
+            if (shouldUpsertDirectly()) {
                 // Direct upsert path for simpler cases
                 logger.info {
                     "Upserting directly to real table for stream ${stream.mappedDescriptor.toPrettyString()}"
@@ -365,7 +376,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
 
             // Case 2: Real table exists but is empty or has correct generation ID
             initialStatus.realTable.isEmpty ||
-                tableOperationsClient.getGenerationId(realTableName) >=
+                tableOperationsClient.getGenerationId(realTableName) ==
                     stream.minimumGenerationId -> true
 
             // Case 3: Real table exists with data - needs more stringent approach

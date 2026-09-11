@@ -9,9 +9,9 @@ Executor implementations for connector operations.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.executor.hosted_executor
-* airbyte_agent_sdk.executor.local_executor
-* airbyte_agent_sdk.executor.models
+* [airbyte_agent_sdk.executor.hosted_executor](/ai-agents/reference/sdk/airbyte_agent_sdk/executor/airbyte_agent_sdk-executor-hosted_executor)
+* [airbyte_agent_sdk.executor.local_executor](/ai-agents/reference/sdk/airbyte_agent_sdk/executor/airbyte_agent_sdk-executor-local_executor)
+* [airbyte_agent_sdk.executor.models](/ai-agents/reference/sdk/airbyte_agent_sdk/executor/airbyte_agent_sdk-executor-models)
 
 Classes
 -------
