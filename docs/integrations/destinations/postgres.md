@@ -68,16 +68,18 @@ CREATE USER airbyte_user WITH PASSWORD '<password>';
 GRANT CREATE ON DATABASE <database> TO airbyte_user;
 ```
 
-If you want the connector to write into a schema that already exists, grant it access to that schema
-instead of relying on database-level `CREATE`:
+`CREATE` on the database only allows the user to create new schemas. If you keep the connector's
+default schema, `public`, or point it at any other schema that already exists, grant access to that
+schema too. Postgres 15 and later don't give ordinary users `CREATE` on `public`.
 
 ```sql
-GRANT USAGE, CREATE ON SCHEMA <schema> TO airbyte_user;
+GRANT USAGE, CREATE ON SCHEMA public TO airbyte_user;
 ```
 
-In that case, don't point the connector at tables another role owns. It can insert into them, but it
-can't alter or replace them, so the sync fails the first time the stream's schema changes or the
-connection runs in overwrite mode.
+Don't point the connector at tables another role owns. These grants don't include table-level
+privileges, and even with them the connector can't alter, rename, or drop a table it doesn't own, so
+the sync fails the first time the stream's schema changes or the connection runs in overwrite mode.
+Let the connector create its own tables.
 
 You can also use a pre-existing user, but we highly recommend creating a dedicated user for Airbyte.
 
@@ -201,7 +203,7 @@ These settings are optional. Unless you have a specific reason to change them, t
 | :------ | :------ | :----------- |
 | **CDC deletion mode** | Hard delete | Controls what happens when a CDC source reports a deleted record. **Hard delete** removes the row from the destination table. **Soft delete** keeps the row and populates its `_ab_cdc_deleted_at` column, so you can filter deleted records downstream yourself. Only affects streams that are deduplicated and carry CDC metadata. |
 | **Airbyte Internal Schema Name** | `airbyte_internal` | The schema Airbyte uses for internal tables. In legacy raw tables mode, raw tables are written here. |
-| **Disable Final Tables** | Off | Turns on legacy "raw tables only" mode. Airbyte writes a single `_airbyte_data` JSONB column per stream instead of typed columns, and syncs run in append mode even when the connection uses a deduplicating sync mode. Only use this if you depend on the pre-3.0.0 raw table format. |
+| **Disable Final Tables** | Off | Turns on legacy "raw tables only" mode. Airbyte writes each record's source data into a single `_airbyte_data` JSONB column alongside the Airbyte metadata columns, instead of a typed column per field, and syncs run in append mode even when the connection uses a deduplicating sync mode. Only use this if you depend on the pre-3.0.0 raw table format. |
 | **Drop tables with CASCADE** | Off | Adds `CASCADE` to the `DROP TABLE` statements the connector runs. See [Creating dependent objects](#creating-dependent-objects) before you enable it. |
 | **Unconstrained numeric columns** | Off | Has no effect in version 3.0.0 and later. Number columns are always created as unconstrained `DECIMAL`. |
 
@@ -243,6 +245,9 @@ tables fail with a missing-column error. Starting with version 3.0.19, the conne
 columns before it writes, as nullable columns with no values for existing rows. This repair is off by
 default. It's enabled by setting the `AIRBYTE_DESTINATION_POSTGRES_META_COLUMN_REPAIR` environment
 variable to `true` on the connector.
+Only enable it if the tables in the target schema were created by an earlier version of this
+connector. The repair adds the columns to any existing table the connector writes into, including a
+table you created yourself that happens to have the same name.
 
 The connector also creates indexes on each final table. Every table gets an index on
 `_airbyte_extracted_at`. Deduplicated streams additionally get an index on the primary key columns
@@ -295,16 +300,20 @@ will contain 4 columns:
 
 ### Naming limitations
 
-Postgres restricts identifiers to 63 bytes. If a stream or column name is longer than that, the
-connector shortens it to the first 54 characters, an underscore, and an 8-character hash of the
-original name. Two long names that share the same first 54 characters therefore still produce
-distinct tables and columns, but the resulting names aren't the ones your source used.
+Postgres restricts identifiers to 63 bytes, and the connector rewrites stream and column names to
+fit. It normalizes each name first: Unicode characters are decomposed and their diacritics dropped,
+so `é` becomes `e`; each run of whitespace becomes a single underscore; every remaining character
+that isn't an ASCII letter, digit, or underscore becomes an underscore; and a name that begins with
+a digit gets an underscore prefix.
 
-The connector also replaces each character that isn't a letter, digit, or underscore with an
-underscore, and prefixes a name that begins with a digit with an underscore. Names that only differ
-by those replaced characters collide after this transformation — `my.field` and `my-field` both
-become `my_field`, for example. Airbyte resolves the collision instead of failing: colliding column
-names get a numeric suffix (`my_field_1`), and colliding table names get a short hash suffix.
+Normalizing can make different source names identical — `my.field` and `my-field` both become
+`my_field`. Airbyte resolves those collisions instead of failing: colliding column names get a
+numeric suffix (`my_field_1`), and colliding table names get a short hash suffix.
+
+If the normalized name is still longer than 63 characters, the connector keeps its first 54
+characters and appends an underscore and up to 8 digits of a hash of the normalized name. That hash
+makes collisions between long names unlikely, but it's a non-cryptographic hash and isn't a
+uniqueness guarantee. Either way, the resulting names aren't the ones your source used.
 
 ### Value limitations
 
@@ -320,8 +329,9 @@ The connector adapts some values to what Postgres accepts:
 - Values that exceed a Postgres type's range are written as `NULL`, and the record's
   `_airbyte_meta` column records a `DESTINATION_FIELD_SIZE_LIMITATION` change. This applies to
   integers outside the `BIGINT` range, numbers with more than 131,072 digits before the decimal
-  point, strings larger than the 1 GB field limit, and timestamps outside the range Postgres
-  supports (4713 BC to 294276 AD).
+  point, strings the connector estimates could exceed Postgres's 1 GB field limit (it assumes a
+  worst case of 4 bytes per character, so any string longer than about 268 million characters),
+  and timestamps outside the range Postgres supports (4713 BC to 294276 AD).
 
 ## Creating dependent objects
 
