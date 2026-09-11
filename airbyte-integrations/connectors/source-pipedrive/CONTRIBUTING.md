@@ -22,8 +22,8 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    drops every custom field. `components.py` is gone; plain `DpathExtractor` on `data` is correct.
    Details in AGENTS.md section 2.
 3. **Date Fields Are Typed to Their Actual Shape** -- RFC3339 values (API v2, `leads`, `lead_labels`)
-   are `date-time` + `timestamp_with_timezone`; `YYYY-MM-DD HH:MM:SS` values (API v1) are `date-time`
-   + `timestamp_without_timezone`; `HH:MM` fields such as `activities.due_time` stay untyped. Adding
+   are `date-time` + `timestamp_with_timezone`; `YYYY-MM-DD HH:MM:SS` values (API v1) are `date-time` +
+   `timestamp_without_timezone`; `HH:MM` fields such as `activities.due_time` stay untyped. Adding
    or changing a `format` is a breaking change. Details in AGENTS.md section 3.
 4. **Authentication Is a Query Parameter, Not an Authenticator** -- the API token rides in the URL
    and scopes every stream to one user's visibility. OAuth is owned by
