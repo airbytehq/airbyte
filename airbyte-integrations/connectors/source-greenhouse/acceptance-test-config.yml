@@ -20,14 +20,15 @@ acceptance_tests:
       # Restore expect_records from a regenerated live Harvest v3 read before enabling fixture validation.
       - config_path: "secrets/config_oauth.json"
         empty_streams:
+          # Every bypassed stream has a mock read test in unit_tests/test_pagination.py.
           - name: eeoc
-            bypass_reason: "No data"
+            bypass_reason: "Test account has no submitted EEOC responses"
           - name: prospect_pools
-            bypass_reason: "No data"
+            bypass_reason: "Test account has no prospect pools"
           - name: tags
-            bypass_reason: "No data"
+            bypass_reason: "Test account has no candidate tags"
           - name: user_permissions
-            bypass_reason: "No Data"
+            bypass_reason: "Test account has no job-level user permissions; the only users are site admins, who never appear in this resource"
   full_refresh:
     tests:
       - config_path: "secrets/config_oauth.json"
