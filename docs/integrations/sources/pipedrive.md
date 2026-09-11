@@ -35,7 +35,7 @@ If the **API** tab isn't visible, your company admin hasn't enabled API access f
 
 <FieldAnchor field="replication_start_date">
 
-**Start Date** (optional): A UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2017-01-25T00:00:00Z`. Defaults to `2010-01-01T00:00:00Z` when left empty. The API v2 streams, `notes` and `leads` send it to Pipedrive as an inclusive `updated_since` filter; `files` and `deal_flow` read their full lists and keep the records modified on or after it. Streams that don't support incremental sync ignore it and always return all records, except `deal_products` and `deal_installments`, which only expand the deals returned by the `deals` stream. A space instead of `T`, as in the example shown in the UI, also works. See [Incremental sync and Start Date](#incremental-sync-and-start-date).
+**Start Date** (optional): A UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2017-01-25T00:00:00Z`. Defaults to `2010-01-01T00:00:00Z` when left empty. The API v2 streams, `notes` and `leads` send it to Pipedrive as an inclusive `updated_since` filter; `files` and `deal_flow` read their full lists and keep the records modified on or after it. Streams that don't support incremental sync ignore it and always return all records, except `deal_products` and `deal_installments`, which only expand the deals returned by `deals` and `deals_archived`. A space instead of `T`, as in the example shown in the UI, also works. See [Incremental sync and Start Date](#incremental-sync-and-start-date).
 
 </FieldAnchor>
 
@@ -72,7 +72,7 @@ Most streams read Pipedrive API v1; `deals`, `deals_archived`, `persons`, `organ
 | `currencies`                 | Full Refresh              | [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies)                                                                                                                                                                                                                                                                             |
 | `deal_fields`                | Full Refresh              | [DealFields](https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields)                                                                                                                                                                                                                                                                             |
 | `deal_flow`                  | Full Refresh, Incremental | Field change history of each deal returned by `deals` and `deals_archived` ([Deals getDealUpdates](https://developers.pipedrive.com/docs/api/v1/Deals#getDealUpdates)), one request per deal, so it is slow on large accounts. Cursor: `log_time`, filtered client-side.                                                                                        |
-| `deal_installments`          | Full Refresh              | Payment installments of the deals returned by the `deals` stream ([DealInstallments](https://developers.pipedrive.com/docs/api/v1/DealInstallments#getInstallments)), 100 deals per request. Installments are only available on Pipedrive's Growth plan and higher; the stream is empty on other plans. Only deals that the `deals` stream returns are visited. |
+| `deal_installments`          | Full Refresh              | Payment installments of deals returned by `deals` and `deals_archived` ([DealInstallments](https://developers.pipedrive.com/docs/api/v1/DealInstallments#getInstallments)), 100 deals per request. Installments are only available on Pipedrive's Growth plan and higher; the stream is empty on other plans.                                                   |
 | `deal_products`              | Full Refresh              | Products attached to each deal, fetched with one request per deal from API v2 `GET /api/v2/deals/{id}/products`. Expands the deals returned by `deals` and `deals_archived`.                                                                                                                                                                                    |
 | `deals`                      | Full Refresh, Incremental | Not-archived deals from API v2 `GET /api/v2/deals` with `status=open,won,lost,deleted`, so deals deleted within the last 30 days are included with `is_deleted: true`. Cursor: `update_time`.                                                                                                                                                                   |
 | `deals_archived`             | Full Refresh, Incremental | Archived deals from API v2 `GET /api/v2/deals/archived`, same fields and status handling as `deals`. Cursor: `update_time`.                                                                                                                                                                                                                                     |
@@ -111,6 +111,8 @@ Most streams read Pipedrive API v1; `deals`, `deals_archived`, `persons`, `organ
 
 Pipedrive lets you add custom fields to deals, persons, organizations, products, and activities. The API returns each custom field as a 40-character hash key rather than a readable name. API v2 streams expose these values under the `custom_fields` object. To map a hash key to its label and type, sync the matching `*_fields` stream (`deal_fields`, `person_fields`, `organization_fields`, `product_fields`, or `activity_fields`) and join on the `key` column.
 
+Monetary custom fields are objects with `value` and `currency` keys instead of the separate `<hash>` and `<hash>_currency` fields that API v1 returned.
+
 ### Mail streams
 
 `mailThreads` lists threads from the mailbox of the user who owns the API token. It queries each of the `inbox`, `drafts`, `sent`, and `archive` folders separately, so a thread that appears in more than one folder may be returned more than once. `mail` then requests the messages of every thread returned by `mailThreads`, one request per thread. Both streams are full refresh only, and you only see mail for the user whose token you configured, not for the whole company. If that user has not connected a mailbox to Pipedrive (Mail sync), both streams return no records.
@@ -123,8 +125,8 @@ Four streams make requests per parent record and can be slow on large accounts:
 
 - `deal_products` makes one request per deal.
 - `mail` makes one request per mail thread.
-- `deal_flow` makes one request per deal returned by the `deals` stream.
-- `deal_installments` makes one request per 100 deals returned by the `deals` stream.
+- `deal_flow` makes one request per deal returned by `deals` and `deals_archived`.
+- `deal_installments` makes one request per 100 deals returned by `deals` and `deals_archived`.
 
 Consider leaving these streams disabled unless you need them.
 
@@ -146,7 +148,7 @@ How the connector treats Pipedrive HTTP errors:
 
 - Deletions are replicated for `deals` and `deals_archived` only, and only for 30 days after the deletion (`is_deleted: true`). Records deleted in other streams stay in your destination until you clear and resync the stream.
 - Ten streams track state: `deals`, `deals_archived`, `persons`, `organizations`, `activities`, `products`, `notes`, `leads`, `files` and `deal_flow`. The other twenty-five are re-read in full on every sync.
-- Full refresh streams ignore the Start Date, except `deal_products` and `deal_installments`, which only expand the deals returned by the `deals` stream.
+- Full refresh streams ignore the Start Date, except `deal_products` and `deal_installments`, which only expand the deals returned by `deals` and `deals_archived`.
 - The connector authenticates with a personal API token only. It doesn't support OAuth.
 - `deals`, `deals_archived`, `persons`, `organizations`, `activities`, `products`, `pipelines`, `stages`, `deal_products`, `deal_installments`, `projects` and `tasks` read Pipedrive API v2; every other stream reads API v1.
 

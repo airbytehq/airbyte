@@ -31,9 +31,7 @@ data:
         upgradeDeadline: "2026-09-25"
         deadlineAction: "disable"
         message: >-
-          Pipedrive core streams now use API v2 and list endpoints, which changes record shapes,
-          primary keys, sync modes, and timestamp types. Refresh schemas, clear the affected streams,
-          and rerun your sync; see the migration guide for details.
+          Version 3.0.0 reads deals, persons, organizations, activities, products, pipelines, stages and deal_products from Pipedrive API v2 and reads notes, files, filters, users and leads from their list endpoints instead of the Recents feed, which capped history to one month. Record shapes, primary keys, sync modes and timestamp types change on 23 streams. After upgrading, refresh the source schema, clear the affected streams and run a sync. Clearing removes rows for records deleted in Pipedrive; back them up first if you need them. See https://docs.airbyte.com/integrations/sources/pipedrive-migrations#upgrading-to-300.
         scopedImpact:
           - scopeType: stream
             impactedScopes:
