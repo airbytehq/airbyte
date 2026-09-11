@@ -29,6 +29,7 @@ data:
     breakingChanges:
       "3.0.0":
         upgradeDeadline: "2026-09-25"
+        deadlineAction: "disable"
         message: >-
           Pipedrive core streams now use API v2 and list endpoints, which changes record shapes,
           primary keys, sync modes, and timestamp types. Refresh schemas, clear the affected streams,
