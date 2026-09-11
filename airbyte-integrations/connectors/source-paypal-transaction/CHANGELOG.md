@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.6.49
+
+Increase the backoff duration for PayPal transaction rate-limit responses.
+
 ## 0.1.0
 
 Source implementation with support of Transactions and Balances streams
