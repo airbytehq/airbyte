@@ -54,11 +54,7 @@ abstract class BaseDirectLoadInitialStatusGatherer(
     }
 
     private suspend fun getTableStatus(tableName: TableName): DirectLoadTableStatus? {
-        // We only need to know whether the table is missing, empty, or non-empty. Determine
-        // emptiness with an existence check rather than a full COUNT(*), which can be
-        // prohibitively expensive on very large tables.
         if (!tableOperationsClient.tableExists(tableName)) {
-            // Missing table
             return null
         }
         return DirectLoadTableStatus(isEmpty = tableOperationsClient.tableIsEmpty(tableName))
