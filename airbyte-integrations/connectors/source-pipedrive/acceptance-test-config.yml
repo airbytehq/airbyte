@@ -26,8 +26,6 @@ acceptance_tests:
             bypass_reason: "Sandbox user has no Pipedrive mail connection: GET /v1/mailbox/mailThreads returns data: [] for every folder."
           - name: mailThreads
             bypass_reason: "Sandbox user has no Pipedrive mail connection, so there are no threads to list."
-          - name: deals_archived
-            bypass_reason: "Sandbox company has no archived deals: GET /api/v2/deals/archived returns no rows."
           - name: call_logs
             bypass_reason: "Sandbox company has no phone integration, so GET /v1/callLogs returns no rows."
           - name: legacy_teams
@@ -49,8 +47,6 @@ acceptance_tests:
             bypass_reason: "Sandbox user has no Pipedrive mail connection: GET /v1/mailbox/mailThreads returns data: [] for every folder."
           - name: mailThreads
             bypass_reason: "Sandbox user has no Pipedrive mail connection, so there are no threads to list."
-          - name: deals_archived
-            bypass_reason: "Sandbox company has no archived deals: GET /api/v2/deals/archived returns no rows."
           - name: call_logs
             bypass_reason: "Sandbox company has no phone integration, so GET /v1/callLogs returns no rows."
           - name: legacy_teams
