@@ -67,6 +67,13 @@ For patterns that look up a connector ID without hard-coding it, see [Get a conn
 
 When you wrap a connector as a tool for an AI agent, the agent needs to know which entities and actions exist, what parameters each takes, and how pagination works. The recommended pattern is `build_connector_tools`, which binds ready-to-use tools that let the agent read just-in-time skill docs before it executes.
 
+The SDK offers these options. Pick the first one that fits:
+
+1. [`build_connector_tools`](#recommended-build_connector_tools): the simplest, preferred default on a supported framework (Pydantic AI, LangChain, OpenAI Agents SDK, FastMCP) when you don't need to write the tool bodies yourself. It binds one connector's tool set per agent.
+2. [`agent_tool`](#custom-tool-bodies-with-agent_tool): use it when you need custom tool bodies, a framework the SDK doesn't natively support, or an agent that uses more than one connector.
+3. [`tool_utils`](#auto-generated-tool-descriptions-with-tool_utils): deprecated. Keep it only in existing integrations; don't use it for new tools.
+4. [`translate_exceptions`](../../reference/sdk/airbyte_agent_sdk/translation/index.md): the same exception translation for any callable that isn't a generated connector tool, such as a custom helper or evaluation harness. `agent_tool` and `tool_utils` already include this translation, so don't stack `translate_exceptions` on top of them. If you do, the SDK detects the double wrap, logs a warning, and leaves the existing wrapper in place.
+
 ### Recommended: build_connector_tools
 
 `build_connector_tools(connector)` returns a `ConnectorTools` object with three callables bound to one connector: `inspect_connector`, `read_skill_docs`, and `execute`. Pass `framework=` so runtime errors surface as that framework's retry signal, then register all three with `tools.as_list()`.
@@ -91,7 +98,7 @@ Skill docs are hosted by Airbyte and served by the platform. If you point the SD
 
 To expose only `execute` with a single generated description instead of the progressive flow, pass `use_progressive_docs=False`. `tools.as_list()` then returns just the `execute` tool.
 
-The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, and the SDK can't rename them. Registering two connectors' tool sets with one agent means renaming them yourself at registration, or using [`agent_tool`](#custom-tool-bodies-with-agent_tool) with connector-specific function names.
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, and the SDK can't rename them, so the builder binds one connector's tool set per agent. If you register two connectors' tool sets with one agent, the names collide. Renaming the callables yourself at registration avoids the collision, but the generated `execute` guidance still tells the agent to call `inspect_connector` and `read_skill_docs`, so it points at the wrong tools. For an agent that uses more than one connector, use [`agent_tool`](#custom-tool-bodies-with-agent_tool) with connector-specific function names and pass those names through `inspect_tool=` and `docs_tool=`.
 
 #### Register the tools with your framework
 
@@ -176,9 +183,9 @@ for tool in build_connector_tools(github, framework="mcp").as_list():
 
 ### Custom tool bodies with `agent_tool`
 
-`build_connector_tools` writes the tool bodies for you. When you need your own to log calls, post-process results, restrict reachable agent operations, or run a framework the SDK doesn't natively support, use the generated connector's `agent_tool` decorator instead. It keeps the same progressive flow: you write the three functions, and the decorator attaches guidance that steers the agent from inspect to docs to execute.
+`build_connector_tools` writes the tool bodies for you. When you need your own to log calls, post-process results, restrict reachable agent operations, run a framework the SDK doesn't natively support, or give one agent more than one connector, use the generated connector's `agent_tool` decorator instead. Use it even on a supported framework when you need custom tool bodies, and pass `framework=` so failures surface as that framework's signal. It keeps the same progressive flow: you write the three functions, and the decorator attaches guidance that steers the agent from inspect to docs to execute.
 
-Decorate one function per role. The role is inferred from the signature:
+Decorate one function per role, and register all three. The framework's registration decorator (for example, `@agent.tool_plain`) goes on top and `agent_tool` goes underneath. `agent_tool` is a class method: call `GithubConnector.agent_tool(...)`, not `github.agent_tool(...)`. The role is inferred from the signature, and extra parameters are allowed:
 
 - `(entity, action, ...)` is execute
 - `(section, ...)` is docs
@@ -214,7 +221,7 @@ async def github_read_docs(section: str | None = None):
     return await github.read_skill_docs(section)
 ```
 
-For multi-connector agents, add the connector name to the start of each function name to avoid naming ambiguity. Give each connector its own:
+For multi-connector agents, add the connector name to the start of each function name to avoid naming ambiguity, and pass the inspect and docs names to the execute decorator's `inspect_tool=` and `docs_tool=` so the guidance names the right sibling tools. Give each connector its own:
 
 - `<connector>_execute`
 - `<connector>_inspect`
@@ -227,12 +234,14 @@ For multi-connector agents, add the connector name to the start of each function
 | `framework=` | A tool failure surfaces as |
 | ------------ | -------------------------- |
 | `"pydantic_ai"` | Raises `pydantic_ai.ModelRetry`, so the agent retries. |
-| `"langchain"` | Raises `langchain_core.tools.ToolException`. LangChain aborts the run unless you feed the message back to the model. See [Surface tool errors back to the model](../../get-started/developer-quickstart/tutorial-langchain#surface-tool-errors-back-to-the-model). |
-| `"openai_agents"` | Returns the failure message as the tool result instead of raising, which is what the OpenAI Agents SDK expects. |
+| `"langchain"` | Raises `langchain_core.tools.ToolException`. LangChain aborts the run unless you feed the message back to the model: pass `handle_tool_error=True` when you construct the tool, or add the middleware shown in [Surface tool errors back to the model](../../get-started/developer-quickstart/tutorial-langchain#surface-tool-errors-back-to-the-model). |
+| `"openai_agents"` | Returns the failure message as the tool result instead of raising, which is what the OpenAI Agents SDK expects. Register the tool with `function_tool(..., strict_mode=False)` so the open-ended `params` dict is accepted. |
 | `"mcp"` | Raises `fastmcp.exceptions.ToolError`, which FastMCP serializes as a failed tool result. |
 | `"none"` | Raises `AirbyteToolError`. |
 
-`build_connector_tools` auto-detects an installed framework when you omit `framework=`, and falls back to `"none"` with a warning if it finds none. `agent_tool` never auto-detects: it defaults to `"none"`.
+`build_connector_tools`, `tool_utils`, and `translate_exceptions` auto-detect an installed framework when you omit `framework=`, and fall back to `"none"` with a warning if they find none. `agent_tool` never auto-detects: it defaults to `"none"`.
+
+If you pass a `framework=` whose package isn't installed, the SDK raises `RuntimeError` when it translates a tool failure, not when you decorate the function. Install the framework package or omit `framework=`.
 
 #### Unsupported frameworks and raw LLM loops
 
@@ -282,7 +291,7 @@ The docstring becomes the tool description the LLM sees. Function parameters bec
 
 #### Auto-generated tool descriptions with `tool_utils`
 
-`tool_utils` is deprecated. It remains available so existing integrations keep working, and it doesn't warn at runtime, but new agents should use `build_connector_tools` or `agent_tool`.
+`tool_utils` is deprecated. It remains available so existing integrations keep working and can migrate on their own schedule, and it doesn't warn at runtime, but don't use it for new tools. New agents should use `build_connector_tools`, or `agent_tool` when they need custom tool bodies. Like `build_connector_tools`, it auto-detects an installed framework and includes exception translation, so don't stack `translate_exceptions` on it.
 
 The decorator replaces the wrapped function's docstring with a generated description that includes every entity, action, required and optional parameter, and response shape. The LLM then sees every operation the connector supports with no extra wiring, and pays for the whole catalog in context on every call, which is what the progressive flow avoids.
 
