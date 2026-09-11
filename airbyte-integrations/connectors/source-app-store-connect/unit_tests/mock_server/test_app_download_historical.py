@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from airbyte_cdk.test.mock_http import HttpMocker
 
-from .analytics_helpers import processing_date, read_analytics_stream
+from .analytics_helpers import download_processing_date, read_analytics_stream
 
 
 _STREAM_NAME = "app_download_historical"
@@ -18,7 +18,7 @@ class TestAppDownloadHistoricalStream(TestCase):
         record = output.records[0].record.data
         assert record["Date"] == "2026-01-15"
         assert record["app_id"] == "app-1"
-        assert record["processing_date"] == processing_date()
+        assert record["processing_date"] == download_processing_date()
 
     @HttpMocker()
     def test_unavailable_resource_is_ignored(self, http_mocker: HttpMocker) -> None:

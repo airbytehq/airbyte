@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from airbyte_cdk.test.mock_http import HttpMocker
 
-from .analytics_helpers import processing_date, read_analytics_stream
+from .analytics_helpers import download_processing_date, read_analytics_stream
 from .utils import latest_stream_state
 
 
@@ -19,13 +19,13 @@ class TestAppStoreInstallationsAndDeletionsStream(TestCase):
         record = output.records[0].record.data
         assert record["Date"] == "2026-01-15"
         assert record["app_id"] == "app-1"
-        assert record["processing_date"] == processing_date()
+        assert record["processing_date"] == download_processing_date()
 
     @HttpMocker()
     def test_incremental_sync_uses_state(self, http_mocker: HttpMocker) -> None:
         output = read_analytics_stream(http_mocker, _STREAM_NAME, incremental=True)
         assert len(output.records) == 1
-        assert latest_stream_state(output, "processing_date") == processing_date()
+        assert latest_stream_state(output, "processing_date") == download_processing_date()
 
     @HttpMocker()
     def test_unavailable_resource_is_ignored(self, http_mocker: HttpMocker) -> None:

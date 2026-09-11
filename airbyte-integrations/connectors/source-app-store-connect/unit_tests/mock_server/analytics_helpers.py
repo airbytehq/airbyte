@@ -67,6 +67,10 @@ def processing_date() -> str:
     return "2024-01-03"
 
 
+def download_processing_date() -> str:
+    return "2026-01-15"
+
+
 def analytics_config() -> ConfigBuilder:
     return ConfigBuilder().with_value("analytics_reports_start_date", "2024-01-01")
 

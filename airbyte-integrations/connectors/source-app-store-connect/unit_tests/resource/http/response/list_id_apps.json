@@ -9,7 +9,7 @@
         "sku": "APP-1",
         "primaryLocale": "en-US",
         "isOrEverWasMadeForKids": false,
-        "streamlinedBuyEnabled": true
+        "streamlinedPurchasingEnabled": true
       }
     }
   ],

@@ -2,10 +2,11 @@
 
 from unittest import TestCase
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
+from unit_tests.conftest import get_source
 
-from .analytics_helpers import expected_record_id, processing_date, read_analytics_stream
-from .utils import latest_stream_state
+from .analytics_helpers import analytics_config, expected_record_id, read_analytics_stream
 
 
 _STREAM_NAME = "analytics_app_download_segment_details"
@@ -20,11 +21,10 @@ class TestAnalyticsAppDownloadSegmentDetailsStream(TestCase):
         assert record["id"] == expected_record_id(_STREAM_NAME)
         assert record["app_id"] == "app-1"
 
-    @HttpMocker()
-    def test_incremental_sync_uses_state(self, http_mocker: HttpMocker) -> None:
-        output = read_analytics_stream(http_mocker, _STREAM_NAME, incremental=True)
-        assert len(output.records) == 1
-        assert latest_stream_state(output, "processing_date") == processing_date()
+    def test_supports_full_refresh_only(self) -> None:
+        config = analytics_config().build()
+        stream = next(stream for stream in get_source(config).streams(config=config) if stream.name == _STREAM_NAME)
+        assert stream.as_airbyte_stream().supported_sync_modes == [SyncMode.full_refresh]
 
     @HttpMocker()
     def test_unavailable_resource_is_ignored(self, http_mocker: HttpMocker) -> None:

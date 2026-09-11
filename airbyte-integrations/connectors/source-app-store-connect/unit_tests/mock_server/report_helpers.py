@@ -26,7 +26,7 @@ class ReportSpec:
 
 REPORT_SPECS = {
     "subscriber_report": ReportSpec("SUBSCRIBER", "DETAILED", "1_3", "sales_reports_start_date", 2),
-    "sales_report": ReportSpec("SALES", "SUMMARY", "1_0", "sales_reports_start_date", 2),
+    "sales_report": ReportSpec("SALES", "SUMMARY", "1_1", "sales_reports_start_date", 2),
     "subscription_report": ReportSpec("SUBSCRIPTION", "SUMMARY", "1_3", "sales_reports_start_date", 2),
     "subscription_event_report": ReportSpec(
         "SUBSCRIPTION_EVENT",
