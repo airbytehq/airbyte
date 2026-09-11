@@ -4,14 +4,18 @@ This page contains the setup guide and reference information for the Pipedrive s
 
 ## Prerequisites
 
-- A Pipedrive account with API access enabled for your user
-- Your Pipedrive API Token
+- A Pipedrive account
+- Either OAuth access to that account (Airbyte Cloud) or a personal API token with API access enabled for your user
 
 ## Setup guide
 
 ### Step 1: Set up Pipedrive
 
-The connector authenticates with a personal API token. Each token is tied to a Pipedrive user, so the connector can only read data that user is allowed to see.
+The connector supports two authentication methods. Either credential belongs to one Pipedrive user, so the connector can only read data that user is allowed to see.
+
+**OAuth (recommended on Airbyte Cloud)**: No preparation is needed. You authorize Airbyte's Pipedrive app in a browser window during setup; Pipedrive returns the company-specific API host that the connector then uses for every request.
+
+**API token**:
 
 1. In the Pipedrive web app, click your account name (top right), then **Company settings** > **Personal preferences** > **API**.
 2. Copy the API token shown on that page. See [How to find the API token](https://pipedrive.readme.io/docs/how-to-find-the-api-token) for screenshots.
@@ -27,9 +31,9 @@ If the **API** tab isn't visible, your company admin hasn't enabled API access f
 3. Enter a name for the source.
 4. Fill in the fields below, then click **Set up source**.
 
-<FieldAnchor field="api_token">
+<FieldAnchor field="credentials">
 
-**API Token**: The personal API token you copied in Step 1. Airbyte sends it as the `api_token` query parameter on every request.
+**Authentication**: Choose **OAuth2.0** and click **Authenticate your Pipedrive account** (Airbyte Cloud), or choose **API Token** and paste the token you copied in Step 1. Airbyte sends the API token in the `x-api-token` request header; it never appears in URLs.
 
 </FieldAnchor>
 
@@ -45,7 +49,7 @@ If the **API** tab isn't visible, your company admin hasn't enabled API access f
 
 </FieldAnchor>
 
-When you click **Set up source**, Airbyte tests the connection by calling the [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies) endpoint. Every API token can read it, so the test passes even on an account that has no deals yet.
+When you click **Set up source**, Airbyte tests the connection by calling the [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies) endpoint. Every credential can read it, so the test passes even on an account that has no deals yet.
 
 ## Supported sync modes
 
@@ -149,7 +153,7 @@ How the connector treats Pipedrive HTTP errors:
 - Deletions are replicated for `deals` and `deals_archived` only, and only for 30 days after the deletion (`is_deleted: true`). Records deleted in other streams stay in your destination until you clear and resync the stream.
 - Ten streams track state: `deals`, `deals_archived`, `persons`, `organizations`, `activities`, `products`, `notes`, `leads`, `files` and `deal_flow`. The other twenty-five are re-read in full on every sync.
 - Full refresh streams ignore the Start Date, except `deal_products` and `deal_installments`, which only expand the deals returned by `deals` and `deals_archived`.
-- The connector authenticates with a personal API token only. It doesn't support OAuth.
+- With OAuth, requests go to the company-specific host Pipedrive returned during authorization (`https://<company>.pipedrive.com/api/...`); with an API token they go to `https://api.pipedrive.com`.
 - `deals`, `deals_archived`, `persons`, `organizations`, `activities`, `products`, `pipelines`, `stages`, `deal_products`, `deal_installments`, `projects` and `tasks` read Pipedrive API v2; every other stream reads API v1.
 
 ### Troubleshooting
@@ -158,7 +162,7 @@ How the connector treats Pipedrive HTTP errors:
 - **Records missing from incremental streams**: Incremental streams only replicate records modified on or after the Start Date, or after the last saved cursor on later syncs. Records that haven't been modified since the Start Date are excluded; move the Start Date earlier or clear the stream to backfill them.
 - **Custom fields appear as hash keys**: This is expected. See [Custom fields](#custom-fields).
 - **Syncs fail with HTTP 429**: The retries were exhausted, which usually means the daily token budget is spent. Reduce the number of enabled streams, increase the interval between syncs, or upgrade the plan.
-- **Setup or syncs fail with HTTP 401, 402 or 403**: The message carries Pipedrive's own error text. 401 means the token was not copied in full, has been regenerated, or API access is disabled for the user (see Step 1). 402 means the company account is not active. 403 means the token owner lacks permission for that data, or Cloudflare blocked the token after repeated rate-limit violations.
+- **Setup or syncs fail with HTTP 401, 402 or 403**: The message carries Pipedrive's own error text. With an API token, 401 means the token was not copied in full, has been regenerated, or API access is disabled for the user (see Step 1); with OAuth it means the authorization expired or was revoked, so re-authenticate the source. 402 means the company account is not active. 403 means the token owner lacks permission for that data, or Cloudflare blocked the token after repeated rate-limit violations.
 
 </details>
 
@@ -170,6 +174,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 3.1.0 | 2026-09-14 | [85773](https://github.com/airbytehq/airbyte/pull/85773) | Add OAuth2.0 as the default authentication, send the API token in the `x-api-token` header instead of the URL and wrap existing configs into `credentials` automatically |
 | 3.0.1 | 2026-09-14 | [85919](https://github.com/airbytehq/airbyte/pull/85919) | Test-only release: cover the streams the sandbox cannot populate with mock-server tests and make the 429 retry test deterministic |
 | 3.0.0 | 2026-09-14 | [85812](https://github.com/airbytehq/airbyte/pull/85812) | Read `deals`, `persons`, `organizations`, `activities`, `products`, `pipelines`, `stages` and `deal_products` from Pipedrive API v2, add the `deals_archived` stream, read `notes`, `files`, `filters`, `users` and `leads` from their list endpoints instead of Recents, add primary keys to twelve streams, type the date fields and expose deleted deals |
 | 2.6.0 | 2026-09-10 | [85775](https://github.com/airbytehq/airbyte/pull/85775) | Add the `call_logs`, `lead_sources`, `legacy_teams`, `projects`, `tasks`, `deal_installments`, `deal_flow` and `permission_set_assignments` streams |

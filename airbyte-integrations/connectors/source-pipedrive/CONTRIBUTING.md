@@ -25,10 +25,10 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    are `date-time` + `timestamp_with_timezone`; `YYYY-MM-DD HH:MM:SS` values (API v1) are `date-time` +
    `timestamp_without_timezone`; `HH:MM` fields such as `activities.due_time` stay untyped. Adding
    or changing a `format` is a breaking change. Details in AGENTS.md section 3.
-4. **Authentication Is a Query Parameter, Not an Authenticator** -- the API token rides in the URL
-   and scopes every stream to one user's visibility. OAuth is owned by
-   [airbyte-internal-issues#17201](https://github.com/airbytehq/airbyte-internal-issues/issues/17201);
-   don't add or document it early. Details in AGENTS.md section 4.
+4. **OAuth Is the Default, the API Token Travels in a Header, Old Configs Are Migrated** -- a
+   `SelectiveAuthenticator` on `credentials.auth_type` picks Bearer (OAuth, company host from
+   `api_domain`) or the `x-api-token` header; never put `api_token` in `request_parameters` and keep
+   test configs in the `credentials` shape. Details in AGENTS.md section 4.
 5. **Mail Streams Are Scoped to One User's Mailbox and Fan Out per Folder and Thread** --
    `mailThreads` queries four folders (so threads can repeat) and `mail` makes one request per
    thread; both only see the token owner's mailbox. `mailThreads` keeps `use_cache: false` because
