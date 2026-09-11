@@ -22,6 +22,8 @@ Cloud storage may incur egress costs. Egress refers to data that is transferred 
 
 ### Create a Service Account
 
+Skip this section and [Grant permission to GCS](#grant-permission-to-gcs) if you plan to authenticate via Google (OAuth) instead of a service account.
+
 First, select an existing project or create a new one in the Google Cloud Console:
 
 1. Sign in to your Google account.
@@ -48,7 +50,7 @@ Using the service account ID from above, grant read access to your target bucket
 7. Add a stream:
    1. Give a **Name** to the stream.
    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
-   3. Optionally, enter the **Globs** which dictates which files to be synced. This is a glob pattern that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
+   3. Optionally, enter the **Globs** pattern, which determines which files are synced. This is a glob pattern that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
    4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
 8. Configure the optional **Start Date** parameter that marks a starting date and time in UTC for data replication. Any files that have _not_ been modified since this specified date/time will _not_ be replicated. Use the provided datepicker (recommended) or enter the desired date programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. Leaving this field blank will replicate data from all files that have not been excluded by the **Globs** pattern.
 9. Click **Set up source** and wait for the tests to complete.
@@ -60,13 +62,13 @@ Using the service account ID from above, grant read access to your target bucket
 3. On the Set up the source page, select Google Cloud Storage (GCS) from the Source type dropdown.
 4. Enter a name for the Google Cloud Storage (GCS) connector.
 5. Select an authorization type:
-   - **Authenticate via Google (OAuth)**: click **Sign in with Google** and complete the authentication workflow.
+   - **Authenticate via Google (OAuth)**: enter the client ID, client secret, access token, and refresh token from your own Google OAuth application.
    - **Service Account Authentication**: paste the service account JSON key into the **Service Account Information** field.
 6. Enter your GCS bucket name in the **Bucket** field.
 7. Add a stream:
    1. Give a **Name** to the stream.
    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
-   3. Optionally, enter the **Globs** which dictates which files to be synced. This is a glob pattern that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
+   3. Optionally, enter the **Globs** pattern, which determines which files are synced. This is a glob pattern that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
    4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
 8. Configure the optional **Start Date** parameter that marks a starting date and time in UTC for data replication. Any files that have _not_ been modified since this specified date/time will _not_ be replicated. Use the provided datepicker (recommended) or enter the desired date programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. Leaving this field blank will replicate data from all files that have not been excluded by the **Globs** pattern.
 9. Click **Set up source** and wait for the tests to complete.
@@ -78,7 +80,7 @@ The connector reads files through the authenticated GCS client using `gs://{buck
 - **Service Account Authentication**: `https://storage.googleapis.com/{bucket}/{blob}`
 - **Authenticate via Google (OAuth)**: `gs://{bucket}/{blob}`
 
-File URLs are part of the connection state, so if you change the authorization type on an existing source, the next incremental sync can't use the old state and rereads all matching files, like an initial sync. Later syncs are incremental as expected.
+File URLs are the keys in the connection state, so if you change the authorization type on an existing source, the next incremental sync doesn't recognize previously synced files and rereads them as if they were new. Later syncs are incremental as expected.
 
 #### Sanitize File URLs
 
