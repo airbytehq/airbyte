@@ -262,7 +262,7 @@ For records the connector rebuilds from the Events API, `updated` comes from the
 - `External Account Bank Accounts`
 - `External Account Cards`
 - `Invoice Items`
-- `Invoice Line Items`
+- `Invoice Line Items` (cursor field is `invoice_updated`)
 - `Invoices`
 - `Payment Intents`
 - `Payment Methods`
@@ -277,7 +277,7 @@ For records the connector rebuilds from the Events API, `updated` comes from the
 - `Reviews`
 - `Setup Intents`
 - `Subscription Schedule`
-- `Subscription Items`
+- `Subscription Items` (cursor field is `subscription_updated`)
 - `Subscriptions`
 - `Top Ups`
 - `Transactions`
@@ -317,7 +317,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.0.17 | 2026-09-09 | [85799](https://github.com/airbytehq/airbyte/pull/85799) | Prevent the events-based `invoice_line_items` and `subscription_items` transformations from running when `original_record` is missing or empty. |
+| 6.0.17 | 2026-09-11 | [85799](https://github.com/airbytehq/airbyte/pull/85799) | Prevent the events-based `invoice_line_items` and `subscription_items` transformations from running when `original_record` is missing or empty. |
 | 6.0.16 | 2026-09-08 | [85672](https://github.com/airbytehq/airbyte/pull/85672) | Update dependencies |
 | 6.0.15 | 2026-08-18 | [84768](https://github.com/airbytehq/airbyte/pull/84768) | Update dependencies |
 | 6.0.14 | 2026-08-17 | [84355](https://github.com/airbytehq/airbyte/pull/84355) | Update events now win same-second cursor ties with creation events so the newer payload is kept at the destination. |
