@@ -28,6 +28,14 @@ from .base_streams import FBMarketingIncrementalStream
 
 logger = logging.getLogger("airbyte")
 
+# VERIFICATION ONLY (do not merge): present in facebook-business 25.x AdsInsights.Field, absent in 26.x
+PROBE_FIELDS_REMOVED_IN_SDK_V26 = [
+    "marketing_messages_website_add_to_cart",
+    "marketing_messages_website_initiate_checkout",
+    "marketing_messages_website_purchase",
+    "marketing_messages_website_purchase_values",
+]
+
 
 class AdsInsights(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/insights"""
@@ -685,6 +693,9 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         excluded_fields = self._fields_excluded_from_api_request()
         self._fields = [field for field in self._fields if field not in excluded_fields]
+
+        # VERIFICATION ONLY (do not merge): always request the fields dropped from AdsInsights.Field in SDK v26
+        self._fields += [field for field in PROBE_FIELDS_REMOVED_IN_SDK_V26 if field not in self._fields]
 
         return self._fields
 

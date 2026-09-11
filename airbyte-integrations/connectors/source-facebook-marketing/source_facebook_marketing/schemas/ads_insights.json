@@ -407,6 +407,22 @@
     "website_purchase_roas": {
       "description": "Return on ad spend for website purchases",
       "$ref": "ads_action_stats.json"
+    },
+    "marketing_messages_website_add_to_cart": {
+      "description": "Marketing messages website add to cart",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_website_initiate_checkout": {
+      "description": "Marketing messages website initiate checkout",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_website_purchase": {
+      "description": "Marketing messages website purchase",
+      "type": ["null", "number"]
+    },
+    "marketing_messages_website_purchase_values": {
+      "description": "Marketing messages website purchase values",
+      "type": ["null", "number"]
     }
   },
   "type": ["null", "object"]
