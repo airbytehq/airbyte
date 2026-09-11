@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.chargebee.connector
-* airbyte_agent_sdk.connectors.chargebee.connector_model
-* airbyte_agent_sdk.connectors.chargebee.models
-* airbyte_agent_sdk.connectors.chargebee.types
+* [airbyte_agent_sdk.connectors.chargebee.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/chargebee/airbyte_agent_sdk-connectors-chargebee-connector)
+* [airbyte_agent_sdk.connectors.chargebee.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/chargebee/airbyte_agent_sdk-connectors-chargebee-connector_model)
+* [airbyte_agent_sdk.connectors.chargebee.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/chargebee/airbyte_agent_sdk-connectors-chargebee-models)
+* [airbyte_agent_sdk.connectors.chargebee.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/chargebee/airbyte_agent_sdk-connectors-chargebee-types)
 
 Classes
 -------
@@ -403,7 +403,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            site: Your Chargebee site name (subdomain)
     Examples:
         # Local mode (direct API calls)
-        connector = ChargebeeConnector(auth_config=ChargebeeAuthConfig(api_key="..."))
+        connector = ChargebeeConnector(auth_config=ChargebeeAuthConfig(api_key="..."), site="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = ChargebeeConnector(
             auth_config=AirbyteAuthConfig(
@@ -612,7 +612,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:

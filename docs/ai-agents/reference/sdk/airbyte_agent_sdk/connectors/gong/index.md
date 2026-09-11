@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.gong.connector
-* airbyte_agent_sdk.connectors.gong.connector_model
-* airbyte_agent_sdk.connectors.gong.models
-* airbyte_agent_sdk.connectors.gong.types
+* [airbyte_agent_sdk.connectors.gong.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/gong/airbyte_agent_sdk-connectors-gong-connector)
+* [airbyte_agent_sdk.connectors.gong.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/gong/airbyte_agent_sdk-connectors-gong-connector_model)
+* [airbyte_agent_sdk.connectors.gong.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/gong/airbyte_agent_sdk-connectors-gong-models)
+* [airbyte_agent_sdk.connectors.gong.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/gong/airbyte_agent_sdk-connectors-gong-types)
 
 Classes
 -------
@@ -652,7 +652,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'download', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'download', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:

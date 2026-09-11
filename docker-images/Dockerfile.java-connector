@@ -18,15 +18,17 @@ ENV AIRBYTE_ENTRYPOINT="/airbyte/base.sh"
 ENV APPLICATION="${CONNECTOR_NAME}"
 
 # Add the connector TAR file and extract it.
-# For compatibility reasons, first try connector-specific name, then `airbyte-app.tar`
-COPY --chown=airbyte:airbyte ./build/distributions/ /tmp/distributions/
-RUN if [ -f /tmp/distributions/${CONNECTOR_NAME}.tar ]; then \
-        cp /tmp/distributions/${CONNECTOR_NAME}.tar /tmp/${CONNECTOR_NAME}.tar; \
+# For compatibility reasons, first try connector-specific name, then `airbyte-app.tar`.
+# The distributions directory is bind-mounted rather than COPY'd: a COPY would persist the
+# archive in its own layer, so the final image would carry both the tarball and its extracted
+# contents. Extracting straight from the mount also avoids the intermediate `cp`.
+RUN --mount=type=bind,source=./build/distributions/,target=/tmp/distributions/ \
+    if [ -f /tmp/distributions/${CONNECTOR_NAME}.tar ]; then \
+        TARBALL=/tmp/distributions/${CONNECTOR_NAME}.tar; \
     else \
-        cp /tmp/distributions/airbyte-app.tar /tmp/${CONNECTOR_NAME}.tar; \
+        TARBALL=/tmp/distributions/airbyte-app.tar; \
     fi && \
-    tar xf /tmp/${CONNECTOR_NAME}.tar --strip-components=1 -C /airbyte && \
-    rm -rf /tmp/${CONNECTOR_NAME}.tar /tmp/distributions && \
+    tar xf "${TARBALL}" --strip-components=1 -C /airbyte && \
     chown -R airbyte:airbyte /airbyte
 
 # Set the non-root user

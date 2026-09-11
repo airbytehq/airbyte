@@ -239,7 +239,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -331,8 +331,9 @@ Classes
         - site_url: The URL of the site from which the data originates
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -343,6 +344,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against search_analytics_all_fields records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, start_date: str, end_date: str, site_url: str, dimensions: list[str] | None = None, row_limit: int | None = None, start_row: int | None = None, type: str | None = None, aggregation_type: str | None = None, data_state: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_search_console.models.GoogleSearchConsoleExecuteResultWithMeta[list[SearchAnalyticsRow], SearchAnalyticsAllFieldsListResultMeta]`
     :   Query search analytics data grouped by all dimensions (date, country, device, page, query). Returns the most granular breakdown of search data.
@@ -392,8 +408,9 @@ Classes
         - site_url: The URL of the site for which the search analytics data is being reported
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -404,6 +421,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against search_analytics_by_country records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, start_date: str, end_date: str, site_url: str, dimensions: list[str] | None = None, row_limit: int | None = None, start_row: int | None = None, type: str | None = None, aggregation_type: str | None = None, data_state: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_search_console.models.GoogleSearchConsoleExecuteResultWithMeta[list[SearchAnalyticsRow], SearchAnalyticsByCountryListResultMeta]`
     :   Query search analytics data grouped by date and country. Returns clicks, impressions, CTR, and average position for each country.
@@ -452,8 +484,9 @@ Classes
         - site_url: The URL of the site for which the search analytics data is being reported
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -464,6 +497,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against search_analytics_by_date records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, start_date: str, end_date: str, site_url: str, dimensions: list[str] | None = None, row_limit: int | None = None, start_row: int | None = None, type: str | None = None, aggregation_type: str | None = None, data_state: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_search_console.models.GoogleSearchConsoleExecuteResultWithMeta[list[SearchAnalyticsRow], SearchAnalyticsByDateListResultMeta]`
     :   Query search analytics data grouped by date. Returns clicks, impressions, CTR, and average position for each date in the specified range.
@@ -513,8 +561,9 @@ Classes
         - site_url: The URL of the site for which search analytics data is being provided
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -525,6 +574,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against search_analytics_by_device records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, start_date: str, end_date: str, site_url: str, dimensions: list[str] | None = None, row_limit: int | None = None, start_row: int | None = None, type: str | None = None, aggregation_type: str | None = None, data_state: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_search_console.models.GoogleSearchConsoleExecuteResultWithMeta[list[SearchAnalyticsRow], SearchAnalyticsByDeviceListResultMeta]`
     :   Query search analytics data grouped by date and device. Returns clicks, impressions, CTR, and average position for each device type.
@@ -574,8 +638,9 @@ Classes
         - site_url: The URL of the site for which the search analytics data is being reported
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -586,6 +651,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against search_analytics_by_page records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, start_date: str, end_date: str, site_url: str, dimensions: list[str] | None = None, row_limit: int | None = None, start_row: int | None = None, type: str | None = None, aggregation_type: str | None = None, data_state: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_search_console.models.GoogleSearchConsoleExecuteResultWithMeta[list[SearchAnalyticsRow], SearchAnalyticsByPageListResultMeta]`
     :   Query search analytics data grouped by date and page. Returns clicks, impressions, CTR, and average position for each page URL.
@@ -635,8 +715,9 @@ Classes
         - site_url: The URL of the site for which the search analytics data is captured
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -647,6 +728,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against search_analytics_by_query records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, start_date: str, end_date: str, site_url: str, dimensions: list[str] | None = None, row_limit: int | None = None, start_row: int | None = None, type: str | None = None, aggregation_type: str | None = None, data_state: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_search_console.models.GoogleSearchConsoleExecuteResultWithMeta[list[SearchAnalyticsRow], SearchAnalyticsByQueryListResultMeta]`
     :   Query search analytics data grouped by date and query. Returns clicks, impressions, CTR, and average position for each search query.
@@ -697,8 +793,9 @@ Classes
         - warnings: Warnings encountered while processing the sitemaps
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -709,6 +806,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against sitemaps records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, site_url: str, feedpath: str, **kwargs) ‑> airbyte_agent_sdk.connectors.google_search_console.models.Sitemap`
     :   Retrieves information about a specific sitemap.
@@ -753,8 +865,9 @@ Classes
         - site_url: The URL of the site data being fetched
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -765,6 +878,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against sites records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, site_url: str, **kwargs) ‑> airbyte_agent_sdk.connectors.google_search_console.models.Site`
     :   Retrieves information about a specific site.
