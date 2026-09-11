@@ -35,7 +35,7 @@ Using the service account ID from above, grant read access to your target bucket
 
 ### Set up the Google Cloud Storage (GCS) connector in Airbyte
 
-#### For Airbyte Cloud:
+#### For Airbyte Cloud
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
@@ -53,7 +53,7 @@ Using the service account ID from above, grant read access to your target bucket
 8. Configure the optional **Start Date** parameter that marks a starting date and time in UTC for data replication. Any files that have _not_ been modified since this specified date/time will _not_ be replicated. Use the provided datepicker (recommended) or enter the desired date programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. Leaving this field blank will replicate data from all files that have not been excluded by the **Globs** pattern.
 9. Click **Set up source** and wait for the tests to complete.
 
-#### For Airbyte Open Source:
+#### For Airbyte Open Source
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click Sources and then click + New source.
