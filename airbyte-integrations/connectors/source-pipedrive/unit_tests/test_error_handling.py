@@ -193,6 +193,21 @@ def test_deal_products_skips_missing_or_forbidden_parent_deal(status_code: int, 
         assert output.is_in_logs(error)
 
 
+def test_deal_products_fails_loudly_when_the_oauth_app_lacks_the_scope() -> None:
+    with HttpMocker() as http_mocker:
+        http_mocker.get(deals_archived_request(), empty_v2_page())
+        http_mocker.get(deals_request(), collection([{"id": 1, "update_time": "2024-02-01 00:00:00"}]))
+        http_mocker.get(_deal_products_request(1), pipedrive_error(403, "Scope and URL mismatch"))
+
+        output = read_stream("deal_products", expecting_exception=True)
+
+    # A missing app scope is a setup problem, so the per-parent 403 IGNORE must not swallow it.
+    assert output.records == []
+    error = _error_trace(output)
+    assert error.failure_type == FailureType.config_error
+    assert "scope" in error.message
+
+
 def test_deal_products_still_fails_on_401() -> None:
     with HttpMocker() as http_mocker:
         deals = deals_request()
