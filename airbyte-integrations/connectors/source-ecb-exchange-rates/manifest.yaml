@@ -1,0 +1,170 @@
+version: 7.0.4
+
+type: DeclarativeSource
+
+description: >-
+  - Low-code declarative source that hits https://api.frankfurter.app/{date} to
+  fetch daily ECB
+      reference rates directly from the Frankfurter API; no auth required.
+    - Accepts start_date (required), optional end_date, base_currency, amount, and an optional list of
+      target_currencies; when targets are omitted, the API returns the full rate map for every supported
+      currency.
+    - Uses a DatetimeStreamSlicer/DatetimeBasedCursor on the date field so incremental syncs request one
+      business day at a time and resume automatically.
+    - Response schema includes amount, base, date, optional start_date/end_date, and the raw rates object
+      (currency→value). Downstream models can explode rates with SQL/ELT if per-currency rows are needed.
+    - Designed for stable weekday updates (ECB publishes around 16:00 CET) and lightweight retries via
+      DefaultErrorHandler.
+
+check:
+  type: CheckStream
+  stream_names:
+    - ECB Exchange Rates
+
+streams:
+  - type: DeclarativeStream
+    name: ECB Exchange Rates
+    primary_key:
+      - date
+    cursor_field:
+      - date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: false
+        properties:
+          amount:
+            type: number
+            description: Multiplier that was requested when retrieving rates.
+          base:
+            type: string
+            description: Base currency used for the conversion.
+          date:
+            type: string
+            description: Business date for the returned rates.
+            format: date
+          start_date:
+            type: string
+            description: Earliest date returned when the API generated data for a range.
+            format: date
+          end_date:
+            type: string
+            description: Latest date returned when the API generated data for a range.
+            format: date
+          rates:
+            type: object
+            description: >-
+              Mapping of currency codes to their exchange rate relative to the
+              base currency.
+            additionalProperties:
+              type: number
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        request_parameters:
+          amount: "{{ config.get('amount', 1) }}"
+          from: "{{ config.get('base_currency', 'EUR') }}"
+          to: "{{ config.get('target_currencies', []) | join(',') }}"
+        url: https://api.frankfurter.app/{{ stream_slice['start_time'] }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 5
+      stream_slicer:
+        type: DatetimeStreamSlicer
+        cursor_field: date
+        cursor_granularity: P1D
+        datetime_format: "%Y-%m-%d"
+        start_datetime: "{{ config['start_date'] }}"
+        end_datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+        step: P1D
+        timezone: UTC
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: date
+      cursor_granularity: P1D
+      datetime_format: "%Y-%m-%d"
+      lookback_window: P0D
+      start_datetime: "{{ config['start_date'] }}"
+      end_datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+      step: P1D
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    additionalProperties: true
+    required:
+      - start_date
+    properties:
+      start_date:
+        type: string
+        description: Earliest date (YYYY-MM-DD) to begin pulling ECB exchange rates.
+        format: date
+        title: Start Date
+      end_date:
+        type: string
+        description: Optional end date; defaults to the current UTC date if not set.
+        format: date
+        title: End Date
+      base_currency:
+        type: string
+        description: >-
+          ISO 4217 currency code that serves as the conversion base (defaults to
+          EUR/ECB reference).
+        title: Base Currency
+        pattern: ^[A-Z]{3}$
+        default: EUR
+      target_currencies:
+        type: array
+        description: >-
+          Optional list of ISO 4217 currency codes to limit the response; leave
+          empty to fetch all available currencies.
+        title: Target Currencies
+        items:
+          type: string
+          pattern: ^[A-Z]{3}$
+      amount:
+        type: number
+        description: >-
+          Optional multiplier applied to the conversion result (Frankfurter
+          `amount` parameter).
+        title: Amount
+        default: 1
+        minimum: 0
+
+metadata:
+  testedStreams:
+    stream_0:
+      streamHash: ad11f9fa446b445a056b0f48d54e74059e0bc977
+    ECB Exchange Rates:
+      streamHash: 02e97278c91d7e97b42f5a0b6cd44e63fbed6906
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  autoImportSchema:
+    ECB Exchange Rates: true
+  applied_migrations:
+    - from_version: 7.0.4
+      to_version: "*"
+      migration: HttpRequesterUrlBaseToUrl
+      migrated_at: "2025-11-06T22:27:51.594380+00:00"
+    - from_version: 7.0.4
+      to_version: "*"
+      migration: HttpRequesterPathToUrl
+      migrated_at: "2025-11-06T22:27:51.594538+00:00"
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
