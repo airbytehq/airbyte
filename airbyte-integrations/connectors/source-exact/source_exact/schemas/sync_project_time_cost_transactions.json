@@ -1,0 +1,189 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "SyncProjectTimeCostTransactions",
+  "additionalProperties": true,
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": ["null", "integer"]
+    },
+    "Account": {
+      "description": "Guid ID of account that is linked to the project",
+      "type": ["null", "string"]
+    },
+    "AccountName": {
+      "description": "Name of account that is linked to the project",
+      "type": ["null", "string"]
+    },
+    "AmountFC": {
+      "description": "Calculated amount of the transaction based on (Quantity * PriceFC)",
+      "type": ["null", "number"]
+    },
+    "Attachment": {
+      "description": "Attachment linked to the transaction (not mandatory)",
+      "type": ["null", "string"]
+    },
+    "Created": {
+      "description": "Date and time the transaction was created",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "The Guid ID of user that created the transaction",
+      "type": ["null", "string"]
+    },
+    "CreatorFullName": {
+      "description": "The full name of the user that created the record",
+      "type": ["null", "string"]
+    },
+    "Currency": {
+      "description": "Currency of amount FC",
+      "type": ["null", "string"]
+    },
+    "CustomField": {
+      "description": "Custom field endpoint. Provided only for the Exact Online Premium users.",
+      "type": ["null", "string"]
+    },
+    "Date": {
+      "description": "Date and time the transaction was done",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Division": {
+      "description": "Division code",
+      "type": ["null", "integer"]
+    },
+    "DivisionDescription": {
+      "description": "Description of Division",
+      "type": ["null", "string"]
+    },
+    "Employee": {
+      "description": "Guid ID of the employee that is linked to the transaction",
+      "type": ["null", "string"]
+    },
+    "EndTime": {
+      "description": "End time of the time transaction",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "EntryNumber": {
+      "description": "Number that represents the grouping of transactions",
+      "type": ["null", "integer"]
+    },
+    "ErrorText": {
+      "description": "(Only used by backgroundjobs) To determine which transaction has an error",
+      "type": ["null", "string"]
+    },
+    "HourStatus": {
+      "description": "Status of the transaction: 1 = Draft, 2 = Rejected, 10 = Submitted, 11 = Failed on approval, 14 = Processing, 16 = Processing, 19 = Failed while undoing approval, 20 = Final",
+      "type": ["null", "integer"]
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": ["null", "string"]
+    },
+    "Item": {
+      "description": "Item that is linked to the transaction, which provides the time or cost information",
+      "type": ["null", "string"]
+    },
+    "ItemDescription": {
+      "description": "Description of the item that is linked to the transaction",
+      "type": ["null", "string"]
+    },
+    "ItemDivisable": {
+      "description": "Indicates if fractional quantities of the item can be used, for example quantity = 0.4",
+      "type": ["null", "boolean"]
+    },
+    "Modified": {
+      "description": "The date and time transaction record was modified",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "The Guid ID of the user that modified the records",
+      "type": ["null", "string"]
+    },
+    "ModifierFullName": {
+      "description": "The full name of the user that modified the record",
+      "type": ["null", "string"]
+    },
+    "Notes": {
+      "description": "Notes linked to the transaction for providing additional information (not mandatory)",
+      "type": ["null", "string"]
+    },
+    "PriceFC": {
+      "description": "For use in AmountFC (Quantiy * Price FC)",
+      "type": ["null", "number"]
+    },
+    "Project": {
+      "description": "Guid ID of project that is linked to the transaction",
+      "type": ["null", "string"]
+    },
+    "ProjectAccount": {
+      "description": "Project account ID that is linked to the transaction (not mandatory)",
+      "type": ["null", "string"]
+    },
+    "ProjectAccountCode": {
+      "description": "Project account code that is linked to the transaction",
+      "type": ["null", "string"]
+    },
+    "ProjectAccountName": {
+      "description": "Project account name that is linked to the transaction",
+      "type": ["null", "string"]
+    },
+    "ProjectCode": {
+      "description": "Project code that is linked to the transaction",
+      "type": ["null", "string"]
+    },
+    "ProjectDescription": {
+      "description": "Project description that is linked to the transaction",
+      "type": ["null", "string"]
+    },
+    "Quantity": {
+      "description": "Quantity of the item that is linked to the transaction",
+      "type": ["null", "number"]
+    },
+    "StartTime": {
+      "description": "Start time of the time transaction",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Subscription": {
+      "description": "Guid ID of subscription that is linked to the transaction",
+      "type": ["null", "string"]
+    },
+    "SubscriptionAccount": {
+      "description": "Subscription account ID that is linked to the transaction, this is to identify the referenced subscription",
+      "type": ["null", "string"]
+    },
+    "SubscriptionAccountCode": {
+      "description": "Subscription account code that is linked to the transaction",
+      "type": ["null", "string"]
+    },
+    "SubscriptionAccountName": {
+      "description": "Subscription account name that is linked to the transaction",
+      "type": ["null", "string"]
+    },
+    "SubscriptionDescription": {
+      "description": "Subscription description that is linked to the transaction",
+      "type": ["null", "string"]
+    },
+    "SubscriptionNumber": {
+      "description": "Subscription number that is linked to the transaction",
+      "type": ["null", "integer"]
+    },
+    "Type": {
+      "description": "The type of transaction. E.g: 1 = Time, 2 = Cost",
+      "type": ["null", "integer"]
+    },
+    "WBS": {
+      "description": "Guid ID of activity for time transaction or expense for cost transaction that is linked to project WBS (work breakdown structure)",
+      "type": ["null", "string"]
+    },
+    "WBSDescription": {
+      "description": "Name of activity for time transaction or expense for cost transaction that is linked to project WBS (work breakdown structure)",
+      "type": ["null", "string"]
+    }
+  }
+}

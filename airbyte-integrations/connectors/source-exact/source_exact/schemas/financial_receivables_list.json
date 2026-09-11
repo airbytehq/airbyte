@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "FinancialReceivablesList",
+  "additionalProperties": true,
+  "properties": {
+    "HID": {
+      "description": "Primary key, human readable ID",
+      "type": ["null", "string"]
+    },
+    "AccountCode": {
+      "description": "Code of account",
+      "type": ["null", "string"]
+    },
+    "AccountId": {
+      "description": "Reference to the account",
+      "type": ["null", "string"]
+    },
+    "AccountName": {
+      "description": "Name of account",
+      "type": ["null", "string"]
+    },
+    "Amount": {
+      "description": "Amount",
+      "type": ["null", "number"]
+    },
+    "AmountInTransit": {
+      "description": "Amount in transit - The amount that you have rqquested your bank to pay",
+      "type": ["null", "string"]
+    },
+    "CurrencyCode": {
+      "description": "Code of Currency",
+      "type": ["null", "string"]
+    },
+    "Description": {
+      "description": "Description",
+      "type": ["null", "number"]
+    },
+    "DueDate": {
+      "description": "Date the invoice is due (This due date is not the discount due date)",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "EntryNumber": {
+      "description": "The entry number of this payment term corresponding sales/cashflow entry",
+      "type": ["null", "integer"]
+    },
+    "InvoiceDate": {
+      "description": "The date of the invoice or the date when money is collected from the customer",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "InvoiceNumber": {
+      "description": "For sales entry, it would be the entrynumber. For the cashflow entry, it will be entrynumber of an invoice which this collection is for",
+      "type": ["null", "integer"]
+    },
+    "JournalCode": {
+      "description": "Code of Journal",
+      "type": ["null", "string"]
+    },
+    "JournalDescription": {
+      "description": "Description of Journal",
+      "type": ["null", "string"]
+    },
+    "Notes": {
+      "description": "Notes",
+      "type": ["null", "string"]
+    },
+    "YourRef": {
+      "description": "Sales invoice Your Reference number. Will be null if it is a cashflow entry",
+      "type": ["null", "string"]
+    }
+  }
+}
