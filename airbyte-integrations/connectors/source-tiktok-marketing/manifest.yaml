@@ -710,6 +710,13 @@ definitions:
           "engaged_view_15s",
           "paid_engaged_view_15s",
           "paid_engagement_engaged_view_15s",
+          "web_event_add_to_cart",
+          "page_content_view_events",
+          "onsite_on_web_cart",
+          "onsite_on_web_detail",
+          "total_view_content",
+          "total_purchase",
+          "total_sales_lead_value",
         ]
       dimensions: ["ad_id", "stat_time_day"]
     primary_key:
@@ -851,6 +858,19 @@ definitions:
           "secondary_goal_result",
           "cost_per_secondary_goal_result",
           "secondary_goal_result_rate",
+          "web_event_add_to_cart",
+          "page_content_view_events",
+          "onsite_on_web_cart",
+          "onsite_on_web_detail",
+          "total_view_content",
+          "total_purchase",
+          "total_sales_lead_value",
+          "complete_payment",
+          "total_complete_payment_rate",
+          "onsite_shopping",
+          "total_onsite_shopping_value",
+          "total_app_event_add_to_cart",
+          "total_purchase_value",
         ]
       dimensions: ["adgroup_id", "stat_time_day"]
     primary_key:
@@ -963,7 +983,27 @@ definitions:
             "filter_value": "[\\\"STATUS_ALL\\\"]",
           },
         ]
-      report_metrics: ["campaign_name"]
+      report_metrics:
+        [
+          "campaign_name",
+          "web_event_add_to_cart",
+          "page_content_view_events",
+          "onsite_on_web_cart",
+          "onsite_on_web_detail",
+          "total_view_content",
+          "total_purchase",
+          "total_sales_lead_value",
+          "complete_payment",
+          "total_complete_payment_rate",
+          "onsite_shopping",
+          "total_onsite_shopping_value",
+          "total_app_event_add_to_cart",
+          "total_purchase_value",
+          "conversion",
+          "conversion_rate",
+          "cost_per_conversion",
+          "real_time_conversion",
+        ]
       dimensions: ["campaign_id", "stat_time_day"]
     primary_key:
       - campaign_id
@@ -4355,6 +4395,41 @@ definitions:
                 - string
             total_pageview:
               description: Total number of page views.
+              type:
+                - "null"
+                - string
+            web_event_add_to_cart:
+              description: Number of add-to-cart events attributed to the ad, from the website pixel.
+              type:
+                - "null"
+                - string
+            page_content_view_events:
+              description: Number of content view events attributed to the ad, from the website pixel.
+              type:
+                - "null"
+                - string
+            onsite_on_web_cart:
+              description: Number of add-to-cart events on TikTok Shop attributed to the ad.
+              type:
+                - "null"
+                - string
+            onsite_on_web_detail:
+              description: Number of product detail page views on TikTok Shop attributed to the ad.
+              type:
+                - "null"
+                - string
+            total_view_content:
+              description: Total number of in-app content view events attributed to the ad.
+              type:
+                - "null"
+                - string
+            total_purchase:
+              description: Total number of in-app purchase events attributed to the ad.
+              type:
+                - "null"
+                - string
+            total_sales_lead_value:
+              description: Total value of in-app lead generation events attributed to the ad.
               type:
                 - "null"
                 - string
