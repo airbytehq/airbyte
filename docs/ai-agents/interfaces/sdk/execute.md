@@ -98,7 +98,7 @@ Skill docs are hosted by Airbyte and served by the platform. If you point the SD
 
 To expose only `execute` with a single generated description instead of the progressive flow, pass `use_progressive_docs=False`. `tools.as_list()` then returns just the `execute` tool.
 
-The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, and the SDK can't rename them, so the builder binds one connector's tool set per agent. If you register two connectors' tool sets with one agent, the names collide. Renaming the callables yourself at registration avoids the collision, but the generated `execute` guidance still tells the agent to call `inspect_connector` and `read_skill_docs`, so it points at the wrong tools. For an agent that uses more than one connector, use [`agent_tool`](#custom-tool-bodies-with-agent_tool) with connector-specific function names and pass those names through `inspect_tool=` and `docs_tool=`.
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, and the SDK can't rename them, so the builder binds one connector's tool set per agent. If you register two connectors' tool sets with one agent, the names collide. Renaming the callables yourself at registration avoids the collision, but in the progressive flow the generated `execute` guidance still tells the agent to call `inspect_connector` and `read_skill_docs`, so it points at the wrong tools. For an agent that uses more than one connector, use [`agent_tool`](#custom-tool-bodies-with-agent_tool) with connector-specific function names and pass those names through `inspect_tool=` and `docs_tool=`.
 
 #### Register the tools with your framework
 
