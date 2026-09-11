@@ -1,10 +1,17 @@
 import {
   faArrowRight,
+  faBook,
   faCloud,
+  faCode,
   faDownload,
+  faGear,
+  faLightbulb,
   faLock,
   faPlug,
+  faPuzzlePiece,
   faRobot,
+  faRocket,
+  faWindowMaximize,
 } from "@fortawesome/free-solid-svg-icons";
 import { faPython } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -12,12 +19,19 @@ import styles from "./Card.module.css";
 import { CloudIcon, EnterpriseIcon, OssIcon } from "./CustomIcons";
 
 const FA_ICONS = {
+  "fa-book": faBook,
   "fa-cloud": faCloud,
+  "fa-code": faCode,
   "fa-download": faDownload,
+  "fa-gear": faGear,
+  "fa-lightbulb": faLightbulb,
   "fa-lock": faLock,
   "fa-plug": faPlug,
+  "fa-puzzle-piece": faPuzzlePiece,
   "fa-python": faPython,
   "fa-robot": faRobot,
+  "fa-rocket": faRocket,
+  "fa-window-maximize": faWindowMaximize,
 };
 
 const CUSTOM_ICONS = {
@@ -30,15 +44,11 @@ const Link = ({ children, href, variant = "primary" }) => {
   const linkClass =
     variant === "secondary" ? styles.cardCtaSecondary : styles.cardCtaPrimary;
 
-  const handleClick = () => {
-    window.location.href = href;
-  };
-
   return (
-    <button className={`${styles.cardCta} ${linkClass}`} onClick={handleClick} role="link">
+    <a className={`${styles.cardCta} ${linkClass}`} href={href}>
       {children}
       <FontAwesomeIcon icon={faArrowRight} />
-    </button>
+    </a>
   );
 };
 

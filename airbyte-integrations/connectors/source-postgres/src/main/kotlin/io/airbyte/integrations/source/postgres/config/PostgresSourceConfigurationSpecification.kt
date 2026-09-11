@@ -126,10 +126,10 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaTitle("Schemas")
     @JsonSchemaArrayWithUniqueItems("schemas")
     @JsonPropertyDescription(
-        "The list of schemas to sync from. Defaults to public. Case sensitive."
+        "The list of schemas to sync from. Case sensitive. Empty means all schemas."
     )
     @JsonSchemaInject(json = """{"order":9,"uniqueItems":true,"group":"db"}""")
-    var schemas: List<String>? = listOf("public")
+    var schemas: List<String>? = listOf()
 
     @JsonProperty("jdbc_url_params")
     @JsonSchemaTitle("JDBC URL Parameters (Advanced)")
@@ -233,14 +233,14 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     )
     var checkPrivileges: Boolean? = true
 
-    @JsonIgnore var additionalPropertiesMap = mutableMapOf<String, Any>()
+    @JsonIgnore var additionalPropertiesMap: MutableMap<String, Any>? = mutableMapOf<String, Any>()
 
     @JsonAnySetter
     fun setAdditionalProperty(
         name: String,
         value: Any,
     ) {
-        additionalPropertiesMap[name] = value
+        additionalPropertiesMap?.set(name, value)
     }
 }
 
@@ -421,22 +421,13 @@ data object XminReplicationMethodConfigurationSpecification : IncrementalConfigu
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "testing")
 class CdcReplicationMethodConfigurationSpecification : IncrementalConfigurationSpecification {
 
-    @JsonProperty("invalid_cdc_cursor_position_behavior")
-    @JsonSchemaTitle("Invalid CDC Position Behavior (Advanced)")
-    @JsonPropertyDescription(
-        "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value in the mined logs. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
-    )
-    @JsonSchemaDefault("Fail sync")
-    @JsonSchemaInject(json = """{"order":6,"enum":["Fail sync","Re-sync data"]}""")
-    var invalidCdcCursorPositionBehavior: String? = "Fail sync"
-
     @JsonProperty("initial_load_timeout_hours")
     @JsonSchemaTitle("Initial Load Timeout in Hours (Advanced)")
     @JsonPropertyDescription(
         "The amount of time an initial load is allowed to continue for before catching up on CDC events.",
     )
     @JsonSchemaDefault("8")
-    @JsonSchemaInject(json = """{"order":7,"min":4,"max":24}""")
+    @JsonSchemaInject(json = """{"order":6,"min":4,"max":24}""")
     var initialLoadTimeoutHours: Int? = 8
 
     @JsonProperty("debezium_shutdown_timeout_seconds")
@@ -445,7 +436,7 @@ class CdcReplicationMethodConfigurationSpecification : IncrementalConfigurationS
         "The amount of time to allow the Debezium Engine to shut down, in seconds.",
     )
     @JsonSchemaDefault("60")
-    @JsonSchemaInject(json = """{"order":8,"min":1,"max":3600}""")
+    @JsonSchemaInject(json = """{"order":7,"min":1,"max":3600}""")
     var debeziumShutdownTimeoutSeconds: Int? = 60
 
     @JsonProperty("replication_slot", required = true)
@@ -501,7 +492,6 @@ class CdcReplicationMethodConfigurationSpecification : IncrementalConfigurationS
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.cursor")
 class MicronautPropertiesFriendlyCursorConfigurationSpecification {
     var cursorMethod: String = "user_defined"
-    var invalidCdcCursorPositionBehavior: String? = null
     var initialLoadTimeoutHours: Int? = null
     var debeziumShutdownTimeoutSeconds: Int? = null
 
@@ -510,7 +500,6 @@ class MicronautPropertiesFriendlyCursorConfigurationSpecification {
             "user_defined" -> StandardReplicationMethodConfigurationSpecification
             "cdc" ->
                 CdcReplicationMethodConfigurationSpecification().also {
-                    it.invalidCdcCursorPositionBehavior = invalidCdcCursorPositionBehavior
                     it.initialLoadTimeoutHours = initialLoadTimeoutHours
                     it.debeziumShutdownTimeoutSeconds = debeziumShutdownTimeoutSeconds
                 }

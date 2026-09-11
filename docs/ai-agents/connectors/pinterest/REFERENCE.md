@@ -8,26 +8,37 @@ The Pinterest connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Ad Accounts | [List](#ad-accounts-list), [Get](#ad-accounts-get), [Search](#ad-accounts-search) |
-| Boards | [List](#boards-list), [Get](#boards-get), [Search](#boards-search) |
-| Campaigns | [List](#campaigns-list), [Search](#campaigns-search) |
-| Ad Groups | [List](#ad-groups-list), [Search](#ad-groups-search) |
-| Ads | [List](#ads-list), [Search](#ads-search) |
-| Board Sections | [List](#board-sections-list), [Search](#board-sections-search) |
-| Board Pins | [List](#board-pins-list), [Search](#board-pins-search) |
-| Catalogs | [List](#catalogs-list), [Search](#catalogs-search) |
-| Catalogs Feeds | [List](#catalogs-feeds-list), [Search](#catalogs-feeds-search) |
-| Catalogs Product Groups | [List](#catalogs-product-groups-list), [Search](#catalogs-product-groups-search) |
-| Audiences | [List](#audiences-list), [Search](#audiences-search) |
-| Conversion Tags | [List](#conversion-tags-list), [Search](#conversion-tags-search) |
-| Customer Lists | [List](#customer-lists-list), [Search](#customer-lists-search) |
-| Keywords | [List](#keywords-list), [Search](#keywords-search) |
+| Ad Accounts | [List](#ad-accounts-list), [Get](#ad-accounts-get), [Context Store Search](#ad-accounts-context-store-search) |
+| Boards | [List](#boards-list), [Get](#boards-get), [Context Store Search](#boards-context-store-search) |
+| Campaigns | [List](#campaigns-list), [Context Store Search](#campaigns-context-store-search) |
+| Ad Groups | [List](#ad-groups-list), [Context Store Search](#ad-groups-context-store-search) |
+| Ads | [List](#ads-list), [Context Store Search](#ads-context-store-search) |
+| Board Sections | [List](#board-sections-list), [Context Store Search](#board-sections-context-store-search) |
+| Board Pins | [List](#board-pins-list), [Context Store Search](#board-pins-context-store-search) |
+| Catalogs | [List](#catalogs-list), [Context Store Search](#catalogs-context-store-search) |
+| Catalogs Feeds | [List](#catalogs-feeds-list), [Context Store Search](#catalogs-feeds-context-store-search) |
+| Catalogs Product Groups | [List](#catalogs-product-groups-list), [Context Store Search](#catalogs-product-groups-context-store-search) |
+| Audiences | [List](#audiences-list), [Context Store Search](#audiences-context-store-search) |
+| Conversion Tags | [List](#conversion-tags-list), [Context Store Search](#conversion-tags-context-store-search) |
+| Customer Lists | [List](#customer-lists-list), [Context Store Search](#customer-lists-context-store-search) |
+| Keywords | [List](#keywords-list), [Context Store Search](#keywords-context-store-search) |
 
 ## Ad Accounts
 
 ### Ad Accounts List
 
 Get a list of the ad accounts that the authenticated user has access to.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "ad_accounts",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -78,13 +89,27 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `bookmark` | `null \| string` |  |
+| `cursor` | `null \| string` |  |
 
 </details>
 
 ### Ad Accounts Get
 
 Get an ad account by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "ad_accounts",
+  "action": "get",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -136,14 +161,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Ad Accounts Search
+### Ad Accounts Context Store Search
 
 Search and filter ad accounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "ad_accounts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "country": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await pinterest.ad_accounts.search(
+await pinterest.ad_accounts.context_store_search(
     query={"filter": {"eq": {"country": "<str>"}}}
 )
 ```
@@ -156,7 +201,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ad_accounts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"country": "<str>"}}}
     }
@@ -167,7 +212,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -213,6 +258,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Boards List
 
 Get a list of the boards owned by the authenticated user.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "boards",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -267,13 +323,27 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `bookmark` | `null \| string` |  |
+| `cursor` | `null \| string` |  |
 
 </details>
 
 ### Boards Get
 
 Get a board by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "boards",
+  "action": "get",
+  "params": {
+    "board_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -329,14 +399,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Boards Search
+### Boards Context Store Search
 
 Search and filter boards records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "boards",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "board_pins_modified_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await pinterest.boards.search(
+await pinterest.boards.context_store_search(
     query={"filter": {"eq": {"board_pins_modified_at": "<str>"}}}
 )
 ```
@@ -349,7 +439,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "boards",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"board_pins_modified_at": "<str>"}}}
     }
@@ -360,7 +450,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -412,6 +502,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Campaigns List
 
 Get a list of campaigns in the specified ad account.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "campaigns",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -482,18 +586,38 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `bookmark` | `null \| string` |  |
+| `cursor` | `null \| string` |  |
 
 </details>
 
-### Campaigns Search
+### Campaigns Context Store Search
 
 Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "campaigns",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await pinterest.campaigns.search(
+await pinterest.campaigns.context_store_search(
     query={"filter": {"eq": {"ad_account_id": "<str>"}}}
 )
 ```
@@ -506,7 +630,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ad_account_id": "<str>"}}}
     }
@@ -517,7 +641,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -581,6 +705,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ad Groups List
 
 Get a list of ad groups in the specified ad account.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "ad_groups",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -662,18 +800,38 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `bookmark` | `null \| string` |  |
+| `cursor` | `null \| string` |  |
 
 </details>
 
-### Ad Groups Search
+### Ad Groups Context Store Search
 
 Search and filter ad groups records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "ad_groups",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await pinterest.ad_groups.search(
+await pinterest.ad_groups.context_store_search(
     query={"filter": {"eq": {"ad_account_id": "<str>"}}}
 )
 ```
@@ -686,7 +844,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ad_groups",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ad_account_id": "<str>"}}}
     }
@@ -697,7 +855,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -777,6 +935,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ads List
 
 Get a list of ads in the specified ad account.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "ads",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -859,18 +1031,38 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `bookmark` | `null \| string` |  |
+| `cursor` | `null \| string` |  |
 
 </details>
 
-### Ads Search
+### Ads Context Store Search
 
 Search and filter ads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "ads",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await pinterest.ads.search(
+await pinterest.ads.context_store_search(
     query={"filter": {"eq": {"ad_account_id": "<str>"}}}
 )
 ```
@@ -883,7 +1075,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ads",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ad_account_id": "<str>"}}}
     }
@@ -894,7 +1086,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -981,6 +1173,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of sections for a specific board.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "board_sections",
+  "action": "list",
+  "params": {
+    "board_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1029,18 +1235,38 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `bookmark` | `null \| string` |  |
+| `cursor` | `null \| string` |  |
 
 </details>
 
-### Board Sections Search
+### Board Sections Context Store Search
 
 Search and filter board sections records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "board_sections",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await pinterest.board_sections.search(
+await pinterest.board_sections.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -1053,7 +1279,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "board_sections",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -1064,7 +1290,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1098,6 +1324,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Board Pins List
 
 Get a list of pins on a specific board.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "board_pins",
+  "action": "list",
+  "params": {
+    "board_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1164,18 +1404,38 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `bookmark` | `null \| string` |  |
+| `cursor` | `null \| string` |  |
 
 </details>
 
-### Board Pins Search
+### Board Pins Context Store Search
 
 Search and filter board pins records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "board_pins",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "alt_text": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await pinterest.board_pins.search(
+await pinterest.board_pins.context_store_search(
     query={"filter": {"eq": {"alt_text": "<str>"}}}
 )
 ```
@@ -1188,7 +1448,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "board_pins",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"alt_text": "<str>"}}}
     }
@@ -1199,7 +1459,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1264,6 +1524,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of catalogs for the authenticated user.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "catalogs",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1309,18 +1580,38 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `bookmark` | `null \| string` |  |
+| `cursor` | `null \| string` |  |
 
 </details>
 
-### Catalogs Search
+### Catalogs Context Store Search
 
 Search and filter catalogs records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "catalogs",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "catalog_type": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await pinterest.catalogs.search(
+await pinterest.catalogs.context_store_search(
     query={"filter": {"eq": {"catalog_type": "<str>"}}}
 )
 ```
@@ -1333,7 +1624,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "catalogs",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"catalog_type": "<str>"}}}
     }
@@ -1344,7 +1635,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1384,6 +1675,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Catalogs Feeds List
 
 Get a list of catalog feeds for the authenticated user.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "catalogs_feeds",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1438,18 +1740,38 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `bookmark` | `null \| string` |  |
+| `cursor` | `null \| string` |  |
 
 </details>
 
-### Catalogs Feeds Search
+### Catalogs Feeds Context Store Search
 
 Search and filter catalogs feeds records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "catalogs_feeds",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "catalog_type": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await pinterest.catalogs_feeds.search(
+await pinterest.catalogs_feeds.context_store_search(
     query={"filter": {"eq": {"catalog_type": "<str>"}}}
 )
 ```
@@ -1462,7 +1784,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "catalogs_feeds",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"catalog_type": "<str>"}}}
     }
@@ -1473,7 +1795,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1530,6 +1852,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of catalog product groups for the authenticated user.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "catalogs_product_groups",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1579,18 +1912,38 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `bookmark` | `null \| string` |  |
+| `cursor` | `null \| string` |  |
 
 </details>
 
-### Catalogs Product Groups Search
+### Catalogs Product Groups Context Store Search
 
 Search and filter catalogs product groups records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "catalogs_product_groups",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_at": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await pinterest.catalogs_product_groups.search(
+await pinterest.catalogs_product_groups.context_store_search(
     query={"filter": {"eq": {"created_at": 0}}}
 )
 ```
@@ -1603,7 +1956,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "catalogs_product_groups",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created_at": 0}}}
     }
@@ -1614,7 +1967,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1662,6 +2015,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Audiences List
 
 Get a list of audiences for the specified ad account.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "audiences",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1721,18 +2088,38 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `bookmark` | `null \| string` |  |
+| `cursor` | `null \| string` |  |
 
 </details>
 
-### Audiences Search
+### Audiences Context Store Search
 
 Search and filter audiences records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "audiences",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await pinterest.audiences.search(
+await pinterest.audiences.context_store_search(
     query={"filter": {"eq": {"ad_account_id": "<str>"}}}
 )
 ```
@@ -1745,7 +2132,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "audiences",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ad_account_id": "<str>"}}}
     }
@@ -1756,7 +2143,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1808,6 +2195,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Conversion Tags List
 
 Get a list of conversion tags for the specified ad account.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "conversion_tags",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1864,18 +2265,38 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `bookmark` | `null \| string` |  |
+| `cursor` | `null \| string` |  |
 
 </details>
 
-### Conversion Tags Search
+### Conversion Tags Context Store Search
 
 Search and filter conversion tags records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "conversion_tags",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await pinterest.conversion_tags.search(
+await pinterest.conversion_tags.context_store_search(
     query={"filter": {"eq": {"ad_account_id": "<str>"}}}
 )
 ```
@@ -1888,7 +2309,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "conversion_tags",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ad_account_id": "<str>"}}}
     }
@@ -1899,7 +2320,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1947,6 +2368,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Customer Lists List
 
 Get a list of customer lists for the specified ad account.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "customer_lists",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2004,18 +2439,38 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `bookmark` | `null \| string` |  |
+| `cursor` | `null \| string` |  |
 
 </details>
 
-### Customer Lists Search
+### Customer Lists Context Store Search
 
 Search and filter customer lists records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "customer_lists",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await pinterest.customer_lists.search(
+await pinterest.customer_lists.context_store_search(
     query={"filter": {"eq": {"ad_account_id": "<str>"}}}
 )
 ```
@@ -2028,7 +2483,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "customer_lists",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ad_account_id": "<str>"}}}
     }
@@ -2039,7 +2494,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -2089,6 +2544,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Keywords List
 
 Get a list of keywords for the specified ad account. Requires an ad_group_id filter.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "keywords",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>",
+    "ad_group_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2147,18 +2617,38 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `bookmark` | `null \| string` |  |
+| `cursor` | `null \| string` |  |
 
 </details>
 
-### Keywords Search
+### Keywords Context Store Search
 
 Search and filter keywords records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "keywords",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await pinterest.keywords.search(
+await pinterest.keywords.context_store_search(
     query={"filter": {"eq": {"archived": True}}}
 )
 ```
@@ -2171,7 +2661,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "keywords",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"archived": True}}}
     }
@@ -2182,7 +2672,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |

@@ -27,7 +27,7 @@ definitions:
           - type: WaitTimeFromHeader
             header: Retry-After
       request_headers:
-        User-Agent: Airbyte (Connector Version 0.5.3)
+        User-Agent: Airbyte (Connector Version 1.1.0)
     SimpleRetriever:
       requester:
         $ref: "#/definitions/linked/HttpRequester"
@@ -129,7 +129,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/tasks/'
+        url: '{{ config["base_url"] }}/api/v2.15/tasks/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -650,105 +650,154 @@ streams:
           - type: AddedFieldDefinition
             path:
               - category_id
-            value: '{{ record["relationships"]["category"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["category"]["data"]["id"] if record["relationships"].get("category",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - servicegroup_id
-            value: '{{ record["relationships"]["servicegroup"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["servicegroup"]["data"]["id"] if record["relationships"].get("servicegroup",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - client_id
-            value: '{{ record["relationships"]["client"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["client"]["data"]["id"] if record["relationships"].get("client",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - property_id
-            value: '{{ record["relationships"]["property"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["property"]["data"]["id"] if record["relationships"].get("property",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - billingcard_id
-            value: '{{ record["relationships"]["billingcard"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["billingcard"]["data"]["id"] if record["relationships"].get("billingcard",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - assigned_to_id
-            value: '{{ record["relationships"]["assigned_to"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["assigned_to"]["data"]["id"] if record["relationships"].get("assigned_to",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - assigned_office_id
-            value: '{{ record["relationships"]["assigned_office"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["assigned_office"]["data"]["id"] if record["relationships"].get("assigned_office",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - salesperson_id
-            value: '{{ record["relationships"]["salesperson"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["salesperson"]["data"]["id"] if record["relationships"].get("salesperson",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - technician_id
-            value: '{{ record["relationships"]["technician"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["technician"]["data"]["id"] if record["relationships"].get("technician",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - round_id
-            value: '{{ record["relationships"]["round"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["round"]["data"]["id"] if record["relationships"].get("round",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - tags
-            value: '{{ record["relationships"]["tags"]["data"] }}'
+            value:
+              '{{ record["relationships"]["tags"]["data"] if record["relationships"].get("tags")
+              else "" }}'
           - type: AddedFieldDefinition
             path:
               - branch_id
-            value: '{{ record["relationships"]["branch"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["branch"]["data"]["id"] if record["relationships"].get("branch",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - supporting_technicians
-            value: '{{ record["relationships"]["supporting_technicians"]["data"] }}'
+            value:
+              '{{ record["relationships"]["supporting_technicians"]["data"] if record["relationships"].get("supporting_technicians")
+              else "" }}'
           - type: AddedFieldDefinition
             path:
               - costcentre_id
-            value: '{{ record["relationships"]["costcentre"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["costcentre"]["data"]["id"] if record["relationships"].get("costcentre",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - parent_task_id
-            value: '{{ record["relationships"]["parent_task"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["parent_task"]["data"]["id"] if record["relationships"].get("parent_task",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - author_id
-            value: '{{ record["relationships"]["author"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["author"]["data"]["id"] if record["relationships"].get("author",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - contractor_id
-            value: '{{ record["relationships"]["contractor"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["contractor"]["data"]["id"] if record["relationships"].get("contractor",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - contractor_assigned_technician_id
             value:
               '{{ record["relationships"]["contractor_assigned_technician"]["data"]["id"]
-              or "None"}}'
+              if record["relationships"].get("contractor_assigned_technician", {}).get("data")
+              else "None" }}'
           - type: AddedFieldDefinition
             path:
               - updated_by_id
-            value: '{{ record["relationships"]["updated_by"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["updated_by"]["data"]["id"] if record["relationships"].get("updated_by",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - status_id
-            value: '{{ record["relationships"]["status"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["status"]["data"]["id"] if record["relationships"].get("status",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - zone_id
-            value: '{{ record["relationships"]["zone"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["zone"]["data"]["id"] if record["relationships"].get("zone",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - required_accreditationtypes
-            value: '{{ record["relationships"]["required_accreditationtypes"]["data"] }}'
+            value:
+              '{{ record["relationships"]["required_accreditationtypes"]["data"] if
+              record["relationships"].get("required_accreditationtypes") else "" }}'
           - type: AddedFieldDefinition
             path:
               - project_id
-            value: '{{ record["relationships"]["project"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["project"]["data"]["id"] if record["relationships"].get("project",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - sla_id
-            value: '{{ record["relationships"]["sla"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["sla"]["data"]["id"] if record["relationships"].get("sla",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - callout_id
-            value: '{{ record["relationships"]["callout"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["callout"]["data"]["id"] if record["relationships"].get("callout",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: taskcategories
     primary_key:
@@ -759,7 +808,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/taskcategories/'
+        url: '{{ config["base_url"] }}/api/v2.15/taskcategories/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -816,11 +865,11 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/clients/'
+        url: '{{ config["base_url"] }}/api/v2.15/clients/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[Client]: id,created,updated,ref,name,is_active,contact_name,contact_organisation,contact_mobile,contact_phone_bh,contact_phone_ah,contact_email,contact_email_cc,contact_address,report_requirements,report_attention,report_email_to,report_email_cc,report_manual,billing_organisation,billing_requirements,billing_attention,billing_email_to,billing_email_cc,billing_manual,billing_address,billing_fixedprice,quoting_autoreminders_enabled,quoting_requirements,notes,address,material_markup,extra_fields,sector,billingcard,pricetier
+          fields[Client]: id,created,updated,ref,name,is_active,contact_name,contact_organisation,contact_mobile,contact_phone_bh,contact_phone_ah,contact_email,contact_email_cc,contact_address,report_requirements,report_attention,report_email_to,report_email_cc,report_manual,billing_organisation,billing_requirements,billing_attention,billing_email_to,billing_email_cc,billing_manual,billing_address,billing_fixedprice,quoting_autoreminders_enabled,quoting_requirements,notes,address,material_markup,extra_fields,sector,billingcard,pricetier,clientgroup,account_manager
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -944,6 +993,14 @@ streams:
               - integer
               - "null"
           pricetier_id:
+            type:
+              - integer
+              - "null"
+          clientgroup_id:
+            type:
+              - integer
+              - "null"
+          account_manager_id:
             type:
               - integer
               - "null"
@@ -1089,11 +1146,27 @@ streams:
           - type: AddedFieldDefinition
             path:
               - billingcard_id
-            value: '{{ record["relationships"]["billingcard"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["billingcard"]["data"]["id"] if record["relationships"].get("billingcard",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - pricetier_id
-            value: '{{ record["relationships"]["pricetier"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["pricetier"]["data"]["id"] if record["relationships"].get("pricetier",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - clientgroup_id
+            value:
+              '{{ record["relationships"]["clientgroup"]["data"]["id"] if record["relationships"].get("clientgroup",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - account_manager_id
+            value:
+              '{{ record["relationships"]["account_manager"]["data"]["id"] if record["relationships"].get("account_manager",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: clientgroups
     primary_key:
@@ -1104,7 +1177,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/clientgroups/'
+        url: '{{ config["base_url"] }}/api/v2.15/clientgroups/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -1175,11 +1248,11 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/properties/'
+        url: '{{ config["base_url"] }}/api/v2.15/properties/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[Property]: id,created,updated,address,coords,timezone,access_inductionreq,access_logbookreq,access_schedule,access_signaturereq,billing_manual,building_tenancies,client_signature_required,name,ref,report_manual,status,bsecure_resolved_guid,extra_fields,tags
+          fields[Property]: id,created,updated,address,coords,timezone,access_inductionreq,access_logbookreq,access_schedule,access_signaturereq,billing_manual,building_tenancies,client_signature_required,name,ref,report_manual,status,bsecure_resolved_guid,extra_fields,tags,client,branch,account_manager
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1255,6 +1328,18 @@ streams:
           tags:
             type:
               - array
+          client_id:
+            type:
+              - integer
+              - "null"
+          branch_id:
+            type:
+              - integer
+              - "null"
+          account_manager_id:
+            type:
+              - integer
+              - "null"
     transformations:
       - type: AddFields
         fields:
@@ -1337,7 +1422,27 @@ streams:
           - type: AddedFieldDefinition
             path:
               - tags
-            value: '{{ record["relationships"]["tags"]["data"] }}'
+            value:
+              '{{ record["relationships"]["tags"]["data"] if record["relationships"].get("tags")
+              else "" }}'
+          - type: AddedFieldDefinition
+            path:
+              - client_id
+            value:
+              '{{ record["relationships"]["client"]["data"]["id"] if record["relationships"].get("client",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - branch_id
+            value:
+              '{{ record["relationships"]["branch"]["data"]["id"] if record["relationships"].get("branch",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - account_manager_id
+            value:
+              '{{ record["relationships"]["account_manager"]["data"]["id"] if record["relationships"].get("account_manager",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: invoices
     primary_key:
@@ -1348,11 +1453,11 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/invoices/'
+        url: '{{ config["base_url"] }}/api/v2.15/invoices/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[Invoice]: id,created,updated,description,authorisation_ref,created,currency,date,due_date,extra_fields,gst,is_overdue,is_sent,number,partner_uid,ref,status,subtotal,synced,total,property,task
+          fields[Invoice]: id,created,updated,description,authorisation_ref,created,currency,date,due_date,extra_fields,gst,is_overdue,is_sent,number,partner_uid,ref,status,subtotal,synced,total,property,task,branch,client
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1436,6 +1541,14 @@ streams:
               - integer
               - "null"
           task_id:
+            type:
+              - integer
+              - "null"
+          branch_id:
+            type:
+              - integer
+              - "null"
+          client_id:
             type:
               - integer
               - "null"
@@ -1525,11 +1638,27 @@ streams:
           - type: AddedFieldDefinition
             path:
               - property_id
-            value: '{{ record["relationships"]["property"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["property"]["data"]["id"] if record["relationships"].get("property",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - task_id
-            value: '{{ record["relationships"]["task"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["task"]["data"]["id"] if record["relationships"].get("task",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - branch_id
+            value:
+              '{{ record["relationships"]["branch"]["data"]["id"] if record["relationships"].get("branch",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - client_id
+            value:
+              '{{ record["relationships"]["client"]["data"]["id"] if record["relationships"].get("client",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: projects
     primary_key:
@@ -1540,7 +1669,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/projects/'
+        url: '{{ config["base_url"] }}/api/v2.15/projects/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -1735,31 +1864,45 @@ streams:
           - type: AddedFieldDefinition
             path:
               - branch_id
-            value: '{{ record["relationships"]["branch"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["branch"]["data"]["id"] if record["relationships"].get("branch",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - costcentre_id
-            value: '{{ record["relationships"]["costcentre"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["costcentre"]["data"]["id"] if record["relationships"].get("costcentre",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - client_id
-            value: '{{ record["relationships"]["client"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["client"]["data"]["id"] if record["relationships"].get("client",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - property_id
-            value: '{{ record["relationships"]["property"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["property"]["data"]["id"] if record["relationships"].get("property",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - billingcard_id
-            value: '{{ record["relationships"]["billingcard"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["billingcard"]["data"]["id"] if record["relationships"].get("billingcard",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - supervisor_id
-            value: '{{ record["relationships"]["supervisor"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["supervisor"]["data"]["id"] if record["relationships"].get("supervisor",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - salesperson_id
-            value: '{{ record["relationships"]["salesperson"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["salesperson"]["data"]["id"] if record["relationships"].get("salesperson",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: servicequotes
     primary_key:
@@ -1770,11 +1913,11 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/servicequotes/'
+        url: '{{ config["base_url"] }}/api/v2.15/servicequotes/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[ServiceQuote]: id,description,created,updated,uuid,ref,status,status_changed_submitted,status_changed_approved,expiry_date,review_date,template,template_name,scope_of_works_format,upload_path,property_access_schedule,authorisation_date,product_subtotal
+          fields[ServiceQuote]: id,description,created,updated,uuid,ref,status,status_changed_submitted,status_changed_approved,expiry_date,review_date,template,template_name,scope_of_works_format,upload_path,property_access_schedule,authorisation_date,product_subtotal,author,salesperson,property_branch,property_object,client_object
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1855,6 +1998,26 @@ streams:
           product_subtotal:
             type:
               - string
+          author_id:
+            type:
+              - integer
+              - "null"
+          salesperson_id:
+            type:
+              - integer
+              - "null"
+          property_branch_id:
+            type:
+              - integer
+              - "null"
+          property_object_id:
+            type:
+              - integer
+              - "null"
+          client_object_id:
+            type:
+              - integer
+              - "null"
     transformations:
       - type: AddFields
         fields:
@@ -1930,6 +2093,36 @@ streams:
             path:
               - product_subtotal
             value: '{{ record["attributes"]["product_subtotal"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - author_id
+            value:
+              '{{ record["relationships"]["author"]["data"]["id"] if record["relationships"].get("author",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - salesperson_id
+            value:
+              '{{ record["relationships"]["salesperson"]["data"]["id"] if record["relationships"].get("salesperson",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - property_branch_id
+            value:
+              '{{ record["relationships"]["property_branch"]["data"]["id"] if record["relationships"].get("property_branch",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - property_object_id
+            value:
+              '{{ record["relationships"]["property_object"]["data"]["id"] if record["relationships"].get("property_object",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - client_object_id
+            value:
+              '{{ record["relationships"]["client_object"]["data"]["id"] if record["relationships"].get("client_object",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: defectquotes
     primary_key:
@@ -1940,11 +2133,11 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/defectquotes/'
+        url: '{{ config["base_url"] }}/api/v2.15/defectquotes/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[DefectQuote]: id,description,ref,created,updated,status,date,due_date,expiry_date,last_actioned,email_template,reminder_email_template,scope_of_works,branch,client,property,author,salesperson
+          fields[DefectQuote]: id,description,ref,created,updated,status,date,due_date,expiry_date,last_actioned,email_template,reminder_email_template,scope_of_works,branch,client,property,author,salesperson,status_changed_submitted,status_changed_approved,servicegroup,authorisation_date
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2024,6 +2217,28 @@ streams:
             type:
               - integer
               - "null"
+          status_changed_submitted:
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          status_changed_approved:
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          servicegroup_id:
+            type:
+              - integer
+              - "null"
+          authorisation_date:
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
     transformations:
       - type: AddFields
         fields:
@@ -2082,23 +2297,51 @@ streams:
           - type: AddedFieldDefinition
             path:
               - branch_id
-            value: '{{ record["relationships"]["branch"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["branch"]["data"]["id"] if record["relationships"].get("branch",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - client_id
-            value: '{{ record["relationships"]["client"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["client"]["data"]["id"] if record["relationships"].get("client",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - property_id
-            value: '{{ record["relationships"]["property"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["property"]["data"]["id"] if record["relationships"].get("property",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - author_id
-            value: '{{ record["relationships"]["author"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["author"]["data"]["id"] if record["relationships"].get("author",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - salesperson_id
-            value: '{{ record["relationships"]["salesperson"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["salesperson"]["data"]["id"] if record["relationships"].get("salesperson",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - status_changed_submitted
+            value: '{{ record["attributes"]["status_changed_submitted"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - status_changed_approved
+            value: '{{ record["attributes"]["status_changed_approved"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - servicegroup_id
+            value:
+              '{{ record["relationships"]["servicegroup"]["data"]["id"] if record["relationships"].get("servicegroup",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - authorisation_date
+            value: '{{ record["attributes"]["authorisation_date"] or "None"}}'
   - type: DeclarativeStream
     name: suppliers
     primary_key:
@@ -2109,7 +2352,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/suppliers/'
+        url: '{{ config["base_url"] }}/api/v2.15/suppliers/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -2195,11 +2438,11 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/purchaseorders/'
+        url: '{{ config["base_url"] }}/api/v2.15/purchaseorders/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[PurchaseOrder]: id,created,updated,ref,status,all_goods_received,date,total,supplier_ref,created_via,has_manually_added_costs,currency,fx_rate
+          fields[PurchaseOrder]: id,created,updated,ref,status,all_goods_received,date,total,supplier_ref,created_via,has_manually_added_costs,currency,fx_rate,task
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2254,6 +2497,10 @@ streams:
             type:
               - string
             airbyte_type: decimal
+          task_id:
+            type:
+              - integer
+              - "null"
     transformations:
       - type: AddFields
         fields:
@@ -2309,6 +2556,12 @@ streams:
             path:
               - fx_rate
             value: '{{ record["attributes"]["fx_rate"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - task_id
+            value:
+              '{{ record["relationships"]["task"]["data"]["id"] if record["relationships"].get("task",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: routines
     primary_key:
@@ -2319,7 +2572,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/routines/'
+        url: '{{ config["base_url"] }}/api/v2.15/routines/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -2416,7 +2669,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/billingcards/'
+        url: '{{ config["base_url"] }}/api/v2.15/billingcards/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -2480,7 +2733,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/purchaseorderbills/'
+        url: '{{ config["base_url"] }}/api/v2.15/purchaseorderbills/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -2552,7 +2805,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/purchaseorderdockets/'
+        url: '{{ config["base_url"] }}/api/v2.15/purchaseorderdockets/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -2624,7 +2877,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/invoicelineitems/'
+        url: '{{ config["base_url"] }}/api/v2.15/invoicelineitems/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -2695,7 +2948,9 @@ streams:
           - type: AddedFieldDefinition
             path:
               - invoice_id
-            value: '{{ record["relationships"]["invoice"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["invoice"]["data"]["id"] if record["relationships"].get("invoice",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - created
@@ -2754,11 +3009,11 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/users/'
+        url: '{{ config["base_url"] }}/api/v2.15/users/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[User]: id,updated,name,email,partner_uid,date_joined,last_login,last_access,is_active,is_staff,is_superuser,license,addons,rate,sell_rate,extra_fields,purchase_order_approval_limit,defectquote_approval_limit
+          fields[User]: id,updated,name,email,partner_uid,date_joined,last_login,last_access,is_active,is_staff,is_superuser,license,addons,rate,sell_rate,extra_fields,purchase_order_approval_limit,defectquote_approval_limit,servicegroup
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2839,6 +3094,10 @@ streams:
               - string
               - "null"
             airbyte_type: decimal
+          servicegroup_id:
+            type:
+              - integer
+              - "null"
     transformations:
       - type: AddFields
         fields:
@@ -2914,6 +3173,12 @@ streams:
             path:
               - defectquote_approval_limit
             value: '{{ record["attributes"]["defectquote_approval_limit"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - servicegroup_id
+            value:
+              '{{ record["relationships"]["servicegroup"]["data"]["id"] if record["relationships"].get("servicegroup",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: servicegroups
     primary_key:
@@ -2924,7 +3189,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/servicegroups/'
+        url: '{{ config["base_url"] }}/api/v2.15/servicegroups/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -2981,7 +3246,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/costcentres/'
+        url: '{{ config["base_url"] }}/api/v2.15/costcentres/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -3074,11 +3339,15 @@ streams:
           - type: AddedFieldDefinition
             path:
               - branch_id
-            value: '{{ record["relationships"]["branch"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["branch"]["data"]["id"] if record["relationships"].get("branch",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - taskcategory_id
-            value: '{{ record["relationships"]["taskcategory"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["taskcategory"]["data"]["id"] if record["relationships"].get("taskcategory",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: purchaseorderlineitems
     primary_key:
@@ -3089,7 +3358,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/purchaseorderlineitems/'
+        url: '{{ config["base_url"] }}/api/v2.15/purchaseorderlineitems/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -3254,11 +3523,15 @@ streams:
           - type: AddedFieldDefinition
             path:
               - purchaseorder_id
-            value: '{{ record["relationships"]["purchaseorder"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["purchaseorder"]["data"]["id"] if record["relationships"].get("purchaseorder",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - product_id
-            value: '{{ record["relationships"]["product"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["product"]["data"]["id"] if record["relationships"].get("product",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: purchaseorderbilllineitems
     primary_key:
@@ -3269,7 +3542,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/purchaseorderbilllineitems/'
+        url: '{{ config["base_url"] }}/api/v2.15/purchaseorderbilllineitems/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -3398,17 +3671,22 @@ streams:
           - type: AddedFieldDefinition
             path:
               - purchaseorderbill_id
-            value: '{{ record["relationships"]["purchaseorderbill"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["purchaseorderbill"]["data"]["id"] if record["relationships"].get("purchaseorderbill",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - purchaseorderlineitem_id
             value:
-              '{{ record["relationships"]["purchaseorderlineitem"]["data"]["id"] or
-              "None"}}'
+              '{{ record["relationships"]["purchaseorderlineitem"]["data"]["id"] if
+              record["relationships"].get("purchaseorderlineitem", {}).get("data") else
+              "None" }}'
           - type: AddedFieldDefinition
             path:
               - product_id
-            value: '{{ record["relationships"]["product"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["product"]["data"]["id"] if record["relationships"].get("product",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: accreditationtypes
     primary_key:
@@ -3419,7 +3697,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/accreditationtypes/'
+        url: '{{ config["base_url"] }}/api/v2.15/accreditationtypes/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -3497,7 +3775,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/accreditations/'
+        url: '{{ config["base_url"] }}/api/v2.15/accreditations/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -3583,15 +3861,21 @@ streams:
           - type: AddedFieldDefinition
             path:
               - property_id
-            value: '{{ record["relationships"]["property"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["property"]["data"]["id"] if record["relationships"].get("property",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - accreditationtype_id
-            value: '{{ record["relationships"]["accreditationtype"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["accreditationtype"]["data"]["id"] if record["relationships"].get("accreditationtype",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - technician_id
-            value: '{{ record["relationships"]["technician"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["technician"]["data"]["id"] if record["relationships"].get("technician",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: branches
     primary_key:
@@ -3602,11 +3886,11 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/branches/'
+        url: '{{ config["base_url"] }}/api/v2.15/branches/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[Branch]: id,created,updated,name,code,address,business_hours,email,phone,fax,property_count,user_count,material_markup,extra_fields,subcontracted_task_safety_requirements,subcontracted_task_service_requirements,default_warehouse
+          fields[Branch]: id,created,updated,name,code,address,business_hours,email,phone,property_count,user_count,material_markup,extra_fields,subcontracted_task_safety_requirements,subcontracted_task_service_requirements,default_warehouse
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3645,9 +3929,6 @@ streams:
               - string
             format: email
           phone:
-            type:
-              - string
-          fax:
             type:
               - string
           property_count:
@@ -3717,10 +3998,6 @@ streams:
             value: '{{ record["attributes"]["phone"] }}'
           - type: AddedFieldDefinition
             path:
-              - fax
-            value: '{{ record["attributes"]["fax"] }}'
-          - type: AddedFieldDefinition
-            path:
               - property_count
             value: '{{ record["attributes"]["property_count"] or "None"}}'
           - type: AddedFieldDefinition
@@ -3746,7 +4023,9 @@ streams:
           - type: AddedFieldDefinition
             path:
               - default_warehouse_id
-            value: '{{ record["relationships"]["default_warehouse"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["default_warehouse"]["data"]["id"] if record["relationships"].get("default_warehouse",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: creditnotes
     primary_key:
@@ -3757,7 +4036,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/creditnotes/'
+        url: '{{ config["base_url"] }}/api/v2.15/creditnotes/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -3885,11 +4164,15 @@ streams:
           - type: AddedFieldDefinition
             path:
               - invoice_id
-            value: '{{ record["relationships"]["invoice"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["invoice"]["data"]["id"] if record["relationships"].get("invoice",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - lineitems
-            value: '{{ record["relationships"]["lineitems"]["data"] }}'
+            value:
+              '{{ record["relationships"]["lineitems"]["data"] if record["relationships"].get("lineitems")
+              else "" }}'
   - type: DeclarativeStream
     name: creditnotelineitems
     primary_key:
@@ -3900,7 +4183,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/creditnotelineitems/'
+        url: '{{ config["base_url"] }}/api/v2.15/creditnotelineitems/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -4030,11 +4313,15 @@ streams:
           - type: AddedFieldDefinition
             path:
               - creditnote_id
-            value: '{{ record["relationships"]["creditnote"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["creditnote"]["data"]["id"] if record["relationships"].get("creditnote",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - product_id
-            value: '{{ record["relationships"]["product"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["product"]["data"]["id"] if record["relationships"].get("product",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: remarks
     primary_key:
@@ -4045,7 +4332,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/remarks/'
+        url: '{{ config["base_url"] }}/api/v2.15/remarks/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -4233,25 +4520,34 @@ streams:
           - type: AddedFieldDefinition
             path:
               - type_id
-            value: '{{ record["relationships"]["type"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["type"]["data"]["id"] if record["relationships"].get("type",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - asset_id
-            value: '{{ record["relationships"]["asset"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["asset"]["data"]["id"] if record["relationships"].get("asset",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - assigned_contractor_id
-            value: '{{ record["relationships"]["assigned_contractor"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["assigned_contractor"]["data"]["id"] if record["relationships"].get("assigned_contractor",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - created_by_id
-            value: '{{ record["relationships"]["created_by"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["created_by"]["data"]["id"] if record["relationships"].get("created_by",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - created_by_contractor_id
             value:
-              '{{ record["relationships"]["created_by_contractor"]["data"]["id"] or
-              "None"}}'
+              '{{ record["relationships"]["created_by_contractor"]["data"]["id"] if
+              record["relationships"].get("created_by_contractor", {}).get("data") else
+              "None" }}'
           - type: AddedFieldDefinition
             path:
               - extra_fields
@@ -4270,7 +4566,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/assettypes/'
+        url: '{{ config["base_url"] }}/api/v2.15/assettypes/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -4516,25 +4812,34 @@ streams:
           - type: AddedFieldDefinition
             path:
               - tags
-            value: '{{ record["relationships"]["tags"]["data"] }}'
+            value:
+              '{{ record["relationships"]["tags"]["data"] if record["relationships"].get("tags")
+              else "" }}'
           - type: AddedFieldDefinition
             path:
               - variants
-            value: '{{ record["relationships"]["variants"]["data"] }}'
+            value:
+              '{{ record["relationships"]["variants"]["data"] if record["relationships"].get("variants")
+              else "" }}'
           - type: AddedFieldDefinition
             path:
               - applicable_routines
-            value: '{{ record["relationships"]["applicable_routines"]["data"] }}'
+            value:
+              '{{ record["relationships"]["applicable_routines"]["data"] if record["relationships"].get("applicable_routines")
+              else "" }}'
           - type: AddedFieldDefinition
             path:
               - excluded_routinelevels
-            value: '{{ record["relationships"]["excluded_routinelevels"]["data"] }}'
+            value:
+              '{{ record["relationships"]["excluded_routinelevels"]["data"] if record["relationships"].get("excluded_routinelevels")
+              else "" }}'
           - type: AddedFieldDefinition
             path:
               - default_replacement_product_id
             value:
               '{{ record["relationships"]["default_replacement_product"]["data"]["id"]
-              or "None"}}'
+              if record["relationships"].get("default_replacement_product", {}).get("data")
+              else "None" }}'
   - type: DeclarativeStream
     name: assettypevariants
     primary_key:
@@ -4545,7 +4850,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/assettypevariants/'
+        url: '{{ config["base_url"] }}/api/v2.15/assettypevariants/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -4641,13 +4946,16 @@ streams:
           - type: AddedFieldDefinition
             path:
               - type_id
-            value: '{{ record["relationships"]["type"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["type"]["data"]["id"] if record["relationships"].get("type",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - default_replacement_product_id
             value:
               '{{ record["relationships"]["default_replacement_product"]["data"]["id"]
-              or "None"}}'
+              if record["relationships"].get("default_replacement_product", {}).get("data")
+              else "None" }}'
   - type: DeclarativeStream
     name: assets
     primary_key:
@@ -4658,7 +4966,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/assets/'
+        url: '{{ config["base_url"] }}/api/v2.15/assets/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -4909,7 +5217,9 @@ streams:
           - type: AddedFieldDefinition
             path:
               - iotdevice_id
-            value: '{{ record["relationships"]["iotdevice"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["iotdevice"]["data"]["id"] if record["relationships"].get("iotdevice",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - label
@@ -5021,35 +5331,51 @@ streams:
           - type: AddedFieldDefinition
             path:
               - tags
-            value: '{{ record["relationships"]["tags"]["data"] }}'
+            value:
+              '{{ record["relationships"]["tags"]["data"] if record["relationships"].get("tags")
+              else "" }}'
           - type: AddedFieldDefinition
             path:
               - type_id
-            value: '{{ record["relationships"]["type"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["type"]["data"]["id"] if record["relationships"].get("type",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - variant_id
-            value: '{{ record["relationships"]["variant"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["variant"]["data"]["id"] if record["relationships"].get("variant",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - product_id
-            value: '{{ record["relationships"]["product"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["product"]["data"]["id"] if record["relationships"].get("product",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - property_id
-            value: '{{ record["relationships"]["property"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["property"]["data"]["id"] if record["relationships"].get("property",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - contractor_id
-            value: '{{ record["relationships"]["contractor"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["contractor"]["data"]["id"] if record["relationships"].get("contractor",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - serviced_by_id
-            value: '{{ record["relationships"]["serviced_by"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["serviced_by"]["data"]["id"] if record["relationships"].get("serviced_by",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - servicelevels
-            value: '{{ record["relationships"]["servicelevels"]["data"] }}'
+            value:
+              '{{ record["relationships"]["servicelevels"]["data"] if record["relationships"].get("servicelevels")
+              else "" }}'
           - type: AddedFieldDefinition
             path:
               - last_service_result
@@ -5068,7 +5394,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/products/'
+        url: '{{ config["base_url"] }}/api/v2.15/products/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -5333,13 +5659,16 @@ streams:
           - type: AddedFieldDefinition
             path:
               - supplier_id
-            value: '{{ record["relationships"]["supplier"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["supplier"]["data"]["id"] if record["relationships"].get("supplier",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - accounting_organisation_id
             value:
               '{{ record["relationships"]["accounting_organisation"]["data"]["id"]
-              or "None"}}'
+              if record["relationships"].get("accounting_organisation", {}).get("data")
+              else "None" }}'
           - type: AddedFieldDefinition
             path:
               - is_attendancefee
@@ -5374,7 +5703,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/rounds/'
+        url: '{{ config["base_url"] }}/api/v2.15/rounds/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -5486,15 +5815,21 @@ streams:
           - type: AddedFieldDefinition
             path:
               - chieftan_id
-            value: '{{ record["relationships"]["chieftan"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["chieftan"]["data"]["id"] if record["relationships"].get("chieftan",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - technician_id
-            value: '{{ record["relationships"]["technician"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["technician"]["data"]["id"] if record["relationships"].get("technician",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - branch_id
-            value: '{{ record["relationships"]["branch"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["branch"]["data"]["id"] if record["relationships"].get("branch",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: tasksessions
     primary_key:
@@ -5505,11 +5840,11 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/tasksessions/'
+        url: '{{ config["base_url"] }}/api/v2.15/tasksessions/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[TaskSession]: id,created,updated,trashed,submitted,is_approved,is_submitted,type,started,finished,started_coord_lat,started_coord_lng,finished_coord_lat,finished_coord_lng,original_started,original_finished,description,rate,timezone,multiplier,multiplier_label,sell_rate,cost,sell,submitted_at,approved_at,task,technician,sell_product,submitted_by,approved_by,duration,duration_hours,status,payroll_date
+          fields[TaskSession]: id,created,updated,trashed,type,started,finished,started_coord_lat,started_coord_lng,finished_coord_lat,finished_coord_lng,original_started,original_finished,description,rate,timezone,multiplier,multiplier_label,sell_rate,cost,sell,submitted_at,approved_at,task,technician,sell_product,submitted_by,approved_by,duration,duration_hours,status,payroll_date
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5536,18 +5871,6 @@ streams:
               - "null"
             format: date-time
             airbyte_type: timestamp_with_timezone
-          submitted:
-            type:
-              - string
-              - "null"
-            format: date-time
-            airbyte_type: timestamp_with_timezone
-          is_approved:
-            type:
-              - boolean
-          is_submitted:
-            type:
-              - boolean
           type_id:
             type:
               - integer
@@ -5695,20 +6018,10 @@ streams:
             value: '{{ record["attributes"]["trashed"] or "None"}}'
           - type: AddedFieldDefinition
             path:
-              - submitted
-            value: '{{ record["attributes"]["submitted"] or "None"}}'
-          - type: AddedFieldDefinition
-            path:
-              - is_approved
-            value: '{{ record["attributes"]["is_approved"] }}'
-          - type: AddedFieldDefinition
-            path:
-              - is_submitted
-            value: '{{ record["attributes"]["is_submitted"] }}'
-          - type: AddedFieldDefinition
-            path:
               - type_id
-            value: '{{ record["relationships"]["type"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["type"]["data"]["id"] if record["relationships"].get("type",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - started
@@ -5784,23 +6097,33 @@ streams:
           - type: AddedFieldDefinition
             path:
               - task_id
-            value: '{{ record["relationships"]["task"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["task"]["data"]["id"] if record["relationships"].get("task",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - technician_id
-            value: '{{ record["relationships"]["technician"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["technician"]["data"]["id"] if record["relationships"].get("technician",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - sell_product_id
-            value: '{{ record["relationships"]["sell_product"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["sell_product"]["data"]["id"] if record["relationships"].get("sell_product",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - submitted_by_id
-            value: '{{ record["relationships"]["submitted_by"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["submitted_by"]["data"]["id"] if record["relationships"].get("submitted_by",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - approved_by_id
-            value: '{{ record["relationships"]["approved_by"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["approved_by"]["data"]["id"] if record["relationships"].get("approved_by",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - duration
@@ -5827,7 +6150,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/contractors/'
+        url: '{{ config["base_url"] }}/api/v2.15/contractors/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -6004,37 +6327,52 @@ streams:
           - type: AddedFieldDefinition
             path:
               - category_id
-            value: '{{ record["relationships"]["category"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["category"]["data"]["id"] if record["relationships"].get("category",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - tags
-            value: '{{ record["relationships"]["tags"]["data"] }}'
+            value:
+              '{{ record["relationships"]["tags"]["data"] if record["relationships"].get("tags")
+              else "" }}'
           - type: AddedFieldDefinition
             path:
               - skill
-            value: '{{ record["relationships"]["skill"]["data"] }}'
+            value:
+              '{{ record["relationships"]["skill"]["data"] if record["relationships"].get("skill")
+              else "" }}'
           - type: AddedFieldDefinition
             path:
               - serviceareas
-            value: '{{ record["relationships"]["serviceareas"]["data"] }}'
+            value:
+              '{{ record["relationships"]["serviceareas"]["data"] if record["relationships"].get("serviceareas")
+              else "" }}'
           - type: AddedFieldDefinition
             path:
               - zones
-            value: '{{ record["relationships"]["zones"]["data"] }}'
+            value:
+              '{{ record["relationships"]["zones"]["data"] if record["relationships"].get("zones")
+              else "" }}'
           - type: AddedFieldDefinition
             path:
               - account_id
-            value: '{{ record["relationships"]["account"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["account"]["data"]["id"] if record["relationships"].get("account",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - supplier_id
-            value: '{{ record["relationships"]["supplier"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["supplier"]["data"]["id"] if record["relationships"].get("supplier",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - accounting_organisation_id
             value:
               '{{ record["relationships"]["accounting_organisation"]["data"]["id"]
-              or "None"}}'
+              if record["relationships"].get("accounting_organisation", {}).get("data")
+              else "None" }}'
           - type: AddedFieldDefinition
             path:
               - asset_count
@@ -6049,7 +6387,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/appointments/'
+        url: '{{ config["base_url"] }}/api/v2.15/appointments/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -6185,19 +6523,27 @@ streams:
           - type: AddedFieldDefinition
             path:
               - category_id
-            value: '{{ record["relationships"]["category"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["category"]["data"]["id"] if record["relationships"].get("category",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - routine_id
-            value: '{{ record["relationships"]["routine"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["routine"]["data"]["id"] if record["relationships"].get("routine",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - technicians
-            value: '{{ record["relationships"]["technicians"]["data"] }}'
+            value:
+              '{{ record["relationships"]["technicians"]["data"] if record["relationships"].get("technicians")
+              else "" }}'
           - type: AddedFieldDefinition
             path:
               - task_id
-            value: '{{ record["relationships"]["task"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["task"]["data"]["id"] if record["relationships"].get("task",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: billingcontracts
     primary_key:
@@ -6208,7 +6554,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/billingcontracts/'
+        url: '{{ config["base_url"] }}/api/v2.15/billingcontracts/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -6349,11 +6695,15 @@ streams:
           - type: AddedFieldDefinition
             path:
               - property_id
-            value: '{{ record["relationships"]["property"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["property"]["data"]["id"] if record["relationships"].get("property",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - billingcard_id
-            value: '{{ record["relationships"]["billingcard"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["billingcard"]["data"]["id"] if record["relationships"].get("billingcard",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - recurrence
@@ -6385,7 +6735,9 @@ streams:
           - type: AddedFieldDefinition
             path:
               - author_id
-            value: '{{ record["relationships"]["author"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["author"]["data"]["id"] if record["relationships"].get("author",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - authorisation
@@ -6444,7 +6796,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/billingcontractlineitems/'
+        url: '{{ config["base_url"] }}/api/v2.15/billingcontractlineitems/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -6514,7 +6866,9 @@ streams:
           - type: AddedFieldDefinition
             path:
               - billingcontract_id
-            value: '{{ record["relationships"]["billingcontract"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["billingcontract"]["data"]["id"] if record["relationships"].get("billingcontract",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - visible
@@ -6522,7 +6876,9 @@ streams:
           - type: AddedFieldDefinition
             path:
               - product_id
-            value: '{{ record["relationships"]["product"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["product"]["data"]["id"] if record["relationships"].get("product",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - description
@@ -6553,11 +6909,11 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/defectquotelineitems/'
+        url: '{{ config["base_url"] }}/api/v2.15/defectquotelineitems/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[DefectQuoteLineItem]: id,created,updated,description,unit_price,cost_price,markup,quantity,taxcode,taxrate,subtotal,total,gst,index,estimated_time,product_type,product,quote,asset,remark
+          fields[DefectQuoteLineItem]: id,created,updated,description,unit_price,cost_price,markup,quantity,taxcode,taxrate,subtotal,total,gst,index,estimated_time,product,quote,asset,remark
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6619,10 +6975,6 @@ streams:
           estimated_time:
             type:
               - integer
-          product_type:
-            type:
-              - string
-              - "null"
           product_id:
             type:
               - integer
@@ -6704,24 +7056,28 @@ streams:
             value: '{{ record["attributes"]["estimated_time"] }}'
           - type: AddedFieldDefinition
             path:
-              - product_type
-            value: '{{ record["attributes"]["product_type"] or "None"}}'
-          - type: AddedFieldDefinition
-            path:
               - product_id
-            value: '{{ record["relationships"]["product"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["product"]["data"]["id"] if record["relationships"].get("product",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - quote_id
-            value: '{{ record["relationships"]["quote"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["quote"]["data"]["id"] if record["relationships"].get("quote",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - asset_id
-            value: '{{ record["relationships"]["asset"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["asset"]["data"]["id"] if record["relationships"].get("asset",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - remark_id
-            value: '{{ record["relationships"]["remark"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["remark"]["data"]["id"] if record["relationships"].get("remark",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: servicequotefixedlineitems
     primary_key:
@@ -6732,7 +7088,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/servicequotefixedlineitems/'
+        url: '{{ config["base_url"] }}/api/v2.15/servicequotefixedlineitems/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -6808,7 +7164,9 @@ streams:
           - type: AddedFieldDefinition
             path:
               - servicequote_id
-            value: '{{ record["relationships"]["servicequote"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["servicequote"]["data"]["id"] if record["relationships"].get("servicequote",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - description
@@ -6867,7 +7225,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/servicequotedoandchargelineitems/'
+        url: '{{ config["base_url"] }}/api/v2.15/servicequotedoandchargelineitems/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -6951,7 +7309,9 @@ streams:
           - type: AddedFieldDefinition
             path:
               - servicequote_id
-            value: '{{ record["relationships"]["servicequote"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["servicequote"]["data"]["id"] if record["relationships"].get("servicequote",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - description
@@ -7018,7 +7378,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/servicequoteproductlineitems/'
+        url: '{{ config["base_url"] }}/api/v2.15/servicequoteproductlineitems/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -7098,11 +7458,15 @@ streams:
           - type: AddedFieldDefinition
             path:
               - servicequote_id
-            value: '{{ record["relationships"]["servicequote"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["servicequote"]["data"]["id"] if record["relationships"].get("servicequote",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - product_id
-            value: '{{ record["relationships"]["product"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["product"]["data"]["id"] if record["relationships"].get("product",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - description
@@ -7161,7 +7525,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/remarkevents/'
+        url: '{{ config["base_url"] }}/api/v2.15/remarkevents/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -7234,19 +7598,27 @@ streams:
           - type: AddedFieldDefinition
             path:
               - remark_id
-            value: '{{ record["relationships"]["remark"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["remark"]["data"]["id"] if record["relationships"].get("remark",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - task_id
-            value: '{{ record["relationships"]["task"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["task"]["data"]["id"] if record["relationships"].get("task",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - servicetask_id
-            value: '{{ record["relationships"]["servicetask"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["servicetask"]["data"]["id"] if record["relationships"].get("servicetask",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - account_id
-            value: '{{ record["relationships"]["account"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["account"]["data"]["id"] if record["relationships"].get("account",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: servicetasks
     primary_key:
@@ -7257,11 +7629,11 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/servicetasks/'
+        url: '{{ config["base_url"] }}/api/v2.15/servicetasks/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[ServiceTask]: id,created,updated,deleted,due,quantity,unit_price,subtotal,cost_price,from_stock,markup,notes,is_scheduled,is_majorservice,is_quoted,is_invoiced,is_billable,is_scanned,performed_date,quoted_date,invoiced_date,guid,result,extra_fields,remarks_added_count,active_remarks_count,highest_severity,task,item,routine,remark,product,technician,purchaseorderlineitem,routineserviceleveltype
+          fields[ServiceTask]: id,created,updated,deleted,quantity,unit_price,subtotal,cost_price,from_stock,markup,notes,is_scheduled,is_quoted,is_invoiced,is_billable,is_scanned,performed_date,quoted_date,invoiced_date,guid,result,extra_fields,remarks_added_count,active_remarks_count,highest_severity,task,item,routine,remark,product,technician,purchaseorderlineitem,routineserviceleveltype
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -7288,11 +7660,6 @@ streams:
               - "null"
             format: date-time
             airbyte_type: timestamp_with_timezone
-          due:
-            type:
-              - string
-              - "null"
-            format: date
           quantity:
             type:
               - string
@@ -7320,9 +7687,6 @@ streams:
             type:
               - string
           is_scheduled:
-            type:
-              - boolean
-          is_majorservice:
             type:
               - boolean
           is_quoted:
@@ -7430,10 +7794,6 @@ streams:
             value: '{{ record["attributes"]["deleted"] or "None"}}'
           - type: AddedFieldDefinition
             path:
-              - due
-            value: '{{ record["attributes"]["due"] or "None"}}'
-          - type: AddedFieldDefinition
-            path:
               - quantity
             value: '{{ record["attributes"]["quantity"] }}'
           - type: AddedFieldDefinition
@@ -7464,10 +7824,6 @@ streams:
             path:
               - is_scheduled
             value: '{{ record["attributes"]["is_scheduled"] }}'
-          - type: AddedFieldDefinition
-            path:
-              - is_majorservice
-            value: '{{ record["attributes"]["is_majorservice"] }}'
           - type: AddedFieldDefinition
             path:
               - is_quoted
@@ -7523,39 +7879,139 @@ streams:
           - type: AddedFieldDefinition
             path:
               - task_id
-            value: '{{ record["relationships"]["task"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["task"]["data"]["id"] if record["relationships"].get("task",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - item_id
-            value: '{{ record["relationships"]["item"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["item"]["data"]["id"] if record["relationships"].get("item",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - routine_id
-            value: '{{ record["relationships"]["routine"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["routine"]["data"]["id"] if record["relationships"].get("routine",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - remark_id
-            value: '{{ record["relationships"]["remark"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["remark"]["data"]["id"] if record["relationships"].get("remark",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - product_id
-            value: '{{ record["relationships"]["product"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["product"]["data"]["id"] if record["relationships"].get("product",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - technician_id
-            value: '{{ record["relationships"]["technician"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["technician"]["data"]["id"] if record["relationships"].get("technician",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - purchaseorderlineitem_id
             value:
-              '{{ record["relationships"]["purchaseorderlineitem"]["data"]["id"] or
-              "None"}}'
+              '{{ record["relationships"]["purchaseorderlineitem"]["data"]["id"] if
+              record["relationships"].get("purchaseorderlineitem", {}).get("data") else
+              "None" }}'
           - type: AddedFieldDefinition
             path:
               - routineserviceleveltype_id
             value:
               '{{ record["relationships"]["routineserviceleveltype"]["data"]["id"]
-              or "None"}}'
+              if record["relationships"].get("routineserviceleveltype", {}).get("data")
+              else "None" }}'
+  - type: DeclarativeStream
+    name: majorservices
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/linked/DeclarativeStream/incremental_sync"
+    retriever:
+      $ref: "#/definitions/linked/BaseSimpleRetriever"
+      requester:
+        $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
+        url: '{{ config["base_url"] }}/api/v2.15/majorservices/'
+        request_parameters:
+          ordering: -updated
+          show_deleted: "true"
+          fields[MajorService]: id,created,updated,asset,routineserviceleveltype,due,status
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+          created:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          asset_id:
+            type:
+              - integer
+              - "null"
+          routineserviceleveltype_id:
+            type:
+              - integer
+              - "null"
+          due:
+            type:
+              - string
+            format: date
+          status:
+            type:
+              - string
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: '{{ record["id"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - created
+            value: '{{ record["attributes"]["created"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - updated
+            value: '{{ record["attributes"]["updated"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - asset_id
+            value:
+              '{{ record["relationships"]["asset"]["data"]["id"] if record["relationships"].get("asset",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - routineserviceleveltype_id
+            value:
+              '{{ record["relationships"]["routineserviceleveltype"]["data"]["id"]
+              if record["relationships"].get("routineserviceleveltype", {}).get("data")
+              else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - due
+            value: '{{ record["attributes"]["due"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - status
+            value: '{{ record["attributes"]["status"] }}'
   - type: DeclarativeStream
     name: routineservices
     primary_key:
@@ -7566,7 +8022,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/routineservices/'
+        url: '{{ config["base_url"] }}/api/v2.15/routineservices/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -7682,23 +8138,33 @@ streams:
           - type: AddedFieldDefinition
             path:
               - type_id
-            value: '{{ record["relationships"]["type"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["type"]["data"]["id"] if record["relationships"].get("type",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - property_id
-            value: '{{ record["relationships"]["property"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["property"]["data"]["id"] if record["relationships"].get("property",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - servicegroup_id
-            value: '{{ record["relationships"]["servicegroup"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["servicegroup"]["data"]["id"] if record["relationships"].get("servicegroup",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - contractor_id
-            value: '{{ record["relationships"]["contractor"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["contractor"]["data"]["id"] if record["relationships"].get("contractor",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - assettag_id
-            value: '{{ record["relationships"]["assettag"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["assettag"]["data"]["id"] if record["relationships"].get("assettag",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: routineservicelevels
     primary_key:
@@ -7709,7 +8175,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/routineservicelevels/'
+        url: '{{ config["base_url"] }}/api/v2.15/routineservicelevels/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -7801,19 +8267,27 @@ streams:
           - type: AddedFieldDefinition
             path:
               - type_id
-            value: '{{ record["relationships"]["type"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["type"]["data"]["id"] if record["relationships"].get("type",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - routineservice_id
-            value: '{{ record["relationships"]["routineservice"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["routineservice"]["data"]["id"] if record["relationships"].get("routineservice",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - servicegroup_id
-            value: '{{ record["relationships"]["servicegroup"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["servicegroup"]["data"]["id"] if record["relationships"].get("servicegroup",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - contractor_id
-            value: '{{ record["relationships"]["contractor"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["contractor"]["data"]["id"] if record["relationships"].get("contractor",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - extra_fields
@@ -7828,7 +8302,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/routineservicetypes/'
+        url: '{{ config["base_url"] }}/api/v2.15/routineservicetypes/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -7957,19 +8431,27 @@ streams:
           - type: AddedFieldDefinition
             path:
               - product_id
-            value: '{{ record["relationships"]["product"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["product"]["data"]["id"] if record["relationships"].get("product",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - standard_id
-            value: '{{ record["relationships"]["standard"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["standard"]["data"]["id"] if record["relationships"].get("standard",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - servicegroup_id
-            value: '{{ record["relationships"]["servicegroup"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["servicegroup"]["data"]["id"] if record["relationships"].get("servicegroup",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - assettype_set
-            value: '{{ record["relationships"]["assettype_set"]["data"] }}'
+            value:
+              '{{ record["relationships"]["assettype_set"]["data"] if record["relationships"].get("assettype_set")
+              else "" }}'
   - type: DeclarativeStream
     name: routineserviceleveltypes
     primary_key:
@@ -7980,7 +8462,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/routineserviceleveltypes/'
+        url: '{{ config["base_url"] }}/api/v2.15/routineserviceleveltypes/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -8176,11 +8658,15 @@ streams:
           - type: AddedFieldDefinition
             path:
               - servicegroup_id
-            value: '{{ record["relationships"]["servicegroup"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["servicegroup"]["data"]["id"] if record["relationships"].get("servicegroup",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - routineservicetype_id
-            value: '{{ record["relationships"]["routineservicetype"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["routineservicetype"]["data"]["id"] if record["relationships"].get("routineservicetype",
+              {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: subtasks
     primary_key:
@@ -8191,7 +8677,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/subtasks/'
+        url: '{{ config["base_url"] }}/api/v2.15/subtasks/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -8332,19 +8818,600 @@ streams:
           - type: AddedFieldDefinition
             path:
               - task_id
-            value: '{{ record["relationships"]["task"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["task"]["data"]["id"] if record["relationships"].get("task",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - billingcontract_id
-            value: '{{ record["relationships"]["billingcontract"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["billingcontract"]["data"]["id"] if record["relationships"].get("billingcontract",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - product_id
-            value: '{{ record["relationships"]["product"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["product"]["data"]["id"] if record["relationships"].get("product",
+              {}).get("data") else "None" }}'
           - type: AddedFieldDefinition
             path:
               - routine_id
-            value: '{{ record["relationships"]["routine"]["data"]["id"] or "None"}}'
+            value:
+              '{{ record["relationships"]["routine"]["data"]["id"] if record["relationships"].get("routine",
+              {}).get("data") else "None" }}'
+  - type: DeclarativeStream
+    name: clientcontacts
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/linked/DeclarativeStream/incremental_sync"
+    retriever:
+      $ref: "#/definitions/linked/BaseSimpleRetriever"
+      requester:
+        $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
+        url: '{{ config["base_url"] }}/api/v2.15/clientcontacts/'
+        request_parameters:
+          ordering: -updated
+          show_deleted: "true"
+          fields[ClientContact]: id,created,updated,name,email,mobile,phone,position,is_active,client
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+          created:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          name:
+            type:
+              - string
+          email:
+            type:
+              - string
+            format: email
+          mobile:
+            type:
+              - string
+          phone:
+            type:
+              - string
+          position:
+            type:
+              - string
+          is_active:
+            type:
+              - boolean
+          client_id:
+            type:
+              - integer
+              - "null"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: '{{ record["id"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - created
+            value: '{{ record["attributes"]["created"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - updated
+            value: '{{ record["attributes"]["updated"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - name
+            value: '{{ record["attributes"]["name"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - email
+            value: '{{ record["attributes"]["email"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - mobile
+            value: '{{ record["attributes"]["mobile"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - phone
+            value: '{{ record["attributes"]["phone"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - position
+            value: '{{ record["attributes"]["position"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - is_active
+            value: '{{ record["attributes"]["is_active"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - client_id
+            value:
+              '{{ record["relationships"]["client"]["data"]["id"] if record["relationships"].get("client",
+              {}).get("data") else "None" }}'
+  - type: DeclarativeStream
+    name: propertycontacts
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/linked/DeclarativeStream/incremental_sync"
+    retriever:
+      $ref: "#/definitions/linked/BaseSimpleRetriever"
+      requester:
+        $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
+        url: '{{ config["base_url"] }}/api/v2.15/propertycontacts/'
+        request_parameters:
+          ordering: -updated
+          show_deleted: "true"
+          fields[PropertyContact]: id,created,updated,name,role,email,email_cc,mobile,phone_bh,organisation,address,requires_report,requires_quote,requires_invoice,requires_notification,is_public,is_active,property
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+          created:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          name:
+            type:
+              - string
+          role:
+            type:
+              - string
+          email:
+            type:
+              - string
+            format: email
+          email_cc:
+            type:
+              - string
+          mobile:
+            type:
+              - string
+          phone_bh:
+            type:
+              - string
+          organisation:
+            type:
+              - string
+          address:
+            type:
+              - string
+          requires_report:
+            type:
+              - boolean
+          requires_quote:
+            type:
+              - boolean
+          requires_invoice:
+            type:
+              - boolean
+          requires_notification:
+            type:
+              - boolean
+          is_public:
+            type:
+              - boolean
+          is_active:
+            type:
+              - boolean
+          property_id:
+            type:
+              - integer
+              - "null"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: '{{ record["id"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - created
+            value: '{{ record["attributes"]["created"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - updated
+            value: '{{ record["attributes"]["updated"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - name
+            value: '{{ record["attributes"]["name"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - role
+            value: '{{ record["attributes"]["role"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - email
+            value: '{{ record["attributes"]["email"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - email_cc
+            value: '{{ record["attributes"]["email_cc"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - mobile
+            value: '{{ record["attributes"]["mobile"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - phone_bh
+            value: '{{ record["attributes"]["phone_bh"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - organisation
+            value: '{{ record["attributes"]["organisation"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - address
+            value: '{{ record["attributes"]["address"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - requires_report
+            value: '{{ record["attributes"]["requires_report"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - requires_quote
+            value: '{{ record["attributes"]["requires_quote"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - requires_invoice
+            value: '{{ record["attributes"]["requires_invoice"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - requires_notification
+            value: '{{ record["attributes"]["requires_notification"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - is_public
+            value: '{{ record["attributes"]["is_public"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - is_active
+            value: '{{ record["attributes"]["is_active"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - property_id
+            value:
+              '{{ record["relationships"]["property"]["data"]["id"] if record["relationships"].get("property",
+              {}).get("data") else "None" }}'
+  - type: DeclarativeStream
+    name: promptquestions
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/linked/DeclarativeStream/incremental_sync"
+    retriever:
+      $ref: "#/definitions/linked/BaseSimpleRetriever"
+      requester:
+        $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
+        url: '{{ config["base_url"] }}/api/v2.15/promptquestions/'
+        request_parameters:
+          ordering: -updated
+          show_deleted: "true"
+          fields[PromptQuestion]: id,created,updated,deleted,label,type,ref,order,config,section
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+          created:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          deleted:
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          label:
+            type:
+              - string
+          type:
+            type:
+              - string
+          ref:
+            type:
+              - string
+          order:
+            type:
+              - integer
+          config:
+            type:
+              - object
+          section_id:
+            type:
+              - integer
+              - "null"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: '{{ record["id"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - created
+            value: '{{ record["attributes"]["created"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - updated
+            value: '{{ record["attributes"]["updated"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - deleted
+            value: '{{ record["attributes"]["deleted"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - label
+            value: '{{ record["attributes"]["label"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - type
+            value: '{{ record["attributes"]["type"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - ref
+            value: '{{ record["attributes"]["ref"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - order
+            value: '{{ record["attributes"]["order"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - config
+            value: '{{ record["attributes"]["config"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - section_id
+            value:
+              '{{ record["relationships"]["section"]["data"]["id"] if record["relationships"].get("section",
+              {}).get("data") else "None" }}'
+  - type: DeclarativeStream
+    name: promptanswergroups
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/linked/DeclarativeStream/incremental_sync"
+    retriever:
+      $ref: "#/definitions/linked/BaseSimpleRetriever"
+      requester:
+        $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
+        url: '{{ config["base_url"] }}/api/v2.15/promptanswergroups/'
+        request_parameters:
+          ordering: -updated
+          show_deleted: "true"
+          fields[PromptAnswerGroup]: id,created,updated,servicetask,task,section,key,order,group_type,guid
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+          created:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          servicetask_id:
+            type:
+              - integer
+              - "null"
+          task_id:
+            type:
+              - integer
+              - "null"
+          section_id:
+            type:
+              - integer
+              - "null"
+          key:
+            type:
+              - string
+              - "null"
+          order:
+            type:
+              - integer
+              - "null"
+          group_type:
+            type:
+              - string
+          guid:
+            type:
+              - string
+            format: uuid
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: '{{ record["id"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - created
+            value: '{{ record["attributes"]["created"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - updated
+            value: '{{ record["attributes"]["updated"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - servicetask_id
+            value:
+              '{{ record["relationships"]["servicetask"]["data"]["id"] if record["relationships"].get("servicetask",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - task_id
+            value:
+              '{{ record["relationships"]["task"]["data"]["id"] if record["relationships"].get("task",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - section_id
+            value:
+              '{{ record["relationships"]["section"]["data"]["id"] if record["relationships"].get("section",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - key
+            value: '{{ record["attributes"]["key"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - order
+            value: '{{ record["attributes"]["order"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - group_type
+            value: '{{ record["attributes"]["group_type"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - guid
+            value: '{{ record["attributes"]["guid"] }}'
+  - type: DeclarativeStream
+    name: promptanswers
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/linked/DeclarativeStream/incremental_sync"
+    retriever:
+      $ref: "#/definitions/linked/BaseSimpleRetriever"
+      requester:
+        $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
+        url: '{{ config["base_url"] }}/api/v2.15/promptanswers/'
+        request_parameters:
+          ordering: -updated
+          show_deleted: "true"
+          fields[PromptAnswer]: id,created,updated,value,question,answergroup,performed_date,guid
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+          created:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          value:
+            type:
+              - object
+          question_id:
+            type:
+              - integer
+              - "null"
+          answergroup_id:
+            type:
+              - integer
+              - "null"
+          performed_date:
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          guid:
+            type:
+              - string
+            format: uuid
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: '{{ record["id"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - created
+            value: '{{ record["attributes"]["created"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - updated
+            value: '{{ record["attributes"]["updated"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - value
+            value: '{{ record["attributes"]["value"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - question_id
+            value:
+              '{{ record["relationships"]["question"]["data"]["id"] if record["relationships"].get("question",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - answergroup_id
+            value:
+              '{{ record["relationships"]["answergroup"]["data"]["id"] if record["relationships"].get("answergroup",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - performed_date
+            value: '{{ record["attributes"]["performed_date"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - guid
+            value: '{{ record["attributes"]["guid"] }}'
   - type: DeclarativeStream
     name: task_profitability
     primary_key:

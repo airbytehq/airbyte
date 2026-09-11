@@ -66,7 +66,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         if (
             details.get("kwargs", {}).get("params", {}).get("limit")
             and exc.http_status() == http.client.INTERNAL_SERVER_ERROR
-            and exc.api_error_message() in error_patterns
+            and (exc.api_error_message() or "") in error_patterns
         ):
             # reduce the existing request `limit` param by a half and retry
             details["kwargs"]["params"]["limit"] = int(int(details["kwargs"]["params"]["limit"]) / 2)
@@ -95,7 +95,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         """After migration to API v19.0, some customers randomly face a BAD_REQUEST error (OAuthException) with the pattern:"Cannot include ..."
         According to the last comment in https://developers.facebook.com/community/threads/286697364476462/, this might be a transient issue that can be solved with a retry."""
         pattern = r"Cannot include .* in summary param because they weren't there while creating the report run."
-        return bool(exc.http_status() == http.client.BAD_REQUEST and re.search(pattern, exc.api_error_message()))
+        return bool(exc.http_status() == http.client.BAD_REQUEST and re.search(pattern, exc.api_error_message() or ""))
 
     def should_retry_api_error(exc):
         if isinstance(exc, FacebookRequestError):
@@ -165,7 +165,9 @@ def traced_exception(fb_exception: FacebookRequestError):
         failure_type = FailureType.config_error
         friendly_msg = (
             "The access token for this connection is invalid or corrupted. "
-            "Please re-authenticate your Facebook connection in Airbyte. "
+            "This may be caused by browser autofill overwriting the OAuth token with saved credentials. "
+            "Please re-authenticate your Facebook connection by clicking 'Authenticate your account' and saving the configuration. "
+            "See https://docs.airbyte.com/integrations/sources/facebook-marketing#connection-check-fails-with-invalid-access-token-after-re-authenticating for details. "
             "If re-authentication does not resolve the issue, go to facebook.com > Settings > Business Integrations, "
             "remove the Airbyte app, and then re-authenticate again."
         )

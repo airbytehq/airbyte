@@ -12,21 +12,69 @@ import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfigurati
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
 import java.io.File
+import java.io.StringWriter
+import java.nio.charset.StandardCharsets
+import java.security.KeyPair
+import java.security.KeyPairGenerator
+import java.security.Security
 import java.util.logging.Level
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 import net.snowflake.client.jdbc.SnowflakeDriver
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.openssl.PKCS8Generator
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter
+import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8EncryptorBuilder
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
 internal class SnowflakeBeanFactoryTest {
 
+    @Test
+    fun testSnowflakePrivateKeyParserSupportsSnowflakeEncryptedKeyFormat() {
+        val previousProperty = System.setProperty("net.snowflake.jdbc.enableBouncyCastle", "TRUE")
+        try {
+            Security.addProvider(BouncyCastleProvider())
+            val privateKeyFile = File.createTempFile("snowflake-private-key", ".p8")
+            privateKeyFile.deleteOnExit()
+            val privateKeyPassword = "test-private-key-password"
+            privateKeyFile.writeText(
+                generateEncryptedPkcs8PrivateKey(privateKeyPassword),
+                StandardCharsets.UTF_8
+            )
+
+            val snowflakeConfiguration =
+                snowflakeConfiguration(
+                    authType =
+                        KeyPairAuthConfiguration(
+                            privateKey = privateKeyFile.readText(StandardCharsets.UTF_8),
+                            privateKeyPassword = privateKeyPassword,
+                        )
+                )
+            val factory = SnowflakeBeanFactory()
+
+            val dataSource =
+                factory.snowflakeDataSource(
+                    snowflakeConfiguration = snowflakeConfiguration,
+                    airbyteEdition = "OSS",
+                )
+
+            dataSource.close()
+        } finally {
+            if (previousProperty == null) {
+                System.clearProperty("net.snowflake.jdbc.enableBouncyCastle")
+            } else {
+                System.setProperty("net.snowflake.jdbc.enableBouncyCastle", previousProperty)
+            }
+        }
+    }
+
     @ParameterizedTest
     @CsvSource(value = ["OSS", "CLOUD", "ENTERPRISE"])
     fun testCreateSnowflakeDataSourcePrivateKeyAuth(airbyteEdition: String) {
-        val privateKeyFile = File.createTempFile("snowflake-private-key", ".p8")
-        privateKeyFile.deleteOnExit()
         val privateKey = "test-private-key"
         val privateKeyPassword = "test-private-key-password"
         val authType =
@@ -53,6 +101,7 @@ internal class SnowflakeBeanFactoryTest {
                 cdcDeletionMode = CdcDeletionMode.HARD_DELETE,
                 legacyRawTablesOnly = false,
                 internalTableSchema = "snowflake",
+                trimSpace = true,
                 jdbcUrlParams = jdbcUrlParams,
                 retentionPeriodDays = 1,
             )
@@ -60,7 +109,6 @@ internal class SnowflakeBeanFactoryTest {
         val dataSource =
             factory.snowflakeDataSource(
                 snowflakeConfiguration = snowflakeConfiguration,
-                snowflakePrivateKeyFileName = privateKeyFile.path,
                 airbyteEdition = airbyteEdition,
             )
         try {
@@ -89,11 +137,16 @@ internal class SnowflakeBeanFactoryTest {
                 "jdbc:snowflake://${snowflakeConfiguration.host}/?${snowflakeConfiguration.jdbcUrlParams}",
                 (dataSource as HikariConfig).jdbcUrl
             )
-            assertEquals(
-                privateKeyFile.path,
+            val privateKeyFilePath =
                 (dataSource as HikariConfig)
                     .dataSourceProperties[DATA_SOURCE_PROPERTY_PRIVATE_KEY_FILE]
-            )
+                    as String
+            assert(privateKeyFilePath.endsWith(".p8")) {
+                "Expected private key file path to end with .p8, but was: $privateKeyFilePath"
+            }
+            assert(File(privateKeyFilePath).exists()) {
+                "Expected private key file to exist at: $privateKeyFilePath"
+            }
             assertEquals(
                 privateKeyPassword,
                 (dataSource as HikariConfig)
@@ -149,6 +202,43 @@ internal class SnowflakeBeanFactoryTest {
         }
     }
 
+    private fun snowflakeConfiguration(
+        authType: KeyPairAuthConfiguration,
+    ): SnowflakeConfiguration =
+        SnowflakeConfiguration(
+            host = "test-account.test-host",
+            role = "test-role",
+            warehouse = "test-warehouse",
+            database = "test-database",
+            schema = "test-schema",
+            username = "test-username",
+            authType = authType,
+            cdcDeletionMode = CdcDeletionMode.HARD_DELETE,
+            legacyRawTablesOnly = false,
+            internalTableSchema = "snowflake",
+            trimSpace = true,
+            jdbcUrlParams = "param1=foo;param2=bar",
+            retentionPeriodDays = 1,
+        )
+
+    private fun generateEncryptedPkcs8PrivateKey(password: String): String {
+        val keyPair: KeyPair =
+            KeyPairGenerator.getInstance("RSA").apply { initialize(2048) }.generateKeyPair()
+        val privateKeyInfo = PrivateKeyInfo.getInstance(keyPair.private.encoded)
+        val encryptor =
+            JceOpenSSLPKCS8EncryptorBuilder(PKCS8Generator.DES3_CBC)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .setPRF(PKCS8Generator.PRF_HMACSHA256)
+                .setPassword(password.toCharArray())
+                .build()
+        return StringWriter().use { stringWriter ->
+            JcaPEMWriter(stringWriter).use { pemWriter ->
+                pemWriter.writeObject(PKCS8Generator(privateKeyInfo, encryptor))
+            }
+            stringWriter.toString()
+        }
+    }
+
     @ParameterizedTest
     @CsvSource(value = ["COMMUNITY", "CLOUD", "ENTERPRISE"])
     fun testCreateSnowflakeDataSourceUsernamePasswordAuth(airbyteEdition: String) {
@@ -176,6 +266,7 @@ internal class SnowflakeBeanFactoryTest {
                 cdcDeletionMode = CdcDeletionMode.HARD_DELETE,
                 legacyRawTablesOnly = false,
                 internalTableSchema = "snowflake",
+                trimSpace = true,
                 jdbcUrlParams = jdbcUrlParams,
                 retentionPeriodDays = 1,
             )

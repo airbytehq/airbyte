@@ -14,21 +14,15 @@ import responses
 from attr.validators import matches_re
 from responses import matchers
 from source_github import SourceGithub, constants
+from source_github.errors_handlers import GitHubGraphQLErrorHandler, is_conflict_with_empty_repository, is_gone_with_feature_disabled
 from source_github.streams import (
     Branches,
-    Collaborators,
-    Comments,
     CommitCommentReactions,
     CommitComments,
     Commits,
     ContributorActivity,
-    Deployments,
     GithubStreamABCBackoffStrategy,
-    IssueEvents,
-    IssueLabels,
-    IssueMilestones,
     IssueTimelineEvents,
-    Organizations,
     ProjectCards,
     ProjectColumns,
     Projects,
@@ -38,15 +32,11 @@ from source_github.streams import (
     PullRequests,
     PullRequestStats,
     Releases,
-    Repositories,
     RepositoryStats,
     Reviews,
-    Stargazers,
-    Tags,
     TeamMembers,
     TeamMemberships,
     Teams,
-    Users,
     WorkflowJobs,
     WorkflowRuns,
 )
@@ -57,7 +47,7 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, Res
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-from .utils import ProjectsResponsesAPI, read_incremental
+from .utils import ProbeStream, ProjectsResponsesAPI, read_incremental
 
 
 DEFAULT_BACKOFF_DELAYS = [1, 2, 4, 8, 16]
@@ -88,8 +78,8 @@ def test_internal_server_error_retry(time_mock, requests_mock):
         (HTTPStatus.FORBIDDEN, {"Retry-After": "0"}, 60),
         (HTTPStatus.FORBIDDEN, {"Retry-After": "30"}, 60),
         (HTTPStatus.FORBIDDEN, {"Retry-After": "120"}, 120),
-        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": "1655804454"}, 60.0),
-        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": "1655804724"}, 300.0),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1655804454"}, 60.0),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1655804724"}, 300.0),
     ],
 )
 @patch("time.time", return_value=1655804424.0)
@@ -102,6 +92,61 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
     assert stream.get_backoff_strategy().backoff_time(response_mock) == expected_backoff_time
 
 
+def test_non_rate_limited_404_does_not_wait_for_reset():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.NOT_FOUND
+    response_mock.headers = {"X-RateLimit-Reset": "1655808024"}
+    args = {"authenticator": None, "repositories": ["test_repo"], "page_size_for_large_streams": 30}
+    stream = PullRequestCommentReactions(**args)
+
+    with patch("time.time", return_value=1655804424.0):
+        assert stream.get_backoff_strategy().backoff_time(response_mock) is None
+
+
+def test_retry_after_takes_precedence_over_reset():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.FORBIDDEN
+    response_mock.headers = {
+        "Retry-After": "120",
+        "X-RateLimit-Remaining": "0",
+        "X-RateLimit-Reset": "1655808024",
+    }
+    args = {"authenticator": None, "repositories": ["test_repo"], "page_size_for_large_streams": 30}
+    stream = PullRequestCommentReactions(**args)
+
+    with patch("time.time", return_value=1655804424.0):
+        assert stream.get_backoff_strategy().backoff_time(response_mock) == 120.0
+
+
+def test_rate_limit_wait_is_bounded():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.FORBIDDEN
+    response_mock.headers = {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1655804724"}
+    args = {
+        "authenticator": None,
+        "repositories": ["test_repo"],
+        "start_date": "start_date",
+        "page_size_for_large_streams": 30,
+        "max_wait_time_seconds": 120,
+    }
+    stream = PullRequestCommentReactions(**args)
+
+    with patch("time.time", return_value=1655804424.0):
+        assert stream.get_backoff_strategy().backoff_time(response_mock) is None
+
+
+def test_graphql_rate_limit_wait_applies():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.OK
+    response_mock.headers = {"X-RateLimit-Resource": "graphql", "X-RateLimit-Reset": "1655804724"}
+    response_mock.json.return_value = {"errors": [{"type": "RATE_LIMITED"}]}
+    args = {"authenticator": None, "repositories": ["test_repo"], "page_size_for_large_streams": 30}
+    stream = ProjectsV2(**args)
+
+    with patch("time.time", return_value=1655804424.0):
+        assert stream.get_backoff_strategy().backoff_time(response_mock) == 300.0
+
+
 @pytest.mark.parametrize(
     ("http_status", "response_headers", "text", "response_action", "error_message"),
     [
@@ -110,28 +155,28 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
             {"X-RateLimit-Resource": "graphql"},
             '{"errors": [{"type": "RATE_LIMITED"}]}',
             ResponseAction.RATE_LIMITED,
-            f"Response status code: {HTTPStatus.OK}. Retrying...",
+            "GitHub rate limit hit for stream `repository_stats` (HTTP 200). Waiting for the rate limit window to reset before retrying.",
         ),
         (
             HTTPStatus.FORBIDDEN,
             {"X-RateLimit-Remaining": "0"},
             "",
             ResponseAction.RATE_LIMITED,
-            f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying...",
+            "GitHub rate limit hit for stream `repository_stats` (HTTP 403). Waiting for the rate limit window to reset before retrying.",
         ),
         (
             HTTPStatus.FORBIDDEN,
             {"Retry-After": "0"},
             "",
             ResponseAction.RATE_LIMITED,
-            f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying...",
+            "GitHub rate limit hit for stream `repository_stats` (HTTP 403). Waiting for the rate limit window to reset before retrying.",
         ),
         (
             HTTPStatus.FORBIDDEN,
             {"Retry-After": "60"},
             "",
             ResponseAction.RATE_LIMITED,
-            f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying...",
+            "GitHub rate limit hit for stream `repository_stats` (HTTP 403). Waiting for the rate limit window to reset before retrying.",
         ),
         (HTTPStatus.INTERNAL_SERVER_ERROR, {}, "", ResponseAction.RETRY, "HTTP Status Code: 500. Error: Internal server error."),
         (HTTPStatus.BAD_GATEWAY, {}, "", ResponseAction.RETRY, "HTTP Status Code: 502. Error: Bad gateway."),
@@ -171,7 +216,8 @@ def test_permission_403_fails_immediately():
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.FAIL
     assert result.failure_type == FailureType.config_error
-    assert result.error_message == "Access denied due to insufficient permissions."
+    assert "GitHub denied access (HTTP 403)" in result.error_message
+    assert "SAML SSO authorization" in result.error_message
 
 
 @pytest.mark.parametrize(
@@ -198,6 +244,90 @@ def test_rate_limit_403_retries(response_headers):
     assert result.failure_type == FailureType.transient_error
 
 
+@pytest.mark.parametrize(
+    "status_code,body,expected",
+    [
+        pytest.param(
+            requests.codes.GONE,
+            {"message": "Issues are disabled for this repo"},
+            True,
+            id="issues_disabled",
+        ),
+        pytest.param(
+            requests.codes.GONE,
+            {"message": "Projects are disabled for this repository"},
+            True,
+            id="projects_disabled",
+        ),
+        pytest.param(
+            requests.codes.GONE,
+            {"message": "Some other gone message"},
+            False,
+            id="unrelated_410_message",
+        ),
+        pytest.param(
+            requests.codes.GONE,
+            {},
+            False,
+            id="empty_body",
+        ),
+        pytest.param(
+            requests.codes.NOT_FOUND,
+            {"message": "Issues are disabled for this repo"},
+            False,
+            id="non_410_status",
+        ),
+        pytest.param(
+            requests.codes.GONE,
+            {"message": None},
+            False,
+            id="null_message",
+        ),
+    ],
+)
+def test_is_gone_with_feature_disabled(status_code, body, expected):
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = status_code
+    response_mock.json = lambda: body
+    assert is_gone_with_feature_disabled(response_mock) is expected
+
+
+def test_error_handler_410_feature_disabled_returns_ignore():
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = requests.codes.GONE
+    response_mock.headers = {}
+    response_mock.text = '{"message": "Issues are disabled for this repo"}'
+    response_mock.ok = False
+    response_mock.json = lambda: json.loads(response_mock.text)
+    response_mock.url = "https://api.github.com/repos/test_repo/issues"
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.IGNORE
+    assert result.failure_type == FailureType.config_error
+
+
+def test_is_gone_with_feature_disabled_malformed_json():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = requests.codes.GONE
+    response_mock.json = MagicMock(side_effect=ValueError("not json"))
+    assert is_gone_with_feature_disabled(response_mock) is False
+
+
+def test_error_handler_410_unknown_body_returns_fail():
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = requests.codes.GONE
+    response_mock.headers = {}
+    response_mock.text = '{"message": "Something else entirely"}'
+    response_mock.ok = False
+    response_mock.json = lambda: json.loads(response_mock.text)
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.FAIL
+    assert result.failure_type == FailureType.config_error
+
+
 @patch("time.sleep")
 def test_retry_after_rate_limit(time_mock, requests_mock):
     """
@@ -215,19 +345,21 @@ def test_retry_after_rate_limit(time_mock, requests_mock):
             return ""
         context.status_code = HTTPStatus.OK
         context.headers = {}
-        context.text = '{"login": "airbytehq"}'
-        return '{"login": "airbytehq"}'
+        context.text = '[{"id": 1, "slug": "core"}]'
+        return '[{"id": 1, "slug": "core"}]'
 
     requests_mock.get(
-        "https://api.github.com/orgs/airbytehq",
+        "https://api.github.com/orgs/airbytehq/teams",
         text=request_callback,
     )
 
-    stream = Organizations(organizations=["airbytehq"])
+    # `teams` is a manifest stream as of Step 4; the class survives as `TeamMembers`' parent and
+    # is still the org-scoped Python stream this retry behaviour lives on.
+    stream = Teams(organizations=["airbytehq"])
     list(read_full_refresh(stream))
     assert requests_mock.call_count == 2
-    assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/airbytehq?per_page=100"
-    assert [r.url for r in requests_mock._adapter.request_history][1] == "https://api.github.com/orgs/airbytehq?per_page=100"
+    assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/airbytehq/teams?per_page=100"
+    assert [r.url for r in requests_mock._adapter.request_history][1] == "https://api.github.com/orgs/airbytehq/teams?per_page=100"
 
 
 @patch("time.sleep")
@@ -237,16 +369,117 @@ def test_permission_403_raises_error(time_mock, requests_mock):
     not retry indefinitely.
     """
     requests_mock.get(
-        "https://api.github.com/orgs/airbytehq",
+        "https://api.github.com/orgs/airbytehq/teams",
         status_code=HTTPStatus.FORBIDDEN,
         json={"message": "Resource not accessible by personal access token"},
     )
 
-    stream = Organizations(organizations=["airbytehq"])
+    stream = Teams(organizations=["airbytehq"])
     with pytest.raises((AirbyteTracedException, AttributeError)):
         list(read_full_refresh(stream))
     # Should fail on first attempt, not retry
     assert requests_mock.call_count == 1
+
+
+@patch("time.sleep")
+def test_read_records_404_message_for_repository_stream(time_mock, caplog, requests_mock):
+    args = {"authenticator": None, "repositories": ["org/missing-repo"], "page_size_for_large_streams": 30}
+    stream = ProbeStream(**args)
+
+    requests_mock.get(
+        "https://api.github.com/repos/org/missing-repo/probe_stream",
+        status_code=requests.codes.NOT_FOUND,
+        json={"message": "Not Found"},
+    )
+
+    list(read_full_refresh(stream))
+    assert any(
+        "Skipping `ProbeStream` for repository `org/missing-repo`" in msg and "GitHub returned 404 Not Found" in msg
+        for msg in caplog.messages
+    )
+
+
+@patch("time.sleep")
+def test_read_records_403_message_for_org_stream(time_mock, caplog, requests_mock):
+    stream = Teams(organizations=["restricted-org"])
+
+    requests_mock.get(
+        "https://api.github.com/orgs/restricted-org/teams",
+        status_code=requests.codes.FORBIDDEN,
+        json={"message": "Resource not accessible by integration"},
+    )
+
+    with pytest.raises((AirbyteTracedException, AttributeError)):
+        list(read_full_refresh(stream))
+
+
+@patch("time.sleep")
+def test_read_records_403_raises_with_actionable_message(time_mock, requests_mock):
+    args = {"authenticator": None, "repositories": ["org/private-repo"], "page_size_for_large_streams": 30}
+    stream = ProbeStream(**args)
+
+    requests_mock.get(
+        "https://api.github.com/repos/org/private-repo/probe_stream",
+        status_code=requests.codes.FORBIDDEN,
+        json={"message": "Resource not accessible by integration"},
+    )
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(read_full_refresh(stream))
+    assert "GitHub denied access (HTTP 403)" in str(exc_info.value)
+    assert "SAML SSO authorization" in str(exc_info.value)
+
+
+@patch("time.sleep")
+def test_read_records_409_conflict_message(time_mock, caplog, requests_mock):
+    args = {"authenticator": None, "repositories": ["org/empty-repo"], "page_size_for_large_streams": 30}
+    stream = ProbeStream(**args)
+
+    requests_mock.get(
+        "https://api.github.com/repos/org/empty-repo/probe_stream",
+        status_code=requests.codes.CONFLICT,
+        json={"message": "Git Repository is not empty but not a conflict either"},
+    )
+
+    list(read_full_refresh(stream))
+    assert any(
+        "Skipping `probe_stream` for repository `org/empty-repo`" in msg
+        and "GitHub returned 409 Conflict" in msg
+        and "empty (no commits)" in msg
+        for msg in caplog.messages
+    )
+
+
+@patch("time.sleep")
+def test_read_records_502_message(time_mock, caplog, requests_mock):
+    args = {"authenticator": None, "repositories": ["org/repo"], "page_size_for_large_streams": 30}
+    stream = ProbeStream(**args)
+
+    requests_mock.get(
+        "https://api.github.com/repos/org/repo/probe_stream",
+        status_code=requests.codes.BAD_GATEWAY,
+        json={"message": "Server Error"},
+    )
+
+    list(read_full_refresh(stream))
+    assert any(
+        "GitHub returned HTTP 502 Bad Gateway for stream `probe_stream`" in msg and "usually transient" in msg for msg in caplog.messages
+    )
+
+
+@patch("time.sleep")
+def test_read_records_410_projects_disabled_message(time_mock, caplog, requests_mock):
+    repository_args_with_start_date = {"start_date": "start_date", "page_size_for_large_streams": 30, "repositories": ["org/repo"]}
+    stream = Projects(**repository_args_with_start_date)
+
+    requests_mock.get(
+        "https://api.github.com/repos/org/repo/projects",
+        status_code=requests.codes.GONE,
+        json={"message": "Projects are disabled for this repository"},
+    )
+
+    list(read_full_refresh(stream))
+    assert any("Projects are disabled for this repository" in msg for msg in caplog.messages)
 
 
 @patch("time.sleep")
@@ -319,18 +552,35 @@ def test_stream_teams_502(sleep_mock, requests_mock):
 
 
 def test_stream_organizations_availability_report():
+    """`organizations` itself is declarative as of Step 4 — see
+    test_manifest_org_scoped_streams.py. The org-scoped Python base still opts out of the
+    availability strategy, which `TeamMembers` inherits through `Teams`."""
     organization_args = {"organizations": ["org1", "org2"]}
-    stream = Organizations(**organization_args)
+    stream = Teams(**organization_args)
     assert stream.availability_strategy is None
 
 
-def test_stream_organizations_read(requests_mock):
-    organization_args = {"organizations": ["org1", "org2"]}
-    stream = Organizations(**organization_args)
-    requests_mock.get("https://api.github.com/orgs/org1", json={"id": 1})
-    requests_mock.get("https://api.github.com/orgs/org2", json={"id": 2})
-    records = list(read_full_refresh(stream))
-    assert records == [{"id": 1}, {"id": 2}]
+@patch("time.sleep")
+def test_stream_401_logs_pat_renewal_hint(time_mock, caplog, requests_mock):
+    """Replaces the deleted test_stream_repositories_401: GithubStreamABC.read_records still logs
+    the PAT-renewal hint on 401 and re-raises, for every stream still on the Python path."""
+    stream = Teams(organizations=["org1"], access_token_type=constants.PERSONAL_ACCESS_TOKEN_TITLE)
+
+    requests_mock.get(
+        "https://api.github.com/orgs/org1/teams",
+        status_code=requests.codes.UNAUTHORIZED,
+        json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest"},
+    )
+
+    with pytest.raises(AirbyteTracedException):
+        list(read_full_refresh(stream))
+
+    # 1 initial attempt + GithubStreamABC.max_retries (5), matching GITHUB_DEFAULT_ERROR_MAPPING[401] = RETRY.
+    assert requests_mock.call_count == 6
+    assert any(
+        "GitHub authentication failed (HTTP 401) for stream" in message and "Personal Access Token may need to be renewed" in message
+        for message in caplog.messages
+    )
 
 
 def test_stream_teams_read(requests_mock):
@@ -347,82 +597,21 @@ def test_stream_teams_read(requests_mock):
 
 
 def test_stream_users_read(requests_mock):
+    """`users` is declarative as of Step 4; its read parity is asserted in
+    test_manifest_org_scoped_streams.py. This exercises the same shape through `Teams`, the
+    org-scoped Python stream that remains as `TeamMembers`' parent."""
     organization_args = {"organizations": ["org1", "org2"]}
-    stream = Users(**organization_args)
-    requests_mock.get("https://api.github.com/orgs/org1/members", json=[{"id": 1}, {"id": 2}])
-    requests_mock.get("https://api.github.com/orgs/org2/members", json=[{"id": 3}])
+    stream = Teams(**organization_args)
+    requests_mock.get("https://api.github.com/orgs/org1/teams", json=[{"id": 1}, {"id": 2}])
+    requests_mock.get("https://api.github.com/orgs/org2/teams", json=[{"id": 3}])
     records = list(read_full_refresh(stream))
     assert records == [{"id": 1, "organization": "org1"}, {"id": 2, "organization": "org1"}, {"id": 3, "organization": "org2"}]
     assert requests_mock.call_count == 2
-    assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/org1/members?per_page=100"
-    assert [r.url for r in requests_mock._adapter.request_history][1] == "https://api.github.com/orgs/org2/members?per_page=100"
+    assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/org1/teams?per_page=100"
+    assert [r.url for r in requests_mock._adapter.request_history][1] == "https://api.github.com/orgs/org2/teams?per_page=100"
 
 
-@patch("time.sleep")
-def test_stream_repositories_404(time_mock, requests_mock):
-    organization_args = {"organizations": ["org_name"]}
-    stream = Repositories(**organization_args)
-
-    requests_mock.get(
-        "https://api.github.com/orgs/org_name/repos",
-        status_code=requests.codes.NOT_FOUND,
-        json={"message": "Not Found", "documentation_url": "https://docs.github.com/rest/reference/repos#list-organization-repositories"},
-    )
-
-    assert list(read_full_refresh(stream)) == []
-    assert requests_mock.call_count == 6
-    assert [r.url for r in requests_mock._adapter.request_history][
-        0
-    ] == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
-
-
-@patch("time.sleep")
-def test_stream_repositories_401(time_mock, caplog, requests_mock):
-    organization_args = {"organizations": ["org_name"], "access_token_type": constants.PERSONAL_ACCESS_TOKEN_TITLE}
-    stream = Repositories(**organization_args)
-
-    requests_mock.get(
-        "https://api.github.com/orgs/org_name/repos",
-        status_code=requests.codes.UNAUTHORIZED,
-        json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest"},
-    )
-
-    with pytest.raises(AirbyteTracedException):
-        assert list(read_full_refresh(stream)) == []
-
-    assert requests_mock.call_count == 6
-    assert [r.url for r in requests_mock._adapter.request_history][
-        0
-    ] == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
-    assert "Personal Access Token renewal is required: Bad credentials" in caplog.messages
-
-
-@responses.activate
-def test_stream_repositories_read(requests_mock):
-    organization_args = {"organizations": ["org1", "org2"]}
-    stream = Repositories(**organization_args)
-    updated_at = "2020-01-01T00:00:00Z"
-    requests_mock.get(
-        "https://api.github.com/orgs/org1/repos", json=[{"id": 1, "updated_at": updated_at}, {"id": 2, "updated_at": updated_at}]
-    )
-    requests_mock.get("https://api.github.com/orgs/org2/repos", json=[{"id": 3, "updated_at": updated_at}])
-    records = list(read_full_refresh(stream))
-    assert records == [
-        {"id": 1, "organization": "org1", "updated_at": updated_at},
-        {"id": 2, "organization": "org1", "updated_at": updated_at},
-        {"id": 3, "organization": "org2", "updated_at": updated_at},
-    ]
-    assert requests_mock.call_count == 2
-    assert [r.url for r in requests_mock._adapter.request_history][
-        0
-    ] == "https://api.github.com/orgs/org1/repos?per_page=100&sort=updated&direction=desc"
-    assert [r.url for r in requests_mock._adapter.request_history][
-        1
-    ] == "https://api.github.com/orgs/org2/repos?per_page=100&sort=updated&direction=desc"
-
-
-@patch("time.sleep")
-def test_stream_projects_disabled(time_mock, requests_mock):
+def test_stream_projects_disabled(requests_mock):
     repository_args_with_start_date = {"start_date": "start_date", "page_size_for_large_streams": 30, "repositories": ["test_repo"]}
 
     stream = Projects(**repository_args_with_start_date)
@@ -433,10 +622,35 @@ def test_stream_projects_disabled(time_mock, requests_mock):
     )
 
     assert list(read_full_refresh(stream)) == []
-    assert requests_mock.call_count == 6
+    assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][
         0
     ] == "https://api.github.com/repos/test_repo/projects?per_page=100&state=all"
+
+
+def test_stream_feature_disabled(requests_mock):
+    """A 410 naming a disabled feature is swallowed and the stream yields nothing.
+
+    This pins `GithubStreamABCErrorHandler`/`is_gone_with_feature_disabled` on the Python side,
+    which used to be exercised through `Issues`. That stream is declarative as of Step 6 — its
+    equivalent lives in `test_manifest_repo_scoped_streams.py` — so this uses `Projects`, the
+    other stream GitHub answers this 410 for, which stays Python until Step 5.
+    """
+    repository_args_with_start_date = {
+        "start_date": "2022-01-01T00:00:00Z",
+        "page_size_for_large_streams": 30,
+        "repositories": ["test_repo"],
+    }
+
+    stream = Projects(**repository_args_with_start_date)
+    requests_mock.get(
+        "https://api.github.com/repos/test_repo/projects",
+        status_code=requests.codes.GONE,
+        json={"message": "Projects are disabled for this repo"},
+    )
+
+    assert list(read_full_refresh(stream)) == []
+    assert requests_mock.call_count == 1
 
 
 def test_stream_pull_requests_incremental_read(requests_mock):
@@ -616,8 +830,10 @@ def test_stream_commits_409_empty_repository(caplog, requests_mock):
     stream_state = {}
     records = read_incremental(stream, stream_state)
     assert records == []
-    ignore_message = "Ignoring response for 'GET' request to 'https://api.github.com/repos/organization/repository/commits?per_page=2&since=2022-02-02T10%3A10%3A03Z&sha=branch' with response code '409' as the repository is empty."
-    assert ignore_message in caplog.messages
+    assert any(
+        "Skipping `commits` for this repository: GitHub returned 409 Conflict" in msg and "repository has no commits" in msg
+        for msg in caplog.messages
+    )
 
 
 def test_stream_pull_request_commits(requests_mock):
@@ -842,109 +1058,16 @@ def test_stream_project_cards(requests_mock):
     ]
 
 
-def test_stream_comments(requests_mock):
-    repository_args_with_start_date = {
-        "repositories": ["organization/repository", "airbytehq/airbyte"],
-        "page_size_for_large_streams": 2,
-        "start_date": "2022-02-02T10:10:01Z",
-    }
+def test_branches_technical_stream_still_answers_get_json_schema():
+    """`Branches` is kept only so `Commits` can discover branches, and its schema file was
+    deleted when the user-facing `branches` stream moved to the manifest. The class overrides
+    `get_json_schema` so it does not fall back to the now-missing `schemas/branches.json`."""
+    stream = Branches(repositories=["organization/repository"], page_size_for_large_streams=100)
 
-    stream = Comments(**repository_args_with_start_date)
+    schema = stream.get_json_schema()
 
-    data = [
-        {"id": 1, "updated_at": "2022-02-02T10:10:02Z"},
-        {"id": 2, "updated_at": "2022-02-02T10:10:04Z"},
-        {"id": 3, "updated_at": "2022-02-02T10:12:06Z"},
-        {"id": 4, "updated_at": "2022-02-02T10:12:08Z"},
-        {"id": 5, "updated_at": "2022-02-02T10:12:10Z"},
-        {"id": 6, "updated_at": "2022-02-02T10:12:12Z"},
-    ]
-
-    api_url = "https://api.github.com/repos/organization/repository/issues/comments"
-
-    requests_mock.get(f"{api_url}?per_page=2&since=2022-02-02T10:10:01Z", json=data[0:2])
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&since=2022-02-02T10:10:04Z",
-        json=data[1:3],
-        headers={
-            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=2&since=2022-02-02T10%3A10%3A04Z&page=2>; rel="next"'
-        },
-    )
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&page=2&since=2022-02-02T10:10:04Z",
-        json=data[3:5],
-        headers={
-            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=2&since=2022-02-02T10%3A10%3A04Z&page=3>; rel="next"'
-        },
-    )
-
-    requests_mock.get(f"{api_url}?per_page=2&page=3&since=2022-02-02T10:10:04Z", json=data[5:])
-
-    data = [
-        {"id": 1, "updated_at": "2022-02-02T10:11:02Z"},
-        {"id": 2, "updated_at": "2022-02-02T10:11:04Z"},
-        {"id": 3, "updated_at": "2022-02-02T10:13:06Z"},
-        {"id": 4, "updated_at": "2022-02-02T10:13:08Z"},
-        {"id": 5, "updated_at": "2022-02-02T10:13:10Z"},
-        {"id": 6, "updated_at": "2022-02-02T10:13:12Z"},
-    ]
-
-    api_url = "https://api.github.com/repos/airbytehq/airbyte/issues/comments"
-
-    requests_mock.get(f"{api_url}?per_page=2&since=2022-02-02T10:10:01Z", json=data[0:2])
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&since=2022-02-02T10:11:04Z",
-        json=data[1:3],
-        headers={
-            "Link": '<https://api.github.com/repos/airbytehq/airbyte/issues/comments?per_page=2&since=2022-02-02T10%3A11%3A04Z&page=2>; rel="next"'
-        },
-    )
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&page=2&since=2022-02-02T10:11:04Z",
-        json=data[3:5],
-        headers={
-            "Link": '<https://api.github.com/repos/airbytehq/airbyte/issues/comments?per_page=2&since=2022-02-02T10%3A11%3A04Z&page=3>; rel="next"'
-        },
-    )
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&page=3&since=2022-02-02T10:11:04Z",
-        json=data[5:],
-    )
-
-    stream_state = {}
-    records = read_incremental(stream, stream_state)
-    assert records == [
-        {"id": 1, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:02Z"},
-        {"id": 2, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:04Z"},
-        {"id": 1, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:11:02Z"},
-        {"id": 2, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:11:04Z"},
-    ]
-
-    assert stream_state == {
-        "airbytehq/airbyte": {"updated_at": "2022-02-02T10:11:04Z"},
-        "organization/repository": {"updated_at": "2022-02-02T10:10:04Z"},
-    }
-
-    records = read_incremental(stream, stream_state)
-    assert records == [
-        {"id": 3, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:06Z"},
-        {"id": 4, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:08Z"},
-        {"id": 5, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:10Z"},
-        {"id": 6, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:12Z"},
-        {"id": 3, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:06Z"},
-        {"id": 4, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:08Z"},
-        {"id": 5, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:10Z"},
-        {"id": 6, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:12Z"},
-    ]
-    assert stream_state == {
-        "airbytehq/airbyte": {"updated_at": "2022-02-02T10:13:12Z"},
-        "organization/repository": {"updated_at": "2022-02-02T10:12:12Z"},
-    }
+    assert schema["type"] == "object"
+    assert set(stream.primary_key) <= set(schema["properties"])
 
 
 def test_streams_read_full_refresh(requests_mock):
@@ -969,11 +1092,10 @@ def test_streams_read_full_refresh(requests_mock):
             {"id": 2, cursor_field: "2022-02-02T00:00:00Z", "repository": "organization/repository"},
         ]
 
+    # `CommitComments` is the one semi-incremental REST class still in Python (a technical parent);
+    # the declarative streams are covered in `test_manifest_semi_incremental_streams.py`.
     for cls, url in [
-        (IssueEvents, "https://api.github.com/repos/organization/repository/issues/events"),
-        (IssueMilestones, "https://api.github.com/repos/organization/repository/milestones"),
         (CommitComments, "https://api.github.com/repos/organization/repository/comments"),
-        (Deployments, "https://api.github.com/repos/organization/repository/deployments"),
     ]:
         stream = cls(**repository_args_with_start_date)
         requests_mock.get(url, json=get_json_response(stream.cursor_field))
@@ -1053,28 +1175,12 @@ def test_streams_read_full_refresh(requests_mock):
         "total_count": 1,
     }
 
-    for cls, url in [
-        (Tags, "https://api.github.com/repos/organization/repository/tags"),
-        (IssueLabels, "https://api.github.com/repos/organization/repository/labels"),
-        (Collaborators, "https://api.github.com/repos/organization/repository/collaborators"),
-        (Branches, "https://api.github.com/repos/organization/repository/branches"),
-    ]:
-        stream = cls(**repository_args)
-        requests_mock.get(url, json=get_json_response(stream.cursor_field))
-        records = list(read_full_refresh(stream))
-        assert records == get_records(stream.cursor_field)
-
-    requests_mock.get(
-        "https://api.github.com/repos/organization/repository/stargazers",
-        json=[
-            {"starred_at": "2022-02-01T00:00:00Z", "user": {"id": 1}},
-            {"starred_at": "2022-02-02T00:00:00Z", "user": {"id": 2}},
-        ],
-    )
-
-    stream = Stargazers(**repository_args_with_start_date)
-    records = list(read_full_refresh(stream))
-    assert records == [{"repository": "organization/repository", "starred_at": "2022-02-02T00:00:00Z", "user": {"id": 2}, "user_id": 2}]
+    # `assignees`, `branches`, `collaborators`, `issue_labels` and `tags` moved to the
+    # manifest; their read behavior is covered by test_manifest_repo_scoped_streams.py.
+    # `Branches` stays as the technical stream `Commits` uses for branch discovery.
+    stream = Branches(**repository_args)
+    requests_mock.get("https://api.github.com/repos/organization/repository/branches", json=get_json_response(stream.cursor_field))
+    assert list(read_full_refresh(stream)) == get_records(stream.cursor_field)
 
 
 def test_releases_draft_release_null_tag(requests_mock):
@@ -1750,17 +1856,12 @@ def test_stream_contributor_activity_parse_empty_author(caplog, requests_mock):
 
 def test_stream_contributor_activity_accepted_response(caplog, rate_limit_mock_response, requests_mock):
     requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
-        json={"full_name": "airbytehq/test_airbyte"},
-        status_code=200,
-    )
-    requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+        "https://api.github.com/repos/airbytehq/test_airbyte",
         json={"full_name": "airbytehq/test_airbyte", "default_branch": "default_branch"},
         status_code=200,
     )
     requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte/branches?per_page=100",
+        "https://api.github.com/repos/airbytehq/test_airbyte/branches",
         json={},
         status_code=200,
     )
@@ -1770,9 +1871,9 @@ def test_stream_contributor_activity_accepted_response(caplog, rate_limit_mock_r
         status_code=202,
     )
 
-    source = SourceGithub()
-    catalog = CatalogBuilder().with_stream(name="contributor_activity", sync_mode=SyncMode.full_refresh).build()
     config = {"access_token": "test_token", "repository": "airbytehq/test_airbyte"}
+    catalog = CatalogBuilder().with_stream(name="contributor_activity", sync_mode=SyncMode.full_refresh).build()
+    source = SourceGithub(config=config, catalog=catalog)
     logger_mock = MagicMock()
 
     with patch("time.sleep", return_value=0):
@@ -1875,23 +1976,44 @@ def test_github_stream_abc_read_records_reraises_when_no_response_attr(time_mock
 
 
 @patch("time.sleep")
+def test_github_stream_abc_read_records_reraises_when_response_is_none(time_mock):
+    """Bug fix (oncall/issues/11661): GithubStreamABC.read_records() must re-raise when the wrapped
+    `requests.RequestException` has `response is None` (transport-layer failures such as
+    ConnectionError, ConnectTimeout, ReadTimeout, SSLError, DNS failures). Previously, the
+    guard only checked `hasattr(e._exception, "response")` — which is always True for
+    `RequestException` subclasses — so `e._exception.response.status_code` raised
+    `AttributeError: 'NoneType' object has no attribute 'status_code'`, masking the original
+    transport error."""
+    organization_args = {"organizations": ["org_name"]}
+    stream = Teams(**organization_args)
+
+    # Construct an AirbyteTracedException wrapping a ConnectionError with no response.
+    exc = AirbyteTracedException(message="transport error", failure_type=FailureType.system_error)
+    inner = requests.exceptions.ConnectionError("connection refused")
+    exc._exception = inner
+    assert hasattr(exc._exception, "response"), "Test precondition: RequestException always has `response`"
+    assert exc._exception.response is None, "Test precondition: response must be None for transport errors"
+
+    # Patch HttpStream.read_records (the super() target) to raise our exception
+    with patch("airbyte_cdk.sources.streams.http.http.HttpStream.read_records", side_effect=exc):
+        # The original AirbyteTracedException must propagate — NOT AttributeError.
+        with pytest.raises(AirbyteTracedException):
+            list(stream.read_records(stream_slice={"organization": "org_name"}))
+
+
+@patch("time.sleep")
 def test_contributor_activity_reraises_non_accepted_status(time_mock, rate_limit_mock_response, requests_mock):
     """Bug fix: ContributorActivity.read_records() should re-raise when the exception has
     a valid _exception.response but the status code is NOT 202 ACCEPTED. Previously, the
     `else: raise e` was paired with the outer `if` instead of the inner `if`, causing
     non-ACCEPTED errors to be silently swallowed."""
     requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
-        json={"full_name": "airbytehq/test_airbyte"},
-        status_code=200,
-    )
-    requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+        "https://api.github.com/repos/airbytehq/test_airbyte",
         json={"full_name": "airbytehq/test_airbyte", "default_branch": "default_branch"},
         status_code=200,
     )
     requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte/branches?per_page=100",
+        "https://api.github.com/repos/airbytehq/test_airbyte/branches",
         json={},
         status_code=200,
     )
@@ -1901,9 +2023,9 @@ def test_contributor_activity_reraises_non_accepted_status(time_mock, rate_limit
         status_code=401,
     )
 
-    source = SourceGithub()
-    catalog = CatalogBuilder().with_stream(name="contributor_activity", sync_mode=SyncMode.full_refresh).build()
     config = {"access_token": "test_token", "repository": "airbytehq/test_airbyte"}
+    catalog = CatalogBuilder().with_stream(name="contributor_activity", sync_mode=SyncMode.full_refresh).build()
+    source = SourceGithub(config=config, catalog=catalog)
 
     # The 401 error should be re-raised, not silently swallowed
     with pytest.raises(AirbyteTracedException):
@@ -1940,3 +2062,303 @@ def test_releases_extract_database_id_does_not_catch_type_error():
 def test_releases_extract_database_id_catches_expected_errors(node_id, expected_id):
     """Verify that expected decode/unpack errors still return None after narrowing the except."""
     assert Releases._extract_database_id_from_node_id(node_id) == expected_id
+
+
+# === Tests for defensive parse_response (airbyte-internal-issues/issues/16281) ===
+
+
+def _make_response(status_code=200, json_data=None, text=None):
+    """Build a mock `requests.Response` with controllable `.json()` and `.text`."""
+    resp = MagicMock(spec=requests.Response)
+    resp.status_code = status_code
+    if text is not None:
+        resp.text = text
+        resp.json = MagicMock(side_effect=ValueError("No JSON"))
+    elif json_data is not None:
+        resp.text = json.dumps(json_data)
+        resp.json = MagicMock(return_value=json_data)
+    else:
+        resp.text = ""
+        resp.json = MagicMock(side_effect=ValueError("No JSON"))
+    return resp
+
+
+_REPO_ARGS = {"repositories": ["org/repo"], "page_size_for_large_streams": 30}
+_STREAM_SLICE = {"repository": "org/repo"}
+
+
+@pytest.mark.parametrize(
+    "json_data,text,expected_count",
+    [
+        pytest.param({"workflow_runs": [{"id": 1}]}, None, 1, id="valid_single_record"),
+        pytest.param({"workflow_runs": []}, None, 0, id="valid_empty_list"),
+        pytest.param(None, "<html>Bad Gateway</html>", 0, id="html_body"),
+        pytest.param(None, "", 0, id="empty_body"),
+        pytest.param({"message": "error"}, None, 0, id="missing_key"),
+        pytest.param({"workflow_runs": "not_a_list"}, None, 0, id="wrong_type"),
+        pytest.param({"workflow_runs": None}, None, 0, id="key_is_none"),
+    ],
+)
+def test_workflow_runs_parse_response_defensive(json_data, text, expected_count):
+    stream = WorkflowRuns(**{**_REPO_ARGS, "start_date": "2022-01-01T00:00:00Z"})
+    resp = _make_response(json_data=json_data, text=text)
+    records = list(stream.parse_response(resp, stream_slice=_STREAM_SLICE))
+    assert len(records) == expected_count
+
+
+@pytest.mark.parametrize(
+    "json_data,text,expected_count",
+    [
+        pytest.param({"jobs": [{"id": 1, "completed_at": "2024-01-01T00:00:00Z", "run_id": 1}]}, None, 1, id="valid_single_record"),
+        pytest.param({"jobs": [{"id": 1, "completed_at": None, "run_id": 1}]}, None, 0, id="valid_record_no_cursor"),
+        pytest.param({"jobs": []}, None, 0, id="valid_empty_list"),
+        pytest.param(None, "<html>Bad Gateway</html>", 0, id="html_body"),
+        pytest.param(None, "", 0, id="empty_body"),
+        pytest.param({"message": "error"}, None, 0, id="missing_key"),
+        pytest.param({"jobs": "not_a_list"}, None, 0, id="wrong_type"),
+        pytest.param({"jobs": None}, None, 0, id="key_is_none"),
+    ],
+)
+def test_workflow_jobs_parse_response_defensive(json_data, text, expected_count):
+    parent = WorkflowRuns(**{**_REPO_ARGS, "start_date": "2022-01-01T00:00:00Z"})
+    stream = WorkflowJobs(parent, **{**_REPO_ARGS, "start_date": "2022-01-01T00:00:00Z"})
+    resp = _make_response(json_data=json_data, text=text)
+    records = list(stream.parse_response(resp, stream_state={}, stream_slice=_STREAM_SLICE))
+    assert len(records) == expected_count
+
+
+@pytest.mark.parametrize(
+    "json_data,text,expected_count",
+    [
+        pytest.param([{"event": "labeled"}, {"event": "closed"}], None, 1, id="valid_events_list"),
+        pytest.param([], None, 1, id="valid_empty_events"),
+        pytest.param(None, "<html>Bad Gateway</html>", 1, id="html_body_yields_base_record"),
+        pytest.param(None, "", 1, id="empty_body_yields_base_record"),
+        pytest.param({"message": "error"}, None, 1, id="dict_instead_of_list_yields_base_record"),
+        pytest.param("not_a_list", None, 1, id="string_instead_of_list_yields_base_record"),
+    ],
+)
+def test_issue_timeline_events_parse_response_defensive(json_data, text, expected_count):
+    stream = IssueTimelineEvents(**_REPO_ARGS)
+    resp = _make_response(json_data=json_data, text=text)
+    slice_ = {"repository": "org/repo", "number": 1}
+    records = list(stream.parse_response(resp, stream_state={}, stream_slice=slice_))
+    assert len(records) == expected_count
+
+
+# === Tests for defensive error handlers (airbyte-internal-issues/issues/16281) ===
+
+
+@pytest.mark.parametrize(
+    "status_code,text,expected",
+    [
+        pytest.param(409, '{"message": "Git Repository is empty."}', True, id="conflict_empty_repo"),
+        pytest.param(409, '{"message": "other"}', False, id="conflict_other_message"),
+        pytest.param(409, "<html>Error</html>", False, id="conflict_html_body"),
+        pytest.param(409, "", False, id="conflict_empty_body"),
+        pytest.param(200, '{"message": "Git Repository is empty."}', False, id="non_409_status"),
+    ],
+)
+def test_is_conflict_with_empty_repository_defensive(status_code, text, expected):
+    resp = MagicMock(spec=requests.Response)
+    resp.status_code = status_code
+    if text:
+        try:
+            parsed = json.loads(text)
+            resp.json = MagicMock(return_value=parsed)
+        except json.JSONDecodeError:
+            resp.json = MagicMock(side_effect=ValueError("No JSON"))
+    else:
+        resp.json = MagicMock(side_effect=ValueError("No JSON"))
+    assert is_conflict_with_empty_repository(resp) == expected
+
+
+def test_graphql_rate_limit_check_with_html_response():
+    """GithubStreamABCErrorHandler should not crash when response is non-JSON
+    during graphql rate limit check."""
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    handler = stream.get_error_handler()
+    resp = MagicMock(spec=requests.Response)
+    resp.status_code = 200
+    resp.headers = {"X-RateLimit-Resource": "graphql"}
+    resp.text = "<html>Error</html>"
+    resp.ok = True
+    resp.json = MagicMock(side_effect=ValueError("No JSON"))
+    result = handler.interpret_response(resp)
+    assert result.response_action != ResponseAction.RATE_LIMITED
+
+
+def test_graphql_error_handler_with_html_response():
+    """GitHubGraphQLErrorHandler._safe_json_get_errors should not crash on non-JSON."""
+    stream = MagicMock()
+    stream.name = "test_stream"
+    stream.large_stream = False
+    stream.page_size = 100
+    handler = GitHubGraphQLErrorHandler(stream=stream, logger=MagicMock(), error_mapping={})
+    resp = MagicMock(spec=requests.Response)
+    resp.status_code = 200
+    resp.headers = {}
+    resp.text = "<html>Error</html>"
+    resp.ok = True
+    resp.json = MagicMock(side_effect=ValueError("No JSON"))
+    assert handler._safe_json_get_errors(resp) is False
+
+
+def test_graphql_error_handler_with_valid_errors():
+    """GitHubGraphQLErrorHandler._safe_json_get_errors returns True when errors present."""
+    handler = GitHubGraphQLErrorHandler(stream=MagicMock(), logger=MagicMock(), error_mapping={})
+    resp = MagicMock(spec=requests.Response)
+    resp.json = MagicMock(return_value={"errors": [{"type": "SOME_ERROR"}]})
+    assert handler._safe_json_get_errors(resp) is True
+
+
+def test_graphql_rate_limit_check_with_valid_rate_limited_body():
+    """When response has graphql rate-limit header AND a valid body with RATE_LIMITED error,
+    handler should return RATE_LIMITED action."""
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    handler = stream.get_error_handler()
+    resp = MagicMock(spec=requests.Response)
+    resp.status_code = 200
+    resp.headers = {"X-RateLimit-Resource": "graphql"}
+    resp.text = '{"errors": [{"type": "RATE_LIMITED"}]}'
+    resp.ok = True
+    resp.json = MagicMock(return_value={"errors": [{"type": "RATE_LIMITED"}]})
+    result = handler.interpret_response(resp)
+    assert result.response_action == ResponseAction.RATE_LIMITED
+
+
+def test_releases_marked_as_large_stream():
+    """The Releases GraphQL query is high-cost, so the stream must be marked as
+    large_stream so that page_size defaults to the smaller large-stream value."""
+    assert Releases.large_stream is True
+    stream = Releases(
+        repositories=["org/repo"],
+        page_size_for_large_streams=constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM,
+        start_date="2022-01-01T00:00:00Z",
+    )
+    assert stream.page_size == constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
+
+
+@pytest.mark.parametrize("status_code", [requests.codes.BAD_GATEWAY, requests.codes.GATEWAY_TIMEOUT])
+def test_graphql_error_handler_502_504_message_includes_stream_name(status_code):
+    """502/504 responses should produce an error message that names the stream and
+    explains that the page size is being reduced — not the generic
+    'Response status code: 504. Retrying...' string."""
+    stream = MagicMock()
+    stream.name = "releases"
+    stream.large_stream = True
+    stream.page_size = 10
+    handler = GitHubGraphQLErrorHandler(stream=stream, logger=MagicMock(), error_mapping={})
+    resp = MagicMock(spec=requests.Response)
+    resp.status_code = status_code
+    resp.headers = {}
+    resp.text = ""
+    resp.ok = False
+    resp.json = MagicMock(return_value={})
+    resolution = handler.interpret_response(resp)
+    assert resolution.response_action == ResponseAction.RETRY
+    assert resolution.failure_type == FailureType.transient_error
+    assert "`releases`" in resolution.error_message
+    assert str(status_code) in resolution.error_message
+    assert "Reducing GraphQL page size" in resolution.error_message
+
+
+def test_graphql_error_handler_504_floors_page_size_at_one():
+    """The 502/504 page-size halving must never let page_size drop below 1.
+    A page_size of 0 would request no records and stall the stream."""
+    stream = MagicMock()
+    stream.name = "releases"
+    stream.large_stream = True
+    stream.page_size = 1
+    handler = GitHubGraphQLErrorHandler(stream=stream, logger=MagicMock(), error_mapping={})
+    resp = MagicMock(spec=requests.Response)
+    resp.status_code = requests.codes.GATEWAY_TIMEOUT
+    resp.headers = {}
+    resp.text = ""
+    resp.ok = False
+    resp.json = MagicMock(return_value={})
+    handler.interpret_response(resp)
+    assert stream.page_size == 1
+
+
+@patch("time.sleep")
+def test_read_records_504_message_for_releases(time_mock, caplog, requests_mock):
+    """After exhausting retries on 504s, the final user-facing log message for the
+    Releases stream should name the stream and mention the page-size remediation —
+    not the bare 'Response status code: 504. Retrying...' string."""
+    stream = Releases(
+        repositories=["org/repo"],
+        page_size_for_large_streams=10,
+        start_date="2022-01-01T00:00:00Z",
+    )
+    requests_mock.post(
+        "https://api.github.com/graphql",
+        status_code=requests.codes.GATEWAY_TIMEOUT,
+        json={"message": "Gateway Timeout"},
+    )
+    list(read_full_refresh(stream))
+    assert any(
+        "GitHub returned HTTP 504 Gateway Timeout for stream `releases`" in msg and "Page size for large streams" in msg
+        for msg in caplog.messages
+    )
+
+
+class _RequestLoopDetected(Exception):
+    """Raised by a mock instead of letting an unterminated read spin forever."""
+
+
+@patch("time.sleep")
+def test_read_records_404_closes_resumable_full_refresh_slice(time_mock, requests_mock):
+    """A swallowed 404 must terminate the partition instead of being retried forever.
+
+    `Teams` is full refresh, so it carries a `SubstreamResumableFullRefreshCursor`. Before the
+    fix the swallowed error left the partition's cursor state empty, the checkpoint reader
+    handed the same partition back on every iteration, and the sync emitted no records until
+    the platform's source heartbeat killed the attempt.
+
+    This was written against `Organizations`, which Step 4 deleted; `Teams` is the org-scoped
+    Python class that survives as `TeamMembers`' parent, and it reaches the same
+    `GithubStreamABC.read_records` path.
+    """
+    calls = 0
+
+    def request_callback(request, context):
+        nonlocal calls
+        calls += 1
+        # 1 initial attempt + GithubStreamABC.max_retries (5); anything beyond that means the
+        # partition was handed back for another pass.
+        if calls > 6:
+            raise _RequestLoopDetected(f"teams partition re-read after {calls} requests")
+        context.status_code = HTTPStatus.NOT_FOUND
+        return {"message": "Not Found"}
+
+    requests_mock.get("https://api.github.com/orgs/octocat/teams", json=request_callback)
+
+    stream = Teams(organizations=["octocat"])
+    records = list(stream.read_only_records())
+
+    assert records == []
+    assert calls == 6
+    assert stream.get_cursor().get_stream_state() == {
+        "states": [{"partition": {"organization": "octocat"}, "cursor": {"__ab_full_refresh_sync_complete": True}}]
+    }
+
+
+@patch("time.sleep")
+def test_read_records_404_on_a_parent_read_leaves_shared_cursor_untouched(time_mock, requests_mock):
+    """A swallowed error on a slice with no `partition` key must not close an empty partition.
+
+    Substreams such as `TeamMembers` read their parent by calling `Teams.read_records` straight
+    from `stream_slices()`, passing a bare `{"organization": ...}` mapping. `Teams` is a shared
+    instance that is also in the catalog and emits its own STATE, so closing
+    `_extract_slice_fields`' `{}` fallback would publish a `{"partition": {}}` entry that means
+    nothing.
+    """
+    requests_mock.get("https://api.github.com/orgs/octo-org/teams", status_code=HTTPStatus.NOT_FOUND, json={"message": "Not Found"})
+
+    stream = Teams(organizations=["octo-org"])
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"organization": "octo-org"}))
+
+    assert records == []
+    # No `{"partition": {}}` entry: the empty partition was never closed.
+    assert stream.get_cursor().get_stream_state() == {"states": []}

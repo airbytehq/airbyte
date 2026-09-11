@@ -144,8 +144,12 @@ For more details, see [Recharge API Rate Limits](https://developer.rechargepayme
 
 ### Error Handling
 
-*   **Transient HTTP Errors:** Common transient errors (e.g., `500 - Internal server error`, `503 - A 3rd party service on which the request depends has timed out`) are handled by Airbyte's `DefaultErrorHandler`. This mechanism retries requests with an exponential backoff strategy, up to a maximum of 10 retries.
-*   **Persistent Issues:** If you consistently encounter rate limit issues or other errors that are not automatically resolved by the connector's retry mechanisms, please [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose) on GitHub with relevant logs and details.
+- **Transient HTTP Errors:** Common transient errors (e.g., `500 - Internal server error`, `503 - A 3rd party service on which the request depends has timed out`) are handled by Airbyte's `DefaultErrorHandler`. This mechanism retries requests with an exponential backoff strategy, up to a maximum of 10 retries.
+- **Persistent Issues:** If you consistently encounter rate limit issues or other errors that are not automatically resolved by the connector's retry mechanisms, please [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose) on GitHub with relevant logs and details.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 

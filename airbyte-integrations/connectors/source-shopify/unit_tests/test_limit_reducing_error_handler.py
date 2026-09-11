@@ -3,7 +3,11 @@
 #
 
 import pytest
+import requests
 from source_shopify.streams.streams import OrderRefunds, Orders
+from source_shopify.utils import LimitReducingErrorHandler
+
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 
 
 # Mock data for Orders stream with pagination via Link headers
@@ -89,6 +93,36 @@ class TestOrdersLimitReducingErrorHandler:
         assert any(
             "limit=125" in req.url for req in requests_mock.request_history
         ), "No request was made with the reduced limit (limit=125)"
+
+
+def _unmapped_response(status_code: int) -> requests.Response:
+    response = requests.Response()
+    response.status_code = status_code
+    return response
+
+
+@pytest.mark.parametrize(
+    "response_or_exception",
+    [
+        pytest.param(RuntimeError("boom"), id="unmapped_exception"),
+        pytest.param(_unmapped_response(418), id="unmapped_status_code"),
+    ],
+)
+def test_limit_reducing_error_handler_logs_fallthrough_without_crashing(response_or_exception):
+    """
+    Regression test for the null-logger `AttributeError` bug
+    ([oncall#11714](https://github.com/airbytehq/oncall/issues/11714)).
+
+    The parent `HttpStatusErrorHandler.interpret_response` calls `self._logger.error` / `.warning`
+    whenever an exception or status code falls through to the default branch. Previously the
+    handler was constructed with `logger=None`, causing `AttributeError: 'NoneType' object has no
+    attribute 'error'` on any non-500 failure path.
+    """
+    handler = LimitReducingErrorHandler(max_retries=5, error_mapping={})
+
+    resolution = handler.interpret_response(response_or_exception)
+
+    assert resolution.response_action == ResponseAction.RETRY
 
 
 class TestOrderRefundsLimitReducingErrorHandler:

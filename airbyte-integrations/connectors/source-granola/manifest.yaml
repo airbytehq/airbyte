@@ -4,7 +4,24 @@ type: DeclarativeSource
 
 description: >-
   Granola is an AI-powered meeting notes tool. This connector reads meeting
-  notes from your Granola workspace using the Granola Enterprise API.
+  notes from your Granola workspace using the Granola API.
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 6
+
+# Granola API rate limits (per workspace):
+# https://docs.granola.ai/api-reference/changelog
+# Burst: 25 requests per 5-second window
+# Sustained: 5 requests/second (300/minute)
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 25
+          interval: PT5S
+      matchers: []
 
 check:
   type: CheckStream
@@ -42,13 +59,18 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get('cursor', '') }}"
             stop_condition: "{{ not response.get('cursor') or not response.get('hasMore', False) }}"
+      # Slice bounds are second-granular date-times, not dates: the API treats
+      # created_before=<date> as excluding that whole day, so day-truncated bounds
+      # dropped every record created on a slice boundary day. "%Y-%m-%d" stays in
+      # cursor_datetime_formats so date-only state from earlier versions still parses.
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: "%Y-%m-%d"
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%d')) }}"
@@ -63,10 +85,10 @@ definitions:
           field_name: created_before
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
-          datetime_format: "%Y-%m-%d"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P30D
-        cursor_granularity: P1D
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -85,6 +107,20 @@ definitions:
           http_method: GET
           request_parameters:
             include: transcript
+          # Granola refuses to return oversized transcripts inline and answers 413
+          # TRANSCRIPT_TOO_LARGE. Skip the note here instead of failing the sync; the
+          # full transcript is available from the note_transcripts stream.
+          error_handler:
+            $ref: "#/definitions/base_error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 413
+                action: IGNORE
+                error_message: >-
+                  Skipping a note in detailed_notes because its transcript is too large to
+                  be returned inline. Sync the note_transcripts stream to replicate this
+                  transcript.
         record_selector:
           type: RecordSelector
           extractor:
@@ -103,16 +139,89 @@ definitions:
         schema:
           $ref: "#/schemas/detailed_notes"
 
+    note_transcripts:
+      type: DeclarativeStream
+      name: note_transcripts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/notes/{{ stream_partition.note_id }}/transcript
+          http_method: GET
+          request_parameters:
+            page_size: "100"
+          # A note listed by the parent stream can be deleted, unshared, or fall out of
+          # the API key's scope before its transcript partition runs, and Granola answers
+          # 404 on this path. Skip that note instead of failing every remaining transcript.
+          error_handler:
+            $ref: "#/definitions/base_error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 404
+                action: IGNORE
+                error_message: >-
+                  Skipping a note in note_transcripts because Granola no longer returns a
+                  transcript for it. The note was likely deleted or unshared during the sync.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - transcript
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('cursor', '') }}"
+            stop_condition: "{{ not response.get('cursor') or not response.get('hasMore', False) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: note_id
+              stream:
+                $ref: "#/definitions/streams/notes"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - note_id
+              value: "{{ stream_partition.note_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/note_transcripts"
+
+  base_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+        max_waiting_time_in_seconds: 60
+      - type: ExponentialBackoffStrategy
+        factor: 5
+
   base_requester:
     type: HttpRequester
     url_base: https://public-api.granola.ai
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_key'] }}"
+    # Prefer Retry-After when present; otherwise use exponential backoff.
+    error_handler:
+      $ref: "#/definitions/base_error_handler"
 
 streams:
   - $ref: "#/definitions/streams/notes"
   - $ref: "#/definitions/streams/detailed_notes"
+  - $ref: "#/definitions/streams/note_transcripts"
 
 spec:
   type: Spec
@@ -126,8 +235,11 @@ spec:
         type: string
         title: API Key
         description: >-
-          Your Granola Enterprise API key. Generate one from Settings >
-          Workspaces > API in your Granola workspace.
+          Your Granola API key. For a personal key, open the Granola desktop app
+          and go to Settings > Connectors > API keys > Create new key. For an
+          Enterprise API key, go to Settings > API > Create new key. On Enterprise
+          plans, workspace admins must enable "Allow personal API keys" in
+          Settings > Workspace > General before personal keys can be created.
         airbyte_secret: true
         order: 0
       start_date:
@@ -148,6 +260,7 @@ metadata:
   autoImportSchema:
     notes: false
     detailed_notes: false
+    note_transcripts: false
 
 schemas:
   notes:
@@ -188,6 +301,66 @@ schemas:
     additionalProperties: true
     required:
       - id
+
+  note_transcripts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      note_id:
+        type: string
+        description: The unique identifier of the note the transcript segment belongs to.
+      speaker:
+        type:
+          - "null"
+          - object
+        description: Speaker information.
+        properties:
+          source:
+            type:
+              - "null"
+              - string
+            description: Source of the speaker (microphone or speaker).
+          attribution:
+            type:
+              - "null"
+              - string
+            description: >-
+              Who the segment is attributed to: "me" for the note's owner, "them" for
+              other meeting participants. Omitted when the attribution is unknown.
+          diarization_label:
+            type:
+              - "null"
+              - string
+            description: >-
+              Diarized anonymous speaker label, such as "Speaker A". Present only on iOS
+              transcripts when diarization is available.
+          name:
+            type:
+              - "null"
+              - string
+            description: >-
+              Resolved name of the identified speaker, such as "Alice Smith". Present
+              only when a speaker could be identified.
+      text:
+        type:
+          - "null"
+          - string
+        description: Transcript text content.
+      start_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+        description: Start time of the transcript segment.
+      end_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+        description: End time of the transcript segment.
+    additionalProperties: true
+    required:
+      - note_id
 
   detailed_notes:
     type: object

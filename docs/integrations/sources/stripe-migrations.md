@@ -1,6 +1,74 @@
 # Stripe Migration Guide
 
-###  Upgrading to 5.6.0
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
+## Upgrading to 6.0.0
+
+Version 6.0.0 fixes a bug where the `invoice_line_items` and `subscription_items` incremental streams emitted only one record per Stripe event instead of correctly expanding nested line items. An event containing N line items previously produced 1 record; it now produces N records.
+
+### What changed
+
+We changed how records are extracted from the API response for the `invoice_line_items` and `subscription_items` streams to ensure nested data is properly treated as individual records.
+
+#### Example: `invoice_line_items`
+
+**Before (5.x):** A single Stripe event with an invoice containing 3 line items produced 1 flattened record:
+
+```json
+{
+  "id": "evt_1234",
+  "type": "invoice.updated",
+  "data": {
+    "object": {
+      "id": "in_abc",
+      "lines": {
+        "data": [
+          {"id": "il_1", "amount": 1000},
+          {"id": "il_2", "amount": 2000},
+          {"id": "il_3", "amount": 500}
+        ]
+      }
+    }
+  }
+}
+```
+
+This event emitted **1 record** containing the top-level event fields. The nested line items inside `data.object.lines.data` were lost.
+
+**After (6.0.0):** The same event now emits **3 records**, 1 per line item:
+
+```json
+{"id": "il_1", "amount": 1000, "invoice_id": "in_abc", "invoice_updated": 1712600000}
+{"id": "il_2", "amount": 2000, "invoice_id": "in_abc", "invoice_updated": 1712600000}
+{"id": "il_3", "amount": 500, "invoice_id": "in_abc", "invoice_updated": 1712600000}
+```
+
+The same change applies to `subscription_items`, which expands items from `data.object.items.data`.
+
+### Who is affected
+
+Users syncing the `invoice_line_items` or `subscription_items` streams in incremental mode. Previously synced data for these streams may be incomplete due to the bug.
+
+### Migration steps
+
+After upgrading, you can choose to either leave your syncs as-is or run a full refresh to recapture the correct values for impacted fields.
+
+**Option 1: Leave syncs alone.** Future incremental syncs will emit records correctly. Historical data already in your destination will remain incomplete, but no action is required.
+
+**Option 2: Run a full refresh.** A full refresh will recapture the correct values for all records in the impacted streams. If you choose this option, decide between:
+
+- **Full Refresh and Retain records:** Keeps existing data in your destination and layers the refreshed data on top. This is the safer option for most users.
+- **Full Refresh and Clear:** Replaces all existing data in the destination for these streams. **Use caution:** because the Stripe Events API only retains events for the last 30 days, clearing will cause you to lose all updates to event-based streams in your destination that are older than 30 days. See the [Stripe API event retention limitation](/integrations/sources/stripe#limitations--troubleshooting) for more details.
+
+:::tip
+If the 30-day retention window is a concern, consider making a backup of your currently synced data in a separate table in your destination before clearing the stream. Once the backup is complete, you can safely run a Full Refresh and Clear without losing historical data.
+:::
+
+### Connector upgrade guide
+
+<MigrationGuide />
+
+### Upgrading to 5.6.0
 
 The `Payment Methods` stream previously sync data from Treasury flows. This version will now provide data about customers' payment methods.
 

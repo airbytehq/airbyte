@@ -86,10 +86,10 @@
           },
           "required" : [ "auth_type", "private_key" ]
         }, {
-          "title" : "Username and Password",
+          "title" : "Username and Password (Deprecated)",
           "type" : "object",
           "additionalProperties" : true,
-          "description" : "Configuration details for the Username and Password Authentication.",
+          "description" : "Deprecated: Username and password authentication is deprecated as of version 5.0.0 and will be removed in a future release. Snowflake is enforcing strong authentication on a rolling per-account basis between August and October 2026. Switch to key pair authentication instead. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake-migrations\">migration guide</a> for details.",
           "properties" : {
             "auth_type" : {
               "type" : "string",
@@ -98,7 +98,7 @@
             },
             "password" : {
               "type" : "string",
-              "description" : "Enter the password associated with the username.",
+              "description" : "Deprecated. Enter the password associated with the username.",
               "title" : "Password",
               "order" : 0,
               "airbyte_secret" : true
@@ -136,19 +136,36 @@
         "group" : "advanced",
         "order" : 8
       },
+      "trim_space" : {
+        "type" : "boolean",
+        "description" : "Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Disable this option if your data contains meaningful leading or trailing whitespace in string fields that should be preserved.",
+        "title" : "Trim Whitespace from String Fields",
+        "group" : "advanced",
+        "order" : 9,
+        "default" : true
+      },
       "jdbc_url_params" : {
         "type" : "string",
         "description" : "Enter the additional properties to pass to the JDBC URL string when connecting to the database (formatted as key=value pairs separated by the symbol &). Example: key1=value1&key2=value2&key3=value3",
         "title" : "JDBC URL Params",
         "group" : "advanced",
-        "order" : 9
+        "order" : 10
       },
       "retention_period_days" : {
         "type" : "integer",
         "description" : "The number of days of Snowflake Time Travel to enable on the tables. See <a href=\"https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period\">Snowflake's documentation</a> for more information. Setting a nonzero value will incur increased storage costs in your Snowflake instance.",
         "title" : "Data Retention Period (days)",
         "group" : "advanced",
-        "order" : 10
+        "order" : 11
+      },
+      "number_data_type" : {
+        "type" : "string",
+        "default" : "FLOAT",
+        "enum" : [ "NUMBER(38,9)", "FLOAT" ],
+        "description" : "Datatype choice for columns using the Airbyte number type. NUMBER(38,9) (RECOMMENDED): Fixed-point decimal with 9 decimal places. Stores values exactly. Best for financial data, monetary values, numeric IDs, and values that require exact decimal representation. FLOAT: Binary floating-point number. Stores decimal values approximately. Best for scientific calculations, statistical models, probabilities, model scores, very large magnitudes, and calculations where small rounding differences are acceptable.",
+        "title" : "Decimal Data Type",
+        "group" : "advanced",
+        "order" : 12
       }
     },
     "required" : [ "host", "role", "warehouse", "database", "schema", "username" ],

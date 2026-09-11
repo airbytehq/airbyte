@@ -569,10 +569,28 @@ class PostgresDirectLoadSqlGenerator(
         WITH (FORMAT csv)
         """
 
+    fun addMetaColumns(
+        tableName: TableName,
+        columns: Map<String, ColumnType>,
+    ): String {
+        val fullyQualifiedTableName = getFullyQualifiedName(tableName)
+        val clauses =
+            columns.map { (name, columnType) ->
+                // Note: we intentionally don't set NOT NULL.
+                // We're adding a new column, and preexisting records have no value for it.
+                "ALTER TABLE $fullyQualifiedTableName ADD COLUMN IF NOT EXISTS ${quoteIdentifier(name)} ${columnType.type};"
+            }
+
+        return """
+            BEGIN TRANSACTION;
+            ${clauses.joinToString("\n")}
+            COMMIT;
+        """
+    }
+
     fun matchSchemas(
         tableName: TableName,
         columnsToAdd: Map<String, ColumnType>,
-        columnsToRemove: Map<String, ColumnType>,
         columnsToModify: Map<String, ColumnTypeChange>,
         recreatePrimaryKeyIndex: Boolean,
         primaryKeyColumnNames: List<String>,
@@ -588,11 +606,6 @@ class PostgresDirectLoadSqlGenerator(
             // default value for preexisting records.
             clauses.add(
                 "ALTER TABLE $fullyQualifiedTableName ADD COLUMN ${quoteIdentifier(name)} ${columnType.type};"
-            )
-        }
-        columnsToRemove.forEach { (name, _) ->
-            clauses.add(
-                "ALTER TABLE $fullyQualifiedTableName DROP COLUMN ${quoteIdentifier(name)}$dropTableSuffix;"
             )
         }
 

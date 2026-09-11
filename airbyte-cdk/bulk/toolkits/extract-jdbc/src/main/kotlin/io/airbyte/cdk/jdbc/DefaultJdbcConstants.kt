@@ -33,6 +33,10 @@ data class DefaultJdbcConstants(
     val maxSequentialQueryLimit: Long? = MAX_SEQUENTIAL_QUERY_LIMIT_NULL,
     /** Whether to fetch pseudo-columns when querying column metadata. */
     val includePseudoColumns: Boolean = true,
+    /** Namespaces to ignore when discovering all namespaces. */
+    val ignoredNamespaces: Set<String> = emptySet(),
+    /** Stream names to drop from the discovered catalog. */
+    val ignoredStreams: Set<String> = emptySet(),
 ) {
 
     enum class NamespaceKind {

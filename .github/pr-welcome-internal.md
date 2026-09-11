@@ -21,8 +21,15 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
   - `/ai-prove-fix` - Runs prerelease readiness checks, including testing against customer connections.
   - `/ai-canary-prerelease` - Rolls out prerelease to 5-10 connections for canary testing.
   - `/ai-review` - AI-powered PR review for connector safety and quality gates.
+  - `/ai-breaking-change-review` - Assists the breaking-change reviewers: whether the change needs to be breaking, destination data-loss risk, and whether the migration guide, metadata message, and docs let users upgrade safely.
+- 📝 AI Documentation:
+  - `/ai-docs-review` - AI-powered documentation review for PRs with connector changes.
+  - `/ai-create-docs-pr` - Creates a documentation PR for connector changes, stacked on the current PR.
 - 🚀 Connector Releases:
   - `/publish-connectors-prerelease` - Publishes pre-release connector builds (tagged as `{version}-preview.{git-sha}`) for all modified connectors in the PR.
+  - `/enable-autopilot-rollouts` - Enables autopilot progressive rollouts for the modified connector(s) in the PR, remediating "autopilot rollouts not enabled for `{connector-name}`" auto-merge blockers. Sets `defaultRolloutMode: autopilot` and `enableProgressiveRollout: true`, preserving any existing `autopilotConfig`.
+    - Optional args: `connector=<CONNECTOR_NAME>` (defaults to the modified connectors in the PR), `strategy=fast|slow|default` (defaults to `fast`).
+    - Example: `/enable-autopilot-rollouts` or `/enable-autopilot-rollouts connector=source-faker strategy=slow`
 - ☕️ JVM connectors:
   - `/update-connector-cdk-version connector=<CONNECTOR_NAME>` - Updates the specified connector to the latest CDK version.
     Example: `/update-connector-cdk-version connector=destination-bigquery`

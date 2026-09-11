@@ -55,6 +55,7 @@ Other components, such as an `Authenticator` can also set additional request par
 
 Additionally, some stateful components use a `RequestOption` to configure the options and update the value. Example of such components are [Paginators](./pagination.md) and [Partition routers](./partition-router.md).
 
-## More readings
+## Related
 
+- *No-Code Connector Builder*: [Global Configuration](/platform/connector-development/connector-builder-ui/global-configuration)
 - [Request options](./request-options.md)

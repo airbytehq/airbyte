@@ -5,32 +5,82 @@ data:
   allowedHosts:
     hosts:
       - harvest.greenhouse.io
+      - auth.greenhouse.io
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.14.0@sha256:5b95dd9e71defeece4a1efb27688b15e482f18c82c745498611846466b72403e
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.25.1@sha256:cdbd1578932d121f2852c065fbabebc49ccbf00078606dc503be5e4c66b373df
   connectorSubtype: api
   connectorType: source
   definitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
-  dockerImageTag: 0.7.19
+  dockerImageTag: 1.0.2
   dockerRepository: airbyte/source-greenhouse
   documentationUrl: https://docs.airbyte.com/integrations/sources/greenhouse
   githubIssueLabel: source-greenhouse
   icon: greenhouse.svg
   license: ELv2
-  maxSecondsBetweenMessages: 10
+  maxSecondsBetweenMessages: 3600
   name: Greenhouse
   remoteRegistries:
     pypi:
       enabled: false
       packageName: airbyte-source-greenhouse
-  releases:
-    rolloutConfiguration:
-      enableProgressiveRollout: false
   registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "This release migrates all Greenhouse streams from Harvest v1 to Harvest v3 because Greenhouse is sunsetting Harvest v1 and v2 on 2026-08-31, and replaces API-key authentication with OAuth Authorization Code authentication. Every deployment now authenticates with the client ID and secret of a Greenhouse partner OAuth application, authorizes the requested scopes through the Greenhouse consent flow, and lets Airbyte manage the access and refresh tokens. This release also removes three duplicate streams: use demographics_answers, interviews, and job_stages instead of applications_demographics_answers, applications_interviews, and jobs_stages. Because no stream is a one-to-one replacement, there are two upgrade paths: we strongly recommend setting up a new connection on 1.0.0 that writes to a new destination namespace or table prefix, keeping your existing Harvest v1 tables as history. If you upgrade this connection in place instead, update the source configuration, refresh the schemas, and clear the affected streams so v3 records do not land beside v1 records. See the [Greenhouse migration guide](https://docs.airbyte.com/integrations/sources/greenhouse-migrations) for details."
+        upgradeDeadline: "2026-08-31"
+        deadlineAction: "disable"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "applications"
+              - "applications_demographics_answers"
+              - "applications_interviews"
+              - "candidates"
+              - "close_reasons"
+              - "custom_fields"
+              - "degrees"
+              - "demographics_answers"
+              - "demographics_answer_options"
+              - "demographics_questions"
+              - "demographics_answers_answer_options"
+              - "demographics_question_sets"
+              - "demographics_question_sets_questions"
+              - "departments"
+              - "jobs"
+              - "jobs_openings"
+              - "interviews"
+              - "job_posts"
+              - "job_stages"
+              - "jobs_stages"
+              - "offers"
+              - "rejection_reasons"
+              - "scorecards"
+              - "sources"
+              - "users"
+              - "activity_feed"
+              - "approvals"
+              - "disciplines"
+              - "schools"
+              - "eeoc"
+              - "email_templates"
+              - "offices"
+              - "prospect_pools"
+              - "tags"
+              - "user_roles"
+              - "user_permissions"
+    rolloutConfiguration:
+      enableProgressiveRollout: false
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   supportLevel: community
   tags:
     - language:manifest-only
@@ -38,31 +88,30 @@ data:
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
-        - name: greenhouse_config_users_only_dev_null
-          id: 2234aee5-c67b-48f7-8c6d-45a1e0303ea1
         - name: greenhouse_config_dev_null
           id: 2bcce6b2-2c89-46a4-9980-82a299266774
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
-        - name: SECRET_SOURCE-GREENHOUSE_USERS_ONLY__CREDS
-          fileName: config_users_only.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE-GREENHOUSE__CREDS
-          fileName: config.json
+        - name: SECRET_SOURCE-GREENHOUSE__CREDS_OAUTH
+          fileName: config_oauth.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
     - title: Greenhouse Harvest API
-      url: https://developers.greenhouse.io/harvest.html
+      url: https://harvestdocs.greenhouse.io/
       type: api_reference
     - title: Greenhouse authentication
-      url: https://developers.greenhouse.io/harvest.html#authentication
+      url: https://harvestdocs.greenhouse.io/docs/authentication
       type: authentication_guide
     - title: Greenhouse rate limits
-      url: https://developers.greenhouse.io/harvest.html#throttling
+      url: https://harvestdocs.greenhouse.io/docs/api-rate-limiting
       type: rate_limits
+    - title: Greenhouse Harvest v3 API
+      url: https://harvestdocs.greenhouse.io/
+      type: api_reference
+    - title: Greenhouse Harvest v3 authentication
+      url: https://harvestdocs.greenhouse.io/docs/authentication
+      type: authentication_guide
 metadataSpecVersion: "1.0"

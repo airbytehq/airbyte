@@ -4,6 +4,8 @@ import logging
 import time
 from typing import TYPE_CHECKING, Iterator, List, Optional
 
+from facebook_business.exceptions import FacebookBadObjectError
+
 from .async_job import AsyncJob, update_in_batch  # ParentAsyncJob not needed here
 
 
@@ -34,8 +36,21 @@ class APILimit:
         """
         Ping the account to refresh the `x-fb-ads-insights-throttle` header and cache the value.
         NOTE: This is inexpensive (empty insights call) and safe to perform before scheduling.
+
+        Facebook occasionally returns a malformed response that the SDK cannot parse,
+        raising `FacebookBadObjectError`. The ping is best-effort and only updates a
+        cached throttle estimate, so we log the failure and keep the previous value
+        instead of failing the entire sync.
         """
-        self._api.get_account(account_id=self._account_id).get_insights()
+        try:
+            self._api.get_account(account_id=self._account_id).get_insights()
+        except FacebookBadObjectError as exc:
+            logger.warning(
+                "Facebook returned a malformed response while refreshing the insights throttle; keeping the previous estimate of %.1f. Error: %s",
+                self._current_throttle,
+                exc,
+            )
+            return
         t = self._api.api.ads_insights_throttle
         # Use the stricter of the two numbers.
         self._current_throttle = max(getattr(t, "per_account", 0.0), getattr(t, "per_application", 0.0))

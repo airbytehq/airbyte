@@ -50,28 +50,32 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 3. On the Set up the source page, select GitHub from the Source type dropdown.
 4. Enter a name for the GitHub connector.
 5. To authenticate:
-<!-- env:cloud -->
+   <!-- env:cloud -->
 
-- **For Airbyte Cloud:** **Authenticate your GitHub account** to authorize your GitHub account. Airbyte will authenticate the GitHub account you are already logged in to. Please make sure you are logged into the right account.
-  <!-- /env:cloud -->
-  <!-- env:oss -->
+   - **For Airbyte Cloud:** **Authenticate your GitHub account** to authorize your GitHub account. Airbyte will authenticate the GitHub account you are already logged in to. Please make sure you are logged into the right account.
+   <!-- /env:cloud -->
+   <!-- env:oss -->
 
-- **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
-<!-- /env:oss -->
+   - **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+   <!-- /env:oss -->
 
 6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
 
-:::caution
-Repositories with the wrong name or repositories that do not exist or have the wrong name format will be skipped with `WARN` message in the logs.
-:::
+   :::caution
+   Repositories with the wrong name or repositories that do not exist or have the wrong name format will be skipped with `WARN` message in the logs.
+   :::
 
 7. **Start date (Optional)** - The date from which you'd like to replicate data for streams. For streams which support this configuration, only data generated on or after the start date will be replicated.
 
-- These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
+   - These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
 
-- The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `repositories`, `tags`, `teams`, `users`
+   - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `repositories`, `tags`, `teams`, `users`
 
 8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
+9. **API URL (Optional)** - If you use a self-hosted GitHub instance, enter its API URL, for example `https://github.company.org`. Leave empty to use `https://api.github.com/`.
+10. **Max Waiting Time (in minutes) (Optional)** - Maximum time the connector waits when every configured API token is rate-limited before it fails the sync. The default is 120 minutes, which covers GitHub's 60-minute rate limit reset window plus margin. You can set any value between 1 and 240 minutes. If you provide multiple personal access tokens, the connector rotates through them first, and only waits after every token is exhausted.
+
+11. **Number of Concurrent Threads (Optional)** - How many partitions the connector reads in parallel. The default is 4 and the maximum is 25. While the declarative migration is in progress this setting applies only to the streams already moved to the declarative manifest (`repositories`, `assignees`, `branches`, `collaborators`, `issue_labels`, `tags`, `organizations`, `teams`, `users`, `events`, `pull_requests`, `commit_comments`, `issue_milestones`, `stargazers`, `projects`, `issue_events`, `deployments`, `workflows`, `comments`, `issues`, `review_comments`); the remaining streams are still read one at a time. Raising it speeds up those streams but increases the risk of hitting GitHub's secondary rate limits.
 
 ### For Airbyte Open Source:
 
@@ -134,7 +138,7 @@ This connector outputs the following incremental streams:
 - [Review comments](https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28#list-review-comments-in-a-repository)
 - [Reviews](https://docs.github.com/en/rest/pulls/reviews?apiVersion=2022-11-28#list-reviews-for-a-pull-request)
 - [Stargazers](https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-stargazers)
-- [WorkflowJobs](https://docs.github.com/pt/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run)
+- [WorkflowJobs](https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run)
 - [WorkflowRuns](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository)
 - [Workflows](https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows)
 
@@ -151,28 +155,34 @@ This connector outputs the following incremental streams:
 2. Streams `workflow_runs` and `workflow_jobs` are almost pure incremental:
 
    - read new records and some portion of old records (in past 30 days) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
-   - the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
+   - the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/en/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
    - output only new records.
 
 3. Other 19 incremental streams are also incremental but with one difference, they:
 
    - read all records;
    - output only new records.
-     Please, consider this behaviour when using those 19 incremental streams because it may affect you API call limits.
+
+   Consider this behavior when using these incremental streams, because it may affect your API call limits.
 
 4. Sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
    **The "Start date" configuration option does not apply to the streams below, because the GitHub API does not include dates which can be used for filtering:**
 
-- `assignees`
-- `branches`
-- `collaborators`
-- `issue_labels`
-- `organizations`
-- `pull_request_commits`
-- `repositories`
-- `tags`
-- `teams`
-- `users`
+   - `assignees`
+   - `branches`
+   - `collaborators`
+   - `issue_labels`
+   - `organizations`
+   - `pull_request_commits`
+   - `tags`
+   - `teams`
+   - `users`
+
+5. Adding a repository or organization to a connection that has already synced does not backfill its history. See [Adding repositories or organizations to an existing connection](#adding-repositories-or-organizations-to-an-existing-connection).
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Limitations & Troubleshooting
 
@@ -198,13 +208,54 @@ In the event that limits are reached before all streams have been read, it is re
 1. Utilize Incremental sync mode.
 2. Set a higher sync interval.
 3. Divide the sync into separate connections with a smaller number of streams.
-   :::
+4. Provide multiple personal access tokens in the **Personal Access Tokens** field, separated by commas. The connector rotates through all tokens and only waits once every token's rate limit is exhausted.
+
+:::
+
+When every configured token is rate-limited, the connector waits for the limit to reset rather than failing immediately. The wait is capped by the **Max Waiting Time (in minutes)** configuration option (default: 120 minutes, maximum: 240 minutes), and that cap applies both when the connector already knows its tokens are spent and when GitHub rejects a request and asks it to wait. Rate-limit exhaustion is classified as a transient error, so Airbyte will retry the sync according to your connection's retry behavior if the connector does exceed this wait. If you supply several tokens, a rate-limited request switches to another token instead of waiting, whatever this setting is.
+
+**Test connection** is exempt from the wait: it answers within seconds with the rate-limit message instead of sleeping, so a rate-limited token never leaves the connection setup page hanging.
 
 Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
+
+#### Adding repositories or organizations to an existing connection
+
+Widening the **GitHub Repositories** field on a connection that has already synced does not backfill what the new repositories or organizations did in the past. The connector keeps one sync position per repository or organization, and a newly added one starts from the connection's current overall position instead of from your configured **Start date**. Anything created or last updated before that position is never emitted, and the sync reports no warning or error.
+
+For example, a connection syncing `docker/*` since 2026-01-01 that you widen to `docker/*, airbytehq/*` will pick up the `airbytehq` repositories updated after 2026-01-01, but not the ones whose last update is older than that.
+
+To pull the full history of a newly added repository or organization, clear the affected streams (or refresh the connection) after saving the new value, then sync. Each stream then re-reads from the beginning of the range it supports — your configured **Start date** for streams that honor it, and everything available for the streams listed above that do not.
+
+This currently affects the `repositories` stream. Other streams still fall back to the **Start date** for a repository they have not seen before; they will follow the rule above as they move to the connector's declarative implementation.
+
+#### GitHub Enterprise Server with rate limiting disabled
+
+GitHub Enterprise Server ships with HTTP API rate limiting turned off, and an instance in that state answers `GET /rate_limit` with `404 Rate limiting is not enabled.`. The connector reads that as "this instance does not track quotas" and continues without quota tracking — it no longer treats it as a failed connection. Requests are still authenticated, multiple tokens are still used in turn, and any rate limiting the instance *does* enforce (secondary rate limits are a separate GHES setting) is still honored through the usual retry and backoff.
 
 #### Releases stream asset limit
 
 The Releases stream uses the GitHub GraphQL API and fetches up to 100 assets per release. Releases with more than 100 assets will only include the first 100. Sub-pagination for release assets is not currently supported.
+
+#### Unreadable repositories and repeated server errors
+
+When a repository cannot be read for a reason that is specific to that repository, the connector logs a message and moves on to the next one, so a single bad repository does not fail the whole stream. This covers a repository that was deleted or renamed (`404`), one your token cannot access (`403`), one with no commits yet (`409`), and one where the feature backing the stream is turned off — for example the `issue_labels` stream on a repository with Issues disabled (`410`).
+
+Repeated server errors are treated differently as of version 2.2.0. If GitHub keeps answering `502 Bad Gateway` or `504 Gateway Timeout` after the connector has retried, the stream now fails instead of skipping the affected repository or organization and continuing. Earlier versions logged a warning, skipped it, and reported the sync as successful — which meant a sync could complete with records silently missing. Affected streams so far: `repositories` (since 2.2.0), `assignees`, `branches`, `collaborators`, `issue_labels`, `tags`, `organizations`, `teams`, `users` (since 2.3.0), `events`, `pull_requests`, `commit_comments`, `issue_milestones`, `stargazers`, `projects`, `issue_events`, `deployments`, `workflows`, `comments`, `issues`, `review_comments` (since 2.4.0). If a sync starts failing on one of these after upgrading, it is worth checking whether that repository or organization was already being skipped before.
+
+The same streams also stopped resuming mid-stream. A failed attempt used to pick up from the repository or organization it stopped at; it now restarts the stream from the first one. Nothing is lost — the retry re-reads what it already read — but a stream that fails late costs its earlier partitions' requests again against your rate limit. Same versions as above. For `issues` this also means state is now saved once per repository rather than once per page, so an interrupted sync restarts the repository it was reading instead of resuming part-way through it.
+
+#### One repeated record per repository on `comments`, `issues` and `review_comments`
+
+As of version 2.4.0, each incremental sync of these three streams re-emits the single record whose `updated_at` is exactly the timestamp the previous sync stopped at. GitHub's `since` filter is inclusive, so that record is always on the first page, and the connector no longer filters it out locally. The record is unchanged, and destinations using **Incremental | Append + Deduped** collapse it on the primary key; on **Incremental | Append** you will see one extra row per repository per sync.
+
+#### One repeated record per repository on the semi-incremental streams
+
+As of version 2.4.0, each incremental sync of `events`, `pull_requests`, `commit_comments`, `issue_milestones`, `stargazers`, `projects`, `issue_events`, `deployments`, `workflows` re-emits the single record per repository whose cursor value (`updated_at`, `created_at` or `starred_at`) is exactly the timestamp the previous sync stopped at. These streams read GitHub's listing and filter it locally; the connector used to keep only records strictly newer than the saved cursor and now keeps the boundary record too. The record is unchanged, and destinations using **Incremental | Append + Deduped** collapse it on the primary key; on **Incremental | Append** you will see one extra row per repository per sync.
+
+Two smaller changes in the same release:
+
+- `pull_requests` now fills `base.repo_id` with the id of the base repository. Earlier versions always emitted `null` there because of a bug in the record transformation; `head.repo_id` is unchanged.
+- `pull_requests` always lists a repository newest-first. Earlier versions listed it oldest-first on the very first sync of a connection, which let a failed first sync resume part-way through a repository; a failed attempt now restarts the repository, as it already did on every later sync.
 
 #### Permissions and scopes
 
@@ -227,12 +278,42 @@ Your token should have at least the `repo` scope. Depending on which streams you
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
-|:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.19 | 2026-04-06 | [76090](https://github.com/airbytehq/airbyte/pull/76090) | Fix 403 permission errors misclassified as retryable, causing infinite retry loops |
+| Version | Date | Pull Request | Subject |
+| :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.4.0 | 2026-09-09 | [85786](https://github.com/airbytehq/airbyte/pull/85786) | Declarative migration Steps 5 and 6 - move the events, pull_requests, commit_comments, issue_milestones, stargazers, projects, issue_events, deployments, workflows, comments, issues and review_comments streams to the manifest. Each incremental sync of these streams now re-emits the one record per repository whose cursor equals the previous sync's cursor, `pull_requests` fills `base.repo_id` (always null before) and always lists newest-first, `issues` checkpoints once per repository instead of once per page, and a repository that keeps returning 502/504 after retries fails the stream instead of being skipped with the sync still reported as successful |
+| 2.3.0 | 2026-09-08 | [85746](https://github.com/airbytehq/airbyte/pull/85746) | Declarative migration Steps 3 and 4 - move the assignees, branches, collaborators, issue_labels, tags, organizations, teams and users streams to the manifest. For these eight streams, a repository or organization that keeps returning 502/504 after retries now fails the stream instead of being skipped with the sync still reported as successful, and a failed attempt restarts the stream instead of resuming from the repository or organization it stopped at. Also fixes a 2.2.0 regression where a `403` on one listed repository (SAML-protected organizations, most often) failed the sync instead of skipping that repository and syncing the rest |
+| 2.2.3 | 2026-09-08 | [85494](https://github.com/airbytehq/airbyte/pull/85494) | Update dependencies |
+| 2.2.2 | 2026-09-01 | [85253](https://github.com/airbytehq/airbyte/pull/85253) | Fix syncs hanging until the platform heartbeat timeout when a wildcard repository entry (`owner/*`) names a user account instead of an organization: the org-scoped streams no longer receive an unverified login, and a skipped stream slice can no longer be retried indefinitely |
+| 2.2.1 | 2026-09-01 | [85244](https://github.com/airbytehq/airbyte/pull/85244) | Update dependencies |
+| 2.2.0 | 2026-08-27 | [81428](https://github.com/airbytehq/airbyte/pull/81428) | Declarative migration Step 2 - multi-token auth shared by all streams (now rotates off a rate-limited token instead of waiting for its reset), spec in manifest, declarative Repositories stream, new optional `num_workers` setting for concurrent partition reads, a request budget matching GitHub's 900-points/minute secondary rate limit, Max Waiting Time now bounding every rate-limit wait so Test connection fails fast instead of sleeping until the reset, and support for GitHub Enterprise Server instances with rate limiting disabled |
+| 2.1.42 | 2026-08-25 | [85011](https://github.com/airbytehq/airbyte/pull/85011) | Update dependencies |
+| 2.1.41 | 2026-08-18 | [84569](https://github.com/airbytehq/airbyte/pull/84569) | Update dependencies |
+| 2.1.40 | 2026-08-11 | [83943](https://github.com/airbytehq/airbyte/pull/83943) | Update dependencies |
+| 2.1.39 | 2026-08-04 | [83469](https://github.com/airbytehq/airbyte/pull/83469) | Update dependencies |
+| 2.1.38 | 2026-07-28 | [82893](https://github.com/airbytehq/airbyte/pull/82893) | Update dependencies |
+| 2.1.37 | 2026-07-21 | [81799](https://github.com/airbytehq/airbyte/pull/81799) | Update dependencies |
+| 2.1.36 | 2026-07-14 | [82093](https://github.com/airbytehq/airbyte/pull/82093) | Promoted release candidate to GA |
+| 2.1.36-rc.1 | 2026-07-08 | [80133](https://github.com/airbytehq/airbyte/pull/80133) | Switch base class from AbstractSource to YamlDeclarativeSource (Step 1 of declarative migration) |
+| 2.1.35 | 2026-07-07 | [81440](https://github.com/airbytehq/airbyte/pull/81440) | Update dependencies |
+| 2.1.34 | 2026-06-30 | [81084](https://github.com/airbytehq/airbyte/pull/81084) | Update dependencies |
+| 2.1.33 | 2026-06-23 | [80440](https://github.com/airbytehq/airbyte/pull/80440) | Update dependencies |
+| 2.1.32 | 2026-06-16 | [79802](https://github.com/airbytehq/airbyte/pull/79802) | Update dependencies |
+| 2.1.31 | 2026-06-08 | [79196](https://github.com/airbytehq/airbyte/pull/79196) | Upgrade cryptography from 44.0.3 to 46.0.7 to resolve CVE-2026-26007 |
+| 2.1.30 | 2026-06-09 | [79312](https://github.com/airbytehq/airbyte/pull/79312) | Update dependencies |
+| 2.1.29 | 2026-06-02 | [78702](https://github.com/airbytehq/airbyte/pull/78702) | Update dependencies |
+| 2.1.28 | 2026-05-07 | [77847](https://github.com/airbytehq/airbyte/pull/77847) | Reduce GraphQL `releases` query cost (mark as large stream), bound page-size halving at 1, and improve 504 Gateway Timeout error messages |
+| 2.1.27 | 2026-05-02 | [77685](https://github.com/airbytehq/airbyte/pull/77685) | Make `parse_response` and error-handler helpers defensive against unexpected response shapes (HTML error pages, malformed JSON, missing keys) |
+| 2.1.26 | 2026-05-02 | [77681](https://github.com/airbytehq/airbyte/pull/77681) | Treat 410 "Issues/Projects disabled" responses as skip-the-slice instead of failing the stream |
+| 2.1.25 | 2026-05-01 | [77690](https://github.com/airbytehq/airbyte/pull/77690) | Replaced placeholder and raw-passthrough error messages with actionable text including HTTP status codes, affected resources, and likely causes |
+| 2.1.24 | 2026-04-28 | [77238](https://github.com/airbytehq/airbyte/pull/77238) | Update dependencies |
+| 2.1.23 | 2026-04-22 | [76922](https://github.com/airbytehq/airbyte/pull/76922) | Handle `None` response in `read_records` error handler so transport-layer failures (connection errors, timeouts) surface as transient errors instead of `AttributeError` |
+| 2.1.22 | 2026-04-22 | [74758](https://github.com/airbytehq/airbyte/pull/74758) | Fix rate limit sleep blocking heartbeat; classify rate limit errors as transient; increase default max_waiting_time to 120 minutes to cover GitHub's hourly rate limit window |
+| 2.1.21 | 2026-04-21 | [74586](https://github.com/airbytehq/airbyte/pull/74586) | Update dependencies |
+| 2.1.20 | 2026-04-15 | [76275](https://github.com/airbytehq/airbyte/pull/76275) | Bump airbyte-cdk to >=7.12.0 to fix OAuth `scope=null` in consent URL |
+| 2.1.19 | 2026-04-08 | [76090](https://github.com/airbytehq/airbyte/pull/76090) | Fix 403 permission errors misclassified as retryable, causing infinite retry loops |
 | 2.1.18 | 2026-04-07 | [76124](https://github.com/airbytehq/airbyte/pull/76124) | Fix silent error swallowing in exception handlers for ContributorActivity, GithubStreamABC, and Releases streams |
-| 2.1.17 | 2026-04-03 | [76080](https://github.com/airbytehq/airbyte/pull/76080) | Fix remaining NameError references to removed MessageRepresentationAirbyteTracedErrors in ContributorActivity stream |
-| 2.1.16 | 2026-04-02 | [76038](https://github.com/airbytehq/airbyte/pull/76038) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException |
+| 2.1.17 | 2026-04-07 | [76080](https://github.com/airbytehq/airbyte/pull/76080) | Fix remaining NameError references to removed MessageRepresentationAirbyteTracedErrors in ContributorActivity stream |
+| 2.1.16 | 2026-04-03 | [76038](https://github.com/airbytehq/airbyte/pull/76038) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException |
 | 2.1.15 | 2026-03-27 | [75508](https://github.com/airbytehq/airbyte/pull/75508) | Add declarative OAuth with `oauth_connector_input_specification` and granular scopes |
 | 2.1.14 | 2026-03-09 | [74284](https://github.com/airbytehq/airbyte/pull/74284) | Fix heartbeat timeout for pull_request_stats by using descending sort on incremental syncs |
 | 2.1.13 | 2026-03-03 | [73698](https://github.com/airbytehq/airbyte/pull/73698) | feat(source-github): use GraphQL API for Releases stream to bypass 10k REST limit |

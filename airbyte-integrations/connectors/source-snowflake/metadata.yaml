@@ -8,7 +8,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
-  dockerImageTag: 1.0.10
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-snowflake
   documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
   githubIssueLabel: source-snowflake
@@ -42,6 +42,17 @@ data:
           3. For incremental sync mode, a full refresh will be triggered for next sync because the connection state will not be compatible.
           New state will be populated after full refresh is completed."
         upgradeDeadline: "2025-09-30"
+      2.0.0:
+        message: "Username and password authentication is deprecated and will be removed in a future release. Key pair authentication or a programmatic access token is now the recommended method. Snowflake is enforcing strong authentication on a rolling per-account basis between August and October 2026. If you are already using key pair or programmatic access token authentication, no action is needed. Otherwise, see the migration guide (https://docs.airbyte.com/integrations/sources/snowflake-migrations) for steps to migrate your connection."
+        upgradeDeadline: "2026-11-01"
+        deadlineAction: "auto_upgrade"
+    rolloutConfiguration:
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: slow
   supportLevel: certified
   tags:
     - language:java

@@ -9,7 +9,7 @@ This page contains the setup guide and reference information for the [Google Sea
 ## Prerequisites
 
 - Google Account
-- A verified property in Google Search Console (or the list of the `Site URLs` (Website URL Property))
+- One or more verified properties in Google Search Console. You need the exact property identifier for each one. URL-prefix properties look like `https://example.com/`, and Domain properties look like `sc-domain:example.com`. See [Google's guide to property types](https://support.google.com/webmasters/answer/34592).
 <!-- env:oss -->
 - Google Search Console API enabled for your project (**Airbyte Open Source** only)
 <!-- /env:oss -->
@@ -87,7 +87,7 @@ For more information on this topic, please refer to [this Google article](https:
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Google Search Console from the Source type dropdown.
 4. Enter a name for the Google Search Console connector.
-5. For **Website URL Property**, enter the website properties in Google Search Console that contain the data you want to replicate. You can add multiple site URLs.
+5. For **Website URL Property**, enter the properties in Google Search Console that contain the data you want to replicate. Enter each property exactly as Search Console shows it, for example `https://example.com/` for a URL-prefix property or `sc-domain:example.com` for a Domain property. You can add multiple properties.
 6. For **Start Date**, by default the `2021-01-01` is set, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
 7. To authenticate the connection:
 <!-- env:cloud -->
@@ -113,7 +113,7 @@ For more information on this topic, please refer to [this Google article](https:
 8. (Optional) For **End Date**, you may optionally provide a date in the format `YYYY-MM-DD`. Any data created between the defined Start Date and End Date will be replicated. Leaving this field blank will replicate all data created on or after the Start Date to the present.
 9. (Optional) For **Custom Reports**, you may optionally provide an array of JSON objects representing any custom reports you wish to query the API with. Refer to the [Custom reports](#custom-reports) section below for more information on formulating these reports.
 10. (Optional) For **Data Freshness**, you may choose whether to include "fresh" data that has not been finalized by Google, and may be subject to change. Please note that if you are using Incremental sync mode, we highly recommend leaving this option to its default value of `final`. Refer to the [Data Freshness](#data-freshness) section below for more information on this parameter.
-11. (Optional) For **Number of Concurrent Workers**, you may configure the number of worker threads used during sync. The default is 40. If you are syncing a large number of site URLs or experiencing rate limit errors, you may want to reduce this value.
+11. (Optional) For **Number of Concurrent Threads**, you may configure the number of worker threads used during sync. The default is 40. If you are syncing a large number of site URLs or experiencing rate limit errors, you may want to reduce this value.
 12. (Optional) For **Always Use Aggregation Type Auto**, enable this setting if your search analytics streams fail with a 400 error related to an unsupported `aggregationType`. This overrides the default aggregation type with `auto`, which resolves the error for certain site configurations.
 13. (Optional) For **Search Analytics API Requests Per Minute**, you may configure the maximum number of requests per minute for Search Analytics API calls. The default value of 1200 matches Google's documented maximum quota. If you are experiencing rate limit errors, you may need to lower this value. Most new Google Cloud projects start with a quota of 60 requests per minute. Check your Google Cloud Console quotas to see your actual limit. Refer to the [Rate Limiting](#rate-limiting) section below for more information.
 14. Click **Set up source** and wait for the tests to complete.
@@ -214,28 +214,56 @@ Expand to see details about Google Search Console connector limitations and trou
 
 #### Rate limiting
 
-This connector attempts to back off gracefully when it hits Reports API's rate limits. To find more information about limits, see [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
+The Search Console API enforces two distinct types of quota on Search Analytics queries. The connector retries automatically when either type is exceeded, but with different backoff durations. For full details, see Google's [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
 
-While Google's public documentation states that the Search Console API allows up to 1,200 requests per minute, most Google Cloud projects start with a lower default quota of 60 requests per minute. This is especially common for new projects or projects without billing enabled.
+**QPS (queries per minute) quota**: Limits the number of API requests per minute. Google documents a maximum of 1,200 requests per minute per user and per site, but most new Google Cloud projects start with a lower default of 60 requests per minute. When exceeded, the connector retries with a 60-second backoff.
 
-To check your actual quota limits:
+**Load quota**: Limits the internal resources consumed by queries. Complex queries — particularly those that group or filter by both `page` and `query` dimensions, or that span long date ranges — consume more load. Google measures load quota in 10-minute (short-term) and daily (long-term) windows. When exceeded, the connector retries with a 15-minute backoff, consistent with Google's recommendation to wait 15 minutes before retrying.
+
+To check your actual QPS quota limits:
 
 1. Go to your [Google Cloud Console](https://console.cloud.google.com/).
 2. Navigate to **APIs & Services** then **Quotas**.
 3. Search for "Search Console API".
 4. Look for "Requests per minute per user" to see your current limit.
 
-If you need higher limits, you can enable billing on your Google Cloud project or submit a quota increase request through the Google Cloud Console. You can then configure the **API Requests Per Minute** setting in the connector to match your actual quota.
+If you need higher QPS limits, enable billing on your Google Cloud project or submit a quota increase request through the Google Cloud Console. You can then configure the **Search Analytics API Requests Per Minute** setting in the connector to match your actual quota.
+
+If you hit load quota limits, reduce the complexity of your queries. Avoid grouping or filtering by both `page` and `query` simultaneously, use shorter date ranges, and avoid requerying the same data repeatedly.
 
 #### Data retention
 
 Google Search Console only retains data for websites from the last 16 months. Any data prior to this cutoff point will not be accessible. For more information, see [Google's documentation on data freshness and availability](https://support.google.com/webmasters/answer/7576553).
 
+#### Retired search appearance values
+
+The `search_analytics_keyword_page_report`, `search_analytics_keyword_site_report_by_page`, and `search_analytics_keyword_site_report_by_site` streams break their data out by `search_appearance`. Google retires search appearance types over time — FAQ rich results stopped appearing in Search in May 2026, and Google's [FAQ structured data documentation](https://developers.google.com/search/docs/appearance/structured-data/faqpage) announced the removal of FAQ rich result data from the Search Console API in August 2026.
+
+The connector discovers appearance values from the API on every sync rather than hard-coding them, so a retired value needs no configuration change: rows for that value simply stop arriving, and the remaining appearance values continue to sync normally. No stream or field is added or removed.
+
+Two effects are worth planning for:
+
+- `search_appearance` is part of these streams' primary key, and syncs do not delete rows. Records already synced for a retired appearance value remain in your destination indefinitely. If you aggregate across `search_appearance`, those rows keep contributing to totals.
+- Re-syncing a historical window may no longer reproduce rows for a retired value, so a full refresh can return fewer records than the original sync did.
+
 ### Troubleshooting
+
+#### Site URL errors during setup or sync
+
+The connection test reads the `sites` stream for every property you configured, so an incorrect **Website URL Property** value fails at setup rather than partway through a sync. The `sites` and `sitemaps` streams report the following errors as configuration errors:
+
+- `Configured site URL is not a verified Search Console property in this account.` The value doesn't match a property in the Search Console account you authenticated with. Compare the value against the property list in Search Console. Common mismatches are a missing trailing slash, `http` instead of `https`, a missing or extra `www.`, or entering a plain domain instead of the `sc-domain:` form for a Domain property.
+- `Configured site URL is not accessible with the account's Search Console permissions.` The property exists, but the authenticated account can't read it. Ask a property owner to add the Google account (for OAuth) or the service account email (for service account authentication) as a user on that property.
+
+#### Other issues
 
 - Check out common troubleshooting issues for the Google Search Console source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -244,6 +272,28 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.12 | 2026-09-09 | [75289](https://github.com/airbytehq/airbyte/pull/75289) | Improve error messages for unverified or inaccessible site URLs on the sites and sitemaps streams |
+| 2.1.11 | 2026-09-08 | [85529](https://github.com/airbytehq/airbyte/pull/85529) | Update dependencies |
+| 2.1.10 | 2026-08-18 | [84615](https://github.com/airbytehq/airbyte/pull/84615) | Update dependencies |
+| 2.1.9 | 2026-08-11 | [83959](https://github.com/airbytehq/airbyte/pull/83959) | Update dependencies |
+| 2.1.8 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 2.1.7 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 2.1.5 — 2.1.6 is built on SDM 7.23.7, which breaks bundled custom components |
+| 2.1.6 | 2026-07-28 | [82942](https://github.com/airbytehq/airbyte/pull/82942) | Update dependencies |
+| 2.1.5 | 2026-07-21 | [82440](https://github.com/airbytehq/airbyte/pull/82440) | Update dependencies |
+| 2.1.4 | 2026-07-14 | [81851](https://github.com/airbytehq/airbyte/pull/81851) | Update dependencies |
+| 2.1.3 | 2026-06-30 | [81094](https://github.com/airbytehq/airbyte/pull/81094) | Update dependencies |
+| 2.1.2 | 2026-06-23 | [80489](https://github.com/airbytehq/airbyte/pull/80489) | Update dependencies |
+| 2.1.1 | 2026-06-16 | [79906](https://github.com/airbytehq/airbyte/pull/79906) | Update dependencies |
+| 2.1.0 | 2026-06-12 | [79146](https://github.com/airbytehq/airbyte/pull/79146) | Handle 403 "Search Analytics load quota exceeded" as rate-limited with a 15-minute backoff instead of config error |
+| 2.0.4 | 2026-06-09 | [79344](https://github.com/airbytehq/airbyte/pull/79344) | Update dependencies |
+| 2.0.3 | 2026-06-01 | [78545](https://github.com/airbytehq/airbyte/pull/78545) | Adds jitter to backoff strategy |
+| 2.0.2 | 2026-05-21 | [78289](https://github.com/airbytehq/airbyte/pull/78289) | Reduce `search_analytics_*` paginator `page_size` from `25000` to `5000` to lower peak worker memory on high-volume tenants. See airbytehq/oncall#12246 for context. |
+| 2.0.1 | 2026-05-18 | [78157](https://github.com/airbytehq/airbyte/pull/78157) | Restore `default_concurrency` to `num_workers`-driven configuration (`{{ config.get('num_workers', 3) }}`) and keep `max_concurrency` at `100`; cancels the Phase 1 concurrency tuning rollout introduced in 2.0.1-rc.1 |
+| 2.0.0 | 2026-05-04 | [76306](https://github.com/airbytehq/airbyte/pull/76306) | Append `search_appearance` to existing primary keys of keyword report streams; drop duplicate unfiltered keyword rows caused by empty/null `searchAppearance` partitions; fix multi-site duplication by removing the cartesian-product over `site_urls` on keyword streams; wrap `dimensionFilterGroups.filters` in an array to match the Google Search Console API spec. This is a **breaking change** for the `search_analytics_keyword_page_report`, `search_analytics_keyword_site_report_by_page`, and `search_analytics_keyword_site_report_by_site` streams. See the [migration guide](https://docs.airbyte.com/integrations/sources/google-search-console-migrations) for details. |
+| 1.10.33 | 2026-04-28 | [77276](https://github.com/airbytehq/airbyte/pull/77276) | Update dependencies |
+| 1.10.32 | 2026-04-21 | [76624](https://github.com/airbytehq/airbyte/pull/76624) | Update dependencies |
+| 1.10.31 | 2026-04-14 | [76190](https://github.com/airbytehq/airbyte/pull/76190) | Add access_token to extract_output and complete_oauth_output_specification to fix OAuth secretId 422 regression |
+| 1.10.30 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 1.10.29 | 2026-04-01 | [75582](https://github.com/airbytehq/airbyte/pull/75582) | Add `oauth_connector_input_specification` with granular scopes |
 | 1.10.28 | 2026-03-31 | [75699](https://github.com/airbytehq/airbyte/pull/75699) | Update dependencies |
 | 1.10.27 | 2026-03-30 | [75426](https://github.com/airbytehq/airbyte/pull/75426) | Guard numeric metric fields against complex types to prevent serialization failures and deadlocks |

@@ -8,21 +8,32 @@ The Intercom connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](#contacts-list), [Create](#contacts-create), [Get](#contacts-get), [Update](#contacts-update), [Search](#contacts-search) |
-| Conversations | [List](#conversations-list), [Get](#conversations-get), [Search](#conversations-search) |
-| Companies | [List](#companies-list), [Create](#companies-create), [Get](#companies-get), [Update](#companies-update), [Search](#companies-search) |
-| Teams | [List](#teams-list), [Get](#teams-get), [Search](#teams-search) |
+| Contacts | [List](#contacts-list), [Create](#contacts-create), [Get](#contacts-get), [Update](#contacts-update), [Delete](#contacts-delete), [Context Store Search](#contacts-context-store-search) |
+| Conversations | [List](#conversations-list), [Create](#conversations-create), [Get](#conversations-get), [Update](#conversations-update), [Delete](#conversations-delete), [Context Store Search](#conversations-context-store-search), [Semantic Search](#conversations-semantic-search) |
+| Companies | [List](#companies-list), [Create](#companies-create), [Get](#companies-get), [Update](#companies-update), [Delete](#companies-delete), [Context Store Search](#companies-context-store-search) |
+| Teams | [List](#teams-list), [Get](#teams-get), [Context Store Search](#teams-context-store-search) |
 | Admins | [List](#admins-list), [Get](#admins-get) |
-| Tags | [List](#tags-list), [Create](#tags-create), [Get](#tags-get) |
+| Tags | [List](#tags-list), [Create](#tags-create), [Get](#tags-get), [Delete](#tags-delete) |
 | Notes | [Create](#notes-create) |
 | Segments | [List](#segments-list), [Get](#segments-get) |
-| Internal Articles | [Create](#internal-articles-create) |
+| Internal Articles | [Create](#internal-articles-create), [Update](#internal-articles-update), [Delete](#internal-articles-delete) |
 
 ## Contacts
 
 ### Contacts List
 
 Returns a paginated list of contacts in the workspace
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "contacts",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -115,6 +126,30 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Contacts Create
 
 Create a new contact (user or lead)
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "contacts",
+  "action": "create",
+  "params": {
+    "role": "<str>",
+    "external_id": "<str>",
+    "email": "<str>",
+    "phone": "<str>",
+    "name": "<str>",
+    "avatar": "<str>",
+    "signed_up_at": 0,
+    "last_seen_at": 0,
+    "owner_id": 0,
+    "unsubscribed_from_emails": true,
+    "custom_attributes": {}
+  }
+}'
+```
 
 #### Python SDK
 
@@ -236,6 +271,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single contact by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "contacts",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -325,6 +374,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Contacts Update
 
 Update an existing contact by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "contacts",
+  "action": "update",
+  "params": {
+    "role": "<str>",
+    "external_id": "<str>",
+    "email": "<str>",
+    "phone": "<str>",
+    "name": "<str>",
+    "avatar": "<str>",
+    "signed_up_at": 0,
+    "last_seen_at": 0,
+    "owner_id": 0,
+    "unsubscribed_from_emails": true,
+    "custom_attributes": {},
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -445,14 +519,98 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Contacts Search
+### Contacts Delete
 
-Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+Permanently delete a contact by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "contacts",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await intercom.contacts.search(
+await intercom.contacts.delete(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "contacts",
+    "action": "delete",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The unique identifier of the contact to delete |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string` |  |
+| `id` | `string` |  |
+| `external_id` | `string \| null` |  |
+| `deleted` | `boolean` |  |
+
+
+</details>
+
+### Contacts Context Store Search
+
+Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "contacts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "android_app_name": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.contacts.context_store_search(
     query={"filter": {"eq": {"android_app_name": "<str>"}}}
 )
 ```
@@ -465,7 +623,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "contacts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"android_app_name": "<str>"}}}
     }
@@ -476,7 +634,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -615,6 +773,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of conversations
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "conversations",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -682,9 +851,117 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Conversations Create
+
+Create a new conversation initiated by a contact (user or lead)
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "conversations",
+  "action": "create",
+  "params": {
+    "from": {
+      "type": "<str>",
+      "id": "<str>"
+    },
+    "body": "<str>",
+    "subject": "<str>",
+    "attachment_urls": [],
+    "created_at": 0
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.conversations.create(
+    from_={
+        "type": "<str>",
+        "id": "<str>"
+    },
+    body="<str>",
+    subject="<str>",
+    attachment_urls=[],
+    created_at=0
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "conversations",
+    "action": "create",
+    "params": {
+        "from": {
+            "type": "<str>",
+            "id": "<str>"
+        },
+        "body": "<str>",
+        "subject": "<str>",
+        "attachment_urls": [],
+        "created_at": 0
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `from` | `object` | Yes | The contact (user or lead) initiating the conversation |
+| `from.type` | `"lead" \| "user" \| "contact"` | Yes | The type of the contact (lead, user, or contact) |
+| `from.id` | `string` | Yes | The identifier for the contact as given by Intercom (a 24 character UUID) |
+| `body` | `string` | Yes | The content of the initial message in the conversation |
+| `subject` | `string` | No | The subject line of the conversation (optional) |
+| `attachment_urls` | `array<string>` | No | A list of URLs of attached files (max 10) |
+| `created_at` | `integer` | No | Optional timestamp for the conversation creation (Unix) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string \| null` |  |
+| `id` | `string` |  |
+| `created_at` | `integer \| null` |  |
+| `subject` | `string \| null` |  |
+| `body` | `string \| null` |  |
+| `message_type` | `string \| null` |  |
+| `conversation_id` | `string \| null` |  |
+
+
+</details>
+
 ### Conversations Get
 
 Get a single conversation by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "conversations",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -751,14 +1028,188 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Conversations Search
+### Conversations Update
 
-Search and filter conversations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+Update conversation attributes such as custom_attributes or read status
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "conversations",
+  "action": "update",
+  "params": {
+    "read": true,
+    "custom_attributes": {},
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await intercom.conversations.search(
+await intercom.conversations.update(
+    read=True,
+    custom_attributes={},
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "conversations",
+    "action": "update",
+    "params": {
+        "read": True,
+        "custom_attributes": {},
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `read` | `boolean` | No | Mark the conversation as read or unread |
+| `custom_attributes` | `object` | No | Custom attributes to set on the conversation |
+| `id` | `string` | Yes | Conversation ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string \| null` |  |
+| `id` | `string` |  |
+| `title` | `string \| null` |  |
+| `created_at` | `integer \| null` |  |
+| `updated_at` | `integer \| null` |  |
+| `waiting_since` | `integer \| null` |  |
+| `snoozed_until` | `integer \| null` |  |
+| `open` | `boolean \| null` |  |
+| `state` | `string \| null` |  |
+| `read` | `boolean \| null` |  |
+| `priority` | `string \| null` |  |
+| `admin_assignee_id` | `integer \| null` |  |
+| `team_assignee_id` | `string \| null` |  |
+| `tags` | `object \| any` |  |
+| `conversation_rating` | `object \| any` |  |
+| `source` | `object \| any` |  |
+| `contacts` | `object \| any` |  |
+| `teammates` | `object \| any` |  |
+| `first_contact_reply` | `object \| any` |  |
+| `sla_applied` | `object \| any` |  |
+| `statistics` | `object \| any` |  |
+| `conversation_parts` | `object \| any` |  |
+| `custom_attributes` | `object \| null` |  |
+
+
+</details>
+
+### Conversations Delete
+
+Permanently delete a conversation by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "conversations",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.conversations.delete(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "conversations",
+    "action": "delete",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | Conversation ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `string` |  |
+| `deleted` | `boolean` |  |
+
+
+</details>
+
+### Conversations Context Store Search
+
+Search and filter conversations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "conversations",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "admin_assignee_id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.conversations.context_store_search(
     query={"filter": {"eq": {"admin_assignee_id": 0}}}
 )
 ```
@@ -771,7 +1222,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "conversations",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"admin_assignee_id": 0}}}
     }
@@ -782,7 +1233,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -814,8 +1265,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `sent_at` | `integer` | The timestamp when the conversation was sent |
 | `sla_applied` | `object` | Service Level Agreement details applied to the conversation. |
 | `snoozed_until` | `integer` | Timestamp until the conversation is snoozed |
-| `source` | `object` | Source details of the conversation. |
-| `state` | `string` | The state of the conversation (e.g., new, in progress) |
+| `source` | `object` | Source details of the conversation, including the opening message body. |
+| `state` | `string` | The state of the conversation: open, closed, or snoozed |
 | `statistics` | `object` | Statistics related to the conversation. |
 | `tags` | `object` | Tags applied to the conversation. |
 | `team_assignee_id` | `integer` | The ID of the team assigned to the conversation |
@@ -858,8 +1309,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].sent_at` | `integer` | The timestamp when the conversation was sent |
 | `data[].sla_applied` | `object` | Service Level Agreement details applied to the conversation. |
 | `data[].snoozed_until` | `integer` | Timestamp until the conversation is snoozed |
-| `data[].source` | `object` | Source details of the conversation. |
-| `data[].state` | `string` | The state of the conversation (e.g., new, in progress) |
+| `data[].source` | `object` | Source details of the conversation, including the opening message body. |
+| `data[].state` | `string` | The state of the conversation: open, closed, or snoozed |
 | `data[].statistics` | `object` | Statistics related to the conversation. |
 | `data[].tags` | `object` | Tags applied to the conversation. |
 | `data[].team_assignee_id` | `integer` | The ID of the team assigned to the conversation |
@@ -873,11 +1324,111 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Conversations Semantic Search
+
+Search conversations records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "conversations",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "source", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `conversations.context_store_search` helper only accepts `query`.
+
+```python
+await intercom.execute(
+    "conversations",
+    "context_store_search",
+    {"semantic": {"field": "source", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "conversations",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "source", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `source` | 2048 | Source details of the conversation, including the opening message body. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.updated_at` | `string` | Source record field |
+| `data[].entity.created_at` | `string` | Source record field |
+| `data[].entity.state` | `string` | Source record field |
+| `data[].entity.priority` | `string` | Source record field |
+| `data[].entity.title` | `string` | Source record field |
+| `data[].entity.author_name` | `string` | Source record field |
+| `data[].entity.delivered_as` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Companies
 
 ### Companies List
 
 Returns a paginated list of companies
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "companies",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -945,6 +1496,27 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Companies Create
 
 Create a new company or update an existing one by company_id
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "companies",
+  "action": "create",
+  "params": {
+    "company_id": "<str>",
+    "name": "<str>",
+    "plan": "<str>",
+    "monthly_spend": 0.0,
+    "size": 0,
+    "website": "<str>",
+    "industry": "<str>",
+    "custom_attributes": {}
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1032,6 +1604,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single company by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "companies",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1096,6 +1682,27 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Companies Update
 
 Update an existing company by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "companies",
+  "action": "update",
+  "params": {
+    "name": "<str>",
+    "plan": "<str>",
+    "monthly_spend": 0.0,
+    "size": 0,
+    "website": "<str>",
+    "industry": "<str>",
+    "custom_attributes": {},
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1179,14 +1786,97 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Companies Search
+### Companies Delete
 
-Search and filter companies records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+Permanently delete a company by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "companies",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await intercom.companies.search(
+await intercom.companies.delete(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "companies",
+    "action": "delete",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The unique identifier of the company to delete |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `string` |  |
+| `deleted` | `boolean` |  |
+
+
+</details>
+
+### Companies Context Store Search
+
+Search and filter companies records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "companies",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "app_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.companies.context_store_search(
     query={"filter": {"eq": {"app_id": "<str>"}}}
 )
 ```
@@ -1199,7 +1889,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "companies",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"app_id": "<str>"}}}
     }
@@ -1210,7 +1900,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1277,6 +1967,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all teams in the workspace
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "teams",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1316,6 +2017,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Teams Get
 
 Get a single team by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "teams",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1364,14 +2079,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Teams Search
+### Teams Context Store Search
 
 Search and filter teams records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "teams",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "admin_ids": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await intercom.teams.search(
+await intercom.teams.context_store_search(
     query={"filter": {"eq": {"admin_ids": []}}}
 )
 ```
@@ -1384,7 +2119,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "teams",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"admin_ids": []}}}
     }
@@ -1395,7 +2130,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1433,6 +2168,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Admins List
 
 Returns a list of all admins in the workspace
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "admins",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1479,6 +2225,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Admins Get
 
 Get a single admin by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "admins",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1539,6 +2299,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all tags in the workspace
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "tags",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1578,6 +2349,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tags Create
 
 Create a new tag or update an existing one
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "tags",
+  "action": "create",
+  "params": {
+    "name": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1630,6 +2415,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single tag by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "tags",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1677,11 +2476,76 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Tags Delete
+
+Permanently delete a tag by ID. This removes the tag from all contacts, companies, and conversations.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "tags",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.tags.delete(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tags",
+    "action": "delete",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The unique identifier of the tag to delete |
+
+
 ## Notes
 
 ### Notes Create
 
 Create a note on an existing contact
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "notes",
+  "action": "create",
+  "params": {
+    "body": "<str>",
+    "admin_id": "<str>",
+    "contact_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1743,6 +2607,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all segments in the workspace
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "segments",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1790,6 +2665,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Segments Get
 
 Get a single segment by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "segments",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1846,6 +2735,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Create a new internal article in the workspace
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "internal_articles",
+  "action": "create",
+  "params": {
+    "title": "<str>",
+    "body": "<str>",
+    "owner_id": 0,
+    "author_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1901,6 +2807,153 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `created_at` | `integer \| null` |  |
 | `updated_at` | `integer \| null` |  |
 | `locale` | `string \| null` |  |
+
+
+</details>
+
+### Internal Articles Update
+
+Update an existing internal article by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "internal_articles",
+  "action": "update",
+  "params": {
+    "title": "<str>",
+    "body": "<str>",
+    "author_id": 0,
+    "owner_id": 0,
+    "id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.internal_articles.update(
+    title="<str>",
+    body="<str>",
+    author_id=0,
+    owner_id=0,
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "internal_articles",
+    "action": "update",
+    "params": {
+        "title": "<str>",
+        "body": "<str>",
+        "author_id": 0,
+        "owner_id": 0,
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `title` | `string` | No | The title of the article |
+| `body` | `string` | No | The content of the article in HTML |
+| `author_id` | `integer` | No | The ID of the author of the article |
+| `owner_id` | `integer` | No | The ID of the owner of the article |
+| `id` | `string` | Yes | Internal article ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer \| string` |  |
+| `title` | `string \| null` |  |
+| `body` | `string \| null` |  |
+| `owner_id` | `integer \| null` |  |
+| `author_id` | `integer \| null` |  |
+| `created_at` | `integer \| null` |  |
+| `updated_at` | `integer \| null` |  |
+| `locale` | `string \| null` |  |
+
+
+</details>
+
+### Internal Articles Delete
+
+Permanently delete an internal article by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "internal_articles",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.internal_articles.delete(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "internal_articles",
+    "action": "delete",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | Internal article ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `string` |  |
+| `deleted` | `boolean` |  |
 
 
 </details>

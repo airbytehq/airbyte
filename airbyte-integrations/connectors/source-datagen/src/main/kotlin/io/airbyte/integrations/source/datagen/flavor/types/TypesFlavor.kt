@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.datagen.flavor.types
 
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.integrations.source.datagen.BigDecimalFieldType
 import io.airbyte.integrations.source.datagen.BigIntegerFieldType
 import io.airbyte.integrations.source.datagen.BooleanFieldType
@@ -44,21 +44,24 @@ data object TypesFlavor : Flavor {
         mapOf(
             typesTableName to
                 listOf(
-                    Field(FieldNames.ID, IntegerFieldType),
-                    Field(FieldNames.STRING, StringFieldType),
-                    Field(FieldNames.BOOLEAN, BooleanFieldType),
-                    Field(FieldNames.NUMBER, NumberFieldType),
-                    Field(FieldNames.BIG_INTEGER, BigIntegerFieldType),
-                    Field(FieldNames.BIG_DECIMAL, BigDecimalFieldType),
-                    Field(FieldNames.DATE, DateFieldType),
-                    Field(FieldNames.TIME_WITH_TIME_ZONE, TimeWithTimeZoneFieldType),
-                    Field(FieldNames.TIME_WITHOUT_TIME_ZONE, TimeWithoutTimeZoneFieldType),
-                    Field(FieldNames.TIMESTAMP_WITH_TIME_ZONE, TimestampWithTimeZoneFieldType),
-                    Field(
+                    EmittedField(FieldNames.ID, IntegerFieldType),
+                    EmittedField(FieldNames.STRING, StringFieldType),
+                    EmittedField(FieldNames.BOOLEAN, BooleanFieldType),
+                    EmittedField(FieldNames.NUMBER, NumberFieldType),
+                    EmittedField(FieldNames.BIG_INTEGER, BigIntegerFieldType),
+                    EmittedField(FieldNames.BIG_DECIMAL, BigDecimalFieldType),
+                    EmittedField(FieldNames.DATE, DateFieldType),
+                    EmittedField(FieldNames.TIME_WITH_TIME_ZONE, TimeWithTimeZoneFieldType),
+                    EmittedField(FieldNames.TIME_WITHOUT_TIME_ZONE, TimeWithoutTimeZoneFieldType),
+                    EmittedField(
+                        FieldNames.TIMESTAMP_WITH_TIME_ZONE,
+                        TimestampWithTimeZoneFieldType
+                    ),
+                    EmittedField(
                         FieldNames.TIMESTAMP_WITHOUT_TIME_ZONE,
                         TimestampWithoutTimeZoneFieldType
                     ),
-                    Field(FieldNames.JSON, JsonFieldType),
+                    EmittedField(FieldNames.JSON, JsonFieldType),
                 )
         )
     override val primaryKeys = mapOf(typesTableName to listOf(listOf((FieldNames.ID))))

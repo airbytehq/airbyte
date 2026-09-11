@@ -24,7 +24,7 @@ enum class FeatureFlag(
     /** [AIRBYTE_CLOUD_DEPLOYMENT] is active when the connector is running in Airbyte Cloud. */
     AIRBYTE_CLOUD_DEPLOYMENT(
         micronautEnvironmentName = AIRBYTE_CLOUD_ENV,
-        envVar = EnvVar.DEPLOYMENT_MODE,
+        envVar = EnvVar.AIRBYTE_EDITION,
         requiredEnvVarValue = "CLOUD",
         transformActualValue = { it.trim().uppercase() },
     );
@@ -34,7 +34,7 @@ enum class FeatureFlag(
         get() = "${envVar.name}=$requiredEnvVarValue"
 
     enum class EnvVar(val defaultValue: String = "") {
-        DEPLOYMENT_MODE
+        AIRBYTE_EDITION
     }
 
     companion object {

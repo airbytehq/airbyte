@@ -68,6 +68,10 @@ In the Data tab, you should see the tables and a sample of the data that will be
 3. Click "Generate a deploy key".
 4. Copy the generated deploy key into the `access_key` field in Airbyte.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

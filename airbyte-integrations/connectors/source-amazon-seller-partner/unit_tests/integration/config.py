@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Optional
 
 import pendulum
 
@@ -46,6 +46,38 @@ class ConfigBuilder:
 
     def with_asin_granularity(self, granularity: str) -> ConfigBuilder:
         self._config["sales_and_traffic_report_asin_granularity"] = granularity
+        return self
+
+    def with_max_done_report_age_hours(self, hours: int) -> ConfigBuilder:
+        self._config["max_done_report_age_hours"] = hours
+        return self
+
+    def with_failed_retry_wait_time_in_seconds(self, seconds: int) -> ConfigBuilder:
+        self._config["failed_retry_wait_time_in_seconds"] = seconds
+        return self
+
+    def with_account_type(self, account_type: str) -> ConfigBuilder:
+        self._config["account_type"] = account_type
+        return self
+
+    def with_report_stream_lookback_window_in_hours(self, hours: int) -> ConfigBuilder:
+        self._config["report_stream_lookback_window_in_hours"] = hours
+        return self
+
+    def with_report_options_list(self, options_list: list) -> ConfigBuilder:
+        self._config["report_options_list"] = options_list
+        return self
+
+    def with_inbound_rolling_days(self, days: int) -> ConfigBuilder:
+        self._config["inbound_replication_mode"] = "rolling_days"
+        self._config["inbound_rolling_days"] = days
+        return self
+
+    def with_inbound_fixed_window(self, start_datetime: datetime, end_datetime: Optional[datetime] = None) -> ConfigBuilder:
+        self._config["inbound_replication_mode"] = "fixed"
+        self._config["inbound_start_datetime"] = start_datetime.strftime(TIME_FORMAT)
+        if end_datetime is not None:
+            self._config["inbound_end_datetime"] = end_datetime.strftime(TIME_FORMAT)
         return self
 
     def build(self) -> Dict[str, str]:

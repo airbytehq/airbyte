@@ -29,7 +29,36 @@ definitions:
 
   basic_error_handler:
     type: DefaultErrorHandler
+    backoff_strategies:
+      # Amazon returns 429 with a Retry-After header (seconds) and asks clients to
+      # retry throttling and server errors: reference/concepts/rate-limiting.
+      # NOTE: the CDK compares with `>=` and STOPS the stream (AirbyteTracedException,
+      # zero retries) at or above this value, so it must sit strictly above the largest
+      # Retry-After we still want to wait out. 900 keeps round-number waits (60/300/600)
+      # honoured while still capping an absurd header value.
+      - type: WaitTimeFromHeader
+        header: "Retry-After"
+        max_waiting_time_in_seconds: 900
     response_filters:
+      # The two retryable filters must precede BOTH filters below. DefaultErrorHandler
+      # returns the first matching filter and HttpResponseFilter matches on `predicate` OR
+      # `http_codes`, so a retryable status whose body carries `message` would be FAILed,
+      # and one carrying `code`/`details` (the documented Sponsored Brands v4 / Sponsored
+      # Display error envelope) would be IGNOREd - halting pagination mid-stream on an
+      # otherwise successful sync.
+      #
+      # 429 is RATE_LIMITED rather than RETRY so the platform surfaces the stream as
+      # rate-limited and `exit_on_rate_limit` keeps applying; the CDK retries both actions
+      # with the same backoff strategy above.
+      #
+      # No `error_message` on either filter on purpose: HttpResponseFilter.matches falls
+      # back to the CDK's DEFAULT_ERROR_MAPPING text, which names the status code (e.g.
+      # "HTTP Status Code: 429. Error: Too many requests."). A static string here would
+      # collapse five distinct codes into one opaque message.
+      - http_codes: [429]
+        action: RATE_LIMITED
+      - http_codes: [500, 502, 503, 504]
+        action: RETRY
       - predicate: "{{ 'message' in response }}"
         action: FAIL
         error_message: "{{ response.message }}"
@@ -60,7 +89,7 @@ definitions:
         http_codes: [ 425 ]
         action: FAIL
         failure_type: config_error
-        error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
+        error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent threads to 2 for sequential processing."
 
   report_polling_error_handler:
     type: DefaultErrorHandler
@@ -113,7 +142,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/profiles?profileTypeFilter=seller,vendor
+          path: v2/profiles?profileTypeFilter=seller,vendor&accessLevel=view
           http_method: GET
           use_cache: true
         record_selector:
@@ -137,7 +166,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/profiles?profileTypeFilter=seller,vendor
+          path: v2/profiles?profileTypeFilter=seller,vendor&accessLevel=view
           http_method: GET
           use_cache: true
         record_selector:
@@ -587,6 +616,57 @@ definitions:
         schema:
           $ref: "#/schemas/sponsored_brands_ad_groups"
 
+    sponsored_brands_ads:
+      type: DeclarativeStream
+      name: sponsored_brands_ads
+      primary_key:
+        - campaignId
+        - adGroupId
+        - adId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          error_handler:
+            $ref: "#/definitions/basic_error_handler"
+          path: sb/v4/ads/list
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+            Accept: application/vnd.sbadresource.v4+json
+            Content-Type: application/vnd.sbadresource.v4+json
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: "profileId"
+              stream: "#/definitions/streams/profiles_filtered"
+              partition_field: "profileId"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["ads"]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: nextToken
+          page_size_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: maxResults
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.nextToken }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_brands_ads"
+
     sponsored_product_campaigns:
       type: DeclarativeStream
       name: sponsored_product_campaigns
@@ -994,13 +1074,18 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           error_handler: "#/definitions/sponsored_product_ad_group_error_handler"
-          path: "v2/sp/adGroups/{{ stream_slice['adGroupId'] }}/suggested/keywords"
-          http_method: GET
+          path: /sp/targets/keywords/recommendations
+          http_method: POST
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice.parent_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
-          request_params:
-            maxNumSuggestions: 100
+            Accept: application/vnd.spkeywordsrecommendation.v4+json
+            Content-Type: application/vnd.spkeywordsrecommendation.v4+json
+          request_body_json:
+            recommendationType: KEYWORDS_FOR_ADGROUP
+            adGroupId: '{{ stream_slice["adGroupId"] }}'
+            campaignId: '{{ stream_slice.extra_fields["campaignId"] }}'
+            maxRecommendations: 200
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1014,9 +1099,19 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - keywordTargetList
         paginator:
           type: NoPagination
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["adGroupId"]
+              value: '{{ stream_slice["adGroupId"] }}'
+              value_type: string
+            - path: ["campaignId"]
+              value: '{{ stream_slice.extra_fields["campaignId"] }}'
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1104,7 +1199,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 300
-            cursor_value: "{{ response.cursorId }}"
+            cursor_value: '{{ response.get("cursorId", "") | tojson }}'
+            stop_condition: "{{ response.cursorId is none}}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1121,6 +1217,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             response_filters:
+              - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
+                action: IGNORE
+                error_message: "Profile is not authorized to use Amazon Attribution. This is expected for profiles without Attribution access and can be safely ignored."
               - http_codes: [400]
                 action: IGNORE
                 error_message: "{{ response }}"
@@ -1186,7 +1285,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 300
-            cursor_value: "{{ response.cursorId }}"
+            cursor_value: '{{ response.get("cursorId", "") | tojson }}'
+            stop_condition: "{{ response.cursorId is none}}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1203,6 +1303,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             response_filters:
+              - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
+                action: IGNORE
+                error_message: "Profile is not authorized to use Amazon Attribution. This is expected for profiles without Attribution access and can be safely ignored."
               - http_codes: [400]
                 action: IGNORE
                 error_message: "{{ response }}"
@@ -1268,7 +1371,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 300
-            cursor_value: "{{ response.cursorId }}"
+            cursor_value: '{{ response.get("cursorId", "") | tojson }}'
+            stop_condition: "{{ response.cursorId is none}}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1285,6 +1389,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             response_filters:
+              - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
+                action: IGNORE
+                error_message: "Profile is not authorized to use Amazon Attribution. This is expected for profiles without Attribution access and can be safely ignored."
               - http_codes: [400]
                 action: IGNORE
                 error_message: "{{ response }}"
@@ -1349,7 +1456,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 300
-            cursor_value: "{{ response.cursorId }}"
+            cursor_value: '{{ response.get("cursorId", "") | tojson }}'
+            stop_condition: "{{ response.cursorId is none}}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1403,9 +1511,9 @@ definitions:
     sponsored_brands_v3_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_brands_v3_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "purchasedAsin"]
+      primary_key: ["profileId", "date", "adGroupName", "purchasedAsin"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -1445,6 +1553,551 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/sponsored_brands_v3_report_stream_daily"
+
+    sponsored_brands_campaigns_report_stream:
+      type: DeclarativeStream
+      name: sponsored_brands_campaigns_report_stream
+      primary_key: ["profileId", "reportDate", "campaignId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "sb campaigns report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_BRANDS
+              groupBy: ["campaign"]
+              columns:
+                - "campaignBudgetCurrencyCode"
+                - "campaignId"
+                - "campaignName"
+                - "campaignStatus"
+                - "campaignBudgetAmount"
+                - "campaignBudgetType"
+                - "clicks"
+                - "cost"
+                - "impressions"
+                - "sales"
+                - "purchases"
+                - "unitsSold"
+                - "newToBrandPurchases"
+                - "newToBrandSales"
+                - "newToBrandUnitsSold"
+                - "newToBrandPurchasesPercentage"
+                - "newToBrandSalesPercentage"
+                - "newToBrandUnitsSoldPercentage"
+                - "addToCart"
+                - "addToCartClicks"
+                - "addToCartRate"
+                - "addToList"
+                - "addToListFromClicks"
+                - "brandStorePageView"
+                - "brandedSearches"
+                - "brandedSearchesClicks"
+                - "costType"
+                - "detailPageViews"
+                - "detailPageViewsClicks"
+                - "eCPAddToCart"
+                - "endDate"
+                - "kindleEditionNormalizedPagesRead14d"
+                - "kindleEditionNormalizedPagesRoyalties14d"
+                - "longTermROAS"
+                - "longTermSales"
+                - "newToBrandDetailPageViewRate"
+                - "newToBrandDetailPageViews"
+                - "newToBrandDetailPageViewsClicks"
+                - "newToBrandECPDetailPageView"
+                - "newToBrandPurchasesClicks"
+                - "newToBrandPurchasesRate"
+                - "newToBrandSalesClicks"
+                - "newToBrandUnitsSoldClicks"
+                - "purchasesClicks"
+                - "purchasesPromoted"
+                - "qualifiedBorrows"
+                - "qualifiedBorrowsFromClicks"
+                - "royaltyQualifiedBorrows"
+                - "royaltyQualifiedBorrowsFromClicks"
+                - "salesClicks"
+                - "salesPromoted"
+                - "startDate"
+                - "topOfSearchImpressionShare"
+                - "unitsSoldClicks"
+                - "video5SecondViewRate"
+                - "video5SecondViews"
+                - "videoCompleteViews"
+                - "videoFirstQuartileViews"
+                - "videoMidpointViews"
+                - "videoThirdQuartileViews"
+                - "videoUnmutes"
+                - "viewClickThroughRate"
+                - "viewabilityRate"
+                - "viewableImpressions"
+              reportTypeId: sbCampaigns
+              filters: []
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_brands_campaigns_report_stream"
+
+    sponsored_brands_campaigns_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_brands_campaigns_report_stream_daily
+      primary_key: ["profileId", "date", "campaignId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "sb campaigns report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_BRANDS
+              groupBy: ["campaign"]
+              columns:
+                - "date"
+                - "campaignBudgetCurrencyCode"
+                - "campaignId"
+                - "campaignName"
+                - "campaignStatus"
+                - "campaignBudgetAmount"
+                - "campaignBudgetType"
+                - "clicks"
+                - "cost"
+                - "impressions"
+                - "sales"
+                - "purchases"
+                - "unitsSold"
+                - "newToBrandPurchases"
+                - "newToBrandSales"
+                - "newToBrandUnitsSold"
+                - "newToBrandPurchasesPercentage"
+                - "newToBrandSalesPercentage"
+                - "newToBrandUnitsSoldPercentage"
+                - "addToCart"
+                - "addToCartClicks"
+                - "addToCartRate"
+                - "addToList"
+                - "addToListFromClicks"
+                - "brandStorePageView"
+                - "brandedSearches"
+                - "brandedSearchesClicks"
+                - "costType"
+                - "detailPageViews"
+                - "detailPageViewsClicks"
+                - "eCPAddToCart"
+                - "kindleEditionNormalizedPagesRead14d"
+                - "kindleEditionNormalizedPagesRoyalties14d"
+                - "longTermROAS"
+                - "longTermSales"
+                - "newToBrandDetailPageViewRate"
+                - "newToBrandDetailPageViews"
+                - "newToBrandDetailPageViewsClicks"
+                - "newToBrandECPDetailPageView"
+                - "newToBrandPurchasesClicks"
+                - "newToBrandPurchasesRate"
+                - "newToBrandSalesClicks"
+                - "newToBrandUnitsSoldClicks"
+                - "purchasesClicks"
+                - "purchasesPromoted"
+                - "qualifiedBorrows"
+                - "qualifiedBorrowsFromClicks"
+                - "royaltyQualifiedBorrows"
+                - "royaltyQualifiedBorrowsFromClicks"
+                - "salesClicks"
+                - "salesPromoted"
+                - "topOfSearchImpressionShare"
+                - "unitsSoldClicks"
+                - "video5SecondViewRate"
+                - "video5SecondViews"
+                - "videoCompleteViews"
+                - "videoFirstQuartileViews"
+                - "videoMidpointViews"
+                - "videoThirdQuartileViews"
+                - "videoUnmutes"
+                - "viewClickThroughRate"
+                - "viewabilityRate"
+                - "viewableImpressions"
+              reportTypeId: sbCampaigns
+              filters: []
+              timeUnit: DAILY
+              format: GZIP_JSON
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_brands_campaigns_report_stream_daily"
+
+    sponsored_brands_adgroups_report_stream:
+      type: DeclarativeStream
+      name: sponsored_brands_adgroups_report_stream
+      primary_key: ["profileId", "reportDate", "adGroupName", "adGroupId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "sb adGroups report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_BRANDS
+              groupBy: ["adGroup"]
+              columns:
+                - "campaignBudgetCurrencyCode"
+                - "campaignId"
+                - "campaignName"
+                - "adGroupId"
+                - "adGroupName"
+                - "clicks"
+                - "cost"
+                - "impressions"
+                - "sales"
+                - "purchases"
+                - "unitsSold"
+                - "newToBrandPurchases"
+                - "newToBrandSales"
+                - "newToBrandUnitsSold"
+                - "newToBrandPurchasesPercentage"
+                - "newToBrandSalesPercentage"
+                - "newToBrandUnitsSoldPercentage"
+                - "adStatus"
+                - "addToCart"
+                - "addToCartClicks"
+                - "addToCartRate"
+                - "addToList"
+                - "addToListFromClicks"
+                - "brandedSearches"
+                - "brandedSearchesClicks"
+                - "campaignBudgetAmount"
+                - "campaignBudgetType"
+                - "campaignStatus"
+                - "costType"
+                - "detailPageViews"
+                - "detailPageViewsClicks"
+                - "eCPAddToCart"
+                - "endDate"
+                - "kindleEditionNormalizedPagesRead14d"
+                - "kindleEditionNormalizedPagesRoyalties14d"
+                - "newToBrandDetailPageViewRate"
+                - "newToBrandDetailPageViews"
+                - "newToBrandDetailPageViewsClicks"
+                - "newToBrandECPDetailPageView"
+                - "newToBrandPurchasesClicks"
+                - "newToBrandPurchasesRate"
+                - "newToBrandSalesClicks"
+                - "newToBrandUnitsSoldClicks"
+                - "purchasesClicks"
+                - "purchasesPromoted"
+                - "qualifiedBorrows"
+                - "qualifiedBorrowsFromClicks"
+                - "royaltyQualifiedBorrows"
+                - "royaltyQualifiedBorrowsFromClicks"
+                - "salesClicks"
+                - "salesPromoted"
+                - "startDate"
+                - "unitsSoldClicks"
+                - "video5SecondViewRate"
+                - "video5SecondViews"
+                - "videoCompleteViews"
+                - "videoFirstQuartileViews"
+                - "videoMidpointViews"
+                - "videoThirdQuartileViews"
+                - "videoUnmutes"
+                - "viewabilityRate"
+              reportTypeId: sbAdGroup
+              filters: []
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_brands_adgroups_report_stream"
+
+    sponsored_brands_adgroups_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_brands_adgroups_report_stream_daily
+      primary_key: ["profileId", "date", "adGroupName", "adGroupId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "sb adGroups report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_BRANDS
+              groupBy: ["adGroup"]
+              columns:
+                - "date"
+                - "campaignBudgetCurrencyCode"
+                - "campaignId"
+                - "campaignName"
+                - "adGroupId"
+                - "adGroupName"
+                - "clicks"
+                - "cost"
+                - "impressions"
+                - "sales"
+                - "purchases"
+                - "unitsSold"
+                - "newToBrandPurchases"
+                - "newToBrandSales"
+                - "newToBrandUnitsSold"
+                - "newToBrandPurchasesPercentage"
+                - "newToBrandSalesPercentage"
+                - "newToBrandUnitsSoldPercentage"
+                - "adStatus"
+                - "addToCart"
+                - "addToCartClicks"
+                - "addToCartRate"
+                - "addToList"
+                - "addToListFromClicks"
+                - "brandedSearches"
+                - "brandedSearchesClicks"
+                - "campaignBudgetAmount"
+                - "campaignBudgetType"
+                - "campaignStatus"
+                - "costType"
+                - "detailPageViews"
+                - "detailPageViewsClicks"
+                - "eCPAddToCart"
+                - "kindleEditionNormalizedPagesRead14d"
+                - "kindleEditionNormalizedPagesRoyalties14d"
+                - "newToBrandDetailPageViewRate"
+                - "newToBrandDetailPageViews"
+                - "newToBrandDetailPageViewsClicks"
+                - "newToBrandECPDetailPageView"
+                - "newToBrandPurchasesClicks"
+                - "newToBrandPurchasesRate"
+                - "newToBrandSalesClicks"
+                - "newToBrandUnitsSoldClicks"
+                - "purchasesClicks"
+                - "purchasesPromoted"
+                - "qualifiedBorrows"
+                - "qualifiedBorrowsFromClicks"
+                - "royaltyQualifiedBorrows"
+                - "royaltyQualifiedBorrowsFromClicks"
+                - "salesClicks"
+                - "salesPromoted"
+                - "unitsSoldClicks"
+                - "video5SecondViewRate"
+                - "video5SecondViews"
+                - "videoCompleteViews"
+                - "videoFirstQuartileViews"
+                - "videoMidpointViews"
+                - "videoThirdQuartileViews"
+                - "videoUnmutes"
+                - "viewabilityRate"
+              reportTypeId: sbAdGroup
+              filters: []
+              timeUnit: DAILY
+              format: GZIP_JSON
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_brands_adgroups_report_stream_daily"
+
+    sponsored_brands_ads_report_stream:
+      type: DeclarativeStream
+      name: sponsored_brands_ads_report_stream
+      primary_key: ["profileId", "reportDate", "adId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "sb ads report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_BRANDS
+              groupBy: ["ads"]
+              columns:
+                - "adGroupId"
+                - "adGroupName"
+                - "adId"
+                - "addToCart"
+                - "addToCartClicks"
+                - "addToCartRate"
+                - "addToList"
+                - "addToListFromClicks"
+                - "brandedSearches"
+                - "brandedSearchesClicks"
+                - "campaignBudgetAmount"
+                - "campaignBudgetCurrencyCode"
+                - "campaignBudgetType"
+                - "campaignId"
+                - "campaignName"
+                - "campaignStatus"
+                - "clicks"
+                - "cost"
+                - "costType"
+                - "detailPageViews"
+                - "detailPageViewsClicks"
+                - "eCPAddToCart"
+                - "endDate"
+                - "impressions"
+                - "kindleEditionNormalizedPagesRead14d"
+                - "kindleEditionNormalizedPagesRoyalties14d"
+                - "newToBrandDetailPageViewRate"
+                - "newToBrandDetailPageViews"
+                - "newToBrandDetailPageViewsClicks"
+                - "newToBrandECPDetailPageView"
+                - "newToBrandPurchases"
+                - "newToBrandPurchasesClicks"
+                - "newToBrandPurchasesPercentage"
+                - "newToBrandPurchasesRate"
+                - "newToBrandSales"
+                - "newToBrandSalesClicks"
+                - "newToBrandSalesPercentage"
+                - "newToBrandUnitsSold"
+                - "newToBrandUnitsSoldClicks"
+                - "newToBrandUnitsSoldPercentage"
+                - "purchases"
+                - "purchasesClicks"
+                - "purchasesPromoted"
+                - "qualifiedBorrows"
+                - "qualifiedBorrowsFromClicks"
+                - "royaltyQualifiedBorrows"
+                - "royaltyQualifiedBorrowsFromClicks"
+                - "sales"
+                - "salesClicks"
+                - "salesPromoted"
+                - "startDate"
+                - "unitsSold"
+                - "unitsSoldClicks"
+                - "video5SecondViewRate"
+                - "video5SecondViews"
+                - "videoCompleteViews"
+                - "videoFirstQuartileViews"
+                - "videoMidpointViews"
+                - "videoThirdQuartileViews"
+                - "videoUnmutes"
+                - "viewabilityRate"
+                - "viewableImpressions"
+              reportTypeId: sbAds
+              filters: []
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_brands_ads_report_stream"
+
+    sponsored_brands_ads_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_brands_ads_report_stream_daily
+      primary_key: ["profileId", "date", "adId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "sb ads report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_BRANDS
+              groupBy: ["ads"]
+              columns:
+                - "adGroupId"
+                - "adGroupName"
+                - "adId"
+                - "addToCart"
+                - "addToCartClicks"
+                - "addToCartRate"
+                - "addToList"
+                - "addToListFromClicks"
+                - "brandedSearches"
+                - "brandedSearchesClicks"
+                - "campaignBudgetAmount"
+                - "campaignBudgetCurrencyCode"
+                - "campaignBudgetType"
+                - "campaignId"
+                - "campaignName"
+                - "campaignStatus"
+                - "clicks"
+                - "cost"
+                - "costType"
+                - "date"
+                - "detailPageViews"
+                - "detailPageViewsClicks"
+                - "eCPAddToCart"
+                - "impressions"
+                - "kindleEditionNormalizedPagesRead14d"
+                - "kindleEditionNormalizedPagesRoyalties14d"
+                - "newToBrandDetailPageViewRate"
+                - "newToBrandDetailPageViews"
+                - "newToBrandDetailPageViewsClicks"
+                - "newToBrandECPDetailPageView"
+                - "newToBrandPurchases"
+                - "newToBrandPurchasesClicks"
+                - "newToBrandPurchasesPercentage"
+                - "newToBrandPurchasesRate"
+                - "newToBrandSales"
+                - "newToBrandSalesClicks"
+                - "newToBrandSalesPercentage"
+                - "newToBrandUnitsSold"
+                - "newToBrandUnitsSoldClicks"
+                - "newToBrandUnitsSoldPercentage"
+                - "purchases"
+                - "purchasesClicks"
+                - "purchasesPromoted"
+                - "qualifiedBorrows"
+                - "qualifiedBorrowsFromClicks"
+                - "royaltyQualifiedBorrows"
+                - "royaltyQualifiedBorrowsFromClicks"
+                - "sales"
+                - "salesClicks"
+                - "salesPromoted"
+                - "unitsSold"
+                - "unitsSoldClicks"
+                - "video5SecondViewRate"
+                - "video5SecondViews"
+                - "videoCompleteViews"
+                - "videoFirstQuartileViews"
+                - "videoMidpointViews"
+                - "videoThirdQuartileViews"
+                - "videoUnmutes"
+                - "viewabilityRate"
+                - "viewableImpressions"
+              reportTypeId: sbAds
+              filters: []
+              timeUnit: DAILY
+              format: GZIP_JSON
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_brands_ads_report_stream_daily"
 
     sponsored_display_campaigns_report_stream:
       type: DeclarativeStream
@@ -1544,9 +2197,9 @@ definitions:
     sponsored_display_campaigns_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_display_campaigns_report_stream_daily
-      primary_key: ["profileId", "reportDate", "campaignId"]
+      primary_key: ["profileId", "date", "campaignId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -1731,9 +2384,9 @@ definitions:
     sponsored_display_adgroups_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_display_adgroups_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "adGroupId"]
+      primary_key: ["profileId", "date", "adGroupName", "adGroupId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -1921,9 +2574,9 @@ definitions:
     sponsored_display_productads_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_display_productads_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "adId"]
+      primary_key: ["profileId", "date", "adGroupName", "adId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2106,9 +2759,9 @@ definitions:
     sponsored_display_targets_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_display_targets_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "targetingId"]
+      primary_key: ["profileId", "date", "adGroupName", "targetingId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2249,9 +2902,9 @@ definitions:
     sponsored_display_asins_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_display_asins_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "promotedAsin"]
+      primary_key: ["profileId", "date", "adGroupName", "promotedAsin"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2367,9 +3020,9 @@ definitions:
     sponsored_products_campaigns_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_campaigns_report_stream_daily
-      primary_key: ["profileId", "reportDate", "campaignId"]
+      primary_key: ["profileId", "date", "campaignId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2493,9 +3146,9 @@ definitions:
     sponsored_products_adgroups_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_adgroups_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "adGroupId"]
+      primary_key: ["profileId", "date", "adGroupName", "adGroupId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2625,9 +3278,9 @@ definitions:
     sponsored_products_keywords_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_keywords_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "keywordId"]
+      primary_key: ["profileId", "date", "adGroupName", "keywordId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2687,6 +3340,203 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/sponsored_products_keywords_report_stream_daily"
+
+    sponsored_products_search_terms_report_stream:
+      type: DeclarativeStream
+      name: sponsored_products_search_terms_report_stream
+      primary_key: ["profileId", "reportDate", "searchTerm", "keywordId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "search terms report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["searchTerm"]
+              columns:
+                [
+                  "searchTerm",
+                  "targeting",
+                  "keywordType",
+                  "campaignName",
+                  "campaignId",
+                  "adGroupName",
+                  "adGroupId",
+                  "keywordId",
+                  "keyword",
+                  "matchType",
+                  "impressions",
+                  "clicks",
+                  "cost",
+                  "purchases1d",
+                  "purchases7d",
+                  "purchases14d",
+                  "purchases30d",
+                  "purchasesSameSku1d",
+                  "purchasesSameSku7d",
+                  "purchasesSameSku14d",
+                  "purchasesSameSku30d",
+                  "unitsSoldClicks1d",
+                  "unitsSoldClicks7d",
+                  "unitsSoldClicks14d",
+                  "unitsSoldClicks30d",
+                  "sales1d",
+                  "sales7d",
+                  "sales14d",
+                  "sales30d",
+                  "attributedSalesSameSku1d",
+                  "attributedSalesSameSku7d",
+                  "attributedSalesSameSku14d",
+                  "attributedSalesSameSku30d",
+                  "unitsSoldSameSku1d",
+                  "unitsSoldSameSku7d",
+                  "unitsSoldSameSku14d",
+                  "unitsSoldSameSku30d",
+                  "portfolioId",
+                  "campaignStatus",
+                  "campaignBudgetType",
+                  "campaignBudgetAmount",
+                  "campaignBudgetCurrencyCode",
+                  "keywordBid",
+                  "adKeywordStatus",
+                  "costPerClick",
+                  "clickThroughRate",
+                  "acosClicks7d",
+                  "acosClicks14d",
+                  "roasClicks7d",
+                  "roasClicks14d",
+                  "salesOtherSku7d",
+                  "unitsSoldOtherSku7d",
+                  "addToList",
+                  "qualifiedBorrows",
+                  "royaltyQualifiedBorrows",
+                  "kindleEditionNormalizedPagesRead14d",
+                  "kindleEditionNormalizedPagesRoyalties14d",
+                ]
+              reportTypeId: spSearchTerm
+              filters:
+                [
+                  {
+                    "field": "keywordType",
+                    "values":
+                      [
+                        "BROAD",
+                        "PHRASE",
+                        "EXACT",
+                        "TARGETING_EXPRESSION",
+                        "TARGETING_EXPRESSION_PREDEFINED",
+                      ],
+                  },
+                ]
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_products_search_terms_report_stream"
+
+    sponsored_products_search_terms_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_products_search_terms_report_stream_daily
+      primary_key: ["profileId", "date", "searchTerm", "keywordId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "search terms report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["searchTerm"]
+              columns:
+                - "date"
+                - "searchTerm"
+                - "targeting"
+                - "keywordType"
+                - "campaignName"
+                - "campaignId"
+                - "adGroupName"
+                - "adGroupId"
+                - "keywordId"
+                - "keyword"
+                - "matchType"
+                - "impressions"
+                - "clicks"
+                - "cost"
+                - "purchases1d"
+                - "purchases7d"
+                - "purchases14d"
+                - "purchases30d"
+                - "purchasesSameSku1d"
+                - "purchasesSameSku7d"
+                - "purchasesSameSku14d"
+                - "purchasesSameSku30d"
+                - "unitsSoldClicks1d"
+                - "unitsSoldClicks7d"
+                - "unitsSoldClicks14d"
+                - "unitsSoldClicks30d"
+                - "sales1d"
+                - "sales7d"
+                - "sales14d"
+                - "sales30d"
+                - "attributedSalesSameSku1d"
+                - "attributedSalesSameSku7d"
+                - "attributedSalesSameSku14d"
+                - "attributedSalesSameSku30d"
+                - "unitsSoldSameSku1d"
+                - "unitsSoldSameSku7d"
+                - "unitsSoldSameSku14d"
+                - "unitsSoldSameSku30d"
+                - "portfolioId"
+                - "campaignStatus"
+                - "campaignBudgetType"
+                - "campaignBudgetAmount"
+                - "campaignBudgetCurrencyCode"
+                - "keywordBid"
+                - "adKeywordStatus"
+                - "costPerClick"
+                - "clickThroughRate"
+                - "acosClicks7d"
+                - "acosClicks14d"
+                - "roasClicks7d"
+                - "roasClicks14d"
+                - "salesOtherSku7d"
+                - "unitsSoldOtherSku7d"
+                - "addToList"
+                - "qualifiedBorrows"
+                - "royaltyQualifiedBorrows"
+                - "kindleEditionNormalizedPagesRead14d"
+                - "kindleEditionNormalizedPagesRoyalties14d"
+              reportTypeId: spSearchTerm
+              filters:
+                - field: "keywordType"
+                  values:
+                    [
+                      "BROAD",
+                      "PHRASE",
+                      "EXACT",
+                      "TARGETING_EXPRESSION",
+                      "TARGETING_EXPRESSION_PREDEFINED",
+                    ]
+              timeUnit: DAILY
+              format: GZIP_JSON
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_products_search_terms_report_stream_daily"
 
     sponsored_products_targets_report_stream:
       type: DeclarativeStream
@@ -2767,9 +3617,9 @@ definitions:
     sponsored_products_targets_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_targets_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "keywordId"]
+      primary_key: ["profileId", "date", "adGroupName", "keywordId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2901,9 +3751,9 @@ definitions:
     sponsored_products_productads_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_productads_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "adId"]
+      primary_key: ["profileId", "date", "adGroupName", "adId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -3019,9 +3869,9 @@ definitions:
     sponsored_products_asins_keywords_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_asins_keywords_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "advertisedAsin"]
+      primary_key: ["profileId", "date", "adGroupName", "advertisedAsin"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -3127,9 +3977,9 @@ definitions:
     sponsored_products_asins_targets_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_asins_targets_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "advertisedAsin"]
+      primary_key: ["profileId", "date", "adGroupName", "advertisedAsin"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -3187,11 +4037,10 @@ definitions:
     lookback_window: P{{ config.get('look_back_window', 3) }}D
     start_datetime:
       type: MinMaxDatetime
-      datetime: >-
-        {%- set today = today_utc() - duration('P1D') -%}
-        {%- set user_start_date = config.get('start_date', today.strftime('%Y-%m-%d')) -%}
-        {%- set sixty_days_ago = today - duration('P60D') -%}
-        "{{ max(user_start_date, sixty_days_ago.strftime('%Y-%m-%d')) }}"
+      datetime: "{{ config.get('start_date', (today_utc() - duration('P1D')).strftime('%Y-%m-%d')) }}"
+      # Amazon Ads Sponsored Brands reports have a 60-day data retention limit.
+      # https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types
+      min_datetime: "{{ today_utc() - duration('P60D') }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
       datetime: "{{ today_utc() }}"
@@ -3204,6 +4053,10 @@ definitions:
     end_time_option:
       field_name: endDate
       inject_into: body_json
+
+  incremental_sync_report_datetime_cursor_daily:
+    $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+    cursor_field: date
 
   transformation_report_add_fields:
     - type: AddFields
@@ -3336,6 +4189,7 @@ streams:
   - $ref: "#/definitions/streams/sponsored_brands_keywords"
   - $ref: "#/definitions/streams/sponsored_brands_campaigns"
   - $ref: "#/definitions/streams/sponsored_brands_ad_groups"
+  - $ref: "#/definitions/streams/sponsored_brands_ads"
 
   - $ref: "#/definitions/streams/sponsored_product_campaigns"
   - $ref: "#/definitions/streams/sponsored_product_ad_groups"
@@ -3354,6 +4208,9 @@ streams:
   - $ref: "#/definitions/streams/attribution_report_performance_creative"
 
   - $ref: "#/definitions/streams/sponsored_brands_v3_report_stream"
+  - $ref: "#/definitions/streams/sponsored_brands_campaigns_report_stream"
+  - $ref: "#/definitions/streams/sponsored_brands_adgroups_report_stream"
+  - $ref: "#/definitions/streams/sponsored_brands_ads_report_stream"
 
   - $ref: "#/definitions/streams/sponsored_display_campaigns_report_stream"
   - $ref: "#/definitions/streams/sponsored_display_adgroups_report_stream"
@@ -3365,11 +4222,15 @@ streams:
   - $ref: "#/definitions/streams/sponsored_products_adgroups_report_stream"
   - $ref: "#/definitions/streams/sponsored_products_keywords_report_stream"
   - $ref: "#/definitions/streams/sponsored_products_targets_report_stream"
+  - $ref: "#/definitions/streams/sponsored_products_search_terms_report_stream"
   - $ref: "#/definitions/streams/sponsored_products_productads_report_stream"
   - $ref: "#/definitions/streams/sponsored_products_asins_keywords_report_stream"
   - $ref: "#/definitions/streams/sponsored_products_asins_targets_report_stream"
 
   - $ref: "#/definitions/streams/sponsored_brands_v3_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_brands_campaigns_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_brands_adgroups_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_brands_ads_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_display_campaigns_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_display_adgroups_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_display_productads_report_stream_daily"
@@ -3379,6 +4240,7 @@ streams:
   - $ref: "#/definitions/streams/sponsored_products_adgroups_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_products_keywords_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_products_targets_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_products_search_terms_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_products_productads_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_products_asins_keywords_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_products_asins_targets_report_stream_daily"
@@ -3489,10 +4351,10 @@ spec:
         type: integer
       num_workers:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 2
         maximum: 20
-        default: 10
+        default: 14
         examples:
           - 2
           - 3
@@ -3546,11 +4408,11 @@ spec:
 # depending on the time.
 # https://advertising.amazon.com/API/docs/en-us/reference/concepts/rate-limiting
 #
-# We've set the default to 10 so we can leverage some concurrency, but this can be tuned as we
+# We've set the default to 12 so we can leverage some concurrency, but this can be tuned as we
 # continue to observe.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  default_concurrency: "{{ config.get('num_workers', 14) }}"
   max_concurrency: 20
 
 schemas:
@@ -4389,6 +5251,30 @@ schemas:
         type:
           - "null"
           - object
+      goal:
+        type:
+          - "null"
+          - string
+      isMultiAdGroupsEnabled:
+        type:
+          - "null"
+          - boolean
+      kpi:
+        type:
+          - "null"
+          - string
+      siteRestrictions:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      targetedPGDealId:
+        type:
+          - "null"
+          - string
     title: sponsored_brands_campaigns
     type:
       - "null"
@@ -4579,6 +5465,1879 @@ schemas:
           - "null"
           - string
     title: sponsored_brands_v3_report_stream_daily
+    type:
+      - "null"
+      - object
+  sponsored_brands_campaigns_report_stream:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - string
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignStatus:
+        type:
+          - "null"
+          - string
+      campaignBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignBudgetType:
+        type:
+          - "null"
+          - string
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      impressions:
+        type:
+          - "null"
+          - integer
+      sales:
+        type:
+          - "null"
+          - number
+      purchases:
+        type:
+          - "null"
+          - integer
+      unitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchases:
+        type:
+          - "null"
+          - integer
+      newToBrandSales:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandSalesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSoldPercentage:
+        type:
+          - "null"
+          - number
+      addToCart:
+        type:
+          - "null"
+          - integer
+      addToCartClicks:
+        type:
+          - "null"
+          - integer
+      addToCartRate:
+        type:
+          - "null"
+          - number
+      addToList:
+        type:
+          - "null"
+          - integer
+      addToListFromClicks:
+        type:
+          - "null"
+          - integer
+      brandStorePageView:
+        type:
+          - "null"
+          - integer
+      brandedSearches:
+        type:
+          - "null"
+          - integer
+      brandedSearchesClicks:
+        type:
+          - "null"
+          - integer
+      costType:
+        type:
+          - "null"
+          - string
+      detailPageViews:
+        type:
+          - "null"
+          - integer
+      detailPageViewsClicks:
+        type:
+          - "null"
+          - integer
+      eCPAddToCart:
+        type:
+          - "null"
+          - number
+      endDate:
+        type:
+          - "null"
+          - string
+      kindleEditionNormalizedPagesRead14d:
+        type:
+          - "null"
+          - integer
+      kindleEditionNormalizedPagesRoyalties14d:
+        type:
+          - "null"
+          - number
+      longTermROAS:
+        type:
+          - "null"
+          - number
+      longTermSales:
+        type:
+          - "null"
+          - number
+      newToBrandDetailPageViewRate:
+        type:
+          - "null"
+          - number
+      newToBrandDetailPageViews:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViewsClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandECPDetailPageView:
+        type:
+          - "null"
+          - number
+      newToBrandPurchasesClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesRate:
+        type:
+          - "null"
+          - number
+      newToBrandSalesClicks:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      purchasesClicks:
+        type:
+          - "null"
+          - integer
+      purchasesPromoted:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrows:
+        type:
+          - "null"
+          - number
+      royaltyQualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - number
+      salesClicks:
+        type:
+          - "null"
+          - number
+      salesPromoted:
+        type:
+          - "null"
+          - number
+      startDate:
+        type:
+          - "null"
+          - string
+      topOfSearchImpressionShare:
+        type:
+          - "null"
+          - number
+      unitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      video5SecondViewRate:
+        type:
+          - "null"
+          - number
+      video5SecondViews:
+        type:
+          - "null"
+          - integer
+      videoCompleteViews:
+        type:
+          - "null"
+          - integer
+      videoFirstQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoMidpointViews:
+        type:
+          - "null"
+          - integer
+      videoThirdQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoUnmutes:
+        type:
+          - "null"
+          - integer
+      viewClickThroughRate:
+        type:
+          - "null"
+          - number
+      viewabilityRate:
+        type:
+          - "null"
+          - number
+      viewableImpressions:
+        type:
+          - "null"
+          - integer
+    title: sponsored_brands_campaigns_report_stream
+    type:
+      - "null"
+      - object
+  sponsored_brands_campaigns_report_stream_daily:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - string
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignStatus:
+        type:
+          - "null"
+          - string
+      campaignBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignBudgetType:
+        type:
+          - "null"
+          - string
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      impressions:
+        type:
+          - "null"
+          - integer
+      sales:
+        type:
+          - "null"
+          - number
+      purchases:
+        type:
+          - "null"
+          - integer
+      unitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchases:
+        type:
+          - "null"
+          - integer
+      newToBrandSales:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandSalesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSoldPercentage:
+        type:
+          - "null"
+          - number
+      addToCart:
+        type:
+          - "null"
+          - integer
+      addToCartClicks:
+        type:
+          - "null"
+          - integer
+      addToCartRate:
+        type:
+          - "null"
+          - number
+      addToList:
+        type:
+          - "null"
+          - integer
+      addToListFromClicks:
+        type:
+          - "null"
+          - integer
+      brandStorePageView:
+        type:
+          - "null"
+          - integer
+      brandedSearches:
+        type:
+          - "null"
+          - integer
+      brandedSearchesClicks:
+        type:
+          - "null"
+          - integer
+      costType:
+        type:
+          - "null"
+          - string
+      detailPageViews:
+        type:
+          - "null"
+          - integer
+      detailPageViewsClicks:
+        type:
+          - "null"
+          - integer
+      eCPAddToCart:
+        type:
+          - "null"
+          - number
+      kindleEditionNormalizedPagesRead14d:
+        type:
+          - "null"
+          - integer
+      kindleEditionNormalizedPagesRoyalties14d:
+        type:
+          - "null"
+          - number
+      longTermROAS:
+        type:
+          - "null"
+          - number
+      longTermSales:
+        type:
+          - "null"
+          - number
+      newToBrandDetailPageViewRate:
+        type:
+          - "null"
+          - number
+      newToBrandDetailPageViews:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViewsClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandECPDetailPageView:
+        type:
+          - "null"
+          - number
+      newToBrandPurchasesClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesRate:
+        type:
+          - "null"
+          - number
+      newToBrandSalesClicks:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      purchasesClicks:
+        type:
+          - "null"
+          - integer
+      purchasesPromoted:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrows:
+        type:
+          - "null"
+          - number
+      royaltyQualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - number
+      salesClicks:
+        type:
+          - "null"
+          - number
+      salesPromoted:
+        type:
+          - "null"
+          - number
+      topOfSearchImpressionShare:
+        type:
+          - "null"
+          - number
+      unitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      video5SecondViewRate:
+        type:
+          - "null"
+          - number
+      video5SecondViews:
+        type:
+          - "null"
+          - integer
+      videoCompleteViews:
+        type:
+          - "null"
+          - integer
+      videoFirstQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoMidpointViews:
+        type:
+          - "null"
+          - integer
+      videoThirdQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoUnmutes:
+        type:
+          - "null"
+          - integer
+      viewClickThroughRate:
+        type:
+          - "null"
+          - number
+      viewabilityRate:
+        type:
+          - "null"
+          - number
+      viewableImpressions:
+        type:
+          - "null"
+          - integer
+    title: sponsored_brands_campaigns_report_stream_daily
+    type:
+      - "null"
+      - object
+  sponsored_brands_adgroups_report_stream:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - string
+      campaignName:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - string
+      adGroupName:
+        type:
+          - "null"
+          - string
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      impressions:
+        type:
+          - "null"
+          - integer
+      sales:
+        type:
+          - "null"
+          - number
+      purchases:
+        type:
+          - "null"
+          - integer
+      unitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchases:
+        type:
+          - "null"
+          - integer
+      newToBrandSales:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandSalesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSoldPercentage:
+        type:
+          - "null"
+          - number
+      adStatus:
+        type:
+          - "null"
+          - string
+      addToCart:
+        type:
+          - "null"
+          - integer
+      addToCartClicks:
+        type:
+          - "null"
+          - integer
+      addToCartRate:
+        type:
+          - "null"
+          - number
+      addToList:
+        type:
+          - "null"
+          - integer
+      addToListFromClicks:
+        type:
+          - "null"
+          - integer
+      brandedSearches:
+        type:
+          - "null"
+          - integer
+      brandedSearchesClicks:
+        type:
+          - "null"
+          - integer
+      campaignBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignBudgetType:
+        type:
+          - "null"
+          - string
+      campaignStatus:
+        type:
+          - "null"
+          - string
+      costType:
+        type:
+          - "null"
+          - string
+      detailPageViews:
+        type:
+          - "null"
+          - integer
+      detailPageViewsClicks:
+        type:
+          - "null"
+          - integer
+      eCPAddToCart:
+        type:
+          - "null"
+          - number
+      endDate:
+        type:
+          - "null"
+          - string
+      kindleEditionNormalizedPagesRead14d:
+        type:
+          - "null"
+          - integer
+      kindleEditionNormalizedPagesRoyalties14d:
+        type:
+          - "null"
+          - number
+      newToBrandDetailPageViewRate:
+        type:
+          - "null"
+          - number
+      newToBrandDetailPageViews:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViewsClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandECPDetailPageView:
+        type:
+          - "null"
+          - number
+      newToBrandPurchasesClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesRate:
+        type:
+          - "null"
+          - number
+      newToBrandSalesClicks:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      purchasesClicks:
+        type:
+          - "null"
+          - integer
+      purchasesPromoted:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrows:
+        type:
+          - "null"
+          - number
+      royaltyQualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - number
+      salesClicks:
+        type:
+          - "null"
+          - number
+      salesPromoted:
+        type:
+          - "null"
+          - number
+      startDate:
+        type:
+          - "null"
+          - string
+      unitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      video5SecondViewRate:
+        type:
+          - "null"
+          - number
+      video5SecondViews:
+        type:
+          - "null"
+          - integer
+      videoCompleteViews:
+        type:
+          - "null"
+          - integer
+      videoFirstQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoMidpointViews:
+        type:
+          - "null"
+          - integer
+      videoThirdQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoUnmutes:
+        type:
+          - "null"
+          - integer
+      viewabilityRate:
+        type:
+          - "null"
+          - number
+    title: sponsored_brands_adgroups_report_stream
+    type:
+      - "null"
+      - object
+  sponsored_brands_adgroups_report_stream_daily:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - string
+      campaignName:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - string
+      adGroupName:
+        type:
+          - "null"
+          - string
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      impressions:
+        type:
+          - "null"
+          - integer
+      sales:
+        type:
+          - "null"
+          - number
+      purchases:
+        type:
+          - "null"
+          - integer
+      unitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchases:
+        type:
+          - "null"
+          - integer
+      newToBrandSales:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandSalesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSoldPercentage:
+        type:
+          - "null"
+          - number
+      adStatus:
+        type:
+          - "null"
+          - string
+      addToCart:
+        type:
+          - "null"
+          - integer
+      addToCartClicks:
+        type:
+          - "null"
+          - integer
+      addToCartRate:
+        type:
+          - "null"
+          - number
+      addToList:
+        type:
+          - "null"
+          - integer
+      addToListFromClicks:
+        type:
+          - "null"
+          - integer
+      brandedSearches:
+        type:
+          - "null"
+          - integer
+      brandedSearchesClicks:
+        type:
+          - "null"
+          - integer
+      campaignBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignBudgetType:
+        type:
+          - "null"
+          - string
+      campaignStatus:
+        type:
+          - "null"
+          - string
+      costType:
+        type:
+          - "null"
+          - string
+      detailPageViews:
+        type:
+          - "null"
+          - integer
+      detailPageViewsClicks:
+        type:
+          - "null"
+          - integer
+      eCPAddToCart:
+        type:
+          - "null"
+          - number
+      kindleEditionNormalizedPagesRead14d:
+        type:
+          - "null"
+          - integer
+      kindleEditionNormalizedPagesRoyalties14d:
+        type:
+          - "null"
+          - number
+      newToBrandDetailPageViewRate:
+        type:
+          - "null"
+          - number
+      newToBrandDetailPageViews:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViewsClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandECPDetailPageView:
+        type:
+          - "null"
+          - number
+      newToBrandPurchasesClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesRate:
+        type:
+          - "null"
+          - number
+      newToBrandSalesClicks:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      purchasesClicks:
+        type:
+          - "null"
+          - integer
+      purchasesPromoted:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrows:
+        type:
+          - "null"
+          - number
+      royaltyQualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - number
+      salesClicks:
+        type:
+          - "null"
+          - number
+      salesPromoted:
+        type:
+          - "null"
+          - number
+      unitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      video5SecondViewRate:
+        type:
+          - "null"
+          - number
+      video5SecondViews:
+        type:
+          - "null"
+          - integer
+      videoCompleteViews:
+        type:
+          - "null"
+          - integer
+      videoFirstQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoMidpointViews:
+        type:
+          - "null"
+          - integer
+      videoThirdQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoUnmutes:
+        type:
+          - "null"
+          - integer
+      viewabilityRate:
+        type:
+          - "null"
+          - number
+    title: sponsored_brands_adgroups_report_stream_daily
+    type:
+      - "null"
+      - object
+  sponsored_brands_ads:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      adGroupId:
+        type:
+          - "null"
+          - string
+      adId:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - string
+      creative:
+        type:
+          - "null"
+          - object
+        properties:
+          asinExclusions:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          asins:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          brandLogoAssetID:
+            type:
+              - "null"
+              - string
+          brandLogoCrop:
+            type:
+              - "null"
+              - object
+            properties:
+              height:
+                type:
+                  - "null"
+                  - number
+              left:
+                type:
+                  - "null"
+                  - number
+              top:
+                type:
+                  - "null"
+                  - number
+              width:
+                type:
+                  - "null"
+                  - number
+          brandLogoUrl:
+            type:
+              - "null"
+              - string
+          brandName:
+            type:
+              - "null"
+              - string
+          collectionName:
+            type:
+              - "null"
+              - string
+          collectionType:
+            type:
+              - "null"
+              - string
+          companionAsins:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          consentToTranslate:
+            type:
+              - "null"
+              - boolean
+          creativePropertiesToOptimize:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          creativeStatus:
+            type:
+              - "null"
+              - string
+          creativeVersion:
+            type:
+              - "null"
+              - string
+          customImageAssetId:
+            type:
+              - "null"
+              - string
+          customImageCrop:
+            type:
+              - "null"
+              - object
+            properties:
+              height:
+                type:
+                  - "null"
+                  - number
+              left:
+                type:
+                  - "null"
+                  - number
+              top:
+                type:
+                  - "null"
+                  - number
+              width:
+                type:
+                  - "null"
+                  - number
+          customImageUrl:
+            type:
+              - "null"
+              - string
+          customImages:
+            type:
+              - "null"
+              - array
+            items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  assetId:
+                    type:
+                      - "null"
+                      - string
+                  crop:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      height:
+                        type:
+                          - "null"
+                          - number
+                      left:
+                        type:
+                          - "null"
+                          - number
+                      top:
+                        type:
+                          - "null"
+                          - number
+                      width:
+                        type:
+                          - "null"
+                          - number
+                  url:
+                    type:
+                      - "null"
+                      - string
+          headline:
+            type:
+              - "null"
+              - string
+          headlines:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          originalHeadline:
+            type:
+              - "null"
+              - string
+          originalHeadlines:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          originalVideoAssetIds:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          subpages:
+            type:
+              - "null"
+              - array
+            items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  asin:
+                    type:
+                      - "null"
+                      - string
+                  pageTitle:
+                    type:
+                      - "null"
+                      - string
+                  url:
+                    type:
+                      - "null"
+                      - string
+          title:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          videoAssetIds:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+      extendedData:
+        type:
+          - "null"
+          - object
+        properties:
+          creationDate:
+            type:
+              - "null"
+              - number
+          lastUpdateDate:
+            type:
+              - "null"
+              - number
+          servingStatus:
+            type:
+              - "null"
+              - string
+          servingStatusDetails:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+      landingPage:
+        type:
+          - "null"
+          - object
+        properties:
+          asins:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          pageType:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+      name:
+        type:
+          - "null"
+          - string
+      state:
+        type:
+          - "null"
+          - string
+    title: sponsored_brands_ads
+    type:
+      - "null"
+      - object
+  sponsored_brands_ads_report_stream:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      adId:
+        type:
+          - "null"
+          - integer
+      addToCart:
+        type:
+          - "null"
+          - integer
+      addToCartClicks:
+        type:
+          - "null"
+          - integer
+      addToCartRate:
+        type:
+          - "null"
+          - number
+      addToList:
+        type:
+          - "null"
+          - integer
+      addToListFromClicks:
+        type:
+          - "null"
+          - integer
+      brandedSearches:
+        type:
+          - "null"
+          - integer
+      brandedSearchesClicks:
+        type:
+          - "null"
+          - integer
+      campaignBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignBudgetType:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignStatus:
+        type:
+          - "null"
+          - string
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      costType:
+        type:
+          - "null"
+          - string
+      detailPageViews:
+        type:
+          - "null"
+          - integer
+      detailPageViewsClicks:
+        type:
+          - "null"
+          - integer
+      eCPAddToCart:
+        type:
+          - "null"
+          - number
+      endDate:
+        type:
+          - "null"
+          - string
+      impressions:
+        type:
+          - "null"
+          - integer
+      kindleEditionNormalizedPagesRead14d:
+        type:
+          - "null"
+          - integer
+      kindleEditionNormalizedPagesRoyalties14d:
+        type:
+          - "null"
+          - number
+      newToBrandDetailPageViewRate:
+        type:
+          - "null"
+          - number
+      newToBrandDetailPageViews:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViewsClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandECPDetailPageView:
+        type:
+          - "null"
+          - number
+      newToBrandPurchases:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandPurchasesRate:
+        type:
+          - "null"
+          - number
+      newToBrandSales:
+        type:
+          - "null"
+          - number
+      newToBrandSalesClicks:
+        type:
+          - "null"
+          - number
+      newToBrandSalesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandUnitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandUnitsSoldPercentage:
+        type:
+          - "null"
+          - number
+      purchases:
+        type:
+          - "null"
+          - integer
+      purchasesClicks:
+        type:
+          - "null"
+          - integer
+      purchasesPromoted:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrows:
+        type:
+          - "null"
+          - number
+      royaltyQualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - number
+      sales:
+        type:
+          - "null"
+          - number
+      salesClicks:
+        type:
+          - "null"
+          - number
+      salesPromoted:
+        type:
+          - "null"
+          - number
+      startDate:
+        type:
+          - "null"
+          - string
+      unitsSold:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      video5SecondViewRate:
+        type:
+          - "null"
+          - number
+      video5SecondViews:
+        type:
+          - "null"
+          - integer
+      videoCompleteViews:
+        type:
+          - "null"
+          - integer
+      videoFirstQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoMidpointViews:
+        type:
+          - "null"
+          - integer
+      videoThirdQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoUnmutes:
+        type:
+          - "null"
+          - integer
+      viewabilityRate:
+        type:
+          - "null"
+          - number
+      viewableImpressions:
+        type:
+          - "null"
+          - integer
+    title: sponsored_brands_ads_report_stream
+    type:
+      - "null"
+      - object
+  sponsored_brands_ads_report_stream_daily:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      adId:
+        type:
+          - "null"
+          - integer
+      addToCart:
+        type:
+          - "null"
+          - integer
+      addToCartClicks:
+        type:
+          - "null"
+          - integer
+      addToCartRate:
+        type:
+          - "null"
+          - number
+      addToList:
+        type:
+          - "null"
+          - integer
+      addToListFromClicks:
+        type:
+          - "null"
+          - integer
+      brandedSearches:
+        type:
+          - "null"
+          - integer
+      brandedSearchesClicks:
+        type:
+          - "null"
+          - integer
+      campaignBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignBudgetType:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignStatus:
+        type:
+          - "null"
+          - string
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      costType:
+        type:
+          - "null"
+          - string
+      detailPageViews:
+        type:
+          - "null"
+          - integer
+      detailPageViewsClicks:
+        type:
+          - "null"
+          - integer
+      eCPAddToCart:
+        type:
+          - "null"
+          - number
+      impressions:
+        type:
+          - "null"
+          - integer
+      kindleEditionNormalizedPagesRead14d:
+        type:
+          - "null"
+          - integer
+      kindleEditionNormalizedPagesRoyalties14d:
+        type:
+          - "null"
+          - number
+      newToBrandDetailPageViewRate:
+        type:
+          - "null"
+          - number
+      newToBrandDetailPageViews:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViewsClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandECPDetailPageView:
+        type:
+          - "null"
+          - number
+      newToBrandPurchases:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandPurchasesRate:
+        type:
+          - "null"
+          - number
+      newToBrandSales:
+        type:
+          - "null"
+          - number
+      newToBrandSalesClicks:
+        type:
+          - "null"
+          - number
+      newToBrandSalesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandUnitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandUnitsSoldPercentage:
+        type:
+          - "null"
+          - number
+      purchases:
+        type:
+          - "null"
+          - integer
+      purchasesClicks:
+        type:
+          - "null"
+          - integer
+      purchasesPromoted:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrows:
+        type:
+          - "null"
+          - number
+      royaltyQualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - number
+      sales:
+        type:
+          - "null"
+          - number
+      salesClicks:
+        type:
+          - "null"
+          - number
+      salesPromoted:
+        type:
+          - "null"
+          - number
+      unitsSold:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      video5SecondViewRate:
+        type:
+          - "null"
+          - number
+      video5SecondViews:
+        type:
+          - "null"
+          - integer
+      videoCompleteViews:
+        type:
+          - "null"
+          - integer
+      videoFirstQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoMidpointViews:
+        type:
+          - "null"
+          - integer
+      videoThirdQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoUnmutes:
+        type:
+          - "null"
+          - integer
+      viewabilityRate:
+        type:
+          - "null"
+          - number
+      viewableImpressions:
+        type:
+          - "null"
+          - integer
+    title: sponsored_brands_ads_report_stream_daily
     type:
       - "null"
       - object
@@ -7044,11 +9803,11 @@ schemas:
       - object
   sponsored_display_targets_report_stream_daily:
     $schema: http://json-schema.org/draft-07/schema#
-    date:
-      type:
-        - "null"
-        - string
     properties:
+      date:
+        type:
+          - "null"
+          - string
       profileId:
         type:
           - "null"
@@ -7333,8 +10092,36 @@ schemas:
       adGroupId:
         type:
           - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - string
+      keyword:
+        type:
+          - "null"
+          - string
+      recId:
+        type:
+          - "null"
+          - string
+      translation:
+        type:
+          - "null"
+          - string
+      userSelectedKeyword:
+        type:
+          - "null"
+          - boolean
+      searchTermImpressionShare:
+        type:
+          - "null"
+          - number
+      searchTermImpressionRank:
+        type:
+          - "null"
           - integer
-      suggestedKeywords:
+      bidInfo:
         type:
           - "null"
           - array
@@ -7343,14 +10130,39 @@ schemas:
             - object
             - "null"
           properties:
-            keywordText:
-              type:
-                - "null"
-                - string
             matchType:
               type:
                 - "null"
                 - string
+            bid:
+              type:
+                - "null"
+                - number
+            rank:
+              type:
+                - "null"
+                - integer
+            suggestedBid:
+              type:
+                - "null"
+                - object
+              properties:
+                rangeStart:
+                  type:
+                    - "null"
+                    - number
+                rangeMedian:
+                  type:
+                    - "null"
+                    - number
+                rangeEnd:
+                  type:
+                    - "null"
+                    - number
+                bidRecId:
+                  type:
+                    - "null"
+                    - string
     title: sponsored_product_ad_group_suggested_keywords
     type:
       - "null"
@@ -8964,6 +11776,496 @@ schemas:
           - "null"
           - integer
     title: sponsored_products_keywords_report_stream_daily
+    type:
+      - "null"
+      - object
+  sponsored_products_search_terms_report_stream:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      searchTerm:
+        type:
+          - "null"
+          - string
+      targeting:
+        type:
+          - "null"
+          - string
+      keywordType:
+        type:
+          - "null"
+          - string
+      keywordId:
+        type:
+          - "null"
+          - integer
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - integer
+      keyword:
+        type:
+          - "null"
+          - string
+      matchType:
+        type:
+          - "null"
+          - string
+      impressions:
+        type:
+          - "null"
+          - integer
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      purchases1d:
+        type:
+          - "null"
+          - integer
+      purchases7d:
+        type:
+          - "null"
+          - integer
+      purchases14d:
+        type:
+          - "null"
+          - integer
+      purchases30d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku1d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku7d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku14d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku30d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks30d:
+        type:
+          - "null"
+          - integer
+      sales1d:
+        type:
+          - "null"
+          - number
+      sales7d:
+        type:
+          - "null"
+          - number
+      sales14d:
+        type:
+          - "null"
+          - number
+      sales30d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku1d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku7d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku14d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku30d:
+        type:
+          - "null"
+          - number
+      unitsSoldSameSku1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku30d:
+        type:
+          - "null"
+          - integer
+      portfolioId:
+        type:
+          - "null"
+          - integer
+      campaignStatus:
+        type:
+          - "null"
+          - string
+      campaignBudgetType:
+        type:
+          - "null"
+          - string
+      campaignBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      keywordBid:
+        type:
+          - "null"
+          - number
+      adKeywordStatus:
+        type:
+          - "null"
+          - string
+      costPerClick:
+        type:
+          - "null"
+          - number
+      clickThroughRate:
+        type:
+          - "null"
+          - number
+      acosClicks7d:
+        type:
+          - "null"
+          - number
+      acosClicks14d:
+        type:
+          - "null"
+          - number
+      roasClicks7d:
+        type:
+          - "null"
+          - number
+      roasClicks14d:
+        type:
+          - "null"
+          - number
+      salesOtherSku7d:
+        type:
+          - "null"
+          - number
+      unitsSoldOtherSku7d:
+        type:
+          - "null"
+          - integer
+      addToList:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrows:
+        type:
+          - "null"
+          - number
+      kindleEditionNormalizedPagesRead14d:
+        type:
+          - "null"
+          - integer
+      kindleEditionNormalizedPagesRoyalties14d:
+        type:
+          - "null"
+          - number
+    title: sponsored_products_search_terms_report_stream
+    type:
+      - "null"
+      - object
+  sponsored_products_search_terms_report_stream_daily:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      searchTerm:
+        type:
+          - "null"
+          - string
+      targeting:
+        type:
+          - "null"
+          - string
+      keywordType:
+        type:
+          - "null"
+          - string
+      keywordId:
+        type:
+          - "null"
+          - integer
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - integer
+      keyword:
+        type:
+          - "null"
+          - string
+      matchType:
+        type:
+          - "null"
+          - string
+      impressions:
+        type:
+          - "null"
+          - integer
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      purchases1d:
+        type:
+          - "null"
+          - integer
+      purchases7d:
+        type:
+          - "null"
+          - integer
+      purchases14d:
+        type:
+          - "null"
+          - integer
+      purchases30d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku1d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku7d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku14d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku30d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks30d:
+        type:
+          - "null"
+          - integer
+      sales1d:
+        type:
+          - "null"
+          - number
+      sales7d:
+        type:
+          - "null"
+          - number
+      sales14d:
+        type:
+          - "null"
+          - number
+      sales30d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku1d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku7d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku14d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku30d:
+        type:
+          - "null"
+          - number
+      unitsSoldSameSku1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku30d:
+        type:
+          - "null"
+          - integer
+      portfolioId:
+        type:
+          - "null"
+          - integer
+      campaignStatus:
+        type:
+          - "null"
+          - string
+      campaignBudgetType:
+        type:
+          - "null"
+          - string
+      campaignBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      keywordBid:
+        type:
+          - "null"
+          - number
+      adKeywordStatus:
+        type:
+          - "null"
+          - string
+      costPerClick:
+        type:
+          - "null"
+          - number
+      clickThroughRate:
+        type:
+          - "null"
+          - number
+      acosClicks7d:
+        type:
+          - "null"
+          - number
+      acosClicks14d:
+        type:
+          - "null"
+          - number
+      roasClicks7d:
+        type:
+          - "null"
+          - number
+      roasClicks14d:
+        type:
+          - "null"
+          - number
+      salesOtherSku7d:
+        type:
+          - "null"
+          - number
+      unitsSoldOtherSku7d:
+        type:
+          - "null"
+          - integer
+      addToList:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrows:
+        type:
+          - "null"
+          - number
+      kindleEditionNormalizedPagesRead14d:
+        type:
+          - "null"
+          - integer
+      kindleEditionNormalizedPagesRoyalties14d:
+        type:
+          - "null"
+          - number
+    title: sponsored_products_search_terms_report_stream_daily
     type:
       - "null"
       - object

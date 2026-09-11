@@ -8,9 +8,17 @@ Understanding the following limitations will help you more effectively manage Ai
 
 ## Standard plan limitations
 
-These limitations only apply to those using the Standard plan. If you upgrade to Pro or Enterprise Flex, Airbyte removes these limitations.
+These limitations only apply to those using the Standard plan. If you upgrade to Plus, Pro, or Enterprise Flex, Airbyte removes these limitations.
 
 - Max number of workspaces per user: 1. If you were a Cloud Standard customer before September 24, 2025, Airbyte has grandfathered you into its historical 3-workspace limit.
+
+- Scheduled or cron syncs can run at most every 60 minutes.
+
+## Plus plan limitations
+
+These limitations only apply to those using the Plus plan. If you upgrade to Pro or Enterprise Flex, Airbyte removes these limitations.
+
+- Scheduled or cron syncs can run at most every 15 minutes.
 
 ## Cloud limitations for all plans
 
@@ -21,6 +29,12 @@ These limitations only apply to those using the Standard plan. If you upgrade to
 - Max number of fields that can be selected to sync in a single connection: 20,000
 
 - Size of a single record: 20MB\*\*
+
+## Pro and Enterprise Flex plan considerations
+
+Organizations on capacity-based plans (Pro, Enterprise Flex) have a contracted number of data workers. When all data workers are in use, additional syncs are queued until capacity becomes available. This is not a hard limit on the number of connections or syncs you can create, but a limit on concurrent sync execution.
+
+You can enable on-demand capacity for critical connections so they run even when committed capacity is exhausted. See [Monitor data worker usage](./manage-data-workers.md) for details.
 
 \*\* The effective maximum size of the record may vary based per destination. Some destinations may
 fail to sync if a record cannot be stored, but Destinations which support

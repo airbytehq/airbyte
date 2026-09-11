@@ -6,8 +6,6 @@ import json
 import logging
 
 from destination_milvus.destination import DestinationMilvus
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import Milvus
 from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connections, utility
 
 from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
@@ -107,17 +105,3 @@ class MilvusIntegrationTest(BaseIntegrationTest):
         )
         assert len(result[0]) == 1
         assert result[0][0].entity.get("text") == "str_col: Cats are nice"
-
-        # test langchain integration
-        embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
-        vs = Milvus(
-            embedding_function=embeddings,
-            collection_name=self.config["indexing"]["collection"],
-            connection_args={"uri": self.config["indexing"]["host"], "token": self.config["indexing"]["auth"]["token"]},
-        )
-        vs.fields.append("text")
-        vs.fields.append("_ab_record_id")
-        # call  vs.fields.append() for all fields you need in the metadata
-
-        result = vs.similarity_search("feline animals", 1)
-        assert result[0].metadata["_ab_record_id"] == "mystream_2"

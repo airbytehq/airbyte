@@ -58,6 +58,10 @@ GET https://api.captaindata.co/v3/
 
 Captain Data [API reference](https://docs.captaindata.co/#intro) has v3 at present. The connector as default uses v3.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -65,6 +69,7 @@ Captain Data [API reference](https://docs.captaindata.co/#intro) has v3 at prese
 
 | Version | Date       | Pull Request                                            | Subject                                     |
 | :------ |:-----------| :------------------------------------------------------ |:--------------------------------------------|
+| 0.2.25 | 2026-06-02 | [78635](https://github.com/airbytehq/airbyte/pull/78635) | Update dependencies |
 | 0.2.24 | 2025-05-10 | [59884](https://github.com/airbytehq/airbyte/pull/59884) | Update dependencies |
 | 0.2.23 | 2025-05-03 | [59321](https://github.com/airbytehq/airbyte/pull/59321) | Update dependencies |
 | 0.2.22 | 2025-04-26 | [58708](https://github.com/airbytehq/airbyte/pull/58708) | Update dependencies |

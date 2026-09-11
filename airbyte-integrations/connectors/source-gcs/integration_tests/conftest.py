@@ -1,4 +1,5 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+import gzip
 import os
 import shutil
 import time
@@ -16,6 +17,7 @@ from .utils import get_docker_ip
 
 
 LOCAL_GCP_PORT = 4443
+TRANSPORT_GZIP_BUCKET = "sample-bucket-transport-gzip"
 
 from urllib.parse import urlparse, urlunparse
 
@@ -73,6 +75,21 @@ def connector_setup_fixture(docker_client) -> None:
         volumes={f"{TMP_FOLDER}": {"bind": "/data", "mode": "rw"}},
     )
     time.sleep(5)
+
+    # Upload a .csv object with Content-Encoding: gzip metadata via the client
+    # API. This exercises the transport-level gzip path (urllib3 _GzipDecoder)
+    # that caused #74241, which cannot be set via filesystem seeding.
+    gcs_client = storage.Client(
+        credentials=AnonymousCredentials(),
+        project="test",
+        client_options={"api_endpoint": f"http://{get_docker_ip()}:{LOCAL_GCP_PORT}"},
+    )
+    bucket = gcs_client.create_bucket(TRANSPORT_GZIP_BUCKET)
+    csv_content = "id,name,value\n1,Alice,100\n2,Bob,200\n3,Charlie,300\n"
+    compressed = gzip.compress(csv_content.encode("utf-8"))
+    blob = bucket.blob("test_transport_gzip.csv")
+    blob.content_encoding = "gzip"
+    blob.upload_from_string(compressed, content_type="text/csv")
 
     yield
 

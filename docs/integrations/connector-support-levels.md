@@ -34,7 +34,7 @@ maintenance/upgrades are owned by the customer.
 
 ## Enterprise connectors
 
-**Enterprise** Connectors are premium connectors available exclusively for Self-Managed Enterprise and Pro customers at **an additional cost**. These connectors:
+**Enterprise** Connectors are premium connectors available exclusively for Enterprise and Pro customers at **an additional cost**. These connectors:
 
 - Are built and maintained by the Airbyte team.
 - Provide enhanced capabilities and support for critical enterprise systems.
@@ -46,8 +46,8 @@ maintenance/upgrades are owned by the customer.
 **Marketplace** connectors are maintained by Airbyte's community members. These connectors:
 
 - Are not maintained by Airbyte.
-- Do not have support SLAs.
-- Should be used with caution in production.
+- Are not covered by Airbyte support SLAs.
+- Should be tested before production use.
 - Might not be feature complete and may experience backward-incompatible, breaking changes with no notice.
 - Are available to everyone.
 - Can [be improved by people like you](/community/contributing-to-airbyte/).

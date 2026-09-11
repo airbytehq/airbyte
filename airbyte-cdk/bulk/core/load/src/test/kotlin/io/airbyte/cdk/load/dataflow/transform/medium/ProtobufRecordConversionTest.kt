@@ -287,7 +287,7 @@ class ProtobufRecordConversionTest {
         record =
             mockk(relaxed = false) {
                 every { asJsonRecord() } answers { callOriginal() }
-                every { asEnrichedDestinationRecordAirbyteValue(any(), any()) } answers
+                every { asEnrichedDestinationRecordAirbyteValue(any(), any(), any()) } answers
                     {
                         callOriginal()
                     }

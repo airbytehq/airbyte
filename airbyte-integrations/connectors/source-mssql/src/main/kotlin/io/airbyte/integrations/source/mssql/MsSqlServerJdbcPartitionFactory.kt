@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.read.ConfiguredSyncMode
@@ -31,7 +31,7 @@ import javax.inject.Singleton
 
 @Primary
 @Singleton
-class MsSqlServerJdbcPartitionFactory(
+open class MsSqlServerJdbcPartitionFactory(
     override val sharedState: DefaultJdbcSharedState,
     val selectQueryGenerator: MsSqlSourceOperations,
     val config: MsSqlServerSourceConfiguration,
@@ -65,13 +65,13 @@ class MsSqlServerJdbcPartitionFactory(
      * Returns the ordered column (from clustered index or PK) as a single-element list, or null if
      * no ordered column is available. This is used for resumable partitioning.
      */
-    private fun getOrderedColumnAsList(stream: Stream): List<Field>? {
+    private fun getOrderedColumnAsList(stream: Stream): List<EmittedField>? {
         val orderedColumnName = metadataQuerier.getOrderedColumnForSync(stream.id) ?: return null
         val orderedColumn = stream.fields.find { it.id == orderedColumnName } ?: return null
         return listOf(orderedColumn)
     }
 
-    private fun findPkUpperBound(stream: Stream): JsonNode {
+    protected open fun findPkUpperBound(stream: Stream): JsonNode {
         // find upper bound using maxPk query
         // Use the ordered column for sync (prefers clustered index for SQL Server performance)
         val orderedColumnName = metadataQuerier.getOrderedColumnForSync(stream.id)!!
@@ -101,7 +101,11 @@ class MsSqlServerJdbcPartitionFactory(
         val isView = isView(stream)
         val orderedColumns = getOrderedColumnAsList(stream)
 
+        log.info { "Starting cold start for ${stream.name}" }
+
         if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
+            // Views can't be sampled with TABLESAMPLE, so use non-resumable partitions
+            // which skip the sampling step entirely
             if (isView || orderedColumns == null) {
                 return MsSqlServerJdbcNonResumableSnapshotPartition(
                     selectQueryGenerator,
@@ -110,6 +114,24 @@ class MsSqlServerJdbcPartitionFactory(
             }
 
             val upperBound = findPkUpperBound(stream)
+
+            // A null upper bound from MAX(orderedColumn) means the table is empty.
+            // Skip sampling and use a non-resumable partition to read the (empty) table in one
+            // pass.
+            if (upperBound.isNull) {
+                log.info {
+                    "Upper bound is null, indicating that the table is empty. Using non-resumable snapshot."
+                }
+                // Note: MsSqlServerJdbcNonResumableSnapshotPartition.completeState always emits
+                // MsSqlServerJdbcStreamStateValue.snapshotCompleted, even in CDC (global) mode.
+                // If a future change makes CDC empty tables emit a different sentinel, that check
+                // will silently stop terminating round 2.
+                return MsSqlServerJdbcNonResumableSnapshotPartition(
+                    selectQueryGenerator,
+                    streamState,
+                )
+            }
+
             return if (sharedState.configuration.global) {
                 MsSqlServerJdbcCdcRfrSnapshotPartition(
                     selectQueryGenerator,
@@ -145,8 +167,8 @@ class MsSqlServerJdbcPartitionFactory(
             )
         }
 
-        val cursorChosenFromCatalog: Field =
-            stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
+        val cursorChosenFromCatalog: EmittedField =
+            stream.configuredCursor as? EmittedField ?: throw ConfigErrorException("no cursor")
 
         // Calculate cutoff time for cursor if exclude today's data is enabled
         val cursorCutoffTime = getCursorCutoffTime(cursorChosenFromCatalog)
@@ -212,12 +234,19 @@ class MsSqlServerJdbcPartitionFactory(
         val isView = isView(stream)
         val orderedColumns = getOrderedColumnAsList(stream)
 
-        // Views cannot use TABLESAMPLE, so use non-resumable partitions
-        if (
-            stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH &&
-                (isView || orderedColumns == null)
-        ) {
-            return handleFullRefreshWithoutPk(streamState)
+        // Two full-refresh cases need special handling:
+        // 1. View / no ordered column - call handleFullRefreshWithoutPk(), which builds
+        //    a non-resumable partition (or returns null if a previous run already completed).
+        // 2. snapshotCompleted state - a previous run finished a non-resumable snapshot for
+        //    this stream (e.g. an empty-PK table from coldStart). Nothing more to read.
+        if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
+            if (isView || orderedColumns == null) {
+                return handleFullRefreshWithoutPk(streamState)
+            }
+            if (opaqueStateValue == MsSqlServerJdbcStreamStateValue.snapshotCompleted) {
+                log.info { "Snapshot already complete for stream ${stream.name}, nothing to sync" }
+                return null
+            }
         }
 
         // CDC sync
@@ -297,8 +326,9 @@ class MsSqlServerJdbcPartitionFactory(
             // Resume from full refresh
             if (sv.pkName != null) {
                 // Still in snapshot phase (PK read)
-                val cursorChosenFromCatalog: Field =
-                    stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
+                val cursorChosenFromCatalog: EmittedField =
+                    stream.configuredCursor as? EmittedField
+                        ?: throw ConfigErrorException("no cursor")
 
                 // Views can't be sampled with TABLESAMPLE, so use non-resumable partitions
                 if (isView(stream) || orderedColumns == null) {
@@ -334,7 +364,7 @@ class MsSqlServerJdbcPartitionFactory(
             }
 
             // Cursor read phase (incremental read)
-            val cursor: Field? = stream.fields.find { it.id == sv.cursorField.first() }
+            val cursor: EmittedField? = stream.fields.find { it.id == sv.cursorField.first() }
             if (cursor == null) {
                 log.warn {
                     "Cursor field '${sv.cursorField.first()}' not found in stream ${stream.name}, resetting stream"
@@ -342,12 +372,26 @@ class MsSqlServerJdbcPartitionFactory(
                 streamState.reset()
                 return coldStart(streamState)
             }
-            // Convert cursor JsonNode to proper type (handles timestamp formatting, binary
-            // decoding, etc.)
+            /*
+             * Convert cursor JsonNode to proper type (handles timestamp formatting, binary decoding, etc.).
+             *
+             * A missing or NULL cursor means there is no resume point: it can't serve as a lower bound,
+             * because the cursor-incremental requires a non-null lower bound.
+             *
+             * This shouldn't be the case in v3 - an empty table checkpoint produces isNull (see
+             * MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint), which is caught at the top of
+             * create() and skips (no state is populated). It only occurs when migrating v2 state, where
+             * empty tables had a cursor_based entry with a NULL cursor.
+             */
             val cursorCheckpoint: JsonNode =
                 if (sv.cursor == null || sv.cursor.isNull) {
-                    Jsons.nullNode()
+                    log.warn {
+                        "Cursor field '${sv.cursorField.first()}' has no stored value in stream ${stream.name}, resetting stream"
+                    }
+                    streamState.reset()
+                    return coldStart(streamState)
                 } else {
+                    // Convert the stored cursor to its typed JsonNode
                     stateValueToJsonNode(cursor, sv.cursor.asText())
                 }
 
@@ -357,6 +401,18 @@ class MsSqlServerJdbcPartitionFactory(
                     // Values are equal - incremental complete
                     return null
                 }
+            }
+
+            // Views can't be sampled with TABLESAMPLE, so use non-resumable partitions
+            if (isView(stream) || orderedColumns == null) {
+                return MsSqlServerJdbcNonResumableCursorIncrementalPartition(
+                    selectQueryGenerator,
+                    streamState,
+                    cursor,
+                    cursorLowerBound = cursorCheckpoint,
+                    isLowerBoundIncluded = false,
+                    cursorCutoffTime = getCursorCutoffTime(cursor)
+                )
             }
             return MsSqlServerJdbcCursorIncrementalPartition(
                 selectQueryGenerator,
@@ -379,13 +435,20 @@ class MsSqlServerJdbcPartitionFactory(
         ) {
             return null
         }
+        log.info {
+            "Stream ${streamState.stream.name} is a view or has no ordered column. " +
+                "Using non-resumable snapshot."
+        }
         return MsSqlServerJdbcNonResumableSnapshotPartition(
             selectQueryGenerator,
             streamState,
         )
     }
 
-    private fun extractPkLowerBound(pkValue: JsonNode?, orderedColumnForSync: Field): JsonNode {
+    private fun extractPkLowerBound(
+        pkValue: JsonNode?,
+        orderedColumnForSync: EmittedField
+    ): JsonNode {
         return when {
             pkValue == null || pkValue.isNull -> Jsons.nullNode()
             pkValue.isTextual -> stateValueToJsonNode(orderedColumnForSync, pkValue.asText())
@@ -393,7 +456,7 @@ class MsSqlServerJdbcPartitionFactory(
         }
     }
 
-    private fun getCursorCutoffTime(cursorField: Field): JsonNode? {
+    private fun getCursorCutoffTime(cursorField: EmittedField): JsonNode? {
         val incrementalConfig = config.incrementalReplicationConfiguration
         return if (
             incrementalConfig is UserDefinedCursorIncrementalConfiguration &&
@@ -445,6 +508,7 @@ class MsSqlServerJdbcPartitionFactory(
             is MsSqlServerJdbcCursorIncrementalPartition -> listOf(unsplitPartition)
             is MsSqlServerJdbcNonResumableSnapshotPartition -> listOf(unsplitPartition)
             is MsSqlServerJdbcNonResumableSnapshotWithCursorPartition -> listOf(unsplitPartition)
+            is MsSqlServerJdbcNonResumableCursorIncrementalPartition -> listOf(unsplitPartition)
         }
     }
 

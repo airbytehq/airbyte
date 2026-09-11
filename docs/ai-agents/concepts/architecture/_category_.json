@@ -1,0 +1,3 @@
+{
+  "description": "How the platform is organized. Covers the four interfaces, the resource hierarchy of organizations, workspaces, and connectors, and the execution model that routes agent requests."
+}

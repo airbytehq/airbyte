@@ -18,3 +18,7 @@ The Docker image for the HTTP Request connector image can be found at our Docker
 
 We found that there are lots of cases in which using a general connector leads to poor user experience, as there are countless edge cases for different API structures, different authentication policies, and varied approaches to rate-limiting. We believe that enabling users to more easily
 create connectors is a more scalable and resilient approach to maximizing the quality of the user experience.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.

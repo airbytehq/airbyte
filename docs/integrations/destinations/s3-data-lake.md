@@ -16,6 +16,9 @@ The S3 Data Lake connector requires two things.
     - Nessie
     - Polaris
 
+If you're using Airbyte Cloud and this destination uses IP-based access controls, add
+Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your allowlist.
+
 ## Setup guide
 
 Follow these steps to set up your S3 storage and Iceberg catalog permissions.
@@ -23,6 +26,10 @@ Follow these steps to set up your S3 storage and Iceberg catalog permissions.
 ### S3 setup and permissions
 
 S3 setup consists of creating a bucket policy and authenticating.
+
+:::note
+If you use S3-compatible storage instead of Amazon S3, set the **S3 Endpoint** field to your storage endpoint, for example `http://localhost:9000`. Leave this field empty for Amazon S3.
+:::
 
 #### Create a bucket policy
 
@@ -140,7 +147,7 @@ Enter the URI of your REST catalog. You may also need to enter the default names
 
 #### AWS Glue
 
-1. Update your S3 policy, created previously, to grant these Glue permissions.
+1. Update your S3 policy, created previously, to add a second statement granting Glue permissions. Glue actions require Glue resource ARNs, not S3 ARNs, so they must be in a separate statement.
 
     ```json
     {
@@ -154,8 +161,17 @@ Enter the URI of your REST catalog. You may also need to enter the default names
             "s3:PutObject",
             "s3:PutObjectAcl",
             "s3:DeleteObject",
-            "s3:ListBucket*",
-            // highlight-start
+            "s3:ListBucket*"
+          ],
+          "Resource": [
+            "arn:aws:s3:::YOUR_BUCKET_NAME/*",
+            "arn:aws:s3:::YOUR_BUCKET_NAME"
+          ]
+        },
+        // highlight-start
+        {
+          "Effect": "Allow",
+          "Action": [
             "glue:TagResource",
             "glue:UnTagResource",
             "glue:BatchCreatePartition",
@@ -175,16 +191,21 @@ Enter the URI of your REST catalog. You may also need to enter the default names
             "glue:UpdateDatabase",
             "glue:UpdatePartition",
             "glue:UpdateTable"
-            // highlight-end
           ],
           "Resource": [
-            "arn:aws:s3:::YOUR_BUCKET_NAME/*",
-            "arn:aws:s3:::YOUR_BUCKET_NAME"
+            "arn:aws:glue:*:*:catalog",
+            "arn:aws:glue:*:*:database/*",
+            "arn:aws:glue:*:*:table/*/*"
           ]
         }
+        // highlight-end
       ]
     }
     ```
+
+    :::tip
+    To restrict Glue access to a specific region and account, replace the `*` wildcards in the Glue ARNs with your AWS region and account ID (for example, `arn:aws:glue:us-east-1:123456789012:catalog`).
+    :::
 
 2. Set the **warehouse location** option to `s3://<bucket name>/path/within/bucket`.
 
@@ -237,6 +258,8 @@ To authenticate with Apache Polaris, follow these steps.
     - **Catalog Name**: The name of the catalog you created in Polaris (e.g., `quickstart_catalog`)
     - **Client ID**: The OAuth Client ID provided when creating the principal
     - **Client Secret**: The OAuth Client Secret provided when creating the principal
+    - **OAuth Scope**: The scope to request when authenticating, in the format `PRINCIPAL_ROLE:<role_name>`. For example: `PRINCIPAL_ROLE:catalog_admin`
+    - **OAuth2 Server URI**: The OAuth2 token endpoint, for example `https://polaris.example.com/oauth/tokens`. This field is optional today, but a future connector version requires it, so set it if you know it.
     - **Default namespace**: The namespace to be used for table identifiers when the destination namespace is set to "Destination-defined" or "Source-defined"
 
 5. Set the **Warehouse location** option to `s3://<bucket name>/path/within/bucket`.
@@ -257,24 +280,25 @@ To authenticate with Apache Polaris, follow these steps.
 
 ### How Airbyte generates the Iceberg schema
 
-In each stream, Airbyte maps top-level fields to Iceberg fields. Airbyte maps nested fields (objects, arrays, and unions) to string columns and writes them as serialized JSON.
+In each stream, Airbyte maps top-level fields to Iceberg fields. Airbyte writes objects and unions as string columns containing serialized JSON. Arrays keep their structure: if the source schema declares the array's item type, Airbyte writes an Iceberg `list` column of the mapped item type. Arrays without a declared item type become string columns containing serialized JSON.
 
 This is the full mapping between Airbyte types and Iceberg types.
 
-| Airbyte type               | Iceberg type                   |
-|----------------------------|--------------------------------|
-| Boolean                    | Boolean                        |
-| Date                       | Date                           |
-| Integer                    | Long                           |
-| Number                     | Double (String for primary keys)|
-| String                     | String                         |
-| Time with timezone*        | Time                           |
-| Time without timezone      | Time                           |
-| Timestamp with timezone*   | Timestamp with timezone        |
-| Timestamp without timezone | Timestamp without timezone     |
-| Object                     | String (JSON-serialized value) |
-| Array                      | String (JSON-serialized value) |
-| Union                      | String (JSON-serialized value) |
+| Airbyte type                           | Iceberg type                     |
+|----------------------------------------|----------------------------------|
+| Boolean                                | Boolean                          |
+| Date                                   | Date                             |
+| Integer                                | Long                             |
+| Number                                 | Double (String for primary keys) |
+| String                                 | String                           |
+| Time with timezone*                    | Time                             |
+| Time without timezone                  | Time                             |
+| Timestamp with timezone*               | Timestamp with timezone          |
+| Timestamp without timezone             | Timestamp without timezone       |
+| Object                                 | String (JSON-serialized value)   |
+| Array with a declared item type        | List of the mapped item type     |
+| Array without a declared item type     | String (JSON-serialized value)   |
+| Union                                  | String (JSON-serialized value)   |
 
 *Airbyte converts the `time with timezone` and `timestamp with timezone` types to Coordinated Universal Time (UTC) before writing to the Iceberg file.
 
@@ -332,11 +356,11 @@ Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/bra
 
 - In each sync, each microbatch creates a new snapshot.
 
-- During truncate syncs, the connector writes the refreshed data to the `airbyte_staging` branch and replaces the `main` branch with the `airbyte_staging` at the end of the sync. Since most query engines target the `main` branch,  people can query your data until the end of a truncate sync, at which point it's atomically swapped to the new version.
+- During truncate syncs, the connector writes the refreshed data to a unique `airbyte_staging_<uuid>` branch and replaces the `main` branch with that staging branch at the end of a successful sync. Since most query engines target the `main` branch, people can query your data until the end of a truncate sync, at which point it's atomically swapped to the new version. The connector removes the staging branch after a successful promotion, and preserves it after failed syncs so retries can recover staged data.
 
 ### Branch replacement
 
-At the end of stream sync, we replace the current `main` branch with the `airbyte_staging` branch we were working on. We intentionally avoid fast-forwarding to better handle potential compaction issues.
+At the end of stream sync, we replace the current `main` branch with the unique staging branch we were working on. We intentionally avoid fast-forwarding to better handle potential compaction issues.
 **Important Warning**: Any changes made to the `main` branch outside of Airbyte's operations after a sync begins will be lost during this process.
 
 ## Compaction
@@ -390,73 +414,80 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 <details>
   <summary>Expand to review</summary>
 
-| Version     | Date       | Pull Request                                               | Subject                                                                                                                         |
-|:------------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.46      | 2026-03-30 |                                                           | Upgrade CDK to 1.0.7: fix sort order handling during schema evolution. |
-| 0.3.45      | 2026-03-12 | [74326](https://github.com/airbytehq/airbyte/pull/74326) | Upgrade CDK to 1.0.5: Number-type primary keys are now stored as String (enabling dedup on numeric PKs); fix schema evolution when replacing identifier columns |
-| 0.3.44      | 2026-02-04 | [72848](https://github.com/airbytehq/airbyte/pull/72848)   | Enable Speed.                                                                                                               |
-| 0.3.43      | 2026-01-29 | [72482](https://github.com/airbytehq/airbyte/pull/72482)   | Release on dataflow.                                                                                                            |
-| 0.3.43-rc.1 | 2026-01-28 | [72443](https://github.com/airbytehq/airbyte/pull/72443)   | Update to dataflow.                                                                                                             |
-| 0.3.42      | 2026-01-12 | [70205](https://github.com/airbytehq/airbyte/pull/70205)   | Implement support for scope and OAuth server URI attributes for Polaris catalog                                                 |
-| 0.3.41      | 2025-11-07 | [69232](https://github.com/airbytehq/airbyte/pull/69232) | Upgrade to Bulk CDK 0.1.69. Changes to handle changes in commit patterns                                                        |
-| 0.3.40      | 2025-11-05 | [69133](https://github.com/airbytehq/airbyte/pull/69133) | Upgrade to Bulk CDK 0.1.61.                                                                                                     |
-| 0.3.39      | 2025-10-15 | [68108](https://github.com/airbytehq/airbyte/pull/68108)   | Implement Polaris support                                                                                                       |
-| 0.3.38      | 2025-10-07 | [67005](https://github.com/airbytehq/airbyte/pull/67005)   | Fix: Treat empty string role_arn as null to prevent misleading config errors                                                    |
-| 0.3.37      | 2025-10-07 | [67150](https://github.com/airbytehq/airbyte/pull/67150)   | Fix check operation to use unique table names, preventing conflicts with stale metadata and concurrent operations               |
-| 0.3.36      | 2025-09-26 | [66711](https://github.com/airbytehq/airbyte/pull/66711)   | CHECK operation uses configured default dataset instead of `airbyte_test_namespace`                                             |
-| 0.3.35      | 2025-07-23 | [63746](https://github.com/airbytehq/airbyte/pull/63746)   | Remove unnecessary properties from table                                                                                        |
-| 0.3.34      | 2025-07-11 | [62952](https://github.com/airbytehq/airbyte/pull/62952)   | Update CDK version                                                                                                              |
-| 0.3.33      | 2025-07-09 | [62888](https://github.com/airbytehq/airbyte/pull/62888)   | Update CDK version to handle compaction issue when deleting files in a truncate refresh scenario                                |
-| 0.3.32      | 2025-07-08 | [62852](https://github.com/airbytehq/airbyte/pull/62852)   | Fix metadata (revert accidental archiving)                                                                                      |
-| 0.3.31      | 2025-07-07 | [62835](https://github.com/airbytehq/airbyte/pull/62835)   | Pin to latest CDK version 0.522                                                                                                 |
-| 0.3.30      | 2025-06-26 | [62105](https://github.com/airbytehq/airbyte/pull/62105)   | ReplaceBranch to staging from main instead of fast forwarding                                                                   |
-| 0.3.29      | 2025-06-13 | [61588](https://github.com/airbytehq/airbyte/pull/61588)   | ~~Publish version to account for possible duplicate publishing in pipeline. Noop change.~~ WARNING: THIS HAS A BUG. DO NOT USE. |
-| 0.3.28      | 2025-05-07 | [59710](https://github.com/airbytehq/airbyte/pull/59710)   | CDK backpressure bugfix                                                                                                         |
-| 0.3.27      | 2025-04-21 | [58146](https://github.com/airbytehq/airbyte/pull/58146)   | Upgrade to latest CDK                                                                                                           |
-| 0.3.26      | 2025-04-17 | [58104](https://github.com/airbytehq/airbyte/pull/58104)   | Chore: Now passing a string around for the region                                                                               |
-| 0.3.25      | 2025-04-16 | [58085](https://github.com/airbytehq/airbyte/pull/58085)   | Internal refactoring                                                                                                            |
-| 0.3.24      | 2025-03-27 | [56435](https://github.com/airbytehq/airbyte/pull/56435)   | Bug fix: Correctly handle non-positive numbers.                                                                                 |
-| 0.3.23      | 2025-03-25 | [56395](https://github.com/airbytehq/airbyte/pull/56395)   | Bug fix: Correctly coerce values inside nested arrays.                                                                          |
-| 0.3.22      | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355)   | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible.                                                               |
-| 0.3.21      | 2025-03-22 | [\#56347](https://github.com/airbytehq/airbyte/pull/56347) | Bugfix: stream start does not always await iceberg setup                                                                        |
-| 0.3.20      | 2025-03-24 | [\#55849](https://github.com/airbytehq/airbyte/pull/55849) | Internal refactoring                                                                                                            |
-| 0.3.19      | 2025-03-19 | [\#55798](https://github.com/airbytehq/airbyte/pull/55798) | CDK: Typing improvements                                                                                                        |
-| 0.3.18      | 2025-03-18 | [\#55811](https://github.com/airbytehq/airbyte/pull/55811) | CDK: Pass DestinationStream around vs Descriptor                                                                                |
-| 0.3.17      | 2025-03-13 | [\#55737](https://github.com/airbytehq/airbyte/pull/55737) | CDK: Pass DestinationRecordRaw around instead of DestinationRecordAirbyteValue                                                  |
-| 0.3.16      | 2025-03-13 | [\#55755](https://github.com/airbytehq/airbyte/pull/55755) | Exclude number fields from identifier fields                                                                                    |
-| 0.3.15      | 2025-02-28 | [\#54724](https://github.com/airbytehq/airbyte/pull/54724) | Certify connector                                                                                                               |
-| 0.3.14      | 2025-02-14 | [\#53241](https://github.com/airbytehq/airbyte/pull/53241) | New CDK interface; perf improvements, skip initial record staging                                                               |
-| 0.3.13      | 2025-02-14 | [\#53697](https://github.com/airbytehq/airbyte/pull/53697) | Internal refactor                                                                                                               |
-| 0.3.12      | 2025-02-12 | [\#53170](https://github.com/airbytehq/airbyte/pull/53170) | Improve documentation, tweak error handling of invalid schema evolution                                                         |
-| 0.3.11      | 2025-02-12 | [\#53216](https://github.com/airbytehq/airbyte/pull/53216) | Support arbitrary schema change in overwrite / truncate refresh / clear sync                                                    |
-| 0.3.10      | 2025-02-11 | [\#53622](https://github.com/airbytehq/airbyte/pull/53622) | Enable the Nessie integration tests                                                                                             |
-| 0.3.9       | 2025-02-10 | [\#53165](https://github.com/airbytehq/airbyte/pull/53165) | Very basic usability improvements and documentation                                                                             |
-| 0.3.8       | 2025-02-10 | [\#52666](https://github.com/airbytehq/airbyte/pull/52666) | Change the chunk size to 1.5Gb                                                                                                  |
-| 0.3.7       | 2025-02-07 | [\#53141](https://github.com/airbytehq/airbyte/pull/53141) | Adding integration tests around the Rest catalog                                                                                |
-| 0.3.6       | 2025-02-06 | [\#53172](https://github.com/airbytehq/airbyte/pull/53172) | Internal refactor                                                                                                               |
-| 0.3.5       | 2025-02-06 | [\#53164](https://github.com/airbytehq/airbyte/pull/53164) | Improve error message on null primary key in dedup mode                                                                         |
-| 0.3.4       | 2025-02-05 | [\#53173](https://github.com/airbytehq/airbyte/pull/53173) | Tweak spec wording                                                                                                              |
-| 0.3.3       | 2025-02-05 | [\#53176](https://github.com/airbytehq/airbyte/pull/53176) | Fix time_with_timezone handling (values are now adjusted to UTC)                                                                |
-| 0.3.2       | 2025-02-04 | [\#52690](https://github.com/airbytehq/airbyte/pull/52690) | Handle special characters in stream name/namespace when using AWS Glue                                                          |
-| 0.3.1       | 2025-02-03 | [\#52633](https://github.com/airbytehq/airbyte/pull/52633) | Fix dedup                                                                                                                       |
-| 0.3.0       | 2025-01-31 | [\#52639](https://github.com/airbytehq/airbyte/pull/52639) | Make the database/namespace a required field                                                                                    |
-| 0.2.23      | 2025-01-27 | [\#51600](https://github.com/airbytehq/airbyte/pull/51600) | Internal refactor                                                                                                               |
-| 0.2.22      | 2025-01-22 | [\#52081](https://github.com/airbytehq/airbyte/pull/52081) | Implement support for REST catalog                                                                                              |
-| 0.2.21      | 2025-01-27 | [\#52564](https://github.com/airbytehq/airbyte/pull/52564) | Fix crash on stream with 0 records                                                                                              |
-| 0.2.20      | 2025-01-23 | [\#52068](https://github.com/airbytehq/airbyte/pull/52068) | Add support for default namespace (/database name)                                                                              |
-| 0.2.19      | 2025-01-16 | [\#51595](https://github.com/airbytehq/airbyte/pull/51595) | Clarifications in connector config options                                                                                      |
-| 0.2.18      | 2025-01-15 | [\#51042](https://github.com/airbytehq/airbyte/pull/51042) | Write structs as JSON strings instead of Iceberg structs.                                                                       |
-| 0.2.17      | 2025-01-14 | [\#51542](https://github.com/airbytehq/airbyte/pull/51542) | New identifier fields should be marked as required.                                                                             |
-| 0.2.16      | 2025-01-14 | [\#51538](https://github.com/airbytehq/airbyte/pull/51538) | Update identifier fields if incoming fields are different than existing ones                                                    |
-| 0.2.15      | 2025-01-14 | [\#51530](https://github.com/airbytehq/airbyte/pull/51530) | Set AWS region for S3 bucket for nessie catalog                                                                                 |
-| 0.2.14      | 2025-01-14 | [\#50413](https://github.com/airbytehq/airbyte/pull/50413) | Update existing table schema based on the incoming schema                                                                       |
-| 0.2.13      | 2025-01-14 | [\#50412](https://github.com/airbytehq/airbyte/pull/50412) | Implement logic to determine super types between iceberg types                                                                  |
-| 0.2.12      | 2025-01-10 | [\#50876](https://github.com/airbytehq/airbyte/pull/50876) | Add support for AWS instance profile auth                                                                                       |
-| 0.2.11      | 2025-01-10 | [\#50971](https://github.com/airbytehq/airbyte/pull/50971) | Internal refactor in AWS auth flow                                                                                              |
-| 0.2.10      | 2025-01-09 | [\#50400](https://github.com/airbytehq/airbyte/pull/50400) | Add S3DataLakeTypesComparator                                                                                                   |
-| 0.2.9       | 2025-01-09 | [\#51022](https://github.com/airbytehq/airbyte/pull/51022) | Rename all classes and files from Iceberg V2                                                                                    |
-| 0.2.8       | 2025-01-09 | [\#51012](https://github.com/airbytehq/airbyte/pull/51012) | Rename/Cleanup package from Iceberg V2                                                                                          |
-| 0.2.7       | 2025-01-09 | [\#50957](https://github.com/airbytehq/airbyte/pull/50957) | Add support for GLUE RBAC (Assume role)                                                                                         |
-| 0.2.6       | 2025-01-08 | [\#50991](https://github.com/airbytehq/airbyte/pull/50991) | Initial public release.                                                                                                         |
+| Version     | Date       | Pull Request                                               | Subject                                                                                                                                                         |
+|:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.53 | 2026-08-24 | [84994](https://github.com/airbytehq/airbyte/pull/84994) | Upgrade to Bulk CDK 1.0.25. |
+| 0.3.52 | 2026-06-23 | [80349](https://github.com/airbytehq/airbyte/pull/80349) | Remove awssdk:bundle fat jar to fix OOMKilled during CHECK operations |
+| 0.3.51 | 2026-06-15 | [79123](https://github.com/airbytehq/airbyte/pull/79123) | Update Apache Iceberg dependencies. |
+| 0.3.50 | 2026-06-08 | [79112](https://github.com/airbytehq/airbyte/pull/79112) | Use unique staging branches and clean them up after each sync. |
+| 0.3.49 | 2026-05-20 | [78232](https://github.com/airbytehq/airbyte/pull/78232) | Upgrade CDK to 1.0.13 |
+| 0.3.48 | 2026-05-04 | [77677](https://github.com/airbytehq/airbyte/pull/77677) | Add configurable flush batch size for aggregate publishing. |
+| 0.3.47 | 2026-04-17 | [76410](https://github.com/airbytehq/airbyte/pull/76410) | Upgrade CDK to 1.0.9. |
+| 0.3.46 | 2026-03-30 | [75628](https://github.com/airbytehq/airbyte/pull/75628) | Upgrade CDK to 1.0.7: fix sort order handling during schema evolution. |
+| 0.3.45 | 2026-03-13 | [74326](https://github.com/airbytehq/airbyte/pull/74326) | Upgrade CDK to 1.0.5: Number-type primary keys are now stored as String (enabling dedup on numeric PKs); fix schema evolution when replacing identifier columns |
+| 0.3.44 | 2026-02-09 | [72848](https://github.com/airbytehq/airbyte/pull/72848) | Enable Speed. |
+| 0.3.43 | 2026-01-30 | [72482](https://github.com/airbytehq/airbyte/pull/72482) | Release on dataflow. |
+| 0.3.43-rc.1 | 2026-01-29 | [72443](https://github.com/airbytehq/airbyte/pull/72443) | Update to dataflow. |
+| 0.3.42 | 2026-01-12 | [70205](https://github.com/airbytehq/airbyte/pull/70205) | Implement support for scope and OAuth server URI attributes for Polaris catalog |
+| 0.3.41 | 2025-11-07 | [69232](https://github.com/airbytehq/airbyte/pull/69232) | Upgrade to Bulk CDK 0.1.69. Changes to handle changes in commit patterns |
+| 0.3.40 | 2025-11-05 | [69133](https://github.com/airbytehq/airbyte/pull/69133) | Upgrade to Bulk CDK 0.1.61. |
+| 0.3.39 | 2025-10-15 | [68108](https://github.com/airbytehq/airbyte/pull/68108) | Implement Polaris support |
+| 0.3.38 | 2025-10-07 | [67005](https://github.com/airbytehq/airbyte/pull/67005) | Fix: Treat empty string role_arn as null to prevent misleading config errors |
+| 0.3.37 | 2025-10-07 | [67150](https://github.com/airbytehq/airbyte/pull/67150) | Fix check operation to use unique table names, preventing conflicts with stale metadata and concurrent operations |
+| 0.3.36 | 2025-09-25 | [66711](https://github.com/airbytehq/airbyte/pull/66711) | CHECK operation uses configured default dataset instead of `airbyte_test_namespace` |
+| 0.3.35 | 2025-07-23 | [63746](https://github.com/airbytehq/airbyte/pull/63746) | Remove unnecessary properties from table |
+| 0.3.34 | 2025-07-15 | [62952](https://github.com/airbytehq/airbyte/pull/62952) | Update CDK version |
+| 0.3.33 | 2025-07-11 | [62888](https://github.com/airbytehq/airbyte/pull/62888) | Update CDK version to handle compaction issue when deleting files in a truncate refresh scenario |
+| 0.3.32 | 2025-07-08 | [62852](https://github.com/airbytehq/airbyte/pull/62852) | Fix metadata (revert accidental archiving) |
+| 0.3.31 | 2025-07-07 | [62835](https://github.com/airbytehq/airbyte/pull/62835) | Pin to latest CDK version 0.522 |
+| 0.3.30 | 2025-07-07 | [62105](https://github.com/airbytehq/airbyte/pull/62105) | ReplaceBranch to staging from main instead of fast forwarding |
+| 0.3.29 | 2025-06-13 | [61588](https://github.com/airbytehq/airbyte/pull/61588) | ~~Publish version to account for possible duplicate publishing in pipeline. Noop change.~~ WARNING: THIS HAS A BUG. DO NOT USE. |
+| 0.3.28 | 2025-05-07 | [59710](https://github.com/airbytehq/airbyte/pull/59710) | CDK backpressure bugfix |
+| 0.3.27 | 2025-04-21 | [58146](https://github.com/airbytehq/airbyte/pull/58146) | Upgrade to latest CDK |
+| 0.3.26 | 2025-04-17 | [58104](https://github.com/airbytehq/airbyte/pull/58104) | Chore: Now passing a string around for the region |
+| 0.3.25 | 2025-04-16 | [58085](https://github.com/airbytehq/airbyte/pull/58085) | Internal refactoring |
+| 0.3.24 | 2025-03-27 | [56435](https://github.com/airbytehq/airbyte/pull/56435) | Bug fix: Correctly handle non-positive numbers. |
+| 0.3.23 | 2025-03-25 | [56395](https://github.com/airbytehq/airbyte/pull/56395) | Bug fix: Correctly coerce values inside nested arrays. |
+| 0.3.22 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
+| 0.3.21      | 2025-03-22 | [\#56347](https://github.com/airbytehq/airbyte/pull/56347) | Bugfix: stream start does not always await iceberg setup                                                                                                        |
+| 0.3.20      | 2025-03-24 | [\#55849](https://github.com/airbytehq/airbyte/pull/55849) | Internal refactoring                                                                                                                                            |
+| 0.3.19      | 2025-03-19 | [\#55798](https://github.com/airbytehq/airbyte/pull/55798) | CDK: Typing improvements                                                                                                                                        |
+| 0.3.18      | 2025-03-18 | [\#55811](https://github.com/airbytehq/airbyte/pull/55811) | CDK: Pass DestinationStream around vs Descriptor                                                                                                                |
+| 0.3.17      | 2025-03-13 | [\#55737](https://github.com/airbytehq/airbyte/pull/55737) | CDK: Pass DestinationRecordRaw around instead of DestinationRecordAirbyteValue                                                                                  |
+| 0.3.16      | 2025-03-13 | [\#55755](https://github.com/airbytehq/airbyte/pull/55755) | Exclude number fields from identifier fields                                                                                                                    |
+| 0.3.15      | 2025-02-28 | [\#54724](https://github.com/airbytehq/airbyte/pull/54724) | Certify connector                                                                                                                                               |
+| 0.3.14      | 2025-02-14 | [\#53241](https://github.com/airbytehq/airbyte/pull/53241) | New CDK interface; perf improvements, skip initial record staging                                                                                               |
+| 0.3.13      | 2025-02-14 | [\#53697](https://github.com/airbytehq/airbyte/pull/53697) | Internal refactor                                                                                                                                               |
+| 0.3.12      | 2025-02-12 | [\#53170](https://github.com/airbytehq/airbyte/pull/53170) | Improve documentation, tweak error handling of invalid schema evolution                                                                                         |
+| 0.3.11      | 2025-02-12 | [\#53216](https://github.com/airbytehq/airbyte/pull/53216) | Support arbitrary schema change in overwrite / truncate refresh / clear sync                                                                                    |
+| 0.3.10      | 2025-02-11 | [\#53622](https://github.com/airbytehq/airbyte/pull/53622) | Enable the Nessie integration tests                                                                                                                             |
+| 0.3.9       | 2025-02-10 | [\#53165](https://github.com/airbytehq/airbyte/pull/53165) | Very basic usability improvements and documentation                                                                                                             |
+| 0.3.8       | 2025-02-10 | [\#52666](https://github.com/airbytehq/airbyte/pull/52666) | Change the chunk size to 1.5Gb                                                                                                                                  |
+| 0.3.7       | 2025-02-07 | [\#53141](https://github.com/airbytehq/airbyte/pull/53141) | Adding integration tests around the Rest catalog                                                                                                                |
+| 0.3.6       | 2025-02-06 | [\#53172](https://github.com/airbytehq/airbyte/pull/53172) | Internal refactor                                                                                                                                               |
+| 0.3.5       | 2025-02-06 | [\#53164](https://github.com/airbytehq/airbyte/pull/53164) | Improve error message on null primary key in dedup mode                                                                                                         |
+| 0.3.4       | 2025-02-05 | [\#53173](https://github.com/airbytehq/airbyte/pull/53173) | Tweak spec wording                                                                                                                                              |
+| 0.3.3       | 2025-02-05 | [\#53176](https://github.com/airbytehq/airbyte/pull/53176) | Fix time_with_timezone handling (values are now adjusted to UTC)                                                                                                |
+| 0.3.2       | 2025-02-04 | [\#52690](https://github.com/airbytehq/airbyte/pull/52690) | Handle special characters in stream name/namespace when using AWS Glue                                                                                          |
+| 0.3.1       | 2025-02-03 | [\#52633](https://github.com/airbytehq/airbyte/pull/52633) | Fix dedup                                                                                                                                                       |
+| 0.3.0       | 2025-01-31 | [\#52639](https://github.com/airbytehq/airbyte/pull/52639) | Make the database/namespace a required field                                                                                                                    |
+| 0.2.23      | 2025-01-27 | [\#51600](https://github.com/airbytehq/airbyte/pull/51600) | Internal refactor                                                                                                                                               |
+| 0.2.22      | 2025-01-22 | [\#52081](https://github.com/airbytehq/airbyte/pull/52081) | Implement support for REST catalog                                                                                                                              |
+| 0.2.21      | 2025-01-27 | [\#52564](https://github.com/airbytehq/airbyte/pull/52564) | Fix crash on stream with 0 records                                                                                                                              |
+| 0.2.20      | 2025-01-23 | [\#52068](https://github.com/airbytehq/airbyte/pull/52068) | Add support for default namespace (/database name)                                                                                                              |
+| 0.2.19      | 2025-01-16 | [\#51595](https://github.com/airbytehq/airbyte/pull/51595) | Clarifications in connector config options                                                                                                                      |
+| 0.2.18      | 2025-01-15 | [\#51042](https://github.com/airbytehq/airbyte/pull/51042) | Write structs as JSON strings instead of Iceberg structs.                                                                                                       |
+| 0.2.17      | 2025-01-14 | [\#51542](https://github.com/airbytehq/airbyte/pull/51542) | New identifier fields should be marked as required.                                                                                                             |
+| 0.2.16      | 2025-01-14 | [\#51538](https://github.com/airbytehq/airbyte/pull/51538) | Update identifier fields if incoming fields are different than existing ones                                                                                    |
+| 0.2.15      | 2025-01-14 | [\#51530](https://github.com/airbytehq/airbyte/pull/51530) | Set AWS region for S3 bucket for nessie catalog                                                                                                                 |
+| 0.2.14      | 2025-01-14 | [\#50413](https://github.com/airbytehq/airbyte/pull/50413) | Update existing table schema based on the incoming schema                                                                                                       |
+| 0.2.13      | 2025-01-14 | [\#50412](https://github.com/airbytehq/airbyte/pull/50412) | Implement logic to determine super types between iceberg types                                                                                                  |
+| 0.2.12      | 2025-01-10 | [\#50876](https://github.com/airbytehq/airbyte/pull/50876) | Add support for AWS instance profile auth                                                                                                                       |
+| 0.2.11      | 2025-01-10 | [\#50971](https://github.com/airbytehq/airbyte/pull/50971) | Internal refactor in AWS auth flow                                                                                                                              |
+| 0.2.10      | 2025-01-09 | [\#50400](https://github.com/airbytehq/airbyte/pull/50400) | Add S3DataLakeTypesComparator                                                                                                                                   |
+| 0.2.9       | 2025-01-09 | [\#51022](https://github.com/airbytehq/airbyte/pull/51022) | Rename all classes and files from Iceberg V2                                                                                                                    |
+| 0.2.8       | 2025-01-09 | [\#51012](https://github.com/airbytehq/airbyte/pull/51012) | Rename/Cleanup package from Iceberg V2                                                                                                                          |
+| 0.2.7       | 2025-01-09 | [\#50957](https://github.com/airbytehq/airbyte/pull/50957) | Add support for GLUE RBAC (Assume role)                                                                                                                         |
+| 0.2.6       | 2025-01-08 | [\#50991](https://github.com/airbytehq/airbyte/pull/50991) | Initial public release.                                                                                                                                         |
 
 </details>

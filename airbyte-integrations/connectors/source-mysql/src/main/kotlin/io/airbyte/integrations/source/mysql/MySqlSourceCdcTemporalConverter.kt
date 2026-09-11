@@ -38,13 +38,32 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
             TimestampHandler
         )
 
+    /**
+     * MySQL permits zero-values (e.g. 0000-00-00 00:00:00) for DATE, DATETIME, and TIMESTAMP. These
+     * aren't valid dates. For this reason, Debezium injects zeroDateTimeBehavior=CONVERT_TO_NULL in
+     * the JDBC param which will convert zero dates (i.e. 0000-00-00 00:00:00) to NULL (ref
+     * https://github.com/debezium/debezium/blob/f13c18f0db7bb5be47c8c4b427e7138da2a29d99/debezium-connector-mysql/src/main/java/io/debezium/connector/mysql/jdbc/MySqlConnectionConfiguration.java#L23).
+     *
+     * When a zero date is converted to NULL for a non-nullable column, Kafka throws `Invalid value:
+     * null used for required field` and terminates the sync. To handle this, we added optional() in
+     * DATE and DATETIME (micro and millis) so that zero-date that converts to NULL no longer
+     * violates a required field.
+     *
+     * Here is the mapping:
+     * - Datetime (micro and millis): invalid, interpreted as NULL
+     * - Date: invalid, interpreted as NULL
+     * - Timestamp: interpreted as 0, which is then converted to the Unix epoch, 1970-01-01.
+     * Snapshot reads can still produce NULL values.
+     * - Time: 00:00:00 represents midnight, which is a valid time value.
+     */
     data object DatetimeMillisHandler : RelationalColumnCustomConverter.Handler {
 
         override fun matches(column: RelationalColumn): Boolean =
             column.typeName().equals("DATETIME", ignoreCase = true) &&
                 column.length().orElse(0) <= 3
 
-        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
+        // Zero date `datetime(3)` is converted to NULL, optional() lets a NOT NULL column emit NULL
+        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string().optional()
 
         override val partialConverters: List<PartialConverter> =
             listOf(
@@ -76,7 +95,8 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
         override fun matches(column: RelationalColumn): Boolean =
             column.typeName().equals("DATETIME", ignoreCase = true) && column.length().orElse(0) > 3
 
-        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
+        // Zero date `datetime(6)` is converted to NULL, optional() lets a NOT NULL column emit NULL
+        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string().optional()
 
         override val partialConverters: List<PartialConverter> =
             listOf(
@@ -108,7 +128,8 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
         override fun matches(column: RelationalColumn): Boolean =
             column.typeName().equals("DATE", ignoreCase = true)
 
-        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
+        // Zero date `date` is converted to NULL, optional() lets a NOT NULL column emit NULL
+        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string().optional()
 
         override val partialConverters: List<PartialConverter> =
             listOf(

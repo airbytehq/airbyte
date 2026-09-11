@@ -4,6 +4,16 @@ enterprise-connector: true
 ---
 # Source Db2
 
+<HideInUI>
+
+:::info We no longer sell this connector
+
+Airbyte no longer sells this connector, but we continue to support it if you purchased it in the past.
+
+:::
+
+</HideInUI>
+
 The Enterprise Db2 source connector reads data from your Db2 database. To use CDC, your database must have triggers and tracking tables provisioned in advance by your DBA. During CDC syncs, the connector reads from these tracking tables and deletes processed change rows.
 
 ## Features

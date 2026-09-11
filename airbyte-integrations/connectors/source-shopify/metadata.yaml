@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
-  dockerImageTag: 3.2.3
+  dockerImageTag: 4.0.0
   dockerRepository: airbyte/source-shopify
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
   erdUrl: https://dbdocs.io/airbyteio/source-shopify?view=relationships
@@ -33,6 +33,11 @@ data:
   releases:
     rolloutConfiguration:
       enableProgressiveRollout: false
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
     breakingChanges:
       1.0.0:
         message: "This upgrade brings changes to certain streams after migration to Shopify API version `2023-07`, more details in this PR: https://github.com/airbytehq/airbyte/pull/29361."
@@ -92,6 +97,13 @@ data:
           - scopeType: stream
             impactedScopes:
               ["countries", "product_variants", "articles", "blogs", "pages"]
+      4.0.0:
+        message: "The `orders.processed_at` and `order_refunds.processed_at` fields are now declared as `format: date-time`. Typed destinations will change these columns from string/VARCHAR to timestamp-with-timezone. Refresh the source schema and resync the `orders` and `order_refunds` streams, and update any downstream SQL, dbt models, or BI logic that treats these columns as text. See https://docs.airbyte.com/integrations/sources/shopify-migrations."
+        upgradeDeadline: "2026-09-09"
+        deadlineAction: "disable"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["orders", "order_refunds"]
   suggestedStreams:
     streams:
       - customers
@@ -177,12 +189,18 @@ data:
     - title: Shopify authentication
       url: https://shopify.dev/docs/apps/auth
       type: authentication_guide
-    - title: Shopify Admin API OpenAPI specification
-      url: https://shopify.dev/docs/api/admin-rest
-      type: openapi_spec
+    - title: Shopify GraphQL Admin API
+      url: https://shopify.dev/docs/api/admin-graphql
+      type: api_reference
+    - title: REST to GraphQL migration guide
+      url: https://shopify.dev/docs/apps/build/graphql/migrate
+      type: api_deprecations
     - title: Shopify rate limits
       url: https://shopify.dev/docs/api/usage/rate-limits
       type: rate_limits
+    - title: Shopify API versioning and deprecation policy
+      url: https://shopify.dev/docs/api/usage/versioning
+      type: api_deprecations
     - title: Shopify Status
       url: https://www.shopifystatus.com/
       type: status_page

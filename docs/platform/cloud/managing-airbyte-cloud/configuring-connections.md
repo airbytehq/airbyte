@@ -63,6 +63,7 @@ You can configure the following settings:
 | [Destination Namespace](../../using-airbyte/core-concepts/namespaces)               | Determines where the replicated data is written to in the destination          |
 | [Destination Stream Prefix](../../using-airbyte/configuring-schema)                   | (Optional) Adds a prefix to each table name in the destination                  |
 | [Detect and propagate schema changes](../../using-airbyte/schema-change-management) | Set how Airbyte handles schema changes in the source                           |
+| Use on-demand capacity (Cloud Pro and Enterprise Flex only)                               | When enabled, syncs always run even if committed capacity is exhausted. Syncs that run when committed data worker capacity is exhausted will be charged a premium rate. Only organization admins and workspace admins can change this toggle. It also appears during connection creation. See [Monitor data worker usage](./manage-data-workers.md). |
 
 ## Stream Settings
 
