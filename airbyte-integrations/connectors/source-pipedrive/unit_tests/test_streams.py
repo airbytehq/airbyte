@@ -127,6 +127,7 @@ def test_legacy_teams_reads_records():
     "status_code, body",
     [
         pytest.param(403, {"success": False, "error": "Teams feature is not enabled in your company"}, id="feature_disabled"),
+        pytest.param(404, {"success": False, "error": "Not found"}, id="endpoint_missing"),
         pytest.param(410, {"success": False}, id="endpoint_retired"),
     ],
 )
@@ -228,12 +229,51 @@ def test_deal_installments_batches_parent_deals_into_one_request():
     assert _ids(output, "deal_id") == [1, 2]
 
 
-def test_deal_installments_ignores_plan_without_installments():
+def test_deal_installments_paginates_with_cursor():
     with HttpMocker() as http_mocker:
         _mock_deals(http_mocker)
         http_mocker.get(
             _request("api/v2/deals/installments", {"api_token": "tok", "deal_ids": "1,2", "limit": "500"}),
-            _response({"success": False, "error": "The company does not have access to this feature"}, status_code=403),
+            _response({"data": [{"id": 11, "deal_id": 1}], "additional_data": {"next_cursor": "abc"}}),
+        )
+        http_mocker.get(
+            _request("api/v2/deals/installments", {"api_token": "tok", "deal_ids": "1,2", "limit": "500", "cursor": "abc"}),
+            _response({"data": [{"id": 22, "deal_id": 2}], "additional_data": {"next_cursor": None}}),
+        )
+
+        output = _read_stream("deal_installments")
+
+    assert _ids(output) == [11, 22]
+    assert output.errors == []
+
+
+def test_deal_installments_batches_archived_parents_too():
+    with HttpMocker() as http_mocker:
+        _mock_deals(http_mocker, archived=[{"id": 9, "update_time": "2024-02-01T00:00:00Z", "is_archived": True}])
+        http_mocker.get(
+            _request("api/v2/deals/installments", {"api_token": "tok", "deal_ids": "1,2,9", "limit": "500"}),
+            _response({"data": [{"id": 11, "deal_id": 1}, {"id": 99, "deal_id": 9}], "additional_data": {"next_cursor": None}}),
+        )
+
+        output = _read_stream("deal_installments")
+
+    assert _ids(output, "deal_id") == [1, 9]
+    assert output.errors == []
+
+
+@pytest.mark.parametrize(
+    "status_code, body",
+    [
+        pytest.param(402, {"success": False, "error": "Required suites missing", "errorCode": 402}, id="suite_missing"),
+        pytest.param(403, {"success": False, "error": "The company does not have access to this feature"}, id="feature_forbidden"),
+    ],
+)
+def test_deal_installments_ignores_plan_without_installments(status_code, body):
+    with HttpMocker() as http_mocker:
+        _mock_deals(http_mocker)
+        http_mocker.get(
+            _request("api/v2/deals/installments", {"api_token": "tok", "deal_ids": "1,2", "limit": "500"}),
+            _response(body, status_code=status_code),
         )
 
         output = _read_stream("deal_installments")
@@ -574,6 +614,46 @@ def test_deals_archived_reads_the_archived_collection():
     assert output.most_recent_state.stream_state.__dict__ == {"update_time": "2024-02-01T00:00:00Z"}
 
 
+def test_deals_archived_paginates_with_cursor():
+    with HttpMocker() as http_mocker:
+        http_mocker.get(
+            _request("api/v2/deals/archived", _DEALS_QUERY),
+            _response(
+                {
+                    "data": [{"id": 9, "update_time": "2024-02-01T00:00:00Z", "is_archived": True}],
+                    "additional_data": {"next_cursor": "abc"},
+                }
+            ),
+        )
+        http_mocker.get(
+            _request("api/v2/deals/archived", {**_DEALS_QUERY, "cursor": "abc"}),
+            _response(
+                {
+                    "data": [{"id": 10, "update_time": "2024-02-02T00:00:00Z", "is_archived": True}],
+                    "additional_data": {"next_cursor": None},
+                }
+            ),
+        )
+
+        output = _read_stream("deals_archived", SyncMode.incremental)
+
+    assert _ids(output) == [9, 10]
+    assert output.most_recent_state.stream_state.__dict__ == {"update_time": "2024-02-02T00:00:00Z"}
+
+
+def test_deals_archived_resumes_from_legacy_state():
+    state = StateBuilder().with_stream_state("deals_archived", {"update_time": "2021-06-01 10:10:10"}).build()
+    with HttpMocker() as http_mocker:
+        http_mocker.get(
+            _request("api/v2/deals/archived", {**_DEALS_QUERY, "updated_since": "2021-06-01T10:10:10Z"}),
+            _response({"data": [{"id": 9, "update_time": "2021-06-01T10:10:10Z"}], "additional_data": {"next_cursor": None}}),
+        )
+
+        output = _read_stream("deals_archived", SyncMode.incremental, state)
+
+    assert _ids(output) == [9]
+
+
 def test_deal_products_expands_archived_deals_too():
     with HttpMocker() as http_mocker:
         _mock_deals(http_mocker, archived=[{"id": 9, "update_time": "2024-02-01T00:00:00Z", "is_archived": True}])
@@ -704,4 +784,44 @@ def test_mail_threads_reads_every_folder_and_paginates_with_default_concurrency(
         output = _read_stream("mailThreads")
 
     assert sorted(_ids(output)) == [1, 2, 3]
+    assert output.errors == []
+
+
+def test_mail_paginates_messages_of_one_thread():
+    with HttpMocker() as http_mocker:
+        http_mocker.get(_threads_request("inbox"), _response(_v1_page([{"id": 1}])))
+        for folder in ("drafts", "sent", "archive"):
+            http_mocker.get(_threads_request(folder), _response(_v1_page([])))
+        http_mocker.get(
+            _request("v1/mailbox/mailThreads/1/mailMessages", {"api_token": "tok", "limit": "50"}),
+            _response(_v1_page([{"id": 10, "mail_thread_id": 1}], next_start=50)),
+        )
+        http_mocker.get(
+            _request("v1/mailbox/mailThreads/1/mailMessages", {"api_token": "tok", "limit": "50", "start": "50"}),
+            _response(_v1_page([{"id": 11, "mail_thread_id": 1}])),
+        )
+
+        output = _read_stream("mail")
+
+    assert _ids(output) == [10, 11]
+    assert output.errors == []
+
+
+def test_mail_skips_forbidden_parent_thread():
+    with HttpMocker() as http_mocker:
+        http_mocker.get(_threads_request("inbox"), _response(_v1_page([{"id": 1}, {"id": 2}])))
+        for folder in ("drafts", "sent", "archive"):
+            http_mocker.get(_threads_request(folder), _response(_v1_page([])))
+        http_mocker.get(
+            _request("v1/mailbox/mailThreads/1/mailMessages", {"api_token": "tok", "limit": "50"}),
+            _response({"success": False, "error": "You do not have permissions to do this."}, status_code=403),
+        )
+        http_mocker.get(
+            _request("v1/mailbox/mailThreads/2/mailMessages", {"api_token": "tok", "limit": "50"}),
+            _response(_v1_page([{"id": 20, "mail_thread_id": 2}])),
+        )
+
+        output = _read_stream("mail")
+
+    assert _ids(output) == [20]
     assert output.errors == []
