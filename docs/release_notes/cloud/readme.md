@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## September 11, 2026
+
+Connections
+
+- Connection mappings are now split into basic and advanced tiers by plan. If your organization is on the Plus plan, you can rename fields; hashing, encryption, and row filtering require the Pro or Flex plan. On Plus, new mappings default to Rename, and the advanced types show an upgrade link to the Plans page, which now lists which mappers each plan includes.
+
 ## September 10, 2026
 
 Platform
