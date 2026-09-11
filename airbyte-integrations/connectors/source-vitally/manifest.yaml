@@ -287,6 +287,7 @@ spec:
         description: sk_live_secret_token
         order: 2
         title: Secret Token
+        airbyte_secret: true
       basic_auth_header:
         type: string
         description: Basic Auth Header
