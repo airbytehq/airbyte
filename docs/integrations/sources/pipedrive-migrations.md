@@ -12,7 +12,8 @@ What changed:
 
 API v2 schemas replace the Recents-era record shapes. The stream-specific changes are listed below; fields not listed remain unchanged.
 
-<details><summary>Field changes in deals</summary>
+<details>
+<summary>Field changes in deals</summary>
 
 - Renamed fields: `user_id` → `owner_id`; `label` → `label_ids`; `deleted` → `is_deleted`.
 - Added fields: `acv`, `archive_time`, `arr`, `channel`, `channel_id`, `custom_fields`, `is_archived`, `is_deleted`, `label_ids`, `local_close_date`, `local_lost_date`, `local_won_date`, `mrr`, `origin`, `origin_id`, `owner_id`, `source_lead_id`.
@@ -21,13 +22,15 @@ API v2 schemas replace the Recents-era record shapes. The stream-specific change
 
 </details>
 
-<details><summary>Field changes in deals_archived</summary>
+<details>
+<summary>Field changes in deals_archived</summary>
 
 - New stream: `deals_archived` uses the `deals` schema and returns archived deals from API v2.
 
 </details>
 
-<details><summary>Field changes in persons</summary>
+<details>
+<summary>Field changes in persons</summary>
 
 - Renamed fields: `active_flag` → `is_deleted`; `email` → `emails`; `phone` → `phones`; `label` → `label_ids`.
 - Added fields: `birthday`, `custom_fields`, `emails`, `im`, `is_deleted`, `job_title`, `label_ids`, `notes`, `phones`, `postal_address`.
@@ -36,7 +39,8 @@ API v2 schemas replace the Recents-era record shapes. The stream-specific change
 
 </details>
 
-<details><summary>Field changes in organizations</summary>
+<details>
+<summary>Field changes in organizations</summary>
 
 - Renamed fields: `active_flag` → `is_deleted`; `label` → `label_ids`.
 - Added fields: `annual_revenue`, `custom_fields`, `employee_count`, `industry`, `is_deleted`, `label_ids`, `linkedin`, `website`.
@@ -45,7 +49,8 @@ API v2 schemas replace the Recents-era record shapes. The stream-specific change
 
 </details>
 
-<details><summary>Field changes in activities</summary>
+<details>
+<summary>Field changes in activities</summary>
 
 - Renamed fields: `active_flag` → `is_deleted`; `busy_flag` → `busy`; `user_id` → `owner_id`.
 - Added fields: `busy`, `creator_user_id`, `custom_fields`, `is_deleted`, `outcome`, `owner_id`, `priority`, `private`, `project_id`.
@@ -54,7 +59,8 @@ API v2 schemas replace the Recents-era record shapes. The stream-specific change
 
 </details>
 
-<details><summary>Field changes in products</summary>
+<details>
+<summary>Field changes in products</summary>
 
 - Renamed fields: `active_flag` → `is_deleted`.
 - Added fields: `billing_frequency`, `billing_frequency_cycles`, `custom_fields`, `is_deleted`, `is_linkable`.
@@ -63,7 +69,8 @@ API v2 schemas replace the Recents-era record shapes. The stream-specific change
 
 </details>
 
-<details><summary>Field changes in pipelines</summary>
+<details>
+<summary>Field changes in pipelines</summary>
 
 - Added fields: `is_deal_probability_enabled`, `is_deleted`.
 - Removed fields: `active`, `deal_probability`, `selected`, `url_title`.
@@ -72,7 +79,8 @@ API v2 schemas replace the Recents-era record shapes. The stream-specific change
 
 </details>
 
-<details><summary>Field changes in stages</summary>
+<details>
+<summary>Field changes in stages</summary>
 
 - Renamed fields: `active_flag` → `is_deleted`; `rotten_days` → `days_to_rotten`; `rotten_flag` → `is_deal_rot_enabled`.
 - Added fields: `days_to_rotten`, `is_deal_rot_enabled`, `is_deleted`.
@@ -81,7 +89,8 @@ API v2 schemas replace the Recents-era record shapes. The stream-specific change
 
 </details>
 
-<details><summary>Field changes in deal_products</summary>
+<details>
+<summary>Field changes in deal_products</summary>
 
 - Renamed fields: `discount_percentage` → `discount`; `enabled_flag` → `is_enabled`; `duration` and `duration_unit` → `billing_frequency`, `billing_frequency_cycles` and `billing_start_date`.
 - Added fields: `billing_frequency`, `billing_frequency_cycles`, `billing_start_date`, `discount`, `discount_type`, `is_deleted`, `is_enabled`, `tax_method`, `update_time`.
