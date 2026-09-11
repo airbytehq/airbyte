@@ -22,6 +22,7 @@ import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
+import io.airbyte.integrations.destination.postgres.sql.TABLE_IS_EMPTY_ALIAS
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
@@ -67,6 +68,29 @@ class PostgresAirbyteClient(
             } else {
                 log.error(e) {
                     "Failed to count rows in table ${tableName.namespace}.${tableName.name}."
+                }
+                throw e
+            }
+        }
+
+    /**
+     * Answers the emptiness question with an existence check instead of `COUNT(*)`, which scales
+     * with table size. A missing table is reported as empty.
+     */
+    override suspend fun tableIsEmpty(tableName: TableName): Boolean =
+        try {
+            executeQuery(sqlGenerator.tableIsEmpty(tableName)) { resultSet ->
+                !resultSet.next() || resultSet.getBoolean(TABLE_IS_EMPTY_ALIAS)
+            }
+        } catch (e: Exception) {
+            if (isMissingRelation(e)) {
+                log.debug(e) {
+                    "Table ${tableName.namespace}.${tableName.name} does not exist. Reporting it as empty."
+                }
+                true
+            } else {
+                log.error(e) {
+                    "Failed to check whether table ${tableName.namespace}.${tableName.name} is empty."
                 }
                 throw e
             }
