@@ -227,6 +227,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 1.0.2 | 2026-09-10 | [85793](https://github.com/airbytehq/airbyte/pull/85793) | Promote to certified support level |
 | 1.0.1 | 2026-09-09 | [85789](https://github.com/airbytehq/airbyte/pull/85789) | Fix bug in config migration that prevented rotated refresh tokens from being persisted |
 | 1.0.0 | 2026-08-28 | [85095](https://github.com/airbytehq/airbyte/pull/85095) | Breaking: declare `date` and `date-time` formats on every temporal field, and drop the fields Linear deprecated in the `users`, `teams`, and `customer_statuses` queries (`teams.visibility` replaces `teams.private`). See the [migration guide](/integrations/sources/linear-migrations#upgrading-to-100). |
 | 0.4.0 | 2026-08-27 | [85056](https://github.com/airbytehq/airbyte/pull/85056) | Add initiatives, initiative-to-project relationships, project updates, and issue history streams |
