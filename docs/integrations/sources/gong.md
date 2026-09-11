@@ -13,26 +13,20 @@ This page contains the setup guide and reference information for the [Gong](http
 - For API Key authentication: an access key and access key secret generated from the Gong API settings, with the same scopes listed above
 
 :::note
-The connection test validates connectivity by reading the `users` stream, so the `api:users:read` scope is always required — even if you only intend to sync call or scorecard streams. Without it, setting up the source fails with an unauthorized error. Credentials also inherit the data visibility of the Gong user who created them: a key whose user can't see certain calls silently returns fewer (or zero) records rather than an error.
+The connection test validates connectivity by reading the `users` stream, so the `api:users:read` scope is always required, even if you only intend to sync call or scorecard streams. Without it, setting up the source fails with an unauthorized error. Credentials also inherit the data visibility of the Gong user who created them: a key whose user can't see certain calls returns fewer (or zero) records rather than an error.
 :::
 
 ## Setup guide
 
-## Set up Gong
+### Set up Gong
 
-You can authenticate to Gong using one of two methods: OAuth 2.0 or an API key.
-
-### For Airbyte Cloud
+You can authenticate to Gong using OAuth 2.0 or an API key.
 
 <!-- env:cloud -->
 
-- **OAuth 2.0 (recommended)**. Click **Authenticate your Gong account** to sign in through Gong's OAuth flow. This method handles token refresh automatically. You need a Gong account with technical administrator permissions to authorize the connection.
+- **OAuth 2.0 (recommended on Airbyte Cloud)**. Click **Authenticate your Gong account** to sign in through Gong's OAuth flow. This method handles token refresh automatically. You need a Gong account with technical administrator permissions to authorize the connection.
 
 <!-- /env:cloud -->
-
-- **API Key**. Alternatively, authenticate with an access key and access key secret, generated as described in the Open Source section below.
-
-### For Airbyte Open Source
 
 - **API Key**. Authenticate using an access key and access key secret. To generate credentials:
   1. Log in to your Gong account as a technical administrator.
@@ -42,11 +36,18 @@ You can authenticate to Gong using one of two methods: OAuth 2.0 or an API key.
 
   For more details, see the [Gong API documentation](https://help.gong.io/docs/receive-access-to-the-api).
 
-### Configure the connector
+### Set up the Gong connector in Airbyte
+
+1. In the Airbyte UI, click **Sources** and then **New source**.
+2. Find and select **Gong**.
+3. Enter a name for the source.
+4. Under **Authentication**, choose an authentication method and complete the fields for it.
+5. Optionally, configure the fields described below.
+6. Click **Set up source**.
 
 <FieldAnchor field="start_date">
 
-- **Start Date** (optional). The date from which to fetch data, in ISO-8601 format (for example, `2024-01-01T00:00:00Z`). This applies to incremental streams. If not specified, the connector syncs all available data from the earliest recorded call; set a start date to limit how far back the initial sync reaches.
+- **Start Date** (optional). The date from which to fetch data, in ISO-8601 format with a `Z` suffix (for example, `2024-01-01T00:00:00Z`). This applies to incremental streams. If not specified, the connector syncs all available data from the earliest recorded call; set a start date to limit how far back the initial sync reaches. For web-conference calls recorded by Gong, this date is compared against the call's scheduled time; for other calls, against its actual start time.
 
 </FieldAnchor>
 
@@ -58,9 +59,10 @@ You can authenticate to Gong using one of two methods: OAuth 2.0 or an API key.
 
 <FieldAnchor field="lookback_window_days">
 
-- **Lookback Window (days)** (optional). Number of days to subtract from the saved state at the start of each incremental sync. The default is 0 (sync strictly forward). Set this if calls or scorecards are updated after they were first replicated and you want later syncs to pick up those changes.
+- **Lookback Window (days)** (optional). Number of days to subtract from the saved state at the start of each incremental sync. The default is 0 (sync strictly forward). Set this if calls or scorecards are updated after they were first replicated and you want later syncs to pick up those changes. The lookback never rewinds past your configured start date.
 
 </FieldAnchor>
+
 <HideInUI>
 
 ## Supported sync modes
@@ -70,7 +72,7 @@ The Gong source connector supports the following [sync modes](https://docs.airby
 - Full Refresh
 - Incremental
 
-## Supported Streams
+## Supported streams
 
 This source syncs the following streams:
 
@@ -87,6 +89,10 @@ This source syncs the following streams:
 
 Starting with version 1.1.0, the connector excludes calls marked as private (`isPrivate: true` in the Gong API) from the `calls` and `extensive calls` streams. Because `call transcripts` is a substream of `calls`, transcripts for private calls are also excluded. Gong requires this behavior for OAuth app listing approval, and the Gong API does not expose a server-side filter for this field, so the connector applies the filter client-side after fetching records.
 
+### Deprecated `pointsOfInterest` field
+
+Gong removed the `pointsOfInterest` field from the `/v2/calls/extensive` endpoint in January 2025. The `extensive calls` stream still includes the field in its schema so existing destination columns are preserved, but Gong no longer populates it, so the column is null for calls synced after that date. The field will be removed in a future major version.
+
 ### Performance considerations
 
 Gong limits API access to 3 calls per second and 10,000 calls per day. If you exceed either limit, the API returns HTTP status code 429 with a `Retry-After` header indicating how long to wait.
@@ -100,6 +106,22 @@ The connector doesn't pace itself against the 10,000-calls-per-day quota, so a l
 
 The call transcripts stream is a substream of the calls stream. Starting with version 1.3.0, it batches up to 100 call IDs into each `POST /v2/calls/transcript` request instead of sending one request per call. This sharply reduces the request volume during large backfills, making it much less likely you'll hit Gong's rate limit or daily quota, though very large tenants can still approach these limits. Subsequent incremental syncs only fetch transcripts for new calls.
 
+When you exhaust the daily quota, Gong's `Retry-After` value can be several hours. The connector waits it out rather than failing, so a sync that appears idle may be waiting for the quota to reset. Starting with version 1.4.0, the sync reports a rate-limited status during this wait.
+
+## Troubleshooting
+
+### Unauthorized error during setup or sync
+
+Starting with version 1.4.0, Gong `401` and `403` responses fail the sync with a configuration error instead of retrying. Check that:
+
+- Your access key and secret (or OAuth credentials) are valid and haven't been revoked.
+- The credentials have every scope listed in [Prerequisites](#prerequisites), including `api:users:read`.
+- The Gong user who created the credentials still has API access.
+
+### A stream returns no records
+
+Gong returns the same "not found" response for an empty result set and for a request made by a user who can't see the requested data. The connector treats both as an empty stream, so a key created by a user with limited call visibility syncs successfully but produces fewer records than you expect. If a stream is unexpectedly empty, confirm the credential owner can see the calls or scorecards in the Gong UI, and check that your start date isn't later than the data you're looking for.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -111,7 +133,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 1.4.0 | 2026-08-30 | [85192](https://github.com/airbytehq/airbyte/pull/85192) | Promote connector to certified |
+| 1.4.0 | 2026-09-11 | [85192](https://github.com/airbytehq/airbyte/pull/85192) | Promote connector to certified |
 | 1.3.6 | 2026-09-08 | [85501](https://github.com/airbytehq/airbyte/pull/85501) | Update dependencies |
 | 1.3.5 | 2026-08-18 | [84600](https://github.com/airbytehq/airbyte/pull/84600) | Update dependencies |
 | 1.3.4 | 2026-08-11 | [83953](https://github.com/airbytehq/airbyte/pull/83953) | Update dependencies |
