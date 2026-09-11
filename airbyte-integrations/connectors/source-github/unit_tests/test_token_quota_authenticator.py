@@ -101,6 +101,13 @@ def test_authenticator_instance_is_shared_with_manifest_streams(rate_limit_mock_
     """
     config = {"access_token": "token1,token2", "repositories": ["org/repo"], "api_url": "https://api.github.com"}
     source = SourceGithub(catalog=None, config=config, state=None)
+    # Real callers (SourceGithub.read) only ever reach ConcurrentDeclarativeSource.streams()
+    # after _validate_and_transform_config has set credentials.auth_mode, which
+    # SelectiveAuthenticator (the manifest's requester_base.authenticator) requires — and after
+    # _sync_manifest_config, since ConcurrentDeclarativeSource.streams() reads from `self._config`
+    # (set at construction time), not from its own `config` argument.
+    config = source._validate_and_transform_config(config)
+    source._sync_manifest_config(config)
 
     manifest_stream = ConcurrentDeclarativeSource.streams(source, config)[0]
     manifest_authenticator = manifest_stream._stream_partition_generator._partition_factory._retriever.requester.authenticator
