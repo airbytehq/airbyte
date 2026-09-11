@@ -67,7 +67,7 @@ To access the Sandbox environment:
 1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the Set up the source page, enter the name for the connector and select **Tiktok Marketing** from the Source type dropdown.
-4. Select `OAuth2.0` or `Sandbox Access Token` as the authorization method, then enter the credentials from step 1.
+4. Select `OAuth2.0` or `Sandbox Access Token` as the authorization method, then enter the credentials from step 1. With `OAuth2.0`, the **Advertiser ID** is optional. Leave it empty to sync every advertiser the access token can reach, or set it to sync a single advertiser. With `Sandbox Access Token`, the **Advertiser ID** is required.
 5. Choose a **Start date**. Any data before this date is not replicated.
 6. Optionally, set an **End date** to limit how far forward the connector replicates data. If not set, the connector syncs data up to the current date.
 7. Optionally, adjust the **Attribution window** (default: 3 days, range: 0–364 days). This controls how far back the connector looks to update metrics for incremental report streams. A higher value helps capture delayed attribution data.
@@ -132,6 +132,8 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 | AdGroupsReportsByCountryDaily              | Prod         | adgroup_id, stat_time_day, country_code    | Yes         |
 | AdGroupsReportsByCountryHourly             | Prod         | adgroup_id, stat_time_hour, country_code   | Yes         |
 
+Streams marked **Prod** only are available when you authenticate with `OAuth2.0`. They don't appear in the connector's catalog when you authenticate with a `Sandbox Access Token`.
+
 The Campaigns stream retrieves campaigns of all buying types: Auction, TopView (Reservation), and Reach & Frequency (Reservation). The connector makes a separate API call per buying type because the TikTok API does not support combining TopView with other buying types in a single request.
 
 ### Smart+ ad coverage
@@ -176,7 +178,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.1.15 | 2026-09-09 | [85796](https://github.com/airbytehq/airbyte/pull/85796) | Stop enabling production-only streams for legacy configs with an empty `secret` |
+| 5.1.15 | 2026-09-11 | [85796](https://github.com/airbytehq/airbyte/pull/85796) | Stop enabling production-only streams for legacy configs with an empty `secret` |
 | 5.1.14 | 2026-09-09 | [85187](https://github.com/airbytehq/airbyte/pull/85187) | Retry transient TikTok API error 51002 |
 | 5.1.13 | 2026-09-08 | [85704](https://github.com/airbytehq/airbyte/pull/85704) | Update dependencies |
 | 5.1.12 | 2026-08-18 | [84765](https://github.com/airbytehq/airbyte/pull/84765) | Update dependencies |
