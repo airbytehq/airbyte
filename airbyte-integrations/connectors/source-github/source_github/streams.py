@@ -6,12 +6,11 @@ import base64
 import binascii
 import struct
 from abc import ABC, abstractmethod
-from datetime import timedelta, timezone
+from datetime import timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
 import requests
-from dateutil.parser import parse as date_parse
 
 from airbyte_cdk import BackoffStrategy, StreamSlice
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
@@ -23,7 +22,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_parse
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from . import constants
 from .backoff_strategies import ContributorActivityBackoffStrategy, GithubStreamABCBackoffStrategy
@@ -349,8 +348,8 @@ class SemiIncrementalMixin(CheckpointMixin):
     # we should break processing records if possible. If `sort` is set to `updated` and `direction` is set to `desc`
     # this means that latest records will be at the beginning of the response and after we processed those latest
     # records we can just stop and not process other record. This will increase speed of each incremental stream
-    # which supports those 2 request parameters. Currently only `IssueMilestones` and `PullRequests` streams are
-    # supporting this.
+    # which supports those 2 request parameters. Of the remaining Python streams only `PullRequests` (a technical
+    # parent, see below) still uses it; the declarative equivalent is `is_data_feed: true` in `manifest.yaml`.
     is_sorted = False
 
     def __init__(self, start_date: str = "", **kwargs):
@@ -554,17 +553,15 @@ class Teams(GithubStreamABC):
 # Below are semi incremental streams
 
 
-class Events(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/activity/events?apiVersion=2022-11-28#list-repository-events
-    """
-
-    cursor_field = "created_at"
-
-
 class PullRequests(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests
+
+    Retained only as the parent of `PullRequestCommits`, which stays Python until Step 7 migrates
+    the parent-child group. The catalog's `pull_requests` stream comes from `manifest.yaml`; this
+    class is not returned by `SourceGithub.streams()`.
+
+    TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): delete with Step 7.
     """
 
     use_cache = True
@@ -614,6 +611,13 @@ class PullRequests(SemiIncrementalMixin, GithubStream):
 class CommitComments(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/commits/comments?apiVersion=2022-11-28#list-commit-comments-for-a-repository
+
+    Retained only as the parent of `CommitCommentReactions`, which builds it internally
+    (`ReactionStream.parent_entity`) and stays Python until Step 7 migrates the parent-child
+    group. The catalog's `commit_comments` stream comes from `manifest.yaml`; this class is not
+    returned by `SourceGithub.streams()`.
+
+    TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): delete with Step 7.
     """
 
     use_cache = True
@@ -622,51 +626,15 @@ class CommitComments(SemiIncrementalMixin, GithubStream):
         return f"repos/{stream_slice['repository']}/comments"
 
 
-class IssueMilestones(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/issues/milestones?apiVersion=2022-11-28#list-milestones
-    """
-
-    is_sorted = "desc"
-    stream_base_params = {
-        "state": "all",
-        "sort": "updated",
-        "direction": "desc",
-    }
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/milestones"
-
-
-class Stargazers(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-stargazers
-    """
-
-    primary_key = "user_id"
-    cursor_field = "starred_at"
-
-    def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        base_headers = super().request_headers(**kwargs)
-        # We need to send below header if we want to get `starred_at` field. See docs (Alternative response with
-        # star creation timestamps) - https://docs.github.com/en/rest/reference/activity#list-stargazers.
-        headers = {"Accept": "application/vnd.github.v3.star+json"}
-
-        return {**base_headers, **headers}
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        """
-        We need to provide the "user_id" for the primary_key attribute
-        and don't remove the whole "user" block from the record.
-        """
-        record = super().transform(record=record, stream_slice=stream_slice)
-        record["user_id"] = record.get("user").get("id")
-        return record
-
-
 class Projects(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/projects/projects?apiVersion=2022-11-28#list-repository-projects
+
+    Retained only as the parent of `ProjectColumns`, itself the parent of `ProjectCards`; both
+    stay Python until Step 7 migrates the parent-child group. The catalog's `projects` stream
+    comes from `manifest.yaml`; this class is not returned by `SourceGithub.streams()`.
+
+    TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): delete with Step 7.
     """
 
     use_cache = True
@@ -682,16 +650,18 @@ class Projects(SemiIncrementalMixin, GithubStream):
 
         return {**base_headers, **headers}
 
-
-class IssueEvents(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/issues/events?apiVersion=2022-11-28#list-issue-events-for-a-repository
-    """
-
-    cursor_field = "created_at"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/issues/events"
+    def get_json_schema(self) -> Mapping[str, Any]:
+        # `ProjectColumns` only reads `id` and `repository` off these records, and the mixin
+        # reads the cursor.
+        return {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "repository": {"type": "string"},
+                "id": {"type": ["null", "integer"]},
+                "updated_at": {"type": ["null", "string"], "format": "date-time"},
+            },
+        }
 
 
 # Below are incremental streams
@@ -700,6 +670,20 @@ class IssueEvents(SemiIncrementalMixin, GithubStream):
 class Comments(IncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/issues/comments?apiVersion=2022-11-28#list-issue-comments-for-a-repository
+
+    Retained only as the parent of `IssueCommentReactions`, which stays Python until Step 7
+    migrates the parent-child group. The catalog's `comments` stream comes from
+    `manifest.yaml` — this class is not returned by `SourceGithub.streams()` and must stay in
+    step with the manifest definition until it can be deleted. `use_cache` here and
+    `use_cache: true` on the manifest requester make both sides name their cache
+    `comments.sqlite`, so the parent read reuses the pages the declarative stream already
+    fetched (while the `since` values match, which is what legacy did too).
+
+    Because it is not in the catalog, its schema lives inline in `manifest.yaml` and there is
+    no `schemas/comments.json`; `get_json_schema` is overridden below so the class stays usable
+    (the base implementation would raise `FileNotFoundError`), following what `Branches` does.
+
+    TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): delete with Step 7.
     """
 
     use_cache = True
@@ -708,6 +692,19 @@ class Comments(IncrementalMixin, GithubStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/issues/comments"
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        # `IssueCommentReactions` only reads `id` (its `parent_key`) and `repository` off these
+        # records. The user-facing schema is the inline one in `manifest.yaml`; duplicating it
+        # here would only give it a chance to drift.
+        return {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "repository": {"type": "string"},
+                "id": {"type": ["null", "integer"]},
+            },
+        }
 
 
 class Commits(IncrementalMixin, GithubStream):
@@ -795,6 +792,18 @@ class Commits(IncrementalMixin, GithubStream):
 class Issues(IncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
+
+    Retained only as the parent of `IssueTimelineEvents`, which stays Python until Step 7
+    migrates the parent-child group. The catalog's `issues` stream comes from `manifest.yaml`
+    — this class is not returned by `SourceGithub.streams()` and must stay in step with the
+    manifest definition until it can be deleted; `use_cache` shares `issues.sqlite` with the
+    declarative stream the same way `Comments` above does.
+
+    Because it is not in the catalog, its schema lives inline in `manifest.yaml` and there is
+    no `schemas/issues.json`; `get_json_schema` is overridden below so the class stays usable
+    (the base implementation would raise `FileNotFoundError`), following what `Branches` does.
+
+    TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): delete with Step 7.
     """
 
     use_cache = True
@@ -807,17 +816,17 @@ class Issues(IncrementalMixin, GithubStream):
         "direction": "asc",
     }
 
-
-class ReviewComments(IncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28#list-review-comments-in-a-repository
-    """
-
-    use_cache = True
-    large_stream = True
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/pulls/comments"
+    def get_json_schema(self) -> Mapping[str, Any]:
+        # `IssueTimelineEvents` only reads `repository` and `number` off these records; see
+        # the note on `Comments.get_json_schema` above.
+        return {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "repository": {"type": "string"},
+                "number": {"type": ["null", "integer"]},
+            },
+        }
 
 
 class GitHubGraphQLStream(GithubStream, ABC):
@@ -1472,15 +1481,6 @@ class PullRequestCommentReactions(SemiIncrementalMixin, GitHubGraphQLStream):
         return {"query": query}
 
 
-class Deployments(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/deployments/deployments?apiVersion=2022-11-28#list-deployments
-    """
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/deployments"
-
-
 class ProjectColumns(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/projects/columns?apiVersion=2022-11-28#list-project-columns
@@ -1626,27 +1626,6 @@ class ProjectCards(GithubStream):
         record["project_id"] = stream_slice["project_id"]
         record["column_id"] = stream_slice["column_id"]
         return record
-
-
-class Workflows(SemiIncrementalMixin, GithubStream):
-    """
-    Get all workflows of a GitHub repository
-    API documentation: https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows
-    """
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/actions/workflows"
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        items = self._safe_json_list(response, key="workflows")
-        if items is None:
-            return
-        for record in items:
-            yield self.transform(record=record, stream_slice=stream_slice)
-
-    def convert_cursor_value(self, value):
-        parsed_value = date_parse(value).astimezone(timezone.utc)
-        return ab_datetime_format(parsed_value, "%Y-%m-%dT%H:%M:%SZ")
 
 
 class WorkflowRuns(SemiIncrementalMixin, GithubStream):
