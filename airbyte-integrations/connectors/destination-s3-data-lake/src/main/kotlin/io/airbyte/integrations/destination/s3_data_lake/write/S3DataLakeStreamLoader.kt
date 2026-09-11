@@ -5,7 +5,9 @@
 package io.airbyte.integrations.destination.s3_data_lake.write
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
@@ -19,6 +21,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.UpdateSchema
+import org.apache.iceberg.types.Types
 
 private val logger = KotlinLogging.logger {}
 
@@ -44,7 +47,60 @@ class S3DataLakeStreamLoader(
         } else {
             ColumnTypeChangeBehavior.SAFE_SUPERTYPE
         }
-    private val incomingSchema = icebergUtil.toIcebergSchema(stream = stream)
+    private val incomingSchema: Schema =
+        withFinalColumnNames(icebergUtil.toIcebergSchema(stream = stream))
+
+    /**
+     * [IcebergUtil.toIcebergSchema] builds the schema from the *input* column names. Records, on
+     * the other hand, arrive keyed by the *final* column names resolved by the CDK (see
+     * [io.airbyte.cdk.load.schema.TableSchemaMapper]), so the two have to agree. Rename the
+     * top-level user columns here, keeping field IDs (and therefore identifier fields and sort
+     * order) intact. Airbyte meta columns are never renamed.
+     */
+    private fun withFinalColumnNames(schema: Schema): Schema {
+        val fields =
+            schema.columns().map { field ->
+                val inputName = field.name()
+                val finalName =
+                    if (inputName in Meta.COLUMN_NAMES) inputName
+                    else stream.tableSchema.getFinalColumnName(inputName)
+                if (finalName == inputName) field
+                else Types.NestedField.from(field).withName(finalName).build()
+            }
+        return Schema(fields, schema.identifierFieldIds())
+    }
+
+    /**
+     * Enabling (or disabling) `lowercase_column_names` on a connection whose table already exists
+     * makes every affected column look like a drop + add to the schema synchronizer: the old column
+     * is deleted and a fresh, empty one is created under the new name. Rather than silently
+     * discarding data, refuse to proceed unless this sync is a truncate refresh, which rebuilds the
+     * table anyway.
+     */
+    private fun failOnCaseOnlyColumnRenames(existingSchema: Schema) {
+        if (!icebergConfiguration.lowercaseColumnNames || stream.isSingleGenerationTruncate()) {
+            return
+        }
+        val incomingNames = incomingSchema.columns().map { it.name() }.toSet()
+        val incomingByLowercaseName = incomingNames.associateBy { it.lowercase() }
+        val renames =
+            existingSchema
+                .columns()
+                .map { it.name() }
+                .filter { it !in incomingNames }
+                .mapNotNull { existing ->
+                    incomingByLowercaseName[existing.lowercase()]?.let { "$existing -> $it" }
+                }
+        if (renames.isNotEmpty()) {
+            throw ConfigErrorException(
+                "Table ${stream.mappedDescriptor.toPrettyString()} has columns whose names differ " +
+                    "only by case from the incoming schema: ${renames.joinToString(", ")}. " +
+                    "This usually means the 'Lowercase Column Names' option was changed after the " +
+                    "table was created. Clear this stream's data and run a full refresh so the " +
+                    "table is recreated with the new column names."
+            )
+        }
+    }
 
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
@@ -60,6 +116,7 @@ class S3DataLakeStreamLoader(
                 catalog = catalog,
                 schema = incomingSchema
             )
+        failOnCaseOnlyColumnRenames(table.schema())
 
         // Note that if we have columnTypeChangeBehavior OVERWRITE, we don't commit the schema
         // change immediately. This is intentional.

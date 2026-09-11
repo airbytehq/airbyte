@@ -223,6 +223,13 @@
         "default" : 200,
         "order" : 8,
         "airbyte_hidden" : true
+      },
+      "lowercase_column_names" : {
+        "type" : "boolean",
+        "description" : "When enabled, all column names are converted to lowercase before being written to Iceberg (for example, \"userId\" becomes \"userid\"). IMPORTANT: toggling this for streams that have already been synced requires clearing their data and running a full refresh.",
+        "title" : "Lowercase Column Names",
+        "default" : false,
+        "order" : 9
       }
     },
     "required" : [ "s3_bucket_name", "s3_bucket_region", "warehouse_location", "main_branch_name", "catalog_type" ]

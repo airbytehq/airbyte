@@ -83,6 +83,16 @@ class S3DataLakeSpecification :
         json = """{"examples":[200], "default": 200, "order": 8, "airbyte_hidden": true}"""
     )
     val flushBatchSizeMb: Long? = null
+
+    @get:JsonSchemaTitle("Lowercase Column Names")
+    @get:JsonPropertyDescription(
+        "When enabled, all column names are converted to lowercase before being written to Iceberg " +
+            "(for example, \"userId\" becomes \"userid\"). IMPORTANT: toggling this for streams that have " +
+            "already been synced requires clearing their data and running a full refresh."
+    )
+    @get:JsonProperty("lowercase_column_names", required = false)
+    @get:JsonSchemaInject(json = """{"default": false, "order": 9}""")
+    val lowercaseColumnNames: Boolean? = null
 }
 
 @Singleton

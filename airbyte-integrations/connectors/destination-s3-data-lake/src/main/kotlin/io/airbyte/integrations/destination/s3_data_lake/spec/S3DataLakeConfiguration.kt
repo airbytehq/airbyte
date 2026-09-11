@@ -41,6 +41,7 @@ data class S3DataLakeConfiguration(
     override val s3BucketConfiguration: S3BucketConfiguration,
     override val icebergCatalogConfiguration: IcebergCatalogConfiguration,
     val flushBatchSizeMb: Long?,
+    val lowercaseColumnNames: Boolean = false,
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -78,6 +79,7 @@ class S3DataLakeConfigurationFactory :
             s3BucketConfiguration = pojo.toS3BucketConfiguration(),
             icebergCatalogConfiguration = pojo.toIcebergCatalogConfiguration(),
             flushBatchSizeMb = pojo.flushBatchSizeMb,
+            lowercaseColumnNames = pojo.lowercaseColumnNames ?: false,
         )
     }
 }
