@@ -1,15 +1,13 @@
 extends: existence
 message: "Avoid first-person pronouns such as '%s'."
-link: 'https://developers.google.com/style/pronouns#personal-pronouns'
+link: "https://developers.google.com/style/pronouns#personal-pronouns"
 ignorecase: true
 level: warning
-# The 'I' tokens use lookaround rather than consuming the surrounding
-# whitespace. Matching ' I ' made the alert span cover both spaces, which shows
-# up as a too-wide underline in editors, and read as "such as ' I '". Dropping
-# `nonword` also lets a project Vocab apply, which it can't when set. See PR #50.
+nonword: true
 tokens:
-  - '(?<=^|\s)I(?=[\s,])'
-  - "\\bI'm\\b"
+  - (?:^|\s)I\s
+  - (?:^|\s)I,\s
+  - \bI'm\b
   - \bme\b
   - \bmy\b
   - \bmine\b

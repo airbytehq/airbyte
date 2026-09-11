@@ -1,6 +1,6 @@
 extends: existence
 message: "Avoid using '%s'."
-link: 'https://developers.google.com/style/tense'
+link: "https://developers.google.com/style/tense"
 ignorecase: true
 level: warning
 tokens:

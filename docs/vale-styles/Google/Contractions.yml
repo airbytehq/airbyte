@@ -1,6 +1,6 @@
 extends: substitution
 message: "Use '%s' instead of '%s'."
-link: 'https://developers.google.com/style/contractions'
+link: "https://developers.google.com/style/contractions"
 level: suggestion
 ignorecase: true
 action:

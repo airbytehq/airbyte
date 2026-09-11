@@ -1,6 +1,6 @@
 extends: existence
 message: "In general, don't use an ellipsis."
-link: 'https://developers.google.com/style/ellipses'
+link: "https://developers.google.com/style/ellipses"
 nonword: true
 level: warning
 action:
