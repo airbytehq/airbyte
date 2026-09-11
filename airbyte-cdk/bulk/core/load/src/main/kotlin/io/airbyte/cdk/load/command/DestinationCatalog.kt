@@ -107,8 +107,31 @@ class DefaultDestinationCatalogFactory {
         namespaceMapper: NamespaceMapper,
     ): DestinationCatalog {
         // we resolve the table names with the properly mapped descriptors
-        val mappedDescriptors =
-            catalog.streams.map { namespaceMapper.map(it.stream.namespace, it.stream.name) }.toSet()
+        val mappedDescriptorsList =
+            catalog.streams.map { namespaceMapper.map(it.stream.namespace, it.stream.name) }
+
+        // Detect streams that collide after namespace mapping (e.g. different source
+        // namespaces mapped to the same destination namespace).
+        val duplicates = mappedDescriptorsList.groupingBy { it }.eachCount().filter { it.value > 1 }
+        if (duplicates.isNotEmpty()) {
+            val collisionDetails =
+                duplicates.keys.joinToString("; ") { desc ->
+                    val originals =
+                        catalog.streams
+                            .filter {
+                                namespaceMapper.map(it.stream.namespace, it.stream.name) == desc
+                            }
+                            .joinToString(", ") {
+                                "(namespace=${it.stream.namespace}, name=${it.stream.name})"
+                            }
+                    "Destination descriptor ${desc.toPrettyString()} mapped from: $originals"
+                }
+            throw ConfigErrorException(
+                "Multiple streams map to the same destination name after namespace mapping. $collisionDetails"
+            )
+        }
+
+        val mappedDescriptors = mappedDescriptorsList.toSet()
         val names = tableNameResolver.getTableNameMapping(mappedDescriptors)
 
         require(
