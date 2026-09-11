@@ -46,7 +46,7 @@ class RedshiftAirbyteClient(
     private val s3Client: S3Client,
 ) : TableSchemaEvolutionClient, TableOperationsClient {
 
-    private val describeTableCache = ConcurrentHashMap<TableName, List<String>>()
+    private val describeTableCache = ConcurrentHashMap<TableName, LinkedHashMap<String, String>>()
 
     override suspend fun createNamespace(namespace: String) {
         try {
@@ -176,15 +176,18 @@ class RedshiftAirbyteClient(
     }
 
     /**
-     * Returns the column names of the given table in ordinal order (matching the physical column
-     * layout)
+     * Returns column names and their normalized Redshift data types in ordinal order (matching the
+     * physical column layout). Used to determine CSV column ordering and which columns require null
+     * sentinel encoding (VARCHAR columns).
      */
-    fun describeTable(tableName: TableName): List<String> =
+    fun describeTable(tableName: TableName): LinkedHashMap<String, String> =
         describeTableCache.getOrPut(tableName) {
             executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
-                val columns = mutableListOf<String>()
+                val columns = linkedMapOf<String, String>()
                 while (rs.next()) {
-                    columns.add(rs.getString(COLUMN_NAME_COLUMN))
+                    val columnName = rs.getString(COLUMN_NAME_COLUMN)
+                    val dataType = normalizeRedshiftType(rs.getString("data_type"))
+                    columns[columnName] = dataType
                 }
                 columns
             }

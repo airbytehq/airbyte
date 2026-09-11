@@ -103,7 +103,7 @@ Zendesk refresh tokens are single-use. Every refresh returns a new refresh token
 
 6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
 7. (Optional) For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default.
-8. (Optional) For **Number of concurrent threads**, enter the number of parallel threads to use for the sync. The default is 4. Increase this value if your Zendesk plan supports higher rate limits. See [Rate limiting](#rate-limiting) for details.
+8. (Optional) For **Number of concurrent threads**, enter the number of parallel threads to use for the sync. The default is 4 and the minimum is 2. Increase this value if your Zendesk plan supports higher rate limits. See [Rate limiting](#rate-limiting) for details.
 9. (Optional) For **Page Size (ticket_comments)**, enter the number of records per page for the `ticket_comments` stream. The default is 100 and the maximum is 1000. Lower values may help prevent timeouts on large Zendesk instances.
 10. (Optional) For **Tickets Search Lookback Window (days)**, enter the number of days the `tickets_search` stream re-scans on each sync. The default is 0. This setting only affects the opt-in `tickets_search` stream. See [Tickets stream: change tracking](#tickets-stream-change-tracking).
 11. Click **Set up source** and wait for the tests to complete.
@@ -154,7 +154,7 @@ The Zendesk Support source connector supports the following streams:
 - [Post Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
 - [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings) \(Incremental\)
 - [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules) \(Client-Side Incremental\)
-- [Side Conversations](https://developer.zendesk.com/api-reference/ticketing/side_conversations/side_conversation/) \(Client-Side Incremental\)
+- [Side Conversations](https://developer.zendesk.com/api-reference/ticketing/side_conversations/side_conversation/) \(Client-Side Incremental\) \(Requires a plan that includes side conversations\)
 - [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies) \(Client-Side Incremental\)
 - [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
 - [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) \(Incremental\)
@@ -225,7 +225,7 @@ Zendesk applies [rate limits](https://developer.zendesk.com/api-reference/introd
 | Enterprise                               | 700                 |
 | Enterprise Plus / High Volume API add-on | 2500                |
 
-The connector's **Number of concurrent threads** setting (default: 4) controls how many streams sync in parallel. If your plan supports higher rate limits, increase this value for faster syncs. The maximum is 40.
+The connector's **Number of concurrent threads** setting (default: 4) controls how many streams sync in parallel. If your plan supports higher rate limits, increase this value for faster syncs. The minimum is 2 and the maximum is 40. A single thread leaves no other stream emitting while the `tickets` stream reads, so a saved value of 1 is treated as 2 from the first sync after upgrading to 5.6.0, and the stored configuration is updated to match. If the source settings form flags the field before that first sync, set it to 2 or more.
 
 Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `tickets`, `ticket_comments`, `ticket_events`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The opt-in `tickets_search` stream uses the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint, which has a separate rate limit of 100 requests per minute. The `deleted_tickets` stream has a rate limit of 10 requests per minute. The connector includes a built-in API budget that automatically throttles requests to stay within these limits.
 
@@ -238,6 +238,20 @@ The connector should not run into Zendesk API limitations under normal usage. [C
 Some streams require administrator-level permissions in Zendesk (for example, `account_attributes`, `attribute_definitions`, `audit_logs`, and `ticket_forms`). If the authenticated user does not have access to a stream's endpoint, the connector skips that stream and continues syncing the remaining streams. Skipped streams are logged with a message indicating the permission issue.
 
 To sync all available streams, authenticate with a Zendesk account that has an Administrator role.
+
+#### Side conversations access
+
+Side conversations are included in Zendesk Suite Professional and above, and are available to Support Professional and above through the [Collaboration add-on](https://support.zendesk.com/hc/en-us/articles/4408834152730-About-Zendesk-product-add-ons). You also have to [activate side conversations](https://support.zendesk.com/hc/en-us/articles/4408832279962-Activating-and-configuring-side-conversations) in Admin Center, and on Enterprise plans a custom role can restrict which agents may use them.
+
+Zendesk grants access to side conversations per ticket, so this stream can read some tickets and be refused on others. As of version 5.5.2, the connector logs a message for the ticket, skips it, and keeps syncing the rest of the stream when Zendesk returns:
+
+- `403`, when Zendesk denies access to that ticket's side conversations.
+- `404`, when the ticket no longer exists. The `tickets` stream returns deleted tickets, so this is expected.
+- `422`, when the ticket type doesn't support side conversations.
+
+If your account doesn't have side conversations at all, Zendesk refuses every ticket this way, so the stream ends up empty rather than failing.
+
+Versions before 5.5.2 failed the whole sync on a `403` or `404` (the `422` case has been skipped since 5.4.1). Because `side_conversations` reads its parent tickets incrementally, that failure also stopped the parent cursor from advancing, so every following sync restarted from the same ticket and failed again. Upgrade to 5.5.2 or later if your syncs fail this way.
 
 #### Search index delay in the `tickets_search` stream
 
@@ -270,6 +284,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.6.0 | 2026-09-10 | [85760](https://github.com/airbytehq/airbyte/pull/85760) | Raise the minimum **Number of concurrent threads** to 2 and migrate existing single-thread configurations, which hit the heartbeat timeout during long `tickets` reads |
+| 5.5.2 | 2026-08-26 | [84353](https://github.com/airbytehq/airbyte/pull/84353) | Skip individual tickets that Zendesk refuses on the `side_conversations` stream instead of failing the whole sync. Access to side conversations is granted per ticket, and the refusal arrives as a `403` with an empty body that the previous filter could not match |
 | 5.5.1 | 2026-08-11 | [82679](https://github.com/airbytehq/airbyte/pull/82679) | Request an explicit 48h access-token lifetime and persist OAuth token expiry on initial authentication, so the first `check` no longer prematurely refreshes and rotates the single-use refresh token |
 | 5.5.0 | 2026-08-10 | [83812](https://github.com/airbytehq/airbyte/pull/83812) | Promoted release candidate to GA |
 | 5.5.0-rc.1 | 2026-08-03 | [81640](https://github.com/airbytehq/airbyte/pull/81640) | Revert `tickets` stream to the Incremental Ticket Export endpoint (cursor back to `generated_timestamp`) to fix silent data loss on system-driven updates introduced in 5.2.0; add the opt-in `tickets_search` stream. See the migration guide. |

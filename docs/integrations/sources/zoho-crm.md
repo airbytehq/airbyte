@@ -182,10 +182,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.1.4   | 2026-08-24 | [80278](https://github.com/airbytehq/airbyte/pull/80278) | Fix incremental sync: tolerate `Z`-suffixed (UTC) cursor values and resolve cursor field per module instead of hardcoding `Modified_Time` |
-| 0.1.3   | 2025-02-05 | [42864](https://github.com/airbytehq/airbyte/pull/42864) | Migrate to Poetry                                                                                                                         |
-| 0.1.2   | 2023-03-19 | [23906](https://github.com/airbytehq/airbyte/pull/23906) | added support for the latest CDK, fixed SAT                                                                                               |
-| 0.1.1   | 2023-03-15 | [24034](https://github.com/airbytehq/airbyte/pull/24034) | Set airbyte type to string for zoho autonumbers when they include prefix or suffix                                                        |
-| 0.1.0   | 2022-04-06 | [11193](https://github.com/airbytehq/airbyte/pull/11193) | Initial release                                                                                                                           |
+| 0.1.5 | 2026-08-25 | [79062](https://github.com/airbytehq/airbyte/pull/79062) | Update dependencies |
+| 0.1.4 | 2026-08-24 | [80278](https://github.com/airbytehq/airbyte/pull/80278) | Fix incremental sync: tolerate `Z`-suffixed (UTC) cursor values and resolve cursor field per module instead of hardcoding `Modified_Time` |
+| 0.1.3 | 2025-02-05 | [42864](https://github.com/airbytehq/airbyte/pull/42864) | Migrate to Poetry |
+| 0.1.2 | 2023-03-19 | [23906](https://github.com/airbytehq/airbyte/pull/23906) | added support for the latest CDK, fixed SAT |
+| 0.1.1 | 2023-03-15 | [24034](https://github.com/airbytehq/airbyte/pull/24034) | Set airbyte type to string for zoho autonumbers when they include prefix or suffix |
+| 0.1.0 | 2022-04-06 | [11193](https://github.com/airbytehq/airbyte/pull/11193) | Initial release |
 
 </details>

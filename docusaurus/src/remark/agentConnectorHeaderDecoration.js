@@ -1,8 +1,15 @@
+const fs = require("fs");
+const path = require("path");
 const visit = require("unist-util-visit").visit;
 const { toAttributes } = require("../helpers/objects");
 
 const ICON_BASE_URL =
   "https://connectors.airbyte.com/files/metadata/airbyte";
+
+const SOURCES_DIR = path.resolve(__dirname, "../../../docs/integrations/sources");
+
+const hasDataReplicationPage = (slug) =>
+  fs.existsSync(path.join(SOURCES_DIR, `${slug}.md`));
 
 const isAgentConnectorPage = (vfile) => {
   return (
@@ -65,7 +72,7 @@ const plugin = () => {
         (ch.type === "heading" && ch.depth === 1),
     );
 
-    if (headingIdx !== -1) {
+    if (headingIdx !== -1 && hasDataReplicationPage(slug)) {
       const bannerNode = {
         type: "mdxJsxFlowElement",
         name: "ConnectorTypeBanner",

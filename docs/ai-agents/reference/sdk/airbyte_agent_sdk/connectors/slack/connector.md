@@ -131,6 +131,7 @@ Classes
         - type_: Message type.
         - subtype: Message subtype.
         - ts: Message timestamp (unique identifier).
+        - float_ts: Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API.
         - user: User ID who sent the message.
         - text: Message text content.
         - thread_ts: Thread parent timestamp.
@@ -145,11 +146,13 @@ Classes
         - blocks: Block kit blocks.
         - bot_id: Bot ID if message was sent by a bot.
         - bot_profile: Bot profile information.
+        - username: Display name stamped on the message by incoming webhooks and legacy bot posts; absent on ordinary user messages and on most modern app messages, which carry bot_profile instead.
         - team: Team ID.
+        - channel_id: Channel ID the message was posted in. Added by the Airbyte Slack source; not returned by the Slack API.
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -161,6 +164,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.slack.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against channel_messages records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, channel: str, cursor: str | None = None, limit: int | None = None, oldest: str | None = None, latest: str | None = None, inclusive: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.SlackExecuteResultWithMeta[list[Message], ChannelMessagesListResultMeta]`
     :   Returns messages from a channel
@@ -267,7 +285,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -279,6 +297,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.slack.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against channels records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, name: str, is_private: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.Channel`
     :   Creates a new public or private channel
@@ -708,7 +741,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'delete', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -790,6 +823,7 @@ Classes
         - type_: Message type.
         - subtype: Message subtype.
         - ts: Message timestamp (unique identifier).
+        - float_ts: Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API.
         - user: User ID who sent the message.
         - text: Message text content.
         - thread_ts: Thread parent timestamp.
@@ -803,10 +837,11 @@ Classes
         - blocks: Block kit blocks.
         - bot_id: Bot ID if message was sent by a bot.
         - team: Team ID.
+        - channel_id: Channel ID the thread lives in. Added by the Airbyte Slack source; not returned by the Slack API.
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -818,6 +853,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.slack.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against threads records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, channel: str, ts: str | None = None, cursor: str | None = None, limit: int | None = None, oldest: str | None = None, latest: str | None = None, inclusive: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.SlackExecuteResultWithMeta[list[Thread], ThreadsListResultMeta]`
     :   Returns messages in a thread (thread replies from conversations.replies endpoint)
@@ -877,7 +927,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -889,6 +939,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.slack.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, user: str, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.User`
     :   Get information about a single user by ID
