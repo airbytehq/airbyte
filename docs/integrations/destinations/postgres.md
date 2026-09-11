@@ -237,6 +237,13 @@ The Postgres destination uses Direct Load architecture. Each stream is written d
 - `_airbyte_generation_id`: an identifier for the generation of the sync. The column type in
   Postgres is `BIGINT`.
 
+Tables that a connector version earlier than 3.0.0 created don't have the `_airbyte_meta` and
+`_airbyte_generation_id` columns, and normal schema evolution doesn't add them, so syncs into those
+tables fail with a missing-column error. Starting with version 3.0.19, the connector can add both
+columns before it writes, as nullable columns with no values for existing rows. This repair is off by
+default. It's enabled by setting the `AIRBYTE_DESTINATION_POSTGRES_META_COLUMN_REPAIR` environment
+variable to `true` on the connector.
+
 The connector also creates indexes on each final table. Every table gets an index on
 `_airbyte_extracted_at`. Deduplicated streams additionally get an index on the primary key columns
 and, when the stream has one, an index on the cursor column. The connector recreates these indexes
@@ -360,7 +367,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                                                                                                               |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.19  | 2026-09-09 | [84953](https://github.com/airbytehq/airbyte/pull/84953)   | Add missing Airbyte meta columns (`_airbyte_meta`, `_airbyte_generation_id`) to tables created by pre-direct-load connector versions, and read a missing `_airbyte_generation_id` column as generation 0, when the `AIRBYTE_DESTINATION_POSTGRES_META_COLUMN_REPAIR` env var is set to `true` (off by default). |
+| 3.0.19  | 2026-09-11 | [84953](https://github.com/airbytehq/airbyte/pull/84953)   | Add missing Airbyte meta columns (`_airbyte_meta`, `_airbyte_generation_id`) to tables created by pre-direct-load connector versions, and read a missing `_airbyte_generation_id` column as generation 0, when the `AIRBYTE_DESTINATION_POSTGRES_META_COLUMN_REPAIR` env var is set to `true` (off by default). |
 | 3.0.18 | 2026-09-01 | [84989](https://github.com/airbytehq/airbyte/pull/84989) | Upgrade to Bulk CDK 1.0.25. |
 | 3.0.17  | 2026-08-20 | [84853](https://github.com/airbytehq/airbyte/pull/84853)   | Strip null bytes nested inside objects and arrays, which PostgreSQL rejects in `jsonb` columns                                                                                                                                                                                                        |
 | 3.0.16  | 2026-08-10 | [75902](https://github.com/airbytehq/airbyte/pull/75902)   | Fail the sync when a batch of records can't be loaded, instead of logging the error and continuing; strip null bytes from raw JSON data                                                                                                                                                               |
