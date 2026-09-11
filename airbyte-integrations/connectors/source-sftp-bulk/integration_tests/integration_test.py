@@ -50,6 +50,15 @@ def test_check_valid_config_private_key(configured_catalog: ConfiguredAirbyteCat
     assert outcome.status == Status.SUCCEEDED
 
 
+def test_check_valid_config_encrypted_private_key(
+    configured_catalog: ConfiguredAirbyteCatalog, config_encrypted_private_key: Mapping[str, Any]
+):
+    outcome = SourceSFTPBulk(catalog=configured_catalog, config=config_encrypted_private_key, state=None).check(
+        logger, config_encrypted_private_key
+    )
+    assert outcome.status == Status.SUCCEEDED
+
+
 def test_check_valid_config(configured_catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any]):
     outcome = SourceSFTPBulk(catalog=configured_catalog, config=config, state=None).check(logger, config)
     assert outcome.status == Status.SUCCEEDED

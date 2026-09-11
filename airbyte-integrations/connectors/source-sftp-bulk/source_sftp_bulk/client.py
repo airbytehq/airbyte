@@ -10,7 +10,7 @@ from typing import Optional
 
 import backoff
 import paramiko
-from paramiko.ssh_exception import AuthenticationException
+from paramiko.ssh_exception import AuthenticationException, PasswordRequiredException
 
 from airbyte_cdk import AirbyteTracedException, FailureType
 
@@ -23,16 +23,28 @@ _KEY_CLASSES = [
 ]
 
 
-def _parse_private_key(private_key: str) -> paramiko.PKey:
+def _parse_private_key(private_key: str, passphrase: Optional[str] = None) -> paramiko.PKey:
     """Try each paramiko key class to auto-detect the private key type."""
+    password_required = False
     for key_class in _KEY_CLASSES:
         try:
-            return key_class.from_private_key(io.StringIO(private_key))
+            return key_class.from_private_key(io.StringIO(private_key), password=passphrase)
+        except PasswordRequiredException:
+            password_required = True
         except (paramiko.SSHException, ValueError, struct.error):
             continue
+    if password_required and not passphrase:
+        message = "Private key is encrypted and requires a passphrase. Provide the Private key passphrase."
+    elif passphrase:
+        message = (
+            "Private key could not be decrypted. The passphrase may be incorrect, or the key format may be unsupported. "
+            "Supported types: RSA, Ed25519, ECDSA, DSS."
+        )
+    else:
+        message = "Private key format is not recognized. Supported types: RSA, Ed25519, ECDSA, DSS."
     raise AirbyteTracedException(
         failure_type=FailureType.config_error,
-        message="Private key format is not recognized. Supported types: RSA, Ed25519, ECDSA, DSS.",
+        message=message,
         internal_message="Failed to parse private key with any supported paramiko key class: RSAKey, Ed25519Key, ECDSAKey, DSSKey.",
     )
 
@@ -56,6 +68,7 @@ class SFTPClient:
         username: str,
         password: str = None,
         private_key: Optional[str] = None,
+        passphrase: Optional[str] = None,
         port: Optional[int] = None,
         timeout: Optional[int] = REQUEST_TIMEOUT,
     ):
@@ -64,7 +77,7 @@ class SFTPClient:
         self.password = password
         self.port = int(port) or 22
 
-        self.key = _parse_private_key(private_key) if private_key else None
+        self.key = _parse_private_key(private_key, passphrase) if private_key else None
         self.timeout = float(timeout) if timeout else REQUEST_TIMEOUT
 
         self._connect()
