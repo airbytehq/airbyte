@@ -46,6 +46,10 @@ To authenticate with OAuth in **Airbyte Open Source**, create your own OAuth cli
    See [Choose Gmail API scopes](https://developers.google.com/workspace/gmail/api/auth/scopes).
 3. Follow [Google's web server OAuth 2.0 guide](https://developers.google.com/identity/protocols/oauth2/web-server) to create a **Web application** OAuth client and exchange the authorization code for a refresh token.
 
+:::note
+If you configured this source before version 0.1.1, **Client ID**, **Client Secret**, and **Refresh Token** were top-level fields. The connector moves them into the nested **Authentication** object automatically the first time it runs on a newer version, as long as all three values are present. You don't need to re-enter them. Sources that already use the nested OAuth or Service Account Key configuration aren't changed.
+:::
+
 #### Service Account Key for Airbyte Open Source
 
 You can also authenticate with a Google service account key. Because Gmail mailboxes are owned by individual users, the service account must use [domain-wide delegation](https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority) to access mailboxes in a Google Workspace domain.
