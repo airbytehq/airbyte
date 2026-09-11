@@ -1,7 +1,28 @@
 extends: existence
 message: "Use the Oxford comma in '%s'."
-link: "https://developers.google.com/style/commas"
+link: 'https://developers.google.com/style/commas'
 scope: sentence
 level: warning
+nonword: true
+# List items may be several words long, not just one. Four guards keep the
+# false-positive rate down:
+#
+#   1. The comma can't be the one closing a fronted subordinate clause
+#      ('When your alarm rings, you turn it off and tumble out of bed.') --
+#      that comma separates clauses, not list items. Only the first comma of
+#      such a sentence is exempt, so 'When it rains, apples, pears or bananas
+#      get wet.' is still caught.
+#   2. The item can't open with a clause-introducer (', which ...',
+#      ', specifically ...').
+#   3. The item can't open with a subject pronoun followed by a verb, which
+#      marks a compound predicate rather than a list ('..., you walk to the
+#      fridge and get a snack.'). A pronoun directly followed by 'and'/'or'
+#      is a real list item, so ', you and me.' still matches.
+#   4. Neither item may contain an auxiliary verb, which is another compound
+#      predicate signal (', it has some downsides and is officially
+#      discouraged.').
+#
+# The trailing anchor allows end-of-scope so list fragments ('Apples, pears
+# or bananas') are still caught.
 tokens:
-  - '(?:[^,]+,){1,}\s\w+\s(?:and|or)'
+  - '(?<!^(?i:when|whenever|while|if|unless|until|although|though|because|since|after|before|once|whereas|whether|as)\b[^,]{0,80}),\s(?!(?:which|who|whom|whose|that|where|when|while|because|since|although|though|if|unless|so|but|and|or|however|therefore|thus|specifically|especially|namely|then|take|see|note|consider|make|use|either|neither)\b)(?!(?i:i|you|we|they|he|she|it)\s+(?!(?:and|or)\b))(?:(?!\b(?:is|are|was|were|has|have|had|be|been|being|will|would|can|could|should|may|might|must|do|does|did)\b)\w+ ){0,4}\w+ (?:and|or) (?:(?!\b(?:is|are|was|were|has|have|had|be|been|being|will|would|can|could|should|may|might|must|do|does|did)\b)\w+ ){0,4}\w+(?:[.?!]|$)'

@@ -1,8 +1,13 @@
 extends: existence
 message: "'%s' should be in lowercase."
-link: "https://developers.google.com/style/colons"
-nonword: true
+link: 'https://developers.google.com/style/colons'
 level: warning
 scope: sentence
+# The match is the word itself, not ': X', and `nonword` is off. Both are
+# required for a project Vocab to work: Vale compares accept.txt entries
+# against the matched text, and `nonword: true` opts out of that entirely.
+# So a proper noun after a colon can be exempted by adding it to accept.txt.
+# The guide's other exemption, notice labels, is handled by the lookbehinds;
+# headings are already excluded by `scope: sentence`. See issue #20.
 tokens:
-  - ':\s[A-Z]'
+  - '(?<!Note: )(?<!Caution: )(?<!Warning: )(?<!Success: )(?<=:\s)[A-Z]\w+'

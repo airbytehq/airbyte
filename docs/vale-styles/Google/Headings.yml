@@ -4,8 +4,11 @@ link: "https://developers.google.com/style/capitalization#capitalization-in-titl
 level: warning
 scope: heading
 match: $sentence
-indicators:
-  - ":"
+# No `indicators: [":"]` here. That makes Vale require a capital after a colon,
+# which is the Microsoft convention this rule was originally copied from. This
+# guide says the opposite: "the first word after a colon is generally
+# lowercase" (developers.google.com/style/colons), and Colons.yml enforces
+# exactly that. See issue #58.
 exceptions:
   - Azure
   - CLI

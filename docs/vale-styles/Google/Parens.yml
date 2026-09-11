@@ -1,7 +1,15 @@
 extends: existence
 message: "Use parentheses judiciously."
-link: "https://developers.google.com/style/parentheses"
+link: 'https://developers.google.com/style/parentheses'
 nonword: true
 level: suggestion
+# `[^)]` rather than `.+`: a greedy match ran from the first '(' on a line to
+# the last ')', so 'Text (one) and more (two).' produced a single alert
+# covering everything between them. See issue #30.
+# A bare 3-5 letter acronym is skipped: Acronyms.yml requires acronyms to be
+# defined as 'Spelled Out Term (ACRONYM)', so flagging those parentheses would
+# put the two rules in direct conflict. The acronym has to be the whole
+# parenthetical — '(NASA rocket program)' is an ordinary aside and still
+# flags. Length matches the {3,5} in Acronyms.yml. See PR #59.
 tokens:
-  - '\(.+\)'
+  - '\((?![A-Z]{3,5}\))[^)]+\)'

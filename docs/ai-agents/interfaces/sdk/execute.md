@@ -234,7 +234,7 @@ For multi-connector agents, add the connector name to the start of each function
 | `framework=` | A tool failure surfaces as |
 | ------------ | -------------------------- |
 | `"pydantic_ai"` | Raises `pydantic_ai.ModelRetry`, so the agent retries. |
-| `"langchain"` | Raises `langchain_core.tools.ToolException`. LangChain aborts the run unless you feed the message back to the model: pass `handle_tool_error=True` when you construct the tool, or add the middleware shown in [Surface tool errors back to the model](../../get-started/developer-quickstart/tutorial-langchain#surface-tool-errors-back-to-the-model). |
+| `"langchain"` | Raises `langchain_core.tools.ToolException`. LangChain aborts the run unless you feed the message back to the model: pass `handle_tool_error=True` when you construct the tool, or follow [Surface tool errors back to the model](../../get-started/developer-quickstart/tutorial-langchain#surface-tool-errors-back-to-the-model). |
 | `"openai_agents"` | Returns the failure message as the tool result instead of raising, which is what the OpenAI Agents SDK expects. Register the tool with `function_tool(..., strict_mode=False)` so the open-ended `params` dict is accepted. |
 | `"mcp"` | Raises `fastmcp.exceptions.ToolError`, which FastMCP serializes as a failed tool result. |
 | `"none"` | Raises `AirbyteToolError`. |

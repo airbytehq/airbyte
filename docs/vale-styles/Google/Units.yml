@@ -4,5 +4,7 @@ link: "https://developers.google.com/style/units-of-measure"
 nonword: true
 level: error
 tokens:
-  - \b\d+(?:B|kB|MB|GB|TB)
-  - \b\d+(?:ns|ms|s|min|h|d)
+  - '\b\d+(?:B|kB|MB|GB|TB)\b'
+  - '\b\d+(?:ns|ms|min|h|d)\b'
+  # Seconds are split out so a decade ('1990s') isn't read as a unit.
+  - '\b\d+s\b(?<!\b(?:19|20)\d\ds\b)'
