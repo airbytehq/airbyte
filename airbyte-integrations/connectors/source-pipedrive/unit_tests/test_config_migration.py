@@ -31,7 +31,7 @@ def _read_deals(config):
 def test_replication_start_date_is_optional_with_default():
     manifest = yaml.safe_load(_YAML_FILE_PATH.read_text())
     spec = manifest["spec"]["connection_specification"]
-    assert spec["required"] == ["api_token"]
+    assert spec["required"] == ["credentials"]
     assert spec["properties"]["replication_start_date"]["default"] == DEFAULT_START_DATE
 
 
@@ -99,6 +99,10 @@ def test_legacy_authorization_config_is_migrated(capsys):
 
 
 def test_current_config_is_not_migrated(capsys):
-    source = get_source({"api_token": "current-token", "replication_start_date": "2017-01-25T00:00:00Z"})
-    assert source._config["api_token"] == "current-token"
+    config = {
+        "credentials": {"auth_type": "api_token", "api_token": "current-token"},
+        "replication_start_date": "2017-01-25T00:00:00Z",
+    }
+    source = get_source(config)
+    assert source._config["credentials"]["api_token"] == "current-token"
     assert "CONTROL" not in capsys.readouterr().out

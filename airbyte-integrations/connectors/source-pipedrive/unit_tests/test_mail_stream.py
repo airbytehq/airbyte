@@ -31,7 +31,7 @@ def _page(records, next_start=None):
 
 
 def _threads_request(folder, start=None):
-    params = {"api_token": "test_token", "limit": "50", "folder": folder}
+    params = {"limit": "50", "folder": folder}
     if start is not None:
         params["start"] = str(start)
     return _request(_MAIL_THREADS_URL, params)
@@ -53,7 +53,7 @@ def test_mail_stream_succeeds_when_additional_data_missing():
         http_mocker.get(_threads_request("inbox"), _response(_page([{"id": 1, "subject": "t"}])))
         _mock_empty_folders(http_mocker)
         http_mocker.get(
-            _request(_MAIL_MESSAGES_URL, {"api_token": "test_token", "limit": "50"}),
+            _request(_MAIL_MESSAGES_URL, {"limit": "50"}),
             _response({"success": True, "data": [{"id": 10, "subject": "m1"}, {"id": 11, "subject": "m2"}]}),
         )
 
@@ -73,7 +73,7 @@ def test_mail_follows_parent_thread_pagination():
         _mock_empty_folders(http_mocker)
         for thread_id, message_id in ((1, 10), (2, 20)):
             http_mocker.get(
-                _request(f"{_MAIL_THREADS_URL}/{thread_id}/mailMessages", {"api_token": "test_token", "limit": "50"}),
+                _request(f"{_MAIL_THREADS_URL}/{thread_id}/mailMessages", {"limit": "50"}),
                 _response({"success": True, "data": [{"id": message_id, "mail_thread_id": thread_id}]}),
             )
 

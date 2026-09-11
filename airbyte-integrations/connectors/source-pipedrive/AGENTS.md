@@ -18,11 +18,11 @@ Pipedrive returns custom fields on deals, persons, organizations, products, and 
 
 **Why this matters:** Turning on `autoImportSchema`, tightening `additionalProperties`, or adding schema normalization would silently drop every custom field. Because the keys differ per Pipedrive account, they can never be listed in the static schema.
 
-## 4. Authentication Is a Query Parameter, Not an Authenticator
+## 4. OAuth Is the Default; the API Token Travels in a Header and Legacy Configs Are Migrated
 
-There is no `authenticator` in the manifest. Every stream injects `api_token: "{{ config['api_token'] }}"` into `request_parameters`, which is how Pipedrive's [API token auth](https://pipedrive.readme.io/docs/core-api-concepts-authentication) works. The token belongs to a single user, so all streams are scoped to that user's visibility and permission set.
+`definitions.base_requester` carries a `SelectiveAuthenticator` keyed on `credentials.auth_type`. `oauth2.0` (first `oneOf` option, wired to `advanced_auth` for Declarative OAuth) refreshes at `https://oauth.pipedrive.com/oauth/token` with a Basic `client_id:client_secret` header and sends `Authorization: Bearer`; `api_token` sends the token as the `x-api-token` header, never as a query parameter. `url_base` switches to `{{ credentials.api_domain }}/api/` when the OAuth token response supplied an `api_domain` (Pipedrive routes OAuth calls to the company host) and otherwise stays on `https://api.pipedrive.com/`. Two chained `ConfigMigration`s in `config_normalization_rules` lift pre-2.0.0 `authorization.api_token` to the top level and then wrap a flat `api_token` into `credentials: {auth_type: api_token, api_token}`. Either credential belongs to a single user, so all streams are scoped to that user's visibility and permission set.
 
-**Why this matters:** The token is part of the URL, so it appears in request logs and in any debug output that prints URLs. It also means `check` succeeding does not imply the token can see company-wide data. Issue [airbyte-internal-issues#17201](https://github.com/airbytehq/airbyte-internal-issues/issues/17201) owns adding OAuth and moving auth to a header; do not document or add OAuth ahead of that work.
+**Why this matters:** Do not add `api_token` back to any `request_parameters` (a unit test asserts none remain) and do not reference `config['api_token']` outside the migration, since migrated configs only carry `credentials`. OAuth from the pre-2023 connector (0.1.x) is not migrated and needs re-authentication. `check` succeeding does not imply the credential can see company-wide data.
 
 ## 5. Mail Streams Are Scoped to One User's Mailbox and Fan Out per Folder and Thread
 

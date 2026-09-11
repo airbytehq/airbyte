@@ -21,7 +21,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: deal
         record_selector:
@@ -70,7 +69,6 @@ definitions:
           path: v1/dealFields
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -103,7 +101,6 @@ definitions:
           path: v1/goals/find
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -128,7 +125,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: file
         record_selector:
@@ -179,7 +175,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: filter
         record_selector:
@@ -228,7 +223,6 @@ definitions:
           path: v1/leadLabels
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -250,7 +244,6 @@ definitions:
           path: v1/leads
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -283,7 +276,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: note
         record_selector:
@@ -334,7 +326,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: activity
         record_selector:
@@ -383,7 +374,6 @@ definitions:
           path: v1/activityTypes
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -405,7 +395,6 @@ definitions:
           path: v1/activityFields
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -436,7 +425,6 @@ definitions:
           path: v1/currencies
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -460,7 +448,6 @@ definitions:
           path: v1/mailbox/mailThreads/{{ stream_partition.thread_id }}/mailMessages
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
           error_handler:
             type: CompositeErrorHandler
@@ -506,7 +493,6 @@ definitions:
           path: v1/organizations
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: organization
         record_selector:
@@ -538,7 +524,6 @@ definitions:
           path: v1/organizationFields
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -569,7 +554,6 @@ definitions:
           path: v1/permissionSets
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -593,7 +577,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: person
         record_selector:
@@ -642,7 +625,6 @@ definitions:
           path: v1/personFields
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -675,7 +657,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: pipeline
         record_selector:
@@ -726,7 +707,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: product
         record_selector:
@@ -775,7 +755,6 @@ definitions:
           path: v1/productFields
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -806,7 +785,6 @@ definitions:
           path: v1/roles
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -839,7 +817,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: stage
         record_selector:
@@ -890,7 +867,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: user
         record_selector:
@@ -939,7 +915,6 @@ definitions:
           path: v1/deals/{{ stream_slice.parent_id }}/products
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
           error_handler:
             type: CompositeErrorHandler
@@ -985,7 +960,6 @@ definitions:
           path: v1/mailbox/mailThreads
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -1030,7 +1004,6 @@ definitions:
           path: v1/callLogs
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -1062,8 +1035,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v1/leadSources
           http_method: GET
-          request_parameters:
-            api_token: "{{ config['api_token'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1085,8 +1056,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v1/legacyTeams
           http_method: GET
-          request_parameters:
-            api_token: "{{ config['api_token'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1122,7 +1091,6 @@ definitions:
           path: api/v2/{{ stream_slice['path_segment'] }}
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "500"
           error_handler:
             type: CompositeErrorHandler
@@ -1167,7 +1135,6 @@ definitions:
           path: api/v2/tasks
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "500"
           error_handler:
             type: CompositeErrorHandler
@@ -1206,7 +1173,6 @@ definitions:
           path: api/v2/deals/installments
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             deal_ids: "{{ stream_slice['parent_id'] | join(',') }}"
             limit: "500"
           error_handler:
@@ -1258,7 +1224,6 @@ definitions:
           path: v1/deals/{{ stream_slice['parent_id'] }}/flow
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "500"
             items: dealChange
             all_changes: "1"
@@ -1321,7 +1286,6 @@ definitions:
           path: v1/permissionSets/{{ stream_slice['parent_id'] }}/assignments
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "500"
           error_handler:
             type: CompositeErrorHandler
@@ -1363,7 +1327,40 @@ definitions:
           $ref: "#/schemas/permission_set_assignments"
   base_requester:
     type: HttpRequester
-    url_base: https://api.pipedrive.com/
+    url_base: "{{ (config['credentials']['api_domain'] ~ '/api/') if config.get('credentials', {}).get('api_domain') else 'https://api.pipedrive.com/' }}"
+    authenticator:
+      type: SelectiveAuthenticator
+      authenticator_selection_path:
+        - credentials
+        - auth_type
+      authenticators:
+        oauth2.0:
+          type: OAuthAuthenticator
+          client_id: "{{ config['credentials']['client_id'] }}"
+          client_secret: "{{ config['credentials']['client_secret'] }}"
+          refresh_token: "{{ config['credentials']['refresh_token'] }}"
+          token_refresh_endpoint: https://oauth.pipedrive.com/oauth/token
+          grant_type: refresh_token
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['credentials']['client_id'] + ':' + config['credentials']['client_secret']) | base64encode }}"
+          refresh_token_updater:
+            refresh_token_name: refresh_token
+            access_token_config_path:
+              - credentials
+              - access_token
+            refresh_token_config_path:
+              - credentials
+              - refresh_token
+            token_expiry_date_config_path:
+              - credentials
+              - token_expiry_date
+        api_token:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['credentials']['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: x-api-token
     error_handler:
       $ref: "#/definitions/base_error_handler"
   base_error_handler:
@@ -1518,18 +1515,85 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - api_token
+      - credentials
     properties:
-      api_token:
-        type: string
-        title: API Token
-        description: >-
-          Your personal Pipedrive API token. In Pipedrive, click your name (top
-          right) > Company settings > Personal preferences > API and copy the
-          token. If the API tab is missing, ask your Pipedrive admin to enable
-          API access for your user.
-        airbyte_secret: true
+      credentials:
+        type: object
+        title: Authentication
+        description: Choose how to authenticate to Pipedrive.
         order: 0
+        oneOf:
+          - type: object
+            title: OAuth2.0
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: The Client ID of your Pipedrive OAuth application.
+                airbyte_secret: true
+                order: 1
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The Client Secret of your Pipedrive OAuth application.
+                airbyte_secret: true
+                order: 2
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: Refresh Token to renew the expired Access Token.
+                airbyte_secret: true
+                order: 3
+              access_token:
+                type: string
+                title: Access Token
+                description: Access Token for making authenticated requests.
+                airbyte_secret: true
+                order: 4
+              token_expiry_date:
+                type: string
+                title: Token Expiry Date
+                description: The date-time when the access token expires.
+                format: date-time
+                order: 5
+              api_domain:
+                type: string
+                title: API Domain
+                description: >-
+                  Company-specific API base URL returned by the OAuth token
+                  response, e.g. https://mycompany.pipedrive.com.
+                order: 6
+            additionalProperties: true
+          - type: object
+            title: API Token
+            required:
+              - auth_type
+              - api_token
+            properties:
+              auth_type:
+                type: string
+                const: api_token
+                order: 0
+              api_token:
+                type: string
+                title: API Token
+                description: >-
+                  Your personal Pipedrive API token. In Pipedrive, click your name (top
+                  right) > Company settings > Personal preferences > API and copy the
+                  token. If the API tab is missing, ask your Pipedrive admin to enable
+                  API access for your user.
+                airbyte_secret: true
+                order: 1
+            additionalProperties: true
       replication_start_date:
         type: string
         title: Start Date
@@ -1556,6 +1620,74 @@ spec:
         default: 3
         order: 2
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: https://oauth.pipedrive.com/oauth/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&state={{state_value}}
+        access_token_url: https://oauth.pipedrive.com/oauth/token
+        access_token_headers:
+          Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
+          Content-Type: "application/x-www-form-urlencoded"
+        access_token_params:
+          grant_type: authorization_code
+          redirect_uri: "{{ redirect_uri_value }}"
+          code: "{{ auth_code_value }}"
+        extract_output:
+          - access_token
+          - refresh_token
+          - expires_in
+          - api_domain
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+          token_expiry_date:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - token_expiry_date
+          api_domain:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - api_domain
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
   config_normalization_rules:
     type: ConfigNormalizationRules
     config_migrations:
@@ -1568,6 +1700,24 @@ spec:
                 path: ["api_token"]
                 value: "{{ config.get('authorization', {}).get('api_token') }}"
             condition: "{{ config.get('api_token') is none and config.get('authorization', {}).get('api_token') is not none }}"
+      - type: ConfigMigration
+        description: |
+          Wraps the legacy flat API token config into the credentials object.
+          OLD: {"api_token": ...}
+          NEW: {"credentials": {"auth_type": "api_token", "api_token": ...}}
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "api_token"]
+                value: "{{ config['api_token'] }}"
+            condition: "{{ config.get('api_token', False) and not config.get('credentials', {}).get('api_token', False) }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_type"]
+                value: "api_token"
+            condition: "{{ config.get('api_token', False) and not config.get('credentials', {}).get('auth_type', False) }}"
 
 metadata:
   autoImportSchema:
