@@ -255,6 +255,7 @@ const config: Config = {
         routeBasePath: "/developers",
         sidebarPath: "./sidebar-developers.js",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        docItemComponent: "@theme/ApiItem",
         remarkPlugins: [
           plugins.productInformation,
           plugins.addButtonToTitle,
@@ -285,6 +286,25 @@ const config: Config = {
           "agent-engine": {
             specPath: "src/data/agent_engine_api_spec.json",
             outputDir: "../docs/ai-agents/reference/api/api-reference",
+            sidebarOptions: {
+              groupPathsBy: "tag",
+              categoryLinkSource: "tag",
+              sidebarCollapsed: true,
+              sidebarCollapsible: true,
+            },
+          },
+        },
+      },
+    ],
+    [
+      "docusaurus-plugin-openapi-docs",
+      {
+        id: "public-api",
+        docsPluginId: "developers",
+        config: {
+          "public-api": {
+            specPath: "src/data/public_api_spec.json",
+            outputDir: "../docs/developers/api-reference",
             sidebarOptions: {
               groupPathsBy: "tag",
               categoryLinkSource: "tag",
