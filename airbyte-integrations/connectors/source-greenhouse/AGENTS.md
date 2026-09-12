@@ -15,6 +15,7 @@ v3 invariants a future edit must not break:
 - `users` must send `show_service_accounts=true` on the first page; v3 hides integration service users by default.
 - `/v3/demographic_questions` and `/v3/demographic_answer_options` expose no `created_at`/`updated_at` filter, which is why those streams are full refresh.
 - Incremental streams use the optional `start_date` configuration value and default to all history when it is omitted.
+- The nine candidate and application detail streams added in 1.1.0 (`attachments` through `prospect_details` in the table below) are clones of `offers`: same requester, paginator, `updated_at` cursor, and one-hour lookback. Each needs its own `harvest:<resource>:list` scope in the `scope` string; sources authorized before 1.1.0 return `403` on those streams until the consent flow is re-run. `attachments.url` is a download link that expires seven days after Greenhouse issues it, and `application_stages` is usually the highest-volume stream.
 - `job_ids` on `/v3/approval_flows` excludes `offer_candidate` flows.
 - HTTP 401 responses must remain `REFRESH_TOKEN_THEN_RETRY`, and the API budget must model Greenhouse's fixed 30-second window with `X-RateLimit-Reset` and `X-RateLimit-Remaining`; do not switch it back to a moving window.
 
@@ -66,3 +67,12 @@ That is, `updated_at=gte|{datetime}|lte|{datetime}`, with `|` separating operato
 | tags | top-level | none | none | full refresh |
 | user_roles | top-level | none | none | full refresh |
 | user_permissions | child | none | user_ids | full refresh |
+| attachments | top-level | updated_at | updated_at | incremental |
+| candidate_educations | top-level | updated_at | updated_at | incremental |
+| candidate_employments | top-level | updated_at | updated_at | incremental |
+| applied_candidate_tags | top-level | updated_at | updated_at | incremental |
+| candidate_attribute_types | top-level | updated_at | updated_at | incremental |
+| referrers | top-level | updated_at | updated_at | incremental |
+| application_stages | top-level | updated_at | updated_at | incremental |
+| rejection_details | top-level | updated_at | updated_at | incremental |
+| prospect_details | top-level | updated_at | updated_at | incremental |
