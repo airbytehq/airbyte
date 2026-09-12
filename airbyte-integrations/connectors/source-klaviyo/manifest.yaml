@@ -38,6 +38,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -106,6 +107,10 @@ definitions:
           http_method: GET
           request_parameters:
             additional-fields[profile]: subscriptions
+            filter: >-
+              greater-than(updated,{{
+              stream_interval.start_time }})
+            sort: "updated"
           request_headers:
             Accept: application/json
             Revision: "2024-10-15"
@@ -116,6 +121,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -162,9 +168,11 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%d %H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        lookback_window: PT1H
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
+          # Suppression list is synced in full on a stateless read; `start_date` does not bound this stream.
+          datetime: "1970-01-01T00:00:00Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
@@ -225,6 +233,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -313,6 +322,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -397,6 +407,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -478,6 +489,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -578,6 +590,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -673,6 +686,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -751,6 +765,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -815,6 +830,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -870,6 +886,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -936,6 +953,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -1008,6 +1026,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -1115,6 +1134,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: IGNORE
@@ -1273,6 +1293,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: IGNORE
@@ -4628,4 +4649,3 @@ concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 25) }}"
   max_concurrency: 50
-

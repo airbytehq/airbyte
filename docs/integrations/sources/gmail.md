@@ -46,6 +46,10 @@ To authenticate with OAuth in **Airbyte Open Source**, create your own OAuth cli
    See [Choose Gmail API scopes](https://developers.google.com/workspace/gmail/api/auth/scopes).
 3. Follow [Google's web server OAuth 2.0 guide](https://developers.google.com/identity/protocols/oauth2/web-server) to create a **Web application** OAuth client and exchange the authorization code for a refresh token.
 
+:::note
+If you configured this source before version 0.1.1, **Client ID**, **Client Secret**, and **Refresh Token** were top-level fields. The connector moves them into the nested **Authentication** object automatically the first time it runs on a newer version, as long as all three values are present. You don't need to re-enter them. Sources that already use the nested OAuth or Service Account Key configuration aren't changed.
+:::
+
 #### Service Account Key for Airbyte Open Source
 
 You can also authenticate with a Google service account key. Because Gmail mailboxes are owned by individual users, the service account must use [domain-wide delegation](https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority) to access mailboxes in a Google Workspace domain.
@@ -147,6 +151,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.15 | 2026-09-11 | [85800](https://github.com/airbytehq/airbyte/pull/85800) | Fix config migration copying empty or incomplete legacy OAuth fields into nested `credentials` |
+| 0.1.14 | 2026-09-08 | [85497](https://github.com/airbytehq/airbyte/pull/85497) | Update dependencies |
+| 0.1.13 | 2026-08-18 | [84554](https://github.com/airbytehq/airbyte/pull/84554) | Update dependencies |
 | 0.1.12 | 2026-08-11 | [83951](https://github.com/airbytehq/airbyte/pull/83951) | Update dependencies |
 | 0.1.11 | 2026-08-04 | [83308](https://github.com/airbytehq/airbyte/pull/83308) | Use `gmail.modify` for Airbyte Cloud's managed OAuth flow; self-managed OAuth clients and service accounts continue to use `gmail.readonly` |
 | 0.1.10 | 2026-08-04 | [83463](https://github.com/airbytehq/airbyte/pull/83463) | Update dependencies |
