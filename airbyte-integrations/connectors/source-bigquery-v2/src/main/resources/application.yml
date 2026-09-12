@@ -1,0 +1,63 @@
+airbyte:
+  connector:
+    data-channel:
+      medium: ${DATA_CHANNEL_MEDIUM:STDIO}
+      format: ${DATA_CHANNEL_FORMAT:JSONL}
+      socket-paths: ${DATA_CHANNEL_SOCKET_PATHS}
+    output:
+      buffer-byte-size-threshold-for-flush: 8192
+    extract:
+      jdbc:
+        mode: concurrent
+        with-sampling: true
+        table-sample-size: 1024
+        throughput-bytes-per-second: 10000000
+        min-fetch-size: 10
+        default-fetch-size: 1000
+        max-fetch-size: 10000000
+        memory-capacity-ratio: 0.6
+        estimated-record-overhead-bytes: 16
+        estimated-field-overhead-bytes: 16
+        # A BigQuery dataset is the stream namespace; the project is the JDBC catalog.
+        namespace-kind: SCHEMA
+        # The BigQuery JDBC driver has no pseudo-columns.
+        include-pseudo-columns: false
+    check:
+      jdbc:
+        queries:
+          # BigQuery rejects `SELECT 1 WHERE FALSE` ("Query without FROM clause cannot have a
+          # WHERE clause"); this returns zero rows, which is what JdbcCheckQueries expects.
+          - >-
+            SELECT 1 FROM UNNEST([1]) WHERE FALSE
+    exception-classifiers:
+      regex:
+        # Rules are applied in order to a Throwable's message and to the messages of its causes.
+        rules:
+          - pattern: "(?i).*Access Denied.*"
+            input-example: >-
+              com.google.cloud.bigquery.BigQueryException: Access Denied: Project my-project: User does not have
+              bigquery.datasets.get permission in project my-project.
+            error: config
+          - pattern: "(?i).*PERMISSION_DENIED.*"
+            input-example: >-
+              com.google.cloud.bigquery.BigQueryException: PERMISSION_DENIED: Caller does not have required permission
+              to use project my-project.
+            error: config
+          - pattern: "(?i).*Not found: (Dataset|Table|Project).*"
+            input-example: >-
+              com.google.cloud.bigquery.BigQueryException: Not found: Dataset my-project:missing_dataset
+            error: config
+          - pattern: "(?i).*invalid_grant.*"
+            input-example: >-
+              java.io.IOException: Error getting access token for service account: 400 Bad Request
+              POST https://oauth2.googleapis.com/token {"error":"invalid_grant","error_description":"Invalid JWT Signature."}
+            error: config
+          - pattern: "(?i).*Invalid project ID.*"
+            input-example: >-
+              com.google.cloud.bigquery.BigQueryException: Invalid project ID 'my project'. Project IDs must contain
+              6-63 lowercase letters, digits, or dashes.
+            error: config
+          - pattern: "(?i).*(UnknownHostException|Connection refused|Connect timed out|Read timed out).*"
+            input-example: >-
+              java.net.UnknownHostException: bigquery.googleapis.com
+            error: transient
