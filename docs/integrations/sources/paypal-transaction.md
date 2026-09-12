@@ -268,6 +268,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.6.49 | 2026-09-11 | [85249](https://github.com/airbytehq/airbyte/pull/85249) | Increase the backoff duration for PayPal transaction rate-limit responses |
 | 2.6.48 | 2026-09-08 | [84916](https://github.com/airbytehq/airbyte/pull/84916) | Retry oversized `transactions` date slices as smaller date ranges instead of failing the sync on the first `RESULTSET_TOO_LARGE` response |
 | 2.6.47 | 2026-09-08 | [85594](https://github.com/airbytehq/airbyte/pull/85594) | Update dependencies |
 | 2.6.46 | 2026-08-26 | [79676](https://github.com/airbytehq/airbyte/pull/79676) | Fix `transaction_id` primary key emitted as null for IDs resembling scientific notation |
