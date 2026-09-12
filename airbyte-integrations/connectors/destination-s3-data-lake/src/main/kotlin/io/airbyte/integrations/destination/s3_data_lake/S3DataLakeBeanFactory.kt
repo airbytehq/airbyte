@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.dataflow.config.model.DataFlowSocketConfig
 import io.airbyte.cdk.load.dataflow.config.model.LifecycleParallelismConfig
 import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
-import io.airbyte.integrations.destination.s3_data_lake.spec.IcebergDeleteFileType
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
@@ -73,35 +72,6 @@ class S3DataLakeBeanFactory {
             }
         } else {
             log.info { "No socket restriction required, using all available sockets" }
-            object : DataFlowSocketConfig {
-                override val numSockets: Int = Int.MAX_VALUE
-            }
-        }
-    }
-
-    /** Positional Dedupe also requires one socket in connector tests. */
-    @Singleton
-    @Requires(env = [Environment.TEST])
-    fun positionalTestDataFlowSocketConfig(
-        catalog: DestinationCatalog,
-        config: S3DataLakeConfiguration,
-    ): DataFlowSocketConfig {
-        val positionalEncoding =
-            when (config.icebergDeleteFileType) {
-                // TK-TODO: AUTOMATIC is temporarily wired to positional for prerelease testing;
-                // flip it back to equality before release.
-                IcebergDeleteFileType.AUTOMATIC,
-                IcebergDeleteFileType.POSITIONAL -> true
-                IcebergDeleteFileType.EQUALITY -> false
-            }
-        val hasPositionalDedupStreams =
-            positionalEncoding && catalog.streams.any { it.tableSchema.importType is Dedupe }
-        return if (hasPositionalDedupStreams) {
-            log.info { "Positional dedup streams detected, limiting to 1 test socket" }
-            object : DataFlowSocketConfig {
-                override val numSockets: Int = 1
-            }
-        } else {
             object : DataFlowSocketConfig {
                 override val numSockets: Int = Int.MAX_VALUE
             }
