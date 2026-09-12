@@ -1,0 +1,14 @@
+{
+  "data": [
+    {
+      "type": "analyticsReportRequests",
+      "id": "request-1",
+      "attributes": {
+        "accessType": "ONE_TIME_SNAPSHOT"
+      }
+    }
+  ],
+  "links": {
+    "self": "https://api.appstoreconnect.apple.com/v1/apps/app-1/analyticsReportRequests"
+  }
+}
