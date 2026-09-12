@@ -17883,6 +17883,7 @@ streams:
         type: JsonDecoder
       paginator:
         type: DefaultPaginator
+        reset_page_token_on_error: true
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{ response.scroll }}"
@@ -19724,6 +19725,7 @@ streams:
         type: JsonDecoder
       paginator:
         type: DefaultPaginator
+        reset_page_token_on_error: true
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{ response.scroll }}"
@@ -23136,6 +23138,7 @@ streams:
         type: JsonDecoder
       paginator:
         type: DefaultPaginator
+        reset_page_token_on_error: true
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{ response.scroll }}"
