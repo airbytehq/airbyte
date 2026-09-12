@@ -105,7 +105,7 @@ class SupersededRowFinder(
             }
         return plannedFiles
             .asSequence()
-            .sortedBy { it.file.location().toString() }
+            .sortedBy { it.file.location() }
             .onEach { state.dataFilesOpened.incrementAndGet() }
             .flatMap { supersededRowsIn(it, touched, expression) }
     }
@@ -118,7 +118,7 @@ class SupersededRowFinder(
         val positionIndex = positionDeleteIndex(planned)
         val priorDeletedPositions = positionIndex?.cardinality() ?: 0
         val projectedSchema = Schema(identifierFields + MetadataColumns.ROW_POSITION)
-        val inputFile = table.io().newInputFile(planned.file.location().toString())
+        val inputFile = table.io().newInputFile(planned.file.location())
         val locations =
             if (allowWholeFileSupersession) {
                 mutableListOf<PositionalDeleteResolver.RowLocation>()
@@ -169,7 +169,7 @@ class SupersededRowFinder(
 
     private fun positionDeleteIndex(planned: PlannedDataFile): PositionDeleteIndex? {
         if (!suppressDeletedPositions) return null
-        val location = planned.file.location().toString()
+        val location = planned.file.location()
         val index = mergedPositionDeleteIndex(planned, location)
         state.deleteIndex.observe(location, planned.file.recordCount(), planned.deletes, index)
         return index
@@ -187,7 +187,7 @@ class SupersededRowFinder(
         if (positionDeletes.isEmpty()) return null
         val indexes =
             positionDeletes.mapNotNull { deleteFile ->
-                val deletePath = deleteFile.location().toString()
+                val deletePath = deleteFile.location()
                 if (state.unreadablePositionDeleteFiles.contains(deletePath)) {
                     return@mapNotNull null
                 }
@@ -206,7 +206,7 @@ class SupersededRowFinder(
                             }
                             return@mapNotNull null
                         }
-                indexesByDataFile[planned.file.location().toString()]
+                indexesByDataFile[planned.file.location()]
             }
         return if (indexes.isEmpty()) {
             null
@@ -251,7 +251,7 @@ class SupersededRowFinder(
     ): Map<String, PositionDeleteIndex> {
         state.positionDeleteFilesRead.incrementAndGet()
         val deleteSchema = DeleteSchemaUtil.pathPosSchema()
-        return Parquet.read(table.io().newInputFile(deleteFile.location().toString()))
+        return Parquet.read(table.io().newInputFile(deleteFile.location()))
             .project(deleteSchema)
             .createReaderFunc { messageType ->
                 GenericParquetReaders.buildReader(deleteSchema, messageType)
