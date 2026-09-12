@@ -82,20 +82,20 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 
 ## Supported Streams
 
-- [Campaigns](https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns)
-- [Campaigns Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns)
-- [Campaign Values Reports](https://developers.klaviyo.com/en/v2024-10-15/reference/query_campaign_values) - Analytics stream for campaign performance metrics
-- [Email Templates](https://developers.klaviyo.com/en/v2024-10-15/reference/get_templates)
-- [Events](https://developers.klaviyo.com/en/v2024-10-15/reference/get_events)
-- [Events Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_event)
-- [Flows](https://developers.klaviyo.com/en/v2024-10-15/reference/get_flows)
-- [Flow Series Reports](https://developers.klaviyo.com/en/v2024-10-15/reference/query_flow_series) - Analytics stream for automated flow performance over time
-- [GlobalExclusions](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
-- [Lists](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
-- [Lists Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
-- [Metrics](https://developers.klaviyo.com/en/v2024-10-15/reference/get_metrics)
-- [Profiles](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
-- [Segments](https://developers.klaviyo.com/en/v2024-10-15/reference/get_segments)
+- [Campaigns](https://developers.klaviyo.com/en/v2026-01-15/reference/get_campaigns)
+- [Campaigns Detailed](https://developers.klaviyo.com/en/v2026-01-15/reference/get_campaigns)
+- [Campaign Values Reports](https://developers.klaviyo.com/en/v2026-01-15/reference/query_campaign_values) - Analytics stream for campaign performance metrics
+- [Email Templates](https://developers.klaviyo.com/en/v2026-01-15/reference/get_templates)
+- [Events](https://developers.klaviyo.com/en/v2026-01-15/reference/get_events)
+- [Events Detailed](https://developers.klaviyo.com/en/v2026-01-15/reference/get_event)
+- [Flows](https://developers.klaviyo.com/en/v2026-01-15/reference/get_flows)
+- [Flow Series Reports](https://developers.klaviyo.com/en/v2026-01-15/reference/query_flow_series) - Analytics stream for automated flow performance over time
+- [GlobalExclusions](https://developers.klaviyo.com/en/v2026-01-15/reference/get_profiles)
+- [Lists](https://developers.klaviyo.com/en/v2026-01-15/reference/get_lists)
+- [Lists Detailed](https://developers.klaviyo.com/en/v2026-01-15/reference/get_lists)
+- [Metrics](https://developers.klaviyo.com/en/v2026-01-15/reference/get_metrics)
+- [Profiles](https://developers.klaviyo.com/en/v2026-01-15/reference/get_profiles)
+- [Segments](https://developers.klaviyo.com/en/v2026-01-15/reference/get_segments)
 
 ### Metrics stream
 
@@ -199,6 +199,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.0 | 2026-09-08 | [85352](https://github.com/airbytehq/airbyte/pull/85352) | Upgrade to Klaviyo API revision `2026-01-15` ahead of the `2024-10-15` retirement; replace `send_strategy.options_*` with `send_strategy.datetime`/`date`/`throttle_percentage`/`options` in `campaigns` and `campaigns_detailed`, and move campaign message `channel`/`label`/`content`/`render_options` under `definition` in `campaigns_detailed` (refresh the schema and clear both streams) |
 | 3.0.3 | 2026-09-10 | [85217](https://github.com/airbytehq/airbyte/pull/85217) | Send the `global_exclusions` cursor filter to Klaviyo, with a one-hour lookback window, so incremental syncs no longer re-page all profiles; a first/stateless sync still returns the full suppression list. |
 | 3.0.2 | 2026-09-08 | [84635](https://github.com/airbytehq/airbyte/pull/84635) | Update dependencies |
 | 3.0.1 | 2026-08-21 | [84908](https://github.com/airbytehq/airbyte/pull/84908) | Fail fast with a rate limit error instead of sleeping for hours when Klaviyo returns a daily-quota `Retry-After` |
