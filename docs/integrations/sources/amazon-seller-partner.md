@@ -81,7 +81,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
     - **PARENT** (default): Data aggregated at the parent ASIN level.
     - **CHILD**: Data at the child ASIN level, with `childAsin` values populated.
     - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
-12. Optionally, add per-report-type options in the **Report Options** section. The connector sends these options for the two Inventory Ledger streams only—see [Report options](#report-options) before you configure them.
+12. Optionally, add per-report-type options in the **Report Options** section. The connector sends these options for the two Inventory Ledger streams and the Vendor Sales and Vendor Inventory reports—see [Report options](#report-options) before you configure them.
 13. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
 14. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `72` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
 15. For **Report Stream Lookback Window (Hours)**, set how many hours of previously synced data incremental report streams should re-fetch on each sync. The default is `0`, which disables lookback. Increase this value when Amazon updates report data after a sync has already completed. This setting has no effect on `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`, `GET_VENDOR_SALES_REPORT`, `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, `GET_VENDOR_REAL_TIME_INVENTORY_REPORT`, or `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`. To re-fetch history for those streams, refresh them or move the replication start date back.
@@ -115,7 +115,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
     - **PARENT** (default): Data aggregated at the parent ASIN level.
     - **CHILD**: Data at the child ASIN level, with `childAsin` values populated.
     - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
-10. Optionally, add per-report-type options in the **Report Options** section. The connector sends these options for the two Inventory Ledger streams only—see [Report options](#report-options) before you configure them.
+10. Optionally, add per-report-type options in the **Report Options** section. The connector sends these options for the two Inventory Ledger streams and the Vendor Sales and Vendor Inventory reports—see [Report options](#report-options) before you configure them.
 11. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
 12. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `72` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
 13. For **Report Stream Lookback Window (Hours)**, set how many hours of previously synced data incremental report streams should re-fetch on each sync. The default is `0`, which disables lookback. Increase this value when Amazon updates report data after a sync has already completed. This setting has no effect on `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`, `GET_VENDOR_SALES_REPORT`, `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, `GET_VENDOR_REAL_TIME_INVENTORY_REPORT`, or `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`. To re-fetch history for those streams, refresh them or move the replication start date back.
@@ -264,14 +264,20 @@ Amazon accepts a `reportOptions` object when you request a report, and those opt
 
 ### Report options you configure
 
-The **Report Options** setting takes a report type, a stream name, and a list of option name/value pairs. As of version 5.9.3, the connector sends these options for two streams only:
+The **Report Options** setting takes a report type, a stream name, and a list of option name/value pairs. As of version 5.10.3, the connector sends these options for six streams:
 
 - `GET_LEDGER_DETAIL_VIEW_DATA` — for example, set `eventType` to `Adjustments` to return only adjustment rows.
 - `GET_LEDGER_SUMMARY_VIEW_DATA` — for example, set `aggregatedByTimePeriod` to `DAILY` for daily rows instead of Amazon's `MONTHLY` default, or set `aggregateByLocation` to `FC` to break out rows by fulfillment center instead of by country.
+- `GET_VENDOR_SALES_REPORT` and `GET_VENDOR_INVENTORY_REPORT` — Amazon documents `reportPeriod`, `distributorView` and `sellingProgram` as required for these reports.
+- `GET_VENDOR_TRAFFIC_REPORT` and `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT` — Amazon documents `reportPeriod` as required for these reports.
 
 For the other report types the **Report Options** dropdown offers, the connector accepts your entries and validates them, but doesn't send them to Amazon. Those reports come back with Amazon's defaults. [Issue #77617](https://github.com/airbytehq/airbyte/issues/77617) tracks the remaining streams.
 
-If you already had report options configured for either ledger stream before 5.9.3, they take effect as soon as you upgrade, and the records change shape: a summary view aggregated `DAILY` returns one row per day where it previously returned one per month, and a detailed view filtered by `eventType` returns fewer rows. Refresh the stream if you need history to match the new options.
+For the four vendor retail analytics reports, the connector sends only what you configure — it supplies no default values of its own. If you configure nothing, the request goes to Amazon without a `reportOptions` object, exactly as in earlier versions, and Amazon applies its own defaults. Option names and values are case-sensitive: enter `distributorView`, not `distributorview`.
+
+If Amazon can't generate one of these reports, the sync now fails with Amazon's own explanation instead of a generic "async job failed" message. When that explanation points at report options, the error names the options Amazon expects for that report type so you can add them under **Report Options**.
+
+If you already had report options configured for either ledger stream before 5.9.3, or for any of the four vendor retail analytics reports before 5.10.3, they take effect as soon as you upgrade, and the records change shape: a summary view aggregated `DAILY` returns one row per day where it previously returned one per month, and a detailed view filtered by `eventType` returns fewer rows. Refresh the stream if you need history to match the new options.
 
 ### Report options the connector sets for you
 
@@ -483,6 +489,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.10.3 | 2026-09-08 | [85294](https://github.com/airbytehq/airbyte/pull/85294) | Send configured `reportOptions` for the vendor sales, inventory, traffic and net pure product margin reports instead of dropping them, and surface Amazon's own reason when a report fails with `FATAL` instead of a generic async-job error |
 | 5.10.2 | 2026-09-08 | [85388](https://github.com/airbytehq/airbyte/pull/85388) | Update dependencies |
 | 5.10.1 | 2026-08-25 | [84913](https://github.com/airbytehq/airbyte/pull/84913) | Send an explicit, day-aligned report window for the daily `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, and `GET_VENDOR_REAL_TIME_INVENTORY_REPORT` streams, fixing records that were labelled with a date the report did not actually cover |
 | 5.10.0 | 2026-08-24 | [76434](https://github.com/airbytehq/airbyte/pull/76434) | Add Fulfillment Inbound streams (FbaInboundShipments, FbaInboundShipmentItems) and Inbound API settings (`inbound_replication_mode`, `inbound_rolling_days`, `inbound_start_datetime`, `inbound_end_datetime`) |

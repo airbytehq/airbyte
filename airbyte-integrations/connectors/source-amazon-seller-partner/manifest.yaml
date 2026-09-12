@@ -3272,6 +3272,21 @@ definitions:
             dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
             dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            # Forward the options configured for this stream; omit the key entirely when there are
+            # none (see creation_requester_with_report_options). Amazon documents reportPeriod /
+            # distributorView / sellingProgram as required here, but the connector does not invent
+            # values for them - ReportPollingRequester surfaces Amazon's rejection instead.
+            reportOptions: >-
+              {%- set rt = "GET_VENDOR_SALES_REPORT" -%}
+              {%- set opts = {} -%}
+              {%- for ro in config.get('report_options_list', []) -%}
+                {%- if ro.get('stream_name') == rt or ro.get('report_name') == rt -%}
+                  {%- for item in ro.get('options_list', []) -%}
+                    {%- set _ = opts.update({ item['option_name']: item['option_value'] }) -%}
+                  {%- endfor -%}
+                {%- endif -%}
+              {%- endfor -%}
+              {{ opts if opts else None }}
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
@@ -3300,6 +3315,21 @@ definitions:
           request_body_json:
             reportType: GET_VENDOR_INVENTORY_REPORT
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            # Forward the options configured for this stream; omit the key entirely when there are
+            # none (see creation_requester_with_report_options). Amazon documents reportPeriod /
+            # distributorView / sellingProgram as required here, but the connector does not invent
+            # values for them - ReportPollingRequester surfaces Amazon's rejection instead.
+            reportOptions: >-
+              {%- set rt = "GET_VENDOR_INVENTORY_REPORT" -%}
+              {%- set opts = {} -%}
+              {%- for ro in config.get('report_options_list', []) -%}
+                {%- if ro.get('stream_name') == rt or ro.get('report_name') == rt -%}
+                  {%- for item in ro.get('options_list', []) -%}
+                    {%- set _ = opts.update({ item['option_name']: item['option_value'] }) -%}
+                  {%- endfor -%}
+                {%- endif -%}
+              {%- endfor -%}
+              {{ opts if opts else None }}
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
@@ -3346,6 +3376,21 @@ definitions:
             dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
             dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            # Forward the options configured for this stream; omit the key entirely when there are
+            # none (see creation_requester_with_report_options). Amazon documents reportPeriod /
+            # distributorView / sellingProgram as required here, but the connector does not invent
+            # values for them - ReportPollingRequester surfaces Amazon's rejection instead.
+            reportOptions: >-
+              {%- set rt = "GET_VENDOR_TRAFFIC_REPORT" -%}
+              {%- set opts = {} -%}
+              {%- for ro in config.get('report_options_list', []) -%}
+                {%- if ro.get('stream_name') == rt or ro.get('report_name') == rt -%}
+                  {%- for item in ro.get('options_list', []) -%}
+                    {%- set _ = opts.update({ item['option_name']: item['option_value'] }) -%}
+                  {%- endfor -%}
+                {%- endif -%}
+              {%- endfor -%}
+              {{ opts if opts else None }}
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
@@ -3394,6 +3439,21 @@ definitions:
             dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
             dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            # Forward the options configured for this stream; omit the key entirely when there are
+            # none (see creation_requester_with_report_options). Amazon documents reportPeriod /
+            # distributorView / sellingProgram as required here, but the connector does not invent
+            # values for them - ReportPollingRequester surfaces Amazon's rejection instead.
+            reportOptions: >-
+              {%- set rt = "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT" -%}
+              {%- set opts = {} -%}
+              {%- for ro in config.get('report_options_list', []) -%}
+                {%- if ro.get('stream_name') == rt or ro.get('report_name') == rt -%}
+                  {%- for item in ro.get('options_list', []) -%}
+                    {%- set _ = opts.update({ item['option_name']: item['option_value'] }) -%}
+                  {%- endfor -%}
+                {%- endif -%}
+              {%- endfor -%}
+              {{ opts if opts else None }}
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
@@ -3534,7 +3594,10 @@ definitions:
                 default_backoff_time: 60
 
     polling_requester:
-      type: HttpRequester
+      # CustomRequester (not HttpRequester) so a FATAL report surfaces Amazon's own reason instead of
+      # the CDK's generic "Async job failed after exhausting all retry attempts." system error.
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.ReportPollingRequester
       path: reports/2021-06-30/reports/{{creation_response['reportId']}}
       url_base: "{{ config['endpoint'] }}"
       authenticator: "#/definitions/authenticator"

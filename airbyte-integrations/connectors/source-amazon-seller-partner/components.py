@@ -879,6 +879,252 @@ class ReportCreationRequester(HttpRequester):
         return synthetic
 
 
+# Report options Amazon documents as required for a given report type. Used only to make the
+# error message actionable when Amazon rejects a report - the connector never fills these in
+# on the user's behalf, so a report that Amazon accepts today keeps being requested unchanged.
+# https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics
+REQUIRED_REPORT_OPTIONS: Mapping[str, Tuple[str, ...]] = {
+    "GET_VENDOR_SALES_REPORT": ("reportPeriod", "distributorView", "sellingProgram"),
+    "GET_VENDOR_INVENTORY_REPORT": ("reportPeriod", "distributorView", "sellingProgram"),
+    "GET_VENDOR_TRAFFIC_REPORT": ("reportPeriod",),
+    "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT": ("reportPeriod",),
+}
+
+# Lower-cased substrings in Amazon's FATAL error document that identify a reportOptions problem.
+# Amazon's wording is not stable, so this is a best-effort match: a miss only means the sync fails
+# with Amazon's message logged rather than as a config error.
+# "reportoption" is singular on purpose: Amazon's observed wording is "requires the <names>
+# reportOption to be specified", and the singular form also matches the plural spelling. Matching
+# only the option names would miss this sentence for any option not listed in
+# REQUIRED_REPORT_OPTIONS.
+_REPORT_OPTIONS_ERROR_MARKERS = (
+    "reportoption",
+    "report options",
+    "reportperiod",
+    "distributorview",
+    "sellingprogram",
+    "invalid report option",
+    "missing required option",
+)
+
+# Amazon's error text still refers users to amzn/selling-partner-api-docs, archived in June 2024.
+_REPORT_OPTIONS_DOC_URL = "https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics"
+
+# Cap on how much of Amazon's error document is echoed into logs and error messages.
+_MAX_FAILURE_REASON_CHARS = 500
+
+
+@dataclass
+class ReportPollingRequester(HttpRequester):
+    """
+    Polling requester for Amazon SP-API reports that surfaces why a report failed.
+
+    When `getReport` returns `processingStatus: FATAL`, Amazon accepted the `createReport` call but
+    could not produce the report, and the reason lives in a separate error document referenced by
+    `reportDocumentId`. The CDK never fetches that document: it just retries and eventually fails the
+    sync with "Async job failed after exhausting all retry attempts." and `failure_type=system_error`,
+    which tells the user nothing and looks like an Airbyte bug.
+
+    This requester fetches the error document on FATAL and:
+      - always logs Amazon's reason at ERROR, so it appears in the sync logs; and
+      - raises a `config_error` when the reason points at reportOptions, naming the options Amazon
+        documents as required for that report type. `AsyncJobOrchestrator._is_breaking_exception`
+        treats a `config_error` as breaking, so the sync aborts immediately with that message
+        instead of burning through `failed_retry_wait_time_in_seconds` (default 1800s) retries.
+
+    Anything else - a missing document, a fetch failure, an unrecognised payload - leaves the
+    response untouched so the existing retry and status-mapping behaviour is unchanged. This is a
+    diagnostic path only: it never turns a report Amazon accepted into a failure.
+    """
+
+    # HttpRequester has no request_headers field: for a CustomRequester the factory does not build a
+    # request_options_provider from the manifest, so the field must be declared and the provider built
+    # here or the manifest's content-type header is silently dropped from every polling request.
+    # Same workaround ReportCreationRequester applies for request_body_json.
+    request_headers: Optional[Dict[str, Any]] = None
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        if self.request_options_provider is None:
+            self._request_options_provider = InterpolatedRequestOptionsProvider(
+                config=self.config, parameters=parameters, request_headers=self.request_headers
+            )
+        elif isinstance(self.request_options_provider, dict):
+            self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, **self.request_options_provider)
+        else:
+            self._request_options_provider = self.request_options_provider
+
+    def send_request(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Any] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        path: Optional[str] = None,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_params: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> Optional[requests.Response]:
+        response = super().send_request(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+            path=path,
+            request_headers=request_headers,
+            request_params=request_params,
+            request_body_data=request_body_data,
+            request_body_json=request_body_json,
+            log_formatter=log_formatter,
+        )
+        if response is None:
+            return response
+
+        try:
+            body = response.json()
+        except (json.JSONDecodeError, ValueError):
+            return response
+        if not isinstance(body, dict) or body.get("processingStatus") != "FATAL":
+            return response
+
+        report_type = body.get("reportType") or "report"
+        report_id = body.get("reportId") or "unknown"
+        document_id = body.get("reportDocumentId")
+
+        reason = None
+        if document_id:
+            reason = self._fetch_failure_reason(stream_state, stream_slice, document_id)
+
+        if not reason:
+            logger.error(
+                f"Amazon returned processingStatus FATAL for {report_type} (reportId {report_id}) "
+                f"without an error document explaining why."
+            )
+            return response
+
+        logger.error(f"Amazon returned processingStatus FATAL for {report_type} (reportId {report_id}): {reason}")
+
+        if self._is_report_options_error(reason):
+            raise AirbyteTracedException(
+                internal_message=f"FATAL report {report_id} ({report_type}): {reason}",
+                message=self._report_options_error_message(report_type, reason),
+                failure_type=FailureType.config_error,
+            )
+        return response
+
+    def _fetch_failure_reason(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Any],
+        document_id: str,
+    ) -> Optional[str]:
+        """
+        Resolve `reportDocumentId` to a download URL via the documents endpoint, download the error
+        document, and pull Amazon's message out of it. Returns None if anything goes wrong: this is
+        best-effort diagnostics and must never be the reason a sync fails.
+        """
+        try:
+            url_base = self.get_url_base(stream_state=stream_state, stream_slice=stream_slice)
+            document_url = self._join_url(url_base, f"reports/2021-06-30/documents/{document_id}")
+            # No extra headers here: the manifest already supplies content-type through the
+            # request options provider, and combine_mappings rejects a duplicate key.
+            headers = self._request_headers(stream_state, stream_slice, None)
+            _, document_response = self._http_client.send_request(
+                http_method="GET",
+                url=document_url,
+                request_kwargs={"stream": False},
+                headers=headers,
+            )
+            if not document_response or not document_response.ok:
+                return None
+            document = document_response.json()
+            download_url = document.get("url")
+            if not download_url:
+                return None
+
+            # The download URL is pre-signed; sending SP-API auth headers with it is rejected,
+            # which is why the manifest's download_requester uses NoAuth. Use a bare request here.
+            download_response = requests.get(download_url, timeout=60)
+            if not download_response.ok:
+                return None
+            payload = self._decode_document(download_response, document.get("compressionAlgorithm"))
+        except Exception:
+            logger.warning(f"Could not retrieve the error document for FATAL report document {document_id}.", exc_info=True)
+            return None
+
+        return self._extract_message(payload)
+
+    @staticmethod
+    def _decode_document(response: requests.Response, compression_algorithm: Optional[str]) -> str:
+        """Decode the error document, tolerating a compressionAlgorithm that does not match the payload."""
+        if (compression_algorithm or "").upper() == "GZIP":
+            try:
+                return gzip.decompress(response.content).decode("utf-8", errors="replace")
+            except (OSError, EOFError, gzip.BadGzipFile):
+                pass
+        return response.text
+
+    @staticmethod
+    def _extract_message(payload: Optional[str]) -> Optional[str]:
+        """
+        Pull a human-readable message out of an Amazon error document. The payload may be a JSON
+        object, a JSON error envelope, or plain text, so fall back to the raw text when in doubt.
+        """
+        if not payload or not payload.strip():
+            return None
+        text = payload.strip()
+
+        try:
+            document = json.loads(text)
+        except (json.JSONDecodeError, ValueError):
+            first_line = next((line.strip() for line in text.splitlines() if line.strip()), None)
+            return first_line[:_MAX_FAILURE_REASON_CHARS] if first_line else None
+
+        if isinstance(document, dict):
+            for key in ("errorDetails", "errorMessage", "message", "reason"):
+                value = document.get(key)
+                if isinstance(value, str) and value.strip():
+                    return value.strip()[:_MAX_FAILURE_REASON_CHARS]
+            errors = document.get("errors")
+            if isinstance(errors, list):
+                messages = [
+                    error["message"].strip()
+                    for error in errors
+                    if isinstance(error, dict) and isinstance(error.get("message"), str) and error["message"].strip()
+                ]
+                if messages:
+                    return "; ".join(messages)[:_MAX_FAILURE_REASON_CHARS]
+        return text[:_MAX_FAILURE_REASON_CHARS]
+
+    @staticmethod
+    def _is_report_options_error(reason: str) -> bool:
+        lowered = reason.lower()
+        return any(marker in lowered for marker in _REPORT_OPTIONS_ERROR_MARKERS)
+
+    @staticmethod
+    def _report_options_error_message(report_type: str, reason: str) -> str:
+        """
+        Quote Amazon once, then say what to do once. Amazon's reason normally names the options it
+        wants, so REQUIRED_REPORT_OPTIONS is only a fallback for when it does not: restating a
+        hardcoded list alongside Amazon's own would contradict the quote the moment the two diverge.
+        """
+        lowered = reason.lower()
+        documented = REQUIRED_REPORT_OPTIONS.get(report_type, ())
+        if documented and not any(option.lower() in lowered for option in documented):
+            which = f"Amazon documents {', '.join(documented)} as required for this report. "
+        else:
+            which = ""
+        # Amazon's own text may point at its retired GitHub docs, so correct that where it appears.
+        doc_reference = "Amazon's GitHub docs were archived in 2024; see " if "github" in lowered else "See "
+        return (
+            f'Amazon rejected the {report_type} report request. Amazon\'s reason: "{reason}" '
+            f"{which}"
+            f"Add the options under Report Options in the source settings: set Report Name and "
+            f"Stream Name to {report_type}, then one Name/Value pair per option. Names and values "
+            f"are case-sensitive. {doc_reference}{_REPORT_OPTIONS_DOC_URL}"
+        )
+
+
 @dataclass
 class ValidateReportOptionsListStreamNameUniqueness(ValidationStrategy):
     """
