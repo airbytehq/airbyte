@@ -273,8 +273,6 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
 
     inner class EventConsumer() : Consumer<ChangeEvent<String?, String?>> {
 
-        private var lastHeartbeatPosition: T? = null
-        private var lastHeartbeatTime: LocalDateTime? = null
         // Only enable heartbeat timeout if explicitly configured
         private val heartbeatTimeoutDuration: Duration? =
             debeziumProperties[AIRBYTE_HEARTBEAT_TIMEOUT_SECONDS]?.let {
@@ -282,6 +280,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
                     duration.seconds > 0
                 }
             }
+        private val heartbeatMonitor = CdcHeartbeatMonitor<T>(heartbeatTimeoutDuration)
 
         override fun accept(changeEvent: ChangeEvent<String?, String?>) {
             // Stop watchdog once we receive any event - connection is working
@@ -293,6 +292,9 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
 
             val event = DebeziumEvent(changeEvent)
             val eventType: EventType = emitRecord(event)
+            if (eventType == EventType.RECORD_EMITTED) {
+                heartbeatMonitor.onRecord()
+            }
             if (!engineShuttingDown.get()) {
                 updateCounters(event, eventType)
             }
@@ -402,36 +404,10 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
 
             val currentPosition: T? = position(event.sourceRecord) ?: position(event.value)
 
-            // Only check for heartbeat timeout if it's configured AND this is a heartbeat event
-            if (eventType == EventType.HEARTBEAT && heartbeatTimeoutDuration != null) {
-                val now = LocalDateTime.now()
-
-                // Check if heartbeat position is progressing (LSN should increase)
-                //  - If lastHeartbeatPosition is null (first heartbeat) → isProgressing = true
-                //  - If currentPosition is null → skip timeout check (return early)
-                //  - Otherwise → isProgressing = (currentPosition > lastHeartbeatPosition)
-                if (currentPosition == null) {
-                    return null
-                }
-                val isProgressing =
-                    lastHeartbeatPosition == null ||
-                        currentPosition.isGreater(lastHeartbeatPosition)
-                if (isProgressing) {
-                    lastHeartbeatPosition = currentPosition
-                    lastHeartbeatTime = now
-                    log.info { "Heartbeat progressing to position: $currentPosition" }
-                } else {
-                    val timeSinceLastProgress = Duration.between(lastHeartbeatTime!!, now)
-                    if (timeSinceLastProgress > heartbeatTimeoutDuration) {
-                        log.info {
-                            "Heartbeat timeout: no progress for ${timeSinceLastProgress.toMinutes()} minutes. " +
-                                "Last position: $lastHeartbeatPosition, current: $currentPosition"
-                        }
-                        return CloseReason.HEARTBEAT_NOT_PROGRESSING
-                    }
-                    log.info {
-                        "Heartbeat not progressing, time since last progress: ${timeSinceLastProgress.toSeconds()}s"
-                    }
+            if (eventType == EventType.HEARTBEAT) {
+                if (currentPosition == null) return null
+                heartbeatMonitor.onHeartbeat(currentPosition)?.let {
+                    return it
                 }
             }
 
@@ -523,6 +499,9 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
         ),
         HEARTBEAT_NOT_PROGRESSING(
             "heartbeat position has not progressed for an extended period, indicating database is idle"
+        ),
+        HEARTBEAT_PROGRESSING_WITHOUT_RECORDS(
+            "heartbeat position has progressed but no records were received for an extended period; closing to checkpoint the advanced position"
         ),
         WATCHDOG_TIMEOUT(
             "no events received from Debezium within the configured timeout period, indicating database is idle or connection is stuck"

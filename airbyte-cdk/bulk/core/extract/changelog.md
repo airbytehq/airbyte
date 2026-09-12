@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.12 — 2026-09-03
+
+[#85304](https://github.com/airbytehq/airbyte/pull/85304) — Close the Debezium engine and checkpoint when CDC heartbeats advance without any records for longer than the heartbeat timeout, so slow CDC log crawls emit STATE instead of being killed by the platform heartbeat.
+
 ### 1.1.11 — 2026-09-02
 
 [#85313](https://github.com/airbytehq/airbyte/pull/85313) — Tolerate empty STREAM-typed input state in global (CDC) mode instead of failing.
