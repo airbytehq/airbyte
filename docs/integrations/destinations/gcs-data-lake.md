@@ -228,7 +228,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
-| 1.1.0   | 2026-07-31 | [85195](https://github.com/airbytehq/airbyte/pull/85195)     | Add configurable equality or positional delete encoding for Dedupe streams             |
+| 1.1.0   | 2026-09-11 | [85195](https://github.com/airbytehq/airbyte/pull/85195)     | Add configurable equality or positional delete encoding for Dedupe streams             |
+| 1.0.11  | 2026-09-01 | [84992](https://github.com/airbytehq/airbyte/pull/84992)     | Upgrade to Bulk CDK 1.0.25.                                                            |
 | 1.0.10  | 2026-05-19 | [78235](https://github.com/airbytehq/airbyte/pull/78235)     | Upgrade CDK to 1.0.13                                                                  |
 | 1.0.9   | 2026-04-17 | [76406](https://github.com/airbytehq/airbyte/pull/76406)     | Upgrade CDK to 1.0.9                                                                  |
 | 1.0.8   | 2026-03-30 | [75630](https://github.com/airbytehq/airbyte/pull/75630)     | Upgrade CDK to 1.0.7: fix sort order handling during schema evolution                 |

@@ -143,6 +143,16 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 11}""")
     @Suppress("RedundantNullableReturnType")
     val retentionPeriodDays: Int? = 1
+
+    @get:JsonSchemaTitle("Decimal Data Type")
+    @get:JsonPropertyDescription(
+        """Datatype choice for columns using the Airbyte number type. NUMBER(38,9) (RECOMMENDED): Fixed-point decimal with 9 decimal places. Stores values exactly. Best for financial data, monetary values, numeric IDs, and values that require exact decimal representation. FLOAT: Binary floating-point number. Stores decimal values approximately. Best for scientific calculations, statistical models, probabilities, model scores, very large magnitudes, and calculations where small rounding differences are acceptable.""",
+    )
+    // Default FLOAT for backwards compatibility.
+    // TODO: flip the default to NUMBER(38,9), see https://github.com/airbytehq/oncall/issues/13254
+    @get:JsonProperty("number_data_type", defaultValue = "FLOAT")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 12}""")
+    val numberDataTypeConversion: NumberDataType? = null
 }
 
 @JsonTypeInfo(
@@ -186,11 +196,13 @@ class KeyPairAuthSpecification(
     val privateKeyPassword: String? = null
 ) : CredentialsSpecification(Type.PRIVATE_KEY)
 
-@JsonSchemaTitle("Username and Password")
-@JsonSchemaDescription("Configuration details for the Username and Password Authentication.")
+@JsonSchemaTitle("Username and Password (Deprecated)")
+@JsonSchemaDescription(
+    "Deprecated: Username and password authentication is deprecated as of version 5.0.0 and will be removed in a future release. Snowflake is enforcing strong authentication on a rolling per-account basis between August and October 2026. Switch to key pair authentication instead. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake-migrations\">migration guide</a> for details."
+)
 class UsernamePasswordAuthSpecification(
     @get:JsonSchemaTitle("Password")
-    @get:JsonPropertyDescription("Enter the password associated with the username.")
+    @get:JsonPropertyDescription("Deprecated. Enter the password associated with the username.")
     @get:JsonProperty("password")
     @get:JsonSchemaInject(json = """{"order": 0, "airbyte_secret": true}""")
     val password: String = ""
@@ -199,6 +211,11 @@ class UsernamePasswordAuthSpecification(
 enum class CdcDeletionMode(@Suppress("unused") @get:JsonValue val cdcDeletionMode: String) {
     HARD_DELETE("Hard delete"),
     SOFT_DELETE("Soft delete"),
+}
+
+enum class NumberDataType(@get:JsonValue val numberDataType: String) {
+    NUMBER_38_9("NUMBER(38,9)"),
+    FLOAT("FLOAT")
 }
 
 @Singleton

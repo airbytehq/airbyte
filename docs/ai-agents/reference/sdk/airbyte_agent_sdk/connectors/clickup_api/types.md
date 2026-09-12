@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.clickup_api.types.CommentsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.clickup_api.types.CommentsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CommentsAnyCondition"></a>
@@ -100,10 +100,24 @@ Classes
     `reply_count: Any`
     :   Number of replies on the comment
 
+<a id="CommentsArrayContainsCondition"></a>
+
+`CommentsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.clickup_api.types.CommentsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CommentsContainsCondition"></a>
 
 `CommentsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -135,6 +149,20 @@ Classes
     :   The type of the None singleton.
 
     `task_id: str`
+    :   The type of the None singleton.
+
+<a id="CommentsEndswithCondition"></a>
+
+`CommentsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.clickup_api.types.CommentsStringFilter`
     :   The type of the None singleton.
 
 <a id="CommentsEqCondition"></a>
@@ -266,20 +294,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.clickup_api.types.CommentsStringFilter`
     :   The type of the None singleton.
 
-<a id="CommentsLikeCondition"></a>
-
-`CommentsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.clickup_api.types.CommentsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CommentsListParams"></a>
 
 `CommentsListParams(*args, **kwargs)`
@@ -355,7 +369,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.clickup_api.types.CommentsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.clickup_api.types.CommentsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CommentsOrCondition"></a>
@@ -377,7 +391,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.clickup_api.types.CommentsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.clickup_api.types.CommentsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CommentsSearchFilter"></a>
@@ -414,7 +428,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.clickup_api.types.CommentsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.clickup_api.types.CommentsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.CommentsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.clickup_api.types.CommentsSortFilter]`
@@ -443,10 +457,24 @@ Classes
     `reply_count: Literal['asc', 'desc']`
     :   Number of replies on the comment
 
+<a id="CommentsStartswithCondition"></a>
+
+`CommentsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.clickup_api.types.CommentsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CommentsStringFilter"></a>
 
 `CommentsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -542,7 +570,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.clickup_api.types.FoldersEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersInCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.clickup_api.types.FoldersEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersInCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="FoldersAnyCondition"></a>
@@ -590,10 +618,24 @@ Classes
     `task_count: Any`
     :   Number of tasks contained in the folder
 
+<a id="FoldersArrayContainsCondition"></a>
+
+`FoldersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.clickup_api.types.FoldersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="FoldersContainsCondition"></a>
 
 `FoldersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -602,6 +644,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.clickup_api.types.FoldersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="FoldersEndswithCondition"></a>
+
+`FoldersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.clickup_api.types.FoldersStringFilter`
     :   The type of the None singleton.
 
 <a id="FoldersEqCondition"></a>
@@ -733,20 +789,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.clickup_api.types.FoldersStringFilter`
     :   The type of the None singleton.
 
-<a id="FoldersLikeCondition"></a>
-
-`FoldersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.clickup_api.types.FoldersStringFilter`
-    :   The type of the None singleton.
-
 <a id="FoldersListParams"></a>
 
 `FoldersListParams(*args, **kwargs)`
@@ -822,7 +864,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.clickup_api.types.FoldersEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersInCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.clickup_api.types.FoldersEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersInCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersAnyCondition`
     :   The type of the None singleton.
 
 <a id="FoldersOrCondition"></a>
@@ -844,7 +886,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.clickup_api.types.FoldersEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersInCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.clickup_api.types.FoldersEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersInCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="FoldersSearchFilter"></a>
@@ -881,7 +923,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.clickup_api.types.FoldersEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersInCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.clickup_api.types.FoldersEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersInCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.FoldersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.clickup_api.types.FoldersSortFilter]`
@@ -910,10 +952,24 @@ Classes
     `task_count: Literal['asc', 'desc']`
     :   Number of tasks contained in the folder
 
+<a id="FoldersStartswithCondition"></a>
+
+`FoldersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.clickup_api.types.FoldersStringFilter`
+    :   The type of the None singleton.
+
 <a id="FoldersStringFilter"></a>
 
 `FoldersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -952,7 +1008,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.clickup_api.types.GoalsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.clickup_api.types.GoalsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="GoalsAnyCondition"></a>
@@ -1018,10 +1074,24 @@ Classes
     `team_id: Any`
     :   Identifier of the team that owns the goal
 
+<a id="GoalsArrayContainsCondition"></a>
+
+`GoalsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.clickup_api.types.GoalsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="GoalsContainsCondition"></a>
 
 `GoalsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1030,6 +1100,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.clickup_api.types.GoalsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="GoalsEndswithCondition"></a>
+
+`GoalsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.clickup_api.types.GoalsStringFilter`
     :   The type of the None singleton.
 
 <a id="GoalsEqCondition"></a>
@@ -1179,20 +1263,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.clickup_api.types.GoalsStringFilter`
     :   The type of the None singleton.
 
-<a id="GoalsLikeCondition"></a>
-
-`GoalsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.clickup_api.types.GoalsStringFilter`
-    :   The type of the None singleton.
-
 <a id="GoalsListParams"></a>
 
 `GoalsListParams(*args, **kwargs)`
@@ -1268,7 +1338,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.clickup_api.types.GoalsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.clickup_api.types.GoalsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsAnyCondition`
     :   The type of the None singleton.
 
 <a id="GoalsOrCondition"></a>
@@ -1290,7 +1360,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.clickup_api.types.GoalsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.clickup_api.types.GoalsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="GoalsSearchFilter"></a>
@@ -1345,7 +1415,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.clickup_api.types.GoalsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.clickup_api.types.GoalsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.GoalsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.clickup_api.types.GoalsSortFilter]`
@@ -1392,10 +1462,24 @@ Classes
     `team_id: Literal['asc', 'desc']`
     :   Identifier of the team that owns the goal
 
+<a id="GoalsStartswithCondition"></a>
+
+`GoalsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.clickup_api.types.GoalsStringFilter`
+    :   The type of the None singleton.
+
 <a id="GoalsStringFilter"></a>
 
 `GoalsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1452,7 +1536,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.clickup_api.types.ListsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.clickup_api.types.ListsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ListsAnyCondition"></a>
@@ -1509,10 +1593,24 @@ Classes
     `task_count: Any`
     :   Number of tasks contained in the list
 
+<a id="ListsArrayContainsCondition"></a>
+
+`ListsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.clickup_api.types.ListsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ListsContainsCondition"></a>
 
 `ListsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1521,6 +1619,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.clickup_api.types.ListsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ListsEndswithCondition"></a>
+
+`ListsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.clickup_api.types.ListsStringFilter`
     :   The type of the None singleton.
 
 <a id="ListsEqCondition"></a>
@@ -1661,20 +1773,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.clickup_api.types.ListsStringFilter`
     :   The type of the None singleton.
 
-<a id="ListsLikeCondition"></a>
-
-`ListsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.clickup_api.types.ListsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ListsListParams"></a>
 
 `ListsListParams(*args, **kwargs)`
@@ -1750,7 +1848,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.clickup_api.types.ListsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.clickup_api.types.ListsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ListsOrCondition"></a>
@@ -1772,7 +1870,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.clickup_api.types.ListsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.clickup_api.types.ListsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ListsSearchFilter"></a>
@@ -1818,7 +1916,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.clickup_api.types.ListsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.clickup_api.types.ListsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.ListsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.clickup_api.types.ListsSortFilter]`
@@ -1856,10 +1954,24 @@ Classes
     `task_count: Literal['asc', 'desc']`
     :   Number of tasks contained in the list
 
+<a id="ListsStartswithCondition"></a>
+
+`ListsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.clickup_api.types.ListsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ListsStringFilter"></a>
 
 `ListsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1921,7 +2033,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.clickup_api.types.SpacesEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesInCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.clickup_api.types.SpacesEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesInCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SpacesAnyCondition"></a>
@@ -1966,10 +2078,24 @@ Classes
     `private: Any`
     :   Whether the space is private
 
+<a id="SpacesArrayContainsCondition"></a>
+
+`SpacesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.clickup_api.types.SpacesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="SpacesContainsCondition"></a>
 
 `SpacesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1978,6 +2104,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.clickup_api.types.SpacesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SpacesEndswithCondition"></a>
+
+`SpacesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.clickup_api.types.SpacesStringFilter`
     :   The type of the None singleton.
 
 <a id="SpacesEqCondition"></a>
@@ -2106,20 +2246,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.clickup_api.types.SpacesStringFilter`
     :   The type of the None singleton.
 
-<a id="SpacesLikeCondition"></a>
-
-`SpacesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.clickup_api.types.SpacesStringFilter`
-    :   The type of the None singleton.
-
 <a id="SpacesListParams"></a>
 
 `SpacesListParams(*args, **kwargs)`
@@ -2195,7 +2321,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.clickup_api.types.SpacesEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesInCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.clickup_api.types.SpacesEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesInCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesAnyCondition`
     :   The type of the None singleton.
 
 <a id="SpacesOrCondition"></a>
@@ -2217,7 +2343,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.clickup_api.types.SpacesEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesInCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.clickup_api.types.SpacesEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesInCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SpacesSearchFilter"></a>
@@ -2251,7 +2377,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.clickup_api.types.SpacesEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesInCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.clickup_api.types.SpacesEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesInCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.SpacesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.clickup_api.types.SpacesSortFilter]`
@@ -2277,10 +2403,24 @@ Classes
     `private: Literal['asc', 'desc']`
     :   Whether the space is private
 
+<a id="SpacesStartswithCondition"></a>
+
+`SpacesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.clickup_api.types.SpacesStringFilter`
+    :   The type of the None singleton.
+
 <a id="SpacesStringFilter"></a>
 
 `SpacesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2316,7 +2456,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.clickup_api.types.TasksEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.clickup_api.types.TasksEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TasksAnyCondition"></a>
@@ -2435,10 +2575,24 @@ Classes
     `team_id: str`
     :   The type of the None singleton.
 
+<a id="TasksArrayContainsCondition"></a>
+
+`TasksArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.clickup_api.types.TasksAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TasksContainsCondition"></a>
 
 `TasksContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2447,6 +2601,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.clickup_api.types.TasksAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TasksEndswithCondition"></a>
+
+`TasksEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.clickup_api.types.TasksStringFilter`
     :   The type of the None singleton.
 
 <a id="TasksEqCondition"></a>
@@ -2599,20 +2767,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.clickup_api.types.TasksStringFilter`
     :   The type of the None singleton.
 
-<a id="TasksLikeCondition"></a>
-
-`TasksLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.clickup_api.types.TasksStringFilter`
-    :   The type of the None singleton.
-
 <a id="TasksListParams"></a>
 
 `TasksListParams(*args, **kwargs)`
@@ -2691,7 +2845,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.clickup_api.types.TasksEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksAnyCondition`
+    `not: airbyte_agent_sdk.connectors.clickup_api.types.TasksEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksAnyCondition`
     :   The type of the None singleton.
 
 <a id="TasksOrCondition"></a>
@@ -2713,7 +2867,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.clickup_api.types.TasksEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.clickup_api.types.TasksEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TasksSearchFilter"></a>
@@ -2765,7 +2919,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.clickup_api.types.TasksEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.clickup_api.types.TasksEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TasksAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.clickup_api.types.TasksSortFilter]`
@@ -2809,10 +2963,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   Permalink URL to view the task in ClickUp
 
+<a id="TasksStartswithCondition"></a>
+
+`TasksStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.clickup_api.types.TasksStringFilter`
+    :   The type of the None singleton.
+
 <a id="TasksStringFilter"></a>
 
 `TasksStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2866,7 +3034,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.clickup_api.types.TeamsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.clickup_api.types.TeamsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TeamsAnyCondition"></a>
@@ -2908,10 +3076,24 @@ Classes
     `name: Any`
     :   Name of the team
 
+<a id="TeamsArrayContainsCondition"></a>
+
+`TeamsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.clickup_api.types.TeamsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TeamsContainsCondition"></a>
 
 `TeamsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2920,6 +3102,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.clickup_api.types.TeamsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TeamsEndswithCondition"></a>
+
+`TeamsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.clickup_api.types.TeamsStringFilter`
     :   The type of the None singleton.
 
 <a id="TeamsEqCondition"></a>
@@ -3031,20 +3227,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.clickup_api.types.TeamsStringFilter`
     :   The type of the None singleton.
 
-<a id="TeamsLikeCondition"></a>
-
-`TeamsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.clickup_api.types.TeamsStringFilter`
-    :   The type of the None singleton.
-
 <a id="TeamsListParams"></a>
 
 `TeamsListParams(*args, **kwargs)`
@@ -3115,7 +3297,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.clickup_api.types.TeamsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.clickup_api.types.TeamsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TeamsOrCondition"></a>
@@ -3137,7 +3319,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.clickup_api.types.TeamsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.clickup_api.types.TeamsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TeamsSearchFilter"></a>
@@ -3168,7 +3350,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.clickup_api.types.TeamsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.clickup_api.types.TeamsEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TeamsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.clickup_api.types.TeamsSortFilter]`
@@ -3191,10 +3373,24 @@ Classes
     `name: Literal['asc', 'desc']`
     :   Name of the team
 
+<a id="TeamsStartswithCondition"></a>
+
+`TeamsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.clickup_api.types.TeamsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TeamsStringFilter"></a>
 
 `TeamsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3227,7 +3423,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TimeTrackingAnyCondition"></a>
@@ -3269,10 +3465,24 @@ Classes
     `user: Any`
     :   User who tracked the time
 
+<a id="TimeTrackingArrayContainsCondition"></a>
+
+`TimeTrackingArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TimeTrackingContainsCondition"></a>
 
 `TimeTrackingContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3281,6 +3491,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TimeTrackingEndswithCondition"></a>
+
+`TimeTrackingEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingStringFilter`
     :   The type of the None singleton.
 
 <a id="TimeTrackingEqCondition"></a>
@@ -3409,20 +3633,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingStringFilter`
     :   The type of the None singleton.
 
-<a id="TimeTrackingLikeCondition"></a>
-
-`TimeTrackingLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingStringFilter`
-    :   The type of the None singleton.
-
 <a id="TimeTrackingListParams"></a>
 
 `TimeTrackingListParams(*args, **kwargs)`
@@ -3507,7 +3717,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingAnyCondition`
+    `not: airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingAnyCondition`
     :   The type of the None singleton.
 
 <a id="TimeTrackingOrCondition"></a>
@@ -3529,7 +3739,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TimeTrackingSearchFilter"></a>
@@ -3560,7 +3770,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingInCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingSortFilter]`
@@ -3583,10 +3793,24 @@ Classes
     `user: Literal['asc', 'desc']`
     :   User who tracked the time
 
+<a id="TimeTrackingStartswithCondition"></a>
+
+`TimeTrackingStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.clickup_api.types.TimeTrackingStringFilter`
+    :   The type of the None singleton.
+
 <a id="TimeTrackingStringFilter"></a>
 
 `TimeTrackingStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3619,7 +3843,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.clickup_api.types.UserEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserInCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.clickup_api.types.UserEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserInCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UserAnyCondition"></a>
@@ -3661,10 +3885,24 @@ Classes
     `username: Any`
     :   Display name of the user
 
+<a id="UserArrayContainsCondition"></a>
+
+`UserArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.clickup_api.types.UserAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="UserContainsCondition"></a>
 
 `UserContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3673,6 +3911,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.clickup_api.types.UserAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="UserEndswithCondition"></a>
+
+`UserEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.clickup_api.types.UserStringFilter`
     :   The type of the None singleton.
 
 <a id="UserEqCondition"></a>
@@ -3793,20 +4045,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.clickup_api.types.UserStringFilter`
     :   The type of the None singleton.
 
-<a id="UserLikeCondition"></a>
-
-`UserLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.clickup_api.types.UserStringFilter`
-    :   The type of the None singleton.
-
 <a id="UserLtCondition"></a>
 
 `UserLtCondition(*args, **kwargs)`
@@ -3868,7 +4106,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.clickup_api.types.UserEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserInCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserAnyCondition`
+    `not: airbyte_agent_sdk.connectors.clickup_api.types.UserEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserInCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserAnyCondition`
     :   The type of the None singleton.
 
 <a id="UserOrCondition"></a>
@@ -3890,7 +4128,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.clickup_api.types.UserEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserInCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.clickup_api.types.UserEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserInCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UserSearchFilter"></a>
@@ -3921,7 +4159,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.clickup_api.types.UserEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserInCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLikeCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.clickup_api.types.UserEqCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserNeqCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserGtCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserGteCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLtCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserLteCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserInCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserStartswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserEndswithCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserFuzzyCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserKeywordCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserArrayContainsCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserNotCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserAndCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserOrCondition | airbyte_agent_sdk.connectors.clickup_api.types.UserAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.clickup_api.types.UserSortFilter]`
@@ -3944,10 +4182,24 @@ Classes
     `username: Literal['asc', 'desc']`
     :   Display name of the user
 
+<a id="UserStartswithCondition"></a>
+
+`UserStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.clickup_api.types.UserStringFilter`
+    :   The type of the None singleton.
+
 <a id="UserStringFilter"></a>
 
 `UserStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
