@@ -11,6 +11,8 @@ import io.airbyte.cdk.load.component.ColumnTypeChange
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_LOADED_AT
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
@@ -398,6 +400,51 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         assertEquals(
             "CREATE OR REPLACE TABLE ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(targetTableName)} CLONE ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(sourceTableName)} COPY GRANTS",
             sql
+        )
+    }
+
+    @Test
+    fun testAddMetaColumns() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val columns =
+            linkedMapOf(
+                SNOWFLAKE_AB_META to ColumnType("VARIANT", false),
+                SNOWFLAKE_AB_GENERATION_ID to ColumnType("NUMBER", true),
+            )
+        val sql = snowflakeDirectLoadSqlGenerator.addMetaColumns(tableName, columns)
+        val expectedTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${tableName.namespace.quote()}.${tableName.name.quote()}"
+
+        // Intentionally no NOT NULL: preexisting records have no value for these columns.
+        assertEquals(
+            setOf(
+                """ALTER TABLE $expectedTableName ADD COLUMN IF NOT EXISTS "$SNOWFLAKE_AB_META" VARIANT;""",
+                """ALTER TABLE $expectedTableName ADD COLUMN IF NOT EXISTS "$SNOWFLAKE_AB_GENERATION_ID" NUMBER;""",
+            ),
+            sql,
+        )
+    }
+
+    @Test
+    fun testAddMetaColumnsQuotesRawModeColumnNames() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val columns =
+            linkedMapOf(
+                COLUMN_NAME_AB_META to ColumnType("VARIANT", false),
+                COLUMN_NAME_AB_GENERATION_ID to ColumnType("NUMBER", true),
+                COLUMN_NAME_AB_LOADED_AT to ColumnType("TIMESTAMP_TZ", true),
+            )
+        val sql = snowflakeDirectLoadSqlGenerator.addMetaColumns(tableName, columns)
+        val expectedTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${tableName.namespace.quote()}.${tableName.name.quote()}"
+
+        assertEquals(
+            setOf(
+                """ALTER TABLE $expectedTableName ADD COLUMN IF NOT EXISTS "$COLUMN_NAME_AB_META" VARIANT;""",
+                """ALTER TABLE $expectedTableName ADD COLUMN IF NOT EXISTS "$COLUMN_NAME_AB_GENERATION_ID" NUMBER;""",
+                """ALTER TABLE $expectedTableName ADD COLUMN IF NOT EXISTS "$COLUMN_NAME_AB_LOADED_AT" TIMESTAMP_TZ;""",
+            ),
+            sql,
         )
     }
 

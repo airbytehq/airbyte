@@ -2,6 +2,13 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## September 10, 2026
+
+Platform
+
+- When your organization has reached the number of workspaces your plan includes, hovering over the locked New workspace button now shows how many workspaces you've used out of your limit and what upgrading to Plus or Pro adds, with links to view plans or talk to sales. Previously, the button only told you to upgrade your plan. The upgrade details also now correctly state that the Plus plan includes up to 2 workspaces.
+- If your organization doesn't have a subscription yet, the Billing page now also shows the Flex plan alongside Standard, Plus, and Pro, with a Talk to Sales link. Flex is a hybrid option for enterprises that need Airbyte's managed control plane with data planes they run themselves.
+
 ## September 4, 2026
 
 Platform

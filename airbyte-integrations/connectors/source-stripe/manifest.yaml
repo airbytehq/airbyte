@@ -1543,17 +1543,17 @@ definitions:
               - path:
                   - is_deleted
                 value: "{{ True }}"
-            condition: "{{ record.get('original_record', {}).get('type', '').endswith('.deleted') }}"
+            condition: "{{ (record.get('original_record') or {}).get('type', '').endswith('.deleted') }}"
           - type: AddFields
             fields:
               - path:
                   - invoice_updated
-                value: "{{ ((record['original_record'].get('updated') or record['original_record'].get('created') or record['original_record'].get('data', {}).get('object', {}).get('updated') or record['original_record'].get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int) - (1 if record['original_record'].get('type', '').endswith('.created') else 0) }}"
+                value: "{{ (((record.get('original_record') or {}).get('updated') or (record.get('original_record') or {}).get('created') or (record.get('original_record') or {}).get('data', {}).get('object', {}).get('updated') or (record.get('original_record') or {}).get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int) - (1 if (record.get('original_record') or {}).get('type', '').endswith('.created') else 0) }}"
                 value_type: integer
               - path:
                   - invoice_id
-                value: "{{ record['original_record'].get('data', {}).get('object', {}).get('id') }}"
-            condition: "{{ record.get('original_record') }}"
+                value: "{{ (record.get('original_record') or {}).get('data', {}).get('object', {}).get('id') }}"
+            condition: "{{ (record.get('original_record') or {}) != {} }}"
           - type: RemoveFields
             field_pointers:
               - - original_record
@@ -1711,14 +1711,14 @@ definitions:
               - path:
                   - is_deleted
                 value: "{{ True }}"
-            condition: "{{ record.get('original_record', {}).get('type', '').endswith('.deleted') }}"
+            condition: "{{ (record.get('original_record') or {}).get('type', '').endswith('.deleted') }}"
           - type: AddFields
             fields:
               - path:
                   - subscription_updated
-                value: "{{ ((record['original_record'].get('updated') or record['original_record'].get('created') or record['original_record'].get('data', {}).get('object', {}).get('updated') or record['original_record'].get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int) - (1 if record['original_record'].get('type', '').endswith('.created') else 0) }}"
+                value: "{{ (((record.get('original_record') or {}).get('updated') or (record.get('original_record') or {}).get('created') or (record.get('original_record') or {}).get('data', {}).get('object', {}).get('updated') or (record.get('original_record') or {}).get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int) - (1 if (record.get('original_record') or {}).get('type', '').endswith('.created') else 0) }}"
                 value_type: integer
-            condition: "{{ record.get('original_record') }}"
+            condition: "{{ (record.get('original_record') or {}) != {} }}"
           - type: RemoveFields
             field_pointers:
               - - original_record

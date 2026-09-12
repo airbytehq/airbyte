@@ -16,7 +16,9 @@ import io.airbyte.integrations.destination.postgres.component.PostgresComponentT
 import io.airbyte.integrations.destination.postgres.component.PostgresComponentTestFixtures.testMapping
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.Isolated
 
+@Isolated
 @MicronautTest(environments = ["component"], resolveParameters = false)
 class PostgresTableSchemaEvolutionTest(
     override val client: PostgresAirbyteClient,
