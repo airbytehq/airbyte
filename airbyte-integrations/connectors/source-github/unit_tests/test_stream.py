@@ -3,7 +3,9 @@
 #
 
 import json
+import logging
 import urllib
+from collections.abc import Mapping
 from http import HTTPStatus
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -42,8 +44,11 @@ from source_github.streams import (
 )
 from source_github.utils import read_full_refresh
 
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, FailureType, SyncMode, Type
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
+from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
@@ -2144,6 +2149,65 @@ def test_issue_timeline_events_parse_response_defensive(json_data, text, expecte
     slice_ = {"repository": "org/repo", "number": 1}
     records = list(stream.parse_response(resp, stream_state={}, stream_slice=slice_))
     assert len(records) == expected_count
+
+
+def test_issue_timeline_events_full_refresh_emits_single_state_for_many_issues(requests_mock):
+    """A full refresh over many issues must emit one terminal STATE message, not one per
+    issue. Before the fix this read emitted one cumulative STATE per issue (50 here),
+    which is what exhausted destination memory on large repositories."""
+    issue_count = 50
+    repository = "airbytehq/airbyte"
+    stream = IssueTimelineEvents(repositories=[repository], page_size_for_large_streams=100)
+
+    requests_mock.get(
+        f"https://api.github.com/repos/{repository}/issues",
+        json=[{"number": i, "updated_at": "2022-01-01T00:00:00Z"} for i in range(1, issue_count + 1)],
+    )
+    for i in range(1, issue_count + 1):
+        requests_mock.get(
+            f"https://api.github.com/repos/{repository}/issues/{i}/timeline",
+            json=[{"event": "labeled"}],
+        )
+
+    configured_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name=stream.name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+        sync_mode=SyncMode.full_refresh,
+        destination_sync_mode=DestinationSyncMode.overwrite,
+    )
+    items = list(
+        stream.read(
+            configured_stream=configured_stream,
+            logger=logging.getLogger("airbyte"),
+            slice_logger=DebugSliceLogger(),
+            stream_state={},
+            state_manager=ConnectorStateManager(),
+            internal_config=InternalConfig(),
+        )
+    )
+
+    records = [item for item in items if isinstance(item, Mapping)]
+    state_messages = [item for item in items if isinstance(item, AirbyteMessage) and item.type == Type.STATE]
+
+    assert len(records) == issue_count
+    assert len(state_messages) == 1
+    assert state_messages[0].state.stream.stream_state.__dict__ == {"__ab_no_cursor_state_message": True}
+    assert stream.get_cursor() is None
+
+
+@patch("time.sleep")
+def test_issue_timeline_events_swallowed_error_without_cursor(time_mock, requests_mock):
+    """A swallowed 404 on a timeline slice must still return no records without a
+    `SubstreamResumableFullRefreshCursor` to close the slice on."""
+    repository = "airbytehq/airbyte"
+    stream = IssueTimelineEvents(repositories=[repository], page_size_for_large_streams=100)
+    requests_mock.get(
+        f"https://api.github.com/repos/{repository}/issues/1/timeline",
+        status_code=HTTPStatus.NOT_FOUND,
+        json={"message": "Not Found"},
+    )
+
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"repository": repository, "number": 1}))
+    assert records == []
 
 
 # === Tests for defensive error handlers (airbyte-internal-issues/issues/16281) ===

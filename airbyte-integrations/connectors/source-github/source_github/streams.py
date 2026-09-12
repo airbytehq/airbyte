@@ -53,6 +53,7 @@ class GithubStreamABC(HttpStream, ABC):
     large_stream = False
     max_retries: int = 5
     stream_base_params = {}
+    use_substream_resumable_full_refresh_cursor: bool = True
 
     def __init__(
         self,
@@ -68,7 +69,7 @@ class GithubStreamABC(HttpStream, ABC):
         self.api_url = api_url
         self.state = {}
 
-        if not self.supports_incremental:
+        if not self.supports_incremental and self.use_substream_resumable_full_refresh_cursor:
             self.cursor = SubstreamResumableFullRefreshCursor()
 
     @property
@@ -1881,9 +1882,15 @@ class ContributorActivity(GithubStream):
 class IssueTimelineEvents(GithubStream):
     """
     API docs https://docs.github.com/en/rest/issues/timeline?apiVersion=2022-11-28#list-timeline-events-for-an-issue
+
+    This stream slices once per issue, so the default substream resumable full refresh
+    cursor emits a cumulative STATE message per issue that grows quadratically and
+    exhausts destination memory on large repositories. It reads as plain full refresh
+    instead, emitting a single terminal state message at the end of the sync.
     """
 
     primary_key = ["repository", "issue_number"]
+    use_substream_resumable_full_refresh_cursor = False
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
