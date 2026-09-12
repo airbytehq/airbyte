@@ -1,0 +1,57 @@
+data:
+  ab_internal:
+    ql: 300
+    sl: 300
+  allowedHosts:
+    hosts:
+      - api.openai.com
+      - api.cohere.ai
+      - ${embedding.api_base}
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+  connectorSubtype: vectorstore
+  connectorType: destination
+  definitionId: 1d997572-3dac-4d2a-a857-adc6e4af1c02
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-opengauss-datavec
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/opengauss-datavec
+  githubIssueLabel: destination-opengauss-datavec
+  icon: opengauss-datavec.svg
+  license: ELv2
+  name: openGauss DataVec
+  remoteRegistries:
+    pypi:
+      enabled: false # TODO: enable once the CLI is working
+      packageName: airbyte-destination-opengauss-datavec
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseDate: 2026-05-28
+  releaseStage: beta
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
+  supportLevel: certified
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+    - suite: acceptanceTests
+  externalDocumentationUrls:
+    - title: openGauss documentation
+      url: https://docs.opengauss.org/
+      type: api_reference
+    - title: openGauss release notes
+      url: https://docs.opengauss.org/en/docs/latest/docs/AboutopenGauss/release-notes.html
+      type: api_release_history
+    - title: Client authentication
+      url: https://docs.opengauss.org/en/docs/latest/docs/DatabaseAdministrationGuide/client-access-authentication.html
+      type: authentication_guide
+metadataSpecVersion: "1.0"

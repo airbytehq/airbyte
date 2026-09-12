@@ -1,0 +1,25 @@
+{
+  "processing": {
+    "text_fields": ["str_col"],
+    "metadata_fields": ["int_col"],
+    "chunk_size": 1000,
+    "chunk_overlap": 0
+  },
+  "embedding": {
+    "mode": "fake"
+  },
+  "indexing": {
+    "host": "localhost",
+    "port": 5432,
+    "database": "airbyte_test",
+    "default_schema": "public",
+    "username": "airbyte",
+    "ssl_mode": {
+      "mode": "disable"
+    },
+    "credentials": {
+      "password": "password"
+    }
+  },
+  "omit_raw_text": false
+}

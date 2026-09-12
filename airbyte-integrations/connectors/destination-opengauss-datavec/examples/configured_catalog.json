@@ -1,0 +1,23 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "example_stream",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "field2": { "type": "string" },
+            "id": { "type": "integer" },
+            "category": { "type": "string" }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+{"type":"RECORD","record":{"namespace":"manual","stream":"dedup_docs","data":{"id":100,"title":"dedup updated","body":"new content should replace document_id manual_dedup_docs_100","category":"dedup"},"emitted_at":1710000010000}}
+{"type":"STATE","state":{"data":{"phase":"dedup update flushed"}}}
