@@ -552,3 +552,21 @@ def test_stream_slice_dates(config, expected_start_base, expected_end_base, stre
         first_slice["start_time"] == expected_start_base
     ), f"Stream '{stream_name}': Expected start time {expected_start_base}, got {first_slice['start_time']}"
     assert last_slice["end_time"] == expected_end, f"Stream '{stream_name}': Expected end time {expected_end}, got {last_slice['end_time']}"
+
+
+@pytest.mark.parametrize(
+    "stream_name",
+    [
+        "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL",
+        "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL",
+    ],
+)
+def test_flat_file_all_orders_streams_have_no_primary_key(connector_config_without_start_date, stream_name):
+    """
+    These reports are one row per order item, and the report does not expose a unique item identifier, so
+    `amazon-order-id` alone is not unique. Declaring it as a primary key makes destination dedup collapse
+    multi-item orders into a single row (silent data loss), so the streams must not declare any primary key.
+    """
+    streams = get_source(connector_config_without_start_date).streams(connector_config_without_start_date)
+    stream = next(stream for stream in streams if stream.name == stream_name)
+    assert not stream.as_airbyte_stream().source_defined_primary_key
