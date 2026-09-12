@@ -25,11 +25,13 @@ class S3DataLakeBeanFactory {
     @Singleton
     fun aggregatePublishingConfig(config: S3DataLakeConfiguration): AggregatePublishingConfig {
         val batchSize = config.resolvedFlushBatchSizeBytes
+        val maxRecords = config.resolvedMaxRecordsPerFlush
         log.info {
-            "Configured flush batch size: $batchSize bytes (${batchSize / 1024 / 1024} MiB)"
+            "Configured flush batch size: $batchSize bytes (${batchSize / 1024 / 1024} MiB), " +
+                "max records per flush: $maxRecords"
         }
         return AggregatePublishingConfig(
-            maxRecordsPerAgg = 10_000_000_000L,
+            maxRecordsPerAgg = maxRecords,
             maxEstBytesPerAgg = batchSize,
             maxEstBytesAllAggregates = 150_000_000L * 5,
             maxBufferedAggregates = 5,
@@ -56,23 +58,20 @@ class S3DataLakeBeanFactory {
     // from being loaded. So this is necessary for now.
     @Singleton fun tempTableNameGenerator() = DefaultTempTableNameGenerator()
 
-    /**
-     * Socket configuration for S3 Data Lake destination.
-     * - In test environments: this bean is not created, so all sockets are used
-     * - In production with dedup streams: limits to 1 socket for data consistency
-     * - In production without dedup streams: uses all available sockets
-     */
+    /** Preserve the production one-socket invariant for all Dedupe streams. */
     @Singleton
     @Requires(notEnv = [Environment.TEST])
-    fun dataFlowSocketConfig(catalog: DestinationCatalog): DataFlowSocketConfig {
-        val hasDedupStreams = catalog.streams.any { it.tableSchema.importType is Dedupe }
-        return if (hasDedupStreams) {
+    fun dataFlowSocketConfig(
+        catalog: DestinationCatalog,
+    ): DataFlowSocketConfig {
+        val hasDedupeStreams = catalog.streams.any { it.tableSchema.importType is Dedupe }
+        return if (hasDedupeStreams) {
             log.info { "Dedup streams detected, limiting to 1 socket for data consistency" }
             object : DataFlowSocketConfig {
                 override val numSockets: Int = 1
             }
         } else {
-            log.info { "No dedup streams detected, using all available sockets" }
+            log.info { "No socket restriction required, using all available sockets" }
             object : DataFlowSocketConfig {
                 override val numSockets: Int = Int.MAX_VALUE
             }

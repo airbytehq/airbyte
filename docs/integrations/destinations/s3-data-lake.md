@@ -335,6 +335,12 @@ This connector uses a merge-on-read strategy to support deduplication.
 - Airbyte translates the stream's primary keys to Iceberg's [identifier columns](https://iceberg.apache.org/spec/#identifier-field-ids).
 - An "upsert" is an [equality-based delete](https://iceberg.apache.org/spec/#equality-delete-files) on that row's primary key, followed by an insertion of the new data.
 
+The `iceberg_delete_file_type` option controls the delete encoding for Dedupe streams. `AUTOMATIC` currently uses equality deletes and may change in a future version. Choose `EQUALITY` to always use equality deletes, or `POSITIONAL` when downstream readers reject equality-delete files. Append and Overwrite streams always use their existing behavior.
+
+Two experimental options tune how positional deletes are written. `optimize_prior_iceberg_delete_files` (default enabled) reads prior positional delete files so each position is deleted at most once; disabling it writes a delete for every physical copy of a row, which skips those reads but grows the delete-file population. `use_experimental_delete_vector_files` (default disabled) publishes a deletion-vector index as Iceberg statistics so later flushes can skip reading prior delete files. Delete files remain the source of truth in every combination, and readers see identical table contents.
+
+The experimental `max_records_per_flush` option caps how many records accumulate before a batch is written. Batches also flush on `flush_batch_size_mb` and on a staleness deadline, so whichever limit is reached first wins. Larger batches write fewer, larger files and reduce the repeated data-file reads positional deletes perform, at the cost of holding more records in memory. Dedupe streams that use positional deletes reject flushes containing more than 1,000,000 distinct primary keys.
+
 ### Number-type primary keys
 
 When a primary key field has the Airbyte `Number` type, the connector stores it as an Iceberg `StringType` instead of `DoubleType`. This preserves deduplication correctness (Iceberg identifier fields don't support `DoubleType`), but means that ordering and comparison on these columns is lexicographic, not numeric (e.g., `"9" > "10"`). Downstream queries that assume numeric comparison on these fields may need adjustment.
@@ -416,6 +422,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.0 | 2026-09-11 | [85194](https://github.com/airbytehq/airbyte/pull/85194) | Add configurable equality or positional delete encoding for Dedupe streams |
 | 0.3.53 | 2026-08-24 | [84994](https://github.com/airbytehq/airbyte/pull/84994) | Upgrade to Bulk CDK 1.0.25. |
 | 0.3.52 | 2026-06-23 | [80349](https://github.com/airbytehq/airbyte/pull/80349) | Remove awssdk:bundle fat jar to fix OOMKilled during CHECK operations |
 | 0.3.51 | 2026-06-15 | [79123](https://github.com/airbytehq/airbyte/pull/79123) | Update Apache Iceberg dependencies. |
