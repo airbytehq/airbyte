@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.1 — 2026-09-11
+
+[#85193](https://github.com/airbytehq/airbyte/pull/85193) — Feat: add positional and vector delete file support to the Iceberg load toolkit, with duplicate-delete suppression, optional whole-file supersession, and an optional deletion-vector index.
+
 ### 1.1.0 — 2026-09-10
 
 [#82231](https://github.com/airbytehq/airbyte/pull/82231) - Feat: Add `tableIsEmpty` to `TableOperationsClient` and use existence checks (instead of `COUNT(*)`) when gathering direct-load initial status.

@@ -10,6 +10,7 @@ dependencies {
 
     // Hadoop Configuration class used by Iceberg
     implementation 'org.apache.hadoop:hadoop-common:3.4.1'
+    implementation 'org.apache.parquet:parquet-hadoop:1.17.1'
 
     api "org.apache.iceberg:iceberg-core:${project.ext.apacheIcebergVersion}"
     api "org.apache.iceberg:iceberg-api:${project.ext.apacheIcebergVersion}"
@@ -22,4 +23,6 @@ dependencies {
 
     testImplementation "io.mockk:mockk:1.13.12"
     testImplementation "org.assertj:assertj-core:3.26.3"
+    testImplementation 'org.apache.logging.log4j:log4j-core'
+    testImplementation 'org.apache.hadoop:hadoop-mapreduce-client-core:3.4.1'
 }
