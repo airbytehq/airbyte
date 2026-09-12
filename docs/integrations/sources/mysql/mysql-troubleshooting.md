@@ -75,11 +75,13 @@ The root causes is that the binglogs needed for the incremental sync have been r
     ```
     The downside of increasing retention is that more disk space is needed.
 
-### EventDataDeserializationException errors during initial snapshot
+### EOFException or SocketException errors during CDC syncs
 
 When a sync runs for the first time using CDC, Airbyte performs an initial consistent snapshot of your database. Airbyte doesn't acquire any table locks \(for tables defined with MyISAM engine, the tables would still be locked\) while creating the snapshot to allow writes by other database clients. But in order for the sync to work without any error/unexpected behaviour, it is assumed that no schema changes are happening while the snapshot is running.
 
-If seeing `EventDataDeserializationException` errors intermittently with root cause `EOFException` or `SocketException`, you may need to extend the following _MySql server_ timeout values by running:
+The connector treats specific `EOFException` failures from reading the binlog as transient rather than as configuration problems. A sync that hits one ends with a message such as `The sync encountered a communication issue while reading data from the MySQL server, will retry.` and Airbyte retries it. The messages handled this way are `Can not read response from server. Expected to read N bytes`, `Failed to read remaining N of M bytes from position`, and `Failed to read next byte from position`. Occasional retries of this kind need no action from you. `SocketException` failures and `EventDataDeserializationException` failures aren't classified as transient, so they end the sync.
+
+If these errors happen often enough that syncs can't finish, or you see `EventDataDeserializationException` errors intermittently with root cause `EOFException` or `SocketException`, you may need to extend the following _MySQL server_ timeout values by running:
 
 **For MySQL 8.0.26 and later:**
 
@@ -106,16 +108,18 @@ Global transaction identifiers \(GTIDs\) uniquely identify transactions that occ
 - Enable gtid_mode : Boolean that specifies whether GTID mode of the MySQL server is enabled or not. Enable it via `mysql> gtid_mode=ON`
 - Enable enforce_gtid_consistency : Boolean that specifies whether the server enforces GTID consistency by allowing the execution of statements that can be logged in a transactionally safe manner. Required when using GTIDs. Enable it via `mysql> enforce_gtid_consistency=ON`
 
-### (Advanced) Setting up initial CDC waiting time
+### (Advanced) Initial Load Timeout in Hours
 
-The MySQL connector may need some time to start processing the data in the CDC mode in the following scenarios:
+When a CDC connection syncs for the first time, or when you add a stream to it, the connector takes an initial load of the affected tables before it starts reading the binlog. `Initial Load Timeout in Hours` limits how long that initial load may run within a single sync attempt. When the limit is reached, the attempt ends with a retryable error and the initial load continues in the next attempt. The default is 8 hours, and the valid range is 4 to 24 hours.
 
-- When the connection is set up for the first time and a snapshot is needed
-- When the connector has a lot of change logs to process
+If you're loading very large tables, make sure your binlog retention covers the initial load as well. Otherwise the binlog position the connector needs can expire before the load finishes. See [Under CDC incremental mode, there are still full refresh syncs](#under-cdc-incremental-mode-there-are-still-full-refresh-syncs) for retention settings.
 
-The connector waits for the default initial wait time of 5 minutes (300 seconds). Setting the parameter to a longer duration will result in slower syncs, while setting it to a shorter duration may cause the connector to not have enough time to create the initial snapshot or read through the change logs. The valid range is 300 seconds to 1200 seconds.
+### (Advanced) Invalid CDC Position Behavior
 
-If you know there are database changes to be synced, but the connector cannot read those changes, the root cause may be insufficient waiting time. In that case, you can increase the waiting time (example: set to 600 seconds) to test if it is indeed the root cause. On the other hand, if you know there are no database changes, you can decrease the wait time to speed up the zero record syncs.
+If the binlog position the connector saved in state is no longer available on the server — usually because the binlog expired while the connection was paused or failing — the connector can't continue incrementally. `Invalid CDC Position Behavior` controls what happens next:
+
+- `Fail sync` (default): the sync fails, and you have to reset the connection manually before it can sync again.
+- `Re-sync data`: Airbyte resets the CDC state for the connection and re-snapshots every CDC stream in it, not just the stream that hit the invalid position. This avoids the manual reset, but it increases sync duration and cost, and it can lead to data loss.
 
 ### (Advanced) Set up server timezone
 
