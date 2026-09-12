@@ -47,13 +47,13 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](./REFERENCE.md#customers-list), [Create](./REFERENCE.md#customers-create), [Get](./REFERENCE.md#customers-get), [Update](./REFERENCE.md#customers-update), [Delete](./REFERENCE.md#customers-delete), [API Search](./REFERENCE.md#customers-api_search), [Context Store Search](./REFERENCE.md#customers-context-store-search) |
-| Invoices | [List](./REFERENCE.md#invoices-list), [Create](./REFERENCE.md#invoices-create), [Get](./REFERENCE.md#invoices-get), [API Search](./REFERENCE.md#invoices-api_search), [Context Store Search](./REFERENCE.md#invoices-context-store-search) |
+| Customers | [List](./REFERENCE.md#customers-list), [Create](./REFERENCE.md#customers-create), [Get](./REFERENCE.md#customers-get), [Update](./REFERENCE.md#customers-update), [Delete](./REFERENCE.md#customers-delete), [API Search](./REFERENCE.md#customers-api_search), [Context Store Search](./REFERENCE.md#customers-context-store-search), [Context Store SQL Query](./REFERENCE.md#customers-context-store-sql-query) |
+| Invoices | [List](./REFERENCE.md#invoices-list), [Create](./REFERENCE.md#invoices-create), [Get](./REFERENCE.md#invoices-get), [API Search](./REFERENCE.md#invoices-api_search), [Context Store Search](./REFERENCE.md#invoices-context-store-search), [Context Store SQL Query](./REFERENCE.md#invoices-context-store-sql-query) |
 | Invoice Finalizations | [Create](./REFERENCE.md#invoice-finalizations-create) |
 | Invoice Sends | [Create](./REFERENCE.md#invoice-sends-create) |
-| Charges | [List](./REFERENCE.md#charges-list), [Get](./REFERENCE.md#charges-get), [API Search](./REFERENCE.md#charges-api_search), [Context Store Search](./REFERENCE.md#charges-context-store-search) |
-| Subscriptions | [List](./REFERENCE.md#subscriptions-list), [Create](./REFERENCE.md#subscriptions-create), [Get](./REFERENCE.md#subscriptions-get), [Update](./REFERENCE.md#subscriptions-update), [Delete](./REFERENCE.md#subscriptions-delete), [API Search](./REFERENCE.md#subscriptions-api_search), [Context Store Search](./REFERENCE.md#subscriptions-context-store-search) |
-| Refunds | [List](./REFERENCE.md#refunds-list), [Create](./REFERENCE.md#refunds-create), [Get](./REFERENCE.md#refunds-get), [Context Store Search](./REFERENCE.md#refunds-context-store-search) |
+| Charges | [List](./REFERENCE.md#charges-list), [Get](./REFERENCE.md#charges-get), [API Search](./REFERENCE.md#charges-api_search), [Context Store Search](./REFERENCE.md#charges-context-store-search), [Context Store SQL Query](./REFERENCE.md#charges-context-store-sql-query) |
+| Subscriptions | [List](./REFERENCE.md#subscriptions-list), [Create](./REFERENCE.md#subscriptions-create), [Get](./REFERENCE.md#subscriptions-get), [Update](./REFERENCE.md#subscriptions-update), [Delete](./REFERENCE.md#subscriptions-delete), [API Search](./REFERENCE.md#subscriptions-api_search), [Context Store Search](./REFERENCE.md#subscriptions-context-store-search), [Context Store SQL Query](./REFERENCE.md#subscriptions-context-store-sql-query) |
+| Refunds | [List](./REFERENCE.md#refunds-list), [Create](./REFERENCE.md#refunds-create), [Get](./REFERENCE.md#refunds-get), [Context Store Search](./REFERENCE.md#refunds-context-store-search), [Context Store SQL Query](./REFERENCE.md#refunds-context-store-sql-query) |
 | Products | [List](./REFERENCE.md#products-list), [Create](./REFERENCE.md#products-create), [Get](./REFERENCE.md#products-get), [Update](./REFERENCE.md#products-update), [Delete](./REFERENCE.md#products-delete), [API Search](./REFERENCE.md#products-api_search) |
 | Balance | [Get](./REFERENCE.md#balance-get) |
 | Balance Transactions | [List](./REFERENCE.md#balance-transactions-list), [Get](./REFERENCE.md#balance-transactions-get) |
@@ -146,6 +146,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -213,9 +217,91 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `StripeConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.stripe import StripeConnector
+
+connector = connect("stripe", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@StripeConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="stripe_inspect",
+    docs_tool="stripe_read_docs",
+)
+async def stripe_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@StripeConnector.agent_tool(framework="pydantic_ai")
+async def stripe_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@StripeConnector.agent_tool(framework="pydantic_ai")
+async def stripe_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.stripe import StripeConnector
+
+connector = connect("stripe", workspace_name="<your_workspace_name>")
+
+@StripeConnector.agent_tool(
+    inspect_tool="stripe_inspect",
+    docs_tool="stripe_read_docs",
+)
+async def stripe_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@StripeConnector.agent_tool()
+async def stripe_inspect():
+    return await connector.inspect_connector()
+
+@StripeConnector.agent_tool()
+async def stripe_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (stripe_inspect, stripe_read_docs, stripe_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `StripeConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `StripeConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `StripeConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -402,6 +488,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -485,9 +575,99 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `StripeConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.stripe import StripeConnector
+from airbyte_agent_sdk.connectors.stripe.models import StripeAuthConfig
+
+connector = StripeConnector(
+    auth_config=StripeAuthConfig(
+        api_key="<Your Stripe API Key (starts with sk_test_ or sk_live_)>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@StripeConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="stripe_inspect",
+    docs_tool="stripe_read_docs",
+)
+async def stripe_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@StripeConnector.agent_tool(framework="pydantic_ai")
+async def stripe_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@StripeConnector.agent_tool(framework="pydantic_ai")
+async def stripe_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.stripe import StripeConnector
+from airbyte_agent_sdk.connectors.stripe.models import StripeAuthConfig
+
+connector = StripeConnector(
+    auth_config=StripeAuthConfig(
+        api_key="<Your Stripe API Key (starts with sk_test_ or sk_live_)>"
+    )
+)
+
+@StripeConnector.agent_tool(
+    inspect_tool="stripe_inspect",
+    docs_tool="stripe_read_docs",
+)
+async def stripe_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@StripeConnector.agent_tool()
+async def stripe_inspect():
+    return await connector.inspect_connector()
+
+@StripeConnector.agent_tool()
+async def stripe_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (stripe_inspect, stripe_read_docs, stripe_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `StripeConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `StripeConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `StripeConnector.agent_tool` above.
 
 **Pydantic AI**
 

@@ -37,14 +37,14 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Boards | [List](./REFERENCE.md#boards-list), [Get](./REFERENCE.md#boards-get), [Context Store Search](./REFERENCE.md#boards-context-store-search), [Semantic Search](./REFERENCE.md#boards-semantic-search) |
-| Items | [List](./REFERENCE.md#items-list), [Get](./REFERENCE.md#items-get), [Context Store Search](./REFERENCE.md#items-context-store-search), [Semantic Search](./REFERENCE.md#items-semantic-search) |
-| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Context Store Search](./REFERENCE.md#teams-context-store-search) |
-| Tags | [List](./REFERENCE.md#tags-list), [Context Store Search](./REFERENCE.md#tags-context-store-search) |
-| Updates | [List](./REFERENCE.md#updates-list), [Get](./REFERENCE.md#updates-get), [Context Store Search](./REFERENCE.md#updates-context-store-search), [Semantic Search](./REFERENCE.md#updates-semantic-search) |
-| Workspaces | [List](./REFERENCE.md#workspaces-list), [Get](./REFERENCE.md#workspaces-get), [Context Store Search](./REFERENCE.md#workspaces-context-store-search) |
-| Activity Logs | [List](./REFERENCE.md#activity-logs-list), [Context Store Search](./REFERENCE.md#activity-logs-context-store-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
+| Boards | [List](./REFERENCE.md#boards-list), [Get](./REFERENCE.md#boards-get), [Context Store Search](./REFERENCE.md#boards-context-store-search), [Context Store SQL Query](./REFERENCE.md#boards-context-store-sql-query), [Semantic Search](./REFERENCE.md#boards-semantic-search) |
+| Items | [List](./REFERENCE.md#items-list), [Get](./REFERENCE.md#items-get), [Context Store Search](./REFERENCE.md#items-context-store-search), [Context Store SQL Query](./REFERENCE.md#items-context-store-sql-query), [Semantic Search](./REFERENCE.md#items-semantic-search) |
+| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Context Store Search](./REFERENCE.md#teams-context-store-search), [Context Store SQL Query](./REFERENCE.md#teams-context-store-sql-query) |
+| Tags | [List](./REFERENCE.md#tags-list), [Context Store Search](./REFERENCE.md#tags-context-store-search), [Context Store SQL Query](./REFERENCE.md#tags-context-store-sql-query) |
+| Updates | [List](./REFERENCE.md#updates-list), [Get](./REFERENCE.md#updates-get), [Context Store Search](./REFERENCE.md#updates-context-store-search), [Context Store SQL Query](./REFERENCE.md#updates-context-store-sql-query), [Semantic Search](./REFERENCE.md#updates-semantic-search) |
+| Workspaces | [List](./REFERENCE.md#workspaces-list), [Get](./REFERENCE.md#workspaces-get), [Context Store Search](./REFERENCE.md#workspaces-context-store-search), [Context Store SQL Query](./REFERENCE.md#workspaces-context-store-sql-query) |
+| Activity Logs | [List](./REFERENCE.md#activity-logs-list), [Context Store Search](./REFERENCE.md#activity-logs-context-store-search), [Context Store SQL Query](./REFERENCE.md#activity-logs-context-store-sql-query) |
 
 
 ## Monday API docs
@@ -126,6 +126,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -193,9 +197,91 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `MondayConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.monday import MondayConnector
+
+connector = connect("monday", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@MondayConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="monday_inspect",
+    docs_tool="monday_read_docs",
+)
+async def monday_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@MondayConnector.agent_tool(framework="pydantic_ai")
+async def monday_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@MondayConnector.agent_tool(framework="pydantic_ai")
+async def monday_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.monday import MondayConnector
+
+connector = connect("monday", workspace_name="<your_workspace_name>")
+
+@MondayConnector.agent_tool(
+    inspect_tool="monday_inspect",
+    docs_tool="monday_read_docs",
+)
+async def monday_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@MondayConnector.agent_tool()
+async def monday_inspect():
+    return await connector.inspect_connector()
+
+@MondayConnector.agent_tool()
+async def monday_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (monday_inspect, monday_read_docs, monday_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `MondayConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `MondayConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `MondayConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -382,6 +468,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -465,9 +555,99 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `MondayConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.monday.models import MondayApiTokenAuthenticationAuthConfig
+
+connector = MondayConnector(
+    auth_config=MondayApiTokenAuthenticationAuthConfig(
+        api_key="<Your Monday.com personal API token>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@MondayConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="monday_inspect",
+    docs_tool="monday_read_docs",
+)
+async def monday_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@MondayConnector.agent_tool(framework="pydantic_ai")
+async def monday_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@MondayConnector.agent_tool(framework="pydantic_ai")
+async def monday_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.monday.models import MondayApiTokenAuthenticationAuthConfig
+
+connector = MondayConnector(
+    auth_config=MondayApiTokenAuthenticationAuthConfig(
+        api_key="<Your Monday.com personal API token>"
+    )
+)
+
+@MondayConnector.agent_tool(
+    inspect_tool="monday_inspect",
+    docs_tool="monday_read_docs",
+)
+async def monday_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@MondayConnector.agent_tool()
+async def monday_inspect():
+    return await connector.inspect_connector()
+
+@MondayConnector.agent_tool()
+async def monday_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (monday_inspect, monday_read_docs, monday_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `MondayConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `MondayConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `MondayConnector.agent_tool` above.
 
 **Pydantic AI**
 

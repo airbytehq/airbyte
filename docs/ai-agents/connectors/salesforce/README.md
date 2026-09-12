@@ -43,11 +43,11 @@ This connector supports the following entities and actions. For more details, se
 | Entity | Actions |
 |--------|---------|
 | Sobjects | [List](./REFERENCE.md#sobjects-list), [Create](./REFERENCE.md#sobjects-create), [Get](./REFERENCE.md#sobjects-get), [Update](./REFERENCE.md#sobjects-update), [Delete](./REFERENCE.md#sobjects-delete) |
-| Accounts | [List](./REFERENCE.md#accounts-list), [Create](./REFERENCE.md#accounts-create), [Get](./REFERENCE.md#accounts-get), [Update](./REFERENCE.md#accounts-update), [Delete](./REFERENCE.md#accounts-delete), [API Search](./REFERENCE.md#accounts-api_search), [Context Store Search](./REFERENCE.md#accounts-context-store-search) |
-| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [Delete](./REFERENCE.md#contacts-delete), [API Search](./REFERENCE.md#contacts-api_search), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
-| Leads | [List](./REFERENCE.md#leads-list), [Create](./REFERENCE.md#leads-create), [Get](./REFERENCE.md#leads-get), [Update](./REFERENCE.md#leads-update), [Delete](./REFERENCE.md#leads-delete), [API Search](./REFERENCE.md#leads-api_search), [Context Store Search](./REFERENCE.md#leads-context-store-search) |
-| Opportunities | [List](./REFERENCE.md#opportunities-list), [Create](./REFERENCE.md#opportunities-create), [Get](./REFERENCE.md#opportunities-get), [Update](./REFERENCE.md#opportunities-update), [Delete](./REFERENCE.md#opportunities-delete), [API Search](./REFERENCE.md#opportunities-api_search), [Context Store Search](./REFERENCE.md#opportunities-context-store-search) |
-| Tasks | [List](./REFERENCE.md#tasks-list), [Create](./REFERENCE.md#tasks-create), [Get](./REFERENCE.md#tasks-get), [Update](./REFERENCE.md#tasks-update), [Delete](./REFERENCE.md#tasks-delete), [API Search](./REFERENCE.md#tasks-api_search), [Context Store Search](./REFERENCE.md#tasks-context-store-search) |
+| Accounts | [List](./REFERENCE.md#accounts-list), [Create](./REFERENCE.md#accounts-create), [Get](./REFERENCE.md#accounts-get), [Update](./REFERENCE.md#accounts-update), [Delete](./REFERENCE.md#accounts-delete), [API Search](./REFERENCE.md#accounts-api_search), [Context Store Search](./REFERENCE.md#accounts-context-store-search), [Context Store SQL Query](./REFERENCE.md#accounts-context-store-sql-query) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [Delete](./REFERENCE.md#contacts-delete), [API Search](./REFERENCE.md#contacts-api_search), [Context Store Search](./REFERENCE.md#contacts-context-store-search), [Context Store SQL Query](./REFERENCE.md#contacts-context-store-sql-query) |
+| Leads | [List](./REFERENCE.md#leads-list), [Create](./REFERENCE.md#leads-create), [Get](./REFERENCE.md#leads-get), [Update](./REFERENCE.md#leads-update), [Delete](./REFERENCE.md#leads-delete), [API Search](./REFERENCE.md#leads-api_search), [Context Store Search](./REFERENCE.md#leads-context-store-search), [Context Store SQL Query](./REFERENCE.md#leads-context-store-sql-query) |
+| Opportunities | [List](./REFERENCE.md#opportunities-list), [Create](./REFERENCE.md#opportunities-create), [Get](./REFERENCE.md#opportunities-get), [Update](./REFERENCE.md#opportunities-update), [Delete](./REFERENCE.md#opportunities-delete), [API Search](./REFERENCE.md#opportunities-api_search), [Context Store Search](./REFERENCE.md#opportunities-context-store-search), [Context Store SQL Query](./REFERENCE.md#opportunities-context-store-sql-query) |
+| Tasks | [List](./REFERENCE.md#tasks-list), [Create](./REFERENCE.md#tasks-create), [Get](./REFERENCE.md#tasks-get), [Update](./REFERENCE.md#tasks-update), [Delete](./REFERENCE.md#tasks-delete), [API Search](./REFERENCE.md#tasks-api_search), [Context Store Search](./REFERENCE.md#tasks-context-store-search), [Context Store SQL Query](./REFERENCE.md#tasks-context-store-sql-query) |
 | Events | [List](./REFERENCE.md#events-list), [Create](./REFERENCE.md#events-create), [Get](./REFERENCE.md#events-get), [Update](./REFERENCE.md#events-update), [Delete](./REFERENCE.md#events-delete), [API Search](./REFERENCE.md#events-api_search) |
 | Campaigns | [List](./REFERENCE.md#campaigns-list), [Create](./REFERENCE.md#campaigns-create), [Get](./REFERENCE.md#campaigns-get), [Update](./REFERENCE.md#campaigns-update), [Delete](./REFERENCE.md#campaigns-delete), [API Search](./REFERENCE.md#campaigns-api_search) |
 | Cases | [List](./REFERENCE.md#cases-list), [Create](./REFERENCE.md#cases-create), [Get](./REFERENCE.md#cases-get), [Update](./REFERENCE.md#cases-update), [Delete](./REFERENCE.md#cases-delete), [API Search](./REFERENCE.md#cases-api_search) |
@@ -55,8 +55,8 @@ This connector supports the following entities and actions. For more details, se
 | Content Versions | [List](./REFERENCE.md#content-versions-list), [Get](./REFERENCE.md#content-versions-get), [Download](./REFERENCE.md#content-versions-download) |
 | Attachments | [List](./REFERENCE.md#attachments-list), [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download) |
 | Reports | [List](./REFERENCE.md#reports-list), [Get](./REFERENCE.md#reports-get) |
-| Users | [List](./REFERENCE.md#users-list), [Create](./REFERENCE.md#users-create), [Get](./REFERENCE.md#users-get), [Update](./REFERENCE.md#users-update), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Opportunity Stages | [List](./REFERENCE.md#opportunity-stages-list), [Get](./REFERENCE.md#opportunity-stages-get), [Context Store Search](./REFERENCE.md#opportunity-stages-context-store-search) |
+| Users | [List](./REFERENCE.md#users-list), [Create](./REFERENCE.md#users-create), [Get](./REFERENCE.md#users-get), [Update](./REFERENCE.md#users-update), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
+| Opportunity Stages | [List](./REFERENCE.md#opportunity-stages-list), [Get](./REFERENCE.md#opportunity-stages-get), [Context Store Search](./REFERENCE.md#opportunity-stages-context-store-search), [Context Store SQL Query](./REFERENCE.md#opportunity-stages-context-store-sql-query) |
 | Query | [List](./REFERENCE.md#query-list) |
 
 
@@ -139,6 +139,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -206,9 +210,91 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `SalesforceConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+
+connector = connect("salesforce", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@SalesforceConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="salesforce_inspect",
+    docs_tool="salesforce_read_docs",
+)
+async def salesforce_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@SalesforceConnector.agent_tool(framework="pydantic_ai")
+async def salesforce_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@SalesforceConnector.agent_tool(framework="pydantic_ai")
+async def salesforce_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+
+connector = connect("salesforce", workspace_name="<your_workspace_name>")
+
+@SalesforceConnector.agent_tool(
+    inspect_tool="salesforce_inspect",
+    docs_tool="salesforce_read_docs",
+)
+async def salesforce_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@SalesforceConnector.agent_tool()
+async def salesforce_inspect():
+    return await connector.inspect_connector()
+
+@SalesforceConnector.agent_tool()
+async def salesforce_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (salesforce_inspect, salesforce_read_docs, salesforce_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `SalesforceConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `SalesforceConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `SalesforceConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -395,6 +481,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -408,7 +498,8 @@ connector = SalesforceConnector(
         refresh_token="<OAuth refresh token for automatic token renewal>",
         client_id="<Connected App Consumer Key>",
         client_secret="<Connected App Consumer Secret>"
-    )
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
 )
 
 tools = build_connector_tools(connector, framework="pydantic_ai")
@@ -428,7 +519,8 @@ connector = SalesforceConnector(
         refresh_token="<OAuth refresh token for automatic token renewal>",
         client_id="<Connected App Consumer Key>",
         client_secret="<Connected App Consumer Secret>"
-    )
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
 )
 
 tools = build_connector_tools(connector, framework="langchain")
@@ -455,7 +547,8 @@ connector = SalesforceConnector(
         refresh_token="<OAuth refresh token for automatic token renewal>",
         client_id="<Connected App Consumer Key>",
         client_secret="<Connected App Consumer Secret>"
-    )
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
 )
 
 tools = build_connector_tools(connector, framework="openai_agents")
@@ -477,7 +570,8 @@ connector = SalesforceConnector(
         refresh_token="<OAuth refresh token for automatic token renewal>",
         client_id="<Connected App Consumer Key>",
         client_secret="<Connected App Consumer Secret>"
-    )
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
 )
 
 mcp = FastMCP("Salesforce Agent")
@@ -486,9 +580,105 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `SalesforceConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+from airbyte_agent_sdk.connectors.salesforce.models import SalesforceAuthConfig
+
+connector = SalesforceConnector(
+    auth_config=SalesforceAuthConfig(
+        refresh_token="<OAuth refresh token for automatic token renewal>",
+        client_id="<Connected App Consumer Key>",
+        client_secret="<Connected App Consumer Secret>"
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@SalesforceConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="salesforce_inspect",
+    docs_tool="salesforce_read_docs",
+)
+async def salesforce_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@SalesforceConnector.agent_tool(framework="pydantic_ai")
+async def salesforce_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@SalesforceConnector.agent_tool(framework="pydantic_ai")
+async def salesforce_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+from airbyte_agent_sdk.connectors.salesforce.models import SalesforceAuthConfig
+
+connector = SalesforceConnector(
+    auth_config=SalesforceAuthConfig(
+        refresh_token="<OAuth refresh token for automatic token renewal>",
+        client_id="<Connected App Consumer Key>",
+        client_secret="<Connected App Consumer Secret>"
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
+)
+
+@SalesforceConnector.agent_tool(
+    inspect_tool="salesforce_inspect",
+    docs_tool="salesforce_read_docs",
+)
+async def salesforce_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@SalesforceConnector.agent_tool()
+async def salesforce_inspect():
+    return await connector.inspect_connector()
+
+@SalesforceConnector.agent_tool()
+async def salesforce_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (salesforce_inspect, salesforce_read_docs, salesforce_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `SalesforceConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `SalesforceConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `SalesforceConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -502,7 +692,8 @@ connector = SalesforceConnector(
         refresh_token="<OAuth refresh token for automatic token renewal>",
         client_id="<Connected App Consumer Key>",
         client_secret="<Connected App Consumer Secret>"
-    )
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
 )
 
 agent = Agent("openai:gpt-4o")
@@ -525,7 +716,8 @@ connector = SalesforceConnector(
         refresh_token="<OAuth refresh token for automatic token renewal>",
         client_id="<Connected App Consumer Key>",
         client_secret="<Connected App Consumer Secret>"
-    )
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
 )
 
 @tool
@@ -549,7 +741,8 @@ connector = SalesforceConnector(
         refresh_token="<OAuth refresh token for automatic token renewal>",
         client_id="<Connected App Consumer Key>",
         client_secret="<Connected App Consumer Secret>"
-    )
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
 )
 
 # strict_mode=False because `params: dict` is permissive and the default strict
@@ -576,7 +769,8 @@ connector = SalesforceConnector(
         refresh_token="<OAuth refresh token for automatic token renewal>",
         client_id="<Connected App Consumer Key>",
         client_secret="<Connected App Consumer Secret>"
-    )
+    ),
+    instance_url="<Your Salesforce instance URL (e.g., https://na1.salesforce.com)>"
 )
 
 mcp = FastMCP("Salesforce Agent")

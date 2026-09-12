@@ -42,30 +42,30 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Tickets | [List](./REFERENCE.md#tickets-list), [Create](./REFERENCE.md#tickets-create), [Get](./REFERENCE.md#tickets-get), [Update](./REFERENCE.md#tickets-update), [Context Store Search](./REFERENCE.md#tickets-context-store-search) |
-| Ticket Comments | [Create](./REFERENCE.md#ticket-comments-create), [List](./REFERENCE.md#ticket-comments-list), [Context Store Search](./REFERENCE.md#ticket-comments-context-store-search), [Semantic Search](./REFERENCE.md#ticket-comments-semantic-search) |
+| Tickets | [List](./REFERENCE.md#tickets-list), [Create](./REFERENCE.md#tickets-create), [Get](./REFERENCE.md#tickets-get), [Update](./REFERENCE.md#tickets-update), [Context Store Search](./REFERENCE.md#tickets-context-store-search), [Context Store SQL Query](./REFERENCE.md#tickets-context-store-sql-query) |
+| Ticket Comments | [Create](./REFERENCE.md#ticket-comments-create), [List](./REFERENCE.md#ticket-comments-list), [Context Store Search](./REFERENCE.md#ticket-comments-context-store-search), [Context Store SQL Query](./REFERENCE.md#ticket-comments-context-store-sql-query), [Semantic Search](./REFERENCE.md#ticket-comments-semantic-search) |
 | Ticket Bulk Updates | [Create](./REFERENCE.md#ticket-bulk-updates-create) |
-| Deleted Tickets | [List](./REFERENCE.md#deleted-tickets-list), [Context Store Search](./REFERENCE.md#deleted-tickets-context-store-search) |
-| Users | [List](./REFERENCE.md#users-list), [Create](./REFERENCE.md#users-create), [Get](./REFERENCE.md#users-get), [Update](./REFERENCE.md#users-update), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Organizations | [List](./REFERENCE.md#organizations-list), [Get](./REFERENCE.md#organizations-get), [Context Store Search](./REFERENCE.md#organizations-context-store-search) |
-| Groups | [List](./REFERENCE.md#groups-list), [Get](./REFERENCE.md#groups-get), [Context Store Search](./REFERENCE.md#groups-context-store-search) |
+| Deleted Tickets | [List](./REFERENCE.md#deleted-tickets-list), [Context Store Search](./REFERENCE.md#deleted-tickets-context-store-search), [Context Store SQL Query](./REFERENCE.md#deleted-tickets-context-store-sql-query) |
+| Users | [List](./REFERENCE.md#users-list), [Create](./REFERENCE.md#users-create), [Get](./REFERENCE.md#users-get), [Update](./REFERENCE.md#users-update), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
+| Organizations | [List](./REFERENCE.md#organizations-list), [Get](./REFERENCE.md#organizations-get), [Context Store Search](./REFERENCE.md#organizations-context-store-search), [Context Store SQL Query](./REFERENCE.md#organizations-context-store-sql-query) |
+| Groups | [List](./REFERENCE.md#groups-list), [Get](./REFERENCE.md#groups-get), [Context Store Search](./REFERENCE.md#groups-context-store-search), [Context Store SQL Query](./REFERENCE.md#groups-context-store-sql-query) |
 | Attachments | [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download) |
-| Ticket Audits | [List](./REFERENCE.md#ticket-audits-list), [List](./REFERENCE.md#ticket-audits-list), [Context Store Search](./REFERENCE.md#ticket-audits-context-store-search) |
-| Ticket Metrics | [List](./REFERENCE.md#ticket-metrics-list), [Context Store Search](./REFERENCE.md#ticket-metrics-context-store-search) |
-| Ticket Fields | [List](./REFERENCE.md#ticket-fields-list), [Get](./REFERENCE.md#ticket-fields-get), [Context Store Search](./REFERENCE.md#ticket-fields-context-store-search) |
-| Brands | [List](./REFERENCE.md#brands-list), [Get](./REFERENCE.md#brands-get), [Context Store Search](./REFERENCE.md#brands-context-store-search) |
+| Ticket Audits | [List](./REFERENCE.md#ticket-audits-list), [List](./REFERENCE.md#ticket-audits-list), [Context Store Search](./REFERENCE.md#ticket-audits-context-store-search), [Context Store SQL Query](./REFERENCE.md#ticket-audits-context-store-sql-query) |
+| Ticket Metrics | [List](./REFERENCE.md#ticket-metrics-list), [Context Store Search](./REFERENCE.md#ticket-metrics-context-store-search), [Context Store SQL Query](./REFERENCE.md#ticket-metrics-context-store-sql-query) |
+| Ticket Fields | [List](./REFERENCE.md#ticket-fields-list), [Get](./REFERENCE.md#ticket-fields-get), [Context Store Search](./REFERENCE.md#ticket-fields-context-store-search), [Context Store SQL Query](./REFERENCE.md#ticket-fields-context-store-sql-query) |
+| Brands | [List](./REFERENCE.md#brands-list), [Get](./REFERENCE.md#brands-get), [Context Store Search](./REFERENCE.md#brands-context-store-search), [Context Store SQL Query](./REFERENCE.md#brands-context-store-sql-query) |
 | Views | [List](./REFERENCE.md#views-list), [Get](./REFERENCE.md#views-get) |
-| Macros | [Get](./REFERENCE.md#macros-get), [List](./REFERENCE.md#macros-list), [Context Store Search](./REFERENCE.md#macros-context-store-search) |
-| Triggers | [List](./REFERENCE.md#triggers-list), [Get](./REFERENCE.md#triggers-get), [Context Store Search](./REFERENCE.md#triggers-context-store-search) |
-| Automations | [List](./REFERENCE.md#automations-list), [Get](./REFERENCE.md#automations-get), [Context Store Search](./REFERENCE.md#automations-context-store-search) |
-| Tags | [List](./REFERENCE.md#tags-list), [Context Store Search](./REFERENCE.md#tags-context-store-search) |
-| Satisfaction Ratings | [List](./REFERENCE.md#satisfaction-ratings-list), [Get](./REFERENCE.md#satisfaction-ratings-get), [Context Store Search](./REFERENCE.md#satisfaction-ratings-context-store-search) |
-| Group Memberships | [List](./REFERENCE.md#group-memberships-list), [Context Store Search](./REFERENCE.md#group-memberships-context-store-search) |
-| Organization Memberships | [List](./REFERENCE.md#organization-memberships-list), [Context Store Search](./REFERENCE.md#organization-memberships-context-store-search) |
-| Sla Policies | [List](./REFERENCE.md#sla-policies-list), [Get](./REFERENCE.md#sla-policies-get), [Context Store Search](./REFERENCE.md#sla-policies-context-store-search) |
-| Ticket Forms | [List](./REFERENCE.md#ticket-forms-list), [Get](./REFERENCE.md#ticket-forms-get), [Context Store Search](./REFERENCE.md#ticket-forms-context-store-search) |
-| Articles | [List](./REFERENCE.md#articles-list), [Get](./REFERENCE.md#articles-get), [Context Store Search](./REFERENCE.md#articles-context-store-search) |
-| Article Attachments | [List](./REFERENCE.md#article-attachments-list), [Get](./REFERENCE.md#article-attachments-get), [Download](./REFERENCE.md#article-attachments-download), [Context Store Search](./REFERENCE.md#article-attachments-context-store-search) |
+| Macros | [Get](./REFERENCE.md#macros-get), [List](./REFERENCE.md#macros-list), [Context Store Search](./REFERENCE.md#macros-context-store-search), [Context Store SQL Query](./REFERENCE.md#macros-context-store-sql-query) |
+| Triggers | [List](./REFERENCE.md#triggers-list), [Get](./REFERENCE.md#triggers-get), [Context Store Search](./REFERENCE.md#triggers-context-store-search), [Context Store SQL Query](./REFERENCE.md#triggers-context-store-sql-query) |
+| Automations | [List](./REFERENCE.md#automations-list), [Get](./REFERENCE.md#automations-get), [Context Store Search](./REFERENCE.md#automations-context-store-search), [Context Store SQL Query](./REFERENCE.md#automations-context-store-sql-query) |
+| Tags | [List](./REFERENCE.md#tags-list), [Context Store Search](./REFERENCE.md#tags-context-store-search), [Context Store SQL Query](./REFERENCE.md#tags-context-store-sql-query) |
+| Satisfaction Ratings | [List](./REFERENCE.md#satisfaction-ratings-list), [Get](./REFERENCE.md#satisfaction-ratings-get), [Context Store Search](./REFERENCE.md#satisfaction-ratings-context-store-search), [Context Store SQL Query](./REFERENCE.md#satisfaction-ratings-context-store-sql-query) |
+| Group Memberships | [List](./REFERENCE.md#group-memberships-list), [Context Store Search](./REFERENCE.md#group-memberships-context-store-search), [Context Store SQL Query](./REFERENCE.md#group-memberships-context-store-sql-query) |
+| Organization Memberships | [List](./REFERENCE.md#organization-memberships-list), [Context Store Search](./REFERENCE.md#organization-memberships-context-store-search), [Context Store SQL Query](./REFERENCE.md#organization-memberships-context-store-sql-query) |
+| Sla Policies | [List](./REFERENCE.md#sla-policies-list), [Get](./REFERENCE.md#sla-policies-get), [Context Store Search](./REFERENCE.md#sla-policies-context-store-search), [Context Store SQL Query](./REFERENCE.md#sla-policies-context-store-sql-query) |
+| Ticket Forms | [List](./REFERENCE.md#ticket-forms-list), [Get](./REFERENCE.md#ticket-forms-get), [Context Store Search](./REFERENCE.md#ticket-forms-context-store-search), [Context Store SQL Query](./REFERENCE.md#ticket-forms-context-store-sql-query) |
+| Articles | [List](./REFERENCE.md#articles-list), [Get](./REFERENCE.md#articles-get), [Context Store Search](./REFERENCE.md#articles-context-store-search), [Context Store SQL Query](./REFERENCE.md#articles-context-store-sql-query) |
+| Article Attachments | [List](./REFERENCE.md#article-attachments-list), [Get](./REFERENCE.md#article-attachments-get), [Download](./REFERENCE.md#article-attachments-download), [Context Store Search](./REFERENCE.md#article-attachments-context-store-search), [Context Store SQL Query](./REFERENCE.md#article-attachments-context-store-sql-query) |
 
 
 ## Zendesk-Support API docs
@@ -147,6 +147,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -214,9 +218,91 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `ZendeskSupportConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
+
+connector = connect("zendesk-support", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@ZendeskSupportConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="zendesk_support_inspect",
+    docs_tool="zendesk_support_read_docs",
+)
+async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@ZendeskSupportConnector.agent_tool(framework="pydantic_ai")
+async def zendesk_support_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@ZendeskSupportConnector.agent_tool(framework="pydantic_ai")
+async def zendesk_support_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
+
+connector = connect("zendesk-support", workspace_name="<your_workspace_name>")
+
+@ZendeskSupportConnector.agent_tool(
+    inspect_tool="zendesk_support_inspect",
+    docs_tool="zendesk_support_read_docs",
+)
+async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@ZendeskSupportConnector.agent_tool()
+async def zendesk_support_inspect():
+    return await connector.inspect_connector()
+
+@ZendeskSupportConnector.agent_tool()
+async def zendesk_support_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (zendesk_support_inspect, zendesk_support_read_docs, zendesk_support_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `ZendeskSupportConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `ZendeskSupportConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `ZendeskSupportConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -403,6 +489,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -415,7 +505,8 @@ connector = ZendeskSupportConnector(
     auth_config=ZendeskSupportApiTokenAuthConfig(
         email="<Your Zendesk account email address>",
         api_token="<Your Zendesk API token from Admin Center>"
-    )
+    ),
+    subdomain="<Your Zendesk subdomain>"
 )
 
 tools = build_connector_tools(connector, framework="pydantic_ai")
@@ -434,7 +525,8 @@ connector = ZendeskSupportConnector(
     auth_config=ZendeskSupportApiTokenAuthConfig(
         email="<Your Zendesk account email address>",
         api_token="<Your Zendesk API token from Admin Center>"
-    )
+    ),
+    subdomain="<Your Zendesk subdomain>"
 )
 
 tools = build_connector_tools(connector, framework="langchain")
@@ -460,7 +552,8 @@ connector = ZendeskSupportConnector(
     auth_config=ZendeskSupportApiTokenAuthConfig(
         email="<Your Zendesk account email address>",
         api_token="<Your Zendesk API token from Admin Center>"
-    )
+    ),
+    subdomain="<Your Zendesk subdomain>"
 )
 
 tools = build_connector_tools(connector, framework="openai_agents")
@@ -481,7 +574,8 @@ connector = ZendeskSupportConnector(
     auth_config=ZendeskSupportApiTokenAuthConfig(
         email="<Your Zendesk account email address>",
         api_token="<Your Zendesk API token from Admin Center>"
-    )
+    ),
+    subdomain="<Your Zendesk subdomain>"
 )
 
 mcp = FastMCP("Zendesk-Support Agent")
@@ -490,9 +584,103 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `ZendeskSupportConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
+from airbyte_agent_sdk.connectors.zendesk_support.models import ZendeskSupportApiTokenAuthConfig
+
+connector = ZendeskSupportConnector(
+    auth_config=ZendeskSupportApiTokenAuthConfig(
+        email="<Your Zendesk account email address>",
+        api_token="<Your Zendesk API token from Admin Center>"
+    ),
+    subdomain="<Your Zendesk subdomain>"
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@ZendeskSupportConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="zendesk_support_inspect",
+    docs_tool="zendesk_support_read_docs",
+)
+async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@ZendeskSupportConnector.agent_tool(framework="pydantic_ai")
+async def zendesk_support_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@ZendeskSupportConnector.agent_tool(framework="pydantic_ai")
+async def zendesk_support_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
+from airbyte_agent_sdk.connectors.zendesk_support.models import ZendeskSupportApiTokenAuthConfig
+
+connector = ZendeskSupportConnector(
+    auth_config=ZendeskSupportApiTokenAuthConfig(
+        email="<Your Zendesk account email address>",
+        api_token="<Your Zendesk API token from Admin Center>"
+    ),
+    subdomain="<Your Zendesk subdomain>"
+)
+
+@ZendeskSupportConnector.agent_tool(
+    inspect_tool="zendesk_support_inspect",
+    docs_tool="zendesk_support_read_docs",
+)
+async def zendesk_support_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@ZendeskSupportConnector.agent_tool()
+async def zendesk_support_inspect():
+    return await connector.inspect_connector()
+
+@ZendeskSupportConnector.agent_tool()
+async def zendesk_support_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (zendesk_support_inspect, zendesk_support_read_docs, zendesk_support_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `ZendeskSupportConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `ZendeskSupportConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `ZendeskSupportConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -505,7 +693,8 @@ connector = ZendeskSupportConnector(
     auth_config=ZendeskSupportApiTokenAuthConfig(
         email="<Your Zendesk account email address>",
         api_token="<Your Zendesk API token from Admin Center>"
-    )
+    ),
+    subdomain="<Your Zendesk subdomain>"
 )
 
 agent = Agent("openai:gpt-4o")
@@ -527,7 +716,8 @@ connector = ZendeskSupportConnector(
     auth_config=ZendeskSupportApiTokenAuthConfig(
         email="<Your Zendesk account email address>",
         api_token="<Your Zendesk API token from Admin Center>"
-    )
+    ),
+    subdomain="<Your Zendesk subdomain>"
 )
 
 @tool
@@ -550,7 +740,8 @@ connector = ZendeskSupportConnector(
     auth_config=ZendeskSupportApiTokenAuthConfig(
         email="<Your Zendesk account email address>",
         api_token="<Your Zendesk API token from Admin Center>"
-    )
+    ),
+    subdomain="<Your Zendesk subdomain>"
 )
 
 # strict_mode=False because `params: dict` is permissive and the default strict
@@ -576,7 +767,8 @@ connector = ZendeskSupportConnector(
     auth_config=ZendeskSupportApiTokenAuthConfig(
         email="<Your Zendesk account email address>",
         api_token="<Your Zendesk API token from Admin Center>"
-    )
+    ),
+    subdomain="<Your Zendesk subdomain>"
 )
 
 mcp = FastMCP("Zendesk-Support Agent")
