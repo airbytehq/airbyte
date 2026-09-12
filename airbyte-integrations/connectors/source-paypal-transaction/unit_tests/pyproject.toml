@@ -13,6 +13,7 @@ python = "^3.10,<3.13"
 airbyte-cdk = "^7"
 pytest = "^8"
 requests-mock = "^1.12.1"
+freezegun = "^1.5.5"
 
 [tool.pytest.ini_options]
 filterwarnings = [
