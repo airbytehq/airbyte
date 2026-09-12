@@ -1171,8 +1171,7 @@
       },
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
-      "default_cursor_field": ["last-updated-date"],
-      "source_defined_primary_key": [["amazon-order-id"]]
+      "default_cursor_field": ["last-updated-date"]
     },
     {
       "name": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL",
@@ -1325,8 +1324,7 @@
       },
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
-      "default_cursor_field": ["last-updated-date"],
-      "source_defined_primary_key": [["amazon-order-id"]]
+      "default_cursor_field": ["last-updated-date"]
     },
     {
       "name": "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE",
