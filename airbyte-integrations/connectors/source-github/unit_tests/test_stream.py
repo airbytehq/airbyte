@@ -2188,10 +2188,10 @@ def test_issue_timeline_events_full_refresh_emits_single_state_for_many_issues(r
     records = [item for item in items if isinstance(item, Mapping)]
     state_messages = [item for item in items if isinstance(item, AirbyteMessage) and item.type == Type.STATE]
 
-    assert stream.get_cursor() is None
     assert len(records) == issue_count
     assert len(state_messages) == 1
     assert state_messages[0].state.stream.stream_state.__dict__ == {"__ab_no_cursor_state_message": True}
+    assert stream.get_cursor() is None
 
 
 @patch("time.sleep")
