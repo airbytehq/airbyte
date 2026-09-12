@@ -86,6 +86,7 @@ Classes
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[UsersSearchData]
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[ViewerRepositoriesSearchData]
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[ViewerSearchData]
+    * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

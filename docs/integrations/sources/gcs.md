@@ -75,15 +75,13 @@ Use the service account ID from above, grant read access to your target bucket. 
 
 #### File urls
 
-The Google Cloud Storage (GCS) source connector uses `signed url` to work with files when source authenticated with `Service Account Information` and `gs://{blob.bucket.name}/{blob.name}` when source authenticated via Google (OAuth).
-This is important to know that File urls are used in the connection state. 
+The Google Cloud Storage (GCS) source connector reads files through the authenticated GCS client using `gs://{bucket}/{blob}` URIs for both authentication types. The `_ab_source_file_url` record field contains `https://storage.googleapis.com/{bucket}/{blob}` for `Service Account Information` authentication and `gs://{bucket}/{blob}` for Google (OAuth) authentication.
+This is important to know that File urls are used in the connection state.
 So if you change authorization type, and you use Incremental sync the next sync will not use old state and reread provided files in Full Refresh mode(like initial sync), next syncs will be Incremental as expected.
 
 #### Sanitize File URLs
 
-When using Service Account authentication, signed URLs contain credential-bearing query parameters such as `X-Goog-Credential` and `X-Goog-Signature`. By default, these are included in the `_ab_source_file_url` field of synced records.
-
-To remove these sensitive parameters from the `_ab_source_file_url` field, enable the **Sanitize File URLs** option in the advanced settings. When enabled, the connector strips query parameters from signed URLs, so only the base URL is stored in records. This option has no effect when using OAuth authentication, since OAuth does not use signed URLs.
+Deprecated - this option has no effect. The connector no longer generates signed URLs for Service Account authentication, so `_ab_source_file_url` never contains credential-bearing query parameters such as `X-Goog-Credential` or `X-Goog-Signature`. The option stays in the connector specification only so that existing configurations keep validating.
 
 ## Path Patterns
 
@@ -244,8 +242,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-|:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :----------- | :----------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.10.32 | 2026-09-11 | [84891](https://github.com/airbytehq/airbyte/pull/84891) | Fix spurious Parquet columns from signed URL query parameters (Service Account auth); `_ab_source_file_url` now contains the clean canonical HTTPS path instead of a signed URL; Service Account syncs now read `Content-Encoding: gzip` objects through the gs:// client instead of failing on the signed URL; `sanitize_signed_urls` option is deprecated (no-op) |
+| 0.10.31 | 2026-09-08 | [85491](https://github.com/airbytehq/airbyte/pull/85491) | Update dependencies |
+| 0.10.30 | 2026-09-01 | [85245](https://github.com/airbytehq/airbyte/pull/85245) | Update dependencies |
+| 0.10.29 | 2026-08-25 | [85012](https://github.com/airbytehq/airbyte/pull/85012) | Update dependencies |
+| 0.10.28 | 2026-08-18 | [84572](https://github.com/airbytehq/airbyte/pull/84572) | Update dependencies |
 | 0.10.27 | 2026-08-11 | [83924](https://github.com/airbytehq/airbyte/pull/83924) | Update dependencies |
 | 0.10.26 | 2026-08-04 | [83471](https://github.com/airbytehq/airbyte/pull/83471) | Update dependencies |
 | 0.10.25 | 2026-07-28 | [82925](https://github.com/airbytehq/airbyte/pull/82925) | Update dependencies |
