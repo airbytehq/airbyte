@@ -24,6 +24,7 @@ from airbyte_cdk.destinations.vector_db_based.document_processor import (
 from airbyte_cdk.models import AirbyteRecordMessage
 from overrides import overrides
 from pgvector.sqlalchemy import Vector
+from sqlalchemy import text
 from typing_extensions import Protocol
 
 from destination_pgvector.common.catalog.catalog_providers import CatalogProvider
@@ -163,8 +164,8 @@ class PGVectorProcessor(SqlProcessorBase):
         with self.get_sql_connection() as conn:
             # This is a transactional operation to avoid "outages", in case
             # a user queries the data during the operation.
-            conn.execute(delete_statement)
-            conn.execute(append_statement)
+            conn.execute(text(delete_statement))
+            conn.execute(text(append_statement))
 
     def process_record_message(
         self,
