@@ -23,6 +23,10 @@ _CONFIG = {
 
 def _build_router(definition_name: str, config: dict):
     source = SourceGithub(config=config)
+    # Real callers (SourceGithub._resolve_repositories_and_organizations) only ever reach this
+    # component construction after _validate_and_transform_config has set credentials.auth_mode,
+    # which SelectiveAuthenticator (the manifest's requester_base.authenticator) requires.
+    config = source._validate_and_transform_config(dict(config))
     definition = source.resolved_manifest["definitions"][definition_name]
     factory = ModelToComponentFactory()
     return factory.create_component(

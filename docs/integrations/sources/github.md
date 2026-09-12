@@ -23,6 +23,7 @@ This page contains the setup guide and reference information for the [GitHub](ht
 **For Airbyte Open Source:**
 
 - Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
+- GitHub App(s)
 <!-- /env:oss -->
 
 ## Setup guide
@@ -57,6 +58,8 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
    <!-- env:oss -->
 
    - **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+
+     Alternatively, authenticate with **GitHub App(s)**. Create a GitHub App under your organization's settings and install it on the repositories you want to sync, then enter its App ID, Installation ID, and private key (`.pem`) — one App per line group, repeatable for multiple Apps. Each App's access token is minted and refreshed automatically as needed, so it never goes stale mid-sync the way a pasted token would; installing several Apps also spreads requests across more than one rate-limit budget.
    <!-- /env:oss -->
 
 6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
@@ -280,6 +283,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.5.0 | 2026-09-11 | [85836](https://github.com/airbytehq/airbyte/pull/85836) | Add GitHub App authentication support, with multiple installations rotating for extra rate-limit headroom |
 | 2.4.0 | 2026-09-09 | [85786](https://github.com/airbytehq/airbyte/pull/85786) | Declarative migration Steps 5 and 6 - move the events, pull_requests, commit_comments, issue_milestones, stargazers, projects, issue_events, deployments, workflows, comments, issues and review_comments streams to the manifest. Each incremental sync of these streams now re-emits the one record per repository whose cursor equals the previous sync's cursor, `pull_requests` fills `base.repo_id` (always null before) and always lists newest-first, `issues` checkpoints once per repository instead of once per page, and a repository that keeps returning 502/504 after retries fails the stream instead of being skipped with the sync still reported as successful |
 | 2.3.0 | 2026-09-08 | [85746](https://github.com/airbytehq/airbyte/pull/85746) | Declarative migration Steps 3 and 4 - move the assignees, branches, collaborators, issue_labels, tags, organizations, teams and users streams to the manifest. For these eight streams, a repository or organization that keeps returning 502/504 after retries now fails the stream instead of being skipped with the sync still reported as successful, and a failed attempt restarts the stream instead of resuming from the repository or organization it stopped at. Also fixes a 2.2.0 regression where a `403` on one listed repository (SAML-protected organizations, most often) failed the sync instead of skipping that repository and syncing the rest |
 | 2.2.3 | 2026-09-08 | [85494](https://github.com/airbytehq/airbyte/pull/85494) | Update dependencies |

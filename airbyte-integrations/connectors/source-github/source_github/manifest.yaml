@@ -29,79 +29,98 @@ definitions:
     type: HttpRequester
     url_base: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}"
     authenticator:
-      type: RateLimitedMultipleTokenAuthenticator
-      # Precedence must match SourceGithub.get_access_token: legacy root-level
-      # `access_token` first, then `credentials.access_token`, then
-      # `credentials.personal_access_token` — so manifest and Python streams
-      # always authenticate with the same token.
-      tokens: "{{ config.get('access_token', config.get('credentials', {}).get('access_token', config.get('credentials', {}).get('personal_access_token', ''))) }}"
-      token_delimiter: ","
-      auth_method: "token"
-      header: "Authorization"
-      # Same `is not none` guard as the backoff caps below, and for the same reason. A default
-      # in `.get` only applies when the key is *absent*: a present-but-null `max_waiting_time`
-      # (reachable via the API, Terraform or embedded use) returns None, which renders as the
-      # literal "None", so the previous expression produced "PTNoneM" and every command failed at
-      # startup. The error reads `ISO8601Error: Unrecognised ISO 8601 date format: ''` because
-      # isodate splits on the "T" and reports the empty date half, not because the value was
-      # empty. `check_connection` passes 0 deliberately, so the guard must distinguish null from
-      # 0 — which is why this is `is not none` rather than `or 120`.
-      max_wait_time: "PT{{ config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120 }}M"
-      quota_status_source:
-        type: QuotaStatusSource
-        url: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}/rate_limit"
-        request_headers:
-          Accept: "application/vnd.github+json"
-          X-GitHub-Api-Version: "2022-11-28"
-        # GitHub Enterprise Server ships with HTTP API rate limiting disabled, and an instance
-        # in that state answers `GET /rate_limit` with 404 {"message": "Rate limiting is not
-        # enabled."}. Seeding runs before the first stream request, so without this the whole
-        # connection died on a generic "Resource not found" — every command, not just sync.
-        # Listed statuses seed that token's pools as untracked instead: no exhaustion waits, no
-        # proactive throttling, no rotation on exhaustion, while requests are still signed and
-        # tokens still rotate. Only 404, deliberately. An untracked token stays untracked for
-        # the whole sync (the endpoint is never consulted for it again), so a status the
-        # endpoint can also return transiently would cost quota tracking for the entire run.
-        # 401/403 must never be listed — a revoked credential would then read as "quota
-        # tracking unavailable" instead of as an auth failure. GitHub documents 404 as a
-        # possible response for this endpoint but never states that it means rate limiting is
-        # off; that mapping comes from GHES responses in the wild, which is exactly why the CDK
-        # leaves it to the connector.
-        unavailable_status_codes: [404]
-      quotas:
-        - type: TokenQuota
-          name: rest
-          remaining_path: ["resources", "core", "remaining"]
-          reset_path: ["resources", "core", "reset"]
-          limit_path: ["resources", "core", "limit"]
-          # Reconcile the pool against every response, not just the initial /rate_limit
-          # seeding. GitHub returns these headers on every authenticated REST response, and
-          # the local counters drift whenever the token is shared with another client, when
-          # requests overlap under `concurrency_level`, or when a sync outlives its seeding.
-          remaining_header: "X-RateLimit-Remaining"
-          reset_header: "X-RateLimit-Reset"
-          limit_header: "X-RateLimit-Limit"
-          # No `exhaustion_status_codes`, deliberately. GitHub's 403 is not exclusively a
-          # rate-limit code: a secondary limit (403 + `Retry-After`, primary quota untouched)
-          # and a missing-scope denial both use it, and neither carries
-          # `X-RateLimit-Remaining: 0`. Listing 403 would zero the pool for those, which on a
-          # single-token config leaves nothing to rotate to and turns a retryable wait into
-          # "Rate limit is exceeded for all provided tokens." Primary exhaustion needs no
-          # status code here: GitHub reports it as `X-RateLimit-Remaining: 0`, which the
-          # header reconciliation above already picks up.
-        - type: TokenQuota
-          name: graphql
-          remaining_path: ["resources", "graphql", "remaining"]
-          reset_path: ["resources", "graphql", "reset"]
-          limit_path: ["resources", "graphql", "limit"]
-          # /graphql answers with the same header names, scoped to the separate GraphQL
-          # point budget, so the pool reconciles the same way as `rest`.
-          remaining_header: "X-RateLimit-Remaining"
-          reset_header: "X-RateLimit-Reset"
-          limit_header: "X-RateLimit-Limit"
-          matchers:
-            - type: HttpRequestRegexMatcher
-              url_path_pattern: "/graphql"
+      type: SelectiveAuthenticator
+      # SourceGithub._ensure_auth_mode normalizes credentials.auth_mode to "token" or
+      # "github_apps" from whatever config shape was actually used (legacy root-level
+      # access_token, credentials.access_token/personal_access_token, or
+      # credentials.github_apps), so this and `_get_authenticator` branch on the same value.
+      authenticator_selection_path: ["credentials", "auth_mode"]
+      authenticators:
+        token:
+          type: RateLimitedMultipleTokenAuthenticator
+          # Precedence must match SourceGithub.get_access_token: legacy root-level
+          # `access_token` first, then `credentials.access_token`, then
+          # `credentials.personal_access_token` — so manifest and Python streams
+          # always authenticate with the same token.
+          #
+          # SelectiveAuthenticator builds every branch under `authenticators:` up front
+          # (ModelToComponentFactory.create_selective_authenticator), not just the selected one,
+          # so this branch's RateLimitedMultipleTokenAuthenticator gets constructed even in
+          # github_apps mode. It requires a non-empty tokens list to construct at all, so a
+          # placeholder is substituted whenever github_apps mode is active — this branch is never
+          # actually used in that case, only built and discarded.
+          tokens: "{{ 'unused-placeholder-token' if config.get('credentials', {}).get('auth_mode') == 'github_apps' else config.get('access_token', config.get('credentials', {}).get('access_token', config.get('credentials', {}).get('personal_access_token', ''))) }}"
+          token_delimiter: ","
+          auth_method: "token"
+          header: "Authorization"
+          # Same `is not none` guard as the backoff caps below, and for the same reason. A default
+          # in `.get` only applies when the key is *absent*: a present-but-null `max_waiting_time`
+          # (reachable via the API, Terraform or embedded use) returns None, which renders as the
+          # literal "None", so the previous expression produced "PTNoneM" and every command failed at
+          # startup. The error reads `ISO8601Error: Unrecognised ISO 8601 date format: ''` because
+          # isodate splits on the "T" and reports the empty date half, not because the value was
+          # empty. `check_connection` passes 0 deliberately, so the guard must distinguish null from
+          # 0 — which is why this is `is not none` rather than `or 120`.
+          max_wait_time: "PT{{ config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120 }}M"
+          quota_status_source:
+            type: QuotaStatusSource
+            url: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}/rate_limit"
+            request_headers:
+              Accept: "application/vnd.github+json"
+              X-GitHub-Api-Version: "2022-11-28"
+            # GitHub Enterprise Server ships with HTTP API rate limiting disabled, and an instance
+            # in that state answers `GET /rate_limit` with 404 {"message": "Rate limiting is not
+            # enabled."}. Seeding runs before the first stream request, so without this the whole
+            # connection died on a generic "Resource not found" — every command, not just sync.
+            # Listed statuses seed that token's pools as untracked instead: no exhaustion waits, no
+            # proactive throttling, no rotation on exhaustion, while requests are still signed and
+            # tokens still rotate. Only 404, deliberately. An untracked token stays untracked for
+            # the whole sync (the endpoint is never consulted for it again), so a status the
+            # endpoint can also return transiently would cost quota tracking for the entire run.
+            # 401/403 must never be listed — a revoked credential would then read as "quota
+            # tracking unavailable" instead of as an auth failure. GitHub documents 404 as a
+            # possible response for this endpoint but never states that it means rate limiting is
+            # off; that mapping comes from GHES responses in the wild, which is exactly why the CDK
+            # leaves it to the connector.
+            unavailable_status_codes: [404]
+          quotas:
+            - type: TokenQuota
+              name: rest
+              remaining_path: ["resources", "core", "remaining"]
+              reset_path: ["resources", "core", "reset"]
+              limit_path: ["resources", "core", "limit"]
+              # Reconcile the pool against every response, not just the initial /rate_limit
+              # seeding. GitHub returns these headers on every authenticated REST response, and
+              # the local counters drift whenever the token is shared with another client, when
+              # requests overlap under `concurrency_level`, or when a sync outlives its seeding.
+              remaining_header: "X-RateLimit-Remaining"
+              reset_header: "X-RateLimit-Reset"
+              limit_header: "X-RateLimit-Limit"
+              # No `exhaustion_status_codes`, deliberately. GitHub's 403 is not exclusively a
+              # rate-limit code: a secondary limit (403 + `Retry-After`, primary quota untouched)
+              # and a missing-scope denial both use it, and neither carries
+              # `X-RateLimit-Remaining: 0`. Listing 403 would zero the pool for those, which on a
+              # single-token config leaves nothing to rotate to and turns a retryable wait into
+              # "Rate limit is exceeded for all provided tokens." Primary exhaustion needs no
+              # status code here: GitHub reports it as `X-RateLimit-Remaining: 0`, which the
+              # header reconciliation above already picks up.
+            - type: TokenQuota
+              name: graphql
+              remaining_path: ["resources", "graphql", "remaining"]
+              reset_path: ["resources", "graphql", "reset"]
+              limit_path: ["resources", "graphql", "limit"]
+              # /graphql answers with the same header names, scoped to the separate GraphQL
+              # point budget, so the pool reconciles the same way as `rest`.
+              remaining_header: "X-RateLimit-Remaining"
+              reset_header: "X-RateLimit-Reset"
+              limit_header: "X-RateLimit-Limit"
+              matchers:
+                - type: HttpRequestRegexMatcher
+                  url_path_pattern: "/graphql"
+        github_apps:
+          type: CustomAuthenticator
+          class_name: source_github.github_app_auth.GithubAppMultiPemAuthenticator
+          github_apps: "{{ config.get('credentials', {}).get('github_apps', '') }}"
     request_headers:
       User-Agent: "PostmanRuntime/7.28.0"
     error_handler:
@@ -7775,6 +7794,21 @@ spec:
                 title: Personal Access Tokens
                 description: Log into GitHub and then generate a <a href="https://github.com/settings/tokens">personal access token</a>. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with ","
                 airbyte_secret: true
+          - type: object
+            title: GitHub App(s)
+            required:
+              - github_apps
+            properties:
+              option_title:
+                type: string
+                const: GitHub App Credentials
+                order: 0
+              github_apps:
+                type: string
+                title: GitHub Apps
+                description: One or more GitHub App installations — app_id on its own line, then installation_id on the next line, then the private key .pem pasted as-is (from `-----BEGIN` to `-----END`). Repeat the 3 lines for more installations. Each installation's access token is minted and refreshed independently as needed, unlike a pasted access token it never goes stale mid-sync. Multiple installations rotate for extra rate-limit headroom, the same idea as multiple comma-separated personal access tokens above.
+                airbyte_secret: true
+                multiline: true
       repository:
         type: string
         examples:

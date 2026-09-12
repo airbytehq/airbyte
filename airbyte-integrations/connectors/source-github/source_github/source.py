@@ -29,6 +29,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from . import constants
+from .github_app_auth import GithubAppMultiPemAuthenticator
 from .streams import (
     CommitCommentReactions,
     Commits,
@@ -184,6 +185,8 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             return constants.PERSONAL_ACCESS_TOKEN_TITLE, config["access_token"]
 
         credentials = config.get("credentials", {})
+        if "github_apps" in credentials:
+            return constants.GITHUB_APP_TITLE, credentials["github_apps"]
         if "access_token" in credentials:
             return constants.ACCESS_TOKEN_TITLE, credentials["access_token"]
         if "personal_access_token" in credentials:
@@ -209,9 +212,15 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
           - `check_connection` intentionally resolves with `max_waiting_time: 0`, which is a
             separate instance by design — `check` builds no Python streams.
         """
+        if config.get("credentials", {}).get("auth_mode") == "github_apps":
+            return GithubAppMultiPemAuthenticator(
+                config=config,
+                parameters={},
+                github_apps=config["credentials"]["github_apps"],
+            )
         return self._constructor.create_component(
             model_type=RateLimitedMultipleTokenAuthenticatorModel,
-            component_definition=self.resolved_manifest["definitions"]["requester_base"]["authenticator"],
+            component_definition=self.resolved_manifest["definitions"]["requester_base"]["authenticator"]["authenticators"]["token"],
             config=config,
         )
 
@@ -231,8 +240,21 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
 
     def _validate_and_transform_config(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         config = self._ensure_default_values(config)
+        config = self._ensure_auth_mode(config)
         config = self._validate_repositories(config)
         config = self._validate_branches(config)
+        return config
+
+    def _ensure_auth_mode(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        """Normalize `credentials.auth_mode` to "token" or "github_apps" regardless of which
+        legacy or current config shape was used (root-level `access_token`,
+        `credentials.access_token`/`personal_access_token`, or `credentials.github_apps`), so
+        both the manifest's `SelectiveAuthenticator` and `_get_authenticator` branch on the same
+        stable value instead of each re-deriving it from the raw config shape.
+        """
+        credentials = config.get("credentials", {})
+        config["credentials"] = credentials
+        credentials["auth_mode"] = "github_apps" if credentials.get("github_apps") else "token"
         return config
 
     def _ensure_default_values(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
