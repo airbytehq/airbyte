@@ -114,6 +114,7 @@ The Stripe source connector supports the following streams:
 - [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
 - [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
 - [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines) \(Incremental\)
+- [Invoice Payments](https://docs.stripe.com/api/invoice-payment/list) \(Incremental\) — see [Invoice Payments status coverage](#invoice-payments-status-coverage) for the statuses each sync mode returns.
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
 - [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
@@ -151,6 +152,8 @@ The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https:
 ### Stripe API version
 
 This connector uses Stripe API version `2022-11-15`. Stripe returns data shaped according to this version regardless of the version configured in your Stripe dashboard. For details on Stripe API versioning, see [Stripe API upgrades](https://docs.stripe.com/upgrades).
+
+The `Invoice Payments` stream is the one exception. The InvoicePayment resource does not exist before [2025-03-31.basil](https://docs.stripe.com/changelog/basil), so that stream requests version `2025-03-31.basil`. No other stream is affected.
 
 ## Limitations & Troubleshooting
 
@@ -197,6 +200,7 @@ You can customize which streams have cursor age validation by modifying the **St
 - `External Account Cards`
 - `Invoice Items`
 - `Invoice Line Items`
+- `Invoice Payments`
 - `Invoices`
 - `Payment Intents`
 - `Payment Methods`
@@ -219,6 +223,17 @@ You can customize which streams have cursor age validation by modifying the **St
 :::warning
 **Important**: If a stream is removed from the validation list and its cursor becomes stale (older than 30 days), the connector will continue using the Events API for incremental sync, which only returns the last 30 days of data. This may result in missed updates for records older than 30 days. Only remove streams from the validation list if you are confident that a stale cursor is acceptable for your use case.
 :::
+
+#### Invoice Payments status coverage
+
+The `Invoice Payments` stream returns different `status` values depending on how it is read:
+
+- **Full refresh**, and the first incremental sync before any state exists, read `/v1/invoice_payments` directly and return invoice payments in **all** statuses, including `paid`, `open`, and `canceled`.
+- **Later incremental syncs** read from the [Events API](https://docs.stripe.com/api/events), where Stripe publishes only the [`invoice_payment.paid`](https://docs.stripe.com/api/events/types) event type. These syncs therefore pick up **only** invoice payments that have reached `paid` status.
+
+This is a Stripe API limitation rather than a connector restriction: `invoice_payment.paid` is the only event type Stripe emits for the InvoicePayment resource, so there is no event to read for `open` or `canceled` invoice payments. If you need ongoing visibility into invoice payments that are not `paid`, use a full refresh sync mode for this stream.
+
+A second limitation applies to accounts that have not upgraded to [2025-03-31.basil](https://docs.stripe.com/changelog/basil) or newer. Stripe renders event payloads at [the API version the account was on when the event was created](https://docs.stripe.com/api/events/list), not at the version the connector requests, so events created before an account's upgrade may not carry usable invoice-payment data. Use a full refresh sync mode for those accounts — the full refresh path queries the InvoicePayment endpoint directly and is unaffected.
 
 ### Troubleshooting
 
@@ -263,6 +278,7 @@ For records the connector rebuilds from the Events API, `updated` comes from the
 - `External Account Cards`
 - `Invoice Items`
 - `Invoice Line Items` (cursor field is `invoice_updated`)
+- `Invoice Payments`
 - `Invoices`
 - `Payment Intents`
 - `Payment Methods`
@@ -317,6 +333,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.0 | 2026-09-10 | [81375](https://github.com/airbytehq/airbyte/pull/81375) | Added `invoice_payments` stream for Stripe Basil invoice-payment relationship data |
 | 6.0.17 | 2026-09-11 | [85799](https://github.com/airbytehq/airbyte/pull/85799) | Prevent the events-based `invoice_line_items` and `subscription_items` transformations from running when `original_record` is missing or empty. |
 | 6.0.16 | 2026-09-08 | [85672](https://github.com/airbytehq/airbyte/pull/85672) | Update dependencies |
 | 6.0.15 | 2026-08-18 | [84768](https://github.com/airbytehq/airbyte/pull/84768) | Update dependencies |
