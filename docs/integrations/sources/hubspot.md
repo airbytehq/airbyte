@@ -88,6 +88,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `deal_splits`               | `crm.objects.deals.read`                                                                                     |
 | `properties`                | No additional scopes required                                                                                |
 | `workflows`                 | `automation`                                                                                                 |
+| `flows`                     | `automation` (plus `*.sensitive.read` for flows touching sensitive data)                                     |
 | `contacts_web_analytics`    | `business-intelligence`, `crm.objects.contacts.read`                                                         |
 | `companies_web_analytics`   | `business-intelligence`, `crm.objects.companies.read`                                                        |
 | `deals_web_analytics`       | `business-intelligence`, `crm.objects.deals.read`                                                            |
@@ -174,6 +175,8 @@ Enable the **Enable experimental streams** toggle to sync the Web Analytics stre
 - `products_web_analytics`
 
 These streams require HubSpot Marketing Hub Enterprise and the `business-intelligence` scope in addition to each stream's parent-object read scope (see the scopes table in [Step 2](#step-2-configure-the-scopes-for-your-streams-private-app-only)). They begin syncing from the configured **Start date** with fresh state.
+
+The same toggle also enables the `flows` stream, which syncs **full workflow definitions** from HubSpot's [Automation v4 Flows API](https://developers.hubspot.com/docs/reference/api/automation/create-manage-workflows). See [Flows vs. workflows](#flows-vs-workflows) below.
 
 </FieldAnchor>
 
@@ -288,12 +291,35 @@ The HubSpot source connector supports the following streams:
 - [Tickets](https://developers.hubspot.com/docs/api/crm/tickets) \(Incremental\)
 - [Ticket Pipelines](https://developers.hubspot.com/docs/api/crm/pipelines) \(Client-Side Incremental\)
 - [Workflows](https://developers.hubspot.com/docs/api/automation/workflows) \(Client-Side Incremental\)
+- [Flows](https://developers.hubspot.com/docs/reference/api/automation/create-manage-workflows) \(Client-Side Incremental, experimental\)
 - [Account Details](https://developers.hubspot.com/docs/api-reference/account-account-info-v3/details/get-account-info-v3-details) \(Full Refresh\)
 - [Association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for standard objects, such as `associations_tickets_companies` \(Incremental\)
 - [Custom object association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for custom-to-standard or custom-to-custom associations \(Incremental\)
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
+
+### Flows vs. workflows
+
+The connector exposes HubSpot automations through two independent streams. Neither replaces the other, and both can be synced at the same time.
+
+| | `workflows` | `flows` |
+| --- | --- | --- |
+| HubSpot API | Legacy `GET /automation/v3/workflows` | `GET /automation/v4/flows` |
+| Availability | Always available | Requires **Enable experimental streams** |
+| Content | Inventory metadata only (name, type, enabled, counters, migration status) | Full workflow definitions |
+| `id` type | Integer | String |
+| Cursor format | Epoch milliseconds | ISO 8601 date-time |
+
+Use `flows` when you need the workflow definition itself rather than an inventory: the `actions` action graph, `enrollmentCriteria`, `dataSources`, `enrollmentSchedule`, `timeWindows`, `blockedDates`, goal and suppression filter branches, and un-enrollment settings.
+
+A few things to know about the `flows` stream:
+
+- **It costs one extra API call per flow.** The list endpoint returns summaries only, so the connector fetches `GET /automation/v4/flows/{flowId}` for every flow it emits. Because filtering happens before enrichment, incremental syncs only pay this cost for flows that changed since the previous sync.
+- **It covers more than workflows.** The v4 API also returns platform flows and action sets (`flowType` of `ACTION_SET`), so `flows` typically contains more records than `workflows`. Filter on `flowType` and `type` downstream if you only want contact workflows.
+- **Flows are not joinable to workflows by `id`.** The two APIs use different identifier spaces. HubSpot exposes `POST /automation/v4/workflow-id-mappings/batch/read` to translate between them; the connector does not call it.
+- **Inaccessible flows degrade rather than fail.** HubSpot requires additional `*.sensitive.read` scopes for flows that reference sensitive data. If a detail request fails, the connector logs a warning naming the flow and emits its summary fields, so one restricted flow does not fail the whole stream.
+- **The upstream API is a developer preview.** HubSpot documents Automation v4 as subject to change, which is why the stream sits behind the experimental toggle. The `actions`, `enrollmentCriteria`, `dataSources`, and filter-branch fields are typed as free-form objects so that new HubSpot action or criteria subtypes do not break syncs.
 
 ### Notes on the `property_history` streams
 
@@ -425,6 +451,8 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
     `workflows`: Sales, Service, and Marketing Hub Professional accounts
 
+    `flows`: Sales, Service, and Marketing Hub Professional accounts
+
 - Check out common troubleshooting issues for the HubSpot source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 - **Missing records** in CRM Search streams (`deals`, `companies`, `engagements_calls`, `engagements_emails`, `engagements_meetings`, `engagements_notes`, `engagements_tasks`, `contacts`, `deal_splits`, `leads`, `tickets`):
@@ -458,6 +486,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.9.0 | 2026-09-12 | [TODO](https://github.com/airbytehq/airbyte/pull/TODO) | Add the `flows` stream, which syncs full workflow definitions (action graph, enrollment criteria, data sources, schedules) from HubSpot's Automation v4 Flows API. Each flow summary from `GET /automation/v4/flows` is enriched with `GET /automation/v4/flows/{flowId}`. Requires the `automation` scope and is gated behind `enable_experimental_streams` because the upstream API is a HubSpot developer preview. The legacy `workflows` stream is unchanged. |
 | 6.8.3 | 2026-09-08 | [85528](https://github.com/airbytehq/airbyte/pull/85528) | Update dependencies |
 | 6.8.2 | 2026-08-20 | [84917](https://github.com/airbytehq/airbyte/pull/84917) | Update CDK to 7.28.0 to fix a startup crash (`ValueError: No format in [...] matching True`) when a full-refresh association stream with an `incremental_dependency` parent is deselected. |
 | 6.8.1 | 2026-08-14 | [84411](https://github.com/airbytehq/airbyte/pull/84411) | Fix the `Number of concurrent threads` setting being ignored: read the `num_worker` config key emitted by the spec instead of `num_workers` |
