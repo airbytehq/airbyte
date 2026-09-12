@@ -1,0 +1,488 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: >-
+  Source connector for the ComfyUI Cloud API. Extracts generation jobs,
+  assets, models, and system data from ComfyUI Cloud into any Airbyte
+  destination.
+
+check:
+  type: CheckStream
+  stream_names:
+    - system_stats
+
+definitions:
+  authenticator:
+    type: ApiKeyAuthenticator
+    api_token: "{{ config['api_key'] }}"
+    inject_into:
+      type: RequestOption
+      field_name: X-API-Key
+      inject_into: header
+
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config.get('base_url', 'https://cloud.comfy.org') }}"
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 3
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+          factor: 5
+      response_filters:
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 429
+            - 500
+            - 502
+            - 503
+            - 504
+
+  offset_paginator:
+    type: DefaultPaginator
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 50
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: offset
+
+  jobs_stream:
+    type: DeclarativeStream
+    name: jobs
+    description: "Generation job history with status, timing, and workflow references."
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /api/jobs
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/offset_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          status:
+            type:
+              - string
+              - "null"
+          create_time:
+            type:
+              - integer
+              - "null"
+          workflow_id:
+            type:
+              - string
+              - "null"
+          execution_error:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          preview_output:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          outputs_count:
+            type:
+              - integer
+              - "null"
+          execution_start_time:
+            type:
+              - integer
+              - "null"
+          execution_end_time:
+            type:
+              - integer
+              - "null"
+
+  job_details_stream:
+    type: DeclarativeStream
+    name: job_details
+    description: "Full job data including workflow graph, outputs, and execution metadata."
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/api/jobs/{{ stream_slice.job_id }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/jobs_stream"
+            parent_key: id
+            partition_field: job_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          status:
+            type:
+              - string
+              - "null"
+          create_time:
+            type:
+              - integer
+              - "null"
+          update_time:
+            type:
+              - integer
+              - "null"
+          workflow_id:
+            type:
+              - string
+              - "null"
+          workflow:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          outputs:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          preview_output:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          outputs_count:
+            type:
+              - integer
+              - "null"
+          execution_error:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          execution_status:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          execution_meta:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          execution_start_time:
+            type:
+              - integer
+              - "null"
+          execution_end_time:
+            type:
+              - integer
+              - "null"
+
+  assets_stream:
+    type: DeclarativeStream
+    name: assets
+    description: "User assets with tags, metadata, sizes, and preview URLs."
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /api/assets
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/offset_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          asset_hash:
+            type:
+              - string
+              - "null"
+          size:
+            type:
+              - integer
+              - "null"
+          mime_type:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+          user_metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          preview_url:
+            type:
+              - string
+              - "null"
+          preview_id:
+            type:
+              - string
+              - "null"
+          prompt_id:
+            type:
+              - string
+              - "null"
+          job_id:
+            type:
+              - string
+              - "null"
+          metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          is_immutable:
+            type:
+              - boolean
+              - "null"
+
+  model_folders_stream:
+    type: DeclarativeStream
+    name: model_folders
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /api/experiment/models
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          name:
+            type: string
+
+  models_stream:
+    type: DeclarativeStream
+    name: models
+    description: "Available AI model catalog organized by folder."
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/api/experiment/models/{{ stream_slice.folder }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/model_folders_stream"
+            parent_key: name
+            partition_field: folder
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - folder
+            value: "{{ stream_slice.folder }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          folder:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          path:
+            type:
+              - string
+              - "null"
+          pathIndex:
+            type:
+              - integer
+              - "null"
+
+  system_stats_stream:
+    type: DeclarativeStream
+    name: system_stats
+    description: "System information including GPU, VRAM, and ComfyUI version."
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /api/system_stats
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          system:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              os:
+                type:
+                  - string
+                  - "null"
+              python_version:
+                type:
+                  - string
+                  - "null"
+              embedded_python:
+                type:
+                  - boolean
+                  - "null"
+              comfyui_version:
+                type:
+                  - string
+                  - "null"
+              ram_total:
+                type:
+                  - integer
+                  - "null"
+              ram_free:
+                type:
+                  - integer
+                  - "null"
+          devices:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              additionalProperties: true
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                type:
+                  type:
+                    - string
+                    - "null"
+                vram_total:
+                  type:
+                    - integer
+                    - "null"
+                vram_free:
+                  type:
+                    - integer
+                    - "null"
+
+streams:
+  - $ref: "#/definitions/jobs_stream"
+  - $ref: "#/definitions/job_details_stream"
+  - $ref: "#/definitions/assets_stream"
+  - $ref: "#/definitions/models_stream"
+  - $ref: "#/definitions/system_stats_stream"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/comfyui
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: ComfyUI Cloud Source Spec
+    type: object
+    additionalProperties: true
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: "ComfyUI Cloud API key from platform.comfy.org/profile/api-keys"
+        airbyte_secret: true
+        order: 0
+      base_url:
+        type: string
+        title: Base URL
+        description: "ComfyUI Cloud API base URL"
+        default: "https://cloud.comfy.org"
+        order: 1
