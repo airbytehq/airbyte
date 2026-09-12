@@ -1437,6 +1437,76 @@ definitions:
         cursor_field: updatedAt
         cursor_format: "%ms"
 
+  # ── Flows (Automation v4) ─────────────────────────────────────────
+  # Full workflow definitions from HubSpot's Flows v4 API, the successor to the legacy
+  # /automation/v3/workflows endpoint backing the `workflows` stream. `workflows` is left untouched:
+  # its records keep the legacy shape (integer `id`, epoch-ms cursor) and the two streams can be
+  # synced side by side.
+  #
+  # GET /automation/v4/flows returns summaries only (id, name, flowType, isEnabled, objectTypeId,
+  # revisionId, createdAt, updatedAt, uuid), so each record is enriched with a per-flow request to
+  # GET /automation/v4/flows/{flowId} to pick up the action graph and enrollment criteria.
+  # `transform_before_filtering: false` keeps the client-side incremental filter ahead of that
+  # enrichment, so unchanged flows cost no detail request.
+  #
+  # Gated behind `enable_experimental_streams`: HubSpot ships Automation v4 as a developer preview
+  # and documents it as "subject to change".
+  flows_stream:
+    type: DeclarativeStream
+    name: flows
+    primary_key:
+      - id
+    $parameters:
+      name: flows
+      required_scopes: automation
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /automation/v4/flows
+      record_selector:
+        type: RecordSelector
+        transform_before_filtering: false
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      decoder:
+        type: JsonDecoder
+    incremental_sync:
+      # The list endpoint accepts no date filter (only `after`/`limit`), so filtering is client-side.
+      type: DatetimeBasedCursor
+      cursor_field: updatedAt
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      is_client_side_incremental: true
+    transformations:
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.HubspotFlowDetailsTransformation
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/automation/v4/flows/{{ stream_slice['parent_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        $parameters:
+          # Requester and Selector require stream name as a param.
+          name: flows
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/flows"
+
   email_events_stream:
     $ref: "#/definitions/stream_base"
     name: email_events
@@ -2719,6 +2789,7 @@ streams:
       - "#/definitions/goals_web_analytics_stream"
       - "#/definitions/line_items_web_analytics_stream"
       - "#/definitions/products_web_analytics_stream"
+      - "#/definitions/flows_stream"
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
@@ -7207,6 +7278,189 @@ schemas:
         type:
           - "null"
           - integer
+
+  # Full workflow definitions from the Automation v4 Flows API.
+  # Top-level fields are the union of HubSpot's `ApiContactFlow` and `ApiPlatformFlow` schemas plus
+  # the `ApiFlowListing` fields returned by the list endpoint. The deeply polymorphic sub-trees
+  # (`actions`, `enrollmentCriteria`, `dataSources`, filter branches, schedules) are intentionally
+  # left as untyped objects with `additionalProperties: true`: HubSpot models them as `oneOf` over
+  # many action/criteria subtypes and the API is still a developer preview, so enumerating them here
+  # would break syncs whenever HubSpot adds a subtype.
+  flows:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        description: Unique identifier of the flow. Note this is a string, unlike the integer `id` of the legacy `workflows` stream.
+        type:
+          - "null"
+          - string
+      uuid:
+        description: Universally unique identifier of the flow.
+        type:
+          - "null"
+          - string
+      name:
+        description: Name assigned to the flow.
+        type:
+          - "null"
+          - string
+      description:
+        description: Description of the flow.
+        type:
+          - "null"
+          - string
+      flowType:
+        description: Type of the flow. One of ACTION_SET, WORKFLOW or UNKNOWN.
+        type:
+          - "null"
+          - string
+      type:
+        description: Discriminator of the flow definition. One of CONTACT_FLOW or PLATFORM_FLOW.
+        type:
+          - "null"
+          - string
+      isEnabled:
+        description: Whether the flow is currently active.
+        type:
+          - "null"
+          - boolean
+      objectTypeId:
+        description: ID of the CRM object type the flow operates on.
+        type:
+          - "null"
+          - string
+      revisionId:
+        description: Identifier of the current revision of the flow.
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Timestamp when the flow was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: Timestamp when the flow was last updated. Used as the cursor for this stream.
+        type:
+          - "null"
+          - string
+        format: date-time
+      startActionId:
+        description: ID of the first action executed by the flow.
+        type:
+          - "null"
+          - string
+      nextAvailableActionId:
+        description: Next unused action ID, used by HubSpot when appending actions.
+        type:
+          - "null"
+          - string
+      actions:
+        description: Ordered list of actions that make up the flow's action graph.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+      enrollmentCriteria:
+        description: Criteria that determine which records are enrolled into the flow.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      enrollmentSchedule:
+        description: Schedule controlling when enrollment evaluation runs.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      dataSources:
+        description: Data sources referenced by the flow's filters and actions.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+      timeWindows:
+        description: Time windows during which the flow is allowed to execute actions.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+      blockedDates:
+        description: Dates on which the flow is prevented from executing actions.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+      customProperties:
+        description: Free-form key/value metadata attached to the flow.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      crmObjectCreationStatus:
+        description: Status of the CRM object backing the flow. One of COMPLETE or PENDING.
+        type:
+          - "null"
+          - string
+      suppressionListIds:
+        description: IDs of lists whose members are suppressed from the flow. Contact flows only.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      canEnrollFromSalesforce:
+        description: Whether Salesforce can enroll records into the flow. Contact flows only.
+        type:
+          - "null"
+          - boolean
+      eventAnchor:
+        description: Anchor date used by date-based enrollment. Contact flows only.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      goalFilterBranch:
+        description: Filter branch describing the flow's goal criteria. Contact flows only.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      unEnrollmentSetting:
+        description: Settings controlling un-enrollment behaviour. Contact flows only.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      suppressionFilterBranch:
+        description: Filter branch describing suppression criteria. Platform flows only.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
 
   email_events:
     $schema: http://json-schema.org/draft-07/schema#
