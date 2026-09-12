@@ -90,5 +90,9 @@ class ProbeStream(GithubStream):
     replays cached pages and stops a request counter from advancing.
     """
 
+    def __init__(self, start_date: str = "", **kwargs: Any) -> None:
+        # Accepted and ignored so the tests can pass the same arguments a semi-incremental stream took.
+        super().__init__(**kwargs)
+
     def get_json_schema(self) -> Mapping[str, Any]:
         return {"$schema": "https://json-schema.org/draft-07/schema#", "type": "object", "properties": {}}

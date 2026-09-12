@@ -300,9 +300,9 @@ def test_streams_page_size(rate_limit_mock_response, requests_mock):
                 "access_token": "test_token",
                 "repository": "airbyte/test",
             },
-            18,
+            10,
         ),
-        ({"access_token": "test_token", "repository": "airbyte/test"}, 18),
+        ({"access_token": "test_token", "repository": "airbyte/test"}, 10),
     ),
 )
 def test_streams_config_start_date(config, expected, rate_limit_mock_response, requests_mock):
