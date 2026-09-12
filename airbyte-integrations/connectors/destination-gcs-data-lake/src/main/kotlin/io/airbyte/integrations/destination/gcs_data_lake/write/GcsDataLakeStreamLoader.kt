@@ -18,7 +18,7 @@ import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCatalogUtil
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
-import io.airbyte.integrations.destination.gcs_data_lake.spec.MergeOnReadDeleteEncoding
+import io.airbyte.integrations.destination.gcs_data_lake.spec.IcebergDeleteFileType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
@@ -207,20 +207,21 @@ class GcsDataLakeStreamLoader(
         // back to equality before release.
         val positionalDeletesEnabled =
             stream.tableSchema.importType is Dedupe &&
-                when (icebergConfiguration.mergeOnReadDeleteEncoding) {
-                    MergeOnReadDeleteEncoding.AUTOMATIC,
-                    MergeOnReadDeleteEncoding.POSITIONAL -> true
-                    MergeOnReadDeleteEncoding.EQUALITY -> false
+                when (icebergConfiguration.icebergDeleteFileType) {
+                    IcebergDeleteFileType.AUTOMATIC,
+                    IcebergDeleteFileType.POSITIONAL -> true
+                    IcebergDeleteFileType.EQUALITY -> false
                 }
         val identifierFieldIds =
             if (positionalDeletesEnabled) targetSchema.identifierFieldIds() else emptySet()
-        val suppressDeletedPositions = icebergConfiguration.suppressDeletedPositions
+        val optimizePriorIcebergDeleteFiles = icebergConfiguration.optimizePriorIcebergDeleteFiles
         val positionalDeleteState =
             if (positionalDeletesEnabled) {
                 enableIdentifierBloomFilters(table, targetSchema, identifierFieldIds)
                 PositionalDeleteResolutionState(
                     deleteIndexEnabled =
-                        suppressDeletedPositions && icebergConfiguration.indexPositionalDeletes,
+                        optimizePriorIcebergDeleteFiles &&
+                            icebergConfiguration.useExperimentalDeleteVectorFiles,
                 )
             } else {
                 null
@@ -232,7 +233,7 @@ class GcsDataLakeStreamLoader(
                 schema = targetSchema,
                 stagingBranchName = stagingBranchName,
                 positionalDeleteState = positionalDeleteState,
-                suppressDeletedPositions = suppressDeletedPositions,
+                optimizePriorIcebergDeleteFiles = optimizePriorIcebergDeleteFiles,
             )
         streamStateStore.put(stream.mappedDescriptor, state)
     }

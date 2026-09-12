@@ -24,9 +24,9 @@ data class GcsDataLakeConfiguration(
     val gcsEndpoint: String?,
     val namespace: String,
     val gcsCatalogConfiguration: GcsCatalogConfiguration,
-    val mergeOnReadDeleteEncoding: MergeOnReadDeleteEncoding = MergeOnReadDeleteEncoding.AUTOMATIC,
-    val suppressDeletedPositions: Boolean = true,
-    val indexPositionalDeletes: Boolean = false,
+    val icebergDeleteFileType: IcebergDeleteFileType = IcebergDeleteFileType.AUTOMATIC,
+    val optimizePriorIcebergDeleteFiles: Boolean = true,
+    val useExperimentalDeleteVectorFiles: Boolean = false,
     val maxRecordsPerFlush: Long? = null,
 ) : DestinationConfiguration() {
 
@@ -87,10 +87,9 @@ class GcsDataLakeConfigurationFactory :
             gcsEndpoint = pojo.gcsEndpoint,
             namespace = pojo.namespace,
             gcsCatalogConfiguration = pojo.toGcsCatalogConfiguration(),
-            mergeOnReadDeleteEncoding = pojo.mergeOnReadDeleteEncoding
-                    ?: MergeOnReadDeleteEncoding.AUTOMATIC,
-            suppressDeletedPositions = pojo.suppressDeletedPositions ?: true,
-            indexPositionalDeletes = pojo.indexPositionalDeletes ?: false,
+            icebergDeleteFileType = pojo.icebergDeleteFileType ?: IcebergDeleteFileType.AUTOMATIC,
+            optimizePriorIcebergDeleteFiles = pojo.optimizePriorIcebergDeleteFiles ?: true,
+            useExperimentalDeleteVectorFiles = pojo.useExperimentalDeleteVectorFiles ?: false,
             maxRecordsPerFlush = pojo.maxRecordsPerFlush,
         )
     }

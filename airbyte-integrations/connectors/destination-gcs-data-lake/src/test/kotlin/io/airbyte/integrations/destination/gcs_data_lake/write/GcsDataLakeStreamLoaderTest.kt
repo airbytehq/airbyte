@@ -26,7 +26,7 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCatalogUtil
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
-import io.airbyte.integrations.destination.gcs_data_lake.spec.MergeOnReadDeleteEncoding
+import io.airbyte.integrations.destination.gcs_data_lake.spec.IcebergDeleteFileType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.mockk.every
 import io.mockk.just
@@ -116,15 +116,15 @@ internal class GcsDataLakeStreamLoaderTest {
             stream = stream,
             table = table,
             schema = icebergSchema,
-            suppressDeletedPositions = false,
-            indexPositionalDeletes = true,
+            optimizePriorIcebergDeleteFiles = false,
+            useExperimentalDeleteVectorFiles = true,
         )
 
         verify {
             streamStateStore.put(
                 stream.mappedDescriptor,
                 match {
-                    !it.suppressDeletedPositions &&
+                    !it.optimizePriorIcebergDeleteFiles &&
                         it.positionalDeleteState?.deleteIndex?.enabled == false
                 },
             )
@@ -146,7 +146,7 @@ internal class GcsDataLakeStreamLoaderTest {
             stream = stream,
             table = table,
             schema = icebergSchema,
-            indexPositionalDeletes = true,
+            useExperimentalDeleteVectorFiles = true,
         )
 
         verify {
@@ -161,14 +161,16 @@ internal class GcsDataLakeStreamLoaderTest {
         stream: DestinationStream,
         table: Table,
         schema: Schema,
-        suppressDeletedPositions: Boolean = true,
-        indexPositionalDeletes: Boolean = false,
+        optimizePriorIcebergDeleteFiles: Boolean = true,
+        useExperimentalDeleteVectorFiles: Boolean = false,
     ) {
         val configuration =
             mockk<GcsDataLakeConfiguration>(relaxed = true) {
-                every { mergeOnReadDeleteEncoding } returns MergeOnReadDeleteEncoding.POSITIONAL
-                every { this@mockk.suppressDeletedPositions } returns suppressDeletedPositions
-                every { this@mockk.indexPositionalDeletes } returns indexPositionalDeletes
+                every { icebergDeleteFileType } returns IcebergDeleteFileType.POSITIONAL
+                every { this@mockk.optimizePriorIcebergDeleteFiles } returns
+                    optimizePriorIcebergDeleteFiles
+                every { this@mockk.useExperimentalDeleteVectorFiles } returns
+                    useExperimentalDeleteVectorFiles
             }
         val catalog = mockk<Catalog>()
         val catalogUtil =
