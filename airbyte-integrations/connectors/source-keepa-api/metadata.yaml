@@ -1,0 +1,34 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-keepa-api
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 4d1863cd-e94e-497f-aa33-d0894631d2f9
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-keepa-api
+  githubIssueLabel: source-keepa-api
+  icon: icon.svg
+  license: ELv2
+  name: Keepa_API (Product Data)
+  releaseDate: 2025-11-04
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/keepa-api
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
