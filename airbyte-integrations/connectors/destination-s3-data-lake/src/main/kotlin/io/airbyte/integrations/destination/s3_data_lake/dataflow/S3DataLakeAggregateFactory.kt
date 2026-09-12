@@ -35,8 +35,8 @@ class S3DataLakeAggregateFactory(
                 positionalDeleteRef = state.positionalDeleteState?.let { state.stagingBranchName },
                 positionalDeleteState = state.positionalDeleteState,
                 allowWholeFileSupersession =
-                    state.positionalDeleteState != null && state.suppressDeletedPositions,
-                suppressDeletedPositions = state.suppressDeletedPositions,
+                    state.positionalDeleteState != null && state.optimizePriorIcebergDeleteFiles,
+                suppressDeletedPositions = state.optimizePriorIcebergDeleteFiles,
             )
 
         return S3DataLakeAggregate(

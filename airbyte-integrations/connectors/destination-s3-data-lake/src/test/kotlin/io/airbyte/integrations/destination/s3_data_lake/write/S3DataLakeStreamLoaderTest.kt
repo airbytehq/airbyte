@@ -32,7 +32,7 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
 import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_STAGING_BRANCH
-import io.airbyte.integrations.destination.s3_data_lake.spec.MergeOnReadDeleteEncoding
+import io.airbyte.integrations.destination.s3_data_lake.spec.IcebergDeleteFileType
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3BucketConfiguration
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3BucketRegion
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
@@ -594,9 +594,9 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
-            every { mergeOnReadDeleteEncoding } returns MergeOnReadDeleteEncoding.EQUALITY
-            every { suppressDeletedPositions } returns true
-            every { indexPositionalDeletes } returns false
+            every { icebergDeleteFileType } returns IcebergDeleteFileType.EQUALITY
+            every { optimizePriorIcebergDeleteFiles } returns true
+            every { useExperimentalDeleteVectorFiles } returns false
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk { every { schema() } returns icebergSchema }
@@ -673,9 +673,9 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
-            every { mergeOnReadDeleteEncoding } returns MergeOnReadDeleteEncoding.EQUALITY
-            every { suppressDeletedPositions } returns true
-            every { indexPositionalDeletes } returns false
+            every { icebergDeleteFileType } returns IcebergDeleteFileType.EQUALITY
+            every { optimizePriorIcebergDeleteFiles } returns true
+            every { useExperimentalDeleteVectorFiles } returns false
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk {
@@ -845,9 +845,9 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
-            every { mergeOnReadDeleteEncoding } returns MergeOnReadDeleteEncoding.EQUALITY
-            every { suppressDeletedPositions } returns true
-            every { indexPositionalDeletes } returns false
+            every { icebergDeleteFileType } returns IcebergDeleteFileType.EQUALITY
+            every { optimizePriorIcebergDeleteFiles } returns true
+            every { useExperimentalDeleteVectorFiles } returns false
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk {
@@ -992,9 +992,9 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
-            every { mergeOnReadDeleteEncoding } returns MergeOnReadDeleteEncoding.EQUALITY
-            every { suppressDeletedPositions } returns true
-            every { indexPositionalDeletes } returns false
+            every { icebergDeleteFileType } returns IcebergDeleteFileType.EQUALITY
+            every { optimizePriorIcebergDeleteFiles } returns true
+            every { useExperimentalDeleteVectorFiles } returns false
         }
     }
 
@@ -1014,8 +1014,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { toIcebergSchema(any()) } returns icebergSchema
         }
         val configuration = makeIcebergConfiguration()
-        every { configuration.mergeOnReadDeleteEncoding } returns
-            MergeOnReadDeleteEncoding.POSITIONAL
+        every { configuration.icebergDeleteFileType } returns IcebergDeleteFileType.POSITIONAL
         return S3DataLakeStreamLoader(
             configuration,
             stream,

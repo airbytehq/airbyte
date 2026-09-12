@@ -85,40 +85,41 @@ class S3DataLakeSpecification :
     )
     val flushBatchSizeMb: Long? = null
 
-    @get:JsonSchemaTitle("Merge-on-Read Delete Encoding")
+    @get:JsonSchemaTitle("Iceberg Delete File Type")
     @get:JsonPropertyDescription(
         "The delete-file encoding used by Dedupe streams. AUTOMATIC currently uses equality deletes " +
             "but may change in a future version. Choose EQUALITY to always use equality deletes, or " +
             "POSITIONAL for readers that do not support equality-delete files."
     )
-    @get:JsonProperty("merge_on_read_delete_encoding", required = false)
+    @get:JsonProperty("iceberg_delete_file_type", required = false)
     @get:JsonSchemaInject(
         json =
             """{"default":"AUTOMATIC","examples":["AUTOMATIC","EQUALITY","POSITIONAL"],"order":9}"""
     )
-    val mergeOnReadDeleteEncoding: MergeOnReadDeleteEncoding? = null
+    val icebergDeleteFileType: IcebergDeleteFileType? = null
 
-    @get:JsonSchemaTitle("Suppress Already-Deleted Positions")
+    @get:JsonSchemaTitle("Optimize Prior Iceberg Delete Files")
     @get:JsonPropertyDescription(
         "Experimental. Only applies when positional deletes are in use. When enabled, prior " +
             "positional delete files are consulted so that a position is deleted at most once. " +
             "Disabling it writes a delete for every physical copy of a row, which avoids reading " +
             "prior delete files at the cost of a larger delete-file population."
     )
-    @get:JsonProperty("suppress_deleted_positions", required = false)
+    @get:JsonProperty("optimize_prior_iceberg_delete_files", required = false)
     @get:JsonSchemaInject(json = """{"default":true,"order":10,"airbyte_hidden":true}""")
-    val suppressDeletedPositions: Boolean? = null
+    val optimizePriorIcebergDeleteFiles: Boolean? = null
 
-    @get:JsonSchemaTitle("Index Positional Deletes")
+    @get:JsonSchemaTitle("Use Experimental Delete Vector Files")
     @get:JsonPropertyDescription(
-        "Experimental. Only applies when positional deletes are in use with suppression enabled. " +
+        "Experimental. Only applies when positional deletes are in use with prior delete-file " +
+            "optimization enabled. " +
             "Publishes a deletion-vector index alongside the table as Iceberg statistics so later " +
             "flushes can skip reading prior delete files. The index is an accelerator only; " +
             "delete files remain the source of truth and readers are unaffected."
     )
-    @get:JsonProperty("index_positional_deletes", required = false)
+    @get:JsonProperty("use_experimental_delete_vector_files", required = false)
     @get:JsonSchemaInject(json = """{"default":false,"order":11,"airbyte_hidden":true}""")
-    val indexPositionalDeletes: Boolean? = null
+    val useExperimentalDeleteVectorFiles: Boolean? = null
 
     @get:JsonSchemaTitle("Max Records Per Flush")
     @get:JsonPropertyDescription(
@@ -134,7 +135,7 @@ class S3DataLakeSpecification :
     val maxRecordsPerFlush: Long? = null
 }
 
-enum class MergeOnReadDeleteEncoding(@get:JsonValue val value: String) {
+enum class IcebergDeleteFileType(@get:JsonValue val value: String) {
     AUTOMATIC("AUTOMATIC"),
     EQUALITY("EQUALITY"),
     POSITIONAL("POSITIONAL"),

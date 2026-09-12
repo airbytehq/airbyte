@@ -42,9 +42,9 @@ data class S3DataLakeConfiguration(
     override val icebergCatalogConfiguration: IcebergCatalogConfiguration,
     val flushBatchSizeMb: Long?,
     val maxRecordsPerFlush: Long? = null,
-    val mergeOnReadDeleteEncoding: MergeOnReadDeleteEncoding = MergeOnReadDeleteEncoding.AUTOMATIC,
-    val suppressDeletedPositions: Boolean = true,
-    val indexPositionalDeletes: Boolean = false,
+    val icebergDeleteFileType: IcebergDeleteFileType = IcebergDeleteFileType.AUTOMATIC,
+    val optimizePriorIcebergDeleteFiles: Boolean = true,
+    val useExperimentalDeleteVectorFiles: Boolean = false,
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -91,10 +91,9 @@ class S3DataLakeConfigurationFactory :
             icebergCatalogConfiguration = pojo.toIcebergCatalogConfiguration(),
             flushBatchSizeMb = pojo.flushBatchSizeMb,
             maxRecordsPerFlush = pojo.maxRecordsPerFlush,
-            mergeOnReadDeleteEncoding = pojo.mergeOnReadDeleteEncoding
-                    ?: MergeOnReadDeleteEncoding.AUTOMATIC,
-            suppressDeletedPositions = pojo.suppressDeletedPositions ?: true,
-            indexPositionalDeletes = pojo.indexPositionalDeletes ?: false,
+            icebergDeleteFileType = pojo.icebergDeleteFileType ?: IcebergDeleteFileType.AUTOMATIC,
+            optimizePriorIcebergDeleteFiles = pojo.optimizePriorIcebergDeleteFiles ?: true,
+            useExperimentalDeleteVectorFiles = pojo.useExperimentalDeleteVectorFiles ?: false,
         )
     }
 }

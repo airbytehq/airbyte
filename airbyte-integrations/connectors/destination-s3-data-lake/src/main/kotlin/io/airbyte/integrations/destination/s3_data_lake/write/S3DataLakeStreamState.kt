@@ -13,5 +13,5 @@ class S3DataLakeStreamState(
     val schema: Schema,
     val stagingBranchName: String,
     val positionalDeleteState: PositionalDeleteResolutionState? = null,
-    val suppressDeletedPositions: Boolean = true,
+    val optimizePriorIcebergDeleteFiles: Boolean = true,
 )

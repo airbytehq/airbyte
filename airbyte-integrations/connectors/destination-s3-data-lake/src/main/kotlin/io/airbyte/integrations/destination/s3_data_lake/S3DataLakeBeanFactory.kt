@@ -11,7 +11,7 @@ import io.airbyte.cdk.load.dataflow.config.model.DataFlowSocketConfig
 import io.airbyte.cdk.load.dataflow.config.model.LifecycleParallelismConfig
 import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
-import io.airbyte.integrations.destination.s3_data_lake.spec.MergeOnReadDeleteEncoding
+import io.airbyte.integrations.destination.s3_data_lake.spec.IcebergDeleteFileType
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
@@ -87,12 +87,12 @@ class S3DataLakeBeanFactory {
         config: S3DataLakeConfiguration,
     ): DataFlowSocketConfig {
         val positionalEncoding =
-            when (config.mergeOnReadDeleteEncoding) {
+            when (config.icebergDeleteFileType) {
                 // TK-TODO: AUTOMATIC is temporarily wired to positional for prerelease testing;
                 // flip it back to equality before release.
-                MergeOnReadDeleteEncoding.AUTOMATIC,
-                MergeOnReadDeleteEncoding.POSITIONAL -> true
-                MergeOnReadDeleteEncoding.EQUALITY -> false
+                IcebergDeleteFileType.AUTOMATIC,
+                IcebergDeleteFileType.POSITIONAL -> true
+                IcebergDeleteFileType.EQUALITY -> false
             }
         val hasPositionalDedupStreams =
             positionalEncoding && catalog.streams.any { it.tableSchema.importType is Dedupe }
