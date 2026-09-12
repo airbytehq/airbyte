@@ -1,0 +1,46 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.4@sha256:5f343797cfcf021ca98ba9bdf5970ef66cbf6222d8cc17b0d61d13860a5bcc2b
+  connectorSubtype: database
+  connectorTestSuitesOptions:
+    - suite: unitTests
+  connectorType: source
+  definitionId: 2fbe834a-be2e-4f10-b746-1abeb48d5cd2
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-bigquery-v2
+  # Deliberately points at the legacy source-bigquery docs: this connector is a Bulk CDK rewrite of
+  # source-bigquery and its `spec` output embeds this URL.
+  documentationUrl: https://docs.airbyte.com/integrations/sources/bigquery
+  githubIssueLabel: source-bigquery-v2
+  icon: icon.svg
+  license: ELv2
+  name: BigQuery
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:java
+  externalDocumentationUrls:
+    - title: BigQuery REST API
+      url: https://cloud.google.com/bigquery/docs/reference/rest
+      type: api_reference
+    - title: BigQuery JDBC driver (google-cloud-bigquery-jdbc)
+      url: https://github.com/googleapis/google-cloud-java/tree/main/java-bigquery-jdbc
+      type: code_repository
+    - title: Release notes
+      url: https://cloud.google.com/bigquery/docs/release-notes
+      type: api_release_history
+    - title: Authentication
+      url: https://cloud.google.com/bigquery/docs/authentication
+      type: authentication_guide
+    - title: Quotas and limits
+      url: https://cloud.google.com/bigquery/quotas
+      type: rate_limits
+metadataSpecVersion: "1.0"

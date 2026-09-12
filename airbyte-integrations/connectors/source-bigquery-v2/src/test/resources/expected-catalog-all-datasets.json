@@ -1,0 +1,300 @@
+{
+  "streams": [
+    {
+      "name": "all_types",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "big": {
+            "type": "number"
+          },
+          "address": {
+            "type": "object",
+            "properties": {
+              "city": {
+                "type": "string"
+              },
+              "zip": {
+                "airbyte_type": "integer",
+                "type": "number"
+              },
+              "geo": {
+                "type": "object",
+                "properties": {
+                  "observed_at": {
+                    "format": "time",
+                    "airbyte_type": "time_without_timezone",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "tod": {
+            "format": "time",
+            "airbyte_type": "time_without_timezone",
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "line_items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sku": {
+                  "type": "string"
+                },
+                "qty": {
+                  "airbyte_type": "integer",
+                  "type": "number"
+                },
+                "discounts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "pct": {
+                        "airbyte_type": "integer",
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "geo": {
+            "type": "string"
+          },
+          "blob": {
+            "contentEncoding": "base64",
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "local_ts": {
+            "format": "date-time",
+            "airbyte_type": "timestamp_without_timezone",
+            "type": "string"
+          },
+          "doc": {
+            "oneOf": [
+              {
+                "type": "array"
+              },
+              {
+                "type": "object"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "airbyte_type": "json",
+            "type": "object"
+          },
+          "id": {
+            "airbyte_type": "integer",
+            "type": "number"
+          },
+          "day": {
+            "format": "date",
+            "type": "string"
+          },
+          "ratio": {
+            "type": "number"
+          },
+          "ts": {
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone",
+            "type": "string"
+          },
+          "span": {
+            "type": "string"
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ],
+      "source_defined_cursor": false,
+      "default_cursor_field": [],
+      "source_defined_primary_key": [],
+      "namespace": "airbyte_test",
+      "is_resumable": false
+    },
+    {
+      "name": "all_types_view",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "object",
+            "properties": {
+              "city": {
+                "type": "string"
+              },
+              "zip": {
+                "airbyte_type": "integer",
+                "type": "number"
+              },
+              "geo": {
+                "type": "object",
+                "properties": {
+                  "observed_at": {
+                    "format": "time",
+                    "airbyte_type": "time_without_timezone",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "name": {
+            "type": "string"
+          },
+          "id": {
+            "airbyte_type": "integer",
+            "type": "number"
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ],
+      "source_defined_cursor": false,
+      "default_cursor_field": [],
+      "source_defined_primary_key": [],
+      "namespace": "airbyte_test",
+      "is_resumable": false
+    },
+    {
+      "name": "no_rows",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "type": "number"
+          },
+          "k": {
+            "type": "string"
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ],
+      "source_defined_cursor": false,
+      "default_cursor_field": [],
+      "source_defined_primary_key": [],
+      "namespace": "airbyte_test",
+      "is_resumable": false
+    },
+    {
+      "name": "with_pk",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "updated_at": {
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone",
+            "type": "string"
+          },
+          "line": {
+            "airbyte_type": "integer",
+            "type": "number"
+          },
+          "order_id": {
+            "airbyte_type": "integer",
+            "type": "number"
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ],
+      "source_defined_cursor": false,
+      "default_cursor_field": [],
+      "source_defined_primary_key": [
+        [
+          "order_id"
+        ],
+        [
+          "line"
+        ]
+      ],
+      "namespace": "airbyte_test",
+      "is_resumable": true
+    },
+    {
+      "name": "events",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "occurred_at": {
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone",
+            "type": "string"
+          },
+          "event_id": {
+            "type": "string"
+          },
+          "payload": {
+            "oneOf": [
+              {
+                "type": "array"
+              },
+              {
+                "type": "object"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "airbyte_type": "json",
+            "type": "object"
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ],
+      "source_defined_cursor": false,
+      "default_cursor_field": [],
+      "source_defined_primary_key": [],
+      "namespace": "other_dataset",
+      "is_resumable": false
+    }
+  ]
+}

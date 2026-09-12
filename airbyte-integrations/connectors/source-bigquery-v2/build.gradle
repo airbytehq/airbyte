@@ -1,0 +1,26 @@
+plugins {
+    id 'airbyte-bulk-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.bigqueryv2.BigQuerySource'
+}
+
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = ['extract-jdbc']
+}
+
+dependencies {
+    // Google's official, Apache-2.0 licensed BigQuery JDBC driver (java.sql.Driver via ServiceLoader).
+    implementation 'com.google.cloud:google-cloud-bigquery-jdbc:1.4.0'
+    // Native client, used for schema discovery (nested STRUCT/ARRAY fields and primary keys);
+    // the JDBC driver already depends on this exact version.
+    implementation 'com.google.cloud:google-cloud-bigquery:2.67.0'
+
+    // ghcr.io/goccy/bigquery-emulator wrapper.
+    testFixturesImplementation 'org.testcontainers:gcloud:1.21.4'
+    testImplementation 'org.testcontainers:gcloud:1.21.4'
+}
