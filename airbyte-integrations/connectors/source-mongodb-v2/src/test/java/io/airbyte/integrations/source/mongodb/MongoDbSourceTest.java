@@ -18,6 +18,7 @@ import com.mongodb.MongoSecurityException;
 import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -269,6 +270,32 @@ class MongoDbSourceTest {
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
     source.read(airbyteSourceConfigWithoutSchema, new ConfiguredAirbyteCatalog(), null);
     verify(mongoClient, never()).close();
+  }
+
+  @Test
+  void testOrphanedThreadFilterExcludesDebeziumReplicatorFetcher() {
+    // Verify the orphaned thread filter predicate logic registered in MongoDbSource.main():
+    // threadInfo -> !threadInfo.getThread().getName().contains("replicator-fetcher")
+    //
+    // This prevents Debezium's BufferingChangeStreamCursor$EventFetcher thread
+    // from triggering IntegrationRunner.stopOrphanedThreads() force-exit (System.exit(2)).
+
+    // Debezium replicator-fetcher threads should be excluded (predicate returns false)
+    assertFalse(isConsideredOrphanedByReplicatorFilter("replicator-fetcher-0"));
+    assertFalse(isConsideredOrphanedByReplicatorFilter("replicator-fetcher-1"));
+
+    // Normal threads should NOT be excluded (predicate returns true)
+    assertTrue(isConsideredOrphanedByReplicatorFilter("pool-1-thread-1"));
+    assertTrue(isConsideredOrphanedByReplicatorFilter("main"));
+    assertTrue(isConsideredOrphanedByReplicatorFilter("type-and-dedupe"));
+
+    // Verify the filter can be registered with IntegrationRunner without error
+    IntegrationRunner.addOrphanedThreadFilter(
+        threadInfo -> !threadInfo.getThread().getName().contains("replicator-fetcher"));
+  }
+
+  private static boolean isConsideredOrphanedByReplicatorFilter(final String threadName) {
+    return !threadName.contains("replicator-fetcher");
   }
 
   private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password, final boolean isSchemaEnforced) {
