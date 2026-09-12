@@ -59,15 +59,15 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [API Search](./REFERENCE.md#contacts-api_search), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
-| Companies | [List](./REFERENCE.md#companies-list), [Create](./REFERENCE.md#companies-create), [Get](./REFERENCE.md#companies-get), [Update](./REFERENCE.md#companies-update), [API Search](./REFERENCE.md#companies-api_search), [Context Store Search](./REFERENCE.md#companies-context-store-search) |
-| Deals | [List](./REFERENCE.md#deals-list), [Create](./REFERENCE.md#deals-create), [Get](./REFERENCE.md#deals-get), [Update](./REFERENCE.md#deals-update), [API Search](./REFERENCE.md#deals-api_search), [Context Store Search](./REFERENCE.md#deals-context-store-search) |
-| Tickets | [List](./REFERENCE.md#tickets-list), [Create](./REFERENCE.md#tickets-create), [Get](./REFERENCE.md#tickets-get), [Update](./REFERENCE.md#tickets-update), [API Search](./REFERENCE.md#tickets-api_search), [Context Store Search](./REFERENCE.md#tickets-context-store-search), [Semantic Search](./REFERENCE.md#tickets-semantic-search) |
-| Notes | [List](./REFERENCE.md#notes-list), [Create](./REFERENCE.md#notes-create), [Get](./REFERENCE.md#notes-get), [Update](./REFERENCE.md#notes-update), [Delete](./REFERENCE.md#notes-delete), [Context Store Search](./REFERENCE.md#notes-context-store-search), [Semantic Search](./REFERENCE.md#notes-semantic-search) |
-| Calls | [List](./REFERENCE.md#calls-list), [Create](./REFERENCE.md#calls-create), [Get](./REFERENCE.md#calls-get), [Update](./REFERENCE.md#calls-update), [Delete](./REFERENCE.md#calls-delete), [Context Store Search](./REFERENCE.md#calls-context-store-search), [Semantic Search](./REFERENCE.md#calls-semantic-search) |
-| Emails | [List](./REFERENCE.md#emails-list), [Create](./REFERENCE.md#emails-create), [Get](./REFERENCE.md#emails-get), [Update](./REFERENCE.md#emails-update), [Delete](./REFERENCE.md#emails-delete), [Context Store Search](./REFERENCE.md#emails-context-store-search), [Semantic Search](./REFERENCE.md#emails-semantic-search) |
-| Meetings | [List](./REFERENCE.md#meetings-list), [Create](./REFERENCE.md#meetings-create), [Get](./REFERENCE.md#meetings-get), [Update](./REFERENCE.md#meetings-update), [Delete](./REFERENCE.md#meetings-delete), [Context Store Search](./REFERENCE.md#meetings-context-store-search), [Semantic Search](./REFERENCE.md#meetings-semantic-search) |
-| Tasks | [List](./REFERENCE.md#tasks-list), [Create](./REFERENCE.md#tasks-create), [Get](./REFERENCE.md#tasks-get), [Update](./REFERENCE.md#tasks-update), [Delete](./REFERENCE.md#tasks-delete), [Context Store Search](./REFERENCE.md#tasks-context-store-search), [Semantic Search](./REFERENCE.md#tasks-semantic-search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [API Search](./REFERENCE.md#contacts-api_search), [Context Store Search](./REFERENCE.md#contacts-context-store-search), [Context Store SQL Query](./REFERENCE.md#contacts-context-store-sql-query) |
+| Companies | [List](./REFERENCE.md#companies-list), [Create](./REFERENCE.md#companies-create), [Get](./REFERENCE.md#companies-get), [Update](./REFERENCE.md#companies-update), [API Search](./REFERENCE.md#companies-api_search), [Context Store Search](./REFERENCE.md#companies-context-store-search), [Context Store SQL Query](./REFERENCE.md#companies-context-store-sql-query) |
+| Deals | [List](./REFERENCE.md#deals-list), [Create](./REFERENCE.md#deals-create), [Get](./REFERENCE.md#deals-get), [Update](./REFERENCE.md#deals-update), [API Search](./REFERENCE.md#deals-api_search), [Context Store Search](./REFERENCE.md#deals-context-store-search), [Context Store SQL Query](./REFERENCE.md#deals-context-store-sql-query) |
+| Tickets | [List](./REFERENCE.md#tickets-list), [Create](./REFERENCE.md#tickets-create), [Get](./REFERENCE.md#tickets-get), [Update](./REFERENCE.md#tickets-update), [API Search](./REFERENCE.md#tickets-api_search), [Context Store Search](./REFERENCE.md#tickets-context-store-search), [Context Store SQL Query](./REFERENCE.md#tickets-context-store-sql-query), [Semantic Search](./REFERENCE.md#tickets-semantic-search) |
+| Notes | [List](./REFERENCE.md#notes-list), [Create](./REFERENCE.md#notes-create), [Get](./REFERENCE.md#notes-get), [Update](./REFERENCE.md#notes-update), [Delete](./REFERENCE.md#notes-delete), [Context Store Search](./REFERENCE.md#notes-context-store-search), [Context Store SQL Query](./REFERENCE.md#notes-context-store-sql-query), [Semantic Search](./REFERENCE.md#notes-semantic-search) |
+| Calls | [List](./REFERENCE.md#calls-list), [Create](./REFERENCE.md#calls-create), [Get](./REFERENCE.md#calls-get), [Update](./REFERENCE.md#calls-update), [Delete](./REFERENCE.md#calls-delete), [Context Store Search](./REFERENCE.md#calls-context-store-search), [Context Store SQL Query](./REFERENCE.md#calls-context-store-sql-query), [Semantic Search](./REFERENCE.md#calls-semantic-search) |
+| Emails | [List](./REFERENCE.md#emails-list), [Create](./REFERENCE.md#emails-create), [Get](./REFERENCE.md#emails-get), [Update](./REFERENCE.md#emails-update), [Delete](./REFERENCE.md#emails-delete), [Context Store Search](./REFERENCE.md#emails-context-store-search), [Context Store SQL Query](./REFERENCE.md#emails-context-store-sql-query), [Semantic Search](./REFERENCE.md#emails-semantic-search) |
+| Meetings | [List](./REFERENCE.md#meetings-list), [Create](./REFERENCE.md#meetings-create), [Get](./REFERENCE.md#meetings-get), [Update](./REFERENCE.md#meetings-update), [Delete](./REFERENCE.md#meetings-delete), [Context Store Search](./REFERENCE.md#meetings-context-store-search), [Context Store SQL Query](./REFERENCE.md#meetings-context-store-sql-query), [Semantic Search](./REFERENCE.md#meetings-semantic-search) |
+| Tasks | [List](./REFERENCE.md#tasks-list), [Create](./REFERENCE.md#tasks-create), [Get](./REFERENCE.md#tasks-get), [Update](./REFERENCE.md#tasks-update), [Delete](./REFERENCE.md#tasks-delete), [Context Store Search](./REFERENCE.md#tasks-context-store-search), [Context Store SQL Query](./REFERENCE.md#tasks-context-store-sql-query), [Semantic Search](./REFERENCE.md#tasks-semantic-search) |
 | Schemas | [List](./REFERENCE.md#schemas-list), [Get](./REFERENCE.md#schemas-get) |
 | Objects | [List](./REFERENCE.md#objects-list), [Get](./REFERENCE.md#objects-get) |
 | Associations | [List](./REFERENCE.md#associations-list), [Create](./REFERENCE.md#associations-create), [Delete](./REFERENCE.md#associations-delete) |
@@ -152,6 +152,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -219,9 +223,91 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `HubspotConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.hubspot import HubspotConnector
+
+connector = connect("hubspot", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@HubspotConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="hubspot_inspect",
+    docs_tool="hubspot_read_docs",
+)
+async def hubspot_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@HubspotConnector.agent_tool(framework="pydantic_ai")
+async def hubspot_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@HubspotConnector.agent_tool(framework="pydantic_ai")
+async def hubspot_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.hubspot import HubspotConnector
+
+connector = connect("hubspot", workspace_name="<your_workspace_name>")
+
+@HubspotConnector.agent_tool(
+    inspect_tool="hubspot_inspect",
+    docs_tool="hubspot_read_docs",
+)
+async def hubspot_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@HubspotConnector.agent_tool()
+async def hubspot_inspect():
+    return await connector.inspect_connector()
+
+@HubspotConnector.agent_tool()
+async def hubspot_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (hubspot_inspect, hubspot_read_docs, hubspot_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `HubspotConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `HubspotConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `HubspotConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -408,6 +494,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -491,9 +581,99 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `HubspotConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.hubspot import HubspotConnector
+from airbyte_agent_sdk.connectors.hubspot.models import HubspotPrivateAppAuthConfig
+
+connector = HubspotConnector(
+    auth_config=HubspotPrivateAppAuthConfig(
+        private_app_token="<Access token from a HubSpot Private App>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@HubspotConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="hubspot_inspect",
+    docs_tool="hubspot_read_docs",
+)
+async def hubspot_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@HubspotConnector.agent_tool(framework="pydantic_ai")
+async def hubspot_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@HubspotConnector.agent_tool(framework="pydantic_ai")
+async def hubspot_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.hubspot import HubspotConnector
+from airbyte_agent_sdk.connectors.hubspot.models import HubspotPrivateAppAuthConfig
+
+connector = HubspotConnector(
+    auth_config=HubspotPrivateAppAuthConfig(
+        private_app_token="<Access token from a HubSpot Private App>"
+    )
+)
+
+@HubspotConnector.agent_tool(
+    inspect_tool="hubspot_inspect",
+    docs_tool="hubspot_read_docs",
+)
+async def hubspot_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@HubspotConnector.agent_tool()
+async def hubspot_inspect():
+    return await connector.inspect_connector()
+
+@HubspotConnector.agent_tool()
+async def hubspot_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (hubspot_inspect, hubspot_read_docs, hubspot_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `HubspotConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `HubspotConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `HubspotConnector.agent_tool` above.
 
 **Pydantic AI**
 

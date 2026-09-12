@@ -54,30 +54,30 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Repositories | [Get](./REFERENCE.md#repositories-get), [List](./REFERENCE.md#repositories-list), [API Search](./REFERENCE.md#repositories-api_search), [Context Store Search](./REFERENCE.md#repositories-context-store-search) |
-| Org Repositories | [List](./REFERENCE.md#org-repositories-list), [Context Store Search](./REFERENCE.md#org-repositories-context-store-search) |
-| Branches | [List](./REFERENCE.md#branches-list), [Get](./REFERENCE.md#branches-get), [Context Store Search](./REFERENCE.md#branches-context-store-search) |
-| Commits | [List](./REFERENCE.md#commits-list), [Get](./REFERENCE.md#commits-get), [Context Store Search](./REFERENCE.md#commits-context-store-search) |
-| Releases | [List](./REFERENCE.md#releases-list), [Get](./REFERENCE.md#releases-get), [Context Store Search](./REFERENCE.md#releases-context-store-search) |
-| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [API Search](./REFERENCE.md#issues-api_search), [Create](./REFERENCE.md#issues-create), [Update](./REFERENCE.md#issues-update), [Context Store Search](./REFERENCE.md#issues-context-store-search), [Semantic Search](./REFERENCE.md#issues-semantic-search) |
-| Comments | [Create](./REFERENCE.md#comments-create), [List](./REFERENCE.md#comments-list), [Get](./REFERENCE.md#comments-get), [Context Store Search](./REFERENCE.md#comments-context-store-search), [Semantic Search](./REFERENCE.md#comments-semantic-search) |
-| Pull Requests | [Create](./REFERENCE.md#pull-requests-create), [List](./REFERENCE.md#pull-requests-list), [Get](./REFERENCE.md#pull-requests-get), [API Search](./REFERENCE.md#pull-requests-api_search), [Context Store Search](./REFERENCE.md#pull-requests-context-store-search), [Semantic Search](./REFERENCE.md#pull-requests-semantic-search) |
-| Reviews | [List](./REFERENCE.md#reviews-list), [Context Store Search](./REFERENCE.md#reviews-context-store-search) |
-| Pr Comments | [List](./REFERENCE.md#pr-comments-list), [Get](./REFERENCE.md#pr-comments-get), [Context Store Search](./REFERENCE.md#pr-comments-context-store-search) |
-| Labels | [List](./REFERENCE.md#labels-list), [Get](./REFERENCE.md#labels-get), [Context Store Search](./REFERENCE.md#labels-context-store-search) |
-| Milestones | [List](./REFERENCE.md#milestones-list), [Get](./REFERENCE.md#milestones-get), [Context Store Search](./REFERENCE.md#milestones-context-store-search) |
-| Organizations | [Get](./REFERENCE.md#organizations-get), [List](./REFERENCE.md#organizations-list), [Context Store Search](./REFERENCE.md#organizations-context-store-search) |
-| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [API Search](./REFERENCE.md#users-api_search), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Context Store Search](./REFERENCE.md#teams-context-store-search) |
-| Tags | [List](./REFERENCE.md#tags-list), [Get](./REFERENCE.md#tags-get), [Context Store Search](./REFERENCE.md#tags-context-store-search) |
-| Stargazers | [List](./REFERENCE.md#stargazers-list), [Context Store Search](./REFERENCE.md#stargazers-context-store-search) |
-| Viewer | [Get](./REFERENCE.md#viewer-get), [Context Store Search](./REFERENCE.md#viewer-context-store-search) |
-| Viewer Repositories | [List](./REFERENCE.md#viewer-repositories-list), [Context Store Search](./REFERENCE.md#viewer-repositories-context-store-search) |
-| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get), [Context Store Search](./REFERENCE.md#projects-context-store-search) |
-| Project Items | [List](./REFERENCE.md#project-items-list), [Context Store Search](./REFERENCE.md#project-items-context-store-search) |
-| Discussions | [List](./REFERENCE.md#discussions-list), [Get](./REFERENCE.md#discussions-get), [API Search](./REFERENCE.md#discussions-api_search), [Context Store Search](./REFERENCE.md#discussions-context-store-search) |
-| File Content | [Get](./REFERENCE.md#file-content-get), [Context Store Search](./REFERENCE.md#file-content-context-store-search) |
-| Directory Content | [List](./REFERENCE.md#directory-content-list), [Context Store Search](./REFERENCE.md#directory-content-context-store-search) |
+| Repositories | [Get](./REFERENCE.md#repositories-get), [List](./REFERENCE.md#repositories-list), [API Search](./REFERENCE.md#repositories-api_search), [Context Store Search](./REFERENCE.md#repositories-context-store-search), [Context Store SQL Query](./REFERENCE.md#repositories-context-store-sql-query) |
+| Org Repositories | [List](./REFERENCE.md#org-repositories-list), [Context Store Search](./REFERENCE.md#org-repositories-context-store-search), [Context Store SQL Query](./REFERENCE.md#org-repositories-context-store-sql-query) |
+| Branches | [List](./REFERENCE.md#branches-list), [Get](./REFERENCE.md#branches-get), [Context Store Search](./REFERENCE.md#branches-context-store-search), [Context Store SQL Query](./REFERENCE.md#branches-context-store-sql-query) |
+| Commits | [List](./REFERENCE.md#commits-list), [Get](./REFERENCE.md#commits-get), [Context Store Search](./REFERENCE.md#commits-context-store-search), [Context Store SQL Query](./REFERENCE.md#commits-context-store-sql-query) |
+| Releases | [List](./REFERENCE.md#releases-list), [Get](./REFERENCE.md#releases-get), [Context Store Search](./REFERENCE.md#releases-context-store-search), [Context Store SQL Query](./REFERENCE.md#releases-context-store-sql-query) |
+| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [API Search](./REFERENCE.md#issues-api_search), [Create](./REFERENCE.md#issues-create), [Update](./REFERENCE.md#issues-update), [Context Store Search](./REFERENCE.md#issues-context-store-search), [Context Store SQL Query](./REFERENCE.md#issues-context-store-sql-query), [Semantic Search](./REFERENCE.md#issues-semantic-search) |
+| Comments | [Create](./REFERENCE.md#comments-create), [List](./REFERENCE.md#comments-list), [Get](./REFERENCE.md#comments-get), [Context Store Search](./REFERENCE.md#comments-context-store-search), [Context Store SQL Query](./REFERENCE.md#comments-context-store-sql-query), [Semantic Search](./REFERENCE.md#comments-semantic-search) |
+| Pull Requests | [Create](./REFERENCE.md#pull-requests-create), [List](./REFERENCE.md#pull-requests-list), [Get](./REFERENCE.md#pull-requests-get), [API Search](./REFERENCE.md#pull-requests-api_search), [Context Store Search](./REFERENCE.md#pull-requests-context-store-search), [Context Store SQL Query](./REFERENCE.md#pull-requests-context-store-sql-query), [Semantic Search](./REFERENCE.md#pull-requests-semantic-search) |
+| Reviews | [List](./REFERENCE.md#reviews-list), [Context Store Search](./REFERENCE.md#reviews-context-store-search), [Context Store SQL Query](./REFERENCE.md#reviews-context-store-sql-query) |
+| Pr Comments | [List](./REFERENCE.md#pr-comments-list), [Get](./REFERENCE.md#pr-comments-get), [Context Store Search](./REFERENCE.md#pr-comments-context-store-search), [Context Store SQL Query](./REFERENCE.md#pr-comments-context-store-sql-query) |
+| Labels | [List](./REFERENCE.md#labels-list), [Get](./REFERENCE.md#labels-get), [Context Store Search](./REFERENCE.md#labels-context-store-search), [Context Store SQL Query](./REFERENCE.md#labels-context-store-sql-query) |
+| Milestones | [List](./REFERENCE.md#milestones-list), [Get](./REFERENCE.md#milestones-get), [Context Store Search](./REFERENCE.md#milestones-context-store-search), [Context Store SQL Query](./REFERENCE.md#milestones-context-store-sql-query) |
+| Organizations | [Get](./REFERENCE.md#organizations-get), [List](./REFERENCE.md#organizations-list), [Context Store Search](./REFERENCE.md#organizations-context-store-search), [Context Store SQL Query](./REFERENCE.md#organizations-context-store-sql-query) |
+| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [API Search](./REFERENCE.md#users-api_search), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
+| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Context Store Search](./REFERENCE.md#teams-context-store-search), [Context Store SQL Query](./REFERENCE.md#teams-context-store-sql-query) |
+| Tags | [List](./REFERENCE.md#tags-list), [Get](./REFERENCE.md#tags-get), [Context Store Search](./REFERENCE.md#tags-context-store-search), [Context Store SQL Query](./REFERENCE.md#tags-context-store-sql-query) |
+| Stargazers | [List](./REFERENCE.md#stargazers-list), [Context Store Search](./REFERENCE.md#stargazers-context-store-search), [Context Store SQL Query](./REFERENCE.md#stargazers-context-store-sql-query) |
+| Viewer | [Get](./REFERENCE.md#viewer-get), [Context Store Search](./REFERENCE.md#viewer-context-store-search), [Context Store SQL Query](./REFERENCE.md#viewer-context-store-sql-query) |
+| Viewer Repositories | [List](./REFERENCE.md#viewer-repositories-list), [Context Store Search](./REFERENCE.md#viewer-repositories-context-store-search), [Context Store SQL Query](./REFERENCE.md#viewer-repositories-context-store-sql-query) |
+| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get), [Context Store Search](./REFERENCE.md#projects-context-store-search), [Context Store SQL Query](./REFERENCE.md#projects-context-store-sql-query) |
+| Project Items | [List](./REFERENCE.md#project-items-list), [Context Store Search](./REFERENCE.md#project-items-context-store-search), [Context Store SQL Query](./REFERENCE.md#project-items-context-store-sql-query) |
+| Discussions | [List](./REFERENCE.md#discussions-list), [Get](./REFERENCE.md#discussions-get), [API Search](./REFERENCE.md#discussions-api_search), [Context Store Search](./REFERENCE.md#discussions-context-store-search), [Context Store SQL Query](./REFERENCE.md#discussions-context-store-sql-query) |
+| File Content | [Get](./REFERENCE.md#file-content-get), [Context Store Search](./REFERENCE.md#file-content-context-store-search), [Context Store SQL Query](./REFERENCE.md#file-content-context-store-sql-query) |
+| Directory Content | [List](./REFERENCE.md#directory-content-list), [Context Store Search](./REFERENCE.md#directory-content-context-store-search), [Context Store SQL Query](./REFERENCE.md#directory-content-context-store-sql-query) |
 
 
 ## Github API docs
@@ -159,6 +159,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -226,9 +230,91 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `GithubConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.github import GithubConnector
+
+connector = connect("github", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@GithubConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="github_inspect",
+    docs_tool="github_read_docs",
+)
+async def github_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@GithubConnector.agent_tool(framework="pydantic_ai")
+async def github_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@GithubConnector.agent_tool(framework="pydantic_ai")
+async def github_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.github import GithubConnector
+
+connector = connect("github", workspace_name="<your_workspace_name>")
+
+@GithubConnector.agent_tool(
+    inspect_tool="github_inspect",
+    docs_tool="github_read_docs",
+)
+async def github_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@GithubConnector.agent_tool()
+async def github_inspect():
+    return await connector.inspect_connector()
+
+@GithubConnector.agent_tool()
+async def github_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (github_inspect, github_read_docs, github_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `GithubConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `GithubConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `GithubConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -415,6 +501,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -498,9 +588,99 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `GithubConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.github import GithubConnector
+from airbyte_agent_sdk.connectors.github.models import GithubPersonalAccessTokenAuthConfig
+
+connector = GithubConnector(
+    auth_config=GithubPersonalAccessTokenAuthConfig(
+        token="<GitHub personal access token (fine-grained or classic)>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@GithubConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="github_inspect",
+    docs_tool="github_read_docs",
+)
+async def github_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@GithubConnector.agent_tool(framework="pydantic_ai")
+async def github_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@GithubConnector.agent_tool(framework="pydantic_ai")
+async def github_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.github import GithubConnector
+from airbyte_agent_sdk.connectors.github.models import GithubPersonalAccessTokenAuthConfig
+
+connector = GithubConnector(
+    auth_config=GithubPersonalAccessTokenAuthConfig(
+        token="<GitHub personal access token (fine-grained or classic)>"
+    )
+)
+
+@GithubConnector.agent_tool(
+    inspect_tool="github_inspect",
+    docs_tool="github_read_docs",
+)
+async def github_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@GithubConnector.agent_tool()
+async def github_inspect():
+    return await connector.inspect_connector()
+
+@GithubConnector.agent_tool()
+async def github_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (github_inspect, github_read_docs, github_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `GithubConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `GithubConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `GithubConnector.agent_tool` above.
 
 **Pydantic AI**
 
