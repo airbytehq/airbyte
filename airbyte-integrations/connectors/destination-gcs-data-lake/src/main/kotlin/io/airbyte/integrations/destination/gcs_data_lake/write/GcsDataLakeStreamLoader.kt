@@ -12,10 +12,13 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.PositionalDeleteResolutionState
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.enableIdentifierBloomFilters
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCatalogUtil
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
+import io.airbyte.integrations.destination.gcs_data_lake.spec.IcebergDeleteFileType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
@@ -78,13 +81,21 @@ class GcsDataLakeStreamLoader(
                         ?: originalName
 
                 if (mappedName != originalName) {
-                    Types.NestedField.of(
-                        field.fieldId(),
-                        field.isOptional,
-                        mappedName,
-                        field.type(),
-                        field.doc()
-                    )
+                    if (field.isOptional) {
+                        Types.NestedField.optional(
+                            field.fieldId(),
+                            mappedName,
+                            field.type(),
+                            field.doc()
+                        )
+                    } else {
+                        Types.NestedField.required(
+                            field.fieldId(),
+                            mappedName,
+                            field.type(),
+                            field.doc()
+                        )
+                    }
                 } else {
                     field
                 }
@@ -192,10 +203,37 @@ class GcsDataLakeStreamLoader(
             }
         }
 
+        // TK-TODO: AUTOMATIC is temporarily wired to positional for prerelease testing; flip it
+        // back to equality before release.
+        val positionalDeletesEnabled =
+            stream.tableSchema.importType is Dedupe &&
+                when (icebergConfiguration.icebergDeleteFileType) {
+                    IcebergDeleteFileType.AUTOMATIC,
+                    IcebergDeleteFileType.POSITIONAL -> true
+                    IcebergDeleteFileType.EQUALITY -> false
+                }
+        val identifierFieldIds =
+            if (positionalDeletesEnabled) targetSchema.identifierFieldIds() else emptySet()
+        val optimizePriorIcebergDeleteFiles = icebergConfiguration.optimizePriorIcebergDeleteFiles
+        val positionalDeleteState =
+            if (positionalDeletesEnabled) {
+                enableIdentifierBloomFilters(table, targetSchema, identifierFieldIds)
+                PositionalDeleteResolutionState(
+                    deleteIndexEnabled =
+                        optimizePriorIcebergDeleteFiles &&
+                            icebergConfiguration.useExperimentalDeleteVectorFiles,
+                )
+            } else {
+                null
+            }
+
         val state =
             GcsDataLakeStreamState(
                 table = table,
                 schema = targetSchema,
+                stagingBranchName = stagingBranchName,
+                positionalDeleteState = positionalDeleteState,
+                optimizePriorIcebergDeleteFiles = optimizePriorIcebergDeleteFiles,
             )
         streamStateStore.put(stream.mappedDescriptor, state)
     }

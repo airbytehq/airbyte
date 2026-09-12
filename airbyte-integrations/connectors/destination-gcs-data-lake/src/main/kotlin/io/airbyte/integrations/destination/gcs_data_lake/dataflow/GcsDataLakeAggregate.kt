@@ -13,10 +13,15 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.iceberg.parquet.AirbyteValueToIcebergRecord
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.DeleteIndexState
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCommitter
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.Operation
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.RecordWrapper
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.SupersededDataFileProvider
 import io.airbyte.cdk.load.util.serializeToString
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.data.GenericRecord
@@ -33,9 +38,12 @@ class GcsDataLakeAggregate(
     private val schema: Schema,
     private val stagingBranchName: String,
     private val writer: BaseTaskWriter<Record>,
+    private val positionalDeletesEnabled: Boolean,
+    private val deleteIndex: DeleteIndexState? = null,
 ) : Aggregate {
     companion object {
         val converter = AirbyteValueToIcebergRecord()
+        private val commitLock = Any()
     }
 
     private val operationType =
@@ -107,19 +115,46 @@ class GcsDataLakeAggregate(
             "Flushing aggregate to staging branch $stagingBranchName for stream ${stream.mappedDescriptor}"
         }
 
-        val writeResult = writer.complete()
-
-        if (writeResult.deleteFiles().isNotEmpty()) {
-            // Use row delta for updates/deletes (APPEND_DEDUP mode)
-            val delta = table.newRowDelta().toBranch(stagingBranchName)
-            writeResult.dataFiles().forEach { delta.addRows(it) }
-            writeResult.deleteFiles().forEach { delta.addDeletes(it) }
-            delta.commit()
+        fun completeAndCommit() {
+            table.refresh()
+            val plannedSnapshotId = table.refs()[stagingBranchName]?.snapshotId()
+            val writeResult = writer.complete()
+            if (plannedSnapshotId != null) {
+                IcebergTableCommitter.commit(
+                    table,
+                    stagingBranchName,
+                    writeResult,
+                    plannedSnapshotId,
+                    (writer as? SupersededDataFileProvider)?.fullySupersededDataFiles().orEmpty(),
+                    deleteIndex,
+                )
+            } else if (writeResult.deleteFiles().isNotEmpty()) {
+                val delta = table.newRowDelta().toBranch(stagingBranchName)
+                writeResult.dataFiles().forEach { delta.addRows(it) }
+                writeResult.deleteFiles().forEach { delta.addDeletes(it) }
+                delta.commit()
+            } else {
+                val append = table.newAppend().toBranch(stagingBranchName)
+                writeResult.dataFiles().forEach { append.appendFile(it) }
+                append.commit()
+            }
+        }
+        if (positionalDeletesEnabled) {
+            withContext(Dispatchers.IO) { synchronized(commitLock) { completeAndCommit() } }
         } else {
-            // Use append for simple appends
-            val append = table.newAppend().toBranch(stagingBranchName)
-            writeResult.dataFiles().forEach { append.appendFile(it) }
-            append.commit()
+            val writeResult = writer.complete()
+            synchronized(commitLock) {
+                if (writeResult.deleteFiles().isNotEmpty()) {
+                    val delta = table.newRowDelta().toBranch(stagingBranchName)
+                    writeResult.dataFiles().forEach { delta.addRows(it) }
+                    writeResult.deleteFiles().forEach { delta.addDeletes(it) }
+                    delta.commit()
+                } else {
+                    val append = table.newAppend().toBranch(stagingBranchName)
+                    writeResult.dataFiles().forEach { append.appendFile(it) }
+                    append.commit()
+                }
+            }
         }
 
         logger.info { "Flushed records to staging branch $stagingBranchName" }
