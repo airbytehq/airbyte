@@ -1,0 +1,17 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-linkly:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    bypass_reason: "Community contribution; no sandbox credentials are stored in Airbyte's secret store yet"
+  discovery:
+    bypass_reason: "Community contribution; no sandbox credentials are stored in Airbyte's secret store yet"
+  basic_read:
+    bypass_reason: "Community contribution; no sandbox credentials are stored in Airbyte's secret store yet"
+  incremental:
+    bypass_reason: "Community contribution; no sandbox credentials are stored in Airbyte's secret store yet"
+  full_refresh:
+    bypass_reason: "Community contribution; no sandbox credentials are stored in Airbyte's secret store yet"

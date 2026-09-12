@@ -1,0 +1,599 @@
+version: 6.48.15
+
+type: DeclarativeSource
+
+description: >-
+  Linkly is a URL shortener and click tracker. This connector extracts the
+  workspaces, short links, branded domains, daily click time series and
+  conversions that belong to a Linkly API key.
+
+check:
+  type: CheckStream
+  stream_names:
+    - workspaces
+
+definitions:
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.linklyhq.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_key"] }}'
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+          factor: 5
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          failure_type: config_error
+          http_codes:
+            - 401
+          error_message: >-
+            Linkly rejected the API key. Copy it from Settings > Account
+            Settings > API Access in the Linkly app and check it has not been
+            regenerated.
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          http_codes:
+            - 429
+          error_message: Linkly rate limit reached; the request will be retried.
+
+  workspace_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        parent_key: id
+        partition_field: workspace_id
+        stream:
+          $ref: "#/definitions/streams/workspaces"
+
+  add_workspace_id:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - workspace_id
+        value: "{{ stream_partition['workspace_id'] }}"
+        value_type: integer
+
+  streams:
+    workspaces:
+      type: DeclarativeStream
+      name: workspaces
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/workspaces
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workspaces"
+
+    links:
+      type: DeclarativeStream
+      name: links
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/workspace/{{ stream_partition['workspace_id'] }}/list_links
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - links
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          $ref: "#/definitions/workspace_partition_router"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/links"
+
+    domains:
+      type: DeclarativeStream
+      name: domains
+      primary_key:
+        - workspace_id
+        - name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/workspace/{{ stream_partition['workspace_id'] }}/domains
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - domains
+        partition_router:
+          $ref: "#/definitions/workspace_partition_router"
+      transformations:
+        - $ref: "#/definitions/add_workspace_id"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/domains"
+
+    clicks:
+      type: DeclarativeStream
+      name: clicks
+      primary_key:
+        - workspace_id
+        - t
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/workspace/{{ stream_partition['workspace_id'] }}/clicks
+          http_method: GET
+          request_parameters:
+            frequency: day
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - traffic
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record.get('t') is not none }}"
+        partition_router:
+          $ref: "#/definitions/workspace_partition_router"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: t
+        datetime_format: "%Y-%m-%d"
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: start
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end
+        # Today's bucket is still accumulating clicks when it is first synced, so
+        # re-read the last two days on every incremental run. The composite
+        # primary key lets dedup destinations overwrite the earlier partial row.
+        lookback_window: P2D
+      transformations:
+        - $ref: "#/definitions/add_workspace_id"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/clicks"
+
+    conversions:
+      type: DeclarativeStream
+      name: conversions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/conversions
+          http_method: GET
+          request_parameters:
+            limit: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - conversions
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversions"
+
+streams:
+  - $ref: "#/definitions/streams/workspaces"
+  - $ref: "#/definitions/streams/links"
+  - $ref: "#/definitions/streams/domains"
+  - $ref: "#/definitions/streams/clicks"
+  - $ref: "#/definitions/streams/conversions"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/linkly
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: >-
+          Your Linkly API key. In the Linkly app go to Settings > Account
+          Settings > API Access. The key is sent as a Bearer token.
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        description: >-
+          UTC date (YYYY-MM-DD) from which to replicate the daily click time
+          series in the `clicks` stream. Other streams are not date-bounded.
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        pattern_descriptor: YYYY-MM-DD
+        examples:
+          - "2024-01-01"
+        order: 1
+    additionalProperties: true
+
+schemas:
+  workspaces:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+        description: Workspace ID
+      name:
+        type:
+          - string
+          - "null"
+        description: Workspace name
+    required:
+      - id
+
+  links:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      workspace_id:
+        type:
+          - integer
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+        description: Destination URL
+      full_url:
+        type:
+          - string
+          - "null"
+        description: The short link, including domain and slug
+      domain:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      enabled:
+        type:
+          - boolean
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      note:
+        type:
+          - string
+          - "null"
+      utm_source:
+        type:
+          - string
+          - "null"
+      utm_medium:
+        type:
+          - string
+          - "null"
+      utm_campaign:
+        type:
+          - string
+          - "null"
+      utm_content:
+        type:
+          - string
+          - "null"
+      utm_term:
+        type:
+          - string
+          - "null"
+      clicks_total:
+        type:
+          - integer
+          - "null"
+        description: Lifetime clicks, including bot traffic.
+      clicks_today:
+        type:
+          - integer
+          - "null"
+        description: Clicks so far today (UTC), including bot traffic.
+      clicks_thirty_days:
+        type:
+          - integer
+          - "null"
+        description: Clicks in the last 30 days, including bot traffic.
+      human_clicks_total:
+        type:
+          - integer
+          - "null"
+        description: Lifetime clicks with no bot signal.
+      human_clicks_today:
+        type:
+          - integer
+          - "null"
+      human_clicks_previous_day:
+        type:
+          - integer
+          - "null"
+      human_clicks_thirty_days:
+        type:
+          - integer
+          - "null"
+      sparkline:
+        type:
+          - array
+          - "null"
+        description: Daily human clicks over the last 30 days, oldest first.
+        items:
+          type:
+            - integer
+            - "null"
+      rules:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          additionalProperties: true
+          properties:
+            matches:
+              type:
+                - string
+                - "null"
+            percentage:
+              type:
+                - integer
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+            what:
+              type:
+                - string
+                - "null"
+      cloaking:
+        type:
+          - boolean
+          - "null"
+      hide_referrer:
+        type:
+          - boolean
+          - "null"
+      forward_params:
+        type:
+          - boolean
+          - "null"
+      block_bots:
+        type:
+          - boolean
+          - "null"
+      public_analytics:
+        type:
+          - boolean
+          - "null"
+      replacements:
+        type:
+          - string
+          - "null"
+      linkify_words:
+        type:
+          - string
+          - "null"
+      og_title:
+        type:
+          - string
+          - "null"
+      og_description:
+        type:
+          - string
+          - "null"
+      og_image:
+        type:
+          - string
+          - "null"
+      head_tags:
+        type:
+          - string
+          - "null"
+      body_tags:
+        type:
+          - string
+          - "null"
+      fb_pixel_id:
+        type:
+          - string
+          - "null"
+      tiktok_pixel_id:
+        type:
+          - string
+          - "null"
+      gtm_id:
+        type:
+          - string
+          - "null"
+      ga4_tag_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+
+  domains:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      workspace_id:
+        type: integer
+        description: Workspace the domain belongs to (added by the connector).
+      name:
+        type:
+          - string
+          - "null"
+        description: The custom domain, e.g. go.yourcompany.com
+    required:
+      - workspace_id
+
+  clicks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      workspace_id:
+        type: integer
+        description: Workspace the clicks belong to (added by the connector).
+      t:
+        type: string
+        format: date
+        description: UTC day of the bucket (YYYY-MM-DD).
+      y:
+        type:
+          - integer
+          - "null"
+        description: Clicks recorded on that day, including bot traffic.
+    required:
+      - workspace_id
+      - t
+
+  conversions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+        description: ULID. Sorts chronologically.
+      link_id:
+        type:
+          - integer
+          - "null"
+        description: The attributed link, or null if the conversion could not be attributed.
+      click_id:
+        type:
+          - string
+          - "null"
+      event_name:
+        type:
+          - string
+          - "null"
+      event_type:
+        type:
+          - string
+          - "null"
+      event_id:
+        type:
+          - string
+          - "null"
+      external_id:
+        type:
+          - string
+          - "null"
+      amount_cents:
+        type:
+          - integer
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      ip_source:
+        type:
+          - string
+          - "null"
+        description: One of visitor, server, unknown.
+      source:
+        type:
+          - string
+          - "null"
+        description: Which integration reported the conversion.
+      metadata:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      occurred_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      inserted_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+    required:
+      - id
