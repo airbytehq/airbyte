@@ -10,13 +10,26 @@ All streams use the v3 cursor paginator with a first-page `per_page` value of 50
 v3 invariants a future edit must not break:
 
 - A request carrying `cursor` must carry **no other query parameter**. Anything else returns `422 {"errors":["When passing a cursor, do not include other query params."]}`. This is why every first-page parameter is wrapped in `{{ ... if not next_page_token }}`.
-- Five streams have grouped substream routers: `demographics_answers_answer_options`, `demographics_question_sets_questions`, `jobs_openings`, `activity_feed`, and `user_permissions`. All five use `GroupingPartitionRouter` with `partition_field: parent_id`; the partition value is a list joined with `,`. `group_size: 50` is pinned by the documented `maxItems: 50` on every `*_ids` filter - do not raise it. `job_posts` separately uses a `ListPartitionRouter` over `active` with `true` and `false` values.
+- Two streams have grouped substream routers: `demographics_answers_answer_options` (parent `demographics_questions`) and `demographics_question_sets_questions` (parent `demographics_question_sets`). Both use `GroupingPartitionRouter` with `partition_field: parent_id`; the partition value is a list joined with `,`. `group_size: 50` is pinned by the documented `maxItems: 50` on every `*_ids` filter - do not raise it. `jobs_openings`, `activity_feed`, and `user_permissions` used to fan out the same way, but `/v3/openings`, `/v3/notes`, and `/v3/user_job_permissions` list every record without a parent filter (`job_ids`, `candidate_ids`, and `user_ids` are all optional) and the child foreign key is on every record natively, so they read their endpoint directly. `job_posts` separately uses a `ListPartitionRouter` over `active` with `true` and `false` values.
+- A `ParentStreamConfig` that must read its parent over full history has to state `incremental_sync: {$ref: "#/definitions/full_history_cursor"}` explicitly. Sibling keys win over the `$ref`ed stream definition, so the moment a parent stream gains its own `incremental_sync`, an absent override silently lets the user's `start_date` truncate the child. `demographics_question_sets` is incremental, so `demographics_question_sets_questions` carries that override.
 - v3 paginates by primary key **descending**, not by cursor field. Every incremental first request must send a two-sided `gte|…|lte|…` window bounded by the slice end because state advances to the maximum observed record; do not reduce it to a lower-bound-only filter.
 - `users` must send `show_service_accounts=true` on the first page; v3 hides integration service users by default.
-- `/v3/demographic_questions` and `/v3/demographic_answer_options` expose no `created_at`/`updated_at` filter, which is why those streams are full refresh.
+- Only `demographics_questions`, `demographics_answer_options`, and the two derived per-set/per-question streams (`demographics_question_sets_questions`, `demographics_answers_answer_options`) are full refresh: `/v3/demographic_questions` and `/v3/demographic_answer_options` expose no `created_at`/`updated_at` query parameter. Every other stream is incremental on `updated_at`, except `eeoc`, which cursors on `submitted_at` (see below). Before leaving a new stream full refresh, check its reference page for an `updated_at` query parameter.
+- `eeoc` cursors on `submitted_at` even though `/v3/eeoc` also accepts an `updated_at` filter. Switching the cursor needs a `StateMigration` renaming the `submitted_at` key, plus a live request proving Greenhouse honours `updated_at` on this resource, so it is deliberately deferred. Until then, an EEOC response edited after submission is missed.
+- Never send `created_at` and `updated_at` in the same request; Greenhouse's reference says to choose one.
 - Incremental streams use the optional `start_date` configuration value and default to all history when it is omitted.
 - `job_ids` on `/v3/approval_flows` excludes `offer_candidate` flows.
 - HTTP 401 responses must remain `REFRESH_TOKEN_THEN_RETRY`, and the API budget must model Greenhouse's fixed 30-second window with `X-RateLimit-Reset` and `X-RateLimit-Remaining`; do not switch it back to a moving window.
+
+### Deletions
+
+Harvest v3 exposes no deletion endpoint, no `include_deleted` parameter, and no `deleted_at` field, so hard deletes leave no trace and are invisible to this connector. The canonical pattern here is a **deletion flag on the primary stream**, and any new stream should follow it rather than invent a second mechanism:
+
+- `job_posts.active` - v3 excludes inactive posts by default, so the stream uses a `ListPartitionRouter` over `active=true|false` to read both.
+- `active` on `custom_fields`, `custom_field_options` (and its `degrees`/`disciplines`/`schools` views), `demographics_question_sets`, `demographics_questions`, `demographics_answer_options`, and `prospect_pools` - v3 returns both states by default, so the flag arrives without a request parameter.
+- `users.deactivated` - deactivated users are still listed.
+
+Webhook-based deletion capture is out of scope.
 
 ### Verifying v3 query-parameter behavior
 
@@ -34,35 +47,35 @@ That is, `updated_at=gte|{datetime}|lte|{datetime}`, with `|` separating operato
 |---|---|---|---|---|
 | applications | top-level | updated_at | updated_at | incremental |
 | candidates | top-level | updated_at | updated_at | incremental |
-| close_reasons | top-level | none | none | full refresh |
-| custom_fields | top-level | none | none | full refresh |
-| custom_field_options | top-level | none | none | full refresh |
-| degrees | top-level | none | custom_field_key=degree | full refresh |
+| close_reasons | top-level | updated_at | updated_at | incremental |
+| custom_fields | top-level | updated_at | updated_at | incremental |
+| custom_field_options | top-level | updated_at | updated_at | incremental |
+| degrees | top-level | updated_at | updated_at, custom_field_key=degree | incremental |
 | demographics_answers | top-level | updated_at | updated_at | incremental |
 | demographics_answer_options | top-level | none | none | full refresh |
 | demographics_questions | top-level | none | none | full refresh |
 | demographics_answers_answer_options | child | none | demographic_question_ids | full refresh |
-| demographics_question_sets | top-level | none | none | full refresh |
+| demographics_question_sets | top-level | updated_at | updated_at | incremental |
 | demographics_question_sets_questions | child | none | demographic_question_set_ids | full refresh |
-| departments | top-level | none | none | full refresh |
+| departments | top-level | updated_at | updated_at | incremental |
 | jobs | top-level | updated_at | updated_at | incremental |
-| jobs_openings | child | none | job_ids | full refresh |
+| jobs_openings | top-level | updated_at | updated_at | incremental |
 | interviews | top-level | updated_at | updated_at | incremental |
 | job_posts | top-level | updated_at | updated_at, active | incremental |
 | job_stages | top-level | updated_at | updated_at | incremental |
 | offers | top-level | updated_at | updated_at | incremental |
-| rejection_reasons | top-level | none | none | full refresh |
+| rejection_reasons | top-level | updated_at | updated_at | incremental |
 | scorecards | top-level | updated_at | updated_at | incremental |
-| sources | top-level | none | none | full refresh |
+| sources | top-level | updated_at | updated_at | incremental |
 | users | top-level | updated_at | updated_at | incremental |
-| activity_feed | child | none | candidate_ids | full refresh |
-| approvals | top-level | none | none | full refresh |
-| disciplines | top-level | none | custom_field_key=discipline | full refresh |
-| schools | top-level | none | custom_field_key=school_name | full refresh |
+| activity_feed | top-level | updated_at | updated_at | incremental |
+| approvals | top-level | updated_at | updated_at | incremental |
+| disciplines | top-level | updated_at | updated_at, custom_field_key=discipline | incremental |
+| schools | top-level | updated_at | updated_at, custom_field_key=school_name | incremental |
 | eeoc | top-level | submitted_at | submitted_at | incremental |
 | email_templates | top-level | updated_at | updated_at | incremental |
-| offices | top-level | none | none | full refresh |
-| prospect_pools | top-level | none | none | full refresh |
-| tags | top-level | none | none | full refresh |
-| user_roles | top-level | none | none | full refresh |
-| user_permissions | child | none | user_ids | full refresh |
+| offices | top-level | updated_at | updated_at | incremental |
+| prospect_pools | top-level | updated_at | updated_at | incremental |
+| tags | top-level | updated_at | updated_at | incremental |
+| user_roles | top-level | updated_at | updated_at | incremental |
+| user_permissions | top-level | updated_at | updated_at | incremental |

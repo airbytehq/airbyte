@@ -2,71 +2,276 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_descriptor": { "name": "candidates" },
-      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+      "stream_descriptor": {
+        "name": "candidates"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_descriptor": { "name": "demographics_answers" },
-      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+      "stream_descriptor": {
+        "name": "demographics_answers"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_descriptor": { "name": "users" },
-      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+      "stream_descriptor": {
+        "name": "users"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_descriptor": { "name": "scorecards" },
-      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+      "stream_descriptor": {
+        "name": "scorecards"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_descriptor": { "name": "offers" },
-      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+      "stream_descriptor": {
+        "name": "offers"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_descriptor": { "name": "job_stages" },
-      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+      "stream_descriptor": {
+        "name": "job_stages"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_descriptor": { "name": "job_posts" },
-      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+      "stream_descriptor": {
+        "name": "job_posts"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_descriptor": { "name": "interviews" },
-      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+      "stream_descriptor": {
+        "name": "interviews"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_descriptor": { "name": "jobs" },
-      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+      "stream_descriptor": {
+        "name": "jobs"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_descriptor": { "name": "applications" },
-      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+      "stream_descriptor": {
+        "name": "applications"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "close_reasons"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "custom_fields"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "custom_field_options"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "degrees"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "disciplines"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "schools"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "demographics_question_sets"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "departments"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "rejection_reasons"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "sources"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "approvals"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "offices"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "user_roles"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "jobs_openings"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "activity_feed"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
     }
   }
 ]

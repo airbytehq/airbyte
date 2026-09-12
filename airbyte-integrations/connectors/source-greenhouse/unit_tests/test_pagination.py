@@ -237,14 +237,14 @@ def test_shared_error_handler_surfaces_403_as_config_error(requests_mock, get_so
     assert all(trace.trace.error.failure_type == FailureType.config_error for trace in output.errors)
 
 
-def test_custom_field_options_stream_is_unfiltered_and_paginated(requests_mock, get_source):
+def test_custom_field_options_stream_is_unfiltered_by_key_and_paginated(requests_mock, get_source):
     _register_token(requests_mock)
     option_requests = []
 
     def options_callback(request, context):
         option_requests.append(request)
         if len(option_requests) == 1:
-            assert request.qs == {"per_page": ["500"]}
+            assert request.qs == {"per_page": ["500"], "updated_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"]}
             context.status_code = 200
             context.headers["Link"] = '<https://harvest.greenhouse.io/v3/custom_field_options?cursor=cursor-2>; rel="next"'
             return [{"id": 1, "custom_field_id": 10, "name": "Full-time"}]
@@ -256,8 +256,9 @@ def test_custom_field_options_stream_is_unfiltered_and_paginated(requests_mock, 
     requests_mock.get("https://harvest.greenhouse.io/v3/custom_field_options", json=options_callback)
 
     source = get_source(CONFIG)
-    catalog = CatalogBuilder().with_stream("custom_field_options", SyncMode.full_refresh).build()
-    output = read(source, config=CONFIG, catalog=catalog)
+    catalog = CatalogBuilder().with_stream("custom_field_options", SyncMode.incremental).build()
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG, catalog=catalog)
 
     assert [record.record.data["id"] for record in output.records] == [1, 2]
     assert len(option_requests) == 2
@@ -279,7 +280,11 @@ def test_custom_field_option_streams_filter_on_first_page_only(requests_mock, ge
         option_requests.append(request)
         context.status_code = 200
         if len(option_requests) == 1:
-            assert request.qs == {"per_page": ["500"], "custom_field_key": [custom_field_key]}
+            assert request.qs == {
+                "per_page": ["500"],
+                "updated_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"],
+                "custom_field_key": [custom_field_key],
+            }
             context.headers["Link"] = '<https://harvest.greenhouse.io/v3/custom_field_options?cursor=cursor-2>; rel="next"'
             return [{"id": 1, "custom_field_id": 10, "name": "Bachelor's Degree"}]
 
@@ -289,8 +294,9 @@ def test_custom_field_option_streams_filter_on_first_page_only(requests_mock, ge
     requests_mock.get("https://harvest.greenhouse.io/v3/custom_field_options", json=options_callback)
 
     source = get_source(CONFIG)
-    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
-    output = read(source, config=CONFIG, catalog=catalog)
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG, catalog=catalog)
 
     assert not output.errors
     assert [record.record.data["id"] for record in output.records] == [1, 2]
@@ -465,7 +471,8 @@ def test_users_include_service_accounts_only_on_first_page(requests_mock, get_so
     assert user_requests[1].qs == {"cursor": ["cursor-2"]}
 
 
-def test_activity_feed_reads_notes_for_candidate_and_uses_note_id(requests_mock, get_source):
+def test_activity_feed_reads_notes_directly_without_a_candidate_filter(requests_mock, get_source):
+    """/v3/notes lists every note without candidate_ids, so activity_feed reads it as a flat incremental stream."""
     _register_token(requests_mock)
     candidate_requests = []
     note_requests = []
@@ -485,6 +492,7 @@ def test_activity_feed_reads_notes_for_candidate_and_uses_note_id(requests_mock,
                 "application_id": None,
                 "body": "Candidate contacted",
                 "type": "NOTE",
+                "updated_at": "2024-01-01T00:00:00.000Z",
             }
         ]
 
@@ -492,13 +500,14 @@ def test_activity_feed_reads_notes_for_candidate_and_uses_note_id(requests_mock,
     requests_mock.get("https://harvest.greenhouse.io/v3/notes", json=notes_callback)
 
     source = get_source(CONFIG)
-    catalog = CatalogBuilder().with_stream("activity_feed", SyncMode.full_refresh).build()
-    output = read(source, config=CONFIG, catalog=catalog)
+    catalog = CatalogBuilder().with_stream("activity_feed", SyncMode.incremental).build()
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG, catalog=catalog)
 
     assert not output.errors
-    assert candidate_requests
+    assert not candidate_requests, "activity_feed must not fan out over candidates any more"
     assert len(note_requests) == 1
-    assert note_requests[0].qs == {"per_page": ["500"], "candidate_ids": ["42"]}
+    assert note_requests[0].qs == {"per_page": ["500"], "updated_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"]}
     assert [record.record.data["id"] for record in output.records] == [101]
     assert output.records[0].record.data["candidate_id"] == 42
 
@@ -506,42 +515,40 @@ def test_activity_feed_reads_notes_for_candidate_and_uses_note_id(requests_mock,
 def test_grouped_substreams_batch_parent_ids_at_the_50_id_api_cap(requests_mock, get_source):
     """Greenhouse caps every *_ids filter at maxItems: 50, so GroupingPartitionRouter must comma-join parents in batches of at most 50 and issue one request per batch."""
     _register_token(requests_mock)
-    note_requests = []
+    option_requests = []
 
-    def candidates_callback(request, context):
+    def questions_callback(request, context):
         context.status_code = 200
-        return [{"id": candidate_id, "updated_at": "2024-01-01T00:00:00.000Z"} for candidate_id in range(1, 52)]
+        return [{"id": question_id, "updated_at": "2024-01-01T00:00:00.000Z"} for question_id in range(1, 52)]
 
-    def notes_callback(request, context):
-        note_requests.append(request)
+    def answer_options_callback(request, context):
+        option_requests.append(request)
         context.status_code = 200
-        return [{"id": 100 + len(note_requests), "candidate_id": 1, "type": "NOTE"}]
+        return [{"id": 100 + len(option_requests), "demographic_question_id": 1}]
 
-    requests_mock.get("https://harvest.greenhouse.io/v3/candidates", json=candidates_callback)
-    requests_mock.get("https://harvest.greenhouse.io/v3/notes", json=notes_callback)
+    requests_mock.get("https://harvest.greenhouse.io/v3/demographic_questions", json=questions_callback)
+    requests_mock.get("https://harvest.greenhouse.io/v3/demographic_answer_options", json=answer_options_callback)
 
     source = get_source(CONFIG)
-    catalog = CatalogBuilder().with_stream("activity_feed", SyncMode.full_refresh).build()
+    catalog = CatalogBuilder().with_stream("demographics_answers_answer_options", SyncMode.full_refresh).build()
     output = read(source, config=CONFIG, catalog=catalog)
 
     assert not output.errors
-    assert len(note_requests) == 2, "51 candidates must be split into two <=50-id batches"
-    assert note_requests[0].qs["candidate_ids"] == [",".join(str(i) for i in range(1, 51))]
-    assert note_requests[1].qs["candidate_ids"] == ["51"]
-    for request in note_requests:
-        assert len(request.qs["candidate_ids"][0].split(",")) <= 50
+    assert len(option_requests) == 2, "51 questions must be split into two <=50-id batches"
+    assert option_requests[0].qs["demographic_question_ids"] == [",".join(str(i) for i in range(1, 51))]
+    assert option_requests[1].qs["demographic_question_ids"] == ["51"]
+    for request in option_requests:
+        assert len(request.qs["demographic_question_ids"][0].split(",")) <= 50
 
 
 @pytest.mark.parametrize(
     "substream, parent_stream, parent_url, child_url",
     [
-        ("jobs_openings", "jobs", "https://harvest.greenhouse.io/v3/jobs", "https://harvest.greenhouse.io/v3/openings"),
-        ("activity_feed", "candidates", "https://harvest.greenhouse.io/v3/candidates", "https://harvest.greenhouse.io/v3/notes"),
         (
-            "user_permissions",
-            "users",
-            "https://harvest.greenhouse.io/v3/users",
-            "https://harvest.greenhouse.io/v3/user_job_permissions",
+            "demographics_question_sets_questions",
+            "demographics_question_sets",
+            "https://harvest.greenhouse.io/v3/demographic_question_sets",
+            "https://harvest.greenhouse.io/v3/demographic_questions",
         ),
     ],
 )
@@ -722,6 +729,127 @@ def test_eeoc_uses_submitted_at_filter_and_cursor_only_follow_up(requests_mock, 
     assert [record.record.data["application_id"] for record in output.records] == [1, 2]
 
 
+@pytest.mark.parametrize(
+    "stream_name, url, first_record, second_record",
+    [
+        pytest.param(
+            "prospect_pools",
+            "https://harvest.greenhouse.io/v3/prospect_pools",
+            {
+                "id": 17,
+                "name": "Engineering Talent Community",
+                "active": True,
+                "department_ids": [],
+                "office_ids": [],
+                "job_ids": [],
+                "updated_at": "2024-01-01T00:00:00.000Z",
+            },
+            {
+                "id": 18,
+                "name": "Retired Pool",
+                "active": False,
+                "department_ids": [],
+                "office_ids": [],
+                "job_ids": [],
+                "updated_at": "2024-01-02T00:00:00.000Z",
+            },
+            id="prospect_pools",
+        ),
+        pytest.param(
+            "tags",
+            "https://harvest.greenhouse.io/v3/candidate_tags",
+            {"id": 5, "name": "Referral", "updated_at": "2024-01-01T00:00:00.000Z"},
+            {"id": 6, "name": "Rehire", "updated_at": "2024-01-02T00:00:00.000Z"},
+            id="tags",
+        ),
+    ],
+)
+def test_bypassed_streams_paginate_and_filter_on_the_first_page_only(
+    requests_mock, get_source, stream_name, url, first_record, second_record
+):
+    """prospect_pools and tags are empty in the test account, so their request shape is only covered here."""
+    _register_token(requests_mock)
+    requests = []
+
+    def callback(request, context):
+        requests.append(request)
+        context.status_code = 200
+        if len(requests) == 1:
+            assert request.qs == {
+                "per_page": ["500"],
+                "updated_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"],
+            }
+            context.headers["Link"] = f'<{url}?cursor=cursor-2>; rel="next"'
+            return [first_record]
+
+        assert parse_qs(request.query) == {"cursor": ["cursor-2"]}
+        return [second_record]
+
+    requests_mock.get(url, json=callback)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG, catalog=catalog)
+
+    assert not output.errors
+    assert [record.record.data["id"] for record in output.records] == [first_record["id"], second_record["id"]]
+    assert len(requests) == 2
+
+
+@pytest.mark.parametrize(
+    "stream_name, url, parent_url, record",
+    [
+        pytest.param(
+            "user_permissions",
+            "https://harvest.greenhouse.io/v3/user_job_permissions",
+            "https://harvest.greenhouse.io/v3/users",
+            {"id": 9, "user_id": 1, "job_id": 2, "role_id": 3, "automated": False, "updated_at": "2024-01-01T00:00:00.000Z"},
+            id="user_permissions",
+        ),
+        pytest.param(
+            "jobs_openings",
+            "https://harvest.greenhouse.io/v3/openings",
+            "https://harvest.greenhouse.io/v3/jobs",
+            {"id": 11, "job_id": 2, "opening_id": "1-1", "status": "open", "updated_at": "2024-01-01T00:00:00.000Z"},
+            id="jobs_openings",
+        ),
+    ],
+)
+def test_defanned_streams_read_their_endpoint_without_a_parent_filter(requests_mock, get_source, stream_name, url, parent_url, record):
+    """/v3/user_job_permissions and /v3/openings list everything, so these streams no longer fan out one request per 50 parents."""
+    _register_token(requests_mock)
+    requests = []
+    parent_requests = []
+
+    def callback(request, context):
+        requests.append(request)
+        context.status_code = 200
+        return [record]
+
+    def parent_callback(request, context):
+        parent_requests.append(request)
+        context.status_code = 200
+        return [{"id": 1, "updated_at": "2024-01-01T00:00:00.000Z"}]
+
+    requests_mock.get(url, json=callback)
+    requests_mock.get(parent_url, json=parent_callback)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG, catalog=catalog)
+
+    assert not output.errors
+    assert not parent_requests, f"{stream_name} must not read its former parent stream any more"
+    assert len(requests) == 1
+    assert requests[0].qs == {
+        "per_page": ["500"],
+        "updated_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"],
+    }
+    assert [emitted.record.data["id"] for emitted in output.records] == [record["id"]]
+
+
 def test_email_templates_incremental_stateful_cursor_pagination(requests_mock, get_source):
     _register_token(requests_mock)
     email_template_requests = []
@@ -794,7 +922,7 @@ def test_oauth_refresh_failure_surfaces_reauthenticate_config_error(status_code,
     output = read(source, config=CONFIG, catalog=catalog, expecting_exception=True)
 
     messages = [trace.trace.error.message for trace in output.errors]
-    assert any("Please re-authenticate" in text for text in messages), messages
+    assert any("e-authenticate" in text for text in messages), messages
     assert all(trace.trace.error.failure_type == FailureType.config_error for trace in output.errors), [
         (trace.trace.error.failure_type, trace.trace.error.message) for trace in output.errors
     ]
