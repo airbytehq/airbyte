@@ -2,10 +2,11 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 #
 
+import threading
+
+import jwt
 import pytest
 from freezegun import freeze_time
-from source_github import SourceGithub
-from source_github.github_app_auth import GithubAppMultiPemAuthenticator, _parse_entries
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth.rate_limited_multiple_token import (
@@ -15,6 +16,13 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
     SelectiveAuthenticator as SelectiveAuthenticatorModel,
 )
 from airbyte_cdk.utils import AirbyteTracedException
+from source_github import SourceGithub
+from source_github.github_app_auth import GithubAppMultiPemAuthenticator, _InstallationTokenCache, _parse_entries
+
+
+# Captured before the autouse `_mock_jwt` fixture below stubs out `jwt.encode` for every test in
+# this module, so tests that need the *real* signing failure path can restore it.
+_REAL_JWT_ENCODE = jwt.encode
 
 
 FAKE_PEM = (
@@ -182,6 +190,75 @@ class TestStickyRotation:
         token = authenticator.token
         assert token in ("token ghs_a", "token ghs_b")
         assert sleeps == [1.0]  # earliest reset (1000) minus frozen "now" (999)
+
+
+class TestMintAppJwtErrors:
+    def test_malformed_private_key_raises_traced_config_error(self, monkeypatch):
+        # Override the module-level autouse stub for this test only, so `_mint_app_jwt` exercises
+        # the real PyJWT/cryptography failure it is meant to wrap.
+        monkeypatch.setattr("source_github.github_app_auth.jwt.encode", _REAL_JWT_ENCODE)
+        cache = _InstallationTokenCache(app_id="111", installation_id="222", private_key="not a real pem")
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            cache._mint_app_jwt()
+        assert exc_info.value.failure_type == FailureType.config_error
+        # The underlying library error is reported, but never the key material itself.
+        assert "not a real pem" not in exc_info.value.internal_message
+        assert "not a real pem" not in exc_info.value.message
+
+
+class TestConcurrency:
+    def test_concurrent_token_calls_do_not_lose_decrements(self, requests_mock):
+        """Regression test for the sticky-rotation state (`_active_index` and each cache's
+        `remaining`) being read/decremented under a lock. Without it, concurrent threads racing
+        the check-then-decrement could both act on a stale `remaining` value and lose updates —
+        this pins the counter to exactly `seeded - total_calls` after every thread finishes.
+        """
+        requests_mock.post(_access_token_url("222"), json={"token": "ghs_a"})
+        n_threads, calls_per_thread = 20, 25
+        total_calls = n_threads * calls_per_thread
+        seeded = total_calls + 1000  # comfortably above the reserve for the whole run: no rotation/waits involved
+        requests_mock.get("https://api.github.com/rate_limit", json={"resources": {"core": {"remaining": seeded, "reset": 4070908800}}})
+        authenticator = GithubAppMultiPemAuthenticator(config={}, parameters={}, github_apps=_github_apps_field(("111", "222", FAKE_PEM)))
+
+        barrier = threading.Barrier(n_threads)
+
+        def worker():
+            barrier.wait()
+            for _ in range(calls_per_thread):
+                authenticator.token
+
+        threads = [threading.Thread(target=worker) for _ in range(n_threads)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert authenticator._caches[0].remaining == seeded - total_calls
+
+    def test_concurrent_first_use_seeds_quota_once(self, requests_mock):
+        """Regression test for double-checked locking in `_ensure_ready`: concurrent first calls
+        to `.token` must parse `github_apps` and seed quota exactly once, not once per thread.
+        """
+        requests_mock.post(_access_token_url("222"), json={"token": "ghs_a"})
+        rate_limit_mock = requests_mock.get(
+            "https://api.github.com/rate_limit", json={"resources": {"core": {"remaining": 5000, "reset": 4070908800}}}
+        )
+        authenticator = GithubAppMultiPemAuthenticator(config={}, parameters={}, github_apps=_github_apps_field(("111", "222", FAKE_PEM)))
+
+        n_threads = 10
+        barrier = threading.Barrier(n_threads)
+
+        def worker():
+            barrier.wait()
+            authenticator.token
+
+        threads = [threading.Thread(target=worker) for _ in range(n_threads)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert rate_limit_mock.call_count == 1
 
 
 class TestSourceGithubIntegration:

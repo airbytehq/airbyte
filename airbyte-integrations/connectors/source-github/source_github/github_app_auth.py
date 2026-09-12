@@ -3,6 +3,7 @@
 #
 
 import logging
+import threading
 import time
 from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Optional, Tuple, Union
@@ -47,11 +48,28 @@ class _InstallationTokenCache:
         self._expires_at: float = 0.0
         self.remaining: Optional[int] = None
         self.reset_at: Optional[float] = None
+        # Guards `_token`/`_expires_at`: `get_token()` can be called concurrently for the same
+        # installation (multiple in-flight partition reads sharing one authenticator), and without
+        # this a race between the expiry check and the refresh could mint the token twice at once.
+        self._token_lock = threading.Lock()
 
     def _mint_app_jwt(self) -> str:
         now = int(time.time())
         payload = {"iat": now - 60, "exp": now + 540, "iss": self._app_id}
-        return jwt.encode(payload, self._private_key, algorithm="RS256")
+        try:
+            return jwt.encode(payload, self._private_key, algorithm="RS256")
+        except Exception as e:
+            # A malformed/garbage PEM surfaces here (e.g. PyJWT/cryptography's
+            # "Could not deserialize key data..."). Wrap it the same way the installation-token
+            # exchange's 401/403/404 are wrapped below, instead of letting a raw library
+            # exception reach the user with no actionable guidance. Neither that exception nor
+            # this message ever includes the key material itself.
+            raise AirbyteTracedException(
+                message=f"GitHub App authentication failed. The private key for app_id '{self._app_id}' could not be used to "
+                "sign a JWT — please verify it is a valid, unencrypted PEM-formatted RSA private key.",
+                internal_message=f"Failed to sign the GitHub App JWT for app_id={self._app_id}: {e}",
+                failure_type=FailureType.config_error,
+            ) from e
 
     def _refresh_token(self) -> None:
         response = requests.post(
@@ -80,7 +98,11 @@ class _InstallationTokenCache:
 
     def get_token(self) -> str:
         if self._token is None or time.time() >= self._expires_at:
-            self._refresh_token()
+            with self._token_lock:
+                # Re-check inside the lock: another thread may have refreshed while this one
+                # was waiting to acquire it, in which case minting again would be redundant.
+                if self._token is None or time.time() >= self._expires_at:
+                    self._refresh_token()
         return self._token  # type: ignore[return-value]
 
     def refresh_quota(self) -> None:
@@ -171,38 +193,62 @@ class GithubAppMultiPemAuthenticator(DeclarativeAuthenticator):
         self._parameters = parameters
         self._caches: Optional[List[_InstallationTokenCache]] = None
         self._active_index = 0
+        # Guards `_caches`/`_active_index` and every cache's `remaining` counter.
+        # `ConcurrentDeclarativeSource` can read multiple partition streams in parallel, all
+        # sharing this one authenticator instance (mirroring `RateLimitedMultipleTokenAuthenticator`,
+        # which documents the same requirement) — without a lock, two threads racing the
+        # check-then-decrement in `_next_available_cache`/`token` could both pick an already
+        # exhausted cache, or step on each other's rotation of `_active_index`. Sleeping while
+        # waiting out an exhaustion window happens outside the lock so one thread's wait never
+        # blocks another from making progress.
+        self._lock = threading.Lock()
 
     def _ensure_ready(self) -> None:
         if self._caches is not None:
             return
-        github_apps_value = InterpolatedString.create(self.github_apps, parameters=self._parameters).eval(self.config)
-        entries = _parse_entries(github_apps_value) if github_apps_value else []
-        if not entries:
-            raise ValueError("credentials.github_apps must have at least one app_id/installation_id/PEM group")
-        self._caches = [_InstallationTokenCache(app_id, installation_id, private_key) for app_id, installation_id, private_key in entries]
-        for cache in self._caches:
-            cache.refresh_quota()
+        with self._lock:
+            if self._caches is not None:
+                return
+            github_apps_value = InterpolatedString.create(self.github_apps, parameters=self._parameters).eval(self.config)
+            entries = _parse_entries(github_apps_value) if github_apps_value else []
+            if not entries:
+                raise ValueError("credentials.github_apps must have at least one app_id/installation_id/PEM group")
+            caches = [_InstallationTokenCache(app_id, installation_id, private_key) for app_id, installation_id, private_key in entries]
+            for cache in caches:
+                cache.refresh_quota()
+            self._caches = caches
 
-    def _next_available_cache(self) -> _InstallationTokenCache:
-        self._ensure_ready()
+    def _select_cache_locked(self) -> Optional[_InstallationTokenCache]:
+        """Must be called while holding `self._lock`. Returns the active cache with its
+        `remaining` counter already decremented, or `None` if every cache is exhausted."""
         n = len(self._caches)
         for _ in range(n):
             cache = self._caches[self._active_index]
             if cache.remaining is None or cache.remaining > _BUDGET_MIN_RESERVE:
+                if cache.remaining is not None:
+                    cache.remaining -= 1
                 return cache
             self._active_index = (self._active_index + 1) % n
+        return None
 
-        wait_seconds = max(0.0, min(cache.reset_at for cache in self._caches) - time.time())
-        if wait_seconds > _MAX_WAIT_SECONDS:
-            raise AirbyteTracedException(
-                message="Rate limit exceeded for all configured GitHub App installations.",
-                failure_type=FailureType.transient_error,
-            )
-        logger.info("github_app_auth: all installations exhausted, sleeping %.0fs until the earliest reset", wait_seconds)
-        time.sleep(wait_seconds)
-        for cache in self._caches:
-            cache.refresh_quota()
-        return self._caches[self._active_index]
+    def _next_available_cache(self) -> _InstallationTokenCache:
+        self._ensure_ready()
+        while True:
+            with self._lock:
+                cache = self._select_cache_locked()
+                if cache is not None:
+                    return cache
+                wait_seconds = max(0.0, min(c.reset_at for c in self._caches) - time.time())
+
+            if wait_seconds > _MAX_WAIT_SECONDS:
+                raise AirbyteTracedException(
+                    message="Rate limit exceeded for all configured GitHub App installations.",
+                    failure_type=FailureType.transient_error,
+                )
+            logger.info("github_app_auth: all installations exhausted, sleeping %.0fs until the earliest reset", wait_seconds)
+            time.sleep(wait_seconds)
+            for cache in self._caches:
+                cache.refresh_quota()
 
     @property
     def auth_header(self) -> str:
@@ -211,6 +257,4 @@ class GithubAppMultiPemAuthenticator(DeclarativeAuthenticator):
     @property
     def token(self) -> str:
         cache = self._next_available_cache()
-        if cache.remaining is not None:
-            cache.remaining -= 1
         return f"token {cache.get_token()}"
