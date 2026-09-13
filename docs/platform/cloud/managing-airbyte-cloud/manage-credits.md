@@ -8,7 +8,7 @@ In order to manage your payment and billing information, you need the **Organiza
 
 ## What are credits?
 
-Airbyte credits are used to pay for Airbyte resources when you run a sync. Each plan includes a number of credits per month, and you can buy additional credits. For plan and credit pricing, see [Airbyte's pricing page](https://airbyte.com/pricing).
+Airbyte credits are used to pay for Airbyte resources when you run a sync on the Standard and Plus plans. Each plan includes a number of credits per month, and you can buy additional credits. Pro and Enterprise Flex are capacity-based plans that use [data workers](manage-data-workers) instead. For plan and credit pricing, see [Airbyte's pricing page](https://airbyte.com/pricing).
 
 Airbyte uses credits to unify usage across multiple types of sources. You can refer to the below table to estimate how many credits a sync consumes for each source type.
 
@@ -37,9 +37,11 @@ If you pass $10,000 (USD) in credit usage during a billing period, Airbyte autom
 
 The Plan page is where you select and manage your Airbyte Cloud plan. To open it, click **Organization settings** in the navigation bar, then click **Plan**.
 
-- **Standard** and **Plus** are self-serve. You can subscribe, upgrade, or downgrade between them from the Plan page. On Plus, you also choose the number of credits included in your plan each month.
+- **Standard** and **Plus** are self-serve. You can subscribe to either plan, or upgrade from Standard to Plus, from the Plan page. On Plus, you also choose the number of credits included in your plan each month.
 
-- **Pro** and **Enterprise Flex** are contracted, capacity-based plans. To move to one of these plans, or to change plans while you're on Plus or Enterprise Flex, [contact Sales](https://airbyte.com/company/talk-to-sales).
+- **Pro** and **Enterprise Flex** are contracted, capacity-based plans. To move to one of these plans, [contact Sales](https://airbyte.com/company/talk-to-sales).
+
+- You can't downgrade from Plus or Enterprise Flex to another plan on your own. [Contact Sales](https://airbyte.com/company/talk-to-sales) to downgrade.
 
 For what each plan includes and what it costs, see [Airbyte's pricing page](https://airbyte.com/pricing).
 
@@ -75,7 +77,7 @@ Airbyte automatically charges the credit card on file at the end of each month's
 
 ### Review your subscription
 
-The Subscription section shows the plan you're enrolled in. To change plans or the number of credits in your plan, use the [Plan page](#choose-or-change-your-plan).
+The Subscription section shows the plan you're enrolled in. To upgrade to Plus or change the number of credits in your Plus plan, use the [Plan page](#choose-or-change-your-plan).
 
 Reach out to [Sales](https://airbyte.com/company/talk-to-sales) to inquire about Pro, Enterprise Flex, new features, or custom discounts.
 
