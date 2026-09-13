@@ -77,7 +77,7 @@ The Linkly source connector supports the following [sync modes](https://docs.air
 | `links`       | `id`                   | Page-based (`page`, `page_size=1000`) | Yes          | No               | One record per short link, including destination URL, slug, UTM parameters and lifetime / 30-day / today click aggregates. |
 | `domains`     | `workspace_id`, `name` | None                                  | Yes          | No               | Custom (branded) domains configured in each workspace. `workspace_id` is added by the connector.                           |
 | `clicks`      | `workspace_id`, `t`    | None                                  | Yes          | Yes (cursor `t`) | Daily click counts per workspace from `start_date`, including bot traffic. `workspace_id` is added by the connector.       |
-| `conversions` | `id`                   | None                                  | Yes          | No               | The 1,000 most recent conversions visible to the API key, newest first.                                                    |
+| `conversions` | `id`                   | None                                  | Yes          | No               | The 1,000 most recent conversions per workspace, newest first. `workspace_id` is added by the connector.                   |
 
 ### Incremental sync for `clicks`
 
@@ -86,7 +86,7 @@ The `clicks` stream uses the `t` (day) field as its cursor and requests `start`/
 ## Limitations & Troubleshooting
 
 - **Click totals include bots.** The `clicks.y` and `links.clicks_*` figures count all traffic. The `links.human_clicks_*` fields exclude clicks with a bot signal.
-- **Conversions are capped at 1,000.** The Linkly API returns at most the 1,000 most recent conversions per request and the stream is full refresh only. Sync frequently if you record more than that between syncs.
+- **Conversions are capped at 1,000 per workspace.** The Linkly API returns at most the 1,000 most recent conversions of a workspace per request and the stream is full refresh only. Sync frequently if a workspace records more than that between syncs.
 - **Rate limits.** Linkly returns HTTP 429 when a key exceeds its rate limit. The connector retries with exponential backoff.
 - **Invalid API key.** HTTP 401 responses are surfaced as a configuration error. Regenerating the key in Linkly invalidates the previous one.
 - **Not covered yet.** Per-dimension click breakdowns (`/clicks/counters/{country|referer|...}`), hourly click frequency and the `deleted=true` (trashed) links filter are not exposed as streams.

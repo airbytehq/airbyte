@@ -219,6 +219,8 @@ definitions:
           path: /api/v1/conversions
           http_method: GET
           request_parameters:
+            # The endpoint is workspace-scoped: without workspace_id it answers 401.
+            workspace_id: "{{ stream_partition['workspace_id'] }}"
             limit: "1000"
         record_selector:
           type: RecordSelector
@@ -226,6 +228,10 @@ definitions:
             type: DpathExtractor
             field_path:
               - conversions
+        partition_router:
+          $ref: "#/definitions/workspace_partition_router"
+      transformations:
+        - $ref: "#/definitions/add_workspace_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -483,6 +489,90 @@ schemas:
         type:
           - string
           - "null"
+      clicks_previous_day:
+        type:
+          - integer
+          - "null"
+        description: Clicks yesterday (UTC), including bot traffic.
+      inserted_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      created_by_user_id:
+        type:
+          - integer
+          - "null"
+      created_by_email:
+        type:
+          - string
+          - "null"
+      retired:
+        type:
+          - boolean
+          - "null"
+      spam:
+        type:
+          - boolean
+          - "null"
+      skip_social_crawler_tracking:
+        type:
+          - boolean
+          - "null"
+      notify_slack:
+        type:
+          - boolean
+          - "null"
+      notify_user_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - integer
+            - "null"
+      webhooks:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          additionalProperties: true
+      password:
+        type:
+          - string
+          - "null"
+        description: Password protecting the link, if any.
+      expiry_clicks:
+        type:
+          - integer
+          - "null"
+      expiry_datetime:
+        type:
+          - string
+          - "null"
+      expiry_destination:
+        type:
+          - string
+          - "null"
+      qr_styles:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      contact_card:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      app_deeplink:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
     required:
       - id
 
@@ -494,11 +584,26 @@ schemas:
       workspace_id:
         type: integer
         description: Workspace the domain belongs to (added by the connector).
+      id:
+        type:
+          - integer
+          - "null"
       name:
         type:
           - string
           - "null"
         description: The custom domain, e.g. go.yourcompany.com
+      host:
+        type:
+          - string
+          - "null"
+        description: Where the domain is served from.
+      inserted_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
     required:
       - workspace_id
 
@@ -531,6 +636,9 @@ schemas:
       id:
         type: string
         description: ULID. Sorts chronologically.
+      workspace_id:
+        type: integer
+        description: Workspace the conversion belongs to (added by the connector).
       link_id:
         type:
           - integer
