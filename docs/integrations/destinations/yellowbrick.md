@@ -187,7 +187,7 @@ Each table will contain 3 columns:
 
 ## Tutorials
 
-- Comming soon.
+- Coming soon.
 
 ## Namespace support
 

@@ -1,6 +1,6 @@
 # Twelve Data
 Twelve data can be used to access the data of world financial markets including stocks, forex, ETFs, indices, and cryptocurrencies.
-This connector has various streams including but not limited to Stocks , Forex Pairs , Crypto Currencies , Time Series and Techical Indicators
+This connector has various streams including but not limited to Stocks , Forex Pairs , Crypto Currencies , Time Series and Technical Indicators
 
 Docs : https://twelvedata.com/docs
 

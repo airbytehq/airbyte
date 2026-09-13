@@ -29,7 +29,7 @@ Content-Type: application/x-www-form-urlencoded
 grant_type=password&username=YOUR_TRUSTPILOT_USERNAME_OR_LOGIN_EMAIL_HERE&password=YOUR_TRUSTPILOT_PASSWORD_HERE
 ```
 
-When succeeded, it will return a json object. Extrat the properties `access_token`, `refresh_token`.
+When succeeded, it will return a json object. Extract the properties `access_token`, `refresh_token`.
 
 Fill now the missing configuration fields in the Airbyte source configuration. As token expiry date, use the current time + 4 days (or calculate it yourself by calculating the date time of request add the seconds given in property `expires_in`).
 

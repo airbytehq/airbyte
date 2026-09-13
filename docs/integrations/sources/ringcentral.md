@@ -13,7 +13,7 @@ Auth Token (which acts as bearer token), account id and extension id are mandate
 - Get your bearer token by following auth section (ref - https://developers.ringcentral.com/api-reference/authentication)
 - Setup params (All params are required)
 - Available params
-  - auth_token: Recieved by following https://developers.ringcentral.com/api-reference/authentication
+  - auth_token: Received by following https://developers.ringcentral.com/api-reference/authentication
   - account_id: Could be seen at response to basic api call to an endpoint with ~ operator. \
      \ Example- (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
   - extension_id: Could be seen at response to basic api call to an endpoint with ~ operator. \

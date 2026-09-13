@@ -23,7 +23,7 @@ Be careful using variables marked as `alpha`. They aren't meant for public consu
 4. `VAULT_ADDRESS` - Defines the vault address to read/write Airbyte Configuration to Hashicorp Vault. Alpha Support.
 5. `VAULT_PREFIX` - Defines the vault path prefix. Should follow the format `<engine>/<directory>/`, for example `kv/airbyte/` or `secret/airbyte/`. Empty by default. Alpha Support.
 6. `VAULT_AUTH_TOKEN` - The token used for vault authentication. Alpha Support.
-7. `VAULT_AUTH_METHOD` - How vault will preform authentication. Currently, only supports Token auth. Defaults to token. Alpha Support.
+7. `VAULT_AUTH_METHOD` - How vault will perform authentication. Currently, only supports Token auth. Defaults to token. Alpha Support.
 8. `AWS_ACCESS_KEY` - Defines the aws_access_key_id from the AWS credentials to use for AWS Secret Manager.
 9. `AWS_SECRET_ACCESS_KEY`- Defines aws_secret_access_key to use for the AWS Secret Manager.
 10. `AWS_KMS_KEY_ARN` - Optional param that defines the KMS Encryption key used for the AWS Secret Manager.

@@ -21,7 +21,7 @@ You can follow the documentation on [API credentials](https://developer.genesys.
 - [Locations](https://developer.genesys.cloud/telephony/locations-apis)
 - [Routing](https://developer.genesys.cloud/routing/routing/)
 - [Stations](https://developer.genesys.cloud/telephony/stations-apis)
-- [Telephony](hhttps://developer.genesys.cloud/telephony/telephony-apis)
+- [Telephony](https://developer.genesys.cloud/telephony/telephony-apis)
 - [Users](https://developer.genesys.cloud/useragentman/users/)
 
 ## IP allow list
