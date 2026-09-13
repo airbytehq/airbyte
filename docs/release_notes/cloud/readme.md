@@ -4,17 +4,17 @@ Airbyte Cloud is updated continuously. You always have the latest features and f
 
 ## September 14, 2026
 
-Platform
+**Important**: Updated pricing model
 
 - **Airbyte Cloud has a new pricing model** for self-serve plans (Standard and Plus). Pro and Flex are not affected. For many of you, **the price of the Plus plan is significantly cheaper** than the price of the Standard plan. We strongly recommend visiting [Airbyte's pricing page](https://airbyte.com/pricing) to determine the optimal plan for you. New Plus plans are available immediately. The Standard plan switches on September 21. Here's what's changing:
     - **Standard**: the base price for Standard increases from $10 per month to $20 per month. The number of free credits each month also increases from 4 to 5. The price for additional credits increases from $2.50 to $5.00. Single sign on (SSO) is no longer available on Standard, but if you already use SSO, you may continue doing so as long as you keep your plan.
     - **Plus**: Multiple new pricing tiers are available. All Plus plans include a much larger allocation of credits, less expensive overage credits, 15-minute sync frequency, two workspaces, mappings (renames only), single sign-on, and premium support. Existing Plus subscribers are being moved from 50 to 100 credits and your plan cost has dropped $50. The following Plus tiers are available:
-        - 40 credits - $189 (equivalent to $4.75/cr) + $5 per credit for overages
-        - 100 credits - $449 (equivalent to $4.5/cr) + $5 per credit for overages
-        - 250 credits - $999 (equivalent to $4/cr) + $4.5 per credit for overages
-        - 500 credits - $1,799 (equivalent to $3.6/cr) + $4.15 per credit for overages
-        - 1,000 credits - $3,199 (equivalent to $3.2/cr) + $3.75 per credit for overages
-        - 2,000 credits - $4,999 (equivalent to $2.5/cr) + $2.5 per credit for overages
+        - 40 credits: $189 (equivalent to $4.75/cr) + $5/cr for overages
+        - 100 credits: $449 (equivalent to $4.5/cr) + $5/cr for overages
+        - 250 credits: $999 (equivalent to $4/cr) + $4.5/cr for overages
+        - 500 credits: $1,799 (equivalent to $3.6/cr) + $4.15/cr for overages
+        - 1,000 credits: $3,199 (equivalent to $3.2/cr) + $3.75/cr for overages
+        - 2,000 credits: $4,999 (equivalent to $2.5/cr) + $2.5/cr for overages
     - **Credit rollovers**: Unused credits now roll over for 3 months (previously 2), so you have a full quarter to use them.
 
   As a temporary incentive to encourage you to optimize your spend, Airbyte is offering free overage credits to organizations that upgrade to a higher plan (conditions apply).
