@@ -17,7 +17,7 @@ Airbyte Cloud is updated continuously. You always have the latest features and f
         - 2,000 credits: $4,999 (equivalent to $2.5/cr) + $2.5/cr for overages
     - **Credit rollovers**: Unused credits now roll over for 3 months (previously 2), so you have a full quarter to use them.
 
-  As a temporary incentive to encourage you to optimize your spend, Airbyte is offering free overage credits to organizations that upgrade to a higher plan (conditions apply).
+  As a temporary incentive to encourage you to optimize your spend, Airbyte is offering limited free overage credits to organizations that upgrade to a higher plan by September 29. Conditions apply, and the number of free overage credits depends on the plan you select.
 
   To adjust your plan, open Airbyte Cloud and click **Organization settings** > **Plans**. See [Manage billing and credits](/platform/cloud/managing-airbyte-cloud/manage-credits) for more help.
 
