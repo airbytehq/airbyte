@@ -6,12 +6,26 @@ acceptance_tests:
     tests:
       - spec_path: "manifest.yaml"
   connection:
-    bypass_reason: "Community contribution; no sandbox credentials are stored in Airbyte's secret store yet"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    bypass_reason: "Community contribution; no sandbox credentials are stored in Airbyte's secret store yet"
+    tests:
+      - config_path: "secrets/config.json"
   basic_read:
-    bypass_reason: "Community contribution; no sandbox credentials are stored in Airbyte's secret store yet"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: conversions
+            bypass_reason: "The sandbox account has no conversion events yet"
   incremental:
-    bypass_reason: "Community contribution; no sandbox credentials are stored in Airbyte's secret store yet"
+    bypass_reason:
+      "The `clicks` cursor is a calendar day with a 2-day lookback, so the last
+      records are re-emitted on sequential reads by design"
   full_refresh:
-    bypass_reason: "Community contribution; no sandbox credentials are stored in Airbyte's secret store yet"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

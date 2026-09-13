@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
   <rect width="64" height="64" rx="8" fill="#ffffff"/>
-  <g transform="translate(8, 8) scale(0.293)">
+  <g transform="translate(8 8) scale(0.30299)">
     <rect fill="#ffa200" x="0" y="0" width="79.21" height="79.21"/>
     <rect fill="#009eff" x="79.22" y="79.21" width="79.21" height="79.21"/>
     <polygon fill="#f40" points="79.22 79.21 0 79.21 79.22 158.42 79.22 79.21"/>
