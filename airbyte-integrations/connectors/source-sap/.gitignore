@@ -1,0 +1,15 @@
+.venv/
+.erpl/
+.env.a4h
+secrets/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.duckdb
+spec.jsonl
+
+# Written by `airbyte-cdk image build`; the Dockerfile there is generated from
+# Airbyte's template on every build, so a committed copy only goes stale.
+build/

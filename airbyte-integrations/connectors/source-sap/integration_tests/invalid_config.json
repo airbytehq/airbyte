@@ -1,0 +1,9 @@
+{
+  "ashost": "sap.invalid",
+  "sysnr": "00",
+  "client": "001",
+  "user": "nobody",
+  "password": "wrong",
+  "lang": "EN",
+  "protocol": {"mode": "rfc", "table_pattern": "SFLIGHT"}
+}

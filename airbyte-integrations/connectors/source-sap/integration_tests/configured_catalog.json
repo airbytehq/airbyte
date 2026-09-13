@@ -1,0 +1,27 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "SFLIGHT",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "MANDT": {"type": ["null", "string"]},
+            "CARRID": {"type": ["null", "string"]},
+            "CONNID": {"type": ["null", "string"]},
+            "FLDATE": {"type": ["null", "string"], "format": "date"},
+            "PRICE": {"type": ["null", "number"], "airbyte_type": "big_number"},
+            "CURRENCY": {"type": ["null", "string"]},
+            "SEATSMAX": {"type": ["null", "integer"]},
+            "SEATSOCC": {"type": ["null", "integer"]}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["MANDT"], ["CARRID"], ["CONNID"], ["FLDATE"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

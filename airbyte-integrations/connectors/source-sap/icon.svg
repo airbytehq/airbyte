@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="ERPL">
+  <title>ERPL</title>
+  <!-- The ERPL duck: the mark of the ERPL DuckDB extensions this connector runs on.
+       Deliberately not SAP's logo, which is a trademark we have no licence to ship. -->
+  <g fill="none" fill-rule="evenodd">
+    <g fill="#F2F20D">
+      <circle cx="94" cy="84" r="44"/>
+      <circle cx="162" cy="84" r="44"/>
+      <circle cx="128" cy="126" r="70"/>
+    </g>
+    <g fill="#111111">
+      <circle cx="104" cy="96" r="10"/>
+      <circle cx="152" cy="96" r="10"/>
+    </g>
+    <path d="M128 126c26 0 40 16 40 42s-14 40-40 40-40-14-40-40 14-42 40-42z" fill="#E9A85C"/>
+    <g fill="#C08040">
+      <circle cx="117" cy="150" r="5"/>
+      <circle cx="139" cy="150" r="5"/>
+    </g>
+  </g>
+</svg>

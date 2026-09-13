@@ -1,0 +1,10 @@
+.venv/
+.erpl/
+.env*
+__pycache__/
+*.pyc
+.pytest_cache/
+secrets/
+e2e/
+unit_tests/
+integration_tests/

@@ -1,0 +1,511 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/sap
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: SAP Source Spec
+  type: object
+  required:
+    - client
+    - user
+    - protocol
+  additionalProperties: true
+  properties:
+    ashost:
+      title: Application Server Host
+      description: >-
+        Hostname of the SAP application server, for a direct logon. Leave empty and use the
+        message-server fields instead for a load-balanced logon.
+      type: string
+      order: 0
+      examples: ["sap.example.com"]
+    sysnr:
+      title: System Number
+      description: Two-digit SAP system number. Required for a direct logon.
+      type: string
+      order: 1
+      examples: ["00"]
+    mshost:
+      title: Message Server Host
+      description: Message server hostname, for a load-balanced logon.
+      type: string
+      order: 2
+    sysid:
+      title: System ID
+      description: Three-character SAP system ID. Required for a load-balanced logon.
+      type: string
+      order: 3
+      examples: ["PRD"]
+    group:
+      title: Logon Group
+      description: Logon group. Required for a load-balanced logon.
+      type: string
+      order: 4
+      examples: ["PUBLIC"]
+    client:
+      title: Client
+      description: Three-digit SAP client.
+      type: string
+      order: 5
+      examples: ["100"]
+    user:
+      title: User
+      description: SAP user name. Needs authorization object S_RFC for the function groups used.
+      type: string
+      order: 6
+    password:
+      title: Password
+      description: SAP password. Not required when logging on with SNC or an SSO2 ticket.
+      type: string
+      airbyte_secret: true
+      order: 7
+    lang:
+      title: Language
+      description: Two-letter logon language; controls the language of field texts.
+      type: string
+      default: EN
+      order: 8
+    base_url:
+      title: Gateway Base URL
+      description: >-
+        Base URL of the SAP Gateway, used by the "ODP over OData" protocol.
+        Include the scheme and port.
+      type: string
+      order: 9
+      examples: ["https://sap.example.com:44300"]
+    saprouter_host:
+      title: SAProuter Host
+      description: >-
+        Hostname of the SAProuter, without the /H/ /S/ route syntax. Only needed
+        so the platform can allow egress to it.
+      type: string
+      order: 26
+      examples: ["router.example.com"]
+    saprouter:
+      title: SAProuter String
+      description: SAProuter connection string, if the SAP system is reached through one.
+      type: string
+      order: 20
+      examples: ["/H/routerhost/S/3299"]
+    snc_mode:
+      title: Enable SNC
+      description: Set to "1" to secure the connection with SNC.
+      type: string
+      enum: ["0", "1"]
+      default: "0"
+      order: 21
+    snc_partnername:
+      title: SNC Partner Name
+      type: string
+      order: 22
+      examples: ["p:CN=SAP/sap.example.com@EXAMPLE.LOCAL"]
+    snc_lib:
+      title: SNC Library Path
+      type: string
+      order: 23
+    snc_qop:
+      title: SNC Quality of Protection
+      type: string
+      order: 24
+    concurrency:
+      title: Concurrency
+      description: >-
+        How many streams to read in parallel. Each worker holds its own SAP connection, so
+        raise this only as far as the SAP system has free work processes.
+      type: integer
+      default: 4
+      minimum: 1
+      maximum: 32
+      order: 25
+    protocol:
+      title: Protocol
+      description: Which SAP interface to read through.
+      type: object
+      order: 10
+      oneOf:
+        - title: SAP Tables and CDS Views (RFC)
+          required: [mode]
+          properties:
+            mode:
+              type: string
+              const: rfc
+              default: rfc
+              order: 0
+            table_pattern:
+              title: Table Pattern
+              description: >-
+                SAP wildcard pattern selecting the tables and CDS views to expose,
+                for example "/DMO/*". Leave empty to expose only the tables listed below.
+              type: string
+              order: 1
+              examples: ["/DMO/*", "SFLIGHT"]
+            partitions:
+              title: Partitions
+              description: >-
+                Split each table scan into this many row ranges read in parallel. Off by
+                default, because it only helps narrow extracts: measured on a 164,673-row
+                table, partitioning measured slower at every setting tried, on both a wide
+                and a narrow extract. Raise it only with a measurement in hand.
+                Rows then arrive in an unspecified order, which Airbyte does not mind.
+              type: integer
+              default: 0
+              minimum: 0
+              maximum: 64
+              order: 2
+            fetch_size:
+              title: Fetch Size
+              description: >-
+                Bytes requested per SAP round trip, not rows -- so a wide row means
+                fewer rows per call. Scaled with Partitions automatically when left
+                empty, because erpl divides this budget across partition workers.
+              type: integer
+              order: 3
+            threads:
+              title: Threads
+              description: >-
+                RFC connections erpl opens for one table scan. Leave empty for erpl's
+                own default; it only has an effect alongside Partitions, which is off
+                by default.
+              type: integer
+              minimum: 0
+              maximum: 32
+              order: 4
+            objects:
+              title: Tables
+              description: Per-table settings. Tables listed here are exposed even if no pattern matches them.
+              type: array
+              order: 5
+              items:
+                type: object
+                required: [name]
+                properties:
+                  name:
+                    title: Table Name
+                    type: string
+                  columns:
+                    title: Columns
+                    description: Restrict the extract to these columns; pushed down to SAP.
+                    type: array
+                    items: {type: string}
+                  filter:
+                    title: SAP Filter
+                    description: An ABAP WHERE fragment evaluated by SAP, for example "CARRID = 'LH'".
+                    type: string
+                  primary_key:
+                    title: Primary Key
+                    description: Fields forming the record key, needed for deduplicating destinations.
+                    type: array
+                    items: {type: string}
+                  cursor_field:
+                    title: Cursor Field
+                    description: >-
+                      A date or timestamp column to sync incrementally on. The connector keeps
+                      the highest value seen and filters on it server-side next run.
+                    type: string
+                  partitions: {type: integer}
+                  fetch_size: {type: integer}
+                  threads: {type: integer}
+                  max_rows: {type: integer}
+        - title: SAP RFC Function Modules
+          required: [mode, objects]
+          properties:
+            mode:
+              type: string
+              const: rfc_invoke
+              default: rfc_invoke
+              order: 0
+            objects:
+              title: Function Modules
+              description: >-
+                The RFC function modules to call, one stream each. Only modules listed
+                here are ever called; there is no pattern discovery for this protocol,
+                because finding modules by pattern would mean calling them to see what
+                they do. Choose read-only modules: the connector cannot tell a BAPI that
+                reads from one that writes.
+              type: array
+              minItems: 1
+              order: 1
+              items:
+                type: object
+                required: [name, function]
+                properties:
+                  name:
+                    title: Stream Name
+                    type: string
+                  function:
+                    title: Function Module
+                    type: string
+                    examples: ["BAPI_FLIGHT_GETLIST"]
+                  path:
+                    title: Result Parameter
+                    description: >-
+                      Which result table becomes the stream's rows, for example
+                      "/FLIGHT_LIST". Leave empty to emit the module's scalar export
+                      parameters as a single record.
+                    type: string
+                    examples: ["/FLIGHT_LIST"]
+                  parameters:
+                    title: Parameters
+                    description: >-
+                      Values for the module's import and table parameters. Nested SAP
+                      structures and tables are written as JSON objects and arrays.
+                    type: object
+                  primary_key:
+                    title: Primary Key
+                    type: array
+                    items: {type: string}
+                  return_parameter:
+                    title: Return Parameter
+                    description: >-
+                      Which result table carries BAPI error messages. Only needed when the
+                      module names it something other than RETURN, E_RETURN, ET_RETURN,
+                      EX_RETURN, T_RETURN or RETURN_TAB. Getting this wrong means a failed
+                      call is read as an empty result.
+                    type: string
+                  cursor_field:
+                    title: Cursor Field
+                    description: Result column whose highest value is tracked for incremental sync.
+                    type: string
+                  cursor_parameter:
+                    title: Cursor Parameter
+                    description: >-
+                      Import parameter the stored cursor value is passed to on the next
+                      run. Incremental sync needs both this and a cursor field.
+                    type: string
+                  slice_by:
+                    title: Slice By
+                    description: >-
+                      Call the module once per value of one parameter. The calls run in
+                      parallel and their results are unioned.
+                    type: object
+                    properties:
+                      parameter: {type: string}
+                      values:
+                        type: array
+                        items: {type: string}
+        - title: SAP BW Queries (BICS)
+          required: [mode]
+          properties:
+            mode:
+              type: string
+              const: bics
+              default: bics
+              order: 0
+            query_pattern:
+              title: Query Pattern
+              description: Pattern selecting BEx queries or InfoProviders, for example "*SALES*".
+              type: string
+              order: 1
+            object_type:
+              title: Object Type
+              type: string
+              enum: [QUERY, CUBE, INFOPROVIDER]
+              default: QUERY
+              order: 2
+            objects:
+              title: Queries
+              description: >-
+                Per-query settings. BEx queries with mandatory variables must be listed here
+                with those variables bound, because BW refuses to return a result otherwise.
+              type: array
+              order: 3
+              items:
+                type: object
+                required: [name]
+                properties:
+                  name: {title: Stream Name, type: string}
+                  cube: {title: InfoProvider, type: string}
+                  query: {title: BEx Query, type: string}
+                  rows:
+                    title: Row Characteristics
+                    type: array
+                    items: {type: string}
+                  columns:
+                    title: Key Figures
+                    type: array
+                    items: {type: string}
+                  variables:
+                    title: BEx Variables
+                    type: array
+                    items:
+                      type: object
+                      required: [name]
+                      properties:
+                        name: {type: string}
+                        low: {type: string}
+                        high: {type: string}
+                        sign: {type: string, enum: [I, E], default: I}
+                        op: {type: string}
+                  primary_key:
+                    title: Primary Key
+                    description: Fields forming the record key, needed for deduplicating destinations.
+                    type: array
+                    items: {type: string}
+                  cursor_variable:
+                    title: Cursor Variable
+                    description: >-
+                      BEx variable restricted to everything at or after the highest value
+                      seen last run. BW has no change tracking, so incremental sync needs
+                      a variable the query is filtered by -- typically a period.
+                    type: string
+                    examples: ["ZVAR_CALMONTH"]
+                  cursor_field:
+                    title: Cursor Field
+                    description: Result column whose highest value is tracked, e.g. "0CALMONTH".
+                    type: string
+                  cursor_start:
+                    title: Cursor Start
+                    description: Value to use on the first run, before any state exists.
+                    type: string
+                  filters:
+                    title: Member Filters
+                    description: Restrict a characteristic to the listed members.
+                    type: array
+                    items:
+                      type: object
+                      required: [characteristic]
+                      properties:
+                        characteristic: {type: string}
+                        members:
+                          type: array
+                          items: {type: string}
+                  variant:
+                    title: BEx Variant
+                    description: Name of a saved BEx variant used to fill the query's variables.
+                    type: string
+                  properties:
+                    title: Characteristic Properties
+                    description: >-
+                      Per-characteristic display settings, as SAP Analysis offers them.
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        characteristic: {type: string}
+                        property: {type: string, enum: [DISPLAY, SORT, TOTALS]}
+                        value: {type: string, examples: ["KEY", "TEXT", "BOTH", "ASC", "DESC", "HIDE"]}
+                  slice_by:
+                    title: Slice By
+                    description: >-
+                      BW builds the whole result set at once and cannot paginate. Slicing on a
+                      characteristic runs one BICS session per member and bounds memory.
+                    type: object
+                    properties:
+                      characteristic: {type: string}
+                      members:
+                        type: array
+                        items: {type: string}
+        - title: SAP ODP (RFC)
+          required: [mode]
+          properties:
+            mode:
+              type: string
+              const: odp_rfc
+              default: odp_rfc
+              order: 0
+            context:
+              title: ODP Context
+              type: string
+              enum: [ABAP_CDS, BW, SAPI, SLT, HANA]
+              order: 1
+            name_pattern:
+              title: Provider Pattern
+              description: Pattern selecting ODP providers within the context, for example "*FLIGHT*".
+              type: string
+              order: 2
+            threads:
+              title: Threads
+              description: >-
+                Parallel workers for full extractions. Delta extractions always run
+                single-threaded, because parallel package fetch can under-count a delta.
+              type: integer
+              default: 4
+              minimum: 1
+              maximum: 32
+              order: 3
+            skip_unchanged:
+              title: Skip Unchanged Sources
+              description: >-
+                Ask SAP for the provider's last-changed timestamp before a delta read,
+                and skip the extraction entirely when nothing has changed. Costs one
+                cheap call; saves a subscription round trip on a quiet stream.
+              type: boolean
+              default: true
+              order: 4
+            objects:
+              title: Providers
+              type: array
+              order: 5
+              items:
+                type: object
+                required: [name]
+                properties:
+                  name: {title: ODP Name, type: string}
+                  context: {type: string}
+                  primary_key:
+                    title: Primary Key
+                    description: Fields forming the record key, needed for deduplicating destinations.
+                    type: array
+                    items: {type: string}
+                  subscriber_process:
+                    title: Subscriber Process
+                    description: >-
+                      Identifies the delta subscription on the SAP side. Leave empty to derive a
+                      stable name automatically. Changing it strands the existing subscription.
+                    type: string
+                  columns:
+                    type: array
+                    items: {type: string}
+                  filters:
+                    title: Selection Filters
+                    description: >-
+                      Server-side selections, OR-combined. SAP's RODPS_REPL_S_SELECTION
+                      shape.
+                    type: array
+                    items:
+                      type: object
+                      required: [fieldname]
+                      properties:
+                        fieldname: {type: string}
+                        sign: {type: string, enum: [I, E], default: I}
+                        op: {type: string, examples: ["EQ", "BT", "GE", "CP"]}
+                        low: {type: string}
+                        high: {type: string}
+                  threads: {type: integer}
+        - title: SAP ODP (OData)
+          required: [mode]
+          properties:
+            mode:
+              type: string
+              const: odp_odata
+              default: odp_odata
+              order: 0
+            service_pattern:
+              title: Service Pattern
+              description: >-
+                Pattern matched against the Gateway catalog service. Catalog discovery is not
+                available on every Gateway release; list entity sets below if it fails.
+              type: string
+              order: 1
+            max_page_size:
+              title: Max Page Size
+              description: Records requested per OData page.
+              type: integer
+              default: 15000
+              order: 2
+            objects:
+              title: Entity Sets
+              type: array
+              order: 3
+              items:
+                type: object
+                required: [url]
+                properties:
+                  url:
+                    title: Entity Set URL
+                    description: Absolute URL, or a path relative to the Gateway base URL.
+                    type: string
+                    examples:
+                      ["/sap/opu/odata/sap/Z_ODP_SRV/FactsOfZ"]
+                  entity_set: {title: Stream Name, type: string}
+                  primary_key:
+                    type: array
+                    items: {type: string}
