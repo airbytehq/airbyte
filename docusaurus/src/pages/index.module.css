@@ -64,7 +64,7 @@
    =========================== */
 .drSection {
   padding: 4rem 0;
-  background: var(--color-white);
+  background: var(--color-ae-bg);
 }
 
 .drSectionTitle {
@@ -192,7 +192,7 @@
    =========================== */
 .aeSection {
   padding: 4rem 0;
-  background: var(--color-ae-bg);
+  background: var(--color-white);
 }
 
 .aeSectionTitle {
