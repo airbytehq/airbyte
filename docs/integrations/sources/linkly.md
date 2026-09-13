@@ -98,6 +98,6 @@ The `clicks` stream uses the `t` (day) field as its cursor and requests `start`/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 | ------- | ---------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| 0.1.0   | 2026-09-13 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Initial release: `workspaces`, `links`, `domains`, `clicks` (incremental) and `conversions` streams |
+| 0.1.0   | 2026-09-13 | [85860](https://github.com/airbytehq/airbyte/pull/85860) | Initial release: `workspaces`, `links`, `domains`, `clicks` (incremental) and `conversions` streams |
 
 </details>
