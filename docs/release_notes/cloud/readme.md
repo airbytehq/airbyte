@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## September 14, 2026
+
+Platform
+
+- Airbyte Cloud has a new Plus plan. Plus is self-serve: choose the number of credits you need each month, and get 15-minute sync schedules, two workspaces, single sign-on, and premium support. Select or change your plan from the new Plan page in Organization settings. A new Standard plan follows on September 21, 2026. Existing Standard organizations that use single sign-on keep it as long as they remain paying customers. For details, see [Airbyte's pricing page](https://airbyte.com/pricing) and [Manage billing and credits](/platform/cloud/managing-airbyte-cloud/manage-credits).
+
 ## September 10, 2026
 
 Platform
