@@ -83,6 +83,6 @@ existing refresh token does not gain new scopes.
   mock-server unit tests live in `unit_tests/` and run with `poetry run pytest` from that directory.
 - `integration_tests/` holds the acceptance test config. `expected_records.jsonl` mirrors a
   specific sandbox account, so record-level assertions need an updated fixture when the sandbox
-  data changes; the sandbox's daily request budget (30,000 tokens) is small, so do not run several
+  data changes; the sandbox's daily token budget (99,999 on the sandbox plan) is shared with CI, so do not run several
   full reads in parallel.
 - Custom field keys are account-specific; don't hard-code hash keys in tests or schemas.
