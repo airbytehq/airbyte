@@ -2371,6 +2371,34 @@ schemas:
         type:
           - "null"
           - string
+      created:
+        description: Rest.li audit stamp of the access grant creation - `actor` (member URN) and `time` (epoch milliseconds), kept as returned by the API.
+        type:
+          - "null"
+          - object
+        properties:
+          actor:
+            type:
+              - "null"
+              - string
+          time:
+            type:
+              - "null"
+              - integer
+      lastModified:
+        description: Rest.li audit stamp of the last modification of the access grant - `actor` (member URN) and `time` (epoch milliseconds), kept as returned by the API.
+        type:
+          - "null"
+          - object
+        properties:
+          actor:
+            type:
+              - "null"
+              - string
+          time:
+            type:
+              - "null"
+              - integer
 
   account_users:
     $schema: http://json-schema.org/draft-07/schema#

@@ -33,6 +33,9 @@ _DATA_VOLUME_RATE_LIMIT_BODY = json.dumps(
 )
 
 
+_AUDIT_TIME_MS = 1629179860470  # 2021-08-17T05:57:40.470Z
+
+
 def _create_organization_acl_record(
     organization_id: int,
     role: str = "ADMINISTRATOR",
@@ -44,6 +47,9 @@ def _create_organization_acl_record(
         "organization": f"urn:li:organization:{organization_id}",
         "roleAssignee": role_assignee,
         "state": state,
+        # /organizationAcls returns Rest.li audit stamps, not the epoch values the other endpoints use.
+        "created": {"actor": role_assignee, "time": _AUDIT_TIME_MS},
+        "lastModified": {"actor": role_assignee, "time": _AUDIT_TIME_MS},
     }
 
 
@@ -201,3 +207,28 @@ class TestOrganizationsStream(TestCase):
         assert len(output.records) == 1
         assert output.records[0].record.data["organization"] == "urn:li:organization:789"
         assert not output.errors
+
+    @HttpMocker()
+    def test_audit_stamps_are_kept_as_objects(self, http_mocker: HttpMocker):
+        """
+        /organizationAcls returns `created` and `lastModified` as Rest.li audit stamps
+        ({"actor": urn, "time": epoch_ms}). The shared extractor converts epoch values on the
+        other streams to RFC3339 and must leave these objects untouched instead of failing the
+        whole stream with a ValueError, as it did on live data.
+        """
+        config = ConfigBuilder().build()
+
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.organizations_endpoint().with_q("roleAssignee").with_count(_PAGE_SIZE).build(),
+            LinkedInAdsOffsetPaginatedResponseBuilder.single_page([_create_organization_acl_record(123)], total=1),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert not output.errors
+        assert len(output.records) == 1
+        record = output.records[0].record.data
+        assert record["created"] == {"actor": "urn:li:person:abc", "time": _AUDIT_TIME_MS}
+        assert record["lastModified"] == {"actor": "urn:li:person:abc", "time": _AUDIT_TIME_MS}
