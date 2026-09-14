@@ -157,7 +157,7 @@ For information on breaking changes and migration steps, see the [TikTok Marketi
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.1.0 | 2026-09-14 | [N/A](https://github.com/teamspyne/airbyte) | Add `smart_plus_ads` stream: metadata for the parent-level Smart+ Ad object (`GET /smart_plus/ad/get/`), which the `ads` stream cannot expose for Smart+ ad groups |
+| 5.1.0 | 2026-09-14 | [N/A](https://github.com/teamspyne/airbyte) | Add `smart_plus_ads` stream: metadata for the parent-level Smart+ Ad object (`GET /smart_plus/ad/get/`), which the `ads` stream cannot expose for Smart+ ad groups. Align `ads_reports_daily` `report_metrics` with the metrics available downstream in `custom-connectors` (full parity check, ~130 additional metric fields) |
 | 5.0.2 | 2026-03-03 | [73111](https://github.com/airbytehq/airbyte/pull/73111) | Update dependencies |
 | 5.0.1 | 2026-02-24 | [73633](https://github.com/airbytehq/airbyte/pull/73633) | fix(source-tiktok-marketing): Fix UTC timezone mismatch causing data loss for ahead-of-UTC accounts (AI-Triage PR) |
 | 5.0.0 | 2026-02-17 | [73357](https://github.com/airbytehq/airbyte/pull/73357) | Fix `currency` field type from `boolean` to `string` in pixels events schema |
