@@ -309,4 +309,163 @@ class MongoDbCdcEventUtilsTest {
     assertEquals(50, transformed.get("scores").get(0).asInt());
   }
 
+  @Test
+  void testTransformDataTypesCoercesDocumentToStringWhenSchemaExpectsString() {
+    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("metadata", new Document("key", "value").append("nested", true));
+
+    final String documentAsJson = document.toJson();
+
+    final Map<String, JsonNode> schemaMap = Map.of(
+        "_id", Jsons.jsonNode(Map.of("type", "string")),
+        "metadata", Jsons.jsonNode(Map.of("type", "string")));
+
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, schemaMap);
+
+    assertNotNull(transformed);
+    assertTrue(transformed.get("metadata").isTextual());
+    final String metadataStr = transformed.get("metadata").asText();
+    assertTrue(metadataStr.contains("key"));
+    assertTrue(metadataStr.contains("value"));
+    assertTrue(metadataStr.contains("nested"));
+  }
+
+  @Test
+  void testTransformDataTypesCoercesArrayToStringWhenSchemaExpectsString() {
+    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("tags", List.of("tag1", "tag2", "tag3"));
+
+    final String documentAsJson = document.toJson();
+
+    final Map<String, JsonNode> schemaMap = Map.of(
+        "_id", Jsons.jsonNode(Map.of("type", "string")),
+        "tags", Jsons.jsonNode(Map.of("type", "string")));
+
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, schemaMap);
+
+    assertNotNull(transformed);
+    assertTrue(transformed.get("tags").isTextual());
+    final String tagsStr = transformed.get("tags").asText();
+    assertTrue(tagsStr.contains("tag1"));
+    assertTrue(tagsStr.contains("tag2"));
+    assertTrue(tagsStr.contains("tag3"));
+  }
+
+  @Test
+  void testTransformDataTypesCoercesPrimitiveToStringWhenSchemaExpectsObject() {
+    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("details", new BsonString("just a string"));
+
+    final String documentAsJson = document.toJson();
+
+    final Map<String, JsonNode> schemaMap = Map.of(
+        "_id", Jsons.jsonNode(Map.of("type", "string")),
+        "details", Jsons.jsonNode(Map.of("type", "object")));
+
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, schemaMap);
+
+    assertNotNull(transformed);
+    assertTrue(transformed.get("details").isTextual());
+    assertEquals("just a string", transformed.get("details").asText());
+  }
+
+  @Test
+  void testTransformDataTypesCoercesIntToStringWhenSchemaExpectsObject() {
+    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("data", new BsonInt32(42));
+
+    final String documentAsJson = document.toJson();
+
+    final Map<String, JsonNode> schemaMap = Map.of(
+        "_id", Jsons.jsonNode(Map.of("type", "string")),
+        "data", Jsons.jsonNode(Map.of("type", "object")));
+
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, schemaMap);
+
+    assertNotNull(transformed);
+    assertTrue(transformed.get("data").isTextual());
+    assertEquals("42", transformed.get("data").asText());
+  }
+
+  @Test
+  void testTransformDataTypesNoCoercionWhenTypesMatch() {
+    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("name", new BsonString("test"))
+        .append("nested", new Document("inner", "value"))
+        .append("items", List.of(1, 2, 3));
+
+    final String documentAsJson = document.toJson();
+
+    final Map<String, JsonNode> schemaMap = Map.of(
+        "_id", Jsons.jsonNode(Map.of("type", "string")),
+        "name", Jsons.jsonNode(Map.of("type", "string")),
+        "nested", Jsons.jsonNode(Map.of("type", "object")),
+        "items", Jsons.jsonNode(Map.of("type", "array")));
+
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, schemaMap);
+
+    assertNotNull(transformed);
+    assertTrue(transformed.get("name").isTextual());
+    assertEquals("test", transformed.get("name").asText());
+    assertTrue(transformed.get("nested").isObject());
+    assertEquals("value", transformed.get("nested").get("inner").asText());
+    assertTrue(transformed.get("items").isArray());
+    assertEquals(3, transformed.get("items").size());
+  }
+
+  @Test
+  void testTransformDataTypesCoercesDocumentToStringWhenSchemaExpectsNumber() {
+    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("score", new Document("raw", 95).append("weighted", 87.5));
+
+    final String documentAsJson = document.toJson();
+
+    final Map<String, JsonNode> schemaMap = Map.of(
+        "_id", Jsons.jsonNode(Map.of("type", "string")),
+        "score", Jsons.jsonNode(Map.of("type", "number")));
+
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, schemaMap);
+
+    assertNotNull(transformed);
+    assertTrue(transformed.get("score").isTextual());
+    final String scoreStr = transformed.get("score").asText();
+    assertTrue(scoreStr.contains("raw"));
+    assertTrue(scoreStr.contains("95"));
+  }
+
+  @Test
+  void testTransformDataTypesNullFieldNotCoerced() {
+    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("nullField", new BsonNull());
+
+    final String documentAsJson = document.toJson();
+
+    final Map<String, JsonNode> schemaMap = Map.of(
+        "_id", Jsons.jsonNode(Map.of("type", "string")),
+        "nullField", Jsons.jsonNode(Map.of("type", "object")));
+
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, schemaMap);
+
+    assertNotNull(transformed);
+    assertTrue(transformed.has("nullField"));
+    assertEquals(JsonNodeType.NULL, transformed.get("nullField").getNodeType());
+  }
+
+  @Test
+  void testToJsonNodeCoercesDocumentToStringWhenSchemaExpectsString() {
+    final Document document = new Document("_id", new ObjectId(OBJECT_ID))
+        .append("payload", new Document("action", "click"));
+
+    final Map<String, JsonNode> schemaMap = Map.of(
+        "_id", Jsons.jsonNode(Map.of("type", "string")),
+        "payload", Jsons.jsonNode(Map.of("type", "string")));
+
+    final JsonNode result = MongoDbCdcEventUtils.toJsonNode(document, schemaMap);
+
+    assertNotNull(result);
+    assertTrue(result.get("payload").isTextual());
+    assertTrue(result.get("payload").asText().contains("action"));
+    assertTrue(result.get("payload").asText().contains("click"));
+  }
+
 }
