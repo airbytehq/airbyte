@@ -9,9 +9,6 @@
             "id": {
               "type": ["null", "string"]
             },
-            "employee_id": {
-              "type": ["null", "string"]
-            },
             "location_id": {
               "type": ["null", "string"]
             },
