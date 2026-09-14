@@ -9,6 +9,12 @@ Calendly source syncs your organization members, groups, available event types, 
 | `api_key`    | `string` | API Key. Go to Integrations → API &amp; Webhooks to obtain your bearer token. https://calendly.com/integrations/api_webhooks |               |
 | `start_date` | `string` | Start date to sync scheduled events from.                                                                                    |               |
 
+:::note
+
+Calendly requires [authorization scopes](https://developer.calendly.com/docs/authentication/scopes) on newly created personal access tokens. When you create the token, select `users:read`, `event_types:read`, `groups:read`, `organizations:read`, and `scheduled_events:read`.
+
+:::
+
 ## Streams
 
 :::note

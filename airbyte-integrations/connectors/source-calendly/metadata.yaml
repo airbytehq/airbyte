@@ -42,6 +42,15 @@ data:
     - title: Calendly authentication
       url: https://developer.calendly.com/getting-started
       type: authentication_guide
+    - title: Calendly personal access tokens
+      url: https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens
+      type: authentication_guide
+    - title: Calendly authorization scopes
+      url: https://developer.calendly.com/docs/authentication/scopes
+      type: authentication_guide
+    - title: Calendly API release notes
+      url: https://developer.calendly.com/release-notes
+      type: api_release_history
     - title: Calendly API rate limits
       url: https://developer.calendly.com/api-docs/ZG9jOjM2MzE2MDM4-api-conventions#rate-limiting
       type: rate_limits
