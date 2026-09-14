@@ -64,10 +64,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.1.42 | 2026-10-06 | [87912](https://github.com/airbytehq/airbyte/pull/87912) | Update dependencies |
-| 0.1.41 | 2026-09-29 | [87212](https://github.com/airbytehq/airbyte/pull/87212) | Update dependencies |
-| 0.1.40 | 2026-09-22 | [86668](https://github.com/airbytehq/airbyte/pull/86668) | Update dependencies |
-| 0.1.39 | 2026-09-15 | [86108](https://github.com/airbytehq/airbyte/pull/86108) | Update dependencies |
+| 0.1.39 | 2026-09-14 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Migrate `actions` and `follow-ups` streams to the paginated `/v3` endpoints ahead of the `/v2` deprecation |
 | 0.1.38 | 2026-09-08 | [85534](https://github.com/airbytehq/airbyte/pull/85534) | Update dependencies |
 | 0.1.37 | 2026-08-18 | [84609](https://github.com/airbytehq/airbyte/pull/84609) | Update dependencies |
 | 0.1.36 | 2026-08-11 | [83968](https://github.com/airbytehq/airbyte/pull/83968) | Update dependencies |
