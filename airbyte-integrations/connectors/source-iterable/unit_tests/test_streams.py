@@ -58,6 +58,28 @@ def test_campaigns_paginates_from_first_request(config):
     assert responses.calls[1].request.url.endswith("campaigns?page=2&pageSize=1000")
 
 
+@responses.activate
+def test_python_campaigns_helper_paginates():
+    page_one = [{"id": index} for index in range(1000)]
+    page_two = [{"id": index} for index in range(1000, 1003)]
+    responses.get(
+        "https://api.iterable.com/api/campaigns",
+        json={"campaigns": page_one},
+        match=[responses.matchers.query_param_matcher({"page": "1", "pageSize": "1000"})],
+    )
+    responses.get(
+        "https://api.iterable.com/api/campaigns",
+        json={"campaigns": page_two},
+        match=[responses.matchers.query_param_matcher({"page": "2", "pageSize": "1000"})],
+    )
+
+    stream = Campaigns(authenticator=None)
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+    assert records == page_one + page_two
+    assert len(responses.calls) == 2
+
+
 def test_campaigns_metrics_csv():
     csv_string = "a,b,c,d\n1, 2,,3\n6,,1, 2\n"
     output = [{"a": 1, "b": 2, "d": 3}, {"a": 6, "c": 1, "d": 2}]
