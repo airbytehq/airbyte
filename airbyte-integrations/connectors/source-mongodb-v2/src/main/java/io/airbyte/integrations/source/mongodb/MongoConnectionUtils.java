@@ -31,9 +31,13 @@ public class MongoConnectionUtils {
   public static MongoClient createMongoClient(final MongoDbSourceConfig config) {
     final ConnectionString mongoConnectionString = new ConnectionString(buildConnectionString(config));
 
-    final MongoDriverInformation mongoDriverInformation = MongoDriverInformation.builder()
-        .driverName(DRIVER_NAME)
-        .build();
+    final MongoDriverInformation.Builder mongoDriverInformationBuilder = MongoDriverInformation.builder()
+        .driverName(DRIVER_NAME);
+    final String driverVersion = MongoConnectionUtils.class.getPackage().getImplementationVersion();
+    if (driverVersion != null) {
+      mongoDriverInformationBuilder.driverVersion(driverVersion);
+    }
+    final MongoDriverInformation mongoDriverInformation = mongoDriverInformationBuilder.build();
 
     final MongoClientSettings.Builder mongoClientSettingsBuilder = MongoClientSettings.builder()
         .applyConnectionString(mongoConnectionString);
