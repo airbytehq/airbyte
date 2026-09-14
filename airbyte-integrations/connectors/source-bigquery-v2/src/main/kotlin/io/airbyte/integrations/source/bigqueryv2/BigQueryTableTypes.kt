@@ -10,10 +10,11 @@ import java.util.concurrent.ConcurrentHashMap
  * Remembers the [TableDefinition.Type] of every table whose metadata was fetched during the current
  * operation, so that the query generator can tell tables from views.
  *
- * `TABLESAMPLE` is only legal on tables: BigQuery rejects it on views, materialized views and
- * external tables ("TABLESAMPLE is not supported on ..."). READ fetches the metadata of every
- * configured stream before creating partitions, so the type is known by the time a sampling query
- * is generated; anything unknown is assumed to be a table.
+ * `TABLESAMPLE` is only legal on base tables: BigQuery rejects it on views (and, per the message,
+ * on anything else) with "TABLESAMPLE SYSTEM can only be applied directly to base tables."
+ * (verified against the service on 2026-09-14). READ fetches the metadata of every configured
+ * stream before creating partitions, so the type is known by the time a sampling query is
+ * generated; anything unknown is assumed to be a table.
  */
 @Singleton
 class BigQueryTableTypes {
@@ -29,8 +30,7 @@ class BigQueryTableTypes {
     fun supportsTableSample(streamID: StreamIdentifier): Boolean =
         when (types[streamID]) {
             null,
-            TableDefinition.Type.TABLE,
-            TableDefinition.Type.SNAPSHOT -> true
+            TableDefinition.Type.TABLE -> true
             else -> false
         }
 }

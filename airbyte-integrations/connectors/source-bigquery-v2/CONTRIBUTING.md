@@ -169,24 +169,37 @@ the same configs, and `read` with configured catalogs derived from each image's 
   type upgrades listed above (382 typed `TIMESTAMP`/`DATE` columns, 217 typed `JSON` columns);
   two small tables differ only by `is_resumable: false` and `source_defined_cursor: false`, which
   the legacy connector did not emit at all.
-- `read`: same records (`INT64`, `NUMERIC`, `FLOAT64`, `BOOL`, `STRING`, `TIMESTAMP`, `JSON`) for
-  `id_and_name` (3 rows), a `NUMERIC`-keyed datatype table (5 rows) and two destination-written
-  tables (4 and 11 rows). Differences are the deliberate ones: `TIMESTAMP` keeps microseconds
-  (`2025-09-09T12:17:43.462000Z`, legacy `2025-09-09T12:17:43Z`) and `JSON` columns are emitted as
-  JSON rather than as a string. The state after an incremental read is
-  `{"primary_key":{},"cursors":{"id":3}}` (legacy `{"stream_name":...,"cursor_field":["id"],
-  "cursor":"3","cursor_record_count":1}`); resuming v2 from the **legacy** state file emits no
-  records, as the legacy connector would (`WHERE id > 3`).
+- `read`: identical record counts and values on 13 existing tables and one view, covering
+  `INT64`, `NUMERIC`, `BIGNUMERIC`, `FLOAT64`, `BOOL`, `STRING` (incl. a column named `interval`
+  and `STRING(100)`), `DATE`, `DATETIME`, `TIME`, `TIMESTAMP`, `INTERVAL`, `JSON` and
+  `ARRAY<STRING>`. The only differences are the deliberate ones: `DATE` is `2023-07-12` (legacy
+  `2023-07-12T00:00:00Z`), `DATETIME` is `2025-11-13T05:18:39.531834` (legacy appended `Z` and
+  dropped the fraction), `TIME` and `TIMESTAMP` keep microseconds, `JSON` columns are emitted as
+  JSON rather than as a string. `INTERVAL` renders identically (`2021-10 10 10:10:10`).
+- Incremental: with an `INT64`/`NUMERIC` cursor the state is `{"primary_key":{},"cursors":{"id":3}}`
+  (legacy `{"stream_name":...,"cursor_field":["id"],"cursor":"3","cursor_record_count":1}`); with
+  a `TIMESTAMP` cursor `{"cursors":{"updated_at":"2026-08-27T17:23:58.000000Z"}}` (legacy
+  `"cursor":"2026-08-27T17:23:58Z"`). Resuming v2 from the **legacy** state file emits no records
+  in both cases, as the legacy connector would (`WHERE cursor > value`); resuming from its own
+  state re-emits the rows sharing the boundary cursor value (Bulk CDK inclusive lower bound).
+- Views: BigQuery rejects the sampling query on a view with "TABLESAMPLE SYSTEM can only be
+  applied directly to base tables."; with `BigQueryTableTypes` v2 samples the view with plain
+  `LIMIT` queries and reads it (1017 rows, same as legacy).
+- `check` on a dataset without tables: v2 fails with "Discovered zero tables.", legacy succeeds
+  (confirmed on the real service). `discover` on a deleted dataset: both fail with
+  `Not found: Dataset <project>:<dataset>` (legacy wraps it in "Something went wrong").
 - **Known gap**: the Bulk CDK drops every column whose name starts with `_ab_` at READ time
   (`MetaField.isMetaFieldID`, meant for the CDC meta fields), so `test_parquet`'s
   `_ab_source_file_url` and `_ab_source_file_last_modified` are advertised by `discover` but
   missing from v2 records while legacy emitted them. Tables written by Airbyte destinations
   commonly have such columns; this needs a CDK change (skip only the connector's own meta fields).
 
-Not yet exercised against the real service (needs a seeded dataset; creating one with the shared
-key is pending approval): `DATE`, `DATETIME`, `TIME`, `BYTES`, `GEOGRAPHY`, `INTERVAL`, `RANGE`,
-`STRUCT`/`ARRAY` values, temporal cursors, `TABLESAMPLE` on views/external tables, primary keys
-declared by DDL, and the driver's `getColumns` output. All of these pass on the emulator.
+Not yet exercised against the real service, because no populated table with these types exists in
+the test project and creating one with the shared key is blocked pending approval: `STRUCT` and
+`ARRAY<STRUCT>` values, `BYTES`, `GEOGRAPHY`, `RANGE`, and primary keys declared by DDL. All of
+these pass on the emulator, and the nested-value conversion runs on the driver's own
+`java.sql.Struct`/`java.sql.Array` objects, which the emulator exercises through the same code
+path.
 
 ## Stage status and next steps
 
@@ -212,8 +225,10 @@ How `read` is put together:
   `WHERE cursor > <legacy cursor>`; a legacy state whose `cursor_field` does not match the
   configured cursor, or that cannot be interpreted, resets the stream.
 - `BigQueryTableTypes` remembers the `TableDefinition.Type` of every table fetched by the
-  metadata querier; `BigQuerySourceOperations` only emits `TABLESAMPLE SYSTEM` for tables and
-  snapshots and samples views, materialized views and external tables with a plain `LIMIT`.
+  metadata querier; `BigQuerySourceOperations` only emits `TABLESAMPLE SYSTEM` for base tables and
+  samples everything else (views, materialized views, external tables, snapshots) with a plain
+  `LIMIT`. Verified on the real service: a view fails with "TABLESAMPLE SYSTEM can only be applied
+  directly to base tables.", and a v2 `read` of a real view succeeds through the fallback.
 - `STRUCT`/`ARRAY` values arrive from the driver as `java.sql.Struct`/`java.sql.Array`;
   `BigQueryNestedValueGetter`/`BigQueryValues` convert them to JSON using the nested schema
   (struct attributes keyed by field name, nested temporals rendered with the CDK codecs, `JSON`

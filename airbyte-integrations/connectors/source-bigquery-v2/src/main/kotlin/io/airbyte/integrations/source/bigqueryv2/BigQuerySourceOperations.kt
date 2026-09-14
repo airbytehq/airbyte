@@ -123,8 +123,8 @@ constructor(
             is From -> "FROM ${tableReference(name, namespace)}"
             is FromSample -> {
                 // TABLESAMPLE SYSTEM is a BigQuery block-level sample; the percentage is a literal.
-                // It is rejected on views, materialized views and external tables, which are
-                // sampled with a plain LIMIT instead.
+                // It "can only be applied directly to base tables": views, materialized views,
+                // external tables and snapshots are sampled with a plain LIMIT instead.
                 val streamID =
                     StreamIdentifier.from(
                         StreamDescriptor().withName(name).withNamespace(namespace)
