@@ -22,7 +22,7 @@ data:
         strategy: fast
     breakingChanges:
       3.0.0:
-        message: "Monday.com is moving to OAuth 2.1 and stops accepting legacy OAuth access tokens on 2026-10-01 (https://developer-community.monday.com/product-updates/oauth-2-1-is-now-open-for-all-monday-developers-5326). The connector now authenticates through Monday's new token endpoint with PKCE and rotating refresh tokens. Sources that use the OAuth2.0 authorization method must be re-authenticated once after upgrading; sources that use a Personal API Token are not affected. See the [migration guide](https://docs.airbyte.com/integrations/sources/monday-migrations#upgrading-to-300) for details."
+        message: "Monday.com is moving to OAuth 2.1 and stops accepting legacy OAuth access tokens on 2026-10-01 (https://developer-community.monday.com/product-updates/oauth-2-1-is-now-open-for-all-monday-developers-5326). The connector now authenticates through Monday's new token endpoint with PKCE and rotating refresh tokens. Sources that use the OAuth2.0 authorization method stop syncing after the upgrade until they are re-authenticated once (Authenticate your Monday account); sources that use a Personal API Token are not affected. See the [migration guide](https://docs.airbyte.com/integrations/sources/monday-migrations#upgrading-to-300) for details."
         upgradeDeadline: "2026-10-01"
         deadlineAction: "auto_upgrade"
       2.0.0:

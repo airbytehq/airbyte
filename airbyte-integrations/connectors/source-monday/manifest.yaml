@@ -19,6 +19,10 @@ definitions:
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
     grant_type: refresh_token
     token_refresh_endpoint: https://auth.monday.com/oauth_ms/oauth/token
+    # surface Monday's token-endpoint rejections as a re-authenticate config error instead of a system error
+    refresh_token_error_status_codes: [400, 401]
+    refresh_token_error_key: error
+    refresh_token_error_values: [invalid_grant, invalid_client, invalid_token, invalid_request]
     refresh_token_updater:
       refresh_token_name: refresh_token
       access_token_config_path:
@@ -431,8 +435,9 @@ spec:
               token_expiry_date:
                 type: string
                 title: Token Expiry Date
-                description: The date-time when the access token expires and should be refreshed.
+                description: The date-time when the access token expires. Managed by the connector, do not edit.
                 format: date-time
+                airbyte_hidden: true
           - type: object
             title: API Token
             required:
@@ -477,6 +482,9 @@ spec:
           refresh_token:
             type: string
             path_in_connector_config: ["credentials", "refresh_token"]
+          token_expiry_date:
+            type: string
+            path_in_connector_config: ["credentials", "token_expiry_date"]
       complete_oauth_server_input_specification:
         type: object
         additionalProperties: true
@@ -523,9 +531,12 @@ spec:
           client_secret: "{{ client_secret_value }}"
           redirect_uri: "{{ redirect_uri_value }}"
           code_verifier: "{{ state_value }}"
+        # expires_in (86400 s on the live endpoint) becomes token_expiry_date, so the first check after
+        # authorization uses the fresh access token instead of rotating the single-use refresh token
         extract_output:
           - access_token
           - refresh_token
+          - expires_in
       oauth_user_input_from_connector_config_specification:
         type: object
         additionalProperties: false

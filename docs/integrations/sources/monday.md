@@ -30,7 +30,7 @@ For more details, see Monday.com's [authentication documentation](https://develo
 3. Click **Authenticate your Monday account**.
 4. Complete the authentication flow using your Monday.com credentials.
 
-Airbyte stores the access token together with a refresh token and refreshes the access token automatically. Sources authenticated with connector versions earlier than 3.0.0 must be re-authenticated once before October 1, 2026. See the [migration guide](monday-migrations.md#upgrading-to-300).
+Airbyte stores the access token together with a refresh token and refreshes the access token automatically. Sources authenticated with connector versions earlier than 3.0.0 must be upgraded to 3.0.0 and then re-authenticated once, before October 1, 2026. See the [migration guide](monday-migrations.md#upgrading-to-300).
 
 The connector requests the following OAuth scopes: `me:read`, `boards:read`, `workspaces:read`, `users:read`, `account:read`, `updates:read`, `assets:read`, `tags:read`, and `teams:read`.
 

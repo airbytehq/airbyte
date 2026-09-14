@@ -1,10 +1,12 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+from datetime import timedelta
 from unittest import TestCase
 from urllib.parse import parse_qs
 
 from airbyte_cdk.models import SyncMode, Type
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
 from .monday_requests import TeamsRequestBuilder
@@ -61,6 +63,32 @@ class TestOAuthAuthentication(TestCase):
         assert updated_credentials["access_token"] == "new-access"
         assert updated_credentials["refresh_token"] == "new-refresh"
         assert updated_credentials["token_expiry_date"]
+
+    @HttpMocker()
+    def test_given_unexpired_token_when_read_then_no_token_refresh(self, http_mocker):
+        config = (
+            ConfigBuilder()
+            .with_oauth_credentials(
+                client_id="client-id",
+                client_secret="client-secret",
+                access_token="current-access",
+                subdomain="airbyte",
+                refresh_token="old-refresh",
+                token_expiry_date=(ab_datetime_now() + timedelta(hours=1)).isoformat(),
+            )
+            .build()
+        )
+
+        http_mocker.post(
+            TeamsRequestBuilder.teams_endpoint(ApiTokenAuthenticator("current-access")).build(),
+            TeamsResponseBuilder.teams_response().with_record(TeamsRecordBuilder.teams_record()).build(),
+        )
+
+        output = read_stream("teams", SyncMode.full_refresh, config)
+
+        assert len(output.records) == 1
+        assert [request.url for request in http_mocker._mocker.request_history if request.url == _TOKEN_REFRESH_ENDPOINT] == []
+        assert output.get_message_by_types([Type.CONTROL]) == []
 
     @HttpMocker()
     def test_given_api_token_config_when_read_then_no_token_refresh(self, http_mocker):
