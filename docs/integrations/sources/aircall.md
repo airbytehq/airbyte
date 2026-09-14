@@ -54,7 +54,7 @@ The Aircall source connector supports the following [sync modes](https://docs.ai
 - numbers
 - tags
 - user_availability
-- users
+- users (uses the Aircall User V2 API)
 - teams
 - webhooks
 
@@ -77,6 +77,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                                   | Subject                     |
 | :------ | :--------- | :----------------------------------------------------------------------------- | :-------------------------- |
+| 0.4.22 | 2026-09-14 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Migrate the `users` stream to the Aircall User V2 API ahead of the V1 sunset and add pagination |
 | 0.4.21 | 2026-09-08 | [85381](https://github.com/airbytehq/airbyte/pull/85381) | Update dependencies |
 | 0.4.20 | 2026-08-18 | [84505](https://github.com/airbytehq/airbyte/pull/84505) | Update dependencies |
 | 0.4.19 | 2026-08-11 | [83832](https://github.com/airbytehq/airbyte/pull/83832) | Update dependencies |
