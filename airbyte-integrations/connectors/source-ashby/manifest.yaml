@@ -27,7 +27,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /application.list
         http_method: POST
         request_body_json:
@@ -242,6 +242,223 @@ streams:
               - string
             format: date-time
   - type: DeclarativeStream
+    name: application_feedback
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ashbyhq.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: ""
+        path: /applicationFeedback.list
+        http_method: POST
+        request_body_json:
+          createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: cursor
+        page_size_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.nextCursor }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          applicationId:
+            type:
+              - "null"
+              - string
+          applicationHistoryId:
+            type:
+              - "null"
+              - string
+          feedbackFormDefinitionId:
+            type:
+              - "null"
+              - string
+          interviewId:
+            type:
+              - "null"
+              - string
+          interviewEventId:
+            type:
+              - "null"
+              - string
+          submittedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          submittedByUser:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              firstName:
+                type:
+                  - "null"
+                  - string
+              lastName:
+                type:
+                  - "null"
+                  - string
+              email:
+                type:
+                  - "null"
+                  - string
+              globalRole:
+                type:
+                  - "null"
+                  - string
+              isEnabled:
+                type:
+                  - "null"
+                  - boolean
+              updatedAt:
+                type:
+                  - "null"
+                  - string
+                format: date-time
+          creditedToUser:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              firstName:
+                type:
+                  - "null"
+                  - string
+              lastName:
+                type:
+                  - "null"
+                  - string
+              email:
+                type:
+                  - "null"
+                  - string
+              globalRole:
+                type:
+                  - "null"
+                  - string
+              isEnabled:
+                type:
+                  - "null"
+                  - boolean
+              updatedAt:
+                type:
+                  - "null"
+                  - string
+                format: date-time
+          formDefinition:
+            type:
+              - "null"
+              - object
+            properties:
+              sections:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: object
+                  properties:
+                    title:
+                      type:
+                        - "null"
+                        - string
+                    fields:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type: object
+                        properties:
+                          isRequired:
+                            type:
+                              - "null"
+                              - boolean
+                          field:
+                            type:
+                              - "null"
+                              - object
+                            properties:
+                              id:
+                                type:
+                                  - "null"
+                                  - string
+                              type:
+                                type:
+                                  - "null"
+                                  - string
+                              path:
+                                type:
+                                  - "null"
+                                  - string
+                              title:
+                                type:
+                                  - "null"
+                                  - string
+                              humanReadablePath:
+                                type:
+                                  - "null"
+                                  - string
+                              isNullable:
+                                type:
+                                  - "null"
+                                  - boolean
+                              selectableValues:
+                                type:
+                                  - "null"
+                                  - array
+                                items:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type:
+                                        - "null"
+                                        - string
+                                    value:
+                                      type:
+                                        - "null"
+                                        - string
+          submittedValues:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+  - type: DeclarativeStream
     name: archive_reasons
     primary_key:
       - id
@@ -253,7 +470,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /archiveReason.list
         http_method: POST
       record_selector:
@@ -311,7 +528,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /candidateTag.list
         http_method: POST
       record_selector:
@@ -365,7 +582,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /candidate.list
         http_method: POST
       record_selector:
@@ -669,7 +886,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /customField.list
         http_method: POST
       record_selector:
@@ -749,7 +966,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /department.list
         http_method: POST
       record_selector:
@@ -825,7 +1042,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /feedbackFormDefinition.list
         http_method: POST
       record_selector:
@@ -902,7 +1119,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /interviewSchedule.list
         http_method: POST
         request_body_json:
@@ -1047,9 +1264,11 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /interview.list
         http_method: POST
+        request_body_json:
+          includeNonSharedInterviews: true
       record_selector:
         type: RecordSelector
         extractor:
@@ -1082,6 +1301,50 @@ streams:
               - "null"
               - string
           applicationId:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          externalTitle:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          isArchived:
+            type:
+              - "null"
+              - boolean
+          isDebrief:
+            type:
+              - "null"
+              - boolean
+          isFeedbackRequired:
+            type:
+              - "null"
+              - boolean
+          isFeedbackRequested:
+            type:
+              - "null"
+              - boolean
+          instructionsHtml:
+            type:
+              - "null"
+              - string
+          instructionsPlain:
+            type:
+              - "null"
+              - string
+          jobId:
+            type:
+              - "null"
+              - string
+          feedbackFormDefinitionId:
             type:
               - "null"
               - string
@@ -1150,7 +1413,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /interviewStage.list
         http_method: POST
       record_selector:
@@ -1220,7 +1483,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /jobPosting.list
         http_method: POST
       record_selector:
@@ -1348,7 +1611,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /job.list
         http_method: POST
       record_selector:
@@ -1521,7 +1784,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /location.list
         http_method: POST
       record_selector:
@@ -1608,7 +1871,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /offer.list
         http_method: POST
       record_selector:
@@ -1728,7 +1991,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /source.list
         http_method: POST
       record_selector:
@@ -1799,7 +2062,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /user.list
         http_method: POST
       record_selector:
@@ -1879,7 +2142,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /application.listCriteriaEvaluations
         http_method: POST
         request_body_json:
@@ -1909,7 +2172,7 @@ streams:
                   authenticator:
                     type: BasicHttpAuthenticator
                     username: "{{ config['api_key'] }}"
-                    password: "{{ config['api_key'] }}"
+                    password: ""
                   path: /application.list
                   http_method: POST
                   request_body_json:
@@ -2048,7 +2311,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /application.listHistory
         http_method: POST
         request_body_json:
@@ -2123,7 +2386,7 @@ streams:
                   authenticator:
                     type: BasicHttpAuthenticator
                     username: "{{ config['api_key'] }}"
-                    password: "{{ config['api_key'] }}"
+                    password: ""
                   path: /application.list
                   http_method: POST
                   request_body_json:
@@ -2266,6 +2529,7 @@ spec:
 metadata:
   autoImportSchema:
     applications: false
+    application_feedback: false
     archive_reasons: false
     candidate_tags: false
     candidates: false
