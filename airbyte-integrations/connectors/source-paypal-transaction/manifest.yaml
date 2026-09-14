@@ -46,6 +46,9 @@ definitions:
                       {{ 'Data for the given start date is not available' in
                       response['message']}}
                 # Asks the retriever to narrow the date window on HTTP 400 RESULTSET_TOO_LARGE.
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 100
               - type: CustomErrorHandler
                 class_name: source_declarative_manifest.components.ResultSetTooLargeErrorHandler
         record_selector:
