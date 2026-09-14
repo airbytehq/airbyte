@@ -62,4 +62,7 @@ data:
     - title: SQL reference
       url: https://clickhouse.com/docs/en/sql-reference
       type: sql_reference
+    - title: ClickHouse server source code
+      url: https://github.com/ClickHouse/ClickHouse
+      type: code_repository
 metadataSpecVersion: "1.0"
