@@ -76,6 +76,10 @@ The Amazon Ads source connector supports only **seller** and **vendor** profile 
 Both **view** and **edit** access levels are supported. Accounts with view-only permissions (common for Vendor Central accounts) will retrieve profiles and sync data normally.
 :::
 
+:::important
+Amazon Ads refresh tokens expire **365 days** after the advertiser grants consent. When a refresh token expires, the connector surfaces a configuration error indicating the token is invalid. To resolve this, re-authenticate your Amazon Ads account to generate a new refresh token. For Airbyte Cloud users, click **Authenticate your Amazon Ads account** in the source settings. For Open Source users, follow the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) to obtain a new refresh token.
+:::
+
 ## Supported sync modes
 
 The Amazon Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
@@ -222,6 +226,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 9.2.2 | 2026-09-14 | [78506](https://github.com/airbytehq/airbyte/pull/78506) | Handle expired refresh tokens as configuration errors |
 | 9.2.1 | 2026-09-08 | [84485](https://github.com/airbytehq/airbyte/pull/84485) | Update dependencies |
 | 9.2.0 | 2026-08-20 | [74367](https://github.com/airbytehq/airbyte/pull/74367) | Add Sponsored Products Search Terms report streams (summary and daily) using the `spSearchTerm` report type |
 | 9.1.1 | 2026-08-26 | [84981](https://github.com/airbytehq/airbyte/pull/84981) | Bump base image to source-declarative-manifest 7.28.2 |
