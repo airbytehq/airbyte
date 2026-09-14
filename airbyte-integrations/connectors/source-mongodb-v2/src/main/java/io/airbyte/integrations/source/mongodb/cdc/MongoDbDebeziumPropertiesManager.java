@@ -50,6 +50,8 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   static final String MONGODB_SSL_ENABLED_KEY = "mongodb.ssl.enabled";
   static final String MONGODB_SSL_ENABLED_VALUE = Boolean.TRUE.toString();
   static final String MONGODB_USER_KEY = "mongodb.user";
+  static final String MAX_BATCH_SIZE_KEY = "max.batch.size";
+  static final String MAX_BATCH_SIZE_VALUE = "256";
 
   public MongoDbDebeziumPropertiesManager(final Properties properties,
                                           final JsonNode config,
@@ -78,6 +80,9 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
     if (config.has(UPDATE_CAPTURE_MODE) && config.get(UPDATE_CAPTURE_MODE).asText().equals(CAPTURE_MODE_POST_IMAGE_OPTION)) {
       properties.setProperty(MONGODB_POST_IMAGE_KEY, MONGODB_POST_IMAGE_VALUE);
     }
+    // MongoDB change events (full document + pre-image) can be several MB each; Debezium's in-flight
+    // batch is bounded only by count, so keep it small to cap heap usage.
+    properties.setProperty(MAX_BATCH_SIZE_KEY, MAX_BATCH_SIZE_VALUE);
     return properties;
   }
 
