@@ -68,5 +68,68 @@
       "stream_descriptor": { "name": "applications" },
       "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "attachments" },
+      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "candidate_educations" },
+      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "candidate_employments" },
+      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "applied_candidate_tags" },
+      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "candidate_attribute_types" },
+      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "referrers" },
+      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "application_stages" },
+      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "rejection_details" },
+      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "prospect_details" },
+      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z" }
+    }
   }
 ]

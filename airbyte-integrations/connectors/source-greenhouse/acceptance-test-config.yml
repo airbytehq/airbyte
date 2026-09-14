@@ -28,6 +28,14 @@ acceptance_tests:
             bypass_reason: "No data"
           - name: user_permissions
             bypass_reason: "No Data"
+          - name: applied_candidate_tags
+            bypass_reason: "Test account has no candidate tags applied"
+          - name: candidate_attribute_types
+            bypass_reason: "Test account has no per-job candidate attribute types configured"
+          - name: prospect_details
+            bypass_reason: "Test account has no prospects"
+          - name: referrers
+            bypass_reason: "Test account has no referred candidates"
   full_refresh:
     tests:
       - config_path: "secrets/config_oauth.json"
