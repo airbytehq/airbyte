@@ -51,6 +51,32 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    no other stream replicates deletions, and `is_deleted` on other records is passed through as
    returned. Details in AGENTS.md section 8.
 
+## OAuth app scopes
+
+The Airbyte OAuth app must carry these Pipedrive scopes (Developer Hub name, scope key) for every
+stream to read; a missing scope surfaces as a `403 Scope and URL mismatch` config error:
+
+| Developer Hub toggle | Scope | Streams |
+| :------------------- | :---- | :------ |
+| Access to basic information | `base` | `currencies` (check stream), `users/me` |
+| Deals: Read only | `deals:read` | `deals`, `deals_archived`, `deal_fields`, `deal_products`, `deal_installments`, `pipelines`, `stages`, `filters`, `notes`, `files` |
+| Contacts: Read only | `contacts:read` | `persons`, `organizations`, `person_fields`, `organization_fields` |
+| Activities: Read only | `activities:read` | `activities`, `activity_fields`, `activity_types` |
+| Products: Read only | `products:read` | `products`, `product_fields` |
+| Leads: Read only | `leads:read` | `leads`, `lead_labels`, `lead_sources` |
+| Mail: Read only | `mail:read` | `mail`, `mailThreads` |
+| Read users data | `users:read` | `users`, `legacy_teams` |
+| Administer account | `admin` | `roles`, `permission_sets`, `permission_set_assignments` |
+| Goals: Read only | `goals:read` | `goals` |
+| Projects: Read only | `projects:read` | `projects`, `tasks` |
+| Call logs | `phone-integration` | `call_logs` |
+| See recent account activity | `recents:read` | `deal_flow` |
+
+`roles` and `GET /callLogs` need `admin` and `phone-integration` even though the
+vendor scope reference lists them under `users:read` and write-only call-log
+endpoints (verified live). Re-run one consent flow after any scope change; an
+existing refresh token does not gain new scopes.
+
 ## Testing notes
 
 - Validate manifest changes with `airbyte-cdk connector test` from the connector directory;
