@@ -4,11 +4,9 @@ This page contains the setup guide and reference information for the Twilio sour
 
 ## Prerequisites
 
-Twilio HTTP requests to the REST API are protected with HTTP Basic authentication. In short, you will use your Twilio Account SID as the username and your Auth Token as the password for HTTP Basic authentication.
-
-You can find your Account SID and Auth Token in the [Twilio Console](https://console.twilio.com/).
-
-Use credentials for the Twilio account whose resources you want to sync. Main account credentials can access main account resources and v2010 REST API resources for subaccounts. Subaccount credentials can access only that subaccount. Twilio notes that resources on product-specific subdomains, such as Studio and Conversations, must be accessed directly with credentials for the account that owns those resources.
+- A Twilio **Account SID** and **Auth Token**. Find both in the [Twilio Console](https://console.twilio.com/).
+- Use credentials for the Twilio account whose resources you want to sync. Main account credentials can access main account resources and v2010 REST API resources for subaccounts. Subaccount credentials can access only that subaccount.
+- Resources on product-specific subdomains (Studio, Conversations, Verify) must be accessed with credentials for the account that owns those resources.
 
 For more information, see the [Twilio API authentication documentation](https://www.twilio.com/docs/iam/api).
 
@@ -81,7 +79,9 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 | [Keys](https://www.twilio.com/docs/usage/api/keys#read-a-key-resource) | Full refresh |
 | [Message Media](https://www.twilio.com/docs/sms/api/media-resource#read-multiple-media-resources) | Full refresh, incremental |
 | [Messages](https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources) | Full refresh, incremental |
+| [Messaging Pricing Countries](https://www.twilio.com/docs/messaging/api/pricing#fetch-a-countries-resource) | Full refresh |
 | [Outgoing Caller IDs](https://www.twilio.com/docs/voice/api/outgoing-caller-ids#outgoingcallerids-list-resource) | Full refresh |
+| [Phone Number Pricing Countries](https://www.twilio.com/docs/phone-numbers/pricing#pricing-phone-numbers-country-instance-resource) | Full refresh |
 | [Queues](https://www.twilio.com/docs/voice/api/queue-resource#read-multiple-queue-resources) | Full refresh |
 | [Recordings](https://www.twilio.com/docs/voice/api/recording#read-multiple-recording-resources) | Full refresh, incremental |
 | [Roles](https://www.twilio.com/docs/conversations/api/role-resource#read-multiple-role-resources) | Full refresh |
@@ -94,10 +94,29 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 | [User Conversations](https://www.twilio.com/docs/conversations/api/user-conversation-resource#list-all-of-a-users-conversations) | Full refresh |
 | [Users](https://www.twilio.com/docs/conversations/api/user-resource) | Full refresh |
 | [Verify Services](https://www.twilio.com/docs/verify/api/service#maincontent) | Full refresh |
+| [Voice Pricing Countries](https://www.twilio.com/docs/voice/pricing#pricing-voice-country-instance-resource) | Full refresh |
+
+### Pricing streams
+
+The `voice_pricing_countries`, `messaging_pricing_countries`, and `phone_number_pricing_countries` streams return per-country price lists from Twilio's Pricing API. Each stream first pages through the list of supported countries, then makes one additional request per country to fetch that country's prices, so a sync of these streams makes more API requests than there are supported countries. Prices are specific to the account you authenticate with: `base_price` is Twilio's list price and `current_price` includes any volume or custom discounts on your account. Each record is keyed by `iso_country`.
 
 ## Upgrading to 1.0.0
 
 Version `1.0.0` moves the `services` and `roles` streams from the deprecated Programmable Chat API to the Conversations API. If your connections sync either stream, refresh the source schema and clear data for those streams after upgrading. For the full list of schema changes and migration steps, see the [migration guide](./twilio-migrations.md#upgrading-to-100).
+
+## Limitations
+
+### 400-day data availability window
+
+The `messages`, `recordings`, and `message_media` streams only sync data from the last 400 days, regardless of the configured **Replication Start Date**. This matches [Twilio's default Message Log retention](https://www.twilio.com/en-us/blog/new-data-controls-twilio-messaging), which stores message records and media for up to 13 months (approximately 400 days). If your **Replication Start Date** is more than 400 days in the past, those streams begin from 400 days ago. Other streams respect the configured start date without this cap.
+
+To retrieve records older than 400 days, use Twilio's [Bulk Export API](https://www.twilio.com/docs/usage/bulkexport) outside of this connector.
+
+### Conference participants cover only active conferences
+
+The `conference_participants` stream returns participants only for conferences that are still active (`init` or `in-progress`). Twilio's [Participants subresource](https://www.twilio.com/docs/voice/api/conference-participant-resource#read-multiple-participant-resources) manages only active participants of in-progress conferences, so participants of a conference that has already completed aren't returned and can't be synced. To capture participant activity for the full lifetime of a conference, subscribe to Twilio [conference status callbacks](https://www.twilio.com/docs/voice/api/conference-resource) in your own application and store the events as participants join and leave.
+
+The `conferences` stream itself isn't affected by this limitation and syncs conferences in all statuses (`init`, `in-progress`, and `completed`).
 
 ## Performance considerations
 
@@ -128,7 +147,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 ## Reference
 
-This connector uses REST APIs, including the `https://api.twilio.com/2010-04-01`, `https://monitor.twilio.com/v1`, `https://conversations.twilio.com/v1`, `https://studio.twilio.com/v1`, `https://trunking.twilio.com/v1`, and `https://verify.twilio.com/v2` API endpoints.
+This connector uses REST APIs, including the `https://api.twilio.com/2010-04-01`, `https://monitor.twilio.com/v1`, `https://conversations.twilio.com/v1`, `https://studio.twilio.com/v1`, `https://trunking.twilio.com/v1`, `https://verify.twilio.com/v2`, `https://pricing.twilio.com/v1`, and `https://pricing.twilio.com/v2` API endpoints.
 
 For programmatic configuration, use these parameter names:
 
@@ -148,6 +167,18 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.0 | 2026-09-08 | [85748](https://github.com/airbytehq/airbyte/pull/85748) | Promoting release candidate 1.1.0-rc.1 to a main version. |
+| 1.1.0-rc.1 | 2026-08-13 | [84203](https://github.com/airbytehq/airbyte/pull/84203) | Add voice, messaging, and phone number pricing country streams |
+| 1.0.13 | 2026-08-11 | [84128](https://github.com/airbytehq/airbyte/pull/84128) | Update dependencies |
+| 1.0.12 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 1.0.11 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 1.0.9 — 1.0.10 is built on SDM 7.23.7, which breaks bundled custom components |
+| 1.0.10 | 2026-07-28 | [83134](https://github.com/airbytehq/airbyte/pull/83134) | Update dependencies |
+| 1.0.9 | 2026-07-21 | [82618](https://github.com/airbytehq/airbyte/pull/82618) | Update dependencies |
+| 1.0.8 | 2026-07-14 | [82053](https://github.com/airbytehq/airbyte/pull/82053) | Update dependencies |
+| 1.0.7 | 2026-07-09 | [80330](https://github.com/airbytehq/airbyte/pull/80330) | Add `Status` filter to `conferences` and `conference_participants` streams to retrieve conferences in all statuses (`init`, `in-progress`, `completed`) after Twilio's July 2026 API default change |
+| 1.0.6 | 2026-06-30 | [81294](https://github.com/airbytehq/airbyte/pull/81294) | Update dependencies |
+| 1.0.5 | 2026-06-23 | [80703](https://github.com/airbytehq/airbyte/pull/80703) | Update dependencies |
+| 1.0.4 | 2026-06-22 | [80282](https://github.com/airbytehq/airbyte/pull/80282) | Fix `messages` and `recordings` incremental state getting stuck near the start date by aligning `cursor_granularity` with the second-precision `datetime_format`. |
 | 1.0.3 | 2026-06-16 | [80075](https://github.com/airbytehq/airbyte/pull/80075) | Update dependencies |
 | 1.0.2 | 2026-06-09 | [79553](https://github.com/airbytehq/airbyte/pull/79553) | Update dependencies |
 | 1.0.1 | 2026-06-02 | [79027](https://github.com/airbytehq/airbyte/pull/79027) | Update dependencies |
