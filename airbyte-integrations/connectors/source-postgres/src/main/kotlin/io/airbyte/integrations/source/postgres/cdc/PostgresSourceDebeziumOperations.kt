@@ -414,6 +414,9 @@ class PostgresSourceDebeziumOperations(
     override fun position(sourceRecord: SourceRecord): PostgresSourceCdcPosition? {
         val lsn = sourceRecord.sourceOffset()[LSN] as Long?
         val lsnCommit = sourceRecord.sourceOffset()[LSN_COMMIT] as Long?
-        return PostgresSourceCdcPosition(Lsn.valueOf(lsn), Lsn.valueOf(lsnCommit))
+        return PostgresSourceCdcPosition(
+            lsnCommit = Lsn.valueOf(lsnCommit),
+            lsn = Lsn.valueOf(lsn),
+        )
     }
 }
