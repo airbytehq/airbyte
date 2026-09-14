@@ -16,7 +16,7 @@ import yaml
 from .conftest import _YAML_FILE_PATH
 
 
-# The Website / App / Shop legs, added to every daily report stream.
+# The Website / App / Shop legs, added to the ad, ad group and campaign daily report streams.
 FUNNEL_LEGS = [
     "web_event_add_to_cart",
     "page_content_view_events",
