@@ -30,7 +30,7 @@ Google Ads API access levels are granted to the Google Cloud project that owns y
 3. Confirm the project shows at least **Basic** access. Projects with only Test access can't read production Google Ads accounts and fail with `ACTION_NOT_PERMITTED` (or `CLOUD_PROJECT_NOT_APPROVED_FOR_PRODUCTION` on newer API versions).
 
 :::note
-If you already had an approved developer token, Google transferred its access level to every Google Cloud project that used it in the 90 days before September 9, 2026. If your OAuth client's project did not inherit the access level, apply for access from that project's Google Ads API Overview page. Airbyte still requires a value in the **Developer Token** field; enter your existing token, or any placeholder string if you never had one.
+If you already had an approved developer token, Google transferred its access level to every Google Cloud project that used it in the 90 days before September 9, 2026. If your OAuth client's project did not inherit the access level, apply for access from that project's Google Ads API Overview page. Airbyte still requires a value in the **Developer Token** field; enter your existing token, or any non-empty placeholder string (for example, `placeholder`) if you never had one. Google rejects an empty value with `DEVELOPER_TOKEN_PARAMETER_MISSING`.
 :::
 
 #### Step 2: (For Airbyte Open Source) Obtain your OAuth credentials
@@ -73,7 +73,7 @@ Use the Airbyte API to create OAuth override credentials for the workspace or or
 
 For Google Ads, set `actorType` to `source`, set `name` to `google-ads`, and include your Google OAuth app credentials and Google Ads developer token in `configuration.credentials`.
 
-Google ignores the `developer_token` value since September 9, 2026 (see the [developer token sunset guide](https://developers.google.com/google-ads/api/docs/api-policy/developer-token)); the field is still required by the connector, so pass your existing token or any placeholder string. API access is granted to the Google Cloud project that owns your OAuth app, so make sure that project has at least Basic access on its Google Ads API Overview page.
+Google ignores the `developer_token` value since September 9, 2026 (see the [developer token sunset guide](https://developers.google.com/google-ads/api/docs/api-policy/developer-token)); the field is still required by the connector, so pass your existing token or any non-empty placeholder string (an empty string is rejected by Google). API access is granted to the Google Cloud project that owns your OAuth app, so make sure that project has at least Basic access on its Google Ads API Overview page.
 
 ```json
 {
@@ -128,7 +128,7 @@ If you are accessing your account through a Google Ads Manager account, you must
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Ads** from the list of available sources.
 4. Enter a **Source name** of your choosing.
-5. Enter a **Developer Token**. Google ignores this value since September 9, 2026; use your existing token or any placeholder string.
+5. Enter a **Developer Token**. Google ignores this value since September 9, 2026; use your existing token or any non-empty placeholder string.
 6. To authenticate your Google account, enter your Google application's **Client ID**, **Client Secret**, **Refresh Token**, and optionally, the **Access Token**.
 7. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field blank will replicate data from all connected accounts.
 8. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v23/CustomerStatusEnum.CustomerStatus) for more info.
