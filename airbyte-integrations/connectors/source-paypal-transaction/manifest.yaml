@@ -32,22 +32,26 @@ definitions:
             Content-Type: application/json
           error_handler:
             type: CompositeErrorHandler
+            # The custom handler returns None for other responses, and CompositeErrorHandler keeps the last handler's resolution, so the DefaultErrorHandler must come last.
             error_handlers:
+              - type: CustomErrorHandler
+                class_name: source_declarative_manifest.components.ResultSetTooLargeErrorHandler
+                # Asks the retriever to narrow the date window on HTTP 400 RESULTSET_TOO_LARGE.
               - type: DefaultErrorHandler
                 description: >-
-                  Handle HTTP 400 with error message: Data for the given start
+                  Handle HTTP 400 or 404 with error message: Data for the given start
                   date is not available. 
                 response_filters:
                   - type: HttpResponseFilter
                     http_codes:
                       - 400
+                      - 404
                     action: FAIL
+                    failure_type: transient_error
+                    error_message: "PayPal transaction data for the requested start date is not available yet (PayPal publishes with up to 3 hours delay)."
                     predicate: >-
                       {{ 'Data for the given start date is not available' in
                       response['message']}}
-                # Asks the retriever to narrow the date window on HTTP 400 RESULTSET_TOO_LARGE.
-              - type: CustomErrorHandler
-                class_name: source_declarative_manifest.components.ResultSetTooLargeErrorHandler
         record_selector:
           type: RecordSelector
           extractor:
@@ -96,7 +100,7 @@ definitions:
           type: MinMaxDatetime
           datetime: >-
             {{ format_datetime(config.get('end_date') if config.get('end_date')
-            else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}
+            else (now_utc() - duration('PT3H')), '%Y-%m-%dT%H:%M:%SZ') }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P{{ config.get('time_window', 7) }}D
         cursor_granularity: PT1S
@@ -543,8 +547,9 @@ spec:
           href=\"https://datatracker.ietf.org/doc/html/rfc3339#section-5.6\">ISO
           format</a>. This can be help you select specific range of time, mainly
           for test purposes  or data integrity tests. When this is not used,
-          now_utc() is used by the streams. This does not apply to Disputes and
-          Product streams.
+          now_utc() is used by the streams. The transactions stream uses
+          now_utc() minus 3 hours to allow for PayPal's data-availability delay.
+          This does not apply to Disputes and Product streams.
         title: End Date
         examples:
           - "2021-06-11T23:59:59Z"

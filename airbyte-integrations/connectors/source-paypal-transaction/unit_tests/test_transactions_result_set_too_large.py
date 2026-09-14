@@ -5,6 +5,9 @@ from pathlib import Path
 from typing import Any, Dict, List
 from unittest import TestCase
 
+import pytest
+from freezegun import freeze_time
+
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -128,3 +131,58 @@ class ResultSetTooLargeTest(TestCase):
 
         assert output.errors
         assert output.errors[-1].trace.error.failure_type == FailureType.config_error
+
+
+@pytest.mark.parametrize(
+    "status_code",
+    [
+        pytest.param(400, id="http_400"),
+        pytest.param(404, id="http_404"),
+    ],
+)
+@HttpMocker()
+def test_given_start_date_not_available_when_read_then_transient_error_without_retry(status_code: int, **kwargs: Any) -> None:
+    http_mocker = kwargs["http_mocker"]
+    http_mocker.clear_all_matchers()
+    _mock_authentication(http_mocker)
+    transactions_request = _transactions_request(*_FIRST_WINDOW)
+    http_mocker.get(
+        transactions_request,
+        HttpResponse(
+            json.dumps(
+                {
+                    "name": "INVALID_REQUEST",
+                    "message": "Data for the given start date is not available.",
+                    "debug_id": "x",
+                    "details": [],
+                    "links": [],
+                }
+            ),
+            status_code=status_code,
+        ),
+    )
+
+    output = _read(_config(end_date=_FIRST_WINDOW[1]), expecting_exception=True)
+
+    stream_error = output.errors[0].trace.error
+    assert stream_error.failure_type == FailureType.transient_error
+    assert "PayPal transaction data for the requested start date is not available yet" in stream_error.message
+    http_mocker.assert_number_of_calls(transactions_request, 1)
+
+
+@freeze_time("2024-01-03T03:00:00Z")
+@HttpMocker()
+def test_given_no_end_date_in_config_when_read_then_end_datetime_lags_now_by_three_hours(
+    **kwargs: Any,
+) -> None:
+    http_mocker = kwargs["http_mocker"]
+    _mock_authentication(http_mocker)
+    config = _config()
+    config.pop("end_date")
+    http_mocker.get(_transactions_request(*_FIRST_WINDOW), _transactions_response(["first-window"]))
+    http_mocker.get(_transactions_request(*_SECOND_WINDOW), _transactions_response(["second-window"]))
+
+    output = _read(config)
+
+    assert len(output.records) == 2
+    assert not output.errors
