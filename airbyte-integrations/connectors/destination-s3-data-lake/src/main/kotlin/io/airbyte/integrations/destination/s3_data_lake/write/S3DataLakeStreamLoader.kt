@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
+import io.airbyte.integrations.destination.s3_data_lake.schema.S3DataLakeTableSchemaMapper
 import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_CATALOG_NAME
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -55,7 +56,12 @@ class S3DataLakeStreamLoader(
      * the other hand, arrive keyed by the *final* column names resolved by the CDK (see
      * [io.airbyte.cdk.load.schema.TableSchemaMapper]), so the two have to agree. Rename the
      * top-level user columns here, keeping field IDs (and therefore identifier fields and sort
-     * order) intact. Airbyte meta columns are never renamed.
+     * order) intact.
+     *
+     * Airbyte meta columns are skipped: they are not part of the stream's input schema, so
+     * [io.airbyte.cdk.load.schema.model.StreamTableSchema.getFinalColumnName] has no mapping for
+     * them, and their names (`_airbyte_raw_id`, ...) are already lowercase alphanumeric/underscore,
+     * so normalization would leave them unchanged anyway.
      */
     private fun withFinalColumnNames(schema: Schema): Schema {
         val fields =
@@ -71,31 +77,33 @@ class S3DataLakeStreamLoader(
     }
 
     /**
-     * Enabling (or disabling) `lowercase_column_names` on a connection whose table already exists
-     * makes every affected column look like a drop + add to the schema synchronizer: the old column
-     * is deleted and a fresh, empty one is created under the new name. Rather than silently
-     * discarding data, refuse to proceed unless this sync is a truncate refresh, which rebuilds the
-     * table anyway.
+     * Enabling `normalize_column_names` on a connection whose table already exists makes every
+     * affected column look like a drop + add to the schema synchronizer: the old column is deleted
+     * and a fresh, empty one is created under the new name. Rather than silently discarding data,
+     * refuse to proceed unless this sync is a truncate refresh, which rebuilds the table anyway.
+     *
+     * Only checked while the option is on. With it off the connector behaves exactly as it did
+     * before the option existed, so a source-side rename keeps its historical drop + add semantics.
      */
-    private fun failOnCaseOnlyColumnRenames(existingSchema: Schema) {
-        if (!icebergConfiguration.lowercaseColumnNames || stream.isSingleGenerationTruncate()) {
+    private fun failOnNormalizationRenames(existingSchema: Schema) {
+        if (!icebergConfiguration.normalizeColumnNames || stream.isSingleGenerationTruncate()) {
             return
         }
         val incomingNames = incomingSchema.columns().map { it.name() }.toSet()
-        val incomingByLowercaseName = incomingNames.associateBy { it.lowercase() }
         val renames =
             existingSchema
                 .columns()
                 .map { it.name() }
                 .filter { it !in incomingNames }
                 .mapNotNull { existing ->
-                    incomingByLowercaseName[existing.lowercase()]?.let { "$existing -> $it" }
+                    val normalized = S3DataLakeTableSchemaMapper.normalizeColumnName(existing)
+                    if (normalized in incomingNames) "$existing -> $normalized" else null
                 }
         if (renames.isNotEmpty()) {
             throw ConfigErrorException(
-                "Table ${stream.mappedDescriptor.toPrettyString()} has columns whose names differ " +
-                    "only by case from the incoming schema: ${renames.joinToString(", ")}. " +
-                    "This usually means the 'Lowercase Column Names' option was changed after the " +
+                "Table ${stream.mappedDescriptor.toPrettyString()} has columns whose normalized " +
+                    "names match columns in the incoming schema: ${renames.joinToString(", ")}. " +
+                    "This usually means the 'Normalize Column Names' option was changed after the " +
                     "table was created. Clear this stream's data and run a full refresh so the " +
                     "table is recreated with the new column names."
             )
@@ -116,7 +124,7 @@ class S3DataLakeStreamLoader(
                 catalog = catalog,
                 schema = incomingSchema
             )
-        failOnCaseOnlyColumnRenames(table.schema())
+        failOnNormalizationRenames(table.schema())
 
         // Note that if we have columnTypeChangeBehavior OVERWRITE, we don't commit the schema
         // change immediately. This is intentional.

@@ -61,11 +61,11 @@ abstract class S3DataLakeWriteTest(
         micronautProperties = micronautProperties,
         enableSpeed = enableSpeed,
     ) {
-    /** Returns [config] with the `lowercase_column_names` option enabled. */
-    protected fun withLowercaseColumnNames(config: String): String {
+    /** Returns [config] with the `normalize_column_names` option enabled. */
+    protected fun withNormalizeColumnNames(config: String): String {
         val mapper = ObjectMapper()
         val node = mapper.readTree(config) as ObjectNode
-        node.put("lowercase_column_names", true)
+        node.put("normalize_column_names", true)
         return mapper.writeValueAsString(node)
     }
 }
@@ -194,7 +194,7 @@ class GlueWriteTest :
     }
 
     @Test
-    fun testLowercaseColumnNames() {
+    fun testNormalizeColumnNames() {
         assumeTrue(verifyDataWriting)
         val schema =
             ObjectType(
@@ -209,14 +209,14 @@ class GlueWriteTest :
         fun makeStream(syncId: Long) =
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
-                unmappedName = "test_lowercase_columns",
+                unmappedName = "test_normalize_columns",
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = syncId,
                 namespaceMapper = namespaceMapperForMedium(),
                 tableSchema = makeTableSchema(schema, Append),
             )
-        val config = withLowercaseColumnNames(updatedConfig)
+        val config = withNormalizeColumnNames(updatedConfig)
 
         val firstStream = makeStream(syncId = 42)
         runSync(
@@ -231,7 +231,7 @@ class GlueWriteTest :
                 ),
             ),
         )
-        // A second sync against the same table must not see the lowercased columns as a schema
+        // A second sync against the same table must not see the normalized columns as a schema
         // change (i.e. no drop + re-add).
         val secondStream = makeStream(syncId = 43)
         runSync(
@@ -258,7 +258,7 @@ class GlueWriteTest :
                             "id" to 1,
                             "urls" to "https://a",
                             "createdat" to "2000-01-01",
-                            "foo.bar" to "foo",
+                            "foo_bar" to "foo",
                             "already_lowercase" to "bar",
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
@@ -271,7 +271,7 @@ class GlueWriteTest :
                             "id" to 2,
                             "urls" to "https://b",
                             "createdat" to "2001-01-01",
-                            "foo.bar" to "baz",
+                            "foo_bar" to "baz",
                             "already_lowercase" to "qux",
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 43),
@@ -284,12 +284,12 @@ class GlueWriteTest :
     }
 
     @Test
-    fun testLowercaseColumnNamesDedup() {
+    fun testNormalizeColumnNamesDedup() {
         assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
-                unmappedName = "test_lowercase_columns_dedup",
+                unmappedName = "test_normalize_columns_dedup",
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
@@ -311,7 +311,7 @@ class GlueWriteTest :
             )
 
         runSync(
-            withLowercaseColumnNames(updatedConfig),
+            withNormalizeColumnNames(updatedConfig),
             stream,
             listOf(
                 InputRecord(
@@ -346,13 +346,13 @@ class GlueWriteTest :
     }
 
     @Test
-    fun testLowercaseColumnNamesRequiresRefreshOnExistingTable() {
+    fun testNormalizeColumnNamesRequiresRefreshOnExistingTable() {
         assumeTrue(verifyDataWriting)
         val schema = ObjectType(linkedMapOf("Id" to intType, "userName" to stringType))
         fun makeStream(syncId: Long, generationId: Long, minimumGenerationId: Long) =
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
-                unmappedName = "test_lowercase_columns_existing_table",
+                unmappedName = "test_normalize_columns_existing_table",
                 generationId = generationId,
                 minimumGenerationId = minimumGenerationId,
                 syncId = syncId,
@@ -372,21 +372,21 @@ class GlueWriteTest :
         runSync(updatedConfig, initialStream, listOf(record(initialStream, 1, "Alice", 1000)))
 
         // 2. Enabling the option on an incremental sync must fail instead of dropping the
-        //    mixed-case columns.
+        //    columns it would rename.
         val incrementalStream = makeStream(syncId = 43, generationId = 0, minimumGenerationId = 0)
         val failure = expectFailure {
             runSync(
-                withLowercaseColumnNames(updatedConfig),
+                withNormalizeColumnNames(updatedConfig),
                 incrementalStream,
                 listOf(record(incrementalStream, 2, "Bob", 2000)),
             )
         }
         assertContains(failure.message, "userName -> username")
 
-        // 3. A truncate refresh recreates the table with lowercase column names.
+        // 3. A truncate refresh recreates the table with normalized column names.
         val refreshStream = makeStream(syncId = 44, generationId = 1, minimumGenerationId = 1)
         runSync(
-            withLowercaseColumnNames(updatedConfig),
+            withNormalizeColumnNames(updatedConfig),
             refreshStream,
             listOf(record(refreshStream, 3, "Carol", 3000)),
         )

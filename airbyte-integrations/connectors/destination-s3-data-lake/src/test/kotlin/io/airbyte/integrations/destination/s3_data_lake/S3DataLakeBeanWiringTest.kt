@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test
  */
 internal class S3DataLakeBeanWiringTest {
     private fun <T> withContext(
-        lowercaseColumnNames: Boolean,
+        normalizeColumnNames: Boolean,
         block: (ApplicationContext) -> T
     ): T {
         val config =
@@ -42,7 +42,7 @@ internal class S3DataLakeBeanWiringTest {
                 "glue_id": "123456789012",
                 "database_name": "Default_DB"
               },
-              "lowercase_column_names": $lowercaseColumnNames
+              "normalize_column_names": $normalizeColumnNames
             }
             """.trimIndent()
         return ApplicationContext.run(
@@ -58,10 +58,11 @@ internal class S3DataLakeBeanWiringTest {
 
     @Test
     fun `schema mapping beans resolve to the connector mapper`() =
-        withContext(lowercaseColumnNames = true) { context ->
+        withContext(normalizeColumnNames = true) { context ->
             val mapper = context.getBean(TableSchemaMapper::class.java)
             assertIs<S3DataLakeTableSchemaMapper>(mapper)
             assertEquals("urls", mapper.toColumnName("URLs"))
+            assertEquals("foo_bar", mapper.toColumnName("Foo.Bar"))
             assertEquals(
                 TableName("default_db", "my_table"),
                 mapper.toFinalTableName(DestinationStream.Descriptor(null, "My-Table")),
@@ -79,7 +80,7 @@ internal class S3DataLakeBeanWiringTest {
 
     @Test
     fun `column names pass through when the option is disabled`() =
-        withContext(lowercaseColumnNames = false) { context ->
+        withContext(normalizeColumnNames = false) { context ->
             assertEquals(
                 "URLs",
                 context.getBean(TableSchemaMapper::class.java).toColumnName("URLs")

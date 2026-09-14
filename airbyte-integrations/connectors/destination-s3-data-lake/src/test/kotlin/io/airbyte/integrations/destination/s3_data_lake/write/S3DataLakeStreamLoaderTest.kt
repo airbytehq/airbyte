@@ -473,7 +473,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
-            every { lowercaseColumnNames } returns false
+            every { normalizeColumnNames } returns false
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk { every { schema() } returns icebergSchema }
@@ -550,7 +550,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
-            every { lowercaseColumnNames } returns false
+            every { normalizeColumnNames } returns false
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk {
@@ -720,7 +720,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
-            every { lowercaseColumnNames } returns false
+            every { normalizeColumnNames } returns false
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk {
@@ -857,7 +857,7 @@ internal class S3DataLakeStreamLoaderTest {
             )
         val finalColumnNames = mapOf("UserId" to "userid", "URLs" to "urls", "plain" to "plain")
         val stream =
-            makeLowercasedStream(
+            makeNormalizedStream(
                 objectSchema,
                 finalColumnNames,
                 Dedupe(primaryKey = listOf(listOf("UserId")), cursor = emptyList()),
@@ -883,7 +883,7 @@ internal class S3DataLakeStreamLoaderTest {
         val streamLoader =
             makeStreamLoader(
                 stream,
-                makeIcebergConfiguration(lowercaseColumnNames = true),
+                makeIcebergConfiguration(normalizeColumnNames = true),
                 icebergUtil
             )
 
@@ -905,23 +905,25 @@ internal class S3DataLakeStreamLoaderTest {
     }
 
     @Test
-    fun testStartRejectsCaseOnlyColumnRenamesWhenLowercasingIsEnabled() {
+    fun testStartRejectsRenamedColumnsWhenNormalizationIsEnabled() {
         val objectSchema =
             ObjectType(
                 linkedMapOf(
                     "id" to FieldType(IntegerType, nullable = true),
                     "UserName" to FieldType(StringType, nullable = true),
+                    "Foo.Bar" to FieldType(StringType, nullable = true),
                 ),
             )
         val stream =
-            makeLowercasedStream(
+            makeNormalizedStream(
                 objectSchema,
-                mapOf("id" to "id", "UserName" to "username"),
+                mapOf("id" to "id", "UserName" to "username", "Foo.Bar" to "foo_bar"),
                 Append,
                 generationId = 1,
                 minimumGenerationId = 0,
             )
-        // The table was created before the option was enabled, so it still has "UserName".
+        // The table was created before the option was enabled, so it still has "UserName" and
+        // "Foo.Bar".
         val existingSchema = objectSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
         val table: Table = mockk { every { schema() } returns existingSchema }
         val icebergUtil: IcebergUtil = mockk {
@@ -932,19 +934,20 @@ internal class S3DataLakeStreamLoaderTest {
         val streamLoader =
             makeStreamLoader(
                 stream,
-                makeIcebergConfiguration(lowercaseColumnNames = true),
+                makeIcebergConfiguration(normalizeColumnNames = true),
                 icebergUtil
             )
 
         val failure = assertFailsWith<ConfigErrorException> { runBlocking { streamLoader.start() } }
 
         assertContains(failure.message!!, "UserName -> username")
+        assertContains(failure.message!!, "Foo.Bar -> foo_bar")
         assertContains(failure.message!!, "Clear this stream's data")
         verify(exactly = 0) { streamStateStore.put(any(), any()) }
     }
 
     @Test
-    fun testStartAllowsCaseOnlyColumnRenamesOnTruncateRefresh() {
+    fun testStartAllowsRenamedColumnsOnTruncateRefresh() {
         val objectSchema =
             ObjectType(
                 linkedMapOf(
@@ -953,7 +956,7 @@ internal class S3DataLakeStreamLoaderTest {
                 ),
             )
         val stream =
-            makeLowercasedStream(
+            makeNormalizedStream(
                 objectSchema,
                 mapOf("id" to "id", "UserName" to "username"),
                 Append,
@@ -985,7 +988,7 @@ internal class S3DataLakeStreamLoaderTest {
         val streamLoader =
             makeStreamLoader(
                 stream,
-                makeIcebergConfiguration(lowercaseColumnNames = true),
+                makeIcebergConfiguration(normalizeColumnNames = true),
                 icebergUtil
             )
 
@@ -997,7 +1000,7 @@ internal class S3DataLakeStreamLoaderTest {
         verify(exactly = 0) { updateSchema.commit() }
     }
 
-    private fun makeLowercasedStream(
+    private fun makeNormalizedStream(
         objectSchema: ObjectType,
         inputToFinalColumnNames: Map<String, String>,
         importType: ImportType,
@@ -1050,7 +1053,7 @@ internal class S3DataLakeStreamLoaderTest {
     }
 
     private fun makeIcebergConfiguration(
-        lowercaseColumnNames: Boolean = false,
+        normalizeColumnNames: Boolean = false,
     ): S3DataLakeConfiguration {
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
             every { accessKeyId } returns "access-key"
@@ -1071,7 +1074,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
-            every { this@mockk.lowercaseColumnNames } returns lowercaseColumnNames
+            every { this@mockk.normalizeColumnNames } returns normalizeColumnNames
         }
     }
 
