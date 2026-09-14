@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## September 14, 2026
+
+Platform
+
+- If your organization is on the Plus plan and you choose to downgrade to Standard, the confirmation dialog now lists exactly what you'll lose, such as 15-minute sync frequency, mappings, single sign-on, and multiple workspaces, and reminds you that the change takes effect at the end of your billing period. Previously, the dialog only summarized this in one sentence.
+
 ## September 10, 2026
 
 Platform
