@@ -164,6 +164,7 @@ Classes
     * airbyte_agent_sdk.connectors.customer_io.models.AirbyteSearchResult[CampaignActionsSearchData]
     * airbyte_agent_sdk.connectors.customer_io.models.AirbyteSearchResult[CampaignsSearchData]
     * airbyte_agent_sdk.connectors.customer_io.models.AirbyteSearchResult[NewslettersSearchData]
+    * airbyte_agent_sdk.connectors.customer_io.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

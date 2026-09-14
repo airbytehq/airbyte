@@ -772,18 +772,19 @@ def test_lookback_window_widens_resume_bound(requests_mock, get_source):
 
 
 @pytest.mark.parametrize(
-    "status_code, message",
+    "status_code, error",
     [
-        (400, "Bad Request Params"),
-        (401, "Unauthorized"),
+        pytest.param(400, "invalid_grant", id="expired_or_rotated_refresh_token"),
+        pytest.param(401, "invalid_client", id="bad_client_credentials"),
+        pytest.param(400, "unauthorized_client", id="client_not_allowed_grant"),
     ],
 )
-def test_oauth_refresh_failure_surfaces_reauthenticate_config_error(status_code, message, requests_mock, get_source):
+def test_oauth_refresh_failure_surfaces_reauthenticate_config_error(status_code, error, requests_mock, get_source):
     def token_callback(request, context):
         context.status_code = status_code
         return {
-            "message": message,
-            "errors": ["Refresh token expired at 2026-01-01T00:00:00Z. The user must re-authorize consent"],
+            "error": error,
+            "error_description": "Refresh token has been invalidated at 2026-01-01T00:00:00Z. The user must re-authorize consent",
         }
 
     requests_mock.post("https://auth.greenhouse.io/token", json=token_callback)

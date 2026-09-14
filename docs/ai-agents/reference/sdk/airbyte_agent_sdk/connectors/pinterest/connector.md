@@ -50,6 +50,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ad_accounts records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `get(self, ad_account_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.pinterest.models.AdAccount`
     :   Get an ad account by ID.
         
@@ -129,6 +144,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ad_groups records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, ad_account_id: str, page_size: int | None = None, bookmark: str | None = None, entity_statuses: list[str] | None = None, order: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pinterest.models.PinterestExecuteResultWithMeta[list[AdGroup], AdGroupsListResultMeta]`
     :   Get a list of ad groups in the specified ad account.
         
@@ -203,6 +233,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ads records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, ad_account_id: str, page_size: int | None = None, bookmark: str | None = None, entity_statuses: list[str] | None = None, order: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pinterest.models.PinterestExecuteResultWithMeta[list[Ad], AdsListResultMeta]`
     :   Get a list of ads in the specified ad account.
         
@@ -259,6 +304,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against audiences records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, ad_account_id: str, page_size: int | None = None, bookmark: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pinterest.models.PinterestExecuteResultWithMeta[list[Audience], AudiencesListResultMeta]`
     :   Get a list of audiences for the specified ad account.
@@ -321,6 +381,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against board_pins records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, board_id: str, page_size: int | None = None, bookmark: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pinterest.models.PinterestExecuteResultWithMeta[list[BoardPin], BoardPinsListResultMeta]`
     :   Get a list of pins on a specific board.
         
@@ -366,6 +441,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against board_sections records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, board_id: str, page_size: int | None = None, bookmark: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pinterest.models.PinterestExecuteResultWithMeta[list[BoardSection], BoardSectionsListResultMeta]`
     :   Get a list of sections for a specific board.
@@ -421,6 +511,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against boards records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, board_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.pinterest.models.Board`
     :   Get a board by ID.
@@ -493,6 +598,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against campaigns records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, ad_account_id: str, page_size: int | None = None, bookmark: str | None = None, entity_statuses: list[str] | None = None, order: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pinterest.models.PinterestExecuteResultWithMeta[list[Campaign], CampaignsListResultMeta]`
     :   Get a list of campaigns in the specified ad account.
         
@@ -552,6 +672,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against catalogs_feeds records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, page_size: int | None = None, bookmark: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pinterest.models.PinterestExecuteResultWithMeta[list[CatalogsFeed], CatalogsFeedsListResultMeta]`
     :   Get a list of catalog feeds for the authenticated user.
         
@@ -604,6 +739,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against catalogs_product_groups records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, page_size: int | None = None, bookmark: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pinterest.models.PinterestExecuteResultWithMeta[list[CatalogsProductGroup], CatalogsProductGroupsListResultMeta]`
     :   Get a list of catalog product groups for the authenticated user.
         
@@ -651,6 +801,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against catalogs records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, page_size: int | None = None, bookmark: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pinterest.models.PinterestExecuteResultWithMeta[list[Catalog], CatalogsListResultMeta]`
     :   Get a list of catalogs for the authenticated user.
@@ -703,6 +868,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against conversion_tags records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, ad_account_id: str, page_size: int | None = None, bookmark: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pinterest.models.PinterestExecuteResultWithMeta[list[ConversionTag], ConversionTagsListResultMeta]`
     :   Get a list of conversion tags for the specified ad account.
@@ -758,6 +938,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against customer_lists records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, ad_account_id: str, page_size: int | None = None, bookmark: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pinterest.models.PinterestExecuteResultWithMeta[list[CustomerList], CustomerListsListResultMeta]`
     :   Get a list of customer lists for the specified ad account.
         
@@ -809,6 +1004,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against keywords records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, ad_account_id: str, ad_group_id: str, page_size: int | None = None, bookmark: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pinterest.models.PinterestExecuteResultWithMeta[list[Keyword], KeywordsListResultMeta]`
     :   Get a list of keywords for the specified ad account. Requires an ad_group_id filter.
@@ -877,12 +1087,13 @@ Classes
     ### Static methods
 
     `agent_tool(role: AgentToolRole | None = None, *, inspect_tool: str | None = None, docs_tool: str | None = None, max_output_chars: int | None | Unset = UNSET, framework: FrameworkName = 'none', internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> Callable[[~_F], ~_F]`
-    :   Framework-agnostic decorator for user-written connector tool functions.
+    :   Decorator for new user-written connector tool functions.
         
-        The progressive-docs sibling of tool_utils: instead of baking the full
-        entity/action reference into the docstring, it instructs the agent to
-        call this connector's inspect and docs tools before executing. Tool
-        failures raise :class:`airbyte_agent_sdk.AirbyteToolError` by default
+        Use this when a tool needs a custom body or the framework lacks a
+        native strategy. Instead of baking the full entity/action reference
+        into the docstring, it instructs the agent to call this connector's
+        inspect and docs tools before executing. Tool failures raise
+        :class:`airbyte_agent_sdk.AirbyteToolError` by default
         (``framework="none"``, no auto-detection) — pass ``framework=...`` to
         translate to a supported framework's signal instead.
         
@@ -941,7 +1152,11 @@ Classes
                 :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Add connector-specific documentation and runtime safeguards to one tool.
+    :   Deprecated. Add connector-specific documentation and runtime safeguards to one tool.
+        
+        Kept for backwards compatibility with existing single-tool
+        integrations; it is not removed and does not warn at runtime, but new
+        code should use `build_connector_tools` or `agent_tool` below.
         
         For new agents, prefer `build_connector_tools`. It returns progressive
         `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
@@ -954,6 +1169,9 @@ Classes
         tools = build_connector_tools(connector, framework="pydantic_ai")
         agent = Agent("openai:gpt-4o", tools=tools.as_list())
         ```
+        
+        When a new integration needs custom tool bodies or a framework
+        without native support, use `agent_tool` instead.
         
         ### Legacy: one generated-description tool
         
@@ -995,9 +1213,11 @@ Classes
         Args:
             update_docstring: When True, append connector capabilities to `__doc__`.
             max_output_chars: Max serialized output size before raising. Use `None` to disable.
-            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp" | "none"`.
                 Defaults to `None`, which auto-detects each framework's canonical
-                import in order. Explicit always wins.
+                import in order and falls back to `"none"` with a warning when no
+                supported framework is installed. Explicit always wins, and an
+                explicit framework whose package is missing raises `RuntimeError`.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
                 `airbyte_agent_sdk.translation.translate_exceptions`.
@@ -1052,7 +1272,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
