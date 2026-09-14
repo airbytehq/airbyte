@@ -23,6 +23,7 @@ import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import java.security.MessageDigest
+import java.time.Instant
 import java.util.UUID
 
 /** Metadata for completed load inputs, independent of temporary execution tables and GCS keys. */
@@ -33,6 +34,7 @@ class BigqueryCopyMetadata(
     private val runId: UUID,
     private val dataChannelFormat: DataChannelFormat,
     private val configuredCatalog: ConfiguredAirbyteCatalog? = null,
+    val epochSeconds: Long = Instant.now().epochSecond,
 ) {
     private val mapper = ObjectMapper()
     private val raw = bigqueryConfiguration.legacyRawTablesOnly
@@ -233,16 +235,26 @@ class BigqueryCopyMetadata(
     fun streamKey(stream: DestinationStream): String =
         hash(
                 listOf(
+                    config.organizationId.toString(),
                     config.workspaceId.toString(),
                     config.sourceId.toString(),
                     config.connectionId.toString(),
+                    config.destinationId.toString(),
                     stream.unmappedName,
                 )
             )
             .take(32)
 
-    fun runPath(stream: DestinationStream): String =
-        "${config.prefix}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/streams/${escape(stream.unmappedName)}/runs/$runId"
+    fun runPath(stream: DestinationStream): String {
+        require(epochSeconds >= 0) { "Fusion run epoch must not be negative" }
+        val path =
+            "${config.prefix}/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/runs/$epochSeconds/$runId/streams/${escape(stream.unmappedName)}"
+        // Include the longest supported batch suffix when checking S3's UTF-8 key limit.
+        require("$path/batches/${UUID(0, 0)}.csv.gz".toByteArray(Charsets.UTF_8).size <= 1024) {
+            "Fusion S3 object key exceeds 1024 UTF-8 bytes"
+        }
+        return path
+    }
 
     /** Call once per stream/run when minimumGenerationId is positive; retain on later failures. */
     fun cutoff(stream: DestinationStream): Map<String, Any?> {
@@ -266,9 +278,11 @@ class BigqueryCopyMetadata(
 
     private fun identity(stream: DestinationStream): Map<String, Any?> =
         mapOf(
+            "organization_id" to config.organizationId.toString(),
             "workspace_id" to config.workspaceId.toString(),
             "source_id" to config.sourceId.toString(),
             "connection_id" to config.connectionId.toString(),
+            "destination_id" to config.destinationId.toString(),
             "stream_key" to streamKey(stream),
             "original_stream" to
                 mapOf("namespace" to stream.unmappedNamespace, "name" to stream.unmappedName),
@@ -278,6 +292,7 @@ class BigqueryCopyMetadata(
                     "name" to stream.mappedDescriptor.name,
                 ),
             "run_id" to runId.toString(),
+            "epoch_seconds" to epochSeconds,
             "sync_id" to stream.syncId,
             "generation_id" to stream.generationId,
             "minimum_generation_id" to stream.minimumGenerationId,
