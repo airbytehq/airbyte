@@ -13,7 +13,15 @@ from requests_oauthlib import OAuth1
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from source_netsuite.constraints import CUSTOM_INCREMENTAL_CURSOR, INCREMENTAL_CURSOR, META_PATH, RECORD_PATH, SCHEMA_HEADERS
+from source_netsuite.constraints import (
+    CUSTOM_INCREMENTAL_CURSOR,
+    INCREMENTAL_CURSOR,
+    META_PATH,
+    NETSUITE_CONNECT_TIMEOUT_SECONDS,
+    NETSUITE_READ_TIMEOUT_SECONDS,
+    RECORD_PATH,
+    SCHEMA_HEADERS,
+)
 from source_netsuite.streams import CustomIncrementalNetsuiteStream, IncrementalNetsuiteStream, NetsuiteStream
 
 
@@ -56,17 +64,25 @@ class SourceNetsuite(AbstractSource):
             # check connectivity to all provided `object_types`
             for object in object_types:
                 try:
-                    response = session.get(url=base_url + RECORD_PATH + object.lower(), params={"limit": 1})
+                    response = session.get(
+                        url=base_url + RECORD_PATH + object.lower(),
+                        params={"limit": 1},
+                        timeout=(NETSUITE_CONNECT_TIMEOUT_SECONDS, NETSUITE_READ_TIMEOUT_SECONDS),
+                    )
                     response.raise_for_status()
-                    return True, None
                 except requests.exceptions.HTTPError as e:
                     return False, e
+            return True, None
         else:
             # if `object_types` are not provided, use `Contact` object
             # there should be at least 1 contact available in every NetSuite account by default.
             url = base_url + RECORD_PATH + "contact"
             try:
-                response = session.get(url=url, params={"limit": 1})
+                response = session.get(
+                    url=url,
+                    params={"limit": 1},
+                    timeout=(NETSUITE_CONNECT_TIMEOUT_SECONDS, NETSUITE_READ_TIMEOUT_SECONDS),
+                )
                 response.raise_for_status()
                 return True, None
             except requests.exceptions.HTTPError as e:
@@ -95,7 +111,13 @@ class SourceNetsuite(AbstractSource):
         """
         Calls the API for specific object type and returns schema as a dict.
         """
-        return {object_name.lower(): session.get(metadata_url + object_name, headers=SCHEMA_HEADERS).json()}
+        response = session.get(
+            metadata_url + object_name,
+            headers=SCHEMA_HEADERS,
+            timeout=(NETSUITE_CONNECT_TIMEOUT_SECONDS, NETSUITE_READ_TIMEOUT_SECONDS),
+        )
+        response.raise_for_status()
+        return {object_name.lower(): response.json()}
 
     def generate_stream(
         self,
@@ -115,6 +137,7 @@ class SourceNetsuite(AbstractSource):
             "base_url": base_url,
             "start_datetime": start_datetime,
             "window_in_days": window_in_days,
+            "schemas": schemas,
         }
 
         schema = schemas[object_name]
@@ -150,7 +173,12 @@ class SourceNetsuite(AbstractSource):
 
         # retrieve all record types if `object_types` config field is not specified
         if not object_names:
-            objects_metadata = session.get(metadata_url).json().get("items")
+            response = session.get(
+                metadata_url,
+                timeout=(NETSUITE_CONNECT_TIMEOUT_SECONDS, NETSUITE_READ_TIMEOUT_SECONDS),
+            )
+            response.raise_for_status()
+            objects_metadata = response.json().get("items")
             object_names = [object["name"] for object in objects_metadata]
 
         input_args = {"session": session, "metadata_url": metadata_url}

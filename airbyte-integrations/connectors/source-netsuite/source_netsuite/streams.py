@@ -19,6 +19,8 @@ from source_netsuite.constraints import (
     INCREMENTAL_CURSOR,
     MAX_NETSUITE_UTC_OFFSET_HOURS,
     META_PATH,
+    NETSUITE_CONNECT_TIMEOUT_SECONDS,
+    NETSUITE_READ_TIMEOUT_SECONDS,
     NETSUITE_INPUT_DATE_FORMATS,
     NETSUITE_OUTPUT_DATETIME_FORMAT,
     RECORD_PATH,
@@ -39,12 +41,18 @@ class NetsuiteStream(HttpStream, ABC):
         base_url: str,
         start_datetime: str,
         window_in_days: int,
+        schemas: Optional[Mapping[str, Mapping[str, Any]]] = None,
     ):
         self.object_name = object_name
         self.base_url = base_url
         self.start_datetime = start_datetime
         self.window_in_days = window_in_days
-        self.schemas = {}  # store subschemas to reduce API calls
+        # Reuse schemas fetched by SourceNetsuite during discover. Without this
+        # seed, the CDK catalog builder fetches each record schema again.
+        self.schemas = {
+            META_PATH + name.lower(): schema
+            for name, schema in (schemas or {}).items()
+        }
         self._records_attempted = 0
         self._user_error_skipped = 0
         super().__init__(authenticator=auth)
@@ -88,7 +96,11 @@ class NetsuiteStream(HttpStream, ABC):
         # try to retrieve the schema from the cache
         schema = self.schemas.get(ref)
         if not schema:
-            resp = self._session.get(url=self.url_base + ref, headers=SCHEMA_HEADERS)
+            resp = self._session.get(
+                url=self.url_base + ref,
+                headers=SCHEMA_HEADERS,
+                timeout=(NETSUITE_CONNECT_TIMEOUT_SECONDS, NETSUITE_READ_TIMEOUT_SECONDS),
+            )
             # some schemas, like transaction, do not exist because they refer to multiple
             # record types, e.g. sales order/invoice ... in this case we can't retrieve
             # the correct schema, so we just put the json in a string
@@ -96,7 +108,7 @@ class NetsuiteStream(HttpStream, ABC):
                 schema = {"title": ref, "type": "string"}
             else:
                 # check for 200 status
-                resp.raise_for_status
+                resp.raise_for_status()
                 # handle response
                 schema = get_json_response(resp)
 
