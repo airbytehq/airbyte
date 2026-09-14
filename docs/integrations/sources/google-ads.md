@@ -47,7 +47,7 @@ A single access token can grant varying degrees of access to multiple APIs. A va
 
 The scope for the Google Ads API is: https://www.googleapis.com/auth/adwords
 
-Each Google Cloud project's OAuth client is assigned an access level and "permissible use". The access level determines whether you can affect production accounts and the number of operations and requests that you can execute daily. Permissible use determines the specific Google Ads API features that the project is allowed to use. Read more about it and apply for higher access [here](https://developers.google.com/google-ads/api/docs/productionize/access-levels).
+Each Google Cloud project's OAuth client is assigned an access level and "permissible use". The access level determines whether you can affect production accounts and the number of operations and requests that you can execute daily. Permissible use determines the specific Google Ads API features that the project is allowed to use. Read more in [Google's access levels documentation](https://developers.google.com/google-ads/api/docs/productionize/access-levels), where you can also apply for higher access.
 
 ### Step 3: Set up the Google Ads connector in Airbyte
 
