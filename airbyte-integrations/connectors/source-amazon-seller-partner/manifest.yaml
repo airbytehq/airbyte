@@ -3704,6 +3704,20 @@ definitions:
         authenticator: "#/definitions/authenticator"
         request_headers:
           content-type: "application/json"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 403
+              backoff_strategies:
+                - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                  type: CustomBackoffStrategy
+                  header: x-amzn-RateLimit-Limit
+                  default_backoff_time: 60
       record_selector:
         type: RecordSelector
         extractor:

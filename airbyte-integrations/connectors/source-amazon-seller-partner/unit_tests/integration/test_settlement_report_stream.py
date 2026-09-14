@@ -151,6 +151,30 @@ def test_given_done_settlement_reports_when_read_then_documents_downloaded_and_r
 
 @freezegun.freeze_time(NOW.isoformat())
 @HttpMocker()
+def test_given_document_lookup_forbidden_once_when_read_then_retried_and_records_emitted(http_mocker: HttpMocker) -> None:
+    """A transient 403 from `getReportDocument` (e.g. expired token) must be retried instead of failing the stream."""
+    http_mocker.clear_all_matchers()
+    mock_auth(http_mocker)
+    http_mocker.get(_list_reports_request(), _list_reports_response([_report(_DONE_REPORT_ID, "DONE", _DONE_REPORT_DOCUMENT_ID)]))
+    document_request = RequestBuilder.get_document_download_url_endpoint(_DONE_REPORT_DOCUMENT_ID).build()
+    http_mocker.get(
+        document_request,
+        [
+            HttpResponse(body="", status_code=HTTPStatus.FORBIDDEN, headers={"x-amzn-RateLimit-Limit": "1000"}),
+            _document_response(_DONE_REPORT_DOCUMENT_ID, _DONE_DOWNLOAD_URL),
+        ],
+    )
+    http_mocker.get(RequestBuilder.download_document_endpoint(_DONE_DOWNLOAD_URL).build(), _download_response())
+
+    output = read_output(config_builder=_config(), stream_name=_STREAM_NAME, sync_mode=SyncMode.incremental)
+
+    assert len(output.errors) == 0
+    assert len(output.records) == _RECORDS_PER_DOCUMENT
+    http_mocker.assert_number_of_calls(document_request, 2)
+
+
+@freezegun.freeze_time(NOW.isoformat())
+@HttpMocker()
 def test_given_only_non_done_settlement_reports_when_read_then_no_document_requests_and_no_records(http_mocker: HttpMocker) -> None:
     http_mocker.clear_all_matchers()
     mock_auth(http_mocker)
