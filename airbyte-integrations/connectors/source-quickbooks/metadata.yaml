@@ -75,8 +75,11 @@ data:
     - title: QuickBooks Online API
       url: https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/account
       type: api_reference
-    - title: QuickBooks Online API Changelog
-      url: https://developer.intuit.com/app/developer/qbo/docs/changelog
+    - title: QuickBooks Online release notes
+      url: https://developer.intuit.com/app/developer/qbo/docs/release-notes/general-release-notes
+      type: api_release_history
+    - title: QuickBooks Online API release notes
+      url: https://developer.intuit.com/app/developer/qbo/docs/release-notes/platform-release-notes
       type: api_release_history
     - title: QuickBooks authentication
       url: https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization
