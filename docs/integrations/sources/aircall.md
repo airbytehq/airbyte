@@ -64,7 +64,7 @@ GET https://api.aircall.io/v1/numbers
 
 ## Performance considerations
 
-Aircall [API reference](https://api.aircall.io/v1) has v1 at present. The connector as default uses v1.
+The connector uses the Aircall [API](https://developer.aircall.io/api-references/) v1 for all streams except `users`, which uses the User V2 API (`/v2/users`) because Aircall deprecated the User V1 API (sunset 2026-09-30).
 
 ## IP allow list
 
@@ -77,6 +77,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                                   | Subject                     |
 | :------ | :--------- | :----------------------------------------------------------------------------- | :-------------------------- |
+| 0.4.22 | 2026-09-14 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Migrate `users` stream to the User V2 API (`GET /v2/users`) ahead of the User V1 sunset on 2026-09-30 |
 | 0.4.21 | 2026-09-08 | [85381](https://github.com/airbytehq/airbyte/pull/85381) | Update dependencies |
 | 0.4.20 | 2026-08-18 | [84505](https://github.com/airbytehq/airbyte/pull/84505) | Update dependencies |
 | 0.4.19 | 2026-08-11 | [83832](https://github.com/airbytehq/airbyte/pull/83832) | Update dependencies |
