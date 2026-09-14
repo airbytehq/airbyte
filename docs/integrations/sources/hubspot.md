@@ -458,6 +458,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.9.0 | 2026-09-14 | [82769](https://github.com/airbytehq/airbyte/pull/82769) | Declare `marketing_emails` `testing.isAbVariation` and `teams[].primary` on `owners` and `owners_archived`, returned by the API but missing from the schemas |
 | 6.8.3 | 2026-09-08 | [85528](https://github.com/airbytehq/airbyte/pull/85528) | Update dependencies |
 | 6.8.2 | 2026-08-20 | [84917](https://github.com/airbytehq/airbyte/pull/84917) | Update CDK to 7.28.0 to fix a startup crash (`ValueError: No format in [...] matching True`) when a full-refresh association stream with an `incremental_dependency` parent is deselected. |
 | 6.8.1 | 2026-08-14 | [84411](https://github.com/airbytehq/airbyte/pull/84411) | Fix the `Number of concurrent threads` setting being ignored: read the `num_worker` config key emitted by the spec instead of `num_workers` |
