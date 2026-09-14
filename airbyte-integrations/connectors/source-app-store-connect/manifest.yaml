@@ -1,0 +1,4868 @@
+version: 7.28.2
+
+type: DeclarativeSource
+
+description: >-
+  The App Store Connect app lets you monitor your app's sales and downloads,
+  reply to App Store Review, get notified of new reviews, respond to reviews,
+  and more.
+
+check:
+  type: CheckStream
+  stream_names:
+    - list_id_apps
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: JwtAuthenticator
+        algorithm: ES256
+        secret_key: "{{ config['secret_key'] }}"
+        jwt_headers:
+          kid: "{{ config['kid'] }}"
+          typ: JWT
+        jwt_payload:
+          aud: appstoreconnect-v1
+          iss: "{{ config['iss'] }}"
+        header_prefix: Bearer
+        token_duration: 1200
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 3
+        response_filters:
+          - type: HttpResponseFilter
+            action: IGNORE
+            http_codes:
+              - 404
+              - 410
+          - type: HttpResponseFilter
+            action: IGNORE
+            http_codes:
+              - 400
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 429
+              - 500
+              - 502
+              - 503
+              - 504
+        backoff_strategies:
+          - type: ExponentialBackoffStrategy
+            factor: 2
+      request_parameters:
+        filter[accessType]: ONGOING
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.get('links', {}).get('next') }}"
+          stop_condition: "{{ not response.get('links', {}).get('next') }}"
+    DailyReportDateField:
+      type: AddedFieldDefinition
+      path:
+        - report_date
+      value: "{{ stream_interval.start_time }}"
+      value_type: string
+    SalesReportCsvDecoder:
+      type: GzipDecoder
+      decoder:
+        type: GzipDecoder
+        decoder:
+          type: CsvDecoder
+          encoding: utf-8
+          delimiter: \t
+    DailyReportCursorField:
+      type: AddedFieldDefinition
+      path:
+        - _sync_cursor
+      value: >-
+        {{ format_datetime(str_to_datetime(stream_interval.start_time[:10]) +
+        duration('P1D'), '%Y-%m-%d') }}
+      value_type: string
+    MonthlyReportDateField:
+      type: AddedFieldDefinition
+      path:
+        - report_date
+      value: "{{ stream_interval.start_time }}"
+      value_type: string
+    AnalyticsApiErrorHandler:
+      type: DefaultErrorHandler
+      max_retries: 3
+      response_filters:
+        - type: HttpResponseFilter
+          action: IGNORE
+          http_codes:
+            - 400
+            - 403
+            - 404
+            - 410
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 429
+            - 500
+            - 502
+            - 503
+            - 504
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+          factor: 2
+    MonthlyReportCursorField:
+      type: AddedFieldDefinition
+      path:
+        - _sync_cursor
+      value: >-
+        {{ format_datetime(str_to_datetime(stream_interval.start_time[:10]) +
+        duration('P1M'), '%Y-%m-%d') }}
+      value_type: string
+    AnalyticsReportCsvDecoder:
+      type: GzipDecoder
+      decoder:
+        type: CsvDecoder
+        encoding: utf-8
+        delimiter: \t
+    DailyReportIncrementalSync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: _sync_cursor
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P1D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {%- if 'sales_reports_start_date' in config and
+          config['sales_reports_start_date'] and
+          config['sales_reports_start_date'] != 'None' -%} {{-
+          config['sales_reports_start_date'] -}} {%- else -%} {{- (today_utc() -
+          duration('P365D')).strftime('%Y-%m-%d') -}} {%- endif -%}
+        min_datetime: "{{ (today_utc() - duration('P365D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+    MonthlyReportIncrementalSync:
+      type: DatetimeBasedCursor
+      step: P1M
+      cursor_field: _sync_cursor
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P35D')).strftime('%Y-%m') }}-01"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {%- if 'finance_reports_start_date' in config and
+          config['finance_reports_start_date'] and
+          config['finance_reports_start_date'] != 'None' -%} {{-
+          config['finance_reports_start_date'] ~ '-01' -}} {%- else -%} {{-
+          (today_utc() - duration('P11M')).strftime('%Y-%m') ~ '-01' -}} {%-
+          endif -%}
+        min_datetime: "{{ (today_utc() - duration('P11M')).strftime('%Y-%m') }}-01"
+        datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: P1M
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+        - "%Y-%m"
+    AnalyticsDownloadErrorHandler:
+      type: DefaultErrorHandler
+      max_retries: 3
+      response_filters:
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 403
+        - type: HttpResponseFilter
+          action: IGNORE
+          http_codes:
+            - 400
+            - 404
+            - 410
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 429
+            - 500
+            - 502
+            - 503
+            - 504
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+          factor: 2
+    AnalyticsReportIncrementalSync:
+      type: DatetimeBasedCursor
+      step: P100Y
+      cursor_field: processing_date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P1D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['analytics_reports_start_date'] }}"
+        min_datetime: "{{ config['analytics_reports_start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      lookback_window: P0D
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      is_client_side_incremental: true
+    SubscriptionEventReportIncrementalSync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: _sync_cursor
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P2D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {%- if 'subscription_event_reports_start_date' in config and
+          config['subscription_event_reports_start_date'] and
+          config['subscription_event_reports_start_date'] != 'None' -%} {{-
+          config['subscription_event_reports_start_date'] -}} {%- else -%} {{-
+          (today_utc() - duration('P365D')).strftime('%Y-%m-%d') -}} {%- endif
+          -%}
+        min_datetime: "{{ (today_utc() - duration('P365D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+
+streams:
+  - type: DeclarativeStream
+    name: list_id_apps
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.appstoreconnect.apple.com/v1/apps
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          sku:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          bundleId:
+            type:
+              - string
+              - "null"
+          primaryLocale:
+            type:
+              - string
+              - "null"
+          isOrEverWasMadeForKids:
+            type:
+              - boolean
+              - "null"
+          streamlinedPurchasingEnabled:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - name
+            value: "{{ (record.get('attributes') or {}).get('name') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - bundleId
+            value: "{{ (record.get('attributes') or {}).get('bundleId') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - sku
+            value: "{{ (record.get('attributes') or {}).get('sku') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - primaryLocale
+            value: "{{ (record.get('attributes') or {}).get('primaryLocale') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - isOrEverWasMadeForKids
+            value: >-
+              {{ (record.get('attributes') or {}).get('isOrEverWasMadeForKids')
+              }}
+            value_type: boolean
+          - type: AddedFieldDefinition
+            path:
+              - streamlinedPurchasingEnabled
+            value: >-
+              {{ (record.get('attributes') or
+              {}).get('streamlinedPurchasingEnabled') }}
+            value_type: boolean
+      - type: RemoveFields
+        field_pointers:
+          - - attributes
+          - - relationships
+          - - links
+  - type: DeclarativeStream
+    name: subscriber_report
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: GzipDecoder
+        decoder:
+          type: GzipDecoder
+          decoder:
+            type: CsvDecoder
+            encoding: utf-8
+            delimiter: \t
+      requester:
+        type: HttpRequester
+        url: https://api.appstoreconnect.apple.com/v1/salesReports
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_parameters:
+          filter[version]: "1_3"
+          filter[frequency]: DAILY
+          filter[reportDate]: "{{ stream_interval.start_time }}"
+          filter[reportType]: SUBSCRIBER
+          filter[vendorNumber]: "{{ config['vendorID'] }}"
+          filter[reportSubType]: DETAILED
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          Units:
+            type:
+              - string
+              - "null"
+          Client:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          Refund:
+            type:
+              - string
+              - "null"
+          Country:
+            type:
+              - string
+              - "null"
+          App Name:
+            type:
+              - string
+              - "null"
+          Event Date:
+            type:
+              - string
+              - "null"
+          report_date:
+            type:
+              - string
+              - "null"
+          App Apple ID:
+            type:
+              - string
+              - "null"
+          _sync_cursor:
+            type:
+              - string
+              - "null"
+          Purchase Date:
+            type:
+              - string
+              - "null"
+          Subscriber ID:
+            type:
+              - string
+              - "null"
+          Customer Price:
+            type:
+              - string
+              - "null"
+          Proceeds Reason:
+            type:
+              - string
+              - "null"
+          Customer Currency:
+            type:
+              - string
+              - "null"
+          Preserved Pricing:
+            type:
+              - string
+              - "null"
+          Proceeds Currency:
+            type:
+              - string
+              - "null"
+          Subscription Name:
+            type:
+              - string
+              - "null"
+          Developer Proceeds:
+            type:
+              - string
+              - "null"
+          Subscriber ID Reset:
+            type:
+              - string
+              - "null"
+          Promotional Offer ID:
+            type:
+              - string
+              - "null"
+          Subscription Apple ID:
+            type:
+              - string
+              - "null"
+          Subscription Group ID:
+            type:
+              - string
+              - "null"
+          Subscription Offer Name:
+            type:
+              - string
+              - "null"
+          Subscription Offer Type:
+            type:
+              - string
+              - "null"
+          Marketing Opt-In Duration:
+            type:
+              - string
+              - "null"
+          Subscription Offer Duration:
+            type:
+              - string
+              - "null"
+          Standard Subscription Duration:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - report_date
+            value: "{{ stream_interval.start_time }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - _sync_cursor
+            value: >-
+              {{
+              format_datetime(str_to_datetime(stream_interval.start_time[:10]) +
+              duration('P1D'), '%Y-%m-%d') }}
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: _sync_cursor
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P1D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {%- if 'sales_reports_start_date' in config and
+          config['sales_reports_start_date'] and
+          config['sales_reports_start_date'] != 'None' -%} {{-
+          config['sales_reports_start_date'] -}} {%- else -%} {{- (today_utc() -
+          duration('P365D')).strftime('%Y-%m-%d') -}} {%- endif -%}
+        min_datetime: "{{ (today_utc() - duration('P365D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: sales_report
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: GzipDecoder
+        decoder:
+          type: GzipDecoder
+          decoder:
+            type: CsvDecoder
+            encoding: utf-8
+            delimiter: \t
+      requester:
+        type: HttpRequester
+        url: https://api.appstoreconnect.apple.com/v1/salesReports
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_parameters:
+          filter[version]: "1_1"
+          filter[frequency]: DAILY
+          filter[reportDate]: "{{ stream_interval.start_time }}"
+          filter[reportType]: SALES
+          filter[vendorNumber]: "{{ config['vendorID'] }}"
+          filter[reportSubType]: SUMMARY
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          CMB:
+            type:
+              - string
+              - "null"
+          SKU:
+            type:
+              - string
+              - "null"
+          Title:
+            type:
+              - string
+              - "null"
+          Units:
+            type:
+              - string
+              - "null"
+          Client:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          Period:
+            type:
+              - string
+              - "null"
+          Version:
+            type:
+              - string
+              - "null"
+          Category:
+            type:
+              - string
+              - "null"
+          End Date:
+            type:
+              - string
+              - "null"
+          Provider:
+            type:
+              - string
+              - "null"
+          Developer:
+            type:
+              - string
+              - "null"
+          Begin Date:
+            type:
+              - string
+              - "null"
+          Order Type:
+            type:
+              - string
+              - "null"
+          Promo Code:
+            type:
+              - string
+              - "null"
+          report_date:
+            type:
+              - string
+              - "null"
+          Country Code:
+            type:
+              - string
+              - "null"
+          Subscription:
+            type:
+              - string
+              - "null"
+          _sync_cursor:
+            type:
+              - string
+              - "null"
+          Customer Price:
+            type:
+              - string
+              - "null"
+          Proceeds Reason:
+            type:
+              - string
+              - "null"
+          Apple Identifier:
+            type:
+              - string
+              - "null"
+          Provider Country:
+            type:
+              - string
+              - "null"
+          Customer Currency:
+            type:
+              - string
+              - "null"
+          Parent Identifier:
+            type:
+              - string
+              - "null"
+          Preserved Pricing:
+            type:
+              - string
+              - "null"
+          Developer Proceeds:
+            type:
+              - string
+              - "null"
+          Contingent App Name:
+            type:
+              - string
+              - "null"
+          Supported Platforms:
+            type:
+              - string
+              - "null"
+          Currency of Proceeds:
+            type:
+              - string
+              - "null"
+          Product Type Identifier:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - report_date
+            value: "{{ stream_interval.start_time }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - _sync_cursor
+            value: >-
+              {{
+              format_datetime(str_to_datetime(stream_interval.start_time[:10]) +
+              duration('P1D'), '%Y-%m-%d') }}
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: _sync_cursor
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P1D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {%- if 'sales_reports_start_date' in config and
+          config['sales_reports_start_date'] and
+          config['sales_reports_start_date'] != 'None' -%} {{-
+          config['sales_reports_start_date'] -}} {%- else -%} {{- (today_utc() -
+          duration('P365D')).strftime('%Y-%m-%d') -}} {%- endif -%}
+        min_datetime: "{{ (today_utc() - duration('P365D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: subscription_report
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: GzipDecoder
+        decoder:
+          type: GzipDecoder
+          decoder:
+            type: CsvDecoder
+            encoding: utf-8
+            delimiter: \t
+      requester:
+        type: HttpRequester
+        url: https://api.appstoreconnect.apple.com/v1/salesReports
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_parameters:
+          filter[version]: "1_3"
+          filter[frequency]: DAILY
+          filter[reportDate]: "{{ stream_interval.start_time }}"
+          filter[reportType]: SUBSCRIPTION
+          filter[vendorNumber]: "{{ config['vendorID'] }}"
+          filter[reportSubType]: SUMMARY
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          State:
+            type:
+              - string
+              - "null"
+          Client:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          Country:
+            type:
+              - string
+              - "null"
+          App Name:
+            type:
+              - string
+              - "null"
+          Subscribers:
+            type:
+              - string
+              - "null"
+          report_date:
+            type:
+              - string
+              - "null"
+          App Apple ID:
+            type:
+              - string
+              - "null"
+          Grace Period:
+            type:
+              - string
+              - "null"
+          _sync_cursor:
+            type:
+              - string
+              - "null"
+          Billing Retry:
+            type:
+              - string
+              - "null"
+          Customer Price:
+            type:
+              - string
+              - "null"
+          Proceeds Reason:
+            type:
+              - string
+              - "null"
+          Customer Currency:
+            type:
+              - string
+              - "null"
+          Marketing Opt-Ins:
+            type:
+              - string
+              - "null"
+          Preserved Pricing:
+            type:
+              - string
+              - "null"
+          Proceeds Currency:
+            type:
+              - string
+              - "null"
+          Subscription Name:
+            type:
+              - string
+              - "null"
+          Developer Proceeds:
+            type:
+              - string
+              - "null"
+          Promotional Offer ID:
+            type:
+              - string
+              - "null"
+          Subscription Apple ID:
+            type:
+              - string
+              - "null"
+          Subscription Group ID:
+            type:
+              - string
+              - "null"
+          Subscription Offer Name:
+            type:
+              - string
+              - "null"
+          Free Trial Win-back Offers:
+            type:
+              - string
+              - "null"
+          Pay Up Front Win-back Offers:
+            type:
+              - string
+              - "null"
+          Pay As You Go Win-back Offers:
+            type:
+              - string
+              - "null"
+          Standard Subscription Duration:
+            type:
+              - string
+              - "null"
+          Active Standard Price Subscriptions:
+            type:
+              - string
+              - "null"
+          Free Trial Offer Code Subscriptions:
+            type:
+              - string
+              - "null"
+          Pay Up Front Offer Code Subscriptions:
+            type:
+              - string
+              - "null"
+          Pay As You Go Offer Code Subscriptions:
+            type:
+              - string
+              - "null"
+          Free Trial Promotional Offer Subscriptions:
+            type:
+              - string
+              - "null"
+          Pay Up Front Promotional Offer Subscriptions:
+            type:
+              - string
+              - "null"
+          Pay As You Go Promotional Offer Subscriptions:
+            type:
+              - string
+              - "null"
+          Active Free Trial Introductory Offer Subscriptions:
+            type:
+              - string
+              - "null"
+          Active Pay Up Front Introductory Offer Subscriptions:
+            type:
+              - string
+              - "null"
+          Active Pay As You Go Introductory Offer Subscriptions:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - report_date
+            value: "{{ stream_interval.start_time }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - _sync_cursor
+            value: >-
+              {{
+              format_datetime(str_to_datetime(stream_interval.start_time[:10]) +
+              duration('P1D'), '%Y-%m-%d') }}
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: _sync_cursor
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P1D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {%- if 'sales_reports_start_date' in config and
+          config['sales_reports_start_date'] and
+          config['sales_reports_start_date'] != 'None' -%} {{-
+          config['sales_reports_start_date'] -}} {%- else -%} {{- (today_utc() -
+          duration('P365D')).strftime('%Y-%m-%d') -}} {%- endif -%}
+        min_datetime: "{{ (today_utc() - duration('P365D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: subscription_event_report
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: GzipDecoder
+        decoder:
+          type: GzipDecoder
+          decoder:
+            type: CsvDecoder
+            encoding: utf-8
+            delimiter: \t
+      requester:
+        type: HttpRequester
+        url: https://api.appstoreconnect.apple.com/v1/salesReports
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_parameters:
+          filter[version]: "1_3"
+          filter[frequency]: DAILY
+          filter[reportDate]: >-
+            {%- set skip_dates = config['subscription_event_skip_dates'] if
+            ('subscription_event_skip_dates' in config and
+            config['subscription_event_skip_dates']) else [] -%} {{ '2099-01-01'
+            if stream_interval.start_time[:10] in skip_dates else
+            stream_interval.start_time }}
+          filter[reportType]: SUBSCRIPTION_EVENT
+          filter[vendorNumber]: "{{ config['vendorID'] }}"
+          filter[reportSubType]: SUMMARY
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          Event:
+            type:
+              - string
+              - "null"
+          State:
+            type:
+              - string
+              - "null"
+          Client:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          Country:
+            type:
+              - string
+              - "null"
+          App Name:
+            type:
+              - string
+              - "null"
+          Quantity:
+            type:
+              - string
+              - "null"
+          Event Date:
+            type:
+              - string
+              - "null"
+          report_date:
+            type:
+              - string
+              - "null"
+          App Apple ID:
+            type:
+              - string
+              - "null"
+          _sync_cursor:
+            type:
+              - string
+              - "null"
+          Days Canceled:
+            type:
+              - string
+              - "null"
+          Proceeds Reason:
+            type:
+              - string
+              - "null"
+          Marketing Opt-In:
+            type:
+              - string
+              - "null"
+          Preserved Pricing:
+            type:
+              - string
+              - "null"
+          Subscription Name:
+            type:
+              - string
+              - "null"
+          Cancellation Reason:
+            type:
+              - string
+              - "null"
+          Original Start Date:
+            type:
+              - string
+              - "null"
+          Promotional Offer ID:
+            type:
+              - string
+              - "null"
+          Days Before Canceling:
+            type:
+              - string
+              - "null"
+          Subscription Apple ID:
+            type:
+              - string
+              - "null"
+          Subscription Group ID:
+            type:
+              - string
+              - "null"
+          Subscription Offer Name:
+            type:
+              - string
+              - "null"
+          Subscription Offer Type:
+            type:
+              - string
+              - "null"
+          Consecutive Paid Periods:
+            type:
+              - string
+              - "null"
+          Marketing Opt-In Duration:
+            type:
+              - string
+              - "null"
+          Previous Subscription Name:
+            type:
+              - string
+              - "null"
+          Paid Service Days Recovered:
+            type:
+              - string
+              - "null"
+          Subscription Offer Duration:
+            type:
+              - string
+              - "null"
+          Previous Subscription Apple ID:
+            type:
+              - string
+              - "null"
+          Standard Subscription Duration:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - report_date
+            value: "{{ stream_interval.start_time }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - _sync_cursor
+            value: >-
+              {{
+              format_datetime(str_to_datetime(stream_interval.start_time[:10]) +
+              duration('P1D'), '%Y-%m-%d') }}
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: _sync_cursor
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P2D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {%- if 'subscription_event_reports_start_date' in config and
+          config['subscription_event_reports_start_date'] and
+          config['subscription_event_reports_start_date'] != 'None' -%} {{-
+          config['subscription_event_reports_start_date'] -}} {%- else -%} {{-
+          (today_utc() - duration('P365D')).strftime('%Y-%m-%d') -}} {%- endif
+          -%}
+        min_datetime: "{{ (today_utc() - duration('P365D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: finance_report
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: GzipDecoder
+        decoder:
+          type: GzipDecoder
+          decoder:
+            type: CsvDecoder
+            encoding: utf-8
+            delimiter: \t
+      requester:
+        type: HttpRequester
+        url: https://api.appstoreconnect.apple.com/v1/financeReports
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_parameters:
+          filter[regionCode]: ZZ
+          filter[reportDate]: "{{ stream_interval.start_time[:7] }}"
+          filter[reportType]: FINANCIAL
+          filter[vendorNumber]: "{{ config['vendorID'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          UPC:
+            type:
+              - string
+              - "null"
+          Grid:
+            type:
+              - string
+              - "null"
+          Title:
+            type:
+              - string
+              - "null"
+          End Date:
+            type:
+              - string
+              - "null"
+          Quantity:
+            type:
+              - string
+              - "null"
+          ISRC/ISBN:
+            type:
+              - string
+              - "null"
+          Promo Code:
+            type:
+              - string
+              - "null"
+          Start Date:
+            type:
+              - string
+              - "null"
+          report_date:
+            type:
+              - string
+              - "null"
+          _sync_cursor:
+            type:
+              - string
+              - "null"
+          Partner Share:
+            type:
+              - string
+              - "null"
+          Customer Price:
+            type:
+              - string
+              - "null"
+          Pre-order Flag:
+            type:
+              - string
+              - "null"
+          Country Of Sale:
+            type:
+              - string
+              - "null"
+          Sales or Return:
+            type:
+              - string
+              - "null"
+          Apple Identifier:
+            type:
+              - string
+              - "null"
+          Customer Currency:
+            type:
+              - string
+              - "null"
+          Vendor Identifier:
+            type:
+              - string
+              - "null"
+          ISAN/Other Identifier:
+            type:
+              - string
+              - "null"
+          Extended Partner Share:
+            type:
+              - string
+              - "null"
+          Partner Share Currency:
+            type:
+              - string
+              - "null"
+          Product Type Identifier:
+            type:
+              - string
+              - "null"
+          Artist/Show/Developer/Author:
+            type:
+              - string
+              - "null"
+          Label/Studio/Network/Developer/Publisher:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - report_date
+            value: "{{ stream_interval.start_time }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - _sync_cursor
+            value: >-
+              {{
+              format_datetime(str_to_datetime(stream_interval.start_time[:10]) +
+              duration('P1M'), '%Y-%m-%d') }}
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1M
+      cursor_field: _sync_cursor
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P35D')).strftime('%Y-%m') }}-01"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {%- if 'finance_reports_start_date' in config and
+          config['finance_reports_start_date'] and
+          config['finance_reports_start_date'] != 'None' -%} {{-
+          config['finance_reports_start_date'] ~ '-01' -}} {%- else -%} {{-
+          (today_utc() - duration('P11M')).strftime('%Y-%m') ~ '-01' -}} {%-
+          endif -%}
+        min_datetime: "{{ (today_utc() - duration('P11M')).strftime('%Y-%m') }}-01"
+        datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: P1M
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+        - "%Y-%m"
+  - type: DeclarativeStream
+    name: analytics_report_requests_ongoing
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/apps/{{
+          stream_partition.app_id }}/analyticsReportRequests
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+        request_parameters:
+          $ref: "#/definitions/linked/HttpRequester/request_parameters"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/0"
+            parent_key: id
+            partition_field: app_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_partition.app_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: ONGOING
+            value_type: string
+  - type: DeclarativeStream
+    name: analytics_installations_reports
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportRequests/{{
+          stream_partition.request_id }}/reports
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+        request_parameters:
+          filter[name]: App Store Installation and Deletion Standard
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/6"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - access_type
+            partition_field: request_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          request_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_slice.extra_fields.app_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - request_id
+            value: "{{ stream_partition.request_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: "{{ stream_slice.extra_fields.access_type }}"
+            value_type: string
+  - type: DeclarativeStream
+    name: analytics_installations_instances
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReports/{{
+          stream_partition.report_id }}/instances
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+        request_parameters:
+          filter[granularity]: DAILY
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+        record_filter:
+          type: RecordFilter
+          condition: >-
+            {{ record.get('id') and (record.get('attributes') or
+            {}).get('processingDate') >= config['analytics_reports_start_date']
+            }}
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/7"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - request_id
+              - - access_type
+            partition_field: report_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_slice.extra_fields.app_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - report_id
+            value: "{{ stream_partition.report_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: "{{ stream_slice.extra_fields.access_type }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - processing_date
+            value: "{{ (record.get('attributes') or {}).get('processingDate') }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P100Y
+      cursor_field: processing_date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P1D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['analytics_reports_start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      lookback_window: P0D
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      is_client_side_incremental: true
+  - type: DeclarativeStream
+    name: analytics_installations_segments
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportInstances/{{
+          stream_partition.instance_id }}/segments
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+        record_filter:
+          type: RecordFilter
+          condition: >-
+            {{ record.get('id') and ((record.get('attributes') or
+            {}).get('sizeInBytes') or 0) > 0 }}
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/8"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - report_id
+              - - processing_date
+              - - access_type
+            partition_field: instance_id
+            incremental_dependency: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_slice.extra_fields.app_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - report_id
+            value: "{{ stream_slice.extra_fields.report_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - processing_date
+            value: "{{ stream_slice.extra_fields.processing_date }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: "{{ stream_slice.extra_fields.access_type }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - instance_id
+            value: "{{ stream_partition.instance_id }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P100Y
+      cursor_field: processing_date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P1D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['analytics_reports_start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      lookback_window: P0D
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      is_client_side_incremental: true
+  - type: DeclarativeStream
+    name: analytics_installations_segment_details
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportSegments/{{
+          stream_partition.segment_id }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+        record_filter:
+          type: RecordFilter
+          condition: >-
+            {{ ((record.get('attributes') or {}).get('url') or '') | length > 0
+            and ((record.get('attributes') or {}).get('sizeInBytes') or 0) > 0
+            }}
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/9"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - report_id
+              - - processing_date
+              - - instance_id
+              - - access_type
+            partition_field: segment_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          download_url:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_slice.extra_fields.app_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - report_id
+            value: "{{ stream_slice.extra_fields.report_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - processing_date
+            value: "{{ stream_slice.extra_fields.processing_date }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: "{{ stream_slice.extra_fields.access_type }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - instance_id
+            value: "{{ stream_slice.extra_fields.instance_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - download_url
+            value: "{{ (record.get('attributes') or {}).get('url') }}"
+            value_type: string
+  - type: DeclarativeStream
+    name: app_store_installations_and_deletions
+    retriever:
+      type: AsyncRetriever
+      status_mapping:
+        type: AsyncJobStatusMap
+        failed: []
+        running: []
+        timeout: []
+        completed:
+          - analyticsReportSegments
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+        record_filter:
+          type: RecordFilter
+          condition: "{{ (record.get('Date') or '') | length > 0 }}"
+      download_decoder:
+        type: GzipDecoder
+        decoder:
+          type: CsvDecoder
+          encoding: utf-8
+          delimiter: \t
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/9"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - report_id
+              - - instance_id
+              - - access_type
+            partition_field: segment_id
+            incremental_dependency: true
+      status_extractor:
+        type: DpathExtractor
+        field_path:
+          - data
+          - type
+      polling_requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportSegments/{{
+          stream_partition.segment_id }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      creation_requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportSegments/{{
+          stream_partition.segment_id }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      download_requester:
+        type: HttpRequester
+        url: "{{ download_target }}"
+        http_method: GET
+        authenticator:
+          type: NoAuth
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 403
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      polling_job_timeout: 5
+      download_target_extractor:
+        type: DpathExtractor
+        field_path:
+          - data
+          - attributes
+          - url
+      download_target_requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportSegments/{{
+          stream_slice.extra_fields.polling_response.data.id }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 403
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          Date:
+            type:
+              - string
+              - "null"
+          Event:
+            type:
+              - string
+              - "null"
+          Counts:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          App Name:
+            type:
+              - string
+              - "null"
+          Page Type:
+            type:
+              - string
+              - "null"
+          Territory:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          App Version:
+            type:
+              - string
+              - "null"
+          Source Type:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          Download Type:
+            type:
+              - string
+              - "null"
+          Unique Devices:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+          Platform Version:
+            type:
+              - string
+              - "null"
+          App Download Date:
+            type:
+              - string
+              - "null"
+          App Apple Identifier:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: >-
+              {{ stream_partition.get('parent_slice', {}).get('parent_slice',
+              {}).get('parent_slice', {}).get('parent_slice', {}).get('app_id')
+              }}
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - report_id
+            value: >-
+              {{ stream_partition.get('parent_slice', {}).get('parent_slice',
+              {}).get('report_id') }}
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - processing_date
+            value: "{{ record.get('Date') or '' }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - instance_id
+            value: "{{ stream_partition.get('parent_slice', {}).get('instance_id') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: ONGOING
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P100Y
+      cursor_field: processing_date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P1D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['analytics_reports_start_date'] }}"
+        min_datetime: "{{ config['analytics_reports_start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      lookback_window: P0D
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      is_client_side_incremental: true
+  - type: DeclarativeStream
+    name: customer_reviews_per_app
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/apps/{{
+          stream_partition.app_id }}/customerReviews
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        request_parameters:
+          sort: "-createdDate"
+          limit: "200"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/0"
+            parent_key: id
+            partition_field: app_id
+    primary_key:
+      - id
+      - app_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          body:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          rating:
+            type:
+              - integer
+              - "null"
+          territory:
+            type:
+              - string
+              - "null"
+          createdDate:
+            type:
+              - string
+              - "null"
+          reviewerNickname:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - rating
+            value: "{{ (record.get('attributes') or {}).get('rating') }}"
+            value_type: integer
+          - type: AddedFieldDefinition
+            path:
+              - title
+            value: "{{ (record.get('attributes') or {}).get('title') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - body
+            value: "{{ (record.get('attributes') or {}).get('body') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - reviewerNickname
+            value: "{{ (record.get('attributes') or {}).get('reviewerNickname') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - createdDate
+            value: "{{ (record.get('attributes') or {}).get('createdDate') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - territory
+            value: "{{ (record.get('attributes') or {}).get('territory') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_partition.app_id }}"
+            value_type: string
+      - type: RemoveFields
+        field_pointers:
+          - - attributes
+          - - relationships
+          - - links
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: createdDate
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['reviews_start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      lookback_window: P7D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      is_client_side_incremental: true
+  - type: DeclarativeStream
+    name: analytics_report_requests_historical
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/apps/{{
+          stream_partition.app_id }}/analyticsReportRequests
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+        request_parameters:
+          filter[accessType]: ONE_TIME_SNAPSHOT
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/0"
+            parent_key: id
+            partition_field: app_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_partition.app_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: ONE_TIME_SNAPSHOT
+            value_type: string
+  - type: DeclarativeStream
+    name: analytics_installations_reports_historical
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportRequests/{{
+          stream_partition.request_id }}/reports
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+        request_parameters:
+          filter[name]: App Store Installation and Deletion Standard
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/13"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - access_type
+            partition_field: request_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          request_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_slice.extra_fields.app_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - request_id
+            value: "{{ stream_partition.request_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: "{{ stream_slice.extra_fields.access_type }}"
+            value_type: string
+  - type: DeclarativeStream
+    name: analytics_installations_instances_historical
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReports/{{
+          stream_partition.report_id }}/instances
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+        request_parameters:
+          filter[granularity]: DAILY
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('id') }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/14"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - request_id
+              - - access_type
+            partition_field: report_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_slice.extra_fields.app_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - report_id
+            value: "{{ stream_partition.report_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: "{{ stream_slice.extra_fields.access_type }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - processing_date
+            value: "{{ (record.get('attributes') or {}).get('processingDate') }}"
+            value_type: string
+  - type: DeclarativeStream
+    name: analytics_installations_segments_historical
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportInstances/{{
+          stream_partition.instance_id }}/segments
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+        record_filter:
+          type: RecordFilter
+          condition: >-
+            {{ record.get('id') and ((record.get('attributes') or
+            {}).get('sizeInBytes') or 0) > 0 }}
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/15"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - report_id
+              - - processing_date
+              - - access_type
+            partition_field: instance_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_slice.extra_fields.app_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - report_id
+            value: "{{ stream_slice.extra_fields.report_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - processing_date
+            value: "{{ stream_slice.extra_fields.processing_date }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: "{{ stream_slice.extra_fields.access_type }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - instance_id
+            value: "{{ stream_partition.instance_id }}"
+            value_type: string
+  - type: DeclarativeStream
+    name: analytics_installations_segment_details_historical
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportSegments/{{
+          stream_partition.segment_id }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+        record_filter:
+          type: RecordFilter
+          condition: >-
+            {{ ((record.get('attributes') or {}).get('url') or '') | length > 0
+            and ((record.get('attributes') or {}).get('sizeInBytes') or 0) > 0
+            }}
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/16"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - report_id
+              - - processing_date
+              - - instance_id
+              - - access_type
+            partition_field: segment_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          download_url:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_slice.extra_fields.app_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - report_id
+            value: "{{ stream_slice.extra_fields.report_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - processing_date
+            value: "{{ stream_slice.extra_fields.processing_date }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: "{{ stream_slice.extra_fields.access_type }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - instance_id
+            value: "{{ stream_slice.extra_fields.instance_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - download_url
+            value: "{{ (record.get('attributes') or {}).get('url') }}"
+            value_type: string
+  - type: DeclarativeStream
+    name: app_store_installations_and_deletions_historical
+    retriever:
+      type: AsyncRetriever
+      status_mapping:
+        type: AsyncJobStatusMap
+        failed: []
+        running: []
+        timeout: []
+        completed:
+          - analyticsReportSegments
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      download_decoder:
+        type: GzipDecoder
+        decoder:
+          type: CsvDecoder
+          encoding: utf-8
+          delimiter: \t
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/16"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - report_id
+              - - instance_id
+              - - access_type
+            partition_field: segment_id
+      status_extractor:
+        type: DpathExtractor
+        field_path:
+          - data
+          - type
+      polling_requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportSegments/{{
+          stream_partition.segment_id }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      creation_requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportSegments/{{
+          stream_partition.segment_id }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      download_requester:
+        type: HttpRequester
+        url: "{{ download_target }}"
+        http_method: GET
+        authenticator:
+          type: NoAuth
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      polling_job_timeout: 5
+      download_target_extractor:
+        type: DpathExtractor
+        field_path:
+          - data
+          - attributes
+          - url
+      download_target_requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportSegments/{{
+          stream_slice.extra_fields.polling_response.data.id }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 403
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          Date:
+            type:
+              - string
+              - "null"
+          Event:
+            type:
+              - string
+              - "null"
+          Counts:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          App Name:
+            type:
+              - string
+              - "null"
+          Page Type:
+            type:
+              - string
+              - "null"
+          Territory:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          App Version:
+            type:
+              - string
+              - "null"
+          Source Type:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          Download Type:
+            type:
+              - string
+              - "null"
+          Unique Devices:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+          Platform Version:
+            type:
+              - string
+              - "null"
+          App Download Date:
+            type:
+              - string
+              - "null"
+          App Apple Identifier:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: >-
+              {{ stream_partition.get('parent_slice', {}).get('parent_slice',
+              {}).get('parent_slice', {}).get('parent_slice', {}).get('app_id')
+              }}
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - report_id
+            value: >-
+              {{ stream_partition.get('parent_slice', {}).get('parent_slice',
+              {}).get('report_id') }}
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - processing_date
+            value: "{{ record.get('Date') or '' }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - instance_id
+            value: "{{ stream_partition.get('parent_slice', {}).get('instance_id') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: ONE_TIME_SNAPSHOT
+            value_type: string
+  - type: DeclarativeStream
+    name: analytics_app_download_reports
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportRequests/{{
+          stream_partition.request_id }}/reports
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+        request_parameters:
+          filter[name]: App Downloads Standard
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/6"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - access_type
+            partition_field: request_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          request_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_slice.extra_fields.app_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - request_id
+            value: "{{ stream_partition.request_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: "{{ stream_slice.extra_fields.access_type }}"
+            value_type: string
+  - type: DeclarativeStream
+    name: analytics_app_download_instances
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReports/{{
+          stream_partition.report_id }}/instances
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+        request_parameters:
+          filter[granularity]: DAILY
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+        record_filter:
+          type: RecordFilter
+          condition: >-
+            {{ record.get('id') and (record.get('attributes') or
+            {}).get('processingDate') >= config['analytics_reports_start_date']
+            }}
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/19"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - request_id
+              - - access_type
+            partition_field: report_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_slice.extra_fields.app_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - report_id
+            value: "{{ stream_partition.report_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: "{{ stream_slice.extra_fields.access_type }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - processing_date
+            value: "{{ (record.get('attributes') or {}).get('processingDate') }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P100Y
+      cursor_field: processing_date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P1D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['analytics_reports_start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      lookback_window: P0D
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      is_client_side_incremental: true
+  - type: DeclarativeStream
+    name: analytics_app_download_segments
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportInstances/{{
+          stream_partition.instance_id }}/segments
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+        record_filter:
+          type: RecordFilter
+          condition: >-
+            {{ record.get('id') and ((record.get('attributes') or
+            {}).get('sizeInBytes') or 0) > 0 }}
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/20"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - report_id
+              - - processing_date
+              - - access_type
+            partition_field: instance_id
+            incremental_dependency: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_slice.extra_fields.app_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - report_id
+            value: "{{ stream_slice.extra_fields.report_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - processing_date
+            value: "{{ stream_slice.extra_fields.processing_date }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: "{{ stream_slice.extra_fields.access_type }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - instance_id
+            value: "{{ stream_partition.instance_id }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P100Y
+      cursor_field: processing_date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P1D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['analytics_reports_start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      lookback_window: P0D
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      is_client_side_incremental: true
+  - type: DeclarativeStream
+    name: analytics_app_download_segment_details
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportSegments/{{
+          stream_partition.segment_id }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+        record_filter:
+          type: RecordFilter
+          condition: >-
+            {{ ((record.get('attributes') or {}).get('url') or '') | length > 0
+            and ((record.get('attributes') or {}).get('sizeInBytes') or 0) > 0
+            }}
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/21"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - report_id
+              - - processing_date
+              - - instance_id
+              - - access_type
+            partition_field: segment_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          download_url:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_slice.extra_fields.app_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - report_id
+            value: "{{ stream_slice.extra_fields.report_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - processing_date
+            value: "{{ stream_slice.extra_fields.processing_date }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: "{{ stream_slice.extra_fields.access_type }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - instance_id
+            value: "{{ stream_slice.extra_fields.instance_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - download_url
+            value: "{{ (record.get('attributes') or {}).get('url') }}"
+            value_type: string
+  - type: DeclarativeStream
+    name: app_download
+    retriever:
+      type: AsyncRetriever
+      status_mapping:
+        type: AsyncJobStatusMap
+        failed: []
+        running: []
+        timeout: []
+        completed:
+          - analyticsReportSegments
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+        record_filter:
+          type: RecordFilter
+          condition: "{{ (record.get('Date') or '') | length > 0 }}"
+      download_decoder:
+        type: GzipDecoder
+        decoder:
+          type: CsvDecoder
+          encoding: utf-8
+          delimiter: \t
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/21"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - report_id
+              - - instance_id
+              - - access_type
+            partition_field: segment_id
+            incremental_dependency: true
+      status_extractor:
+        type: DpathExtractor
+        field_path:
+          - data
+          - type
+      polling_requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportSegments/{{
+          stream_partition.segment_id }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      creation_requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportSegments/{{
+          stream_partition.segment_id }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      download_requester:
+        type: HttpRequester
+        url: "{{ download_target }}"
+        http_method: GET
+        authenticator:
+          type: NoAuth
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 403
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      polling_job_timeout: 5
+      download_target_extractor:
+        type: DpathExtractor
+        field_path:
+          - data
+          - attributes
+          - url
+      download_target_requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportSegments/{{
+          stream_slice.extra_fields.polling_response.data.id }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 403
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          Date:
+            type:
+              - string
+              - "null"
+          Counts:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          App Name:
+            type:
+              - string
+              - "null"
+          Page Type:
+            type:
+              - string
+              - "null"
+          Pre-Order:
+            type:
+              - string
+              - "null"
+          Territory:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          App Version:
+            type:
+              - string
+              - "null"
+          Source Type:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          Download Type:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+          Platform Version:
+            type:
+              - string
+              - "null"
+          App Apple Identifier:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: >-
+              {{ stream_partition.get('parent_slice', {}).get('parent_slice',
+              {}).get('parent_slice', {}).get('parent_slice', {}).get('app_id')
+              }}
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - report_id
+            value: >-
+              {{ stream_partition.get('parent_slice', {}).get('parent_slice',
+              {}).get('report_id') }}
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - processing_date
+            value: "{{ record.get('Date') or '' }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - instance_id
+            value: "{{ stream_partition.get('parent_slice', {}).get('instance_id') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: ONGOING
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P100Y
+      cursor_field: processing_date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P1D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['analytics_reports_start_date'] }}"
+        min_datetime: "{{ config['analytics_reports_start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      lookback_window: P0D
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      is_client_side_incremental: true
+  - type: DeclarativeStream
+    name: analytics_app_download_reports_historical
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportRequests/{{
+          stream_partition.request_id }}/reports
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+        request_parameters:
+          filter[name]: App Downloads Standard
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/13"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - access_type
+            partition_field: request_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          request_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_slice.extra_fields.app_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - request_id
+            value: "{{ stream_partition.request_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: "{{ stream_slice.extra_fields.access_type }}"
+            value_type: string
+  - type: DeclarativeStream
+    name: analytics_app_download_instances_historical
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReports/{{
+          stream_partition.report_id }}/instances
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+        request_parameters:
+          filter[granularity]: DAILY
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('id') }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/24"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - request_id
+              - - access_type
+            partition_field: report_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_slice.extra_fields.app_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - report_id
+            value: "{{ stream_partition.report_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: "{{ stream_slice.extra_fields.access_type }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - processing_date
+            value: "{{ (record.get('attributes') or {}).get('processingDate') }}"
+            value_type: string
+  - type: DeclarativeStream
+    name: analytics_app_download_segments_historical
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportInstances/{{
+          stream_partition.instance_id }}/segments
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+        record_filter:
+          type: RecordFilter
+          condition: >-
+            {{ record.get('id') and ((record.get('attributes') or
+            {}).get('sizeInBytes') or 0) > 0 }}
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/25"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - report_id
+              - - processing_date
+              - - access_type
+            partition_field: instance_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_slice.extra_fields.app_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - report_id
+            value: "{{ stream_slice.extra_fields.report_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - processing_date
+            value: "{{ stream_slice.extra_fields.processing_date }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: "{{ stream_slice.extra_fields.access_type }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - instance_id
+            value: "{{ stream_partition.instance_id }}"
+            value_type: string
+  - type: DeclarativeStream
+    name: analytics_app_download_segment_details_historical
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportSegments/{{
+          stream_partition.segment_id }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+        record_filter:
+          type: RecordFilter
+          condition: >-
+            {{ ((record.get('attributes') or {}).get('url') or '') | length > 0
+            and ((record.get('attributes') or {}).get('sizeInBytes') or 0) > 0
+            }}
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/26"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - report_id
+              - - processing_date
+              - - instance_id
+              - - access_type
+            partition_field: segment_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          download_url:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_slice.extra_fields.app_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - report_id
+            value: "{{ stream_slice.extra_fields.report_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - processing_date
+            value: "{{ stream_slice.extra_fields.processing_date }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: "{{ stream_slice.extra_fields.access_type }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - instance_id
+            value: "{{ stream_slice.extra_fields.instance_id }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - download_url
+            value: "{{ (record.get('attributes') or {}).get('url') }}"
+            value_type: string
+  - type: DeclarativeStream
+    name: app_download_historical
+    retriever:
+      type: AsyncRetriever
+      status_mapping:
+        type: AsyncJobStatusMap
+        failed: []
+        running: []
+        timeout: []
+        completed:
+          - analyticsReportSegments
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+        record_filter:
+          type: RecordFilter
+          condition: "{{ (record.get('Date') or '') | length > 0 }}"
+      download_decoder:
+        type: GzipDecoder
+        decoder:
+          type: CsvDecoder
+          encoding: utf-8
+          delimiter: \t
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/26"
+            parent_key: id
+            extra_fields:
+              - - app_id
+              - - report_id
+              - - instance_id
+              - - access_type
+            partition_field: segment_id
+      status_extractor:
+        type: DpathExtractor
+        field_path:
+          - data
+          - type
+      polling_requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportSegments/{{
+          stream_partition.segment_id }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      creation_requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportSegments/{{
+          stream_partition.segment_id }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 403
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      download_requester:
+        type: HttpRequester
+        url: "{{ download_target }}"
+        http_method: GET
+        authenticator:
+          type: NoAuth
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 404
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+      polling_job_timeout: 5
+      download_target_extractor:
+        type: DpathExtractor
+        field_path:
+          - data
+          - attributes
+          - url
+      download_target_requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/analyticsReportSegments/{{
+          stream_slice.extra_fields.polling_response.data.id }}
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 403
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+                - 410
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          Date:
+            type:
+              - string
+              - "null"
+          Counts:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          App Name:
+            type:
+              - string
+              - "null"
+          Page Type:
+            type:
+              - string
+              - "null"
+          Pre-Order:
+            type:
+              - string
+              - "null"
+          Territory:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          App Version:
+            type:
+              - string
+              - "null"
+          Source Type:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          Download Type:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+          Platform Version:
+            type:
+              - string
+              - "null"
+          App Apple Identifier:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: >-
+              {{ stream_partition.get('parent_slice', {}).get('parent_slice',
+              {}).get('parent_slice', {}).get('parent_slice', {}).get('app_id')
+              }}
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - report_id
+            value: >-
+              {{ stream_partition.get('parent_slice', {}).get('parent_slice',
+              {}).get('report_id') }}
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - processing_date
+            value: "{{ record.get('Date') or '' }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - instance_id
+            value: "{{ stream_partition.get('parent_slice', {}).get('instance_id') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - access_type
+            value: ONE_TIME_SNAPSHOT
+            value_type: string
+
+spec:
+  type: Spec
+  documentation_url: >-
+    https://developer.apple.com/documentation/appstoreconnectapi/get-v1-salesreports
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - iss
+      - kid
+      - secret_key
+      - vendorID
+      - analytics_reports_start_date
+    properties:
+      iss:
+        type: string
+        description: The ISS (Issuer) to use for the JWT token
+        order: 0
+        title: JWT Payload ISS
+        airbyte_secret: true
+      kid:
+        type: string
+        description: The KID (Key ID) to use for the JWT token
+        order: 1
+        title: JWT Header KID
+        airbyte_secret: true
+      vendorID:
+        type: string
+        order: 3
+        title: vendorID
+        airbyte_secret: true
+      secret_key:
+        type: string
+        description: The secret key to use for the JWT token
+        order: 2
+        title: JWT Secret Key
+        multiline: true
+        airbyte_secret: true
+      reviews_start_date:
+        type: string
+        order: 4
+        title: Reviews start date
+        default: "2020-01-01T00:00:00Z"
+      sales_reports_start_date:
+        type: string
+        description: >-
+          Earliest report date (YYYY-MM-DD) for daily Sales and Trends streams
+          (sales_report, subscription_report, subscriber_report). Does not apply
+          to subscription_event_report (see
+          subscription_event_reports_start_date). When unset, defaults to
+          Apple's 365-day retention window on the first sync (empty cursor);
+          later syncs advance from saved state with T-2 lag via end_datetime.
+          Set explicitly to override the start date.
+        order: 5
+        title: Sales reports start date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - "2025-01-01"
+      finance_reports_start_date:
+        type: string
+        description: >-
+          Earliest report month (YYYY-MM) for finance_report. When unset,
+          defaults to Apple's 12-month retention window (~11 months) on the
+          first sync (empty cursor). End month is the latest available (month
+          before T-35 days). Set explicitly to override the start month.
+        order: 6
+        title: Finance reports start date
+        pattern: ^[0-9]{4}-[0-9]{2}$
+        examples:
+          - 2025-01
+      analytics_reports_start_date:
+        type: string
+        description: >-
+          Earliest processing date (YYYY-MM-DD) for ongoing App Store Analytics
+          reports (app_store_installations_and_deletions, app_download). Set to
+          the ONGOING report request creation date or later; Apple does not
+          backfill before that. End date is yesterday (today minus 1 day).
+        order: 9
+        title: Analytics reports start date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - "2026-07-16"
+      subscription_event_skip_dates:
+        type: array
+        description: >-
+          Daily report dates (YYYY-MM-DD) to skip for subscription_event_report.
+          Apple occasionally returns an undecodable ZIP (b'PK') for these days.
+          Remapped to 2099-01-01 so Apple 404/410 is IGNORE'd and the cursor
+          advances with no rows. Set explicitly when needed (e.g. 2026-06-09).
+        items:
+          type: string
+          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        order: 8
+        title: Subscription event skip dates
+        examples:
+          - - "2026-06-09"
+      subscription_event_reports_start_date:
+        type: string
+        description: >-
+          Earliest report date (YYYY-MM-DD) for subscription_event_report
+          incremental sync. Independent of sales_reports_start_date so a sales
+          backfill does not widen SUBSCRIPTION_EVENT slices. When unset,
+          defaults to Apple's 365-day retention window. End date uses a T-3
+          completeness lag (SUBSCRIPTION_EVENT data is final ~3 days after the
+          event date; see Apple Sales/Trends report docs).
+        order: 7
+        title: Subscription event reports start date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - "2025-07-01"
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    app_download:
+      streamHash: 9974bf978b02e2c4f4ca86b786953a53595d5ecf
+    list_id_apps:
+      streamHash: f311030e4b7b82d1d674f1e59e61b9fd1f8acb3c
+    sales_report:
+      streamHash: 3a29afd75f78fb2603401399fa63f75497839641
+    finance_report:
+      streamHash: 17c3ab9cc9f86936894d5933e2f36bf35e0982b2
+    subscriber_report:
+      streamHash: f8789c2a6d3b02065fbd27a3f323ff7a0988b4c7
+    subscription_report:
+      streamHash: 49db90850be5162f35049fe83d3327134e2280e4
+    app_download_historical:
+      streamHash: 272694f521b4c65ffd87630c9eef5dd8d8e67902
+    customer_reviews_per_app:
+      streamHash: 22df951304749e648eaa5fd4e6205417320ac0fd
+    subscription_event_report:
+      streamHash: c625ee0250ab82a9c59cae06f67746fbbb292105
+    analytics_app_download_reports:
+      streamHash: d6daef43fd8fdabfccd2173b422cd3d68f6d2f99
+    analytics_app_download_segments:
+      streamHash: 9d3bce5157f90bb61705a4a57c7299dd931d20d1
+    analytics_installations_reports:
+      streamHash: d6fd32a2c8cf19decd2e893e47369ced9175110f
+    analytics_app_download_instances:
+      streamHash: 1944f01c5878ece3030d0b79cabf07e53cbb5a53
+    analytics_installations_segments:
+      streamHash: 35282f7a771175feca777e7ab83f9a8c14063ab7
+    analytics_installations_instances:
+      streamHash: bc14101f08f6e34ce5a767ba27d079af4cb6b153
+    analytics_report_requests_ongoing:
+      streamHash: 4d857c720fc39127157c29bb2a36a7c8b51b3854
+    analytics_report_requests_historical:
+      streamHash: 782d106e9156c8a1ccde3e2fd6a72c41bda15256
+    app_store_installations_and_deletions:
+      streamHash: 1d20aa26eb3f628ce449263588722839b117be36
+    analytics_app_download_segment_details:
+      streamHash: 68dba94e04cc6e84502ba8d862478a580ab83202
+    analytics_installations_segment_details:
+      streamHash: 62477849dad27e04e007c2d672ffd0d48b830991
+    analytics_app_download_reports_historical:
+      streamHash: 91402b62bd8cc0badeac6a4713beb5d82b6d9f06
+    analytics_app_download_segments_historical:
+      streamHash: 37c789b7f693bed700c26a33fc3d037dd27db721
+    analytics_installations_reports_historical:
+      streamHash: 004fd02a6de577684516fe2ab39d250d12d707ba
+    analytics_app_download_instances_historical:
+      streamHash: 07ed91db924a55a55af2ad54dcbb9fe0fe3ab502
+    analytics_installations_segments_historical:
+      streamHash: e8d351f476f42635d64fdc3960d9e558fbada2e9
+    analytics_installations_instances_historical:
+      streamHash: 07f9c81562aae8850247b1aeb61d9bbd947b9285
+    app_store_installations_and_deletions_historical:
+      streamHash: 10b19c21715f9fa858589a552e9efa174891bd54
+    analytics_app_download_segment_details_historical:
+      streamHash: 91f81aa5cf28e64cf5cc539bca87e4eb28e1209e
+    analytics_installations_segment_details_historical:
+      streamHash: eddd7107ce9c380ad9ddfb1c2d887413a2493f18
+  autoImportSchema: {}
+
+max_concurrent_async_job_count: 1
