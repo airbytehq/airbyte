@@ -9,6 +9,12 @@ Calendly source syncs your organization members, groups, available event types, 
 | `api_key`    | `string` | API Key. Go to Integrations → API &amp; Webhooks to obtain your bearer token. https://calendly.com/integrations/api_webhooks |               |
 | `start_date` | `string` | Start date to sync scheduled events from.                                                                                    |               |
 
+:::note
+
+Since March 2026, Calendly grants newly created [personal access tokens](https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens) no API access until you select [authorization scopes](https://developer.calendly.com/docs/authentication/scopes) for them. When you create a token for Airbyte, select the following read scopes: `users:read`, `event_types:read`, `groups:read`, `organizations:read`, and `scheduled_events:read`. Tokens created before this change keep their existing access.
+
+:::
+
 ## Streams
 
 :::note
@@ -36,6 +42,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 | ------- | ---------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.51 | 2026-09-14 | [85887](https://github.com/airbytehq/airbyte/pull/85887) | Add external documentation URLs and PAT scope guidance |
 | 0.1.50 | 2026-09-08 | [85409](https://github.com/airbytehq/airbyte/pull/85409) | Update dependencies |
 | 0.1.49 | 2026-08-18 | [84504](https://github.com/airbytehq/airbyte/pull/84504) | Update dependencies |
 | 0.1.48 | 2026-08-11 | [83834](https://github.com/airbytehq/airbyte/pull/83834) | Update dependencies |
