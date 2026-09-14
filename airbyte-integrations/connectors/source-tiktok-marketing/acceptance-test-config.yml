@@ -66,6 +66,8 @@ acceptance_tests:
             bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
           - name: ad_groups_reports_by_country_hourly
             bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
+          - name: smart_plus_ads
+            bypass_reason: "No Smart+ ad groups in the integration test account."
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

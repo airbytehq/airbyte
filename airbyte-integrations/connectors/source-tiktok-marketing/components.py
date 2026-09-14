@@ -92,3 +92,50 @@ class TransformEmptyMetrics(RecordTransformation):
                 record["metrics"][metric_key] = None
 
         return record
+
+
+class SmartPlusAdGroupIdsPartitionRouter(SubstreamPartitionRouter):
+    """
+    The `smart_plus/ad/get/` endpoint only returns data for Smart+ ad groups, and must be
+    called with the advertiser_id it belongs to alongside an `adgroup_ids` filter.
+
+    ad_groups.is_smart_performance_campaign only flags the legacy `SMART_PLUS` automation
+    type. Newer `UPGRADED_SMART_PLUS` ad groups (the 4-level Campaign > Ad Group > Ad >
+    Creative hierarchy this stream exists for) leave that flag false, so we key off
+    ad_groups.campaign_automation_type instead, which covers both variants (confirmed
+    against a live UPGRADED_SMART_PLUS ad group).
+
+    This router reads the `ad_groups` parent stream (via extra_fields, so no request is
+    duplicated), keeps only Smart+ ad groups, groups their adgroup_id by advertiser_id and
+    batches them, so that we make one call per advertiser per batch of Smart+ ad groups
+    instead of one call per ad group.
+    """
+
+    SMART_PLUS_AUTOMATION_TYPES = {"SMART_PLUS", "UPGRADED_SMART_PLUS"}
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        self._partition_field = self._parameters["partition_field"]
+        self._batch_size = self._parameters.get("batch_size", 100)
+
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        adgroup_ids_by_advertiser: dict = {}
+        for parent_slice in super().stream_slices():
+            if parent_slice.extra_fields.get("campaign_automation_type") not in self.SMART_PLUS_AUTOMATION_TYPES:
+                continue
+            advertiser_id = parent_slice.extra_fields.get("advertiser_id")
+            # The API requires adgroup_ids to be strings; the ad_groups schema types adgroup_id as an integer.
+            adgroup_id = str(parent_slice.partition[self._partition_field])
+            adgroup_ids_by_advertiser.setdefault(advertiser_id, []).append(adgroup_id)
+
+        for advertiser_id, adgroup_ids in adgroup_ids_by_advertiser.items():
+            for i in range(0, len(adgroup_ids), self._batch_size):
+                yield StreamSlice(
+                    partition={
+                        "advertiser_id": advertiser_id,
+                        "adgroup_ids": adgroup_ids[i : i + self._batch_size],
+                        "parent_slice": {},
+                    },
+                    cursor_slice={},
+                )
+

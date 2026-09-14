@@ -27,6 +27,20 @@
     },
     {
       "stream": {
+        "name": "smart_plus_ads",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["modify_time"],
+        "source_defined_primary_key": [["smart_plus_ad_id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["modify_time"],
+      "primary_key": [["smart_plus_ad_id"]]
+    },
+    {
+      "stream": {
         "name": "ad_groups",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],

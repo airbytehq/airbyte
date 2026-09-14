@@ -340,6 +340,57 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/semi_incremental_sync"
 
+  # Dedicated endpoint for the true parent-level Smart+ Ad object (4-level Smart+ hierarchy:
+  # Campaign > Ad Group > Ad > Creative). The `ads` stream above only returns the Creative level
+  # for Smart+ ad groups, so `smart_plus_ad_id` here is intentionally distinct from `ads.ad_id`.
+  # Metadata only (ids/names/status/timestamps + the creative_list parent-child link); no metrics.
+  # See https://ads.tiktok.com/help/article/about-reporting-for-the-upgraded-smart-experience
+  smart_plus_ads_stream:
+    type: DeclarativeStream
+    name: smart_plus_ads
+    $parameters:
+      path: "smart_plus/ad/get/"
+      page_size: 100
+    primary_key:
+      - smart_plus_ad_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/smart_plus_ads"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          advertiser_id: "{{ stream_slice['advertiser_id'] }}"
+          filtering: '{{ {"adgroup_ids": stream_slice["adgroup_ids"]} | string }}'
+          fields: '{{ ["smart_plus_ad_id", "ad_name", "advertiser_id", "campaign_id", "campaign_name", "adgroup_id", "adgroup_name", "operation_status", "secondary_status", "create_time", "modify_time", "creative_list"] | string }}'
+      record_selector:
+        $ref: "#/definitions/record_selector"
+        # Mirrors the same filter applied to the `ads` stream: the API can return Smart+ Ad
+        # records without a modify_time value, which are not easily filtered at the API level.
+        # See https://github.com/airbytehq/airbyte/pull/65602 for more context
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('modify_time') is not none }}"
+      paginator:
+        $ref: "#/definitions/semi_incremental_stream/retriever/paginator"
+      partition_router:
+        - class_name: "source_declarative_manifest.components.SmartPlusAdGroupIdsPartitionRouter"
+          $parameters:
+            partition_field: adgroup_id
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/ad_groups_stream"
+              parent_key: adgroup_id
+              partition_field: adgroup_id
+              extra_fields:
+                - ["campaign_automation_type"]
+                - ["advertiser_id"]
+    incremental_sync:
+      $ref: "#/definitions/semi_incremental_sync"
+
   creative_assets_images_stream:
     type: DeclarativeStream
     name: creative_assets_images
@@ -3762,6 +3813,144 @@ definitions:
           type:
             - "null"
             - string
+    smart_plus_ads:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        smart_plus_ad_id:
+          description: The unique identifier of the Smart+ ad (parent of the ad's creative variants)
+          type: integer
+        ad_name:
+          description: The name of the Smart+ ad
+          type: string
+        advertiser_id:
+          description: The unique identifier of the advertiser
+          type: integer
+        campaign_id:
+          description: The unique identifier of the campaign
+          type: integer
+        campaign_name:
+          description: The name of the campaign
+          type: string
+        adgroup_id:
+          description: The unique identifier of the ad group
+          type: integer
+        adgroup_name:
+          description: The name of the ad group
+          type: string
+        operation_status:
+          description: The operational status of the Smart+ ad
+          type:
+            - "null"
+            - string
+        secondary_status:
+          description: The secondary status of the Smart+ ad
+          type:
+            - "null"
+            - string
+        create_time:
+          description: Timestamp when the Smart+ ad was created
+          type:
+            - "null"
+            - string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        modify_time:
+          description: Timestamp when the Smart+ ad was last modified
+          type:
+            - "null"
+            - string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        creative_list:
+          description: The creative variants (children) that belong to this Smart+ ad. Each entry's `smart_plus_creative_id` matches the `ad_id` of the corresponding row in the `ads` stream.
+          type:
+            - "null"
+            - array
+          items:
+            description: A single creative variant belonging to this Smart+ ad
+            type:
+              - "null"
+              - object
+            properties:
+              smart_plus_creative_id:
+                description: The unique identifier of the creative variant. Matches `ad_id` in the `ads` stream for Smart+ ad groups.
+                type:
+                  - "null"
+                  - string
+              ad_material_id:
+                description: The unique identifier of the ad material used by this creative variant
+                type:
+                  - "null"
+                  - string
+              material_operation_status:
+                description: The operational status of the creative material
+                type:
+                  - "null"
+                  - string
+              creative_info:
+                description: Metadata about the creative material
+                type:
+                  - "null"
+                  - object
+                properties:
+                  ad_format:
+                    description: The format of the creative (e.g., SINGLE_VIDEO)
+                    type:
+                      - "null"
+                      - string
+                  aigc_disclosure_type:
+                    description: The AI-generated content disclosure type
+                    type:
+                      - "null"
+                      - string
+                  identity_id:
+                    description: The unique identifier of the identity used by the creative
+                    type:
+                      - "null"
+                      - string
+                  identity_type:
+                    description: The type of identity used by the creative
+                    type:
+                      - "null"
+                      - string
+                  material_name:
+                    description: The file name of the creative material
+                    type:
+                      - "null"
+                      - string
+                  image_info:
+                    description: Image assets used by the creative, if any
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        web_uri:
+                          description: The TikTok-hosted URI of the image asset
+                          type:
+                            - "null"
+                            - string
+                  video_info:
+                    description: The video asset used by the creative, if any
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      file_name:
+                        description: The file name of the video asset
+                        type:
+                          - "null"
+                          - string
+                      video_id:
+                        description: The unique identifier of the video asset
+                        type:
+                          - "null"
+                          - string
     creative_assets_images:
       $schema: http://json-schema.org/draft-07/schema#
       additionalProperties: true
@@ -5732,6 +5921,7 @@ streams:
   - $ref: "#/definitions/ad_groups_reports_hourly_stream"
   - $ref: "#/definitions/ad_groups_reports_lifetime_stream"
   - $ref: "#/definitions/ads_stream"
+  - $ref: "#/definitions/smart_plus_ads_stream"
   - $ref: "#/definitions/ads_audience_reports_by_country_daily_stream"
   - $ref: "#/definitions/ads_audience_reports_by_platform_daily_stream"
   - $ref: "#/definitions/ads_audience_reports_by_province_daily_stream"
