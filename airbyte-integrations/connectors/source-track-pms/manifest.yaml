@@ -42,6 +42,14 @@ definitions:
                   Track's inappropriate 409 for page numbers too high. Nothing
                   to do but continue to work with the vendor.
           - type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: RESET_PAGINATION
+                predicate: >-
+                  {{ response.status == 422 and response.detail == 'Scroll ID
+                  has expired.' }}
+                http_codes: []
+          - type: DefaultErrorHandler
             max_retries: 3
             response_filters:
               - type: HttpResponseFilter
