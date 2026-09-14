@@ -179,9 +179,9 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
 
 **Number of concurrent threads** sets how many streams and partitions the connector reads at the same time. It accepts a value from 1 to 40, and defaults to 10.
 
-The connector paces its own requests to stay inside HubSpot's limits: 5 requests per second for CRM search endpoints, and 10 per second for everything else. More threads don't raise those ceilings, so they help most on streams whose runtime is dominated by HubSpot's response times rather than by the request budget. That includes streams that make extra requests behind each page or record, such as `deals` and the other CRM search streams, which fetch associations for every page, and `campaigns` and `marketing_emails`, which fetch details for every record.
+The connector paces its own requests to stay inside HubSpot's limits: 5 requests per second for CRM search endpoints, and 10 per second for everything else. More threads don't raise those ceilings, so they help most on streams whose runtime is dominated by HubSpot's response times rather than by the request budget. That includes streams that make extra requests behind each page or record, such as `deals` and the other CRM search streams, which fetch associations for every page, and `campaigns`, which fetches details for every record.
 
-Lower the value if other integrations share the same HubSpot account and you see repeated 429 responses in your sync logs, or if you're close to your account's [daily request limit](#rate-limiting).
+Lower the value if other integrations share the same HubSpot account and you see repeated 429 responses in your sync logs. Fewer threads spread the same requests over a longer time, but they don't change how many requests a sync makes, so lowering this value won't help if you're exhausting your account's [daily request limit](#rate-limiting). Enable fewer streams or shorten the backfill window instead.
 
 Versions before 6.8.1 ignored this field and always used 10 threads, so upgrade before you tune it.
 
@@ -218,12 +218,12 @@ If you authenticate with OAuth, `business-intelligence` and `crm.objects.line_it
 
 #### Sync behavior
 
-These streams sync incrementally on the `occurredAt` timestamp, and Airbyte keeps a separate cursor for each parent record. Because HubSpot returns events for one object at a time, each stream issues at least one request per parent record, per event type, per 30-day window between your **Start date** and now. On a portal with tens of thousands of contacts, that adds up quickly against your account's [daily API limit](#rate-limiting).
+These streams sync incrementally on the `occurredAt` timestamp, and Airbyte keeps a separate cursor for each parent record. Because HubSpot returns events for one object at a time, the initial backfill issues at least one request per parent record, per event type, per 30-day window between your **Start date** and now. On a portal with tens of thousands of contacts, that first sync adds up quickly against your account's [daily API limit](#rate-limiting). Later syncs resume from each parent record's saved cursor, so they only request the windows after that record's last event.
 
 To keep the volume manageable:
 
 - Enable only the Web Analytics streams you plan to use. All 12 appear in the catalog once the toggle is on, and each one fans out over its own parent object.
-- Set **Start date** to the earliest date you actually need events for. If you leave it empty, the connector backfills from `2006-06-01T00:00:00Z`.
+- Set **Start date** to the earliest date you actually need events for. If you leave it empty, the connector backfills from `2006-06-01T00:00:00Z`. Keep in mind that **Start date** also limits which parent records the connector finds: it lists parents from the parent object stream, which filters on the parent's own last-modified date, so a recent **Start date** omits events for older records that haven't been modified since then.
 
 These streams don't reuse state from connector versions 5.7.0 and earlier, so the first sync after you enable them backfills from **Start date** even if the same stream synced before version 5.8.0 removed it.
 
@@ -503,7 +503,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
   - The same steps apply if you later disable the toggle — refresh the schema and the data so the destination column types match the new catalog.
 
 - **`ValueError: No format in [...] matching True` before any records sync**:
-  - Versions 6.6.0 through 6.8.1 crash at startup, failing the whole sync, if your connection deselects an association stream whose parent object stream syncs incrementally.
+  - Versions 6.6.0 through 6.8.1 crash at startup, failing the whole sync, if a connection previously synced an association stream in full refresh mode and that stream no longer syncs as full refresh — for example, because you deselected it, or because its sync mode changed to incremental. The connector seeds the parent object stream's incremental cursor from the association stream's saved state, and a full refresh stream's saved state isn't a valid cursor value.
   - Upgrade the source to version 6.8.2 or later. Affected connections recover on their next sync, with no configuration or catalog change needed.
 
 - **Missing `testing.isAbVariation` or `teams[].primary` columns in Avro or Parquet output**:
