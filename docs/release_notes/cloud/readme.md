@@ -6,7 +6,7 @@ Airbyte Cloud is updated continuously. You always have the latest features and f
 
 Platform
 
-- If your organization is on the Plus plan and you choose to downgrade to Standard, the confirmation dialog now lists exactly what you'll lose, such as 15-minute sync frequency, mappings, single sign-on, and multiple workspaces, and reminds you that the change takes effect at the end of your billing period. Previously, the dialog only summarized this in one sentence.
+- If your organization is on the Plus plan and you choose to downgrade to Standard, the confirmation dialog now explains how the downgrade can affect your organization: 15-minute sync frequency, mappings, single sign-on, multiple workspaces, and premium support are Plus features that Standard doesn't include. It also reminds you that the change takes effect at the end of your billing period. Previously, the dialog only summarized this in one sentence.
 
 ## September 10, 2026
 
