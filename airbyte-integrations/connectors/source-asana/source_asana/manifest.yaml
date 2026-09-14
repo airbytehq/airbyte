@@ -1,4 +1,4 @@
-version: "0.78.6"
+version: "0.78.7"
 
 definitions:
   selector:
@@ -47,6 +47,11 @@ definitions:
           failure_type: config_error
           error_message: >-
             Authentication failed. Verify the credentials in your source configuration.
+        - type: HttpResponseFilter
+          action: IGNORE
+          error_message_contains: "upper limit on the number of results"
+          error_message: >-
+            Skipping pagination for this request — the Asana API enforces an upper limit on the number of results returned for this query. Some records may be missing. See https://developers.asana.com/docs/pagination.
         - type: HttpResponseFilter
           action: FAIL
           http_codes:
