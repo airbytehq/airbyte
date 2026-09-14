@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 912eb6b7-a893-4a5b-b1c0-36ebbe2de8cd
-  dockerImageTag: 0.4.21
+  dockerImageTag: 0.4.22
   dockerRepository: airbyte/source-aircall
   githubIssueLabel: source-aircall
   icon: aircall.svg
@@ -50,4 +50,7 @@ data:
     - title: Rate limits
       url: https://developer.aircall.io/api-references/#rate-limit
       type: rate_limits
+    - title: Announcements (deprecations and changes)
+      url: https://developer.aircall.io/api-references/#announcements
+      type: api_deprecations
 metadataSpecVersion: "1.0"
