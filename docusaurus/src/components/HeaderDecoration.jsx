@@ -283,14 +283,6 @@ const ConnectorMetadataCallout = ({
           >
             <EnabledIcon isEnabled={isEnterprise || isCloud} /> Enterprise Flex
           </Chip>
-          <Chip
-            className={
-              isEnterprise || isOss ? styles.available : styles.unavailable
-            }
-          >
-            <EnabledIcon isEnabled={isEnterprise || isOss} /> Self-Managed
-            Enterprise
-          </Chip>
           <Chip className={isOss ? styles.available : styles.unavailable}>
             <EnabledIcon isEnabled={isOss} /> PyAirbyte
           </Chip>

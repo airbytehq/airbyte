@@ -1,5 +1,5 @@
 ---
-products: cloud, oss-enterprise
+products: cloud
 ---
 
 # Manage workspaces
