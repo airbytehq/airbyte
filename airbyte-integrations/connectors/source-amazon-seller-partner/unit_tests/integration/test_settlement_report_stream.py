@@ -13,7 +13,6 @@ lists existing reports (`getReports`), resolves each `reportDocumentId` to a pre
 import gzip
 from http import HTTPStatus
 
-
 import freezegun
 import pytest
 
