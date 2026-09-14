@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## September 14, 2026
+
+SDK
+
+- The `tool_utils` decorator is now deprecated. It keeps working and doesn't warn at runtime, but for new tools use `build_connector_tools` for the prebuilt tool set, or `agent_tool` when you need to write your own tool bodies, target a framework the SDK doesn't natively support, or give one agent tools for more than one connector. The SDK README, shipped skills, and generated connector docs now include complete examples of the `agent_tool` pattern, including which error each framework sees when a tool call fails.
+
 ## September 9, 2026
 
 Other
