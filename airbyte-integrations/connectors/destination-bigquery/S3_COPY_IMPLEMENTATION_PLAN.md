@@ -1,8 +1,9 @@
 # BigQuery load-input copies for Fusion
 
 Status: implemented for GCS staging on `johnny/bigquery-fusion-sync-copy`; standard inserts remain
-unsupported when copying is enabled. Copying defaults off. No deployment-specific settings or
-credentials are embedded in the connector. The sections below describe the implementation contract
+unsupported when copying is enabled. This temporary preview forces copying on for writes to
+`airbyte-fusion-context-store` in `us-west-2` through
+`arn:aws:iam::506572016262:role/fusion-snowflake-sync-copy`. Bootstrap AWS credentials are not embedded. The sections below describe the implementation contract
 and rollout requirements.
 Reviewed September 10, 2026 against the BigQuery files at repository baseline `aa28ceeac4e`.
 The connector uses CDK `1.0.25`, `core = 'load'`, and `useLegacyTaskLoader = true`, with
@@ -45,7 +46,7 @@ Retain successful archive objects and cutoff events across errors, retries, refr
 deletes. Do not parse CDC rows into S3 deletions or delete a failed run's prefix.
 
 Do not change customer BigQuery configuration, ingestion thresholds, formatter semantics, the
-public specification, or the CDK version. Do not migrate BigQuery to the new dataflow engine as
+CDK version. The five temporary optional routing fields below are the only specification additions. Do not migrate BigQuery to the new dataflow engine as
 part of this work. A shared toolkit extraction from Snowflake is also unnecessary for v1.
 
 When copying is enabled with batched standard inserts, fail setup with a clear internal unsupported
@@ -57,15 +58,20 @@ writes must continue to work with either loading strategy and no AWS configurati
 Use the agreed Fusion contract:
 
 ```text
-fusion/workspaces/<workspace_uuid>/sources/<source_uuid>/connections/<connection_uuid>/
-  streams/<escaped_stream_name>/runs/<run_uuid>/
-    schema.json
-    generation-cutoff.json
-    batches/<batch_uuid>.csv.gz
+fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/
+  connections/<connection_uuid>/destinations/<destination_uuid>/syncs/runs/<epoch_seconds>/<run_uuid>/
+    streams/<escaped_stream_name>/
+      schema.json
+      generation-cutoff.json
+      batches/<batch_uuid>.csv.gz
 ```
 
-The prefix is configurable, defaulting to `fusion`. IDs are supplied by the platform, never
-hardcoded or generated as a substitute for missing routing. A process generates one run UUID;
+The prefix defaults to `fusion` and is forced to that value in this preview. Five optional advanced
+connector config fields (`organization_id`, `workspace_id`, `source_id`, `connection_id`, and
+`destination_id`) override the corresponding `AIRBYTE_S3_COPY_*_ID` environment values. Each
+missing value defaults to `00000000-0000-0000-0000-000000000000` for temporary preview testing.
+Values must be canonical UUIDs; uppercase input is normalized. A process captures one Unix epoch
+in seconds and generates one run UUID, shared across all streams;
 each completed GCS object gets one batch UUID reused throughout that archive transfer's retries.
 Generation and sync IDs live in JSON/object metadata, not directory components. Exclude GCS
 staging keys and temporary BigQuery table names from stable routing.
@@ -82,14 +88,16 @@ same run descriptor. This preserves the selected layout without relying on an un
 assumption.
 
 Write `schema.json` first and any cutoff second, once per stream/run, before setup returns.
-Consumers of `batches/<uuid>.csv.gz` resolve `schema.json` in the parent run folder. Filter data
+Consumers of `batches/<uuid>.csv.gz` resolve `schema.json` in the parent stream folder.
+Validate every full batch key, including the escaped stream name and longest batch suffix, against
+S3's 1024 UTF-8 byte limit before writing run metadata. Filter data
 notifications to batch objects. Cutoff consumers handle `generation-cutoff.json` separately.
 Do not rely on notification delivery order: the writes are ordered, but listeners must tolerate
 duplicate and reordered events. Completed objects do not imply a successful overall sync.
 
 Data objects use `application/gzip` without a `Content-Encoding` header. JSON uses
-`application/json`. Data metadata includes `format-version`, `workspace-id`, `source-id`,
-`connection-id`, `stream-key` (a short stable identity hash), `generation-id`, `sync-id`, `run-id`,
+`application/json`. Data metadata includes `format-version`, `organization-id`, `workspace-id`, `source-id`,
+`connection-id`, `destination-id`, `epoch-seconds`, `stream-key` (a short stable identity hash), `generation-id`, `sync-id`, `run-id`,
 `batch-id`, and `schema-id`. Keep rich names and schemas out of S3 metadata headers.
 
 Do not claim a formatter input count is available at the loader hook: `GcsBlob` contains the key
@@ -106,11 +114,19 @@ never count CSV lines, since quoted records can contain newlines.
 | `AIRBYTE_S3_COPY_BUCKET` | Required archive bucket |
 | `AIRBYTE_S3_COPY_REGION` | Required S3/STS region |
 | `AIRBYTE_S3_COPY_ROLE_ARN` | Required target role |
-| `AIRBYTE_S3_COPY_WORKSPACE_ID` | Required canonical UUID |
-| `AIRBYTE_S3_COPY_SOURCE_ID` | Required canonical UUID of source actor |
-| `AIRBYTE_S3_COPY_CONNECTION_ID` | Required canonical UUID |
+| `AIRBYTE_S3_COPY_ORGANIZATION_ID` | Optional canonical UUID; config `organization_id` overrides |
+| `AIRBYTE_S3_COPY_WORKSPACE_ID` | Optional canonical UUID; config `workspace_id` overrides |
+| `AIRBYTE_S3_COPY_SOURCE_ID` | Optional canonical UUID; config `source_id` overrides |
+| `AIRBYTE_S3_COPY_CONNECTION_ID` | Optional canonical UUID; config `connection_id` overrides |
+| `AIRBYTE_S3_COPY_DESTINATION_ID` | Optional canonical UUID; config `destination_id` overrides |
 | `AIRBYTE_S3_COPY_PREFIX` | Default `fusion`; trim surrounding slashes; reject empty |
 | `AIRBYTE_S3_COPY_EXTERNAL_ID` | Optional STS external ID |
+
+The table describes the underlying parser. This preview forces enablement, bucket, region, role,
+and prefix as described above. The IAM role has only `s3:PutObject` and
+`s3:AbortMultipartUpload` on `arn:aws:s3:::airbyte-fusion-context-store/fusion/*`.
+The bucket blocks all public access, uses SSE-S3, and aborts incomplete multipart uploads after
+one day, without expiring completed objects.
 
 Check operation and enablement before binding enabled-only fields or constructing AWS clients.
 Latch the configuration for the process. Validate all routing, supported generation combinations,

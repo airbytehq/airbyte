@@ -181,6 +181,7 @@ class BigqueryCopyMetadataCheckpointTest {
         private val metadata =
             mockk<BigqueryCopyMetadata> {
                 every { descriptor(stream) } returns mapOf("schema_id" to "schema-id")
+                every { epochSeconds } returns 1750000000L
                 every { runPath(stream) } returns "fusion/run"
                 every { streamKey(stream) } returns "stream-key"
                 every { cutoff(stream) } returns mapOf("minimum_generation_id" to 42L)

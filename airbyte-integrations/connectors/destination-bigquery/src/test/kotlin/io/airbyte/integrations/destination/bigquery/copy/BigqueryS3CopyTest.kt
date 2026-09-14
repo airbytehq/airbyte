@@ -171,6 +171,15 @@ class BigqueryS3CopyTest {
                 assertArrayEquals(bytes, copied.bytes)
                 assertEquals("application/gzip", copied.contentType)
                 assertEquals("1", copied.metadata["loaded-record-count"])
+                assertEquals(
+                    fixture.config.organizationId.toString(),
+                    copied.metadata["organization-id"]
+                )
+                assertEquals(
+                    fixture.config.destinationId.toString(),
+                    copied.metadata["destination-id"]
+                )
+                assertEquals("1750000000", copied.metadata["epoch-seconds"])
                 assertEquals(fixture.config.sourceId.toString(), copied.metadata["source-id"])
                 assertTrue(copied.key.startsWith("fusion/test-run/batches/"))
                 assertTrue(copied.key.endsWith(".csv.gz"))
@@ -431,6 +440,7 @@ class BigqueryS3CopyTest {
             every { configuration.loadingMethod } returns
                 GcsStagingConfiguration(mockk(), GcsFilePostProcessing.DELETE)
             every { metadata.descriptor(stream) } returns mapOf("schema_id" to "schema-hash")
+            every { metadata.epochSeconds } returns 1750000000L
             every { metadata.runPath(stream) } returns "fusion/test-run"
             every { metadata.streamKey(stream) } returns "stream-hash"
             every { metadata.cutoff(stream) } returns
