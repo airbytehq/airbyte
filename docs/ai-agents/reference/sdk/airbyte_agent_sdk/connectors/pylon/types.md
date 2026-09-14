@@ -29,7 +29,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pylon.types.AccountsEqCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsGtCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsGteCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsLtCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsLteCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsInCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsNotCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsAndCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsOrCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pylon.types.AccountsEqCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsGtCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsGteCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsLtCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsLteCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsInCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsNotCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsAndCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsOrCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AccountsAnyCondition"></a>
@@ -89,10 +89,24 @@ Classes
     `type_: Any`
     :   Classification of the account (e.g. customer, prospect)
 
+<a id="AccountsArrayContainsCondition"></a>
+
+`AccountsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pylon.types.AccountsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AccountsContainsCondition"></a>
 
 `AccountsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -362,7 +376,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pylon.types.AccountsEqCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsGtCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsGteCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsLtCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsLteCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsInCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsNotCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsAndCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsOrCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pylon.types.AccountsEqCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsGtCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsGteCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsLtCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsLteCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsInCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsNotCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsAndCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsOrCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AccountsOrCondition"></a>
@@ -384,7 +398,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pylon.types.AccountsEqCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsGtCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsGteCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsLtCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsLteCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsInCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsNotCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsAndCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsOrCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pylon.types.AccountsEqCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsGtCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsGteCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsLtCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsLteCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsInCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsNotCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsAndCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsOrCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AccountsSearchFilter"></a>
@@ -433,7 +447,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pylon.types.AccountsEqCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsGtCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsGteCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsLtCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsLteCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsInCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsNotCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsAndCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsOrCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pylon.types.AccountsEqCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsGtCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsGteCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsLtCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsLteCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsInCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsNotCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsAndCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsOrCondition | airbyte_agent_sdk.connectors.pylon.types.AccountsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pylon.types.AccountsSortFilter]`
@@ -675,7 +689,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pylon.types.ContactsEqCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsGtCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsGteCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsLtCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsLteCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsInCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsNotCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsAndCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsOrCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pylon.types.ContactsEqCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsGtCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsGteCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsLtCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsLteCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsInCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsNotCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsAndCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsOrCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ContactsAnyCondition"></a>
@@ -726,10 +740,24 @@ Classes
     `primary_phone_number: Any`
     :   Primary phone number of the contact
 
+<a id="ContactsArrayContainsCondition"></a>
+
+`ContactsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pylon.types.ContactsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ContactsContainsCondition"></a>
 
 `ContactsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -984,7 +1012,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pylon.types.ContactsEqCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsGtCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsGteCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsLtCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsLteCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsInCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsNotCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsAndCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsOrCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pylon.types.ContactsEqCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsGtCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsGteCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsLtCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsLteCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsInCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsNotCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsAndCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsOrCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ContactsOrCondition"></a>
@@ -1006,7 +1034,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pylon.types.ContactsEqCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsGtCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsGteCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsLtCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsLteCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsInCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsNotCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsAndCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsOrCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pylon.types.ContactsEqCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsGtCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsGteCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsLtCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsLteCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsInCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsNotCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsAndCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsOrCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ContactsSearchFilter"></a>
@@ -1046,7 +1074,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pylon.types.ContactsEqCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsGtCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsGteCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsLtCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsLteCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsInCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsNotCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsAndCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsOrCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pylon.types.ContactsEqCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsGtCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsGteCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsLtCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsLteCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsInCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsNotCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsAndCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsOrCondition | airbyte_agent_sdk.connectors.pylon.types.ContactsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pylon.types.ContactsSortFilter]`
@@ -1160,7 +1188,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pylon.types.CustomFieldsEqCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsGtCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsGteCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsLtCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsLteCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsInCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsNotCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsAndCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsOrCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pylon.types.CustomFieldsEqCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsGtCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsGteCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsLtCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsLteCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsInCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsNotCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsAndCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsOrCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CustomFieldsAnyCondition"></a>
@@ -1217,10 +1245,24 @@ Classes
     `type_: Any`
     :   Data type of the custom field (e.g. text, select)
 
+<a id="CustomFieldsArrayContainsCondition"></a>
+
+`CustomFieldsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pylon.types.CustomFieldsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CustomFieldsContainsCondition"></a>
 
 `CustomFieldsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1461,7 +1503,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pylon.types.CustomFieldsEqCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsGtCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsGteCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsLtCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsLteCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsInCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsNotCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsAndCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsOrCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pylon.types.CustomFieldsEqCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsGtCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsGteCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsLtCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsLteCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsInCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsNotCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsAndCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsOrCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CustomFieldsOrCondition"></a>
@@ -1483,7 +1525,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pylon.types.CustomFieldsEqCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsGtCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsGteCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsLtCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsLteCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsInCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsNotCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsAndCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsOrCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pylon.types.CustomFieldsEqCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsGtCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsGteCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsLtCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsLteCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsInCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsNotCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsAndCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsOrCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CustomFieldsSearchFilter"></a>
@@ -1529,7 +1571,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pylon.types.CustomFieldsEqCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsGtCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsGteCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsLtCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsLteCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsInCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsNotCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsAndCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsOrCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pylon.types.CustomFieldsEqCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsGtCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsGteCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsLtCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsLteCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsInCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsNotCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsAndCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsOrCondition | airbyte_agent_sdk.connectors.pylon.types.CustomFieldsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pylon.types.CustomFieldsSortFilter]`
@@ -1738,7 +1780,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pylon.types.IssuesEqCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesGtCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesGteCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesLtCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesLteCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesInCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesNotCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesAndCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesOrCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pylon.types.IssuesEqCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesGtCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesGteCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesLtCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesLteCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesInCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesNotCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesAndCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesOrCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IssuesAnyCondition"></a>
@@ -1807,10 +1849,24 @@ Classes
     `type_: Any`
     :   Type classification of the issue
 
+<a id="IssuesArrayContainsCondition"></a>
+
+`IssuesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pylon.types.IssuesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="IssuesContainsCondition"></a>
 
 `IssuesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2118,7 +2174,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pylon.types.IssuesEqCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesGtCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesGteCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesLtCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesLteCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesInCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesNotCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesAndCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesOrCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pylon.types.IssuesEqCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesGtCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesGteCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesLtCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesLteCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesInCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesNotCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesAndCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesOrCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesAnyCondition`
     :   The type of the None singleton.
 
 <a id="IssuesOrCondition"></a>
@@ -2140,7 +2196,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pylon.types.IssuesEqCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesGtCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesGteCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesLtCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesLteCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesInCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesNotCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesAndCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesOrCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pylon.types.IssuesEqCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesGtCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesGteCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesLtCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesLteCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesInCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesNotCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesAndCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesOrCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IssuesSearchFilter"></a>
@@ -2198,7 +2254,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pylon.types.IssuesEqCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesGtCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesGteCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesLtCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesLteCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesInCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesNotCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesAndCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesOrCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pylon.types.IssuesEqCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesGtCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesGteCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesLtCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesLteCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesInCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesNotCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesAndCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesOrCondition | airbyte_agent_sdk.connectors.pylon.types.IssuesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pylon.types.IssuesSortFilter]`
@@ -2469,7 +2525,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pylon.types.TagsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TagsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TagsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TagsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TagsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TagsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TagsInCondition | airbyte_agent_sdk.connectors.pylon.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TagsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TagsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TagsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TagsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TagsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pylon.types.TagsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TagsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TagsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TagsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TagsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TagsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TagsInCondition | airbyte_agent_sdk.connectors.pylon.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TagsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TagsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TagsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TagsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TagsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TagsAnyCondition"></a>
@@ -2514,10 +2570,24 @@ Classes
     `value: Any`
     :   Display value of the tag
 
+<a id="TagsArrayContainsCondition"></a>
+
+`TagsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pylon.types.TagsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TagsContainsCondition"></a>
 
 `TagsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2763,7 +2833,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pylon.types.TagsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TagsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TagsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TagsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TagsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TagsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TagsInCondition | airbyte_agent_sdk.connectors.pylon.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TagsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TagsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TagsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TagsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TagsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pylon.types.TagsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TagsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TagsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TagsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TagsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TagsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TagsInCondition | airbyte_agent_sdk.connectors.pylon.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TagsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TagsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TagsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TagsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TagsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TagsOrCondition"></a>
@@ -2785,7 +2855,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pylon.types.TagsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TagsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TagsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TagsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TagsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TagsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TagsInCondition | airbyte_agent_sdk.connectors.pylon.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TagsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TagsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TagsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TagsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TagsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pylon.types.TagsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TagsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TagsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TagsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TagsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TagsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TagsInCondition | airbyte_agent_sdk.connectors.pylon.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TagsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TagsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TagsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TagsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TagsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TagsSearchFilter"></a>
@@ -2819,7 +2889,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pylon.types.TagsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TagsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TagsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TagsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TagsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TagsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TagsInCondition | airbyte_agent_sdk.connectors.pylon.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TagsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TagsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TagsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TagsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TagsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pylon.types.TagsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TagsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TagsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TagsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TagsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TagsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TagsInCondition | airbyte_agent_sdk.connectors.pylon.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TagsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TagsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TagsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TagsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TagsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pylon.types.TagsSortFilter]`
@@ -2976,7 +3046,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pylon.types.TeamsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsInCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pylon.types.TeamsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsInCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TeamsAnyCondition"></a>
@@ -3018,10 +3088,24 @@ Classes
     `name: Any`
     :   Name of the team
 
+<a id="TeamsArrayContainsCondition"></a>
+
+`TeamsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pylon.types.TeamsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TeamsContainsCondition"></a>
 
 `TeamsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3258,7 +3342,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pylon.types.TeamsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsInCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pylon.types.TeamsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsInCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TeamsOrCondition"></a>
@@ -3280,7 +3364,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pylon.types.TeamsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsInCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pylon.types.TeamsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsInCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TeamsSearchFilter"></a>
@@ -3311,7 +3395,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pylon.types.TeamsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsInCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pylon.types.TeamsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsInCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TeamsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pylon.types.TeamsSortFilter]`
@@ -3401,7 +3485,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pylon.types.TicketFormsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsInCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pylon.types.TicketFormsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsInCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketFormsAnyCondition"></a>
@@ -3449,10 +3533,24 @@ Classes
     `slug: Any`
     :   URL-safe identifier for the ticket form
 
+<a id="TicketFormsArrayContainsCondition"></a>
+
+`TicketFormsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pylon.types.TicketFormsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TicketFormsContainsCondition"></a>
 
 `TicketFormsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3667,7 +3765,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pylon.types.TicketFormsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsInCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pylon.types.TicketFormsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsInCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TicketFormsOrCondition"></a>
@@ -3689,7 +3787,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pylon.types.TicketFormsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsInCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pylon.types.TicketFormsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsInCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketFormsSearchFilter"></a>
@@ -3726,7 +3824,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pylon.types.TicketFormsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsInCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pylon.types.TicketFormsEqCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsNeqCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsGtCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsGteCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsLtCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsLteCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsInCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsNotCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsAndCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsOrCondition | airbyte_agent_sdk.connectors.pylon.types.TicketFormsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pylon.types.TicketFormsSortFilter]`
@@ -3811,7 +3909,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pylon.types.UserRolesEqCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesNeqCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesGtCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesGteCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesLtCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesLteCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesInCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesNotCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesAndCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesOrCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pylon.types.UserRolesEqCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesNeqCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesGtCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesGteCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesLtCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesLteCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesInCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesNotCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesAndCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesOrCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UserRolesAnyCondition"></a>
@@ -3856,10 +3954,24 @@ Classes
     `slug: Any`
     :   URL-safe identifier for the user role
 
+<a id="UserRolesArrayContainsCondition"></a>
+
+`UserRolesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pylon.types.UserRolesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="UserRolesContainsCondition"></a>
 
 `UserRolesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4071,7 +4183,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pylon.types.UserRolesEqCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesNeqCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesGtCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesGteCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesLtCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesLteCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesInCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesNotCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesAndCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesOrCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pylon.types.UserRolesEqCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesNeqCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesGtCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesGteCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesLtCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesLteCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesInCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesNotCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesAndCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesOrCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesAnyCondition`
     :   The type of the None singleton.
 
 <a id="UserRolesOrCondition"></a>
@@ -4093,7 +4205,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pylon.types.UserRolesEqCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesNeqCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesGtCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesGteCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesLtCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesLteCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesInCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesNotCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesAndCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesOrCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pylon.types.UserRolesEqCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesNeqCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesGtCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesGteCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesLtCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesLteCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesInCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesNotCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesAndCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesOrCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UserRolesSearchFilter"></a>
@@ -4127,7 +4239,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pylon.types.UserRolesEqCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesNeqCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesGtCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesGteCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesLtCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesLteCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesInCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesNotCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesAndCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesOrCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pylon.types.UserRolesEqCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesNeqCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesGtCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesGteCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesLtCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesLteCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesInCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesNotCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesAndCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesOrCondition | airbyte_agent_sdk.connectors.pylon.types.UserRolesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pylon.types.UserRolesSortFilter]`
@@ -4206,7 +4318,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pylon.types.UsersEqCondition | airbyte_agent_sdk.connectors.pylon.types.UsersNeqCondition | airbyte_agent_sdk.connectors.pylon.types.UsersGtCondition | airbyte_agent_sdk.connectors.pylon.types.UsersGteCondition | airbyte_agent_sdk.connectors.pylon.types.UsersLtCondition | airbyte_agent_sdk.connectors.pylon.types.UsersLteCondition | airbyte_agent_sdk.connectors.pylon.types.UsersInCondition | airbyte_agent_sdk.connectors.pylon.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.UsersContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UsersNotCondition | airbyte_agent_sdk.connectors.pylon.types.UsersAndCondition | airbyte_agent_sdk.connectors.pylon.types.UsersOrCondition | airbyte_agent_sdk.connectors.pylon.types.UsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pylon.types.UsersEqCondition | airbyte_agent_sdk.connectors.pylon.types.UsersNeqCondition | airbyte_agent_sdk.connectors.pylon.types.UsersGtCondition | airbyte_agent_sdk.connectors.pylon.types.UsersGteCondition | airbyte_agent_sdk.connectors.pylon.types.UsersLtCondition | airbyte_agent_sdk.connectors.pylon.types.UsersLteCondition | airbyte_agent_sdk.connectors.pylon.types.UsersInCondition | airbyte_agent_sdk.connectors.pylon.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.UsersContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UsersNotCondition | airbyte_agent_sdk.connectors.pylon.types.UsersAndCondition | airbyte_agent_sdk.connectors.pylon.types.UsersOrCondition | airbyte_agent_sdk.connectors.pylon.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersAnyCondition"></a>
@@ -4257,10 +4369,24 @@ Classes
     `status: Any`
     :   Current status of the user (e.g. active, disabled)
 
+<a id="UsersArrayContainsCondition"></a>
+
+`UsersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pylon.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="UsersContainsCondition"></a>
 
 `UsersContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4492,7 +4618,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pylon.types.UsersEqCondition | airbyte_agent_sdk.connectors.pylon.types.UsersNeqCondition | airbyte_agent_sdk.connectors.pylon.types.UsersGtCondition | airbyte_agent_sdk.connectors.pylon.types.UsersGteCondition | airbyte_agent_sdk.connectors.pylon.types.UsersLtCondition | airbyte_agent_sdk.connectors.pylon.types.UsersLteCondition | airbyte_agent_sdk.connectors.pylon.types.UsersInCondition | airbyte_agent_sdk.connectors.pylon.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.UsersContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UsersNotCondition | airbyte_agent_sdk.connectors.pylon.types.UsersAndCondition | airbyte_agent_sdk.connectors.pylon.types.UsersOrCondition | airbyte_agent_sdk.connectors.pylon.types.UsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pylon.types.UsersEqCondition | airbyte_agent_sdk.connectors.pylon.types.UsersNeqCondition | airbyte_agent_sdk.connectors.pylon.types.UsersGtCondition | airbyte_agent_sdk.connectors.pylon.types.UsersGteCondition | airbyte_agent_sdk.connectors.pylon.types.UsersLtCondition | airbyte_agent_sdk.connectors.pylon.types.UsersLteCondition | airbyte_agent_sdk.connectors.pylon.types.UsersInCondition | airbyte_agent_sdk.connectors.pylon.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.UsersContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UsersNotCondition | airbyte_agent_sdk.connectors.pylon.types.UsersAndCondition | airbyte_agent_sdk.connectors.pylon.types.UsersOrCondition | airbyte_agent_sdk.connectors.pylon.types.UsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="UsersOrCondition"></a>
@@ -4514,7 +4640,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pylon.types.UsersEqCondition | airbyte_agent_sdk.connectors.pylon.types.UsersNeqCondition | airbyte_agent_sdk.connectors.pylon.types.UsersGtCondition | airbyte_agent_sdk.connectors.pylon.types.UsersGteCondition | airbyte_agent_sdk.connectors.pylon.types.UsersLtCondition | airbyte_agent_sdk.connectors.pylon.types.UsersLteCondition | airbyte_agent_sdk.connectors.pylon.types.UsersInCondition | airbyte_agent_sdk.connectors.pylon.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.UsersContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UsersNotCondition | airbyte_agent_sdk.connectors.pylon.types.UsersAndCondition | airbyte_agent_sdk.connectors.pylon.types.UsersOrCondition | airbyte_agent_sdk.connectors.pylon.types.UsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pylon.types.UsersEqCondition | airbyte_agent_sdk.connectors.pylon.types.UsersNeqCondition | airbyte_agent_sdk.connectors.pylon.types.UsersGtCondition | airbyte_agent_sdk.connectors.pylon.types.UsersGteCondition | airbyte_agent_sdk.connectors.pylon.types.UsersLtCondition | airbyte_agent_sdk.connectors.pylon.types.UsersLteCondition | airbyte_agent_sdk.connectors.pylon.types.UsersInCondition | airbyte_agent_sdk.connectors.pylon.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.UsersContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UsersNotCondition | airbyte_agent_sdk.connectors.pylon.types.UsersAndCondition | airbyte_agent_sdk.connectors.pylon.types.UsersOrCondition | airbyte_agent_sdk.connectors.pylon.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersSearchFilter"></a>
@@ -4554,7 +4680,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pylon.types.UsersEqCondition | airbyte_agent_sdk.connectors.pylon.types.UsersNeqCondition | airbyte_agent_sdk.connectors.pylon.types.UsersGtCondition | airbyte_agent_sdk.connectors.pylon.types.UsersGteCondition | airbyte_agent_sdk.connectors.pylon.types.UsersLtCondition | airbyte_agent_sdk.connectors.pylon.types.UsersLteCondition | airbyte_agent_sdk.connectors.pylon.types.UsersInCondition | airbyte_agent_sdk.connectors.pylon.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.UsersContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UsersNotCondition | airbyte_agent_sdk.connectors.pylon.types.UsersAndCondition | airbyte_agent_sdk.connectors.pylon.types.UsersOrCondition | airbyte_agent_sdk.connectors.pylon.types.UsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pylon.types.UsersEqCondition | airbyte_agent_sdk.connectors.pylon.types.UsersNeqCondition | airbyte_agent_sdk.connectors.pylon.types.UsersGtCondition | airbyte_agent_sdk.connectors.pylon.types.UsersGteCondition | airbyte_agent_sdk.connectors.pylon.types.UsersLtCondition | airbyte_agent_sdk.connectors.pylon.types.UsersLteCondition | airbyte_agent_sdk.connectors.pylon.types.UsersInCondition | airbyte_agent_sdk.connectors.pylon.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.pylon.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.pylon.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.pylon.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.pylon.types.UsersContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.pylon.types.UsersNotCondition | airbyte_agent_sdk.connectors.pylon.types.UsersAndCondition | airbyte_agent_sdk.connectors.pylon.types.UsersOrCondition | airbyte_agent_sdk.connectors.pylon.types.UsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pylon.types.UsersSortFilter]`

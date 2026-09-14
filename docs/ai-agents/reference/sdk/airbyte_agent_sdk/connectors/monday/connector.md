@@ -38,7 +38,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -50,6 +50,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against activity_logs records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, board_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.monday.models.MondayExecuteResult[list[ActivityLog]]`
     :   Returns activity logs from boards. Requires a board_id parameter.
@@ -81,7 +96,7 @@ Classes
         - columns: Board columns
         - communication: Board communication value
         - creator: Board creator
-        - description: Board description
+        - description: Board description -- the charter a team writes to say what the board is for. Semantically searchable. Empty on boards created programmatically.
         - groups: Board groups
         - id: Unique board identifier
         - name: Board name
@@ -100,7 +115,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -112,6 +127,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against boards records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Returns a single board by ID
@@ -152,7 +182,7 @@ Classes
         - creator_id: ID of the user who created the item
         - group: Group the item belongs to
         - id: Unique item identifier
-        - name: Item name
+        - name: Item name -- the task/row title, and the only always-populated human-readable text on an item. Semantically searchable, prefixed with its board name.
         - parent_item: Parent item (for subitems)
         - state: Item state (active, archived, deleted)
         - subscribers: Item subscribers
@@ -162,7 +192,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -174,6 +204,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against items records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Returns a single item by ID
@@ -249,12 +294,13 @@ Classes
     ### Static methods
 
     `agent_tool(role: AgentToolRole | None = None, *, inspect_tool: str | None = None, docs_tool: str | None = None, max_output_chars: int | None | Unset = UNSET, framework: FrameworkName = 'none', internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> Callable[[~_F], ~_F]`
-    :   Framework-agnostic decorator for user-written connector tool functions.
+    :   Decorator for new user-written connector tool functions.
         
-        The progressive-docs sibling of tool_utils: instead of baking the full
-        entity/action reference into the docstring, it instructs the agent to
-        call this connector's inspect and docs tools before executing. Tool
-        failures raise :class:`airbyte_agent_sdk.AirbyteToolError` by default
+        Use this when a tool needs a custom body or the framework lacks a
+        native strategy. Instead of baking the full entity/action reference
+        into the docstring, it instructs the agent to call this connector's
+        inspect and docs tools before executing. Tool failures raise
+        :class:`airbyte_agent_sdk.AirbyteToolError` by default
         (``framework="none"``, no auto-detection) — pass ``framework=...`` to
         translate to a supported framework's signal instead.
         
@@ -313,7 +359,11 @@ Classes
                 :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Add connector-specific documentation and runtime safeguards to one tool.
+    :   Deprecated. Add connector-specific documentation and runtime safeguards to one tool.
+        
+        Kept for backwards compatibility with existing single-tool
+        integrations; it is not removed and does not warn at runtime, but new
+        code should use `build_connector_tools` or `agent_tool` below.
         
         For new agents, prefer `build_connector_tools`. It returns progressive
         `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
@@ -326,6 +376,9 @@ Classes
         tools = build_connector_tools(connector, framework="pydantic_ai")
         agent = Agent("openai:gpt-4o", tools=tools.as_list())
         ```
+        
+        When a new integration needs custom tool bodies or a framework
+        without native support, use `agent_tool` instead.
         
         ### Legacy: one generated-description tool
         
@@ -367,9 +420,11 @@ Classes
         Args:
             update_docstring: When True, append connector capabilities to `__doc__`.
             max_output_chars: Max serialized output size before raising. Use `None` to disable.
-            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp" | "none"`.
                 Defaults to `None`, which auto-detects each framework's canonical
-                import in order. Explicit always wins.
+                import in order and falls back to `"none"` with a warning when no
+                supported framework is installed. Explicit always wins, and an
+                explicit framework whose package is missing raises `RuntimeError`.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
                 `airbyte_agent_sdk.translation.translate_exceptions`.
@@ -424,7 +479,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -509,7 +564,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -521,6 +576,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against tags records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, **kwargs) ‑> airbyte_agent_sdk.connectors.monday.models.MondayExecuteResult[list[Tag]]`
     :   Returns all tags in the Monday.com account
@@ -551,7 +621,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -563,6 +633,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against teams records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Returns a single team by ID
@@ -597,18 +682,18 @@ Classes
         
         Available filter fields (UpdatesSearchFilter):
         - assets: Files attached to this update
-        - body: Update body (HTML)
+        - body: Update body as HTML. Not semantically indexed -- the embedding engine has no HTML decoder. Use text_body for search; this field is for rendering only.
         - created_at: When the update was created
         - creator_id: ID of the user who created the update
         - id: Unique update identifier
         - item_id: ID of the item this update belongs to
-        - replies: Replies to this update
-        - text_body: Update body (plain text)
+        - replies: Replies to this update -- the threaded discussion beneath it, where the substance of a Monday conversation usually lives. Each reply's plain text is semantically indexed as its own unit; the parent update's text is appended as context.
+        - text_body: Update body as plain text -- the human comment posted on a Monday item. Semantically searchable. Empty for image-only updates, which therefore produce no embedding.
         - updated_at: When the update was last modified
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -620,6 +705,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against updates records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Returns a single update by ID
@@ -674,7 +774,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -686,6 +786,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Returns a single user by ID
@@ -739,7 +854,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -751,6 +866,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against workspaces records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Returns a single workspace by ID

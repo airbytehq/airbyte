@@ -7473,6 +7473,7 @@ Classes
     * airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[CreativesSearchData]
     * airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[LeadFormResponsesSearchData]
     * airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[LeadFormsSearchData]
+    * airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

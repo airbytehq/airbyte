@@ -2,8 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, MutableMapping
+from typing import Any, Mapping, MutableMapping
 from unittest import mock
+
+from source_github.streams import GithubStream
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
@@ -75,3 +77,18 @@ def command_check(source: Source, config):
         source_spec: ConnectorSpecification = source.spec(logger)
         check_config_against_spec_or_exit(connector_config, source_spec)
     return source.check(logger, config)
+
+
+class ProbeStream(GithubStream):
+    """A plain repo-scoped Python stream for tests that exercise `GithubStreamABC.read_records`'s
+    error handling or the shared authenticator through a real `HttpStream`: `GET
+    repos/{repository}/probe_stream?per_page=100`, no parent, no cache, no envelope.
+
+    `Deployments` used to play this role until Step 5 moved it to the manifest. Every remaining
+    Python stream is unsuitable for one of three reasons: it is parent-driven (`PullRequestCommits`,
+    `ProjectColumns`, `TeamMembers`, ...), it is GraphQL, or it sets `use_cache = True`, which
+    replays cached pages and stops a request counter from advancing.
+    """
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {"$schema": "https://json-schema.org/draft-07/schema#", "type": "object", "properties": {}}

@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.jira.types.IssueCommentsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.jira.types.IssueCommentsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IssueCommentsAnyCondition"></a>
@@ -124,10 +124,24 @@ Classes
     `visibility: Any`
     :   The group or role to which this item is visible
 
+<a id="IssueCommentsArrayContainsCondition"></a>
+
+`IssueCommentsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.jira.types.IssueCommentsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="IssueCommentsContainsCondition"></a>
 
 `IssueCommentsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -515,7 +529,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.jira.types.IssueCommentsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.jira.types.IssueCommentsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAnyCondition`
     :   The type of the None singleton.
 
 <a id="IssueCommentsOrCondition"></a>
@@ -537,7 +551,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.jira.types.IssueCommentsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.jira.types.IssueCommentsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IssueCommentsSearchFilter"></a>
@@ -598,7 +612,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.jira.types.IssueCommentsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.jira.types.IssueCommentsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.jira.types.IssueCommentsSortFilter]`
@@ -834,7 +848,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.jira.types.IssueFieldsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.jira.types.IssueFieldsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IssueFieldsAnyCondition"></a>
@@ -935,10 +949,24 @@ Classes
     `type: list[str]`
     :   The type of the None singleton.
 
+<a id="IssueFieldsArrayContainsCondition"></a>
+
+`IssueFieldsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.jira.types.IssueFieldsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="IssueFieldsContainsCondition"></a>
 
 `IssueFieldsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1169,7 +1197,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.jira.types.IssueFieldsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.jira.types.IssueFieldsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAnyCondition`
     :   The type of the None singleton.
 
 <a id="IssueFieldsOrCondition"></a>
@@ -1191,7 +1219,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.jira.types.IssueFieldsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.jira.types.IssueFieldsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IssueFieldsSearchFilter"></a>
@@ -1249,7 +1277,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.jira.types.IssueFieldsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.jira.types.IssueFieldsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.jira.types.IssueFieldsSortFilter]`
@@ -1598,7 +1626,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IssueWorklogsAnyCondition"></a>
@@ -1673,10 +1701,24 @@ Classes
     `visibility: Any`
     :   Details about any restrictions in the visibility of the worklog
 
+<a id="IssueWorklogsArrayContainsCondition"></a>
+
+`IssueWorklogsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="IssueWorklogsContainsCondition"></a>
 
 `IssueWorklogsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2056,7 +2098,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAnyCondition`
     :   The type of the None singleton.
 
 <a id="IssueWorklogsOrCondition"></a>
@@ -2078,7 +2120,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IssueWorklogsSearchFilter"></a>
@@ -2142,7 +2184,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.jira.types.IssueWorklogsSortFilter]`
@@ -2281,7 +2323,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.jira.types.IssuesEqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesInCondition | airbyte_agent_sdk.connectors.jira.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNotCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAndCondition | airbyte_agent_sdk.connectors.jira.types.IssuesOrCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.jira.types.IssuesEqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesInCondition | airbyte_agent_sdk.connectors.jira.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssuesArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNotCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAndCondition | airbyte_agent_sdk.connectors.jira.types.IssuesOrCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IssuesAnyCondition"></a>
@@ -2409,6 +2451,20 @@ Classes
     `properties: str`
     :   The type of the None singleton.
 
+<a id="IssuesArrayContainsCondition"></a>
+
+`IssuesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.jira.types.IssuesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="IssuesAssigneeUpdateParams"></a>
 
 `IssuesAssigneeUpdateParams(*args, **kwargs)`
@@ -2429,7 +2485,7 @@ Classes
 <a id="IssuesContainsCondition"></a>
 
 `IssuesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2917,7 +2973,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.jira.types.IssuesEqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesInCondition | airbyte_agent_sdk.connectors.jira.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNotCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAndCondition | airbyte_agent_sdk.connectors.jira.types.IssuesOrCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.jira.types.IssuesEqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesInCondition | airbyte_agent_sdk.connectors.jira.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssuesArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNotCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAndCondition | airbyte_agent_sdk.connectors.jira.types.IssuesOrCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAnyCondition`
     :   The type of the None singleton.
 
 <a id="IssuesOrCondition"></a>
@@ -2939,7 +2995,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.jira.types.IssuesEqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesInCondition | airbyte_agent_sdk.connectors.jira.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNotCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAndCondition | airbyte_agent_sdk.connectors.jira.types.IssuesOrCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.jira.types.IssuesEqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesInCondition | airbyte_agent_sdk.connectors.jira.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssuesArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNotCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAndCondition | airbyte_agent_sdk.connectors.jira.types.IssuesOrCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IssuesSearchFilter"></a>
@@ -3021,7 +3077,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.jira.types.IssuesEqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesInCondition | airbyte_agent_sdk.connectors.jira.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNotCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAndCondition | airbyte_agent_sdk.connectors.jira.types.IssuesOrCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.jira.types.IssuesEqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesInCondition | airbyte_agent_sdk.connectors.jira.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.jira.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.jira.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssuesArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNotCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAndCondition | airbyte_agent_sdk.connectors.jira.types.IssuesOrCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.jira.types.IssuesSortFilter]`
@@ -3364,7 +3420,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.jira.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsInCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.jira.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsInCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProjectsAnyCondition"></a>
@@ -3548,10 +3604,24 @@ Classes
     `keys(self, /) ‑> list[str]`
     :   Return a set-like object providing a view on the dict's keys.
 
+<a id="ProjectsArrayContainsCondition"></a>
+
+`ProjectsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.jira.types.ProjectsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ProjectsContainsCondition"></a>
 
 `ProjectsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3862,7 +3932,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.jira.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsInCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.jira.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsInCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProjectsOrCondition"></a>
@@ -3884,7 +3954,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.jira.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsInCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.jira.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsInCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProjectsSearchFilter"></a>
@@ -4011,7 +4081,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.jira.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsInCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.jira.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsInCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.jira.types.ProjectsSortFilter]`
@@ -4276,7 +4346,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.jira.types.UsersEqCondition | airbyte_agent_sdk.connectors.jira.types.UsersNeqCondition | airbyte_agent_sdk.connectors.jira.types.UsersGtCondition | airbyte_agent_sdk.connectors.jira.types.UsersGteCondition | airbyte_agent_sdk.connectors.jira.types.UsersLtCondition | airbyte_agent_sdk.connectors.jira.types.UsersLteCondition | airbyte_agent_sdk.connectors.jira.types.UsersInCondition | airbyte_agent_sdk.connectors.jira.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.jira.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.jira.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.jira.types.UsersContainsCondition | airbyte_agent_sdk.connectors.jira.types.UsersNotCondition | airbyte_agent_sdk.connectors.jira.types.UsersAndCondition | airbyte_agent_sdk.connectors.jira.types.UsersOrCondition | airbyte_agent_sdk.connectors.jira.types.UsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.jira.types.UsersEqCondition | airbyte_agent_sdk.connectors.jira.types.UsersNeqCondition | airbyte_agent_sdk.connectors.jira.types.UsersGtCondition | airbyte_agent_sdk.connectors.jira.types.UsersGteCondition | airbyte_agent_sdk.connectors.jira.types.UsersLtCondition | airbyte_agent_sdk.connectors.jira.types.UsersLteCondition | airbyte_agent_sdk.connectors.jira.types.UsersInCondition | airbyte_agent_sdk.connectors.jira.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.jira.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.jira.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.jira.types.UsersContainsCondition | airbyte_agent_sdk.connectors.jira.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.UsersNotCondition | airbyte_agent_sdk.connectors.jira.types.UsersAndCondition | airbyte_agent_sdk.connectors.jira.types.UsersOrCondition | airbyte_agent_sdk.connectors.jira.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersAnyCondition"></a>
@@ -4380,10 +4450,24 @@ Classes
     `start_at: int`
     :   The type of the None singleton.
 
+<a id="UsersArrayContainsCondition"></a>
+
+`UsersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.jira.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="UsersContainsCondition"></a>
 
 `UsersContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4648,7 +4732,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.jira.types.UsersEqCondition | airbyte_agent_sdk.connectors.jira.types.UsersNeqCondition | airbyte_agent_sdk.connectors.jira.types.UsersGtCondition | airbyte_agent_sdk.connectors.jira.types.UsersGteCondition | airbyte_agent_sdk.connectors.jira.types.UsersLtCondition | airbyte_agent_sdk.connectors.jira.types.UsersLteCondition | airbyte_agent_sdk.connectors.jira.types.UsersInCondition | airbyte_agent_sdk.connectors.jira.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.jira.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.jira.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.jira.types.UsersContainsCondition | airbyte_agent_sdk.connectors.jira.types.UsersNotCondition | airbyte_agent_sdk.connectors.jira.types.UsersAndCondition | airbyte_agent_sdk.connectors.jira.types.UsersOrCondition | airbyte_agent_sdk.connectors.jira.types.UsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.jira.types.UsersEqCondition | airbyte_agent_sdk.connectors.jira.types.UsersNeqCondition | airbyte_agent_sdk.connectors.jira.types.UsersGtCondition | airbyte_agent_sdk.connectors.jira.types.UsersGteCondition | airbyte_agent_sdk.connectors.jira.types.UsersLtCondition | airbyte_agent_sdk.connectors.jira.types.UsersLteCondition | airbyte_agent_sdk.connectors.jira.types.UsersInCondition | airbyte_agent_sdk.connectors.jira.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.jira.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.jira.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.jira.types.UsersContainsCondition | airbyte_agent_sdk.connectors.jira.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.UsersNotCondition | airbyte_agent_sdk.connectors.jira.types.UsersAndCondition | airbyte_agent_sdk.connectors.jira.types.UsersOrCondition | airbyte_agent_sdk.connectors.jira.types.UsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="UsersOrCondition"></a>
@@ -4670,7 +4754,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.jira.types.UsersEqCondition | airbyte_agent_sdk.connectors.jira.types.UsersNeqCondition | airbyte_agent_sdk.connectors.jira.types.UsersGtCondition | airbyte_agent_sdk.connectors.jira.types.UsersGteCondition | airbyte_agent_sdk.connectors.jira.types.UsersLtCondition | airbyte_agent_sdk.connectors.jira.types.UsersLteCondition | airbyte_agent_sdk.connectors.jira.types.UsersInCondition | airbyte_agent_sdk.connectors.jira.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.jira.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.jira.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.jira.types.UsersContainsCondition | airbyte_agent_sdk.connectors.jira.types.UsersNotCondition | airbyte_agent_sdk.connectors.jira.types.UsersAndCondition | airbyte_agent_sdk.connectors.jira.types.UsersOrCondition | airbyte_agent_sdk.connectors.jira.types.UsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.jira.types.UsersEqCondition | airbyte_agent_sdk.connectors.jira.types.UsersNeqCondition | airbyte_agent_sdk.connectors.jira.types.UsersGtCondition | airbyte_agent_sdk.connectors.jira.types.UsersGteCondition | airbyte_agent_sdk.connectors.jira.types.UsersLtCondition | airbyte_agent_sdk.connectors.jira.types.UsersLteCondition | airbyte_agent_sdk.connectors.jira.types.UsersInCondition | airbyte_agent_sdk.connectors.jira.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.jira.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.jira.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.jira.types.UsersContainsCondition | airbyte_agent_sdk.connectors.jira.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.UsersNotCondition | airbyte_agent_sdk.connectors.jira.types.UsersAndCondition | airbyte_agent_sdk.connectors.jira.types.UsersOrCondition | airbyte_agent_sdk.connectors.jira.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersSearchFilter"></a>
@@ -4737,7 +4821,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.jira.types.UsersEqCondition | airbyte_agent_sdk.connectors.jira.types.UsersNeqCondition | airbyte_agent_sdk.connectors.jira.types.UsersGtCondition | airbyte_agent_sdk.connectors.jira.types.UsersGteCondition | airbyte_agent_sdk.connectors.jira.types.UsersLtCondition | airbyte_agent_sdk.connectors.jira.types.UsersLteCondition | airbyte_agent_sdk.connectors.jira.types.UsersInCondition | airbyte_agent_sdk.connectors.jira.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.jira.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.jira.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.jira.types.UsersContainsCondition | airbyte_agent_sdk.connectors.jira.types.UsersNotCondition | airbyte_agent_sdk.connectors.jira.types.UsersAndCondition | airbyte_agent_sdk.connectors.jira.types.UsersOrCondition | airbyte_agent_sdk.connectors.jira.types.UsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.jira.types.UsersEqCondition | airbyte_agent_sdk.connectors.jira.types.UsersNeqCondition | airbyte_agent_sdk.connectors.jira.types.UsersGtCondition | airbyte_agent_sdk.connectors.jira.types.UsersGteCondition | airbyte_agent_sdk.connectors.jira.types.UsersLtCondition | airbyte_agent_sdk.connectors.jira.types.UsersLteCondition | airbyte_agent_sdk.connectors.jira.types.UsersInCondition | airbyte_agent_sdk.connectors.jira.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.jira.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.jira.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.jira.types.UsersContainsCondition | airbyte_agent_sdk.connectors.jira.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.jira.types.UsersNotCondition | airbyte_agent_sdk.connectors.jira.types.UsersAndCondition | airbyte_agent_sdk.connectors.jira.types.UsersOrCondition | airbyte_agent_sdk.connectors.jira.types.UsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.jira.types.UsersSortFilter]`
