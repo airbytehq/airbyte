@@ -76,4 +76,10 @@ data:
     - title: Recharge rate limits
       url: https://developer.rechargepayments.com/#rate-limiting
       type: rate_limits
+    - title: Recharge changelog
+      url: https://changelog.rechargepayments.com/
+      type: api_release_history
+    - title: Recharge API 2021-11 changelog
+      url: https://developer.rechargepayments.com/2021-11/changelog
+      type: api_release_history
 metadataSpecVersion: "1.0"

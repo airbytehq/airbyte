@@ -84,6 +84,8 @@ The Recharge source connector supports the following sync modes:
 **Notes on Streams:**
 *   **Orders Stream:** The connector uses the `2021-11` API for the `Orders` stream. If you need to use the deprecated `2021-01` API for orders, enable the **Use `Orders` Deprecated API** toggle in the connector configuration.
 *   **Shop Stream:** The `Shop` stream currently utilizes the deprecated `2021-01` API version. An updated stream (`Store`) using a newer API version has not yet been implemented in this connector.
+*   **Charges Stream:** Since March 19, 2025, the Recharge API (versions `2021-01` and `2021-11`) no longer returns processed charges (status `success`, `refunded`, or `partially-refunded`) whose `processed_at` is more than 90 days in the past. Initial syncs, full refreshes, and resets with an older `start_date` will therefore not include those charges; Recharge makes older charge data available only through the Exports tool in the merchant portal. See the [Recharge changelog](https://changelog.rechargepayments.com/) for details.
+*   **Orders Stream (deprecated API option):** Since May 1, 2025, Recharge requires cursor-based pagination for responses exceeding 100 pages. The default `2021-11` API path already uses cursor pagination. Enabling **Use `Orders` Deprecated API** switches the `Orders` stream to the `2021-01` API with page-based pagination, which Recharge may reject for stores with more than 25,000 orders in a single sync window.
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
