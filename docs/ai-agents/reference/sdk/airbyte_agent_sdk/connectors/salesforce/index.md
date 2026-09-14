@@ -834,7 +834,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            instance_url: Your Salesforce instance URL (e.g., https://na1.salesforce.com)
     Examples:
         # Local mode (direct API calls)
-        connector = SalesforceConnector(auth_config=SalesforceAuthConfig(refresh_token="...", client_id="...", client_secret="..."))
+        connector = SalesforceConnector(auth_config=SalesforceAuthConfig(refresh_token="...", client_id="...", client_secret="..."), instance_url="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = SalesforceConnector(
             auth_config=AirbyteAuthConfig(

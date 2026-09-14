@@ -63,13 +63,21 @@ def test_mail_stream_succeeds_when_additional_data_missing():
         assert not output.errors
 
 
-def test_mail_threads_follow_next_start():
+def test_mail_follows_parent_thread_pagination():
+    # mailThreads paginates with start/limit; mail is read per thread and its endpoint has no pagination block.
+    # Reading `mail` drives the parent read sequentially, which keeps the test free of the concurrent-partition
+    # race on the parent stream's request cache.
     with HttpMocker() as http_mocker:
         http_mocker.get(_threads_request("inbox"), _response(_page([{"id": 1}], next_start=50)))
         http_mocker.get(_threads_request("inbox", start=50), _response(_page([{"id": 2}])))
         _mock_empty_folders(http_mocker)
+        for thread_id, message_id in ((1, 10), (2, 20)):
+            http_mocker.get(
+                _request(f"{_MAIL_THREADS_URL}/{thread_id}/mailMessages", {"api_token": "test_token", "limit": "50"}),
+                _response({"success": True, "data": [{"id": message_id, "mail_thread_id": thread_id}]}),
+            )
 
-        output = _read("mailThreads")
+        output = _read("mail")
 
-        assert [record.record.data["id"] for record in output.records] == [1, 2]
+        assert sorted(record.record.data["id"] for record in output.records) == [10, 20]
         assert not output.errors

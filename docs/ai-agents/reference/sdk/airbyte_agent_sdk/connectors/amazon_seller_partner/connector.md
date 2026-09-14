@@ -34,7 +34,7 @@ Classes
     The region is automatically mapped to the correct API endpoint (na/eu/fe) and marketplace ID. You only need to specify your country code.
             Examples:
                 # Local mode (direct API calls)
-                connector = AmazonSellerPartnerConnector(auth_config=AmazonSellerPartnerAuthConfig(lwa_app_id="...", lwa_client_secret="...", refresh_token="...", access_token="..."))
+                connector = AmazonSellerPartnerConnector(auth_config=AmazonSellerPartnerAuthConfig(lwa_app_id="...", lwa_client_secret="...", refresh_token="...", access_token="..."), region="...")
                 # Hosted mode with explicit connector_id (no lookup needed)
                 connector = AmazonSellerPartnerConnector(
                     auth_config=AirbyteAuthConfig(

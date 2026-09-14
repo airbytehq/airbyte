@@ -441,7 +441,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            hostname: Host name of Sentry API server. For self-hosted instances, specify your host name here. Otherwise, leave as sentry.io.
     Examples:
         # Local mode (direct API calls)
-        connector = SentryConnector(auth_config=SentryAuthConfig(auth_token="..."))
+        connector = SentryConnector(auth_config=SentryAuthConfig(auth_token="..."), hostname="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = SentryConnector(
             auth_config=AirbyteAuthConfig(

@@ -26,6 +26,25 @@ def _resolve(config):
     return source._resolve_repositories_and_organizations(normalized)
 
 
+def test_check_connection_still_fails_when_every_explicit_repository_is_forbidden(requests_mock):
+    """`repository_stats` skips a 403 rather than failing, so that one SAML-protected repository
+    does not take the healthy ones down with it (`resolve_explicit_repository_error_handler`).
+    That must not cost `check` its ability to reject a token that can read nothing: with every
+    entry skipped the resolved list is empty, which `check_connection` already reports."""
+    _mock_rate_limit(requests_mock)
+    requests_mock.get(
+        "https://api.github.com/repos/saml/protected-repo",
+        status_code=403,
+        json={"message": "Resource protected by organization SAML enforcement."},
+    )
+    config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["saml/protected-repo"]}
+
+    ok, message = SourceGithub(config=dict(config)).check_connection(logging.getLogger("airbyte"), dict(config))
+
+    assert ok is False
+    assert "couldn't be found" in message
+
+
 def test_check_connection_fails_fast_when_quota_exhausted(requests_mock):
     """`check` is interactive, so an exhausted quota must return an actionable error in seconds
     rather than sleeping up to `max_waiting_time` (120 minutes by default) and surfacing as a
@@ -309,7 +328,9 @@ def test_every_max_waiting_time_the_spec_allows_builds(requests_mock, max_waitin
     python_stream = source.streams(config)[0]
     streams = ConcurrentDeclarativeSource.streams(source, config)
 
-    assert [stream.name for stream in streams] == ["repositories"]
+    # Building at all is the assertion: every manifest stream shares the authenticator and the
+    # backoff strategies, so a value one of those interpolations cannot render fails here.
+    assert "repositories" in [stream.name for stream in streams]
     max_waiting_time = max_waiting_time_config.get("max_waiting_time")
     expected_wait_time = max_waiting_time if max_waiting_time is not None else 120
     assert python_stream.max_wait_time_seconds == expected_wait_time * 60

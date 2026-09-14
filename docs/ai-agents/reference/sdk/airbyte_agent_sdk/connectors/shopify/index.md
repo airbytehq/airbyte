@@ -2671,7 +2671,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            shop: Your Shopify store name (e.g., 'my-store' from my-store.myshopify.com)
     Examples:
         # Local mode (direct API calls)
-        connector = ShopifyConnector(auth_config=ShopifyAuthConfig(api_key="..."))
+        connector = ShopifyConnector(auth_config=ShopifyAuthConfig(api_key="..."), shop="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = ShopifyConnector(
             auth_config=AirbyteAuthConfig(

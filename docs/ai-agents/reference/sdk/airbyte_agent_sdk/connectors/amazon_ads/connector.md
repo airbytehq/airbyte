@@ -34,7 +34,7 @@ Classes
     
             Examples:
                 # Local mode (direct API calls)
-                connector = AmazonAdsConnector(auth_config=AmazonAdsAuthConfig(client_id="...", client_secret="...", refresh_token="..."))
+                connector = AmazonAdsConnector(auth_config=AmazonAdsAuthConfig(client_id="...", client_secret="...", refresh_token="..."), region="...")
                 # Hosted mode with explicit connector_id (no lookup needed)
                 connector = AmazonAdsConnector(
                     auth_config=AirbyteAuthConfig(

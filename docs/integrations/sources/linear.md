@@ -170,6 +170,8 @@ Workspace-level OAuth applications receive dynamically increased limits based on
 
 If an OAuth source starts failing with an authorization error, re-authenticate the source from its settings page to issue a fresh refresh token. Linear rotates the refresh token every time the connector exchanges it, so a source breaks permanently once its stored token is replaced with an older value. Don't restore an earlier copy of a source's configuration, and don't paste the same refresh token into more than one source.
 
+Connector versions before `1.0.1` had a bug that stopped Airbyte Cloud from storing the rotated refresh token: the connector added an empty `api_key` field to OAuth configurations, and Airbyte Cloud rejects configuration updates that contain an empty secret. As a result, an OAuth source worked until the connector's first token refresh and then failed on every later sync with Linear's `Refresh token revoked` error. If your OAuth source fails this way, upgrade to `1.0.1` or later and re-authenticate it once. You don't need to change anything else. API key sources were never affected.
+
 ### The connection test only reads the issues stream
 
 The connection test queries the `issues` stream. It confirms that Linear accepts your credentials, but it doesn't check any other stream. Credentials that can't reach Customer Requests data still pass the test, and the problem only surfaces when a sync reads those streams.
@@ -225,6 +227,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 1.0.1 | 2026-09-09 | [85789](https://github.com/airbytehq/airbyte/pull/85789) | Fix bug in config migration that prevented rotated refresh tokens from being persisted |
 | 1.0.0 | 2026-08-28 | [85095](https://github.com/airbytehq/airbyte/pull/85095) | Breaking: declare `date` and `date-time` formats on every temporal field, and drop the fields Linear deprecated in the `users`, `teams`, and `customer_statuses` queries (`teams.visibility` replaces `teams.private`). See the [migration guide](/integrations/sources/linear-migrations#upgrading-to-100). |
 | 0.4.0 | 2026-08-27 | [85056](https://github.com/airbytehq/airbyte/pull/85056) | Add initiatives, initiative-to-project relationships, project updates, and issue history streams |
 | 0.3.1 | 2026-08-26 | [85053](https://github.com/airbytehq/airbyte/pull/85053) | Add regression tests covering incremental cursor boundary behavior |

@@ -875,7 +875,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            subdomain: Your Zendesk subdomain (the part before .zendesk.com in your Zendesk URL)
     Examples:
         # Local mode (direct API calls)
-        connector = ZendeskTalkConnector(auth_config=ZendeskTalkAuthConfig(access_token="...", refresh_token="...", client_id="...", client_secret="..."))
+        connector = ZendeskTalkConnector(auth_config=ZendeskTalkAuthConfig(access_token="...", refresh_token="...", client_id="...", client_secret="..."), subdomain="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = ZendeskTalkConnector(
             auth_config=AirbyteAuthConfig(
