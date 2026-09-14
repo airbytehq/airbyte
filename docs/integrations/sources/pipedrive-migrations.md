@@ -102,7 +102,7 @@ API v2 schemas replace the Recents-era record shapes. The stream-specific change
 </details>
 
 - RFC3339 timestamps are typed as `date-time` values with a time zone, and custom fields are nested under `custom_fields`; monetary custom fields are `{value, currency}` objects instead of separate `<hash>` and `<hash>_currency` fields. Streams that stay on API v1 keep their `YYYY-MM-DD HH:MM:SS` timestamps, now typed as `date-time` without a time zone.
-- `deals` returns not-archived deals and, together with the new `deals_archived` stream, includes deals deleted in the last 30 days with `is_deleted: true`.
+- `deals` returns not-archived deals and, together with the new `deals_archived` stream, includes deals deleted in the last 30 days with `is_deleted: true`. Archived deals were never returned by the Recents feed in 2.x, so `deals_archived` only adds records; enable it on existing connections if you need them.
 - `deal_products` uses the API v2 shape: `discount`, `discount_type`, `is_enabled` and the `billing_*` fields replace `discount_percentage`, `enabled_flag`, `duration` and `duration_unit`.
 - Sync modes: `organizations`, `notes` and `leads` are now incremental on `update_time`; `pipelines`, `stages`, `filters` and `users` are full refresh only.
 - Primary keys added: `key` on `deal_fields`, `activity_fields`, `organization_fields`, `person_fields` and `product_fields`; `id` on `leads`, `lead_labels`, `activity_types`, `currencies`, `permission_sets`, `roles` and `deal_products`.
