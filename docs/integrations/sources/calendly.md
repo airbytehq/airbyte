@@ -11,7 +11,7 @@ Calendly source syncs your organization members, groups, available event types, 
 
 :::note
 
-Calendly requires [authorization scopes](https://developer.calendly.com/docs/authentication/scopes) on newly created personal access tokens. When you create the token, select `users:read`, `event_types:read`, `groups:read`, `organizations:read`, and `scheduled_events:read`.
+Since March 2026, Calendly grants newly created [personal access tokens](https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens) no API access until you select [authorization scopes](https://developer.calendly.com/docs/authentication/scopes) for them. When you create a token for Airbyte, select the following read scopes: `users:read`, `event_types:read`, `groups:read`, `organizations:read`, and `scheduled_events:read`. Tokens created before this change keep their existing access.
 
 :::
 
