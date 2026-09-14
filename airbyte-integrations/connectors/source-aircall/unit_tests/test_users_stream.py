@@ -93,7 +93,7 @@ class UsersStreamTest(TestCase):
         http_mocker.assert_number_of_calls(_FIRST_PAGE_REQUEST, 1)
 
     @HttpMocker()
-    def test_check_uses_v2_users_endpoint(self, http_mocker: HttpMocker):
+    def test_users_stream_does_not_target_v1_endpoint(self, http_mocker: HttpMocker):
         # Nothing is mocked, so any request the stream makes fails with
         # NoMockAddress. The error log names the URL it attempted, which proves
         # the stream targets the V2 endpoint (and no longer V1).
