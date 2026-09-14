@@ -77,7 +77,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
-| 2.0.0 | 2026-09-14 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Migrate `shifts` stream from retired `SearchShifts` to `SearchTimecards`; drop `employee_id`. See the [migration guide](https://docs.airbyte.com/integrations/sources/square-migrations#upgrading-to-200) for details. |
+| 2.0.0 | 2026-09-14 | [85907](https://github.com/airbytehq/airbyte/pull/85907) | Migrate `shifts` stream from retired `SearchShifts` to `SearchTimecards`; drop `employee_id`. See the [migration guide](https://docs.airbyte.com/integrations/sources/square-migrations#upgrading-to-200) for details. |
 | 1.7.28 | 2026-09-08 | [85690](https://github.com/airbytehq/airbyte/pull/85690) | Update dependencies |
 | 1.7.27 | 2026-08-18 | [84792](https://github.com/airbytehq/airbyte/pull/84792) | Update dependencies |
 | 1.7.26 | 2026-08-11 | [84144](https://github.com/airbytehq/airbyte/pull/84144) | Update dependencies |
