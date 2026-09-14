@@ -1,4 +1,4 @@
-version: "6.51.0"
+version: "0.29.0"
 
 type: DeclarativeSource
 
@@ -477,10 +477,6 @@ spec:
           refresh_token:
             type: string
             path_in_connector_config: ["credentials", "refresh_token"]
-          token_expiry_date:
-            type: string
-            format: date-time
-            path_in_connector_config: ["credentials", "token_expiry_date"]
       complete_oauth_server_input_specification:
         type: object
         additionalProperties: true
@@ -499,6 +495,37 @@ spec:
           client_secret:
             type: string
             path_in_connector_config: ["credentials", "client_secret"]
+      oauth_connector_input_specification:
+        # https://developer.monday.com/apps/docs/migrating-to-the-new-oauth-flow
+        scopes:
+          - scope: me:read
+          - scope: boards:read
+          - scope: workspaces:read
+          - scope: users:read
+          - scope: account:read
+          - scope: updates:read
+          - scope: assets:read
+          - scope: tags:read
+          - scope: teams:read
+        # PKCE (S256) is mandatory on the new flow; the random `state` doubles as the code_verifier
+        consent_url: https://auth.monday.com/oauth2/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}&code_challenge={{ state_value | codechallengeS256 }}&code_challenge_method=S256&subdomain={{subdomain}}
+        # code_verifier length per RFC 7636 section 4.1
+        state:
+          min: 43
+          max: 128
+        access_token_url: https://auth.monday.com/oauth_ms/oauth/token
+        access_token_headers:
+          Content-Type: application/json
+        access_token_params:
+          grant_type: authorization_code
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+          code_verifier: "{{ state_value }}"
+        extract_output:
+          - access_token
+          - refresh_token
       oauth_user_input_from_connector_config_specification:
         type: object
         additionalProperties: false
@@ -520,13 +547,11 @@ spec:
               - type: AddedFieldDefinition
                 path: ["credentials", "api_token"]
                 value: "{{ config['api_token'] }}"
-            condition: "{{ config.get('api_token', False) and not config.get('credentials', {}) }}"
-          - type: ConfigAddFields
-            fields:
               - type: AddedFieldDefinition
                 path: ["credentials", "auth_type"]
                 value: "api_token"
-            condition: "{{ config.get('api_token', False) and not config.get('credentials', {}) }}"
+            # evaluated per field on the mutating config, so test for the last field written
+            condition: "{{ config.get('api_token', False) and not config.get('credentials', {}).get('auth_type') }}"
 
 check:
   stream_names:

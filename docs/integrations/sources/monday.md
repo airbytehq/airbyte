@@ -30,6 +30,8 @@ For more details, see Monday.com's [authentication documentation](https://develo
 3. Click **Authenticate your Monday account**.
 4. Complete the authentication flow using your Monday.com credentials.
 
+Airbyte stores the access token together with a refresh token and refreshes the access token automatically. Sources authenticated with connector versions earlier than 3.0.0 must be re-authenticated once before October 1, 2026. See the [migration guide](monday-migrations.md#upgrading-to-300).
+
 The connector requests the following OAuth scopes: `me:read`, `boards:read`, `workspaces:read`, `users:read`, `account:read`, `updates:read`, `assets:read`, `tags:read`, and `teams:read`.
 
 ### Connect using API Token
@@ -93,7 +95,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.0 | 2026-08-28 | [85170](https://github.com/airbytehq/airbyte/pull/85170) | Use Monday's new OAuth token endpoint with refresh tokens; OAuth users must re-authenticate |
+| 3.0.0 | 2026-09-14 | [85170](https://github.com/airbytehq/airbyte/pull/85170) | Move OAuth to Monday's OAuth 2.1 flow (PKCE, new token endpoint, rotating refresh tokens); OAuth sources must be re-authenticated before 2026-10-01 |
 | 2.5.20 | 2026-09-08 | [85557](https://github.com/airbytehq/airbyte/pull/85557) | Update dependencies |
 | 2.5.19 | 2026-08-18 | [84675](https://github.com/airbytehq/airbyte/pull/84675) | Update dependencies |
 | 2.5.18 | 2026-08-11 | [84004](https://github.com/airbytehq/airbyte/pull/84004) | Update dependencies |
