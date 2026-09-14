@@ -40,3 +40,9 @@ data:
     - title: Omnisend authentication
       url: https://api-docs.omnisend.com/reference/authentication
       type: authentication_guide
+    - title: Omnisend API v3 changelog
+      url: https://api-docs.omnisend.com/v3/reference/changelog
+      type: api_release_history
+    - title: Omnisend migration guide (v3 to v2026-03-15)
+      url: https://api-docs.omnisend.com/docs/migrate-from-v3-to-v2026-03-15
+      type: api_deprecations
