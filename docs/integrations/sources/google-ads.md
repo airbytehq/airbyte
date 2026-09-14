@@ -11,7 +11,7 @@ This page contains the setup guide and reference information for the [Google Ads
 - A [Google Ads Account](https://support.google.com/google-ads/answer/6366720) [linked](https://support.google.com/google-ads/answer/7459601) to a Google Ads Manager account
 <!-- env:oss -->
 - (For Airbyte Open Source):
-  - A Developer Token
+  - Google Ads API access (Basic or Standard) granted to the Google Cloud project that owns your OAuth client (see Step 1)
   - OAuth credentials to authenticate your Google account
   <!-- /env:oss -->
 
@@ -65,13 +65,15 @@ Each Google Cloud project's OAuth client is assigned an access level and "permis
 
 ##### Optional: use your own Google OAuth app in Airbyte Cloud
 
-Airbyte Cloud normally uses Airbyte-managed OAuth client credentials for the Google Ads source. If you need to use your own Google OAuth app and Google Ads developer token, create OAuth override credentials.
+Airbyte Cloud normally uses Airbyte-managed OAuth client credentials for the Google Ads source. If you need to use your own Google OAuth app, create OAuth override credentials.
 
 Create the override first, then click **Sign in with Google**.
 
 Use the Airbyte API to create OAuth override credentials for the workspace or organization. For the workspace endpoint, see [Create OAuth override credentials for a workspace and source type](https://reference.airbyte.com/reference/workspaceoauthcredentials). For the organization endpoint, see [Create OAuth override credentials for an organization and source type](https://reference.airbyte.com/reference/createorupdateorganizationoauthcredentials).
 
 For Google Ads, set `actorType` to `source`, set `name` to `google-ads`, and include your Google OAuth app credentials and Google Ads developer token in `configuration.credentials`.
+
+Google ignores the `developer_token` value since September 9, 2026 (see the [developer token sunset guide](https://developers.google.com/google-ads/api/docs/api-policy/developer-token)); the field is still required by the connector, so pass your existing token or any placeholder string. API access is granted to the Google Cloud project that owns your OAuth app, so make sure that project has at least Basic access on its Google Ads API Overview page.
 
 ```json
 {
