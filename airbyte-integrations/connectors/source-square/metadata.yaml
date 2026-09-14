@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 77225a51-cd15-4a13-af02-65816bd0ecf4
-  dockerImageTag: 1.7.28
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-square
   documentationUrl: https://docs.airbyte.com/integrations/sources/square
   githubIssueLabel: source-square
@@ -24,6 +24,14 @@ data:
     oss:
       enabled: true
   releaseStage: beta
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "The `shifts` stream now reads from Square's Labor API `SearchTimecards` endpoint because Square retired the `Shift` endpoints (API version 2026-05-21). The `employee_id` field, which Square removed from the replacement `Timecard` object, is no longer emitted; use `team_member_id` instead. Refresh the source schema and reset the `shifts` stream after upgrading."
+        upgradeDeadline: "2026-09-28"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["shifts"]
   remoteRegistries:
     pypi:
       enabled: false
