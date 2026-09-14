@@ -19725,7 +19725,6 @@ streams:
         type: JsonDecoder
       paginator:
         type: DefaultPaginator
-        reset_page_token_on_error: true
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{ response.scroll }}"
@@ -19741,9 +19740,8 @@ streams:
         request_headers:
           $ref: "#/definitions/linked/HttpRequester/request_headers"
         request_parameters:
-          size: "100"
+          size: "20"
           scroll: "{{ next_page_token['next_page_token'] if next_page_token else '1' }}"
-          sortColumn: id
       record_selector:
         type: RecordSelector
         extractor:
