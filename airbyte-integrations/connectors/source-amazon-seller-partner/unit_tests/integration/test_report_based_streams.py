@@ -1385,9 +1385,6 @@ class TestVendorReportOptionsForwarding:
         "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
     )
 
-    # GET_VENDOR_INVENTORY_REPORT is a snapshot stream and intentionally sends no date window.
-    _WINDOWLESS_STREAMS = ("GET_VENDOR_INVENTORY_REPORT",)
-
     @staticmethod
     def _read(stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
         return read_output(
@@ -1397,11 +1394,14 @@ class TestVendorReportOptionsForwarding:
         )
 
     def _expected_body(self, stream_name: str, report_options: Optional[dict]) -> dict:
-        body = {"reportType": stream_name}
-        if stream_name not in self._WINDOWLESS_STREAMS:
-            body["dataStartTime"] = "2023-01-01T00:00:00Z"
-            body["dataEndTime"] = "2023-01-01T23:59:59Z"
-        body["marketplaceIds"] = [MARKETPLACE_ID]
+        # All four streams share vendor_analytics_creation_requester, so all four send the same
+        # day-aligned window derived from the slice.
+        body = {
+            "reportType": stream_name,
+            "dataStartTime": "2023-01-01T00:00:00Z",
+            "dataEndTime": "2023-01-01T23:59:59Z",
+            "marketplaceIds": [MARKETPLACE_ID],
+        }
         if report_options is not None:
             body["reportOptions"] = report_options
         return body
@@ -1484,6 +1484,127 @@ class TestVendorReportOptionsForwarding:
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
 
 
+@freezegun.freeze_time(NOW.isoformat())
+class TestVendorAnalyticsAvailabilityHoldback:
+    """
+    Amazon publishes the vendor retail analytics reports "72 hours after the close of the period"
+    (https://developer-docs.amazon/sp-api/docs/report-type-values-analytics). Requesting a day it
+    has not published yet makes the report FATAL with "The report data for the requested date range
+    is not yet available", which fails the stream rather than skipping the day, so the cursor holds
+    the newest requested day four calendar days back — a slice for day D closes at D 23:59:59 and is
+    published 72h after that, so four days is the smallest holdback that is safe at any time of day.
+
+    Every assertion here is a byte-exact create-report matcher: HttpMocker fails an unmatched
+    request, so a day requested inside the holdback window fails the test rather than passing
+    silently.
+    """
+
+    _VENDOR_STREAMS = (
+        "GET_VENDOR_SALES_REPORT",
+        "GET_VENDOR_INVENTORY_REPORT",
+        "GET_VENDOR_TRAFFIC_REPORT",
+        "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+    )
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_.with_account_type("Vendor"),
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+        )
+
+    @staticmethod
+    def _mock_report_flow(http_mocker: HttpMocker, stream_name: str, days: List[str]) -> None:
+        """Mock one full create/poll/download cycle per expected day, keyed by a byte-exact body."""
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), [_get_reports_response()] * len(days))
+        for index, day in enumerate(days):
+            report_id = f"{_REPORT_ID}_{index}"
+            document_id = f"{_REPORT_DOCUMENT_ID}_{index}"
+            download_url = f"{_DOCUMENT_DOWNLOAD_URL}/{index}"
+            body = {
+                "reportType": stream_name,
+                "dataStartTime": f"{day}T00:00:00Z",
+                "dataEndTime": f"{day}T23:59:59Z",
+                "marketplaceIds": [MARKETPLACE_ID],
+            }
+            http_mocker.post(
+                _create_report_request(stream_name).with_body(json.dumps(body)).build(),
+                _create_report_response(report_id),
+            )
+            http_mocker.get(
+                _check_report_status_request(report_id).build(),
+                _check_report_status_response(stream_name, report_document_id=document_id),
+            )
+            http_mocker.get(
+                _get_document_download_url_request(document_id).build(),
+                _get_document_download_url_response(download_url, document_id),
+            )
+            http_mocker.get(
+                _download_document_request(download_url).build(),
+                _download_document_response(stream_name, data_format="json"),
+            )
+
+    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
+    @HttpMocker()
+    def test_given_no_end_date_when_read_then_newest_requested_day_is_four_days_back(
+        self, stream_name: str, http_mocker: HttpMocker
+    ) -> None:
+        """
+        NOW is 2024-06-01T00:00:00Z, so the cursor's end bound is 2024-05-28T00:00:00Z. The bound is
+        exclusive, so the newest day requested is 2024-05-27 — published 2024-05-30T23:59:59Z, well
+        inside NOW.
+
+        2024-05-28 onwards is deliberately not mocked: requesting any of those days is the bug this
+        guards against.
+        """
+        self._mock_report_flow(http_mocker, stream_name, days=["2024-05-26", "2024-05-27"])
+
+        output = self._read(stream_name, config().without_end_date().with_start_date(pendulum.datetime(2024, 5, 26)))
+
+        assert len(output.records) == 2 * DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+        # Records alone are not enough: an unmocked day fails its own job and leaves the mocked
+        # days' records in place, so the error check is what actually pins the requested day set.
+        assert not output.errors
+
+    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
+    @HttpMocker()
+    def test_given_start_date_inside_holdback_window_when_read_then_no_report_requested(
+        self, stream_name: str, http_mocker: HttpMocker
+    ) -> None:
+        """
+        A start date newer than the holdback bound yields no slices rather than a failure.
+
+        No endpoint at all is mocked — not even the token refresh — so the read is only clean if it
+        makes no HTTP call whatsoever.
+        """
+        http_mocker.clear_all_matchers()
+
+        output = self._read(stream_name, config().without_end_date().with_start_date(pendulum.datetime(2024, 5, 30)))
+
+        assert output.records == []
+        assert not output.errors
+
+    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
+    @HttpMocker()
+    def test_given_explicit_end_date_when_read_then_holdback_not_applied(self, stream_name: str, http_mocker: HttpMocker) -> None:
+        """
+        An explicitly configured replication_end_date is honoured as-is, matching the pre-migration
+        Python connector where availability_sla_days only ever moved the "now" bound. 2024-05-31 is
+        inside the holdback window, so it is only requested because the config asked for it.
+        """
+        self._mock_report_flow(http_mocker, stream_name, days=["2024-05-31"])
+
+        output = self._read(
+            stream_name,
+            config().with_start_date(pendulum.datetime(2024, 5, 31)).with_end_date(pendulum.datetime(2024, 6, 1)),
+        )
+
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+
 class TestFatalReportErrorSurfacing:
     """
     A FATAL report means Amazon accepted createReport but could not produce the report, and the
@@ -1491,8 +1612,11 @@ class TestFatalReportErrorSurfacing:
     reason reaches the user instead of the CDK's generic retry-exhausted message.
     """
 
-    # A snapshot stream: no cursor, so a single slice and a short, fixed request body.
+    # A vendor analytics stream, so the FATAL path is exercised on exactly the streams the
+    # customer hit. The reads below pin a one-day window so there is a single slice and a single,
+    # fixed request body.
     _STREAM_NAME = "GET_VENDOR_INVENTORY_REPORT"
+    _SLICE_END_DATE = pendulum.datetime(2023, 1, 2)
     _ERROR_DOCUMENT_ID = "fatal_error_document_id"
     _ERROR_DOCUMENT_URL = "https://test.com/fatal-error-document"
 
@@ -1506,10 +1630,10 @@ class TestFatalReportErrorSurfacing:
     )
     _DOC_URL = "https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics"
 
-    @staticmethod
-    def _read(stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
+    @classmethod
+    def _read(cls, stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
         return read_output(
-            config_builder=config_.with_account_type("Vendor"),
+            config_builder=config_.with_account_type("Vendor").with_end_date(cls._SLICE_END_DATE),
             stream_name=stream_name,
             sync_mode=SyncMode.full_refresh,
             expecting_exception=True,
@@ -1532,7 +1656,14 @@ class TestFatalReportErrorSurfacing:
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         http_mocker.get(_get_reports_request().without_amz_date().build(), [_get_reports_response()] * attempts)
-        create_body = json.dumps({"reportType": self._STREAM_NAME, "marketplaceIds": [MARKETPLACE_ID]})
+        create_body = json.dumps(
+            {
+                "reportType": self._STREAM_NAME,
+                "dataStartTime": "2023-01-01T00:00:00Z",
+                "dataEndTime": "2023-01-01T23:59:59Z",
+                "marketplaceIds": [MARKETPLACE_ID],
+            }
+        )
         http_mocker.post(
             _create_report_request(self._STREAM_NAME).with_body(create_body).without_amz_date().build(),
             [_create_report_response(_REPORT_ID)] * attempts,
@@ -1585,9 +1716,7 @@ class TestFatalReportErrorSurfacing:
 
     @freezegun.freeze_time(NOW.isoformat(), tick=True)
     @HttpMocker()
-    def test_given_fatal_report_options_error_without_names_when_read_then_documented_options_named(
-        self, http_mocker: HttpMocker
-    ) -> None:
+    def test_given_fatal_report_options_error_without_names_when_read_then_documented_options_named(self, http_mocker: HttpMocker) -> None:
         """When Amazon's reason names no options, fall back to the documented list for the report type."""
         amazon_reason = "Error in report request: a required reportOption is missing."
         self._mock_fatal_flow(http_mocker, json.dumps({"errorDetails": amazon_reason}), attempts=1)
@@ -1793,6 +1922,17 @@ class TestVendorJsonReportsIncremental:
                 id="vendor_traffic_report",
             ),
             pytest.param(
+                "GET_VENDOR_INVENTORY_REPORT",
+                "endDate",
+                {
+                    "reportType": "GET_VENDOR_INVENTORY_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_inventory_report",
+            ),
+            pytest.param(
                 "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
                 "endDate",
                 {
@@ -1859,6 +1999,17 @@ class TestVendorJsonReportsIncremental:
                     "marketplaceIds": [MARKETPLACE_ID],
                 },
                 id="vendor_traffic_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_INVENTORY_REPORT",
+                "endDate",
+                {
+                    "reportType": "GET_VENDOR_INVENTORY_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_inventory_report",
             ),
             pytest.param(
                 "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",

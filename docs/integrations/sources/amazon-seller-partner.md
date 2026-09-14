@@ -193,7 +193,7 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Sales and Traffic Business Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(incremental\)
 - [Sales and Traffic Business Report \(Monthly\)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(incremental\)
 - [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
-- [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
+- [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [Vendor Traffic Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [Vendor Net Pure Product Margin Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [Vendor Rapid Retail Analytics Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\) — `GET_VENDOR_REAL_TIME_INVENTORY_REPORT`, which reports inventory in hourly buckets. The connector overwrites each record's `endTime` with `23:59:59Z` of the UTC day the report was requested for, because `endTime` is this stream's cursor. Use `startTime` to tell the hourly buckets apart.
@@ -239,7 +239,7 @@ The Financial Events stream reads the Finances v0 `listFinancialEvents` operatio
 
 ### Daily report windows
 
-The daily report streams — Sales and Traffic Business Report (`GET_SALES_AND_TRAFFIC_REPORT`), Sales and Traffic Report By Date (`GET_SALES_AND_TRAFFIC_REPORT_BY_DATE`), Vendor Sales Report (`GET_VENDOR_SALES_REPORT`), Vendor Traffic Report (`GET_VENDOR_TRAFFIC_REPORT`), Net Pure Product Margin Report (`GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`), and Rapid Retail Analytics Inventory Report (`GET_VENDOR_REAL_TIME_INVENTORY_REPORT`) — request one report per UTC calendar day, with the report window anchored to `00:00:00Z`–`23:59:59Z`. Amazon rounds any report window that doesn't start and end at midnight outward to every calendar day it touches and sums the results, so anchoring each request to a single day keeps each record's metrics scoped to that day.
+The daily report streams — Sales and Traffic Business Report (`GET_SALES_AND_TRAFFIC_REPORT`), Sales and Traffic Report By Date (`GET_SALES_AND_TRAFFIC_REPORT_BY_DATE`), Vendor Sales Report (`GET_VENDOR_SALES_REPORT`), Vendor Traffic Report (`GET_VENDOR_TRAFFIC_REPORT`), Net Pure Product Margin Report (`GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`), Vendor Inventory Report (`GET_VENDOR_INVENTORY_REPORT`), and Rapid Retail Analytics Inventory Report (`GET_VENDOR_REAL_TIME_INVENTORY_REPORT`) — request one report per UTC calendar day, with the report window anchored to `00:00:00Z`–`23:59:59Z`. Amazon rounds any report window that doesn't start and end at midnight outward to every calendar day it touches and sums the results, so anchoring each request to a single day keeps each record's metrics scoped to that day.
 
 Earlier versions sent the wrong window on some of these streams, in two different ways. In both cases, upgrade and then refresh the affected streams (or re-sync the affected date range) to correct the stored data.
 
@@ -247,10 +247,19 @@ Earlier versions sent the wrong window on some of these streams, in two differen
 | --- | --- | --- | --- |
 | Sales and Traffic Business Report, Sales and Traffic Report By Date, Vendor Sales Report | before 5.9.2 | Off-midnight windows when a sync ended mid-day, inflating the metrics for the days those windows overlapped. Days look doubled. | 5.9.2 |
 | Vendor Traffic Report, Net Pure Product Margin Report, Rapid Retail Analytics Inventory Report | 5.8.0 through 5.10.0 | No report window was sent at all, so Amazon returned its own default reporting period and every daily record was labelled with a date the report didn't cover. | 5.10.1 |
+| Vendor Inventory Report | 5.0.0 through 5.10.3 | No report window was sent at all. Amazon rejected every request with `dataStartTime and dataEndTime must be supplied`, so the stream returned no records. The stream was also full refresh only. | 5.11.0 |
 
 ### Time zone of vendor retail analytics data
 
 Amazon reports data in the vendor retail analytics reports (Vendor Sales, Vendor Inventory, Vendor Traffic, Net Pure Product Margin, Rapid Retail Analytics Inventory, and Vendor Forecasting) in Pacific Standard Time, regardless of your location or the marketplace's local time zone. Airbyte requests these reports using UTC date boundaries, so daily records can appear shifted if you compare them against a local-time report from Vendor Central.
+
+### Data availability lag for vendor retail analytics reports
+
+Amazon publishes the vendor retail analytics reports (Vendor Sales, Vendor Inventory, Vendor Traffic, and Net Pure Product Margin) [72 hours after the close of the period they cover](https://developer-docs.amazon/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports). Asking for a day it has not published yet makes the report fail with `The report data for the requested date range is not yet available`, which fails the whole stream rather than skipping that one day.
+
+From 5.11.0, these four streams stop four calendar days short of the present instead of syncing up to the moment the sync runs. Nothing is lost — each day is picked up by the first sync that runs after Amazon publishes it — but expect the most recent three to four days to be missing at any given time. If you set an explicit **End Date**, it is used as-is and this holdback is not applied, so a date range ending inside the last four days can still fail.
+
+Before 5.11.0, every sync of these streams failed on its newest day. Because a sync is marked failed after 20 partial failures, a long-running connection could be marked failed even though most of its data had loaded.
 
 <HideInUI>
 
@@ -264,7 +273,7 @@ Amazon accepts a `reportOptions` object when you request a report, and those opt
 
 ### Report options you configure
 
-The **Report Options** setting takes a report type, a stream name, and a list of option name/value pairs. As of version 5.10.3, the connector sends these options for six streams:
+The **Report Options** setting takes a report type, a stream name, and a list of option name/value pairs. As of version 5.11.0, the connector sends these options for six streams:
 
 - `GET_LEDGER_DETAIL_VIEW_DATA` — for example, set `eventType` to `Adjustments` to return only adjustment rows.
 - `GET_LEDGER_SUMMARY_VIEW_DATA` — for example, set `aggregatedByTimePeriod` to `DAILY` for daily rows instead of Amazon's `MONTHLY` default, or set `aggregateByLocation` to `FC` to break out rows by fulfillment center instead of by country.
@@ -277,7 +286,7 @@ For the four vendor retail analytics reports, the connector sends only what you 
 
 If Amazon can't generate one of these reports, the sync now fails with Amazon's own explanation instead of a generic "async job failed" message. When that explanation points at report options, the error names the options Amazon expects for that report type so you can add them under **Report Options**.
 
-If you already had report options configured for either ledger stream before 5.9.3, or for any of the four vendor retail analytics reports before 5.10.3, they take effect as soon as you upgrade, and the records change shape: a summary view aggregated `DAILY` returns one row per day where it previously returned one per month, and a detailed view filtered by `eventType` returns fewer rows. Refresh the stream if you need history to match the new options.
+If you already had report options configured for either ledger stream before 5.9.3, or for any of the four vendor retail analytics reports before 5.11.0, they take effect as soon as you upgrade, and the records change shape: a summary view aggregated `DAILY` returns one row per day where it previously returned one per month, and a detailed view filtered by `eventType` returns fewer rows. Refresh the stream if you need history to match the new options.
 
 ### Report options the connector sets for you
 
@@ -489,7 +498,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.10.3 | 2026-09-08 | [85294](https://github.com/airbytehq/airbyte/pull/85294) | Send configured `reportOptions` for the vendor sales, inventory, traffic and net pure product margin reports instead of dropping them, and surface Amazon's own reason when a report fails with `FATAL` instead of a generic async-job error |
+| 5.11.0 | 2026-09-14 | [85294](https://github.com/airbytehq/airbyte/pull/85294) | Send configured `reportOptions` for the vendor sales, inventory, traffic and net pure product margin reports instead of dropping them; surface Amazon's own reason when a report fails with `FATAL` instead of a generic async-job error; stop requesting vendor retail analytics days Amazon has not published yet; and give `GET_VENDOR_INVENTORY_REPORT` the daily date window and cursor its sibling reports already have |
 | 5.10.2 | 2026-09-08 | [85388](https://github.com/airbytehq/airbyte/pull/85388) | Update dependencies |
 | 5.10.1 | 2026-08-25 | [84913](https://github.com/airbytehq/airbyte/pull/84913) | Send an explicit, day-aligned report window for the daily `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, and `GET_VENDOR_REAL_TIME_INVENTORY_REPORT` streams, fixing records that were labelled with a date the report did not actually cover |
 | 5.10.0 | 2026-08-24 | [76434](https://github.com/airbytehq/airbyte/pull/76434) | Add Fulfillment Inbound streams (FbaInboundShipments, FbaInboundShipmentItems) and Inbound API settings (`inbound_replication_mode`, `inbound_rolling_days`, `inbound_start_datetime`, `inbound_end_datetime`) |
