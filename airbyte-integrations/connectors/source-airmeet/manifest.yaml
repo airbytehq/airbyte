@@ -1,0 +1,91 @@
+version: 0.51.42
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - "airmeets"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data"]
+
+  requester:
+    type: HttpRequester
+    url_base: "https://api-gateway.airmeet.com/prod"
+    http_method: "GET"
+    request_headers:
+      Content-Type: "application/json"
+    # Using API Key authenticator as a fallback for testing
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "x-airmeet-access-token"
+      api_token: "{{ config['access_token'] if 'access_token' in config else 'mock-token' }}"
+
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+    record_selector:
+      $ref: "#/definitions/selector"
+
+  meetings_stream:
+    type: DeclarativeStream
+    name: "airmeets"
+    primary_key: ["uid"]
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/airmeets"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          uid:
+            type: string
+          name:
+            type: string
+          status:
+            type: string
+
+streams:
+  - "#/definitions/meetings_stream"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airmeet.com/api
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Airmeet Source Spec
+    type: object
+    required:
+      - access_key
+      - secret_key
+    additionalProperties: true
+    properties:
+      access_key:
+        type: string
+        title: Access Key
+        description: "Your Airmeet API Access Key"
+        airbyte_secret: true
+        order: 0
+      secret_key:
+        type: string
+        title: Secret Key
+        description: "Your Airmeet API Secret Key"
+        airbyte_secret: true
+        order: 1
+      start_date:
+        type: string
+        title: Start Date
+        description: "UTC date in YYYY-MM-DD format"
+        default: "2023-01-01"
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        format: date
+        order: 2
