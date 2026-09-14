@@ -12,12 +12,12 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
-import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
-import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
-import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.airbyte.integrations.destination.snowflake.copy.CsvCopyContext
 import io.airbyte.integrations.destination.snowflake.copy.DisabledSnowflakeS3Copy
 import io.airbyte.integrations.destination.snowflake.copy.SnowflakeS3Copy
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.OutputStream
@@ -91,16 +91,27 @@ class SnowflakeInsertBuffer(
                 }
                 val batchId = java.util.UUID.randomUUID()
                 coroutineScope {
-                    val snowflake = async(kotlinx.coroutines.Dispatchers.IO) {
-                        snowflakeClient.putInStage(tableName, filePath.pathString)
-                        logger.info { "Copying staging data into ${tableName.toPrettyString(quote = QUOTE)}..." }
-                        snowflakeClient.copyFromStage(tableName, filePath.fileName.toString(), columnManager.getTableColumnNames(columnSchema))
-                    }
+                    val snowflake =
+                        async(kotlinx.coroutines.Dispatchers.IO) {
+                            snowflakeClient.putInStage(tableName, filePath.pathString)
+                            logger.info {
+                                "Copying staging data into ${tableName.toPrettyString(quote = QUOTE)}..."
+                            }
+                            snowflakeClient.copyFromStage(
+                                tableName,
+                                filePath.fileName.toString(),
+                                columnManager.getTableColumnNames(columnSchema)
+                            )
+                        }
                     val archive = async {
                         copyContext?.let { s3Copy.upload(filePath, it, recordCount, batchId) }
                     }
                     var failure: Throwable? = null
-                    try { snowflake.await() } catch (t: Throwable) { failure = t }
+                    try {
+                        snowflake.await()
+                    } catch (t: Throwable) {
+                        failure = t
+                    }
                     try {
                         archive.await()
                     } catch (t: Throwable) {

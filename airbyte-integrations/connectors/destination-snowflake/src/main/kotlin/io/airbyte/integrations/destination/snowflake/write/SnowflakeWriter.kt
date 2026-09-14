@@ -21,11 +21,11 @@ import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.copy.DisabledSnowflakeS3Copy
+import io.airbyte.integrations.destination.snowflake.copy.SnowflakeS3Copy
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
 import jakarta.inject.Singleton
-import io.airbyte.integrations.destination.snowflake.copy.DisabledSnowflakeS3Copy
-import io.airbyte.integrations.destination.snowflake.copy.SnowflakeS3Copy
 
 @Singleton
 class SnowflakeWriter(
