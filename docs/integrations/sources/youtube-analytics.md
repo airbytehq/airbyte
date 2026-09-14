@@ -110,8 +110,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                             | Subject                                             |
-|:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
+| 1.4.0 | 2026-09-09 | [85335](https://github.com/airbytehq/airbyte/pull/85335) | Restore incremental syncs for report streams: only newly created report files are requested and downloaded instead of re-downloading every retained report on each sync. Reports that YouTube re-issues with corrected data are now picked up, where previously they were silently skipped. Existing connections are migrated automatically; no action is required. |
+| 1.3.4 | 2026-09-08 | [85727](https://github.com/airbytehq/airbyte/pull/85727) | Update dependencies |
 | 1.3.3 | 2026-08-21 | [84945](https://github.com/airbytehq/airbyte/pull/84945) | Fail fast with a clear transient error when the daily YouTube API project quota is exhausted, and correctly classify rate-limited and server-error responses |
 | 1.3.2 | 2026-08-18 | [84816](https://github.com/airbytehq/airbyte/pull/84816) | Update dependencies |
 | 1.3.1 | 2026-08-11 | [82653](https://github.com/airbytehq/airbyte/pull/82653) | Update dependencies |

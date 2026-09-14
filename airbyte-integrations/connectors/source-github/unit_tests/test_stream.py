@@ -17,20 +17,12 @@ from source_github import SourceGithub, constants
 from source_github.errors_handlers import GitHubGraphQLErrorHandler, is_conflict_with_empty_repository, is_gone_with_feature_disabled
 from source_github.streams import (
     Branches,
-    Collaborators,
-    Comments,
     CommitCommentReactions,
     CommitComments,
     Commits,
     ContributorActivity,
-    Deployments,
     GithubStreamABCBackoffStrategy,
-    IssueEvents,
-    IssueLabels,
-    IssueMilestones,
-    Issues,
     IssueTimelineEvents,
-    Organizations,
     ProjectCards,
     ProjectColumns,
     Projects,
@@ -42,15 +34,11 @@ from source_github.streams import (
     Releases,
     RepositoryStats,
     Reviews,
-    Stargazers,
-    Tags,
     TeamMembers,
     TeamMemberships,
     Teams,
-    Users,
     WorkflowJobs,
     WorkflowRuns,
-    Workflows,
 )
 from source_github.utils import read_full_refresh
 
@@ -59,7 +47,7 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, Res
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-from .utils import ProjectsResponsesAPI, read_incremental
+from .utils import ProbeStream, ProjectsResponsesAPI, read_incremental
 
 
 DEFAULT_BACKOFF_DELAYS = [1, 2, 4, 8, 16]
@@ -357,19 +345,21 @@ def test_retry_after_rate_limit(time_mock, requests_mock):
             return ""
         context.status_code = HTTPStatus.OK
         context.headers = {}
-        context.text = '{"login": "airbytehq"}'
-        return '{"login": "airbytehq"}'
+        context.text = '[{"id": 1, "slug": "core"}]'
+        return '[{"id": 1, "slug": "core"}]'
 
     requests_mock.get(
-        "https://api.github.com/orgs/airbytehq",
+        "https://api.github.com/orgs/airbytehq/teams",
         text=request_callback,
     )
 
-    stream = Organizations(organizations=["airbytehq"])
+    # `teams` is a manifest stream as of Step 4; the class survives as `TeamMembers`' parent and
+    # is still the org-scoped Python stream this retry behaviour lives on.
+    stream = Teams(organizations=["airbytehq"])
     list(read_full_refresh(stream))
     assert requests_mock.call_count == 2
-    assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/airbytehq?per_page=100"
-    assert [r.url for r in requests_mock._adapter.request_history][1] == "https://api.github.com/orgs/airbytehq?per_page=100"
+    assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/airbytehq/teams?per_page=100"
+    assert [r.url for r in requests_mock._adapter.request_history][1] == "https://api.github.com/orgs/airbytehq/teams?per_page=100"
 
 
 @patch("time.sleep")
@@ -379,12 +369,12 @@ def test_permission_403_raises_error(time_mock, requests_mock):
     not retry indefinitely.
     """
     requests_mock.get(
-        "https://api.github.com/orgs/airbytehq",
+        "https://api.github.com/orgs/airbytehq/teams",
         status_code=HTTPStatus.FORBIDDEN,
         json={"message": "Resource not accessible by personal access token"},
     )
 
-    stream = Organizations(organizations=["airbytehq"])
+    stream = Teams(organizations=["airbytehq"])
     with pytest.raises((AirbyteTracedException, AttributeError)):
         list(read_full_refresh(stream))
     # Should fail on first attempt, not retry
@@ -394,26 +384,27 @@ def test_permission_403_raises_error(time_mock, requests_mock):
 @patch("time.sleep")
 def test_read_records_404_message_for_repository_stream(time_mock, caplog, requests_mock):
     args = {"authenticator": None, "repositories": ["org/missing-repo"], "page_size_for_large_streams": 30}
-    stream = Tags(**args)
+    stream = ProbeStream(**args)
 
     requests_mock.get(
-        "https://api.github.com/repos/org/missing-repo/tags",
+        "https://api.github.com/repos/org/missing-repo/probe_stream",
         status_code=requests.codes.NOT_FOUND,
         json={"message": "Not Found"},
     )
 
     list(read_full_refresh(stream))
     assert any(
-        "Skipping `Tags` for repository `org/missing-repo`" in msg and "GitHub returned 404 Not Found" in msg for msg in caplog.messages
+        "Skipping `ProbeStream` for repository `org/missing-repo`" in msg and "GitHub returned 404 Not Found" in msg
+        for msg in caplog.messages
     )
 
 
 @patch("time.sleep")
 def test_read_records_403_message_for_org_stream(time_mock, caplog, requests_mock):
-    stream = Organizations(organizations=["restricted-org"])
+    stream = Teams(organizations=["restricted-org"])
 
     requests_mock.get(
-        "https://api.github.com/orgs/restricted-org",
+        "https://api.github.com/orgs/restricted-org/teams",
         status_code=requests.codes.FORBIDDEN,
         json={"message": "Resource not accessible by integration"},
     )
@@ -425,10 +416,10 @@ def test_read_records_403_message_for_org_stream(time_mock, caplog, requests_moc
 @patch("time.sleep")
 def test_read_records_403_raises_with_actionable_message(time_mock, requests_mock):
     args = {"authenticator": None, "repositories": ["org/private-repo"], "page_size_for_large_streams": 30}
-    stream = Tags(**args)
+    stream = ProbeStream(**args)
 
     requests_mock.get(
-        "https://api.github.com/repos/org/private-repo/tags",
+        "https://api.github.com/repos/org/private-repo/probe_stream",
         status_code=requests.codes.FORBIDDEN,
         json={"message": "Resource not accessible by integration"},
     )
@@ -442,17 +433,19 @@ def test_read_records_403_raises_with_actionable_message(time_mock, requests_moc
 @patch("time.sleep")
 def test_read_records_409_conflict_message(time_mock, caplog, requests_mock):
     args = {"authenticator": None, "repositories": ["org/empty-repo"], "page_size_for_large_streams": 30}
-    stream = Tags(**args)
+    stream = ProbeStream(**args)
 
     requests_mock.get(
-        "https://api.github.com/repos/org/empty-repo/tags",
+        "https://api.github.com/repos/org/empty-repo/probe_stream",
         status_code=requests.codes.CONFLICT,
         json={"message": "Git Repository is not empty but not a conflict either"},
     )
 
     list(read_full_refresh(stream))
     assert any(
-        "Skipping `tags` for repository `org/empty-repo`" in msg and "GitHub returned 409 Conflict" in msg and "empty (no commits)" in msg
+        "Skipping `probe_stream` for repository `org/empty-repo`" in msg
+        and "GitHub returned 409 Conflict" in msg
+        and "empty (no commits)" in msg
         for msg in caplog.messages
     )
 
@@ -460,16 +453,18 @@ def test_read_records_409_conflict_message(time_mock, caplog, requests_mock):
 @patch("time.sleep")
 def test_read_records_502_message(time_mock, caplog, requests_mock):
     args = {"authenticator": None, "repositories": ["org/repo"], "page_size_for_large_streams": 30}
-    stream = Tags(**args)
+    stream = ProbeStream(**args)
 
     requests_mock.get(
-        "https://api.github.com/repos/org/repo/tags",
+        "https://api.github.com/repos/org/repo/probe_stream",
         status_code=requests.codes.BAD_GATEWAY,
         json={"message": "Server Error"},
     )
 
     list(read_full_refresh(stream))
-    assert any("GitHub returned HTTP 502 Bad Gateway for stream `tags`" in msg and "usually transient" in msg for msg in caplog.messages)
+    assert any(
+        "GitHub returned HTTP 502 Bad Gateway for stream `probe_stream`" in msg and "usually transient" in msg for msg in caplog.messages
+    )
 
 
 @patch("time.sleep")
@@ -557,28 +552,22 @@ def test_stream_teams_502(sleep_mock, requests_mock):
 
 
 def test_stream_organizations_availability_report():
+    """`organizations` itself is declarative as of Step 4 — see
+    test_manifest_org_scoped_streams.py. The org-scoped Python base still opts out of the
+    availability strategy, which `TeamMembers` inherits through `Teams`."""
     organization_args = {"organizations": ["org1", "org2"]}
-    stream = Organizations(**organization_args)
+    stream = Teams(**organization_args)
     assert stream.availability_strategy is None
-
-
-def test_stream_organizations_read(requests_mock):
-    organization_args = {"organizations": ["org1", "org2"]}
-    stream = Organizations(**organization_args)
-    requests_mock.get("https://api.github.com/orgs/org1", json={"id": 1})
-    requests_mock.get("https://api.github.com/orgs/org2", json={"id": 2})
-    records = list(read_full_refresh(stream))
-    assert records == [{"id": 1}, {"id": 2}]
 
 
 @patch("time.sleep")
 def test_stream_401_logs_pat_renewal_hint(time_mock, caplog, requests_mock):
     """Replaces the deleted test_stream_repositories_401: GithubStreamABC.read_records still logs
     the PAT-renewal hint on 401 and re-raises, for every stream still on the Python path."""
-    stream = Users(organizations=["org1"], access_token_type=constants.PERSONAL_ACCESS_TOKEN_TITLE)
+    stream = Teams(organizations=["org1"], access_token_type=constants.PERSONAL_ACCESS_TOKEN_TITLE)
 
     requests_mock.get(
-        "https://api.github.com/orgs/org1/members",
+        "https://api.github.com/orgs/org1/teams",
         status_code=requests.codes.UNAUTHORIZED,
         json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest"},
     )
@@ -608,15 +597,18 @@ def test_stream_teams_read(requests_mock):
 
 
 def test_stream_users_read(requests_mock):
+    """`users` is declarative as of Step 4; its read parity is asserted in
+    test_manifest_org_scoped_streams.py. This exercises the same shape through `Teams`, the
+    org-scoped Python stream that remains as `TeamMembers`' parent."""
     organization_args = {"organizations": ["org1", "org2"]}
-    stream = Users(**organization_args)
-    requests_mock.get("https://api.github.com/orgs/org1/members", json=[{"id": 1}, {"id": 2}])
-    requests_mock.get("https://api.github.com/orgs/org2/members", json=[{"id": 3}])
+    stream = Teams(**organization_args)
+    requests_mock.get("https://api.github.com/orgs/org1/teams", json=[{"id": 1}, {"id": 2}])
+    requests_mock.get("https://api.github.com/orgs/org2/teams", json=[{"id": 3}])
     records = list(read_full_refresh(stream))
     assert records == [{"id": 1, "organization": "org1"}, {"id": 2, "organization": "org1"}, {"id": 3, "organization": "org2"}]
     assert requests_mock.call_count == 2
-    assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/org1/members?per_page=100"
-    assert [r.url for r in requests_mock._adapter.request_history][1] == "https://api.github.com/orgs/org2/members?per_page=100"
+    assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/org1/teams?per_page=100"
+    assert [r.url for r in requests_mock._adapter.request_history][1] == "https://api.github.com/orgs/org2/teams?per_page=100"
 
 
 def test_stream_projects_disabled(requests_mock):
@@ -636,18 +628,25 @@ def test_stream_projects_disabled(requests_mock):
     ] == "https://api.github.com/repos/test_repo/projects?per_page=100&state=all"
 
 
-def test_stream_issues_disabled(requests_mock):
+def test_stream_feature_disabled(requests_mock):
+    """A 410 naming a disabled feature is swallowed and the stream yields nothing.
+
+    This pins `GithubStreamABCErrorHandler`/`is_gone_with_feature_disabled` on the Python side,
+    which used to be exercised through `Issues`. That stream is declarative as of Step 6 — its
+    equivalent lives in `test_manifest_repo_scoped_streams.py` — so this uses `Projects`, the
+    other stream GitHub answers this 410 for, which stays Python until Step 5.
+    """
     repository_args_with_start_date = {
         "start_date": "2022-01-01T00:00:00Z",
         "page_size_for_large_streams": 30,
         "repositories": ["test_repo"],
     }
 
-    stream = Issues(**repository_args_with_start_date)
+    stream = Projects(**repository_args_with_start_date)
     requests_mock.get(
-        "https://api.github.com/repos/test_repo/issues",
+        "https://api.github.com/repos/test_repo/projects",
         status_code=requests.codes.GONE,
-        json={"message": "Issues are disabled for this repo"},
+        json={"message": "Projects are disabled for this repo"},
     )
 
     assert list(read_full_refresh(stream)) == []
@@ -1059,109 +1058,16 @@ def test_stream_project_cards(requests_mock):
     ]
 
 
-def test_stream_comments(requests_mock):
-    repository_args_with_start_date = {
-        "repositories": ["organization/repository", "airbytehq/airbyte"],
-        "page_size_for_large_streams": 2,
-        "start_date": "2022-02-02T10:10:01Z",
-    }
+def test_branches_technical_stream_still_answers_get_json_schema():
+    """`Branches` is kept only so `Commits` can discover branches, and its schema file was
+    deleted when the user-facing `branches` stream moved to the manifest. The class overrides
+    `get_json_schema` so it does not fall back to the now-missing `schemas/branches.json`."""
+    stream = Branches(repositories=["organization/repository"], page_size_for_large_streams=100)
 
-    stream = Comments(**repository_args_with_start_date)
+    schema = stream.get_json_schema()
 
-    data = [
-        {"id": 1, "updated_at": "2022-02-02T10:10:02Z"},
-        {"id": 2, "updated_at": "2022-02-02T10:10:04Z"},
-        {"id": 3, "updated_at": "2022-02-02T10:12:06Z"},
-        {"id": 4, "updated_at": "2022-02-02T10:12:08Z"},
-        {"id": 5, "updated_at": "2022-02-02T10:12:10Z"},
-        {"id": 6, "updated_at": "2022-02-02T10:12:12Z"},
-    ]
-
-    api_url = "https://api.github.com/repos/organization/repository/issues/comments"
-
-    requests_mock.get(f"{api_url}?per_page=2&since=2022-02-02T10:10:01Z", json=data[0:2])
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&since=2022-02-02T10:10:04Z",
-        json=data[1:3],
-        headers={
-            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=2&since=2022-02-02T10%3A10%3A04Z&page=2>; rel="next"'
-        },
-    )
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&page=2&since=2022-02-02T10:10:04Z",
-        json=data[3:5],
-        headers={
-            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=2&since=2022-02-02T10%3A10%3A04Z&page=3>; rel="next"'
-        },
-    )
-
-    requests_mock.get(f"{api_url}?per_page=2&page=3&since=2022-02-02T10:10:04Z", json=data[5:])
-
-    data = [
-        {"id": 1, "updated_at": "2022-02-02T10:11:02Z"},
-        {"id": 2, "updated_at": "2022-02-02T10:11:04Z"},
-        {"id": 3, "updated_at": "2022-02-02T10:13:06Z"},
-        {"id": 4, "updated_at": "2022-02-02T10:13:08Z"},
-        {"id": 5, "updated_at": "2022-02-02T10:13:10Z"},
-        {"id": 6, "updated_at": "2022-02-02T10:13:12Z"},
-    ]
-
-    api_url = "https://api.github.com/repos/airbytehq/airbyte/issues/comments"
-
-    requests_mock.get(f"{api_url}?per_page=2&since=2022-02-02T10:10:01Z", json=data[0:2])
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&since=2022-02-02T10:11:04Z",
-        json=data[1:3],
-        headers={
-            "Link": '<https://api.github.com/repos/airbytehq/airbyte/issues/comments?per_page=2&since=2022-02-02T10%3A11%3A04Z&page=2>; rel="next"'
-        },
-    )
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&page=2&since=2022-02-02T10:11:04Z",
-        json=data[3:5],
-        headers={
-            "Link": '<https://api.github.com/repos/airbytehq/airbyte/issues/comments?per_page=2&since=2022-02-02T10%3A11%3A04Z&page=3>; rel="next"'
-        },
-    )
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&page=3&since=2022-02-02T10:11:04Z",
-        json=data[5:],
-    )
-
-    stream_state = {}
-    records = read_incremental(stream, stream_state)
-    assert records == [
-        {"id": 1, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:02Z"},
-        {"id": 2, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:04Z"},
-        {"id": 1, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:11:02Z"},
-        {"id": 2, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:11:04Z"},
-    ]
-
-    assert stream_state == {
-        "airbytehq/airbyte": {"updated_at": "2022-02-02T10:11:04Z"},
-        "organization/repository": {"updated_at": "2022-02-02T10:10:04Z"},
-    }
-
-    records = read_incremental(stream, stream_state)
-    assert records == [
-        {"id": 3, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:06Z"},
-        {"id": 4, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:08Z"},
-        {"id": 5, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:10Z"},
-        {"id": 6, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:12Z"},
-        {"id": 3, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:06Z"},
-        {"id": 4, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:08Z"},
-        {"id": 5, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:10Z"},
-        {"id": 6, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:12Z"},
-    ]
-    assert stream_state == {
-        "airbytehq/airbyte": {"updated_at": "2022-02-02T10:13:12Z"},
-        "organization/repository": {"updated_at": "2022-02-02T10:12:12Z"},
-    }
+    assert schema["type"] == "object"
+    assert set(stream.primary_key) <= set(schema["properties"])
 
 
 def test_streams_read_full_refresh(requests_mock):
@@ -1186,11 +1092,10 @@ def test_streams_read_full_refresh(requests_mock):
             {"id": 2, cursor_field: "2022-02-02T00:00:00Z", "repository": "organization/repository"},
         ]
 
+    # `CommitComments` is the one semi-incremental REST class still in Python (a technical parent);
+    # the declarative streams are covered in `test_manifest_semi_incremental_streams.py`.
     for cls, url in [
-        (IssueEvents, "https://api.github.com/repos/organization/repository/issues/events"),
-        (IssueMilestones, "https://api.github.com/repos/organization/repository/milestones"),
         (CommitComments, "https://api.github.com/repos/organization/repository/comments"),
-        (Deployments, "https://api.github.com/repos/organization/repository/deployments"),
     ]:
         stream = cls(**repository_args_with_start_date)
         requests_mock.get(url, json=get_json_response(stream.cursor_field))
@@ -1270,28 +1175,12 @@ def test_streams_read_full_refresh(requests_mock):
         "total_count": 1,
     }
 
-    for cls, url in [
-        (Tags, "https://api.github.com/repos/organization/repository/tags"),
-        (IssueLabels, "https://api.github.com/repos/organization/repository/labels"),
-        (Collaborators, "https://api.github.com/repos/organization/repository/collaborators"),
-        (Branches, "https://api.github.com/repos/organization/repository/branches"),
-    ]:
-        stream = cls(**repository_args)
-        requests_mock.get(url, json=get_json_response(stream.cursor_field))
-        records = list(read_full_refresh(stream))
-        assert records == get_records(stream.cursor_field)
-
-    requests_mock.get(
-        "https://api.github.com/repos/organization/repository/stargazers",
-        json=[
-            {"starred_at": "2022-02-01T00:00:00Z", "user": {"id": 1}},
-            {"starred_at": "2022-02-02T00:00:00Z", "user": {"id": 2}},
-        ],
-    )
-
-    stream = Stargazers(**repository_args_with_start_date)
-    records = list(read_full_refresh(stream))
-    assert records == [{"repository": "organization/repository", "starred_at": "2022-02-02T00:00:00Z", "user": {"id": 2}, "user_id": 2}]
+    # `assignees`, `branches`, `collaborators`, `issue_labels` and `tags` moved to the
+    # manifest; their read behavior is covered by test_manifest_repo_scoped_streams.py.
+    # `Branches` stays as the technical stream `Commits` uses for branch discovery.
+    stream = Branches(**repository_args)
+    requests_mock.get("https://api.github.com/repos/organization/repository/branches", json=get_json_response(stream.cursor_field))
+    assert list(read_full_refresh(stream)) == get_records(stream.cursor_field)
 
 
 def test_releases_draft_release_null_tag(requests_mock):
@@ -2201,25 +2090,6 @@ _STREAM_SLICE = {"repository": "org/repo"}
 @pytest.mark.parametrize(
     "json_data,text,expected_count",
     [
-        pytest.param({"workflows": [{"id": 1, "updated_at": "2024-01-01T00:00:00Z"}]}, None, 1, id="valid_single_record"),
-        pytest.param({"workflows": []}, None, 0, id="valid_empty_list"),
-        pytest.param(None, "<html>Bad Gateway</html>", 0, id="html_body"),
-        pytest.param(None, "", 0, id="empty_body"),
-        pytest.param({"message": "error"}, None, 0, id="missing_key"),
-        pytest.param({"workflows": "not_a_list"}, None, 0, id="wrong_type"),
-        pytest.param({"workflows": None}, None, 0, id="key_is_none"),
-    ],
-)
-def test_workflows_parse_response_defensive(json_data, text, expected_count):
-    stream = Workflows(**_REPO_ARGS)
-    resp = _make_response(json_data=json_data, text=text)
-    records = list(stream.parse_response(resp, stream_slice=_STREAM_SLICE))
-    assert len(records) == expected_count
-
-
-@pytest.mark.parametrize(
-    "json_data,text,expected_count",
-    [
         pytest.param({"workflow_runs": [{"id": 1}]}, None, 1, id="valid_single_record"),
         pytest.param({"workflow_runs": []}, None, 0, id="valid_empty_list"),
         pytest.param(None, "<html>Bad Gateway</html>", 0, id="html_body"),
@@ -2431,3 +2301,64 @@ def test_read_records_504_message_for_releases(time_mock, caplog, requests_mock)
         "GitHub returned HTTP 504 Gateway Timeout for stream `releases`" in msg and "Page size for large streams" in msg
         for msg in caplog.messages
     )
+
+
+class _RequestLoopDetected(Exception):
+    """Raised by a mock instead of letting an unterminated read spin forever."""
+
+
+@patch("time.sleep")
+def test_read_records_404_closes_resumable_full_refresh_slice(time_mock, requests_mock):
+    """A swallowed 404 must terminate the partition instead of being retried forever.
+
+    `Teams` is full refresh, so it carries a `SubstreamResumableFullRefreshCursor`. Before the
+    fix the swallowed error left the partition's cursor state empty, the checkpoint reader
+    handed the same partition back on every iteration, and the sync emitted no records until
+    the platform's source heartbeat killed the attempt.
+
+    This was written against `Organizations`, which Step 4 deleted; `Teams` is the org-scoped
+    Python class that survives as `TeamMembers`' parent, and it reaches the same
+    `GithubStreamABC.read_records` path.
+    """
+    calls = 0
+
+    def request_callback(request, context):
+        nonlocal calls
+        calls += 1
+        # 1 initial attempt + GithubStreamABC.max_retries (5); anything beyond that means the
+        # partition was handed back for another pass.
+        if calls > 6:
+            raise _RequestLoopDetected(f"teams partition re-read after {calls} requests")
+        context.status_code = HTTPStatus.NOT_FOUND
+        return {"message": "Not Found"}
+
+    requests_mock.get("https://api.github.com/orgs/octocat/teams", json=request_callback)
+
+    stream = Teams(organizations=["octocat"])
+    records = list(stream.read_only_records())
+
+    assert records == []
+    assert calls == 6
+    assert stream.get_cursor().get_stream_state() == {
+        "states": [{"partition": {"organization": "octocat"}, "cursor": {"__ab_full_refresh_sync_complete": True}}]
+    }
+
+
+@patch("time.sleep")
+def test_read_records_404_on_a_parent_read_leaves_shared_cursor_untouched(time_mock, requests_mock):
+    """A swallowed error on a slice with no `partition` key must not close an empty partition.
+
+    Substreams such as `TeamMembers` read their parent by calling `Teams.read_records` straight
+    from `stream_slices()`, passing a bare `{"organization": ...}` mapping. `Teams` is a shared
+    instance that is also in the catalog and emits its own STATE, so closing
+    `_extract_slice_fields`' `{}` fallback would publish a `{"partition": {}}` entry that means
+    nothing.
+    """
+    requests_mock.get("https://api.github.com/orgs/octo-org/teams", status_code=HTTPStatus.NOT_FOUND, json={"message": "Not Found"})
+
+    stream = Teams(organizations=["octo-org"])
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"organization": "octo-org"}))
+
+    assert records == []
+    # No `{"partition": {}}` entry: the empty partition was never closed.
+    assert stream.get_cursor().get_stream_state() == {"states": []}

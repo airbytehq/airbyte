@@ -151,6 +151,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.3.1 | 2026-09-08 | [85516](https://github.com/airbytehq/airbyte/pull/85516) | Update dependencies |
 | 0.3.0 | 2026-08-21 | [84907](https://github.com/airbytehq/airbyte/pull/84907) | Add note_transcripts stream for transcripts of any size. Notes whose transcript is too large to return inline are now skipped in detailed_notes, producing no record for those notes, instead of failing the sync |
 | 0.2.14 | 2026-08-21 | [84898](https://github.com/airbytehq/airbyte/pull/84898) | Stop dropping notes created on a 30-day incremental slice boundary date |
 | 0.2.13 | 2026-08-18 | [84623](https://github.com/airbytehq/airbyte/pull/84623) | Update dependencies |

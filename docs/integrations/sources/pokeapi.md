@@ -60,6 +60,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.3.70 | 2026-09-08 | [85604](https://github.com/airbytehq/airbyte/pull/85604) | Update dependencies |
 | 0.3.69 | 2026-08-24 | [84977](https://github.com/airbytehq/airbyte/pull/84977) | Add missing `cries`, `past_abilities`, and `past_stats` fields to the `pokemon` stream schema |
 | 0.3.68 | 2026-08-18 | [84696](https://github.com/airbytehq/airbyte/pull/84696) | Update dependencies |
 | 0.3.67 | 2026-08-13 | [84389](https://github.com/airbytehq/airbyte/pull/84389) | No-op version bump to validate the new autopilot release-immediately checkbox workflow |
