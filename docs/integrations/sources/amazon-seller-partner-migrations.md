@@ -1,5 +1,19 @@
 # Amazon Seller Partner Migration Guide
 
+## Upgrading to 6.0.0
+
+The primary key has been removed from the `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` streams.
+
+These Amazon flat-file reports contain one row per order item, but the report does not include a unique order-item identifier. The previous primary key (`amazon-order-id`) is therefore not unique: when these streams were synced with `Incremental | Append + Deduped`, the destination collapsed all line items of a multi-item order into a single row, silently dropping data. No combination of the available columns is guaranteed to be unique, so the streams now have no primary key.
+
+After upgrading:
+
+1. Refresh the source schema for your connection.
+2. Reset (clear) the `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` streams.
+3. Select `Incremental | Append` (or `Full Refresh | Overwrite`) as the sync mode for these streams. `Incremental | Append + Deduped` is no longer available for them.
+
+If you need per-order deduplication, deduplicate downstream on the full set of item-level columns rather than on `amazon-order-id`.
+
 ## Upgrading to 5.0.0
 
 Two deprecated FBA Subscribe and Save report types have been removed from the connector per Amazon SP-API deprecation:
