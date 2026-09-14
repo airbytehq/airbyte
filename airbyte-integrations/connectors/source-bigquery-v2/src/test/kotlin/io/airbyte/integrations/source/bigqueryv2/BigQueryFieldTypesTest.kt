@@ -12,9 +12,6 @@ import io.airbyte.cdk.jdbc.BooleanFieldType
 import io.airbyte.cdk.jdbc.BytesFieldType
 import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.JsonStringFieldType
-import io.airbyte.cdk.jdbc.LocalDateFieldType
-import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
-import io.airbyte.cdk.jdbc.LocalTimeFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
@@ -42,10 +39,10 @@ class BigQueryFieldTypesTest {
                 StandardSQLTypeName.BIGNUMERIC to BigDecimalFieldType,
                 StandardSQLTypeName.STRING to StringFieldType,
                 StandardSQLTypeName.BYTES to BytesFieldType,
-                StandardSQLTypeName.DATE to LocalDateFieldType,
-                StandardSQLTypeName.DATETIME to LocalDateTimeFieldType,
+                StandardSQLTypeName.DATE to BigQueryDateFieldType,
+                StandardSQLTypeName.DATETIME to BigQueryDateTimeFieldType,
                 StandardSQLTypeName.TIMESTAMP to OffsetDateTimeFieldType,
-                StandardSQLTypeName.TIME to LocalTimeFieldType,
+                StandardSQLTypeName.TIME to BigQueryTimeFieldType,
                 StandardSQLTypeName.JSON to JsonStringFieldType,
                 StandardSQLTypeName.GEOGRAPHY to StringFieldType,
                 StandardSQLTypeName.INTERVAL to StringFieldType,
@@ -69,7 +66,10 @@ class BigQueryFieldTypesTest {
             OffsetDateTimeFieldType,
             BigQueryFieldTypes.fromTypeName("TIMESTAMP")
         )
-        Assertions.assertEquals(LocalDateTimeFieldType, BigQueryFieldTypes.fromTypeName("DATETIME"))
+        Assertions.assertEquals(
+            BigQueryDateTimeFieldType,
+            BigQueryFieldTypes.fromTypeName("DATETIME")
+        )
         Assertions.assertEquals(
             BigQueryStructFieldType(null),
             BigQueryFieldTypes.fromTypeName("STRUCT")
@@ -121,7 +121,7 @@ class BigQueryFieldTypesTest {
                     EmittedField("n", LongFieldType),
                     EmittedField(
                         "inner",
-                        BigQueryStructFieldType(listOf(EmittedField("t", LocalTimeFieldType)))
+                        BigQueryStructFieldType(listOf(EmittedField("t", BigQueryTimeFieldType)))
                     ),
                     EmittedField(
                         "items",

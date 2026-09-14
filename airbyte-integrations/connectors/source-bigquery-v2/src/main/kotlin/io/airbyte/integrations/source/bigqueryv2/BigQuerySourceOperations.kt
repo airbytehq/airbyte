@@ -111,9 +111,27 @@ constructor(
     fun SelectNode.sql(): String =
         "SELECT " +
             when (this) {
-                is SelectColumns -> columns.joinToString(", ") { it.sql() }
-                is SelectColumnMaxValue -> "MAX(${column.sql()})"
+                is SelectColumns -> columns.joinToString(", ") { it.selectSql() }
+                is SelectColumnMaxValue ->
+                    if (column.isReadAsText()) "CAST(MAX(${column.sql()}) AS STRING)"
+                    else "MAX(${column.sql()})"
             }
+
+    /**
+     * A column in the SELECT list. `DATE`, `DATETIME` and `TIME` are read as text so that the JDBC
+     * driver's calendar and precision limitations do not apply (see [BigQueryTextTemporalFieldType]
+     * ); WHERE and ORDER BY keep the native column.
+     */
+    fun DataField.selectSql(): String =
+        when {
+            isReadAsText() -> "CAST(${sql()} AS STRING) AS ${sql()}"
+            // Exact rendering of nested values, see BigQueryNestedValueGetter.
+            type is BigQueryStructFieldType || type is BigQueryArrayFieldType ->
+                "TO_JSON_STRING(${sql()}) AS ${sql()}"
+            else -> sql()
+        }
+
+    fun DataField.isReadAsText(): Boolean = type is BigQueryTextTemporalFieldType<*>
 
     fun DataField.sql(): String = id.quoted()
 

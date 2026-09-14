@@ -111,7 +111,12 @@ Known deviations of emulator 0.8.1 from BigQuery (verified 2026-09-11; see also 
   BigQuery also rejects); `SELECT 1 FROM UNNEST([1]) WHERE FALSE` works and is the `check` query.
 - `TABLESAMPLE SYSTEM (n PERCENT)`, positional and named parameters and backtick-quoted
   `project.dataset.table` references work; `jobs.query` returns every value as a string
-  (`TIMESTAMP` as epoch seconds with microseconds).
+  (`TIMESTAMP` as epoch seconds with microseconds). `TABLESAMPLE` is accepted on views, which
+  BigQuery rejects.
+- `TO_JSON_STRING` leaves `DATE`/`DATETIME`/`TIMESTAMP`/`TIME` values unquoted (`{"t":08:00:00}`)
+  and renders `BOOL` as `0`/`1`; `BigQueryValues.fromJsonText` repairs both so the read tests
+  exercise the same `TO_JSON_STRING` path as the real service. `CAST(... AS STRING)` of temporals
+  is exact.
 - Not-found errors read `dataset X is not found` / `project Y is not found`; real BigQuery says
   `Not found: Dataset p:d`, which is the phrasing the `exception-classifiers` rule targets. `check`
   reports both as a config error regardless, because `CheckOperation` treats any failure that way.
@@ -194,12 +199,19 @@ the same configs, and `read` with configured catalogs derived from each image's 
   missing from v2 records while legacy emitted them. Tables written by Airbyte destinations
   commonly have such columns; this needs a CDK change (skip only the connector's own meta fields).
 
-Not yet exercised against the real service, because no populated table with these types exists in
-the test project and creating one with the shared key is blocked pending approval: `STRUCT` and
-`ARRAY<STRUCT>` values, `BYTES`, `GEOGRAPHY`, `RANGE`, and primary keys declared by DDL. All of
-these pass on the emulator, and the nested-value conversion runs on the driver's own
-`java.sql.Struct`/`java.sql.Array` objects, which the emulator exercises through the same code
-path.
+- Seeded dataset `source_bigquery_v2_parity` (tables `all_types`, `with_pk`, `no_rows`, view
+  `all_types_view`; DDL in the skill's `databases/bigquery/README.md`): primary keys declared with
+  `PRIMARY KEY ... NOT ENFORCED` reach `tableConstraints` and v2 advertises them
+  (`[["id"]]`, `[["order_id"],["line"]]`, `is_resumable: true`; legacy `[]`). Records of every
+  type (`STRUCT` with nested `TIME`, `ARRAY<STRUCT<..., ARRAY<STRUCT>>>`, `BYTES`, `GEOGRAPHY`,
+  `JSON`, `INTERVAL`, `NUMERIC(29,9)`/`BIGNUMERIC(76,38)` extremes, NULLs and empty arrays) match
+  legacy after the text-based reads above; `TIMESTAMP '0001-01-01'` is emitted correctly by v2
+  while legacy shifted it to `0001-01-03`. `RANGE` is emitted as its canonical text
+  (`[2020-01-01, 2020-12-31)`, `[UNBOUNDED, ...)`); the **legacy connector crashes** (`NullPointerException`
+  in `getAirbyteType`) on any dataset containing a `RANGE` column, because its BigQuery client
+  predates the type, so the column was dropped from the fixture for the comparison.
+
+Everything above the emulator also passes on the real service; nothing is emulator-only anymore.
 
 ## Stage status and next steps
 
@@ -229,10 +241,19 @@ How `read` is put together:
   samples everything else (views, materialized views, external tables, snapshots) with a plain
   `LIMIT`. Verified on the real service: a view fails with "TABLESAMPLE SYSTEM can only be applied
   directly to base tables.", and a v2 `read` of a real view succeeds through the fallback.
-- `STRUCT`/`ARRAY` values arrive from the driver as `java.sql.Struct`/`java.sql.Array`;
-  `BigQueryNestedValueGetter`/`BigQueryValues` convert them to JSON using the nested schema
-  (struct attributes keyed by field name, nested temporals rendered with the CDK codecs, `JSON`
-  strings parsed).
+- Three BigQuery types are not read through the driver's `java.sql` objects, because those lose
+  information (all verified against the service on 2026-09-14): `TIME` becomes `java.sql.Time`
+  (milliseconds at best, BigQuery has microseconds); `DATE`/`DATETIME` go through
+  `java.util.Date`, whose Julian calendar shifts dates before 1582-10-15 (`DATE '0001-01-01'`
+  comes back as `0001-01-03` from every accessor, `getString` included); a NULL nested `STRUCT`
+  becomes a struct of nulls. So the generator selects `DATE`/`DATETIME`/`TIME` columns as
+  `CAST(col AS STRING)` (`BigQueryDateFieldType`, `BigQueryDateTimeFieldType`,
+  `BigQueryTimeFieldType` parse the canonical text) and `STRUCT`/`ARRAY` columns as
+  `TO_JSON_STRING(col)`, which `BigQueryNestedValueGetter`/`BigQueryValues` convert with the
+  nested schema: temporals re-encoded with the CDK codecs, `BYTES` kept as base64, nested
+  `GEOGRAPHY` (GeoJSON in that rendering) turned back into WKT (`GeoJson.toWkt`), numbers parsed
+  as `BigDecimal`. `TIMESTAMP` stays on the driver (`OffsetDateTime`, epoch-based, exact).
+  `WHERE`/`ORDER BY` keep the native columns.
 
 Next: Stage 5 (terabyte-scale table, memory, checkpoint cadence, kill-and-resume, bytes billed vs
 legacy), the real-service checks listed above once a dataset can be seeded, a CDK fix or workaround

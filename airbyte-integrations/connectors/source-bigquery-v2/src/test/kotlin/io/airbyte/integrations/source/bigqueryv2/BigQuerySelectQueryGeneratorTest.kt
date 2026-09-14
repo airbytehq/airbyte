@@ -30,6 +30,53 @@ class BigQuerySelectQueryGeneratorTest {
     private val updatedAt = EmittedField("updated_at", OffsetDateTimeFieldType)
 
     @Test
+    fun testTemporalColumnsAreReadAsText() {
+        val day = EmittedField("day", BigQueryDateFieldType)
+        val localTs = EmittedField("local_ts", BigQueryDateTimeFieldType)
+        val tod = EmittedField("tod", BigQueryTimeFieldType)
+        val query: SelectQuery =
+            generator.generate(
+                SelectQuerySpec(
+                        SelectColumns(id, day, localTs, tod, updatedAt),
+                        From("orders", "sales"),
+                        Where(Greater(day, Jsons.textNode("2021-10-20"))),
+                        OrderBy(day),
+                    )
+                    .optimize()
+            )
+        Assertions.assertEquals(
+            "SELECT `id`, CAST(`day` AS STRING) AS `day`, CAST(`local_ts` AS STRING) AS `local_ts`, " +
+                "CAST(`tod` AS STRING) AS `tod`, `updated_at` FROM `sales`.`orders` " +
+                "WHERE `day` > ? ORDER BY `day`",
+            query.sql,
+        )
+        val max: SelectQuery =
+            generator.generate(
+                SelectQuerySpec(SelectColumnMaxValue(tod), From("orders", "sales")).optimize()
+            )
+        Assertions.assertEquals("SELECT CAST(MAX(`tod`) AS STRING) FROM `sales`.`orders`", max.sql)
+    }
+
+    @Test
+    fun testNestedColumnsAreReadAsJsonText() {
+        val address =
+            EmittedField(
+                "address",
+                BigQueryStructFieldType(listOf(EmittedField("city", StringFieldType)))
+            )
+        val tags = EmittedField("tags", BigQueryArrayFieldType(StringFieldType))
+        val query: SelectQuery =
+            generator.generate(
+                SelectQuerySpec(SelectColumns(id, address, tags), From("orders", "sales"))
+                    .optimize()
+            )
+        Assertions.assertEquals(
+            "SELECT `id`, TO_JSON_STRING(`address`) AS `address`, TO_JSON_STRING(`tags`) AS `tags` FROM `sales`.`orders`",
+            query.sql,
+        )
+    }
+
+    @Test
     fun testSelectLimitZero() {
         val query: SelectQuery =
             generator.generate(

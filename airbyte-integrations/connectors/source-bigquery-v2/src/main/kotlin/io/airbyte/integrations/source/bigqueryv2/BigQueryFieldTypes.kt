@@ -1,7 +1,10 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.bigqueryv2
 
+import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.cloud.bigquery.Field
@@ -9,6 +12,7 @@ import com.google.cloud.bigquery.FieldValue
 import com.google.cloud.bigquery.FieldValueList
 import com.google.cloud.bigquery.StandardSQLTypeName
 import io.airbyte.cdk.data.ArrayAirbyteSchemaType
+import io.airbyte.cdk.data.JsonCodec
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LocalDateCodec
@@ -20,17 +24,19 @@ import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BooleanFieldType
 import io.airbyte.cdk.jdbc.BytesFieldType
+import io.airbyte.cdk.jdbc.DateAccessor
 import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.jdbc.JdbcGetter
+import io.airbyte.cdk.jdbc.JdbcSetter
 import io.airbyte.cdk.jdbc.JsonStringFieldType
-import io.airbyte.cdk.jdbc.LocalDateFieldType
-import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
-import io.airbyte.cdk.jdbc.LocalTimeFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
+import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
 import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
+import io.airbyte.cdk.jdbc.TimeAccessor
+import io.airbyte.cdk.jdbc.TimestampAccessor
 import io.airbyte.cdk.util.Jsons
 import java.math.BigDecimal
 import java.nio.ByteBuffer
@@ -44,8 +50,13 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
+import java.time.temporal.ChronoField
+import java.util.Base64
 
 /**
  * Maps BigQuery column types to [FieldType]s.
@@ -91,10 +102,10 @@ object BigQueryFieldTypes {
             "BIGDECIMAL" -> BigDecimalFieldType
             "STRING" -> StringFieldType
             "BYTES" -> BytesFieldType
-            "DATE" -> LocalDateFieldType
-            "DATETIME" -> LocalDateTimeFieldType
+            "DATE" -> BigQueryDateFieldType
+            "DATETIME" -> BigQueryDateTimeFieldType
             "TIMESTAMP" -> OffsetDateTimeFieldType
-            "TIME" -> LocalTimeFieldType
+            "TIME" -> BigQueryTimeFieldType
             "JSON" -> JsonStringFieldType
             "GEOGRAPHY",
             "INTERVAL",
@@ -132,6 +143,92 @@ object BigQueryFieldTypes {
 /** Encodes values which are already JSON. */
 data object JsonNodeEncoder : JsonEncoder<JsonNode> {
     override fun encode(decoded: JsonNode): JsonNode = decoded
+}
+
+/**
+ * BigQuery `DATE`, `DATETIME` and `TIME` columns are selected as `CAST(col AS STRING)` and parsed
+ * from BigQuery's canonical text instead of going through the JDBC driver's `java.sql` types:
+ * - the driver materializes `TIME` as `java.sql.Time`, which keeps milliseconds at best while
+ * BigQuery stores microseconds (`15:30:00.000001` comes back as `15:30:00.000`);
+ * - the driver converts `DATE` and `DATETIME` through `java.util.Date`, whose calendar is Julian
+ * before 1582-10-15, so `DATE '0001-01-01'` comes back as `0001-01-03` from every accessor,
+ * `getString` included (verified against the service on 2026-09-14). `TIMESTAMP` is not affected
+ * (its conversion is epoch-based) and stays on [OffsetDateTimeFieldType].
+ *
+ * Values that were not cast (e.g. `MAX(col)` on a `TIME` cursor) parse too, since the driver's text
+ * form uses the same layout with fewer fraction digits.
+ */
+sealed class BigQueryTextTemporalFieldType<T>(
+    airbyteSchemaType: LeafAirbyteSchemaType,
+    codec: JsonCodec<T>,
+    setter: JdbcSetter<in T>,
+    parser: (String) -> T,
+) :
+    LosslessJdbcFieldType<T, T>(
+        airbyteSchemaType,
+        TextParsingGetter(parser),
+        codec,
+        codec,
+        setter,
+    )
+
+data object BigQueryDateFieldType :
+    BigQueryTextTemporalFieldType<LocalDate>(
+        LeafAirbyteSchemaType.DATE,
+        LocalDateCodec,
+        DateAccessor,
+        { LocalDate.parse(it) },
+    )
+
+data object BigQueryDateTimeFieldType :
+    BigQueryTextTemporalFieldType<LocalDateTime>(
+        LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
+        LocalDateTimeCodec,
+        TimestampAccessor,
+        { LocalDateTime.parse(it, BigQueryTemporalText.DATETIME) },
+    )
+
+data object BigQueryTimeFieldType :
+    BigQueryTextTemporalFieldType<LocalTime>(
+        LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
+        LocalTimeCodec,
+        TimeAccessor,
+        { LocalTime.parse(it, BigQueryTemporalText.TIME) },
+    )
+
+/** Reads the column as text and parses it. */
+data class TextParsingGetter<T>(val parser: (String) -> T) : JdbcGetter<T> {
+    override fun get(rs: ResultSet, colIdx: Int): T? {
+        val text: String = rs.getString(colIdx) ?: return null
+        if (rs.wasNull()) return null
+        return parser(text.trim())
+    }
+}
+
+/** BigQuery canonical text layouts: `HH:MM:SS[.F]` and `YYYY-MM-DD[ T]HH:MM:SS[.F]`. */
+object BigQueryTemporalText {
+    val TIME: DateTimeFormatter =
+        DateTimeFormatterBuilder()
+            .appendPattern("HH:mm:ss")
+            .optionalStart()
+            .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
+            .optionalEnd()
+            .toFormatter()
+
+    val DATETIME: DateTimeFormatter =
+        DateTimeFormatterBuilder()
+            .appendPattern("yyyy-MM-dd")
+            .optionalStart()
+            .appendLiteral('T')
+            .optionalEnd()
+            .optionalStart()
+            .appendLiteral(' ')
+            .optionalEnd()
+            .appendPattern("HH:mm:ss")
+            .optionalStart()
+            .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
+            .optionalEnd()
+            .toFormatter()
 }
 
 /**
@@ -178,9 +275,14 @@ data class BigQueryArrayFieldType(
 }
 
 /**
- * Reads a `STRUCT` or `ARRAY` column value from the JDBC driver as JSON, using the nested schema (
- * [fields] of a struct, [elementType] of an array) to name struct attributes and to render nested
- * scalars the way their own [FieldType] would.
+ * Reads a `STRUCT` or `ARRAY` column value as JSON, using the nested schema ([fields] of a struct,
+ * [elementType] of an array) to type every nested value.
+ *
+ * The query generator selects these columns as `TO_JSON_STRING(col)`, so the value normally arrives
+ * as BigQuery's own JSON rendering, which is exact: the driver's `java.sql.Struct`/`java.sql.Array`
+ * objects lose the microseconds of nested `TIME`s, shift nested `DATE`/`DATETIME`s before 1582 and
+ * turn a NULL nested struct into a struct of nulls. Those objects are still converted when they do
+ * show up (a query that was not generated here).
  */
 data class BigQueryNestedValueGetter(
     val fields: List<EmittedField>?,
@@ -189,6 +291,9 @@ data class BigQueryNestedValueGetter(
     override fun get(rs: ResultSet, colIdx: Int): JsonNode? {
         val value: Any = rs.getObject(colIdx) ?: return null
         if (rs.wasNull()) return null
+        if (value is String) {
+            return BigQueryValues.fromJsonText(value, fields, elementType)
+        }
         return BigQueryValues.toJson(value, fields, elementType)
     }
 }
@@ -201,6 +306,97 @@ data class BigQueryNestedValueGetter(
  * recursively.
  */
 object BigQueryValues {
+
+    /** Parses JSON keeping every digit of NUMERIC/BIGNUMERIC values. */
+    private val exactMapper: ObjectMapper =
+        ObjectMapper().enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+
+    /**
+     * Converts the `TO_JSON_STRING` rendering of a `STRUCT` ([fields]) or `ARRAY` ([elementType])
+     * value: nested temporals are re-encoded with the CDK codecs, `BYTES` stay base64, `GEOGRAPHY`
+     * (GeoJSON in that rendering) becomes WKT like at the top level, everything else is kept.
+     */
+    fun fromJsonText(text: String, fields: List<EmittedField>?, elementType: FieldType?): JsonNode {
+        val node: JsonNode =
+            try {
+                exactMapper.readTree(text)
+            } catch (e: JsonProcessingException) {
+                // The BigQuery emulator (goccy) leaves DATE/DATETIME/TIMESTAMP/TIME values unquoted
+                // in TO_JSON_STRING output; the real service never does.
+                exactMapper.readTree(quoteBareTemporals(text))
+            }
+        return when {
+            fields != null -> structFromJson(node, fields)
+            elementType != null -> arrayFromJson(node, elementType)
+            else -> node
+        }
+    }
+
+    /** Converts a `TO_JSON_STRING` value of the given BigQuery [type]. */
+    fun fromJson(node: JsonNode, type: FieldType?): JsonNode =
+        when {
+            node.isNull || node.isMissingNode -> Jsons.nullNode()
+            type is BigQueryStructFieldType -> type.fields?.let { structFromJson(node, it) } ?: node
+            type is BigQueryArrayFieldType -> arrayFromJson(node, type.elementType)
+            type == null -> node
+            else -> scalarFromJson(node, type)
+        }
+
+    private fun structFromJson(node: JsonNode, fields: List<EmittedField>): JsonNode {
+        if (!node.isObject) return node
+        val result: ObjectNode = Jsons.objectNode()
+        for (field in fields) {
+            result.set<JsonNode>(
+                field.id,
+                fromJson(node.get(field.id) ?: Jsons.nullNode(), field.type)
+            )
+        }
+        return result
+    }
+
+    private fun arrayFromJson(node: JsonNode, elementType: FieldType): JsonNode {
+        if (!node.isArray) return node
+        val result: ArrayNode = Jsons.arrayNode()
+        for (element in node) {
+            result.add(fromJson(element, elementType))
+        }
+        return result
+    }
+
+    private val bareTemporal: Regex =
+        Regex(
+            """(?<=[:\[,])\s*(\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?)?|\d{2}:\d{2}:\d{2}(?:\.\d+)?)(?=\s*[,}\]])"""
+        )
+
+    internal fun quoteBareTemporals(text: String): String =
+        bareTemporal.replace(text) { "\"${it.groupValues[1]}\"" }
+
+    private fun scalarFromJson(node: JsonNode, type: FieldType): JsonNode =
+        try {
+            when (type.airbyteSchemaType) {
+                // The emulator renders BOOL as 0/1 in TO_JSON_STRING; BigQuery uses true/false.
+                LeafAirbyteSchemaType.BOOLEAN ->
+                    if (node.isNumber) Jsons.booleanNode(node.intValue() != 0) else node
+                LeafAirbyteSchemaType.DATE -> LocalDateCodec.encode(LocalDate.parse(node.asText()))
+                LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE ->
+                    LocalDateTimeCodec.encode(
+                        LocalDateTime.parse(node.asText(), BigQueryTemporalText.DATETIME)
+                    )
+                LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE ->
+                    OffsetDateTimeCodec.encode(OffsetDateTime.parse(node.asText()))
+                LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE ->
+                    LocalTimeCodec.encode(LocalTime.parse(node.asText(), BigQueryTemporalText.TIME))
+                LeafAirbyteSchemaType.BINARY ->
+                    Jsons.binaryNode(Base64.getDecoder().decode(node.asText()))
+                LeafAirbyteSchemaType.STRING ->
+                    if (node.isObject && (node.has("coordinates") || node.has("geometries")))
+                        Jsons.textNode(GeoJson.toWkt(node))
+                    else node
+                else -> node
+            }
+        } catch (_: RuntimeException) {
+            node
+        }
 
     /** [type] is the BigQuery [FieldType] of the value when known. */
     fun toJson(value: Any?, type: FieldType?): JsonNode =
@@ -257,7 +453,11 @@ object BigQueryValues {
                     OffsetDateTimeCodec.encode(value.toInstant().atOffset(ZoneOffset.UTC))
                 else LocalDateTimeCodec.encode(value.toLocalDateTime())
             is java.sql.Date -> LocalDateCodec.encode(value.toLocalDate())
-            is Time -> LocalTimeCodec.encode(value.toLocalTime())
+            // java.sql.Time.toLocalTime() drops the fraction; keep the milliseconds the driver has.
+            is Time ->
+                LocalTimeCodec.encode(
+                    Instant.ofEpochMilli(value.time).atZone(ZoneId.systemDefault()).toLocalTime()
+                )
             is BigDecimal -> Jsons.numberNode(value)
             is Number,
             is Boolean -> Jsons.valueToTree(value)
@@ -320,4 +520,37 @@ object BigQueryValues {
         }
         return Jsons.textNode(value)
     }
+}
+
+/**
+ * Renders the GeoJSON that `TO_JSON_STRING` produces for a `GEOGRAPHY` value as the WKT that
+ * `ST_ASTEXT` (and the JDBC driver, and the legacy connector) produce for the same value.
+ */
+object GeoJson {
+    fun toWkt(node: JsonNode): String {
+        val type: String = node["type"]?.asText() ?: return node.toString()
+        return when (type) {
+            "Point" -> "POINT" + wrap(position(node["coordinates"]))
+            "MultiPoint" -> "MULTIPOINT" + wrap(positions(node["coordinates"]))
+            "LineString" -> "LINESTRING" + wrap(positions(node["coordinates"]))
+            "MultiLineString" -> "MULTILINESTRING" + wrap(rings(node["coordinates"]))
+            "Polygon" -> "POLYGON" + wrap(rings(node["coordinates"]))
+            "MultiPolygon" ->
+                "MULTIPOLYGON" + wrap(node["coordinates"].joinToString(", ") { wrap(rings(it)) })
+            "GeometryCollection" ->
+                "GEOMETRYCOLLECTION" + wrap(node["geometries"].joinToString(", ") { toWkt(it) })
+            else -> node.toString()
+        }
+    }
+
+    private fun wrap(inner: String): String = if (inner.isEmpty()) " EMPTY" else "($inner)"
+
+    private fun rings(node: JsonNode): String = node.joinToString(", ") { wrap(positions(it)) }
+
+    private fun positions(node: JsonNode): String = node.joinToString(", ") { position(it) }
+
+    private fun position(node: JsonNode): String = node.joinToString(" ") { number(it) }
+
+    private fun number(node: JsonNode): String =
+        node.decimalValue().stripTrailingZeros().toPlainString()
 }
