@@ -26,6 +26,7 @@ import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlG
 import io.airbyte.integrations.destination.snowflake.sql.andLog
 import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.sql.ResultSet
 import javax.sql.DataSource
@@ -43,6 +44,14 @@ class SnowflakeAirbyteClient(
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
     private val snowflakeConfiguration: SnowflakeConfiguration,
     private val columnManager: SnowflakeColumnManager,
+    /**
+     * Feature flag for the pre-3.10.0 meta column repair in [ensureSchemaMatches]. Off by default:
+     * only customers migrating from a pre-direct-load connector version need the repair, and it is
+     * enabled for them by setting the env var
+     * `AIRBYTE_DESTINATION_SNOWFLAKE_META_COLUMN_REPAIR=true`.
+     */
+    @Value("\${airbyte.destination.snowflake.meta-column-repair:false}")
+    private val metaColumnRepairEnabled: Boolean = false,
 ) : TableOperationsClient, TableSchemaEvolutionClient {
     private val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
 
@@ -200,13 +209,49 @@ class SnowflakeAirbyteClient(
          * ensure that the destination schema is in sync with any changes.
          */
         if (snowflakeConfiguration.legacyRawTablesOnly) {
+            if (metaColumnRepairEnabled) {
+                repairMissingMetaColumns(tableName, getColumnsFromDb(tableName).keys)
+            }
             return
         }
         super.ensureSchemaMatches(stream, tableName, columnNameMapping)
     }
 
     override suspend fun discoverSchema(tableName: TableName): TableSchema {
+        if (metaColumnRepairEnabled) {
+            // With the repair enabled, getColumnsFromDb also returns the airbyte meta columns:
+            // add any that are missing, then keep them out of the diff (computeSchema excludes
+            // them, and the CDK requires discoverSchema to match).
+            val allColumns = getColumnsFromDb(tableName)
+            repairMissingMetaColumns(tableName, allColumns.keys)
+            return TableSchema(allColumns.filterKeys { it !in columnManager.getMetaColumnNames() })
+        }
         return TableSchema(getColumnsFromDb(tableName))
+    }
+
+    /**
+     * Tables created by connector versions prior to 3.10.0 lack the `_airbyte_meta` and
+     * `_airbyte_generation_id` columns, and the migration that used to add them was removed in the
+     * 4.0.0 direct-load rewrite. The schema diff can't repair them either, because [discoverSchema]
+     * and [computeSchema] both exclude the meta columns. So, when the feature flag is enabled,
+     * [getColumnsFromDb] returns the meta columns too and this repair runs from [discoverSchema]
+     * (typed mode) or [ensureSchemaMatches] (raw mode), reusing that single DESCRIBE TABLE fetch.
+     */
+    private fun repairMissingMetaColumns(tableName: TableName, existingColumns: Set<String>) {
+        val missingMetaColumns =
+            columnManager.getMetaColumns().filterKeys { metaColumn ->
+                // Case-insensitive: raw mode uses lowercase names, schema mode uppercase, and
+                // QUOTED_IDENTIFIERS_IGNORE_CASE accounts may store either case.
+                existingColumns.none { it.equals(metaColumn, ignoreCase = true) }
+            }
+        if (missingMetaColumns.isNotEmpty()) {
+            log.info {
+                "Table ${tableName.toPrettyString()} is missing Airbyte meta columns " +
+                    "${missingMetaColumns.keys} (likely created by a pre-direct-load connector " +
+                    "version); adding them"
+            }
+            sqlGenerator.addMetaColumns(tableName, missingMetaColumns).forEach { execute(it) }
+        }
     }
 
     override fun computeSchema(
@@ -257,7 +302,10 @@ class SnowflakeAirbyteClient(
                         val columnName = escapeJsonIdentifier(rs.getString("name"))
 
                         // Filter out airbyte columns
-                        if (columnManager.getMetaColumnNames().contains(columnName)) {
+                        if (
+                            !metaColumnRepairEnabled &&
+                                columnManager.getMetaColumnNames().contains(columnName)
+                        ) {
                             continue
                         }
                         val dataType = toCanonicalDataType(rs.getString("type"))

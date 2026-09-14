@@ -311,6 +311,7 @@ When using the **Copy raw files** [delivery method](/platform/using-airbyte/deli
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                      |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.8.33 | 2026-09-08 | [85398](https://github.com/airbytehq/airbyte/pull/85398) | Update dependencies |
 | 0.8.32 | 2026-09-01 | [85241](https://github.com/airbytehq/airbyte/pull/85241) | Update dependencies |
 | 0.8.31 | 2026-08-25 | [85007](https://github.com/airbytehq/airbyte/pull/85007) | Update dependencies |
 | 0.8.30 | 2026-08-18 | [84471](https://github.com/airbytehq/airbyte/pull/84471) | Update dependencies |
