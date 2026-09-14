@@ -30,6 +30,7 @@ import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfigurationFactory
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
+import io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryFinalTableNameGenerator
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryRawTableNameGenerator
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -94,9 +95,11 @@ object BigqueryFinalTableDataDumper : DestinationDataDumper {
     ): List<OutputRecord> {
         val config = BigqueryConfigurationFactory().make(spec as BigquerySpecification)
         val bigquery = BigqueryBeansFactory().getBigqueryClient(config)
+        val streamConfigProvider = StreamConfigProvider(config)
 
         val (datasetName, finalTableName) =
-            BigqueryFinalTableNameGenerator(config).getTableName(stream.mappedDescriptor)
+            BigqueryFinalTableNameGenerator(config, streamConfigProvider)
+                .getTableName(stream.mappedDescriptor)
 
         return bigquery.getTable(TableId.of(datasetName, finalTableName))?.let { table ->
             val bigquerySchema = table.getDefinition<StandardTableDefinition>().schema!!
