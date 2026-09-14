@@ -364,4 +364,3 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.1.0 | 2021-09-05 | [5285](https://github.com/airbytehq/airbyte/pull/5285) | Initial release of Native LinkedIn Ads connector for Airbyte |
 
 </details>
-
