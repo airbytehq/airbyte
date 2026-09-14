@@ -74,12 +74,13 @@ class UsersStreamTest(TestCase):
 
         output = _read_users()
 
+        assert output.errors == []
         assert len(output.records) == 51
         assert [record.record.data["id"] for record in output.records] == list(range(1, 52))
         for record in output.records:
             assert record.record.data["direct_link"].startswith("https://api.aircall.io/v2/")
-        # The first request carries no `page` param and the second carries
-        # `page=2`, so `start_from_page: 1` on the PageIncrement is load-bearing.
+        # The first request carries no `page` param and the second carries `page=2`;
+        # without `start_from_page: 1` on the PageIncrement the second request would be `page=1`.
         http_mocker.assert_number_of_calls(_FIRST_PAGE_REQUEST, 1)
         http_mocker.assert_number_of_calls(_SECOND_PAGE_REQUEST, 1)
 
@@ -89,6 +90,7 @@ class UsersStreamTest(TestCase):
 
         output = _read_users()
 
+        assert output.errors == []
         assert len(output.records) == 3
         http_mocker.assert_number_of_calls(_FIRST_PAGE_REQUEST, 1)
 
