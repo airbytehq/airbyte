@@ -363,6 +363,7 @@ definitions:
         error_message: >-
           Invalid aggregationType '{{ parameters.get('aggregationType') }}' used in the body of the API request. If you see this error, enable the
           'always_use_aggregation_type_auto' config setting which will automatically use aggregationType=auto
+        failure_type: config_error
 
   oauth_authenticator:
     type: OAuthAuthenticator
