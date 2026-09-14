@@ -35,6 +35,7 @@ data class BigqueryCopyContext(
     val schemaId: String,
     val runId: UUID,
     val runPath: String,
+    val epochSeconds: Long = 0,
 )
 
 interface BigqueryS3Copy : AutoCloseable {
@@ -176,11 +177,12 @@ class EnabledBigqueryS3Copy(
             if (contexts != null) return
             try {
                 withTimeout(operationTimeoutMillis) {
+                    val runPaths = catalog.streams.associateWith(metadata::runPath)
                     uploader.validateCredentials()
                     val prepared =
                         catalog.streams.associate { stream ->
                             val descriptor = metadata.descriptor(stream)
-                            val runPath = metadata.runPath(stream)
+                            val runPath = runPaths.getValue(stream)
                             putJson("$runPath/schema.json", descriptor)
                             if (stream.minimumGenerationId > 0) {
                                 putJson("$runPath/generation-cutoff.json", metadata.cutoff(stream))
@@ -193,13 +195,14 @@ class EnabledBigqueryS3Copy(
                                     descriptor.getValue("schema_id") as String,
                                     runId,
                                     runPath,
+                                    metadata.epochSeconds,
                                 )
                         }
                     contexts = prepared
                     checkHealthy()
                     ready.complete(true)
                     log.info {
-                        "Fusion S3 run metadata complete: run=$runId streams=${prepared.size} bucket=${config.bucket}"
+                        "Fusion S3 run metadata complete: run=$runId epoch_seconds=${metadata.epochSeconds} streams=${prepared.size} bucket=${config.bucket}"
                     }
                 }
             } catch (t: Throwable) {
@@ -272,13 +275,16 @@ class EnabledBigqueryS3Copy(
     ): Map<String, String> =
         mapOf(
             "format-version" to "1",
+            "organization-id" to config.organizationId.toString(),
             "workspace-id" to config.workspaceId.toString(),
             "source-id" to config.sourceId.toString(),
             "connection-id" to config.connectionId.toString(),
+            "destination-id" to config.destinationId.toString(),
             "stream-key" to context.streamKey,
             "generation-id" to context.generationId.toString(),
             "sync-id" to context.syncId.toString(),
             "run-id" to runId.toString(),
+            "epoch-seconds" to context.epochSeconds.toString(),
             "batch-id" to batchId.toString(),
             "schema-id" to context.schemaId,
             "loaded-record-count" to loadedRecordCount.toString(),

@@ -19,6 +19,7 @@ import io.airbyte.cdk.load.state.DestinationSuccess
 import io.airbyte.cdk.load.state.FreeingAnnotatingCheckpointConsumer
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.WriteOperation
 import io.airbyte.cdk.output.OutputConsumer
@@ -26,8 +27,8 @@ import io.airbyte.cdk.spec.SpecOperation
 import io.airbyte.cdk.spec.SpecificationFactory
 import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
-import io.airbyte.integrations.destination.bigquery.spec.BigqueryRegion
-import io.airbyte.integrations.destination.bigquery.spec.CdcDeletionMode
+import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfigurationFactory
+import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import io.airbyte.integrations.destination.bigquery.spec.GcsFilePostProcessing
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -43,6 +44,7 @@ import java.io.File
 import java.net.URLClassLoader
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -100,6 +102,9 @@ class BigqueryCopyWiringTest {
                 .forEach { remove(it) }
             put("AIRBYTE_S3_COPY_ENABLED", enabled)
             put("AIRBYTE_S3_COPY_ROLE_ARN", "invalid-enabled-only-field")
+            listOf("ORGANIZATION", "WORKSPACE", "SOURCE", "CONNECTION", "DESTINATION").forEach {
+                put("AIRBYTE_S3_COPY_${it}_ID", "invalid-environment-id")
+            }
             put("AWS_EC2_METADATA_DISABLED", "true")
         }
         val process = builder.start()
@@ -119,6 +124,11 @@ class BigqueryCopyWiringTest {
  * Runs only in the subprocess above, with real Micronaut factory definitions and CLI properties.
  */
 object BigqueryCopyWiringProbe {
+    private val routingIds =
+        listOf("organization", "workspace", "source", "connection", "destination")
+            .mapIndexed { index, name -> name to "ABCDEFAB-CDEF-4ABC-8DEF-ABCDEFABCDE$index" }
+            .toMap()
+
     @JvmStatic
     fun main(args: Array<String>) {
         if (args.single() == "nonwrite") {
@@ -132,10 +142,29 @@ object BigqueryCopyWiringProbe {
                     context("write").use { context ->
                         registerConnectorInputs(context, gcs, raw)
                         context.start()
-                        assertInstanceOf(
-                            EnabledBigqueryS3Copy::class.java,
-                            context.getBean(BigqueryS3Copy::class.java),
+                        val copy =
+                            assertInstanceOf(
+                                EnabledBigqueryS3Copy::class.java,
+                                context.getBean(BigqueryS3Copy::class.java),
+                            )
+                        // Inspect the config held by the actual DI-created service without AWS IO.
+                        val archiveConfig =
+                            EnabledBigqueryS3Copy::class.java.getDeclaredField("config").let {
+                                it.isAccessible = true
+                                it.get(copy) as S3CopyConfiguration
+                            }
+                        assertEquals(
+                            routingIds.values.map(UUID::fromString),
+                            listOf(
+                                archiveConfig.organizationId,
+                                archiveConfig.workspaceId,
+                                archiveConfig.sourceId,
+                                archiveConfig.connectionId,
+                                archiveConfig.destinationId
+                            ),
                         )
+                        assertEquals("airbyte-fusion-context-store", archiveConfig.bucket)
+                        assertEquals("us-west-2", archiveConfig.region)
                         assertInstanceOf(
                             BigqueryCopyWriter::class.java,
                             context.getBean(DestinationWriter::class.java),
@@ -181,7 +210,7 @@ object BigqueryCopyWiringProbe {
 
     private fun checkInternalWrite(gcs: Boolean, raw: Boolean) {
         context("check").use { context ->
-            val config = registerConnectorInputs(context, gcs, raw)
+            val config = registerConnectorInputs(context, gcs, raw, invalidIds = true)
             val launcher = mockk<DestinationTaskLauncher>(relaxed = true)
             val sync = mockk<SyncManager>()
             coEvery { sync.awaitDestinationResult() } returns DestinationSuccess
@@ -221,20 +250,29 @@ object BigqueryCopyWiringProbe {
         context: ApplicationContext,
         gcs: Boolean,
         raw: Boolean,
+        invalidIds: Boolean = false,
     ): BigqueryConfiguration {
+        val json =
+            com.fasterxml.jackson.databind.ObjectMapper().createObjectNode().apply {
+                put("project_id", "project")
+                put("job_project_id", "job-project")
+                put("dataset_location", "US")
+                put("dataset_id", "dataset")
+                put("raw_data_dataset", "internal")
+                put("disable_type_dedupe", raw)
+                routingIds.forEach { (name, value) ->
+                    put("${name}_id", if (invalidIds) "invalid-config-id" else value)
+                }
+            }
+        val spec = Jsons.treeToValue(json, BigquerySpecification::class.java)
         val config =
-            BigqueryConfiguration(
-                "project",
-                "job-project",
-                BigqueryRegion.US,
-                "dataset",
-                if (gcs) GcsStagingConfiguration(mockk(), GcsFilePostProcessing.KEEP)
-                else BatchedStandardInsertConfiguration,
-                null,
-                CdcDeletionMode.HARD_DELETE,
-                "internal",
-                raw,
-            )
+            BigqueryConfigurationFactory()
+                .makeWithoutExceptionHandling(spec)
+                .copy(
+                    loadingMethod =
+                        if (gcs) GcsStagingConfiguration(mockk(), GcsFilePostProcessing.KEEP)
+                        else BatchedStandardInsertConfiguration,
+                )
         val stream =
             DestinationStream(
                 "dataset",

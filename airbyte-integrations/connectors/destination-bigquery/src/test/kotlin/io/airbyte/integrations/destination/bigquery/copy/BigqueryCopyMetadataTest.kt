@@ -70,6 +70,7 @@ import org.junit.jupiter.params.provider.CsvSource
 
 class BigqueryCopyMetadataTest {
     @TempDir lateinit var directory: Path
+    private val epochSeconds = 1750000000L
     private val runId = UUID.fromString("11111111-1111-1111-1111-111111111111")
     private val config =
         S3CopyConfiguration(
@@ -79,6 +80,8 @@ class BigqueryCopyMetadataTest {
             connectionId = UUID.fromString("22222222-2222-2222-2222-222222222222"),
             workspaceId = UUID.fromString("33333333-3333-3333-3333-333333333333"),
             sourceId = UUID.fromString("44444444-4444-4444-4444-444444444444"),
+            organizationId = UUID.fromString("55555555-5555-5555-5555-555555555555"),
+            destinationId = UUID.fromString("66666666-6666-6666-6666-666666666666"),
             prefix = "fusion",
             externalId = null,
         )
@@ -721,12 +724,15 @@ class BigqueryCopyMetadataTest {
                 )
         val metadata = metadata(stream)
         val expected =
-            "fusion/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/streams/MiX%2F%E9%9B%AA%25%20./runs/$runId"
+            "fusion/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/runs/$epochSeconds/$runId/streams/MiX%2F%E9%9B%AA%25%20."
         assertEquals(expected, metadata.runPath(stream))
         val descriptor = tree(metadata.descriptor(stream))
         assertTrue(descriptor["original_stream"]["namespace"].isNull)
         assertEquals(stream.unmappedName, descriptor["original_stream"]["name"].asText())
         assertEquals("mapped_${stream.unmappedName}", descriptor["mapped_stream"]["name"].asText())
+        assertEquals(config.organizationId.toString(), descriptor["organization_id"].asText())
+        assertEquals(config.destinationId.toString(), descriptor["destination_id"].asText())
+        assertEquals(epochSeconds, descriptor["epoch_seconds"].asLong())
         assertEquals(config.workspaceId.toString(), descriptor["workspace_id"].asText())
         assertEquals(config.connectionId.toString(), descriptor["connection_id"].asText())
         assertEquals(config.sourceId.toString(), descriptor["source_id"].asText())
@@ -745,13 +751,53 @@ class BigqueryCopyMetadataTest {
             )
             .forEach { (name, escaped) ->
                 assertTrue(
-                    metadata
-                        .runPath(stream.copy(unmappedName = name))
-                        .contains("/streams/$escaped/runs/")
+                    metadata.runPath(stream.copy(unmappedName = name)).endsWith("/streams/$escaped")
                 )
             }
         assertThrows(IllegalArgumentException::class.java) {
             metadata.runPath(stream.copy(unmappedName = ""))
+        }
+    }
+
+    @Test
+    fun `routing changes isolate runs without changing schema affinity`() {
+        val stream = stream()
+        val original = metadata(stream)
+        val changed =
+            BigqueryCopyMetadata(
+                config.copy(organizationId = UUID.randomUUID(), destinationId = UUID.randomUUID()),
+                bigquery(),
+                names(stream),
+                UUID.randomUUID(),
+                DataChannelFormat.JSONL,
+                epochSeconds = epochSeconds + 1,
+            )
+        assertNotEquals(original.runPath(stream), changed.runPath(stream))
+        assertNotEquals(original.streamKey(stream), changed.streamKey(stream))
+        assertEquals(
+            original.descriptor(stream)["schema_id"],
+            changed.descriptor(stream)["schema_id"]
+        )
+        assertTrue(
+            original
+                .runPath(stream.copy(unmappedName = "second"))
+                .contains("/runs/$epochSeconds/$runId/")
+        )
+    }
+
+    @Test
+    fun `full batch keys enforce the S3 byte limit after escaping`() {
+        val stream = stream().copy(unmappedName = "a")
+        val metadata = metadata(stream)
+        val suffix = "/batches/${UUID(0, 0)}.csv.gz"
+        val overhead = (metadata.runPath(stream) + suffix).toByteArray(Charsets.UTF_8).size - 1
+        val maximum = stream.copy(unmappedName = "a".repeat(1024 - overhead))
+        assertEquals(1024, (metadata.runPath(maximum) + suffix).toByteArray(Charsets.UTF_8).size)
+        assertThrows(IllegalArgumentException::class.java) {
+            metadata.runPath(maximum.copy(unmappedName = maximum.unmappedName + "a"))
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            metadata.runPath(stream.copy(unmappedName = "雪".repeat(120)))
         }
     }
 
@@ -768,6 +814,9 @@ class BigqueryCopyMetadataTest {
         assertEquals(9, cutoff["minimum_generation_id"].asInt())
         assertEquals(42, cutoff["sync_id"].asInt())
         assertEquals(runId.toString(), cutoff["run_id"].asText())
+        assertEquals(epochSeconds, cutoff["epoch_seconds"].asLong())
+        assertEquals(config.organizationId.toString(), cutoff["organization_id"].asText())
+        assertEquals(config.destinationId.toString(), cutoff["destination_id"].asText())
         assertEquals(metadata.streamKey(stream), cutoff["stream_key"].asText())
         assertDoesNotThrow { UUID.fromString(cutoff["event_id"].asText()) }
         assertNotEquals(cutoff["event_id"].asText(), metadata.cutoff(stream)["event_id"])
@@ -869,7 +918,8 @@ class BigqueryCopyMetadataTest {
             else bigquery(raw),
             names(stream, mappingPrefix),
             run,
-            format
+            format,
+            epochSeconds = epochSeconds,
         )
 
     private fun tree(value: Map<String, Any?>): JsonNode =
