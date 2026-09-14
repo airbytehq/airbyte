@@ -78,7 +78,7 @@ failed with error: exit status 125
 
 We recommend that you copy and run the `docker run` command manually.
 This may provide more meaningful error messages explaining why it is failing.
-Running manually the sucessful output says kubeadm was able to join worker nodes.
+Running manually the successful output says kubeadm was able to join worker nodes.
 Additionally, verify that you can run Docker containers in general by starting with `docker run hello-world`.
 
 ```shell

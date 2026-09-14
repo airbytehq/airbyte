@@ -4,7 +4,7 @@ This topic explains how to title and describe your pull requests, and how to han
 
 ## Pull request title conventions
 
-When creating a pull request, follow the naming conventions depending on the change you're making. In general, the pull request title starts with an emoji, the the connector name, then the changes. For example: ✨ Source E-Commerce: add new stream `Users`.
+When creating a pull request, follow the naming conventions depending on the change you're making. In general, the pull request title starts with an emoji, the connector name, then the changes. For example: ✨ Source E-Commerce: add new stream `Users`.
 
 Airbyte uses this pattern to automatically assign team reviews and build the product release notes.
 
