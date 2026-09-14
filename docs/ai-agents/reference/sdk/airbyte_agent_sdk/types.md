@@ -465,6 +465,9 @@ Classes
     `untested: bool`
     :   The type of the None singleton.
 
+    `untested_reason: str | None`
+    :   The type of the None singleton.
+
     `upload_file_param: str | None`
     :   The type of the None singleton.
 
