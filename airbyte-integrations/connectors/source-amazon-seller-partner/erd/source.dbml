@@ -122,7 +122,7 @@ Table "GET_FLAT_FILE_OPEN_LISTINGS_DATA" {
 }
 
 Table "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL" {
-    "amazon-order-id" string [pk]
+    "amazon-order-id" string
     "merchant-order-id" string
     "purchase-date" string
     "last-updated-date" string
