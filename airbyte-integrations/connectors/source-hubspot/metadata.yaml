@@ -186,4 +186,7 @@ data:
     - title: HubSpot Status
       url: https://status.hubspot.com/
       type: status_page
+    - title: HubSpot public API spec collection
+      url: https://github.com/HubSpot/HubSpot-public-api-spec-collection
+      type: spec_repository
 metadataSpecVersion: "1.0"
