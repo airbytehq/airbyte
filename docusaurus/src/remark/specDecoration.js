@@ -1,5 +1,5 @@
 const visit = require("unist-util-visit").visit;
-const { catalog } = require("../connector_registry");
+const { fetchRegistry } = require("../scripts/fetch-registry");
 const { isDocsPage, getRegistryEntry } = require("./utils");
 
 const plugin = () => {
@@ -11,7 +11,7 @@ const plugin = () => {
 };
 
 async function injectSpecSchema(ast) {
-  const registry = await catalog;
+  const registry = await fetchRegistry();
   visit(ast, "mdxJsxFlowElement", (node) => {
     if (node.name !== "SpecSchema" && node.name !== "PyAirbyteExample") return;
 
@@ -19,8 +19,8 @@ async function injectSpecSchema(ast) {
       (attr) => attr.name === "connector",
     ).value;
     const connectorSpec = registry.find(
-      (c) => c.dockerRepository_oss === `airbyte/${connectorName}`,
-    ).spec_oss.connectionSpecification;
+      (c) => c.dockerRepository === `airbyte/${connectorName}`,
+    ).spec.connectionSpecification;
     node.attributes.push({
       type: "mdxJsxAttribute",
       name: "specJSON",
@@ -40,9 +40,9 @@ async function injectDefaultPyAirbyteSection(vfile, ast) {
   ) {
     return;
   }
-  const connectorName = registryEntry.dockerRepository_oss.split("/").pop();
+  const connectorName = registryEntry.dockerRepository.split("/").pop();
   const hasValidSpec =
-    registryEntry.spec_oss && registryEntry.spec_oss.connectionSpecification;
+    registryEntry.spec && registryEntry.spec.connectionSpecification;
 
   let added = false;
   visit(ast, "heading", (node, index, parent) => {

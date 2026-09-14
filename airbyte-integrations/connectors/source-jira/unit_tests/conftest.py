@@ -13,6 +13,8 @@ from responses import matchers
 
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.state_builder import StateBuilder
 
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
@@ -34,6 +36,17 @@ _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
 
+def get_source(config, state=None) -> YamlDeclarativeSource:
+    """
+    Create a YamlDeclarativeSource instance for testing.
+
+    This is the main entry point for running your connector in tests.
+    """
+    catalog = CatalogBuilder().build()
+    state = StateBuilder().build() if not state else state
+    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
+
+
 def delete_cache_files(cache_directory):
     directory_path = Path(cache_directory)
     if directory_path.exists() and directory_path.is_dir():
@@ -52,9 +65,12 @@ def clear_cache_before_each_test():
 @fixture
 def config():
     return {
-        "api_token": "token",
-        "domain": "domain",
-        "email": "email@email.com",
+        "credentials": {
+            "auth_type": "API Token",
+            "api_token": "token",
+            "email": "email@email.com",
+        },
+        "domain": "airbyteio.atlassian.net",
         "start_date": "2021-01-01T00:00:00Z",
         "projects": ["Project1"],
         "enable_experimental_streams": True,
@@ -93,11 +109,6 @@ def groups_response():
 @fixture
 def issue_fields_response():
     return json.loads(load_file("issue_fields.json"))
-
-
-@fixture
-def issues_field_configurations_response():
-    return json.loads(load_file("issues_field_configurations.json"))
 
 
 @fixture

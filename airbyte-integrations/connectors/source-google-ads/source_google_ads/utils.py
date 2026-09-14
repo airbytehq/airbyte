@@ -14,11 +14,11 @@ from typing import Any, Callable, Generator, Iterable, MutableMapping, Optional,
 
 import pendulum
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v20.errors.types.authentication_error import AuthenticationErrorEnum
-from google.ads.googleads.v20.errors.types.authorization_error import AuthorizationErrorEnum
-from google.ads.googleads.v20.errors.types.query_error import QueryErrorEnum
-from google.ads.googleads.v20.errors.types.quota_error import QuotaErrorEnum
-from google.ads.googleads.v20.errors.types.request_error import RequestErrorEnum
+from google.ads.googleads.v23.errors.types.authentication_error import AuthenticationErrorEnum
+from google.ads.googleads.v23.errors.types.authorization_error import AuthorizationErrorEnum
+from google.ads.googleads.v23.errors.types.query_error import QueryErrorEnum
+from google.ads.googleads.v23.errors.types.quota_error import QuotaErrorEnum
+from google.ads.googleads.v23.errors.types.request_error import RequestErrorEnum
 from google.api_core.exceptions import Unauthenticated
 
 from airbyte_cdk.models import FailureType
@@ -109,10 +109,11 @@ def traced_exception(
                 )
 
         elif is_error_type(query_error, QueryErrorEnum.QueryError.UNRECOGNIZED_FIELD):
+            query_label = f'"{query_name}" ' if query_name else ""
             message = (
-                f"The Custom Query: `{query_name}` has {error.message.lower()} Please make sure the field exists or name entered is valid."
+                f"Custom query {query_label}references an unrecognized field for the queried resource."
+                " Verify all selected fields are valid for the resource."
             )
-            # additionally log the error for visability during `check_connection` in UI.
             logger.error(message)
 
         elif query_error:

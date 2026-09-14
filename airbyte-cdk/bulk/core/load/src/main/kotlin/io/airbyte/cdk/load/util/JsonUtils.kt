@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.util
@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.cfg.JsonNodeFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import java.io.InputStream
 
 object Jsons : ObjectMapper() {
     // allow jackson to deserialize anything under 100 MiB
@@ -39,9 +38,6 @@ object Jsons : ObjectMapper() {
 fun <T> T.serializeToString(): String {
     return Jsons.writeValueAsString(this)
 }
-
-fun <T> InputStream.readIntoClass(klass: Class<T>): T =
-    Jsons.readTree(this).let { Jsons.treeToValue(it, klass) }
 
 fun <T> T.deserializeToPrettyPrintedString(): String {
     return Jsons.writerWithDefaultPrettyPrinter().writeValueAsString(this)

@@ -1,0 +1,446 @@
+/*
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+ */
+
+package io.airbyte.cdk.load.table.directload
+
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TempTableNameGenerator
+import io.airbyte.cdk.load.write.StreamLoader
+import io.airbyte.cdk.load.write.StreamStateStore
+import io.github.oshai.kotlinlogging.KotlinLogging
+
+private val logger = KotlinLogging.logger {}
+
+/*
+ * For non-truncate modes (Append, Dedup), real table creation uses replace=false
+ * to prevent accidental data loss. Using replace=true was unnecessarily risky and
+ * could drop existing tables in edge cases.
+ *
+ * Truncate paths (AppendTruncate, DedupTruncate) intentionally keep replace=true
+ * because those modes expect the table to be fully replaced.
+ */
+
+/**
+ * Stream loader implementation for append mode.
+ *
+ * This loader handles the simplest case of appending data to an existing target table. If a
+ * temporary table exists, it copies its data to the real table then drops the temp table. All
+ * processing writes directly to the real table, without any deduplication.
+ */
+class DirectLoadTableAppendStreamLoader(
+    override val stream: DestinationStream,
+    private val initialStatus: DirectLoadInitialStatus,
+    private val realTableName: TableName,
+    private val tempTableName: TableName,
+    private val columnNameMapping: ColumnNameMapping,
+    private val schemaEvolutionClient: TableSchemaEvolutionClient,
+    private val tableOperationsClient: TableOperationsClient,
+    private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
+) : StreamLoader {
+    override suspend fun start() {
+        logger.info {
+            "AppendStreamLoader starting for stream ${stream.mappedDescriptor.toPrettyString()} " +
+                "(generationId=${stream.generationId}, minimumGenerationId=${stream.minimumGenerationId})"
+        }
+        if (initialStatus.realTable == null) {
+            tableOperationsClient.createTable(
+                stream,
+                realTableName,
+                columnNameMapping,
+                replace = false
+            )
+        } else {
+            schemaEvolutionClient.ensureSchemaMatches(stream, realTableName, columnNameMapping)
+        }
+        if (initialStatus.tempTable != null) {
+            logger.info {
+                "Processing temp table data: ${tempTableName.toPrettyString()} -> ${realTableName.toPrettyString()} for stream ${stream.mappedDescriptor.toPrettyString()}"
+            }
+            schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
+            tableOperationsClient.copyTable(
+                columnNameMapping,
+                sourceTableName = tempTableName,
+                targetTableName = realTableName,
+            )
+            tableOperationsClient.dropTable(tempTableName)
+        }
+
+        streamStateStore.put(stream.mappedDescriptor, DirectLoadTableExecutionConfig(realTableName))
+    }
+
+    override suspend fun teardown(completedSuccessfully: Boolean) {
+        // do nothing
+    }
+}
+
+/**
+ * Stream loader implementation for deduplication mode.
+ *
+ * This loader ensures uniqueness by writing to a temporary table first, then using an upsert
+ * operation to update the real table with deduplicated data. It handles cases where the temporary
+ * table may already exist from a previous run, and ensures that the schema of both tables is
+ * properly maintained.
+ */
+class DirectLoadTableDedupStreamLoader(
+    override val stream: DestinationStream,
+    private val initialStatus: DirectLoadInitialStatus,
+    private val realTableName: TableName,
+    private val tempTableName: TableName,
+    private val columnNameMapping: ColumnNameMapping,
+    private val schemaEvolutionClient: TableSchemaEvolutionClient,
+    private val tableOperationsClient: TableOperationsClient,
+    private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
+) : StreamLoader {
+    override suspend fun start() {
+        logger.info {
+            "DedupStreamLoader starting for stream: ${stream.mappedDescriptor} " +
+                "(generationId=${stream.generationId}, minimumGenerationId=${stream.minimumGenerationId})"
+        }
+
+        if (initialStatus.tempTable != null) {
+            schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
+        } else {
+            logger.info {
+                "Creating new temp table: ${tempTableName.toPrettyString()} for stream: ${stream.mappedDescriptor}"
+            }
+            tableOperationsClient.createTempTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                replace = true,
+            )
+        }
+
+        streamStateStore.put(stream.mappedDescriptor, DirectLoadTableExecutionConfig(tempTableName))
+    }
+
+    override suspend fun teardown(completedSuccessfully: Boolean) {
+        if (initialStatus.realTable != null) {
+            schemaEvolutionClient.ensureSchemaMatches(stream, realTableName, columnNameMapping)
+        } else {
+            tableOperationsClient.createTable(
+                stream,
+                realTableName,
+                columnNameMapping,
+                replace = false,
+            )
+        }
+        tableOperationsClient.upsertTable(
+            stream,
+            columnNameMapping,
+            sourceTableName = tempTableName,
+            targetTableName = realTableName,
+        )
+        tableOperationsClient.dropTable(tempTableName)
+    }
+}
+
+/**
+ * Stream loader implementation for append + truncate mode.
+ *
+ * This loader combines append and truncate behaviors, allowing for overwriting data in the target
+ * table. It conditionally uses either a temporary table or the real table depending on generation
+ * IDs and initial status. When using a temporary table, it overwrites the real table with the
+ * temporary table's data during close.
+ *
+ * Generation IDs are used to determine whether existing tables can be reused or need to be
+ * recreated to ensure data consistency.
+ */
+class DirectLoadTableAppendTruncateStreamLoader(
+    override val stream: DestinationStream,
+    private val initialStatus: DirectLoadInitialStatus,
+    private val realTableName: TableName,
+    private val tempTableName: TableName,
+    private val columnNameMapping: ColumnNameMapping,
+    private val schemaEvolutionClient: TableSchemaEvolutionClient,
+    private val tableOperationsClient: TableOperationsClient,
+    private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
+) : StreamLoader {
+    // can't use lateinit because of weird kotlin reasons.
+    /**
+     * Indicates whether we're writing to the temporary table or directly to the real table. This is
+     * determined during start() based on table states and generation IDs.
+     * - true: Writing to temp table, will need to copy/overwrite to real table later
+     * - false: Writing directly to real table, no additional action needed at close
+     */
+    private var isWritingToTemporaryTable: Boolean = false
+
+    override suspend fun start() {
+        logger.info {
+            "AppendTruncateStreamLoader starting for stream ${stream.mappedDescriptor.toPrettyString()}"
+        }
+
+        var tempTableGenerationId: Long? = null
+        var realTableGenerationId: Long? = null
+
+        if (initialStatus.tempTable != null) {
+            if (initialStatus.tempTable.isEmpty) {
+                schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
+            } else {
+                tempTableGenerationId = tableOperationsClient.getGenerationId(tempTableName)
+                if (tempTableGenerationId == stream.minimumGenerationId) {
+                    schemaEvolutionClient.ensureSchemaMatches(
+                        stream,
+                        tempTableName,
+                        columnNameMapping,
+                    )
+                } else {
+                    logger.info {
+                        "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $tempTableGenerationId) for stream ${stream.mappedDescriptor.toPrettyString()}"
+                    }
+                    tableOperationsClient.createTempTable(
+                        stream,
+                        tempTableName,
+                        columnNameMapping,
+                        replace = true,
+                    )
+                }
+            }
+            isWritingToTemporaryTable = true
+            streamStateStore.put(
+                stream.mappedDescriptor,
+                DirectLoadTableExecutionConfig(tempTableName)
+            )
+        } else {
+            if (initialStatus.realTable == null) {
+                logger.info {
+                    "Creating new real table: ${realTableName.toPrettyString()} for stream ${stream.mappedDescriptor.toPrettyString()}"
+                }
+                tableOperationsClient.createTable(
+                    stream,
+                    realTableName,
+                    columnNameMapping,
+                    replace = true,
+                )
+                isWritingToTemporaryTable = false
+            } else {
+                if (!initialStatus.realTable.isEmpty) {
+                    realTableGenerationId = tableOperationsClient.getGenerationId(realTableName)
+                }
+                if (
+                    initialStatus.realTable.isEmpty ||
+                        realTableGenerationId == stream.minimumGenerationId
+                ) {
+                    schemaEvolutionClient.ensureSchemaMatches(
+                        stream,
+                        realTableName,
+                        columnNameMapping,
+                    )
+                    isWritingToTemporaryTable = false
+                } else {
+                    logger.info {
+                        "Creating temp table ${tempTableName.toPrettyString()} (real table has old generation ID) for stream ${stream.mappedDescriptor.toPrettyString()}"
+                    }
+                    tableOperationsClient.createTempTable(
+                        stream,
+                        tempTableName,
+                        columnNameMapping,
+                        replace = true,
+                    )
+                    isWritingToTemporaryTable = true
+                }
+            }
+        }
+
+        val targetTableName = if (isWritingToTemporaryTable) tempTableName else realTableName
+        logger.info {
+            "AppendTruncateStreamLoader for stream ${stream.mappedDescriptor.toPrettyString()}: " +
+                "targetTable=${targetTableName.toPrettyString()} " +
+                "(generationId=${stream.generationId}, minimumGenerationId=${stream.minimumGenerationId}, " +
+                "realTableGenerationId=$realTableGenerationId, tempTableGenerationId=$tempTableGenerationId)"
+        }
+        streamStateStore.put(
+            stream.mappedDescriptor,
+            DirectLoadTableExecutionConfig(targetTableName)
+        )
+    }
+
+    override suspend fun teardown(completedSuccessfully: Boolean) {
+        if (completedSuccessfully && isWritingToTemporaryTable) {
+            logger.info {
+                "Overwriting ${tempTableName.toPrettyString()} with ${realTableName.toPrettyString()} for stream ${stream.mappedDescriptor.toPrettyString()}"
+            }
+            // overwriteTable consumes the source table (drops/renames it),
+            // so temp table is already gone after this call.
+            tableOperationsClient.overwriteTable(
+                sourceTableName = tempTableName,
+                targetTableName = realTableName,
+            )
+        }
+    }
+}
+
+/**
+ * Stream loader implementation for deduplication + truncate mode.
+ *
+ * This loader provides the most complex functionality, combining both deduplication and table
+ * truncation. It writes to a temporary table first, then depending on generation IDs and table
+ * status, follows different strategies:
+ *
+ * 1. May upsert directly to the real table if appropriate
+ * 2. May create a real table and upsert into it
+ * 3. May use a temp-temp table approach to ensure proper deduplication before overwriting the real
+ * table
+ *
+ * This strategy ensures optimal performance while maintaining data integrity across various
+ * scenarios, including interrupted syncs and schema changes.
+ */
+class DirectLoadTableDedupTruncateStreamLoader(
+    override val stream: DestinationStream,
+    private val initialStatus: DirectLoadInitialStatus,
+    private val realTableName: TableName,
+    private val tempTableName: TableName,
+    private val columnNameMapping: ColumnNameMapping,
+    private val schemaEvolutionClient: TableSchemaEvolutionClient,
+    private val tableOperationsClient: TableOperationsClient,
+    private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
+    private val tempTableNameGenerator: TempTableNameGenerator,
+) : StreamLoader {
+    override suspend fun start() {
+        logger.info {
+            "DedupTruncateStreamLoader starting for stream ${stream.mappedDescriptor.toPrettyString()}"
+        }
+        var tempTableGenerationId: Long? = null
+
+        if (initialStatus.tempTable != null) {
+            if (initialStatus.tempTable.isEmpty) {
+                schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
+            } else {
+                tempTableGenerationId = tableOperationsClient.getGenerationId(tempTableName)
+                if (tempTableGenerationId == stream.minimumGenerationId) {
+                    schemaEvolutionClient.ensureSchemaMatches(
+                        stream,
+                        tempTableName,
+                        columnNameMapping,
+                    )
+                } else {
+                    logger.info {
+                        "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $tempTableGenerationId) for stream ${stream.mappedDescriptor.toPrettyString()}"
+                    }
+                    tableOperationsClient.createTempTable(
+                        stream,
+                        tempTableName,
+                        columnNameMapping,
+                        replace = true,
+                    )
+                }
+            }
+        } else {
+            logger.info {
+                "Creating new temp table: ${tempTableName.toPrettyString()} for stream ${stream.mappedDescriptor.toPrettyString()}"
+            }
+            tableOperationsClient.createTempTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                replace = true,
+            )
+        }
+
+        logger.info {
+            "DedupTruncateStreamLoader for stream ${stream.mappedDescriptor.toPrettyString()} " +
+                "(generationId=${stream.generationId}, minimumGenerationId=${stream.minimumGenerationId}, " +
+                "tempTableGenerationId=$tempTableGenerationId)"
+        }
+        streamStateStore.put(stream.mappedDescriptor, DirectLoadTableExecutionConfig(tempTableName))
+    }
+
+    override suspend fun teardown(completedSuccessfully: Boolean) {
+        if (completedSuccessfully) {
+            if (shouldUpsertDirectly()) {
+                // Direct upsert path for simpler cases
+                logger.info {
+                    "Upserting directly to real table for stream ${stream.mappedDescriptor.toPrettyString()}"
+                }
+                performDirectUpsert()
+            } else {
+                // Needs temp table and overwrite approach
+                logger.info {
+                    "Upserting to temp temp table for stream ${stream.mappedDescriptor.toPrettyString()}"
+                }
+                performUpsertWithTemporaryTable()
+            }
+        }
+    }
+
+    /** Determines if we can directly upsert without additional processing */
+    private suspend fun shouldUpsertDirectly(): Boolean {
+        return when {
+            // Case 1: Real table doesn't exist yet
+            initialStatus.realTable == null -> true
+
+            // Case 2: Real table exists but is empty or has correct generation ID
+            initialStatus.realTable.isEmpty ||
+                tableOperationsClient.getGenerationId(realTableName) ==
+                    stream.minimumGenerationId -> true
+
+            // Case 3: Real table exists with data - needs more stringent approach
+            else -> false
+        }
+    }
+
+    /** Performs direct upsert from temp table to real table */
+    private suspend fun performDirectUpsert() {
+        // Create or ensure schema of real table
+        if (initialStatus.realTable == null) {
+            tableOperationsClient.createTable(
+                stream,
+                realTableName,
+                columnNameMapping,
+                replace = true,
+            )
+        } else {
+            schemaEvolutionClient.ensureSchemaMatches(stream, realTableName, columnNameMapping)
+        }
+
+        // Upsert data from temp to real table
+        tableOperationsClient.upsertTable(
+            stream,
+            columnNameMapping,
+            sourceTableName = tempTableName,
+            targetTableName = realTableName
+        )
+
+        // Clean up temporary table
+        tableOperationsClient.dropTable(tempTableName)
+    }
+
+    /** Performs upsert using an additional temporary table for safer operation */
+    private suspend fun performUpsertWithTemporaryTable() {
+        val tempTempTable = tempTableNameGenerator.generate(tempTableName)
+
+        // Create temporary table for intermediate operations
+        tableOperationsClient.createTempTable(
+            stream,
+            tempTempTable,
+            columnNameMapping,
+            replace = true,
+        )
+
+        // Upsert from temp to temp-temp table
+        tableOperationsClient.upsertTable(
+            stream,
+            columnNameMapping,
+            sourceTableName = tempTableName,
+            targetTableName = tempTempTable,
+        )
+
+        // Overwrite real table with final data
+        tableOperationsClient.overwriteTable(
+            sourceTableName = tempTempTable,
+            targetTableName = realTableName,
+        )
+
+        // Clean up the original temp table to prevent duplicate records on the next sync.
+        // Note: overwriteTable above consumed tempTempTable (not tempTableName), so
+        // tempTableName still exists with all its data. Without this drop, the next
+        // sync's start() would find a non-empty temp table with matching generation ID
+        // and reuse it, causing old records to accumulate alongside new ones.
+        tableOperationsClient.dropTable(tempTableName)
+    }
+}

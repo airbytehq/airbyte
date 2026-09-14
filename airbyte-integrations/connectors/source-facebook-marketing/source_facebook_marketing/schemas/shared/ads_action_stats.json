@@ -15,10 +15,10 @@
       "1d_view": {
         "type": ["null", "number"]
       },
-      "7d_view": {
+      "1d_ev": {
         "type": ["null", "number"]
       },
-      "28d_view": {
+      "incrementality": {
         "type": ["null", "number"]
       },
       "action_destination": {

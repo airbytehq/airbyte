@@ -1,0 +1,20 @@
+{
+  "schedules": [
+    {
+      "id": 12345,
+      "name": "Default Schedule",
+      "time_zone": "America/New_York",
+      "intervals": [
+        {
+          "start_time": 1980,
+          "end_time": 2460
+        }
+      ],
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "next_page": null,
+  "previous_page": null,
+  "count": 1
+}

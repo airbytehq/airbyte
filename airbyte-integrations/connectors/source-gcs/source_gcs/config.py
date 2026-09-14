@@ -3,11 +3,11 @@
 #
 
 
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 
 from pydantic.v1 import AnyUrl, BaseModel, Field
 
-from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 
 
@@ -70,6 +70,29 @@ class Config(AbstractFileBasedSpec, BaseModel):
     )
 
     bucket: str = Field(title="Bucket", description="Name of the GCS bucket where the file(s) exist.", order=2)
+
+    delivery_method: Union[DeliverRecords, DeliverRawFiles] = Field(
+        title="Delivery Method",
+        discriminator="delivery_type",
+        type="object",
+        order=3,
+        display_type="radio",
+        group="advanced",
+        default="use_records_transfer",
+        airbyte_hidden=True,
+    )
+
+    sanitize_signed_urls: Optional[bool] = Field(
+        title="Sanitize File URLs",
+        description=(
+            "Deprecated - this option has no effect. "
+            "The connector no longer generates signed URLs for Service Account authentication; "
+            "_ab_source_file_url always contains the clean canonical HTTPS path."
+        ),
+        default=False,
+        order=4,
+        group="advanced",
+    )
 
     @classmethod
     def documentation_url(cls) -> AnyUrl:

@@ -1,3 +1,5 @@
+import KeypairExample from '@site/static/_snowflake_keypair_generation.md';
+
 # Snowflake
 
 Setting up the Snowflake destination connector involves setting up Snowflake entities (warehouse,
@@ -6,55 +8,40 @@ connector using the Airbyte UI.
 
 This page describes the step-by-step process of setting up the Snowflake destination connector.
 
+:::danger Username and Password Authentication Deprecated
+Starting with version **5.0.0**, username and password authentication is **deprecated** and will be removed in a future release. **Key pair authentication** is now the only recommended method for connecting to Snowflake.
+
+This change aligns with [Snowflake's deprecation of single-factor password sign-ins](https://docs.snowflake.com/en/user-guide/security-mfa-rollout). Snowflake is enforcing strong authentication for all users on a rolling per-account basis between **August and October 2026**; once enforced on your account, password-only logins from Airbyte will fail.
+
+If you are currently using username and password authentication, see the [Snowflake Migration Guide](./snowflake-migrations.md) for instructions on migrating to key pair authentication.
+:::
+
 ## Prerequisites
 
 - A Snowflake account with the
   [ACCOUNTADMIN](https://docs.snowflake.com/en/user-guide/security-access-control-considerations.html)
-  role. If you don’t have an account with the `ACCOUNTADMIN` role, contact your Snowflake
+  role. If you don't have an account with the `ACCOUNTADMIN` role, contact your Snowflake
   administrator to set one up for you.
-
-### Network policies
-
-By default, Snowflake allows users to connect to the service from any computer or device IP address.
-A security administrator (i.e. users with the SECURITYADMIN role) or higher can create a network
-policy to allow or deny access to a single IP address or a list of addresses.
-
-If you have any issues connecting with Airbyte Cloud please make sure that the list of IP addresses
-is on the allowed list
-
-To determine whether a network policy is set on your account or for a specific user, execute the
-_SHOW PARAMETERS_ command.
-
-**Account**
-
-```
-SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;
-```
-
-**User**
-
-```
-SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
-```
-
-To read more please check official
-[Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#)
 
 ## Setup guide
 
-### Step 1: Set up Airbyte-specific entities in Snowflake
+### Step 1: Set up key pair authentication
 
-To set up the Snowflake destination connector, you first need to create Airbyte-specific Snowflake
-entities (a warehouse, database, schema, user, and role) with the `OWNERSHIP` permission to write
+<KeypairExample/>
+
+### Step 2: Set up Airbyte-specific entities in Snowflake
+
+To set up the Snowflake destination connector, you need to create Airbyte-specific Snowflake
+entities (a warehouse, database, schema, service user, and role) with the `OWNERSHIP` permission to write
 data into Snowflake, track costs pertaining to Airbyte, and control permissions at a granular level.
 
 You can use the following script in a new
 [Snowflake worksheet](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) to create the
 entities:
 
-1.  [Log into your Snowflake account](https://www.snowflake.com/login/).
-2.  Edit the following script to change the password to a more secure password and to change the
-    names of other resources if you so desire.
+1. [Log into your Snowflake account](https://www.snowflake.com/login/).
+2. Edit the following script to change the names of the resources if you so desire, and replace
+    `<public_key_value>` with the RSA public key you generated in Step 1.
 
     **Note:** Make sure you follow the
     [Snowflake identifier requirements](https://docs.snowflake.com/en/sql-reference/identifiers-syntax.html)
@@ -68,9 +55,6 @@ set airbyte_warehouse = 'AIRBYTE_WAREHOUSE';
 set airbyte_database = 'AIRBYTE_DATABASE';
 set airbyte_schema = 'AIRBYTE_SCHEMA';
 
--- set user password
-set airbyte_password = 'password';
-
 begin;
 
 -- create Airbyte role
@@ -78,13 +62,18 @@ use role securityadmin;
 create role if not exists identifier($airbyte_role);
 grant role identifier($airbyte_role) to role SYSADMIN;
 
--- create Airbyte user
+-- create Airbyte service user with key pair authentication
 create user if not exists identifier($airbyte_username)
-password = $airbyte_password
+type = service
 default_role = $airbyte_role
 default_warehouse = $airbyte_warehouse;
 
 grant role identifier($airbyte_role) to user identifier($airbyte_username);
+
+-- assign the RSA public key to the service user
+-- Replace <public_key_value> with the contents of your rsa_key.pub file (excluding the
+-- -----BEGIN PUBLIC KEY----- and -----END PUBLIC KEY----- header/footer lines).
+alter user identifier($airbyte_username) set rsa_public_key='<public_key_value>';
 
 -- change role to sysadmin for warehouse / database steps
 use role sysadmin;
@@ -111,89 +100,102 @@ on database identifier($airbyte_database)
 to role identifier($airbyte_role);
 
 commit;
-
-begin;
-
-USE DATABASE identifier($airbyte_database);
-
--- create schema for Airbyte data
-CREATE SCHEMA IF NOT EXISTS identifier($airbyte_schema);
-
-commit;
-
-begin;
-
--- grant Airbyte schema access
-grant OWNERSHIP
-on schema identifier($airbyte_schema)
-to role identifier($airbyte_role);
-
-commit;
 ```
 
 3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html).
   Make sure to select the **All Queries** checkbox if using the Classic Console or select and highlight the entire query if you are using Snowsight.
 
-### Step 2: Set up a data loading method
+:::info
+Airbyte automatically creates the necessary schemas in your Snowflake destination database.
+To enable this, ensure the connection user has `CREATE SCHEMA` privileges on the target database.
+If you prefer to create schemas manually, that's supported—however, our connection user must have `OWNERSHIP` privileges on those schemas.
+This allows us to manage tables and other objects required for the integration to function properly.
+:::
 
-Airbyte uses Snowflake’s
+:::info Cost-saving tip
+Snowflake bills for compute on a per-second basis, meaning the warehouse resumes and incurs charges
+each time Airbyte loads data. To reduce costs, we recommend provisioning an X-Small warehouse with a
+one-minute auto-suspend timeout dedicated to Airbyte syncs. This is the smallest available compute
+tier and ensures the warehouse shuts down quickly after each load completes, minimizing idle compute
+charges. The script above already configures this (`warehouse_size = xsmall`, `auto_suspend = 60`).
+:::
+
+### Step 3: Configure network policies
+
+By default, Snowflake allows users to connect to the service from any computer or device IP address.
+A security administrator (i.e. users with the SECURITYADMIN role) or higher can create a network
+policy to allow or deny access to a single IP address or a list of addresses.
+
+If you're using Airbyte Cloud, add Airbyte's
+[IP addresses](/platform/operating-airbyte/ip-allowlist) to your Snowflake network policy allowlist.
+
+To determine whether a network policy is set on your account or for a specific user, execute the
+_SHOW PARAMETERS_ command.
+
+##### Account
+
+```sql
+SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;
+```
+
+##### User
+
+```sql
+SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
+```
+
+To read more please check official
+[Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#)
+
+### Step 4: Set up a data loading method
+
+Airbyte uses Snowflake's
 [Internal Stage](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html)
 to load data.
 
 Make sure the database and schema have the `USAGE` privilege.
 
-### Step 3: Set up Snowflake as a destination in Airbyte
+### Step 5: Set up Snowflake as a destination in Airbyte
 
-Navigate to the Airbyte UI to set up Snowflake as a destination. You can authenticate using
-username/password or key pair authentication:
+Navigate to the Airbyte UI to set up Snowflake as a destination. Use the private key you generated
+in [Step 1](#step-1-set-up-key-pair-authentication) to authenticate.
 
-### Login and Password
-
-| Field                                                                                                 | Description                                                                                                                                                                                                                          |
-| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                        | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com`                                    |
-| [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)          | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                                                              |
-| [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                                                      |
-| [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)   | The database you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE`                                                                                                                                        |
-| [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)     | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name.                                                                                             |
-| Username                                                                                              | The username you created in Step 1 to allow Airbyte to access the database. Example: `AIRBYTE_USER`                                                                                                                                  |
-| Password                                                                                              | The password associated with the username.                                                                                                                                                                                           |
-| [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional)           | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3`                                      |
-| Disable Final Tables (Optional)                                                                       | Disables writing final Typed tables See [output schema](#output-schema). WARNING! The data format in \_airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions |
-
-### Key pair authentication
-
-    In order to configure key pair authentication you will need a private/public key pair.
-    If you do not have the key pair yet, you can generate one using openssl command line tool
-    Use this command in order to generate an unencrypted private key file:
-
-       `openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out rsa_key.p8 -nocrypt`
-
-    Alternatively, use this command to generate an encrypted private key file:
-
-      `openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -v2 aes-256-cbc -out rsa_key.p8`
-
-    Once you have your private key, you need to generate a matching public key.
-    You can do so with the following command:
-
-      `openssl rsa -in rsa_key.p8 -pubout -out rsa_key.pub`
-
-    Finally, you need to add the public key to your Snowflake user account.
-    You can do so with the following SQL command in Snowflake:
-
-      `alter user <user_name> set rsa_public_key=<public_key_value>;`
-
-    and replace `<user_name>` with your user name and `<public_key_value>` with your public key.
+| Field | Description |
+| :---- | :---------- |
+| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html) | The host domain of the Snowflake instance, ending with `snowflakecomputing.com`. Use the format `accountname.snowflakecomputing.com` or, for accounts that use a region-based locator, `accountname.region.cloud.snowflakecomputing.com`. Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
+| [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles) | The role you created in Step 2 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE` |
+| [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 2 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE` |
+| [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The database you created in Step 2 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE` |
+| [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. |
+| Username | The service user you created in Step 2 to allow Airbyte to access the database. Example: `AIRBYTE_USER` |
+| Private Key | The private key from the key pair you generated in Step 1. Paste the full contents of your `rsa_key.p8` file, including the `-----BEGIN ... PRIVATE KEY-----` header and footer. |
+| Passphrase (Optional) | The passphrase for the private key, if the key was generated with encryption. Leave blank if the key is unencrypted. |
+| CDC deletion mode | Whether to execute CDC deletions as hard deletes or soft deletes. Hard deletes propagate source deletions to the destination. Soft deletes leave a tombstone record in the destination. Defaults to hard deletes. |
+| [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3` |
+| Legacy raw tables (Optional) | Write the legacy raw tables format for backwards compatibility with older versions of this connector. See [Output schema](#output-schema). The data format in `_airbyte_data` is fairly stable but there are no guarantees that other metadata columns will remain the same in future versions. |
+| Airbyte Internal Table Dataset Name (Optional) | The schema used for Airbyte's internal tables. In legacy raw tables mode, the raw tables are stored in this schema. Defaults to `airbyte_internal`. |
+| Trim Whitespace from String Fields (Optional) | Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Disable this option if leading or trailing whitespace in string fields is meaningful and should be preserved. |
+| [Data Retention Period](https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period) (Optional) | The number of days of Snowflake Time Travel to enable on tables. A nonzero value incurs increased storage costs in your Snowflake instance. Defaults to `1`. |
+| Decimal Data Type (Optional) | Determines which Snowflake data type Airbyte uses for columns with the Airbyte `number` type: `NUMBER(38,9)` (recommended) or `FLOAT` (default). See [Data type map](#data-type-map) for guidance on choosing between them. |
 
 ## Output schema
 
-Airbyte outputs each stream into its own raw table in `airbyte_internal` schema by default (can be
-overriden by user) and a final table with Typed columns. Contents in raw table are _NOT_
+Airbyte outputs each stream into its own raw table in `airbyte_internal` schema by default (you can
+override this with the **Airbyte Internal Table Dataset Name** setting) and a final table with typed columns. Contents in the raw table are _not_
 deduplicated.
 
-**Note:** By default, Airbyte creates permanent tables. If you prefer transient tables, create a
-dedicated transient database for Airbyte. For more information, refer
-to[Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html)
+:::info
+By default, Airbyte creates permanent tables. If you prefer transient tables, create a dedicated
+transient database for Airbyte. Using a transient database ensures all Airbyte-created tables are
+transient by default, which helps reduce the additional costs and storage space associated with
+[Fail-safe](https://docs.snowflake.com/en/user-guide/data-failsafe). However, transient tables
+cannot be recovered in case of operational or system failures.
+
+If you configure a custom **Airbyte Internal Table Dataset Name** (internal schema), ensure both the
+default schema and the internal schema reside in databases of the same nature (both transient or
+both permanent) to avoid inconsistent data protection behavior. For more information, refer to
+[Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html).
+:::
 
 ### Raw Table schema
 
@@ -208,16 +210,20 @@ The raw table contains these fields:
 `_airbyte_data` is a JSON blob with the event data. See [here](/platform/understanding-airbyte/airbyte-metadata-fields)
 for more information about the other fields.
 
-**Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table
-could be subject to change in future versions.
+:::info
+Although the contents of the `_airbyte_data` are fairly stable, the schema of the raw table could
+be subject to change in future versions.
+:::
 
 ### Final Table schema
 
 The final table contains these fields, in addition to the columns declared in your stream schema:
-- `airbyte_raw_id`
-- `_airbyte_generation_id`
-- `airbyte_extracted_at`
-- `_airbyte_meta`
+
+- `_AIRBYTE_RAW_ID`
+- `_AIRBYTE_GENERATION_ID`
+- `_AIRBYTE_EXTRACTED_AT`
+- `_AIRBYTE_LOADED_AT`
+- `_AIRBYTE_META`
 
 Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
 
@@ -229,7 +235,7 @@ Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for m
 | STRING (BASE64)                     | TEXT           |
 | STRING (BIG_NUMBER)                 | TEXT           |
 | STRING (BIG_INTEGER)                | TEXT           |
-| NUMBER                              | FLOAT          |
+| NUMBER                              | FLOAT (default) or NUMBER(38,9) |
 | INTEGER                             | NUMBER         |
 | BOOLEAN                             | BOOLEAN        |
 | STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMP_TZ   |
@@ -239,15 +245,63 @@ Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for m
 | DATE                                | DATE           |
 | OBJECT                              | OBJECT         |
 | ARRAY                               | ARRAY          |
+| UNION                               | VARIANT        |
+| UNKNOWN                             | VARIANT        |
+
+The **Decimal Data Type** setting determines which Snowflake data type Airbyte uses for columns with the Airbyte type `NUMBER` (decimal):
+
+- **NUMBER(38,9)** (recommended): An exact fixed-point decimal type that supports up to 38 total digits, with up to 29 digits before the decimal point and 9 digits after it. It is suitable for financial data and other values that require exact decimal representation within this precision and scale.
+- **FLOAT** (default): An approximate binary floating-point type with approximately 15 digits of precision. It supports magnitudes up to approximately 10^308, making it suitable for scientific calculations, statistical models, probabilities, model scores, and other use cases where a wide numeric range is more important than exact decimal representation and small rounding differences are acceptable.
+
+**Unaffected cases:**
+
+- Legacy raw tables mode: the setting has no effect because there are no typed columns. All values are stored in the `_airbyte_data` VARIANT column.
+- Scale-0 database types (for example `NUMERIC(10,0)`): source connectors map these to the Airbyte `INTEGER` type, which is always stored as Snowflake NUMBER and is not affected by this setting.
+
+:::warning
+We recommend running a full refresh after changing this setting on an existing connection. Otherwise, on the next sync, Airbyte attempts to convert existing number columns in place. Because FLOAT and NUMBER(38,9) have different range and precision characteristics, this conversion can result in data loss, including reduced precision, truncated values, or values being set to NULL:
+
+- Switching to **NUMBER(38,9)**: Stored FLOAT values with more than 29 digits before the decimal point are set to NULL during the conversion. Because Snowflake converts the column in place, Airbyte does not process the individual rows, so no `_airbyte_meta` entry is added for these changes. Values that lost precision when they were originally loaded as FLOAT (rows flagged `TRUNCATED` in `_airbyte_meta`) remain imprecise, because the conversion cannot restore digits that were never stored. Only a full refresh re-syncs the original values from the source.
+- Switching to **FLOAT**: Values silently become approximate again, and query results may differ slightly.
+
+:::
+
+### Precision and size limits
+
+Snowflake has precision limits for numeric types:
+
+- **FLOAT**: Standard 64-bit floating point value.
+- **NUMBER(38,9)** (if selected as the number data type): Maximum 29 digits before the decimal point. Larger values are nulled and flagged in `_airbyte_meta`; if your data contains values this large, use the FLOAT option instead. Values with more than 9 decimal places are truncated and flagged in `_airbyte_meta`.
+- **NUMBER (INTEGER)**: Maximum 38 digits.
+
+When a value exceeds the bounds of these types, Airbyte nulls it out. Values within the minimum/maximum boundaries but with excessive precision are rounded. In both cases, the `_airbyte_meta` column contains a `changes` entry to reflect this.
+
+Snowflake also enforces size limits on text and semi-structured types:
+
+- **VARCHAR**: Maximum 16 MB (UTF-8 encoded).
+- **VARIANT** (used for OBJECT, ARRAY, UNION, and UNKNOWN types): Maximum 128 MB.
+
+Values that exceed these size limits are nulled out, and the `_airbyte_meta` column records the change.
+
+### Schema evolution
+
+This connector supports automatic schema evolution. When the source schema changes, the connector automatically adds new columns to destination tables and modifies column types as needed. When a column is removed from the source, the connector retains the existing column and its historical data in the destination; subsequent rows are written with `NULL` for that column. The connector requires `ALTER TABLE` privileges on destination tables to support this feature.
 
 ## Supported sync modes
 
 The Snowflake destination supports the following sync modes:
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+| Sync mode | Supported |
+| :--- | :---: |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
+
+:::note
+In **Legacy raw tables** mode, deduplication is not performed. All sync modes that would normally deduplicate instead append records to the raw table without deduplication.
+:::
 
 ## Snowflake tutorials
 
@@ -273,6 +327,10 @@ A quick fix could be to edit your connection's 'Replication' settings from `Mirr
 to `Destination Default`. Otherwise, make sure to grant the role the required permissions in the
 desired namespace.
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Snowflake schema.
+
 ## Changelog
 
 <details>
@@ -280,6 +338,65 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.1           | 2026-09-09 | [84953](https://github.com/airbytehq/airbyte/pull/84953)   | Add missing Airbyte meta columns (`_airbyte_meta`, `_airbyte_generation_id`) to tables created by connector versions prior to 3.10.0 when the `AIRBYTE_DESTINATION_SNOWFLAKE_META_COLUMN_REPAIR` env var is set to `true` (off by default), fixing "invalid identifier" sync failures after upgrading to 4.x. |
+| 5.0.0           | 2026-09-02 | [85314](https://github.com/airbytehq/airbyte/pull/85314)   | Deprecate username/password authentication; key pair authentication is now the only recommended auth method. Username/password will be removed in a future release.                      |
+| 4.1.2           | 2026-08-24 | [84979](https://github.com/airbytehq/airbyte/pull/84979)   | Upgrade CDK to 1.0.25 (prevents truncate-refresh retries from replacing a populated table with an empty one)                                                                            |
+| 4.1.1           | 2026-08-18 | [76313](https://github.com/airbytehq/airbyte/pull/76313)   | Handle ANSI reserved keywords as column names by prefixing with underscore                                                                                                             |
+| 4.1.0           | 2026-08-05 | [83713](https://github.com/airbytehq/airbyte/pull/83713)   | Add opt-in NUMBER(38,9) data type for number columns via the new "Decimal Data Type" option. |
+| 4.0.49          | 2026-08-05 | [83740](https://github.com/airbytehq/airbyte/pull/83740)   | Upgrade CDK to 1.0.21                                                                                                                                                                  |
+| 4.0.48          | 2026-07-23 | [82272](https://github.com/airbytehq/airbyte/pull/82272)   | Columns removed from the source schema are now preserved in the destination table instead of being dropped to prevent unintentional data loss due to source schema changes. |
+| 4.0.47          | 2026-07-23 | [82294](https://github.com/airbytehq/airbyte/pull/82294)   | Replace ALTER TABLE SWAP WITH with CREATE OR REPLACE TABLE CLONE COPY GRANTS to preserve table grants |
+| 4.0.46          | 2026-07-15 | [82104](https://github.com/airbytehq/airbyte/pull/82104)   | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
+| 4.0.45          | 2026-07-10 | [81530](https://github.com/airbytehq/airbyte/pull/81530)   | Restore NULL-safe primary-key matching in dedup MERGE to fix duplicate rows when composite PKs contain NULLs |
+| 4.0.44          | 2026-06-30 | [81346](https://github.com/airbytehq/airbyte/pull/81346)   | Remove unnecessary NULL PK equality checks from merge SQL |
+| 4.0.43          | 2026-05-20 | [78231](https://github.com/airbytehq/airbyte/pull/78231)   | Upgrade CDK to 1.0.13 |
+| 4.0.42          | 2026-05-14 | [77978](https://github.com/airbytehq/airbyte/pull/77978)   | Improve encrypted key-pair private key handling and error messages                                                                                                                     |
+| 4.0.41          | 2026-05-07 | [77795](https://github.com/airbytehq/airbyte/pull/77795)   | Add option to preserve Snowflake whitespace                                                                                                                                            |
+| 4.0.40-rc.1     | 2026-04-27 | [76405](https://github.com/airbytehq/airbyte/pull/76405)   | Upgrade CDK to 1.0.9. Enable fast timestamp coercion. Progressive rollout.                                                                                                             |
+| 4.0.39          | 2026-03-13 | [74715](https://github.com/airbytehq/airbyte/pull/74715)   | Drop temp table after successful upsert to prevent duplicate records                                                                                                                   |
+| 4.0.38          | 2026-02-25 | [74041](https://github.com/airbytehq/airbyte/pull/74041)   | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches                                                                                                                           |
+| 4.0.37          | 2026-02-04 | [72854](https://github.com/airbytehq/airbyte/pull/72854)   | Internal interface changes                                                                                                                                                             |
+| 4.0.36          | 2026-01-29 | [72417](https://github.com/airbytehq/airbyte/pull/72417)   | Handle exception in countTable correctly                                                                                                                                               |
+| 4.0.35          | 2026-01-26 | [72295](https://github.com/airbytehq/airbyte/pull/72295)   | Upgrade CDK to 0.2.0                                                                                                                                                                   |
+| 4.0.34          | 2026-01-09 | [71273](https://github.com/airbytehq/airbyte/pull/71273)   | Fix check operation in raw tables only mode.                                                                                                                                           |
+| 4.0.33          | 2026-01-09 | [71248](https://github.com/airbytehq/airbyte/pull/71248)   | Upgrade to CDK 0.1.99 — limit final aggregate parallelism.                                                                                                                             |
+| 4.0.32          | 2026-01-08 | [71233](https://github.com/airbytehq/airbyte/pull/71233)   | Promoting release candidate 4.0.32-rc.2 to a main version.                                                                                                                             |
+| 4.0.32-rc.2     | 2025-12-19 | [71007](https://github.com/airbytehq/airbyte/pull/71007)   | Fix Raw Mode regression: Change _airbyte_data back to SnowflakeType.VARIANT                                                                                                            |
+| 4.0.32-rc.1     | 2025-12-18 | [70903](https://github.com/airbytehq/airbyte/pull/70903)   | Upgrade to CDK 0.1.91; internal refactoring                                                                                                                                            |
+| 4.0.31          | 2025-12-08 | [70442](https://github.com/airbytehq/airbyte/pull/70442)   | Write VARIANT values correctly when underlying Airbyte type is a `union`                                                                                                               |
+| 4.0.30          | 2025-11-24 | [69842](https://github.com/airbytehq/airbyte/pull/69842)   | Update documentation about numeric value handling                                                                                                                                      |
+| 4.0.29          | 2025-11-24 | [69342](https://github.com/airbytehq/airbyte/pull/69342)   | Truncate NumberValues and IntegerValues with excessive precision instead of nullifying them                                                                                            |
+| 4.0.28          | 2025-11-13 | [69245](https://github.com/airbytehq/airbyte/pull/69245)   | Upgrade to CDK 0.1.78                                                                                                                                                                  |
+| 4.0.27          | 2025-11-11 | [69285](https://github.com/airbytehq/airbyte/pull/69285)   | Remove spurious log messages                                                                                                                                                           |
+| 4.0.26          | 2025-11-11 | [69117](https://github.com/airbytehq/airbyte/pull/69117)   | Upgrade to CDK 0.1.74 (internal code changes for schema evolution)                                                                                                                     |
+| 4.0.25          | 2025-11-06 | [69226](https://github.com/airbytehq/airbyte/pull/69226)   | Improved additional statistics handling                                                                                                                                                |
+| 4.0.24          | 2025-11-05 | [69200](https://github.com/airbytehq/airbyte/pull/69200/)  | Add support for observability metrics                                                                                                                                                  |
+| 4.0.23          | 2025-11-03 | [69153](https://github.com/airbytehq/airbyte/pull/69153)   | Fix bug in connector spec                                                                                                                                                              |
+| 4.0.22          | 2025-11-03 | [69147](https://github.com/airbytehq/airbyte/pull/69147)   | Upgrade to CDK 0.1.62 to improve handling of unrecognized JSON schema                                                                                                                  |
+| 4.0.21          | 2025-11-03 | [69100](https://github.com/airbytehq/airbyte/pull/69100)   | Upgrade to CDK 0.1.61 to fix state index bug                                                                                                                                           |
+| 4.0.20          | 2025-10-29 | [68186](https://github.com/airbytehq/airbyte/pull/68186)   | Upgrade to CDK 0.1.59                                                                                                                                                                  |
+| 4.0.19          | 2025-10-28 | [68683](https://github.com/airbytehq/airbyte/pull/68683)   | Upgrade to CDK 0.1.58 (improve logging of unflushed states at end of sync)                                                                                                             |
+| 4.0.18          | 2025-10-28 | [68125](https://github.com/airbytehq/airbyte/pull/68125)   | Internal refactoring; upgrade to CDK 0.1.56                                                                                                                                            |
+| 4.0.17          | 2025-10-22 | [68585](https://github.com/airbytehq/airbyte/pull/68585)   | Wrap Snowflake permission errors as ConfigErrorException for better error handling                                                                                                     |
+| 4.0.16          | 2025-10-21 | [68516](https://github.com/airbytehq/airbyte/pull/68516)   | Ensure columns are marked as non-nullable in destination schema.                                                                                                                       |
+| 4.0.15          | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153)   | Implement new proto schema implementation                                                                                                                                              |
+| 4.0.14          | 2025-10-16 | [68148](https://github.com/airbytehq/airbyte/pull/68148)   | No user-facing changes. Internal code reorganization.                                                                                                                                  |
+| 4.0.13          | 2025-10-15 | [68106](https://github.com/airbytehq/airbyte/pull/68106)   | Revert cache change to fix performance issue.                                                                                                                                          |
+| 4.0.12          | 2025-10-15 | [68096](https://github.com/airbytehq/airbyte/pull/68096)   | Cache Airbyte metadata data column checks during formatting to improve performance.                                                                                                    |
+| 4.0.11          | 2025-10-14 | [67721](https://github.com/airbytehq/airbyte/pull/67721)   | Handle edge case in config migrator; improve test coverage.                                                                                                                            |
+| 4.0.10          | 2025-10-13 | [67714](https://github.com/airbytehq/airbyte/pull/67714)   | Update `check` to handle `QUOTED_IDENTIFIERS_IGNORE_CASE=true` correctly.                                                                                                              |
+| 4.0.9           | 2025-10-10 | [67610](https://github.com/airbytehq/airbyte/pull/67610)   | Fix an issue with varchar size validation                                                                                                                                              |
+| 4.0.8           | 2025-10-10 | [67599](https://github.com/airbytehq/airbyte/pull/67599)   | Improve handling of heavily interleaved streams.                                                                                                                                       |
+| 4.0.7           | 2025-10-09 | [67590](https://github.com/airbytehq/airbyte/pull/67590)   | Use GZIP compression level 5 to improve performance. No longer explicitly `CREATE FILE FORMAT`.                                                                                        |
+| 4.0.6           | 2025-10-09 | [67582](https://github.com/airbytehq/airbyte/pull/67582)   | Schema evolution supports dropping columns with lowercase characters in their name.                                                                                                    |
+| 4.0.5           | 2025-10-09 | [67575](https://github.com/airbytehq/airbyte/pull/67575)   | Revert inadvertent type changes.                                                                                                                                                       |
+| 4.0.4           | 2025-10-08 | [67569](https://github.com/airbytehq/airbyte/pull/67569)   | Prevent crashes when a column value ends with `\`.                                                                                                                                     |
+| 4.0.3           | 2025-10-08 | [67556](https://github.com/airbytehq/airbyte/pull/67556)   | Improve performance and reduce cost by increasing maximum parallel processing.                                                                                                         |
+| 4.0.2           | 2025-10-07 | [67301](https://github.com/airbytehq/airbyte/pull/67301)   | Improve performance and reduce cost by caching `SHOW COLUMNS` output.                                                                                                                  |
+| 4.0.1           | 2025-10-06 | [67106](https://github.com/airbytehq/airbyte/pull/67106)   | Removes unnecessary operations and allocations in value validator.                                                                                                                     |
+| 4.0.0           | 2025-10-06 | [66747](https://github.com/airbytehq/airbyte/pull/66747)   | Upgrade to direct-load tables; add option for soft CDC deletes.                                                                                                                        |
+| 3.15.11-rc.2    | 2025-09-29 | [66753](https://github.com/airbytehq/airbyte/pull/66753)   | Pin to CDK artifact                                                                                                                                                                    |
+| 3.15.11-rc.1    | 2025-09-25 | [66307](https://github.com/airbytehq/airbyte/pull/66307)   | Initial Direct Load RC release                                                                                                                                                         |
 | 3.15.10         | 2025-06-13 | [61588](https://github.com/airbytehq/airbyte/pull/61588)   | Publish version to account for possible duplicate publishing in pipeline. Noop change.                                                                                                 |
 | 3.15.9          | 2025-05-16 | [60328](https://github.com/airbytehq/airbyte/pull/60328)   | Migrate to base 2.0.2.                                                                                                                                                                 |
 | 3.15.8          | 2025-05-02 | [59222](https://github.com/airbytehq/airbyte/pull/59222)   | Upgrade libraries for security patches.                                                                                                                                                |

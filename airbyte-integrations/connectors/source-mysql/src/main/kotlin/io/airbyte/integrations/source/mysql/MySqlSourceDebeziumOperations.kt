@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql
@@ -12,20 +12,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.TextNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.data.BinaryCodec
 import io.airbyte.cdk.data.DoubleCodec
 import io.airbyte.cdk.data.FloatCodec
 import io.airbyte.cdk.data.JsonCodec
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
-import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.NullCodec
-import io.airbyte.cdk.data.OffsetDateTimeCodec
-import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.CommonMetaField
-import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.jdbc.BinaryStreamFieldType
-import io.airbyte.cdk.jdbc.BytesFieldType
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.LongFieldType
@@ -44,6 +38,7 @@ import io.airbyte.cdk.read.cdc.DebeziumSchemaHistory
 import io.airbyte.cdk.read.cdc.DebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.DeserializedRecord
 import io.airbyte.cdk.read.cdc.InvalidDebeziumWarmStartState
+import io.airbyte.cdk.read.cdc.RelationalColumnCustomConverter
 import io.airbyte.cdk.read.cdc.ResetDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
 import io.airbyte.cdk.ssh.TunnelSession
@@ -86,6 +81,7 @@ class MySqlSourceDebeziumOperations(
         configuration.incrementalConfiguration as CdcIncrementalConfiguration
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun deserializeRecord(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
@@ -104,16 +100,24 @@ class MySqlSourceDebeziumOperations(
             when (field.type.airbyteSchemaType) {
                 LeafAirbyteSchemaType.INTEGER,
                 LeafAirbyteSchemaType.NUMBER -> {
-                    val textNode: TextNode? = data[field.id] as? TextNode /*?: continue*/
+                    val textNode: TextNode? = data[field.id] as? TextNode
                     if (textNode != null) {
                         val bigDecimal = BigDecimal(textNode.textValue()).stripTrailingZeros()
                         data.put(field.id, bigDecimal)
                     }
                 }
                 LeafAirbyteSchemaType.JSONB -> {
-                    val textNode: TextNode? = data[field.id] as? TextNode /*?: continue*/
+                    val textNode: TextNode? = data[field.id] as? TextNode
                     if (textNode != null) {
                         data.set<JsonNode>(field.id, Jsons.readTree(textNode.textValue()))
+                    }
+                }
+                LeafAirbyteSchemaType.BINARY -> {
+                    val textNode: TextNode? = data[field.id] as? TextNode
+                    if (textNode != null) {
+                        val bytes: ByteArray =
+                            Base64.decodeBase64(textNode.textValue().toByteArray())
+                        data.set<JsonNode>(field.id, Jsons.binaryNode(bytes))
                     }
                 }
                 else -> {
@@ -130,9 +134,6 @@ class MySqlSourceDebeziumOperations(
                         when (field.type) {
                             FloatFieldType ->
                                 if (data[field.id] is FloatNode) FloatCodec else DoubleCodec
-                            BytesFieldType,
-                            BinaryStreamFieldType ->
-                                if (data[field.id].isBinary) BinaryCodec else TextCodec
                             else -> field.type.jsonEncoder as JsonCodec<*>
                         }
                     @Suppress("UNCHECKED_CAST")
@@ -148,52 +149,43 @@ class MySqlSourceDebeziumOperations(
         val transactionMillis: Long = source["ts_ms"].asLong()
         val transactionOffsetDateTime: OffsetDateTime =
             OffsetDateTime.ofInstant(Instant.ofEpochMilli(transactionMillis), ZoneOffset.UTC)
-        val transactionTimestampJsonNode: JsonNode =
-            OffsetDateTimeCodec.encode(transactionOffsetDateTime)
-        data.set<JsonNode>(
-            CommonMetaField.CDC_UPDATED_AT.id,
-            transactionTimestampJsonNode,
-        )
         resultRow[CommonMetaField.CDC_UPDATED_AT.id] =
-            FieldValueEncoder(transactionOffsetDateTime, OffsetDateTimeCodec)
+            FieldValueEncoder(
+                transactionOffsetDateTime,
+                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>
+            )
 
-        data.set<JsonNode>(
-            CommonMetaField.CDC_DELETED_AT.id,
-            if (isDelete) transactionTimestampJsonNode else Jsons.nullNode(),
-        )
-        @Suppress("UNCHECKED_CAST")
         resultRow[CommonMetaField.CDC_DELETED_AT.id] =
             FieldValueEncoder(
                 if (isDelete) transactionOffsetDateTime else null,
-                (if (isDelete) OffsetDateTimeCodec else NullCodec) as JsonEncoder<Any>
+                (if (isDelete) CommonMetaField.CDC_DELETED_AT.type.jsonEncoder else NullCodec)
+                    as JsonEncoder<Any>
             )
 
         // Set _ab_cdc_log_file and _ab_cdc_log_pos meta-field values.
         val position = MySqlSourceCdcPosition(source["file"].asText(), source["pos"].asLong())
-        data.set<JsonNode>(
-            MySqlSourceCdcMetaFields.CDC_LOG_FILE.id,
-            TextCodec.encode(position.fileName)
-        )
-        resultRow[MySqlSourceCdcMetaFields.CDC_LOG_FILE.id] =
-            FieldValueEncoder(position.fileName, TextCodec)
 
-        data.set<JsonNode>(
-            MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
-            LongCodec.encode(position.position)
-        )
+        resultRow[MySqlSourceCdcMetaFields.CDC_LOG_FILE.id] =
+            FieldValueEncoder(
+                position.fileName,
+                MySqlSourceCdcMetaFields.CDC_LOG_FILE.type.jsonEncoder as JsonEncoder<Any>
+            )
+
         resultRow[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
-            FieldValueEncoder(position.position, LongCodec)
+            FieldValueEncoder(
+                position.position.toDouble(),
+                MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>
+            )
 
         // Set the _ab_cdc_cursor meta-field value.
-        data.set<JsonNode>(
-            MySqlSourceCdcMetaFields.CDC_CURSOR.id,
-            LongCodec.encode(position.cursorValue)
-        )
         resultRow[MySqlSourceCdcMetaFields.CDC_CURSOR.id] =
-            FieldValueEncoder(position.cursorValue, LongCodec)
+            FieldValueEncoder(
+                position.cursorValue,
+                MySqlSourceCdcMetaFields.CDC_CURSOR.type.jsonEncoder as JsonEncoder<Any>
+            )
 
         // Return a DeserializedRecord instance.
-        return DeserializedRecord(resultRow, emptyMap()) // TEMP
+        return DeserializedRecord(resultRow, emptyMap())
     }
 
     override fun findStreamNamespace(key: DebeziumRecordKey, value: DebeziumRecordValue): String? =
@@ -355,9 +347,9 @@ class MySqlSourceDebeziumOperations(
     ): Pair<MySqlSourceCdcPosition, String?> {
         stmt.executeQuery(query).use { rs: ResultSet ->
             if (!rs.next()) throw ConfigErrorException("No results for query: {{$query}}")
-            val file = Field("File", StringFieldType)
-            val pos = Field("Position", LongFieldType)
-            val gtids = Field("Executed_Gtid_Set", StringFieldType)
+            val file = EmittedField("File", StringFieldType)
+            val pos = EmittedField("Position", LongFieldType)
+            val gtids = EmittedField("Executed_Gtid_Set", StringFieldType)
             val mySqlSourceCdcPosition =
                 MySqlSourceCdcPosition(
                     fileName = rs.getString(file.id)?.takeUnless { rs.wasNull() }
@@ -384,7 +376,7 @@ class MySqlSourceDebeziumOperations(
     }
 
     private fun queryPurgedIds(): MySqlGtidSet {
-        val purgedGtidField = Field("@@global.gtid_purged", StringFieldType)
+        val purgedGtidField = EmittedField("@@global.gtid_purged", StringFieldType)
         jdbcConnectionFactory.get().use { connection: Connection ->
             connection.createStatement().use { stmt: Statement ->
                 val sql = "SELECT @@global.gtid_purged"
@@ -498,10 +490,16 @@ class MySqlSourceDebeziumOperations(
                 .withDatabase("include.list", databaseName)
                 .withOffset()
                 .withSchemaHistory()
-                .withConverters(
-                    MySqlSourceCdcBooleanConverter::class,
-                    MySqlSourceCdcTemporalConverter::class
-                )
+                .run {
+                    val converters =
+                        buildList<Class<out RelationalColumnCustomConverter>> {
+                            if (!configuration.treatTinyint1AsInteger) {
+                                add(MySqlSourceCdcBooleanConverter::class.java)
+                            }
+                            add(MySqlSourceCdcTemporalConverter::class.java)
+                        }
+                    withConverters(*converters.toTypedArray())
+                }
 
         cdcIncrementalConfiguration.serverTimezone
             ?.takeUnless { it.isBlank() }

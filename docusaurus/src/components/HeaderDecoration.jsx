@@ -1,7 +1,5 @@
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import React from "react";
-import { getSupportLevelDisplay } from "../connector_registry";
 import { Callout } from "./Callout";
 import { Chip } from "./Chip";
 import { CopyPageButton } from "./CopyPageButton/CopyPageButton";
@@ -195,6 +193,21 @@ const boolStringToBool = (boolString) => {
   return null;
 };
 
+const getSupportLevelDisplay = (rawSupportLevel) => {
+  switch (rawSupportLevel) {
+    case "certified":
+      return "Airbyte";
+    case "community":
+      return "Marketplace";
+    case "enterprise":
+      return "Enterprise";
+    case "archived":
+      return "Archived";
+    default:
+      return null;
+  }
+};
+
 // COMPONENTS
 
 const MetricIcon = ({ iconComponent, level }) => {
@@ -205,9 +218,13 @@ const MetricIcon = ({ iconComponent, level }) => {
 
   if (!Object.keys(iconComponent).includes(level.toLowerCase())) return null;
 
+  const displayLabel =
+    level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
+
   return (
     <div className={styles.metricIcon} title={level}>
       {iconComponent[level?.toLowerCase()]}
+      <span className={styles.metricLabel}>{displayLabel}</span>
     </div>
   );
 };
@@ -235,6 +252,7 @@ const ConnectorMetadataCallout = ({
   cdkVersionUrl,
   syncSuccessRate,
   usageRate,
+  defaultDataWorkers,
   lastUpdated,
   definitionId,
 }) => (
@@ -242,37 +260,32 @@ const ConnectorMetadataCallout = ({
     <dl className={styles.connectorMetadata}>
       <MetadataStat label="Availability">
         <div className={styles.availability}>
-          {isEnterprise ? (
-            <>
-              <Chip className={styles.available}>
-                <EnabledIcon isEnabled={true} /> Cloud <b>with Teams add-on</b>
-              </Chip>
-              <Chip className={isOss ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isOss} /> Self-Managed Community
-              </Chip>
-              <Chip className={styles.available}>
-                <EnabledIcon isEnabled={true} /> Self-Managed Enterprise
-              </Chip>
-              <Chip className={styles.unavailable}>
-                <EnabledIcon isEnabled={false} /> PyAirbyte
-              </Chip>
-            </>
-          ) : (
-            <>
-              <Chip className={isCloud ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isCloud} /> Cloud
-              </Chip>
-              <Chip className={isOss ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isOss} /> Self-Managed Community
-              </Chip>
-              <Chip className={isOss ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isOss} /> Self-Managed Enterprise
-              </Chip>
-              <Chip className={isOss ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isOss} /> PyAirbyte
-              </Chip>
-            </>
-          )}
+          <Chip className={isOss ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isOss} /> Core
+          </Chip>
+          <Chip className={isCloud ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isCloud} /> Standard
+          </Chip>
+          <Chip className={isCloud ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isCloud} /> Plus
+          </Chip>
+          <Chip
+            className={
+              isEnterprise || isCloud ? styles.available : styles.unavailable
+            }
+          >
+            <EnabledIcon isEnabled={isEnterprise || isCloud} /> Pro
+          </Chip>
+          <Chip
+            className={
+              isEnterprise || isCloud ? styles.available : styles.unavailable
+            }
+          >
+            <EnabledIcon isEnabled={isEnterprise || isCloud} /> Enterprise Flex
+          </Chip>
+          <Chip className={isOss ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isOss} /> PyAirbyte
+          </Chip>
         </div>
       </MetadataStat>
       <MetadataStat label="Support Level">
@@ -312,6 +325,18 @@ const ConnectorMetadataCallout = ({
           <MetricIcon iconComponent={USAGE_ICON} level={usageRate} />
         </MetadataStat>
       )}
+      {defaultDataWorkers && (
+        <MetadataStat label="Data workers used">
+          <span title="Applies to Airbyte Cloud plans on capacity-based pricing. Actual usage can vary if your organization has custom resource overrides.">
+            {defaultDataWorkers} per sync
+          </span>
+          {" ("}
+          <a href="/platform/cloud/managing-airbyte-cloud/manage-data-workers#data-worker-consumption-by-source-type">
+            Learn more
+          </a>
+          {")"}
+        </MetadataStat>
+      )}
       {isEnterprise && (
         <MetadataStat label="Enterprise Connector">
           <strong>
@@ -334,10 +359,15 @@ const ConnectorMetadataCallout = ({
   </Callout>
 );
 
-const ConnectorTitle = ({ iconUrl, originalTitle, isArchived }) => (
+const ConnectorTitle = ({
+  iconUrl,
+  originalTitle,
+  isArchived,
+  enterpriseConnector,
+}) => (
   <div className={styles.header}>
     <img src={iconUrl} alt="" className={styles.connectorIcon} />
-    <h1>
+    <h1 data-enterprise-connector={enterpriseConnector}>
       {isArchived ? (
         <span>
           {originalTitle} <span style={{ color: "gray" }}>[ARCHIVED]</span>
@@ -363,8 +393,10 @@ export const HeaderDecoration = ({
   cdkVersionUrl,
   syncSuccessRate,
   usageRate,
+  defaultDataWorkers,
   lastUpdated,
   definitionId,
+  "enterprise-connector": enterpriseConnector,
 }) => {
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
@@ -374,16 +406,16 @@ export const HeaderDecoration = ({
 
   return (
     <>
-      <div
-        className={styles.connectorHeader}
-   
-      >
+      <div className={styles.connectorHeader}>
         <ConnectorTitle
           iconUrl={iconUrl}
           originalTitle={originalTitle}
           isArchived={isArchived}
+          enterpriseConnector={enterpriseConnector}
         />
-        <CopyPageButton />
+        <div className={styles.connectorHeaderActions}>
+          <CopyPageButton />
+        </div>
       </div>
       <ConnectorMetadataCallout
         isCloud={isCloud}
@@ -397,6 +429,7 @@ export const HeaderDecoration = ({
         isLatestCDK={isLatestCDK}
         syncSuccessRate={syncSuccessRate}
         usageRate={usageRate}
+        defaultDataWorkers={defaultDataWorkers}
         lastUpdated={lastUpdated}
         definitionId={definitionId}
       />

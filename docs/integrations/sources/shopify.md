@@ -117,7 +117,7 @@ Add the following scopes to your custom app to ensure Airbyte can sync all avail
 - `read_third_party_fulfillment_orders`
 - `read_translations`
 
-<!-- env:oss -->
+<!-- /env:oss -->
 
 <HideInUI>
 
@@ -125,62 +125,76 @@ Add the following scopes to your custom app to ensure Airbyte can sync all avail
 
 The Shopify source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
-| Feature           | Supported? |
-|:------------------|:-----------|
-| Full Refresh Sync | Yes        |
-| Incremental Sync  | Yes        |
+- Full Refresh
+- Incremental
 
-The Shopify source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
-
-This source can sync data for the [Shopify REST API](https://shopify.dev/api/admin-rest) and the [Shopify GraphQL API](https://shopify.dev/api/admin-graphql) and the [Shopify GraphQL BULK API](https://shopify.dev/docs/api/usage/bulk-operations/queries)
+This source syncs data using the [Shopify REST API](https://shopify.dev/api/admin-rest), the [Shopify GraphQL API](https://shopify.dev/api/admin-graphql), and the [Shopify GraphQL BULK API](https://shopify.dev/docs/api/usage/bulk-operations/queries). Streams labeled "(GraphQL)" in the list below use the GraphQL or BULK API; unlabeled streams use the REST API.
 
 ## Supported Streams
 
-- [Abandoned Checkouts](https://shopify.dev/api/admin-rest/2024-04/resources/abandoned-checkouts#top)
-- [Articles](https://shopify.dev/api/admin-rest/2024-04/resources/article)
-- [Balance Transactions](https://shopify.dev/docs/api/admin-rest/2024-04/resources/transactions)
-- [Blogs](https://shopify.dev/api/admin-rest/2024-04/resources/blog)
-- [Collects](https://shopify.dev/api/admin-rest/2024-04/resources/collect#top)
-- [Collections (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Collection)
-- [Countries](https://shopify.dev/docs/api/admin-rest/2024-04/resources/country)
-- [Custom Collections](https://shopify.dev/api/admin-rest/2024-04/resources/customcollection#top)
-- [Customers](https://shopify.dev/api/admin-rest/2024-04/resources/customer#top)
-- [Customer Journey Summary (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/customerjourneysummary)
-- [Customer Address (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Customer#field-customer-addresses)
-- [Draft Orders](https://shopify.dev/api/admin-rest/2024-04/resources/draftorder#top)
-- [Discount Codes (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/unions/DiscountCode)
-- [Disputes](https://shopify.dev/docs/api/admin-rest/2024-04/resources/dispute)
-- [Fulfillments](https://shopify.dev/api/admin-rest/2024-04/resources/fulfillment)
-- [Fulfillment Orders (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/FulfillmentOrder)
-- [Inventory Items (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/InventoryItem)
-- [Inventory Levels (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/InventoryLevel)
-- [Locations](https://shopify.dev/api/admin-rest/2024-04/resources/location)
-- [Metafields (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield)
-- [Order Agreements (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/OrderAgreement)
-- [Orders](https://shopify.dev/api/admin-rest/2024-04/resources/order#top)
-- [Order Refunds](https://shopify.dev/api/admin-rest/2024-04/resources/refund#top)
-- [Order Risks (GraphQL)](https://shopify.dev/api/admin-rest/2024-04/resources/order-risk#top)
-- [Pages](https://shopify.dev/api/admin-rest/2024-04/resources/page#top)
-- [Price Rules](https://shopify.dev/api/admin-rest/2024-04/resources/pricerule#top)
-- [Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/products)
-- [Product Images (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Image)
-- [Product Variants (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/productVariant)
-- [Shop](https://shopify.dev/api/admin-rest/2024-04/resources/shop)
-- [Smart Collections](https://shopify.dev/api/admin-rest/2024-04/resources/smartcollection)
-- [Transactions](https://shopify.dev/api/admin-rest/2024-04/resources/transaction#top)
-- [Transactions (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/OrderTransaction)
-- [Tender Transactions](https://shopify.dev/api/admin-rest/2024-04/resources/tendertransaction)
+- [Abandoned Checkouts](https://shopify.dev/api/admin-rest/latest/resources/abandoned-checkouts#top)
+- [Articles](https://shopify.dev/api/admin-rest/latest/resources/article)
+- [Balance Transactions](https://shopify.dev/docs/api/admin-rest/latest/resources/transactions)
+- [Blogs](https://shopify.dev/api/admin-rest/latest/resources/blog)
+- [Collects](https://shopify.dev/api/admin-rest/latest/resources/collect#top)
+- [Collection Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Collection#field-Collection.fields.products) — All products associated with each collection, including smart collection matches
+- [Collections (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Collection)
+- [Countries (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/queries/deliveryProfiles)
+- [Custom Collections](https://shopify.dev/api/admin-rest/latest/resources/customcollection#top)
+- [Customers](https://shopify.dev/api/admin-rest/latest/resources/customer#top)
+- [Customer Journey Summary (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/customerjourneysummary)
+- [Customer Address (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Customer#field-customer-addresses)
+- [Deleted Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/queries/events) — Product deletion events
+- [Discount Codes (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/unions/DiscountCode)
+- [Discount Codes Sync (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/unions/DiscountCode) — Synchronous variant of Discount Codes that returns all redeem codes for discounts with more than ~100 codes. See [Syncing discount codes](#syncing-discount-codes).
+- [Disputes](https://shopify.dev/docs/api/admin-rest/latest/resources/dispute)
+- [Draft Orders](https://shopify.dev/api/admin-rest/latest/resources/draftorder#top)
+- [Fulfillments](https://shopify.dev/api/admin-rest/latest/resources/fulfillment)
+- [Fulfillment Orders (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/FulfillmentOrder) — By default, closed fulfillment orders are excluded. To include them, enable the **Include Closed Fulfillment Orders** option in the connector configuration.
+- [Inventory Items (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryItem)
+- [Inventory Levels (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryLevel)
+- [Locations](https://shopify.dev/api/admin-rest/latest/resources/location)
+- [Metafields (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Metafield) — Available as separate streams for: Articles, Blogs, Collections, Customers, Draft Orders, Locations, Orders, Pages, Product Images, Products, Product Variants, Shops, and Smart Collections
+- [Order Agreements (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderAgreement)
+- [Orders](https://shopify.dev/api/admin-rest/latest/resources/order#top)
+- [Order Refunds](https://shopify.dev/api/admin-rest/latest/resources/refund#top)
+- [Order Risks (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderRisk)
+- [Pages](https://shopify.dev/api/admin-rest/latest/resources/page#top)
+- [Price Rules](https://shopify.dev/docs/api/admin-rest/latest/resources/pricerule)
+- [Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/queries/products)
+- [Product Images (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Image)
+- [Product Variants (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/queries/productVariant)
+- [Shop](https://shopify.dev/api/admin-rest/latest/resources/shop)
+- [Smart Collections](https://shopify.dev/api/admin-rest/latest/resources/smartcollection)
+- [Tender Transactions](https://shopify.dev/api/admin-rest/latest/resources/tendertransaction)
+- [Transactions](https://shopify.dev/api/admin-rest/latest/resources/transaction#top)
+- [Transactions (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderTransaction)
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ## Capturing deleted records
 
-The connector captures deletions for records in the `Articles`, `Blogs`, `CustomCollections`, `Orders`, `Pages`, `PriceRules` and `Products` streams.
+The connector captures deletions for records in the `Articles`, `Blogs`, `CustomCollections`, `Orders`, `Pages`, and `PriceRules` streams. When a record is deleted, the connector outputs a record with the `ID` of that record and the `deleted_at`, `deleted_message`, and `deleted_description` fields filled out. No other fields are filled out for the deleted records.
 
-When a record is deleted, the connector outputs a record with the `ID` of that record and the `deleted_at`, `deleted_message`, and `deleted_description` fields filled out. No other fields are filled out for the deleted records.
+For deleted products, use the dedicated `Deleted Products` stream, which queries the Shopify GraphQL Events API for product deletion events. This stream returns records with `id` (the product ID), `deleted_at`, `deleted_message`, and `shop_url` fields.
 
-Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/2024-04/resources/event).
+Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/latest/resources/event).
+
+## Syncing discount codes
+
+The connector provides two streams for discount codes:
+
+| Stream | Method | Best for |
+|---|---|---|
+| **Discount Codes** | Bulk Operations (async) | Stores where every discount has fewer than ~100 redeem codes. High throughput, low API cost. |
+| **Discount Codes Sync** | Synchronous cursor-paginated GraphQL | Stores that have one or more discounts with **more than ~100 redeem codes**. Guarantees every code is returned. |
+
+Shopify's Bulk Operations API silently truncates the nested `codes` connection at approximately 100 records per parent discount, even with `groupObjects: true`. If a discount has 500 codes, the bulk stream will only return ~100 of them without any error or warning.
+
+**Discount Codes Sync** avoids this limitation by querying parent discounts with cursor pagination, then explicitly paging through each parent's child codes (up to 250 per page). The trade-off is higher per-record API cost and lower throughput compared to the bulk stream.
+
+**Recommendation:** Enable the **Discount Codes Sync** stream if you have any discounts with more than ~100 redeem codes. You may run both streams simultaneously — they produce records with the same schema, so you can deduplicate downstream by `id`.
 
 ## Marketing Attribution data
 Data related to [marketing attribution](https://www.shopify.com/au/blog/marketing-attribution) can be found across a few different streams. Sync these streams to understand marketing performance:
@@ -195,6 +209,10 @@ Data related to [marketing attribution](https://www.shopify.com/au/blog/marketin
 | Full Refresh Sync         | Yes                  |
 | Incremental - Append Sync | Yes                  |
 | Namespaces                | No                   |
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Data type map
 
@@ -229,25 +247,86 @@ Waiting <some_number> seconds then retrying..."
 
 This is expected when the connector hits a `429 - Rate Limit Exceeded` HTTP Error. The sync operation will continue successfully after a short backoff period.
 
-For all `Shopify GraphQL BULK` api requests these limitations are applied: https://shopify.dev/docs/api/usage/bulk-operations/queries#operation-restrictions. Please note that different requests have different limitations.
+For all Shopify GraphQL Bulk API requests, Shopify's [bulk operation limitations](https://shopify.dev/docs/api/usage/bulk-operations/queries#operation-restrictions) apply. Different request types can have different limitations.
+
+#### Missing records after bulk stream checkpointing
+
+Version 3.3.3 fixes an issue where some incremental GraphQL Bulk streams could skip parent records after a bulk job checkpointed mid-output. The issue affected these streams:
+
+- `metafield_customers`
+- `metafield_products`
+- `metafield_product_images`
+- `product_images`
+- `customer_address`
+
+If you synced one of these streams on an earlier connector version and suspect missing historical records, clear the affected stream and run a sync to backfill data. Clearing a stream deletes the data Airbyte wrote for that stream in your destination. For more information, see [Clearing your data](/platform/operator-guides/clear).
+
+#### BULK job checkpoint collisions
+
+Incremental GraphQL Bulk streams checkpoint a bulk job once it has collected **BULK Job checkpoint (rows collected)** lines, then start the next job from the newest cursor value they saw. If a single cursor value holds more lines than that threshold, the next job cannot advance past it, and the sync fails with:
+
+```text
+The stream: `<stream_name>` checkpoint collision is detected. Try to increase the
+`BULK Job checkpoint (rows collected)` to the bigger value. The stream will be
+synced again during the next sync attempt.
+```
+
+This most often affects the metafield streams and `discount_codes`, where many child rows hang off one parent record, and it usually follows a bulk change in your store that stamped a large set of records with the same `updated_at` value.
+
+**First, check whether it cleared itself.** Look at whether any sync has succeeded since the collision:
+
+- **A later sync succeeded.** The next attempt got past the cluster on its own. No action needed, though the failed attempts still counted toward your usage.
+- **No sync has succeeded since.** The stream is blocked and will not recover without a configuration change. Recent records are not reaching your destination, so treat it as urgent.
+
+**To unblock a stream that is not recovering,** raise **BULK Job checkpoint (rows collected)** in your source configuration. The value must exceed the number of lines sharing that one cursor value, and the maximum is 1,000,000. Increase it in steps rather than jumping straight to the maximum: each bulk job then covers more data, so syncs take longer and use more temporary disk space while results are sorted.
+
+Two things that do not help:
+
+- **Lowering GraphQL BULK Date Range in Days.** A collision means the sync could not get past a single cursor value, and no date range can subdivide a single value.
+- **Clearing the stream.** The cluster is in your source data, so a fresh sync reaches it again.
+
+If the stream still collides at 1,000,000, or if raising the value does not change the behavior, [contact Airbyte Support](https://docs.airbyte.com/community/getting-support) — the affected cursor value is in the sync logs, on the line reading `Stream <stream_name>, continue from checkpoint:`.
 
 ### Troubleshooting
 
 - If you encounter access errors while using **OAuth2.0** authentication, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the client's store first. Once the access is granted, you should be able to proceed with **OAuth2.0** authentication.
-- If you recieve a "The BULK job couldn't be created at this time, since another job is running." error, please [check your operation's progress](https://shopify.dev/docs/api/usage/bulk-operations/queries#check-an-operations-progress) with the `Shopify GraphQL BULK` api.
+- If you receive a "The BULK job couldn't be created at this time, since another job is running." error, please [check your operation's progress](https://shopify.dev/docs/api/usage/bulk-operations/queries#check-an-operations-progress) with the `Shopify GraphQL BULK` api.
+- If you receive a "checkpoint collision is detected" error for a stream, see [BULK job checkpoint collisions](#bulk-job-checkpoint-collisions) above to tell a self-clearing failure from a blocked stream.
 - If you need to cancel a `Shopify GraphQL BULK`job, please follow [these steps](https://shopify.dev/docs/api/usage/bulk-operations/queries#canceling-an-operation).  You will need the current in-progress job ID to cancel.
 - Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
-
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
+|:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.0 | 2026-08-11 | [81339](https://github.com/airbytehq/airbyte/pull/81339) | Add missing `format: date-time` annotations to datetime fields in `orders` and `order_refunds`. `orders.processed_at` and `order_refunds.processed_at` change column type in typed destinations and require a schema refresh and resync. See the [migration guide](./shopify-migrations.md#upgrading-to-400). |
+| 3.5.1 | 2026-06-24 | [80787](https://github.com/airbytehq/airbyte/pull/80787) | Validate and normalize the `shop` config value: accept a bare subdomain or full myshopify URL, and reject malformed input with a clear config error. The normalized handle is also written to the `shop_url` record field, so previously-malformed configs now emit a clean value. |
+| 3.5.0 | 2026-06-11 | [79624](https://github.com/airbytehq/airbyte/pull/79624) | Add new synchronous cursor-paginated `discount_codes_sync` stream with support for >100 redeem codes per discount |
+| 3.4.1 | 2026-06-10 | [78513](https://github.com/airbytehq/airbyte/pull/78513) | Enable `groupObjects: true` on the `discount_codes` bulk query to preserve grouped output for stores with many redeem codes per discount. |
+| 3.4.0 | 2026-05-19 | [76192](https://github.com/airbytehq/airbyte/pull/76192) | Add `lookback_window_in_days` config option to re-fetch recent records during incremental syncs, preventing missing data from race conditions or late-arriving updates. |
+| 3.3.3 | 2026-05-11 | [77005](https://github.com/airbytehq/airbyte/pull/77005) | Fix some incremental GraphQL Bulk streams silently skipping parent records when a bulk job checkpoints mid-output. Use the parent cursor tracked by the bulk record producer to advance the next slice, not the child record's cursor. |
+| 3.3.2 | 2026-04-24 | [76969](https://github.com/airbytehq/airbyte/pull/76969) | Replace in-memory sort of bulk GraphQL records with a disk-backed external merge sort to fix OOM failures on large metafield syncs |
+| 3.3.1 | 2026-04-22 | [76920](https://github.com/airbytehq/airbyte/pull/76920) | Fix `AttributeError` from null logger in `LimitReducingErrorHandler` when handling non-500 HTTP errors |
+| 3.3.0 | 2026-04-15 | [76327](https://github.com/airbytehq/airbyte/pull/76327) | Upgrade airbyte-cdk dependency from v6 to v7 |
+| 3.2.3 | 2026-03-20 | [75255](https://github.com/airbytehq/airbyte/pull/75255) | Upgrade Shopify API version from 2025-01 to 2025-10 |
+| 3.2.2 | 2026-03-09 | [72849](https://github.com/airbytehq/airbyte/pull/72849) | Fix missing fulfillment orders by querying fulfillmentOrders endpoint directly; add configurable `fulfillment_orders_include_closed` option (default: false) |
+| 3.2.1 | 2026-02-04 | [72810](https://github.com/airbytehq/airbyte/pull/72810) | feat(source-shopify): Add id and position fields to product_variants.options schema (AI-Triage PR) |
+| 3.2.0 | 2026-01-20 | [72209](https://github.com/airbytehq/airbyte/pull/72209) | Add `CollectionProducts` stream for all product-collection associations |
+| 3.1.2 | 2026-01-15 | [71188](https://github.com/airbytehq/airbyte/pull/71188) | Handle CDK exceptions in connection check |
+| 3.1.1 | 2026-01-06 | [71035](https://github.com/airbytehq/airbyte/pull/71035) | Fix IndexError in countries stream when profile_location_groups is empty |
+| 3.1.0 | 2026-01-05 | [71005](https://github.com/airbytehq/airbyte/pull/71005) | Add `deleted_products` stream using GraphQL Events API |
+| 3.0.13 | 2025-10-21 | [68245](https://github.com/airbytehq/airbyte/pull/68245) | Update dependencies |
+| 3.0.12 | 2025-10-14 | [67805](https://github.com/airbytehq/airbyte/pull/67805) | Update dependencies |
+| 3.0.11 | 2025-10-07 | [67448](https://github.com/airbytehq/airbyte/pull/67448) | Update dependencies |
+| 3.0.10 | 2025-09-30 | [66904](https://github.com/airbytehq/airbyte/pull/66904) | Update dependencies |
+| 3.0.9 | 2025-09-16 | [66291](https://github.com/airbytehq/airbyte/pull/66291) | Promoting release candidate 3.0.9-rc.1 to a main version. |
+| 3.0.9-rc.1 | 2025-09-09 | [65987](https://github.com/airbytehq/airbyte/pull/65987) | Use filter field value to adjust slice for streams with ID cursor field. |
+| 3.0.8 | 2025-09-04 | [65552](https://github.com/airbytehq/airbyte/pull/65552) | Fix Incremental Syncs for Metafield child streams. |
 | 3.0.7 | 2025-06-02 | [59015](https://github.com/airbytehq/airbyte/pull/59015) | 🐙 source-shopify: Update dependencies [2025-05-17] |
 | 3.0.6 | 2025-05-28 | [60797](https://github.com/airbytehq/airbyte/pull/60797) | Fix 500s on `orders` & `order_refunds` streams by adding dynamic page limit. |
 | 3.0.5 | 2025-04-23 | [58598](https://github.com/airbytehq/airbyte/pull/58598) | Fix AttributeError with Null `measurement_weight` fields for `product_variants` streams |
@@ -358,32 +437,32 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 | 0.1.32 | 2022-02-18 | [10449](https://github.com/airbytehq/airbyte/pull/10449) | Added `tender_transactions` stream |
 | 0.1.31 | 2022-02-08 | [10175](https://github.com/airbytehq/airbyte/pull/10175) | Fixed compatibility issues for legacy user config |
 | 0.1.30 | 2022-01-24 | [9648](https://github.com/airbytehq/airbyte/pull/9648) | Added permission validation before sync |
-| 0.1.29  | 2022-01-20 | [9049](https://github.com/airbytehq/airbyte/pull/9248)   | Added `shop_url` to the record for all streams                                                                                                                                                                                                                                                                                                                                            |
-| 0.1.28  | 2022-01-19 | [9591](https://github.com/airbytehq/airbyte/pull/9591)   | Implemented `OAuth2.0` authentication method for Airbyte Cloud                                                                                                                                                                                                                                                                                                                            |
-| 0.1.27  | 2021-12-22 | [9049](https://github.com/airbytehq/airbyte/pull/9049)   | Updated connector fields title/description                                                                                                                                                                                                                                                                                                                                                |
-| 0.1.26  | 2021-12-14 | [8597](https://github.com/airbytehq/airbyte/pull/8597)   | Fixed `mismatched number of tables` for base-normalization, increased performance of `order_refunds` stream                                                                                                                                                                                                                                                                               |
-| 0.1.25  | 2021-12-02 | [8297](https://github.com/airbytehq/airbyte/pull/8297)   | Added Shop stream                                                                                                                                                                                                                                                                                                                                                                         |
-| 0.1.24  | 2021-11-30 | [7783](https://github.com/airbytehq/airbyte/pull/7783)   | Reviewed and corrected schemas for all streams                                                                                                                                                                                                                                                                                                                                            |
-| 0.1.23  | 2021-11-15 | [7973](https://github.com/airbytehq/airbyte/pull/7973)   | Added `InventoryItems`                                                                                                                                                                                                                                                                                                                                                                    |
-| 0.1.22  | 2021-10-18 | [7101](https://github.com/airbytehq/airbyte/pull/7107)   | Added FulfillmentOrders, Fulfillments streams                                                                                                                                                                                                                                                                                                                                             |
-| 0.1.21  | 2021-10-14 | [7382](https://github.com/airbytehq/airbyte/pull/7382)   | Fixed `InventoryLevels` primary key                                                                                                                                                                                                                                                                                                                                                       |
-| 0.1.20  | 2021-10-14 | [7063](https://github.com/airbytehq/airbyte/pull/7063)   | Added `Location` and `InventoryLevels` as streams                                                                                                                                                                                                                                                                                                                                         |
-| 0.1.19  | 2021-10-11 | [6951](https://github.com/airbytehq/airbyte/pull/6951)   | Added support of `OAuth 2.0` authorisation option                                                                                                                                                                                                                                                                                                                                         |
-| 0.1.18  | 2021-09-21 | [6056](https://github.com/airbytehq/airbyte/pull/6056)   | Added `pre_tax_price` to the `orders/line_items` schema                                                                                                                                                                                                                                                                                                                                   |
-| 0.1.17  | 2021-09-17 | [5244](https://github.com/airbytehq/airbyte/pull/5244)   | Created data type enforcer for converting prices into numbers                                                                                                                                                                                                                                                                                                                             |
-| 0.1.16  | 2021-09-09 | [5965](https://github.com/airbytehq/airbyte/pull/5945)   | Fixed the connector's performance for `Incremental refresh`                                                                                                                                                                                                                                                                                                                               |
-| 0.1.15  | 2021-09-02 | [5853](https://github.com/airbytehq/airbyte/pull/5853)   | Fixed `amount` type in `order_refund` schema                                                                                                                                                                                                                                                                                                                                              |
-| 0.1.14  | 2021-09-02 | [5801](https://github.com/airbytehq/airbyte/pull/5801)   | Fixed `line_items/discount allocations` & `duties` parts of `orders` schema                                                                                                                                                                                                                                                                                                               |
-| 0.1.13  | 2021-08-17 | [5470](https://github.com/airbytehq/airbyte/pull/5470)   | Fixed rate limits throttling                                                                                                                                                                                                                                                                                                                                                              |
-| 0.1.12  | 2021-08-09 | [5276](https://github.com/airbytehq/airbyte/pull/5276)   | Added status property to product schema                                                                                                                                                                                                                                                                                                                                                   |
-| 0.1.11  | 2021-07-23 | [4943](https://github.com/airbytehq/airbyte/pull/4943)   | Fixed products schema up to API 2021-07                                                                                                                                                                                                                                                                                                                                                   |
-| 0.1.10  | 2021-07-19 | [4830](https://github.com/airbytehq/airbyte/pull/4830)   | Fixed for streams json schemas, upgrade to API version 2021-07                                                                                                                                                                                                                                                                                                                            |
-| 0.1.9   | 2021-07-04 | [4472](https://github.com/airbytehq/airbyte/pull/4472)   | Incremental sync is now using updated_at instead of since_id by default                                                                                                                                                                                                                                                                                                                   |
-| 0.1.8   | 2021-06-29 | [4121](https://github.com/airbytehq/airbyte/pull/4121)   | Added draft orders stream                                                                                                                                                                                                                                                                                                                                                                 |
-| 0.1.7   | 2021-06-26 | [4290](https://github.com/airbytehq/airbyte/pull/4290)   | Fixed the bug when limiting output records to 1 caused infinity loop                                                                                                                                                                                                                                                                                                                      |
-| 0.1.6   | 2021-06-24 | [4009](https://github.com/airbytehq/airbyte/pull/4009)   | Added pages, price rules and discount codes streams                                                                                                                                                                                                                                                                                                                                       |
-| 0.1.5   | 2021-06-10 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Added `AIRBYTE_ENTRYPOINT` for Kubernetes support                                                                                                                                                                                                                                                                                                                                         |
-| 0.1.4   | 2021-06-09 | [3926](https://github.com/airbytehq/airbyte/pull/3926)   | New attributes to Orders schema                                                                                                                                                                                                                                                                                                                                                           |
-| 0.1.3   | 2021-06-08 | [3787](https://github.com/airbytehq/airbyte/pull/3787)   | Added Native Shopify Source Connector                                                                                                                                                                                                                                                                                                                                                     |
+| 0.1.29 | 2022-01-20 | [9248](https://github.com/airbytehq/airbyte/pull/9248) | Added `shop_url` to the record for all streams |
+| 0.1.28 | 2022-01-19 | [9591](https://github.com/airbytehq/airbyte/pull/9591) | Implemented `OAuth2.0` authentication method for Airbyte Cloud |
+| 0.1.27 | 2021-12-22 | [9049](https://github.com/airbytehq/airbyte/pull/9049) | Updated connector fields title/description |
+| 0.1.26 | 2021-12-14 | [8597](https://github.com/airbytehq/airbyte/pull/8597) | Fixed `mismatched number of tables` for base-normalization, increased performance of `order_refunds` stream |
+| 0.1.25 | 2021-12-02 | [8297](https://github.com/airbytehq/airbyte/pull/8297) | Added Shop stream |
+| 0.1.24 | 2021-11-30 | [7783](https://github.com/airbytehq/airbyte/pull/7783) | Reviewed and corrected schemas for all streams |
+| 0.1.23 | 2021-11-15 | [7973](https://github.com/airbytehq/airbyte/pull/7973) | Added `InventoryItems` |
+| 0.1.22 | 2021-10-18 | [7107](https://github.com/airbytehq/airbyte/pull/7107) | Added FulfillmentOrders, Fulfillments streams |
+| 0.1.21 | 2021-10-14 | [7382](https://github.com/airbytehq/airbyte/pull/7382) | Fixed `InventoryLevels` primary key |
+| 0.1.20 | 2021-10-14 | [7063](https://github.com/airbytehq/airbyte/pull/7063) | Added `Location` and `InventoryLevels` as streams |
+| 0.1.19 | 2021-10-11 | [6951](https://github.com/airbytehq/airbyte/pull/6951) | Added support of `OAuth 2.0` authorisation option |
+| 0.1.18 | 2021-09-21 | [6056](https://github.com/airbytehq/airbyte/pull/6056) | Added `pre_tax_price` to the `orders/line_items` schema |
+| 0.1.17 | 2021-09-17 | [5244](https://github.com/airbytehq/airbyte/pull/5244) | Created data type enforcer for converting prices into numbers |
+| 0.1.16 | 2021-09-09 | [5945](https://github.com/airbytehq/airbyte/pull/5945) | Fixed the connector's performance for `Incremental refresh` |
+| 0.1.15 | 2021-09-02 | [5853](https://github.com/airbytehq/airbyte/pull/5853) | Fixed `amount` type in `order_refund` schema |
+| 0.1.14 | 2021-09-02 | [5801](https://github.com/airbytehq/airbyte/pull/5801) | Fixed `line_items/discount allocations` & `duties` parts of `orders` schema |
+| 0.1.13 | 2021-08-17 | [5470](https://github.com/airbytehq/airbyte/pull/5470) | Fixed rate limits throttling |
+| 0.1.12 | 2021-08-09 | [5276](https://github.com/airbytehq/airbyte/pull/5276) | Added status property to product schema |
+| 0.1.11 | 2021-07-23 | [4943](https://github.com/airbytehq/airbyte/pull/4943) | Fixed products schema up to API 2021-07 |
+| 0.1.10 | 2021-07-19 | [4830](https://github.com/airbytehq/airbyte/pull/4830) | Fixed for streams json schemas, upgrade to API version 2021-07 |
+| 0.1.9 | 2021-07-04 | [4472](https://github.com/airbytehq/airbyte/pull/4472) | Incremental sync is now using updated_at instead of since_id by default |
+| 0.1.8 | 2021-06-29 | [4121](https://github.com/airbytehq/airbyte/pull/4121) | Added draft orders stream |
+| 0.1.7 | 2021-06-26 | [4290](https://github.com/airbytehq/airbyte/pull/4290) | Fixed the bug when limiting output records to 1 caused infinity loop |
+| 0.1.6 | 2021-06-24 | [4009](https://github.com/airbytehq/airbyte/pull/4009) | Added pages, price rules and discount codes streams |
+| 0.1.5 | 2021-06-10 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Added `AIRBYTE_ENTRYPOINT` for Kubernetes support |
+| 0.1.4 | 2021-06-09 | [3926](https://github.com/airbytehq/airbyte/pull/3926) | New attributes to Orders schema |
+| 0.1.3 | 2021-06-08 | [3787](https://github.com/airbytehq/airbyte/pull/3787) | Added Native Shopify Source Connector |
 
 </details>

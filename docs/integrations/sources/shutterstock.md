@@ -27,6 +27,10 @@ API Reference: https://api-reference.shutterstock.com/#overview
 | user_details | id | DefaultPaginator | ✅ |  ❌  |
 | user_subscriptions | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -34,6 +38,36 @@ API Reference: https://api-reference.shutterstock.com/#overview
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.46 | 2026-09-08 | [85662](https://github.com/airbytehq/airbyte/pull/85662) | Update dependencies |
+| 0.0.45 | 2026-08-18 | [84756](https://github.com/airbytehq/airbyte/pull/84756) | Update dependencies |
+| 0.0.44 | 2026-08-11 | [84107](https://github.com/airbytehq/airbyte/pull/84107) | Update dependencies |
+| 0.0.43 | 2026-08-04 | [83595](https://github.com/airbytehq/airbyte/pull/83595) | Update dependencies |
+| 0.0.42 | 2026-07-28 | [83089](https://github.com/airbytehq/airbyte/pull/83089) | Update dependencies |
+| 0.0.41 | 2026-07-21 | [82595](https://github.com/airbytehq/airbyte/pull/82595) | Update dependencies |
+| 0.0.40 | 2026-07-14 | [82009](https://github.com/airbytehq/airbyte/pull/82009) | Update dependencies |
+| 0.0.39 | 2026-06-30 | [81226](https://github.com/airbytehq/airbyte/pull/81226) | Update dependencies |
+| 0.0.38 | 2026-06-23 | [80658](https://github.com/airbytehq/airbyte/pull/80658) | Update dependencies |
+| 0.0.37 | 2026-06-16 | [80012](https://github.com/airbytehq/airbyte/pull/80012) | Update dependencies |
+| 0.0.36 | 2026-06-09 | [79499](https://github.com/airbytehq/airbyte/pull/79499) | Update dependencies |
+| 0.0.35 | 2026-06-02 | [78984](https://github.com/airbytehq/airbyte/pull/78984) | Update dependencies |
+| 0.0.34 | 2026-04-28 | [76750](https://github.com/airbytehq/airbyte/pull/76750) | Update dependencies |
+| 0.0.33 | 2026-03-31 | [75792](https://github.com/airbytehq/airbyte/pull/75792) | Update dependencies |
+| 0.0.32 | 2026-03-17 | [75110](https://github.com/airbytehq/airbyte/pull/75110) | Update dependencies |
+| 0.0.31 | 2026-03-03 | [73969](https://github.com/airbytehq/airbyte/pull/73969) | Update dependencies |
+| 0.0.30 | 2026-02-17 | [73535](https://github.com/airbytehq/airbyte/pull/73535) | Update dependencies |
+| 0.0.29 | 2026-02-10 | [73228](https://github.com/airbytehq/airbyte/pull/73228) | Update dependencies |
+| 0.0.28 | 2026-02-03 | [72731](https://github.com/airbytehq/airbyte/pull/72731) | Update dependencies |
+| 0.0.27 | 2026-01-20 | [71654](https://github.com/airbytehq/airbyte/pull/71654) | Update dependencies |
+| 0.0.26 | 2025-12-18 | [70702](https://github.com/airbytehq/airbyte/pull/70702) | Update dependencies |
+| 0.0.25 | 2025-11-25 | [69500](https://github.com/airbytehq/airbyte/pull/69500) | Update dependencies |
+| 0.0.24 | 2025-10-29 | [68804](https://github.com/airbytehq/airbyte/pull/68804) | Update dependencies |
+| 0.0.23 | 2025-10-21 | [68269](https://github.com/airbytehq/airbyte/pull/68269) | Update dependencies |
+| 0.0.22 | 2025-10-14 | [67759](https://github.com/airbytehq/airbyte/pull/67759) | Update dependencies |
+| 0.0.21 | 2025-10-07 | [67437](https://github.com/airbytehq/airbyte/pull/67437) | Update dependencies |
+| 0.0.20 | 2025-09-30 | [66918](https://github.com/airbytehq/airbyte/pull/66918) | Update dependencies |
+| 0.0.19 | 2025-09-24 | [66254](https://github.com/airbytehq/airbyte/pull/66254) | Update dependencies |
+| 0.0.18 | 2025-08-24 | [65451](https://github.com/airbytehq/airbyte/pull/65451) | Update dependencies |
+| 0.0.17 | 2025-08-16 | [65037](https://github.com/airbytehq/airbyte/pull/65037) | Update dependencies |
 | 0.0.16 | 2025-08-02 | [64416](https://github.com/airbytehq/airbyte/pull/64416) | Update dependencies |
 | 0.0.15 | 2025-07-26 | [64009](https://github.com/airbytehq/airbyte/pull/64009) | Update dependencies |
 | 0.0.14 | 2025-07-20 | [63666](https://github.com/airbytehq/airbyte/pull/63666) | Update dependencies |

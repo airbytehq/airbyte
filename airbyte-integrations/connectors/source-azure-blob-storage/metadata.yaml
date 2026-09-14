@@ -8,13 +8,35 @@ data:
     ql: 400
     sl: 300
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+    baseImage: docker.io/airbyte/python-connector-base:4.1.1@sha256:a268b44c733ae699a60f5fbc06a324945dba98945c6e2ab7f8609f2f895b0d28
   connectorSubtype: file
   connectorType: source
   definitionId: fdaaba68-4875-4ed9-8fcd-4ae1e0a25093
-  dockerImageTag: 0.6.12
+  dockerImageTag: 0.8.33
   dockerRepository: airbyte/source-azure-blob-storage
   documentationUrl: https://docs.airbyte.com/integrations/sources/azure-blob-storage
+  externalDocumentationUrls:
+    - title: API versions
+      url: https://learn.microsoft.com/en-us/rest/api/storageservices/previous-azure-storage-service-versions
+      type: api_reference
+    - title: Azure Storage versioning
+      url: https://learn.microsoft.com/en-us/rest/api/storageservices/versioning-for-the-azure-storage-services
+      type: api_release_history
+    - title: GPv1 storage account retirement FAQ
+      url: https://learn.microsoft.com/en-us/azure/storage/common/general-purpose-version-1-account-migration-frequently-asked-questions
+      type: api_deprecations
+    - title: GPv1 storage account migration overview
+      url: https://learn.microsoft.com/en-us/azure/storage/common/general-purpose-version-1-account-migration-overview
+      type: api_deprecations
+    - title: Legacy Blob Storage account retirement
+      url: https://learn.microsoft.com/en-us/azure/storage/common/legacy-blob-storage-account-migration-overview
+      type: api_deprecations
+    - title: Microsoft identity platform breaking changes
+      url: https://learn.microsoft.com/en-us/entra/identity-platform/reference-breaking-changes
+      type: api_deprecations
+    - title: Azure Storage authorization overview
+      url: https://learn.microsoft.com/en-us/azure/storage/common/authorize-data-access
+      type: authentication_guide
   githubIssueLabel: source-azure-blob-storage
   icon: azureblobstorage.svg
   license: ELv2
@@ -30,7 +52,22 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  resourceRequirements:
+    jobSpecific:
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 4096Mi
+          memory_request: 4096Mi
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   supportLevel: certified
+  supportsFileTransfer: true
   tags:
     - language:python
     - cdk:python-file-based

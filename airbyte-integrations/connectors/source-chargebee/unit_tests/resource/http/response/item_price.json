@@ -1,0 +1,22 @@
+{
+  "list": [
+    {
+      "item_price": {
+        "id": "item_price_001",
+        "name": "Basic Plan - Monthly",
+        "item_id": "item_001",
+        "item_type": "plan",
+        "status": "active",
+        "price": 1000,
+        "currency_code": "USD",
+        "period": 1,
+        "period_unit": "month",
+        "created_at": 1705312800,
+        "updated_at": 1705312800,
+        "object": "item_price",
+        "cf_pricing_model": "Tiered",
+        "cf_discount_eligible": "Yes"
+      }
+    }
+  ]
+}

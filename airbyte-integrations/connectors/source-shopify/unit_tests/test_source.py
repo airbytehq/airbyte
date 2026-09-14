@@ -48,6 +48,7 @@ from source_shopify.streams.streams import (
     Transactions,
     TransactionsGraphql,
 )
+from source_shopify.utils import ShopifyWrongShopNameError
 
 from airbyte_cdk.utils import AirbyteTracedException
 
@@ -185,6 +186,18 @@ def test_check_connection(config, mocker) -> None:
     assert source.check_connection(logger_mock, config) == (True, None)
 
 
+def test_check_connection_invalid_shop_returns_clear_error(config) -> None:
+    # A malformed `shop` must surface a clear, actionable reason at check time rather than
+    # letting ShopifyWrongShopNameError escape to the generic top-level handler.
+    config["shop"] = "https://test-store.myshopify.com/admin"
+    source = SourceShopify()
+    logger_mock = MagicMock()
+    succeeded, message = source.check_connection(logger_mock, config)
+    assert succeeded is False
+    assert "Shopify Store" in message
+    assert "https://test-store.myshopify.com/admin" in message
+
+
 def test_read_records(config, mocker) -> None:
     records = [{"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "2022-10-10T06:21:53-07:00"}}]
     stream_slice = records[0]
@@ -262,14 +275,73 @@ def test_parse_response_with_bad_json(config, response_with_bad_json) -> None:
     [
         ("test-store", "test-store"),
         ("test-store.myshopify.com", "test-store"),
+        ("https://test-store.myshopify.com", "test-store"),
+        ("https://test-store.myshopify.com/", "test-store"),
+        ("http://test-store.myshopify.com/", "test-store"),
+        ("https://Test-Store.myshopify.com", "test-store"),
+        ("TEST-STORE", "test-store"),
+        ("TEST-STORE.MYSHOPIFY.COM", "test-store"),
+        ("  test-store  ", "test-store"),
+        ("test-store.myshopify.com/", "test-store"),
     ],
-    ids=["old style", "oauth style"],
+    ids=[
+        "bare",
+        "full-domain",
+        "https",
+        "https-slash",
+        "http-slash",
+        "mixed-case",
+        "bare-upper",
+        "full-domain-upper",
+        "whitespace",
+        "bare-slash",
+    ],
 )
 def test_get_shop_name(config, shop, expected) -> None:
     source = SourceShopify()
     config["shop"] = shop
     actual = source.get_shop_name(config)
     assert actual == expected
+
+
+@pytest.mark.parametrize(
+    "shop",
+    [
+        "https://test-store.myshopify.com/admin",
+        "test-store.myshopify.com/admin/api",
+        "https://test-store.myshopify.com?foo=bar",
+        "https://test-store.myshopify.com#section",
+        "test store",
+        "test_store",
+        "",
+        "   ",
+        "https://",
+        "-test-store",
+        "test-store-",
+        None,
+        12345,
+    ],
+    ids=[
+        "path-scheme",
+        "path-bare",
+        "query",
+        "fragment",
+        "space",
+        "underscore",
+        "empty",
+        "whitespace",
+        "scheme-only",
+        "leading-hyphen",
+        "trailing-hyphen",
+        "none",
+        "non-string",
+    ],
+)
+def test_get_shop_name_invalid(config, shop) -> None:
+    source = SourceShopify()
+    config["shop"] = shop
+    with pytest.raises(ShopifyWrongShopNameError):
+        source.get_shop_name(config)
 
 
 @pytest.mark.parametrize(
@@ -350,7 +422,7 @@ def test_user_scopes_generate_full_list_of_streams(config, mocker):
     mocker.patch.object(ShopifyScopes, "get_user_scopes", return_value=expected_user_scopes)
 
     # Adjust this number based on the actual permitted streams
-    expected_streams_number = 45
+    expected_streams_number = 48
     assert len(source.streams(config)) == expected_streams_number
 
 

@@ -67,6 +67,10 @@ GET https://api.aptrinsic.com/v1/accounts
 
 Gainsight-PX-API's [API reference](https://gainsightpx.docs.apiary.io/) has v1 at present. The connector as default uses v1.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -74,6 +78,7 @@ Gainsight-PX-API's [API reference](https://gainsightpx.docs.apiary.io/) has v1 a
 
 | Version | Date       | Pull Request                                             | Subject                                 |
 | :------ | :--------- | :------------------------------------------------------- |:----------------------------------------|
+| 0.2.34 | 2025-08-23 | [65292](https://github.com/airbytehq/airbyte/pull/65292) | Update dependencies |
 | 0.2.33 | 2025-08-09 | [64786](https://github.com/airbytehq/airbyte/pull/64786) | Update dependencies |
 | 0.2.32 | 2025-08-02 | [64345](https://github.com/airbytehq/airbyte/pull/64345) | Update dependencies |
 | 0.2.31 | 2025-07-26 | [64048](https://github.com/airbytehq/airbyte/pull/64048) | Update dependencies |

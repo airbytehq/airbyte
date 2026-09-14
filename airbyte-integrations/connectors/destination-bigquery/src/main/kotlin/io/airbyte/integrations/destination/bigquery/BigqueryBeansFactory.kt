@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery
@@ -27,6 +27,8 @@ import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.load.write.WriteOperation
 import io.airbyte.integrations.destination.bigquery.check.BigqueryCheckCleaner
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploader
+import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploaderStep
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryBulkLoadConfiguration
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryConfiguredForBulkLoad
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
@@ -38,13 +40,14 @@ import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables.BigqueryTypingDedupingDatabaseInitialStatusGatherer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.ByteArrayInputStream
 import java.io.InputStream
+import java.io.OutputStream
 import java.nio.charset.StandardCharsets
-import org.threeten.bp.Duration
 
 private val logger = KotlinLogging.logger {}
 
@@ -55,6 +58,22 @@ class BigqueryBeansFactory {
     @Singleton
     @Requires(condition = BigqueryConfiguredForBulkLoad::class)
     fun getBulkLoadConfig(config: BigqueryConfiguration) = BigqueryBulkLoadConfiguration(config)
+
+    @Singleton
+    @Named("bigQueryOneShotStep")
+    @Requires(condition = BigqueryConfiguredForBulkLoad::class)
+    @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
+    fun <O : OutputStream> getBigQueryOneShotStep(
+        bigQueryOneShotUploader: BigQueryBulkOneShotUploader<O>,
+        taskFactory: io.airbyte.cdk.load.task.internal.LoadPipelineStepTaskFactory,
+        @Named("numInputPartitions") numInputPartitions: Int,
+    ): BigQueryBulkOneShotUploaderStep<io.airbyte.cdk.load.message.StreamKey, O> {
+        return BigQueryBulkOneShotUploaderStep(
+            bigQueryOneShotUploader,
+            taskFactory,
+            numInputPartitions
+        )
+    }
 
     @Singleton
     @Named("checkNamespace")
@@ -77,6 +96,7 @@ class BigqueryBeansFactory {
     @Singleton
     fun getWriter(
         bigquery: BigQuery,
+        @Named("jobProjectBigquery") jobProjectBigquery: BigQuery,
         config: BigqueryConfiguration,
         names: TableCatalog,
         // micronaut will only instantiate a single instance of StreamStateStore,
@@ -85,7 +105,13 @@ class BigqueryBeansFactory {
         // direct-load tables mode.
         streamStateStore: StreamStateStore<*>,
     ): DestinationWriter {
-        val destinationHandler = BigQueryDatabaseHandler(bigquery, config.datasetLocation.region)
+        val destinationHandler =
+            BigQueryDatabaseHandler(
+                bigquery,
+                jobProjectBigquery,
+                config.datasetLocation.region,
+                config.jobProjectId,
+            )
         if (config.legacyRawTablesOnly) {
             // force smart cast
             @Suppress("UNCHECKED_CAST")
@@ -113,6 +139,8 @@ class BigqueryBeansFactory {
                         destinationHandler,
                     ),
                     bigquery,
+                    config.jobProjectId,
+                    config.datasetLocation.region,
                 )
             // force smart cast
             @Suppress("UNCHECKED_CAST")
@@ -145,6 +173,7 @@ class BigqueryBeansFactory {
     }
 
     @Singleton
+    @Primary
     fun getBigqueryClient(config: BigqueryConfiguration): BigQuery {
         // Follows this order of resolution:
         // https://cloud.google.com/java/docs/reference/google-auth-library/latest/com.google.auth.oauth2.GoogleCredentials#com_google_auth_oauth2_GoogleCredentials_getApplicationDefault
@@ -184,4 +213,16 @@ class BigqueryBeansFactory {
             .build()
             .service
     }
+
+    @Singleton
+    @Named("jobProjectBigquery")
+    fun getJobProjectBigqueryClient(
+        config: BigqueryConfiguration,
+        bigquery: BigQuery,
+    ): BigQuery =
+        if (config.jobProjectId == config.projectId) {
+            bigquery
+        } else {
+            bigquery.options.toBuilder().setProjectId(config.jobProjectId).build().service
+        }
 }

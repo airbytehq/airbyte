@@ -157,6 +157,10 @@ Usually, the very first sync operation for all of the objects inside Zuora accou
 
 5. You're ready to set up Zuora connector in Airbyte, using created `Client ID` and `Client Secret`!
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -164,7 +168,7 @@ Usually, the very first sync operation for all of the objects inside Zuora accou
 
 | Version | Date       | Pull Request                                           | Subject                                                       |
 | :------ | :--------- | :----------------------------------------------------- | :------------------------------------------------------------ |
-| 0.1.3   | 2021-10-16 | [7053](https://github.com/airbytehq/airbyte/pull/7093) | Added support of `Unlimited` option for `Data Query`          |
+| 0.1.3   | 2021-10-16 | [7093](https://github.com/airbytehq/airbyte/pull/7093) | Added support of `Unlimited` option for `Data Query`          |
 | 0.1.2   | 2021-10-11 | [6960](https://github.com/airbytehq/airbyte/pull/6960) | Change minimum value for `Window_in_days` to 1, instead of 30 |
 | 0.1.1   | 2021-10-01 | [6575](https://github.com/airbytehq/airbyte/pull/6575) | Added OAuth support for Airbyte Cloud                         |
 | 0.1.0   | 2021-08-01 | [4661](https://github.com/airbytehq/airbyte/pull/4661) | Initial release of Native Zuora connector for Airbyte         |

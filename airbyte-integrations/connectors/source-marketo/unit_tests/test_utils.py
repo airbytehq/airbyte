@@ -19,6 +19,13 @@ test_data = [
     ("15", {"type": "integer"}, int),
     ("true", {"type": "boolean"}, bool),
     ("test_custom", {"type": "custom_type"}, str),
+    # Test error handling for non-numeric strings in number fields
+    ("Engineering & Technical", {"type": ["number", "null"]}, type(None)),
+    ("2026-01-15T21:16:09Z", {"type": ["number", "null"]}, type(None)),
+    ("not_a_number", {"type": "number"}, type(None)),
+    # Test error handling for non-numeric strings in integer fields
+    ("Engineering & Technical", {"type": ["integer", "null"]}, type(None)),
+    ("not_an_integer", {"type": "integer"}, type(None)),
 ]
 
 
@@ -27,6 +34,30 @@ def test_format_value(value, schema, expected_output_type):
     test = format_value(value, schema)
 
     assert isinstance(test, expected_output_type)
+
+
+@pytest.mark.parametrize(
+    "value,schema,expected",
+    [
+        (1, {"type": ["boolean", "null"]}, True),
+        (0, {"type": ["boolean", "null"]}, False),
+        (1.0, {"type": "boolean"}, True),
+        (True, {"type": "boolean"}, True),
+        (False, {"type": ["boolean", "null"]}, False),
+        ("true", {"type": "boolean"}, True),
+        ("True", {"type": "boolean"}, True),
+        ("false", {"type": "boolean"}, False),
+        ("yes", {"type": "boolean"}, False),
+        (None, {"type": ["boolean", "null"]}, None),
+        ("", {"type": ["boolean", "null"]}, None),
+        ([1], {"type": ["boolean", "null"]}, None),
+        ({"a": 1}, {"type": ["boolean", "null"]}, None),
+    ],
+)
+def test_format_value_boolean_handles_non_string_values(value, schema, expected):
+    result = format_value(value, schema)
+
+    assert result is expected
 
 
 test_data = [

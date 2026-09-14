@@ -1,0 +1,17 @@
+{
+  "results": [
+    {
+      "user_id": 1,
+      "user_name": "John Doe",
+      "is_contractor": false,
+      "total_amount": 800.0,
+      "currency": "USD",
+      "billable_amount": 600.0
+    }
+  ],
+  "per_page": 50,
+  "total_pages": 1,
+  "total_entries": 1,
+  "page": 1,
+  "links": {}
+}

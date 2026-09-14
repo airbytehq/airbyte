@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.file
@@ -11,14 +11,15 @@ import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import java.io.InputStream
 import kotlin.NoSuchElementException
 
+/** Performs non-cooperative blocking IO. */
 class ProtobufDataChannelReader(
     private val factory: DestinationMessageFactory,
     private val bufferSize: Int = 16 * 1024,
-) : DataChannelReader {
+) {
 
     private val parser = AirbyteMessageProtobuf.parser()
 
-    override fun read(inputStream: InputStream): Sequence<DestinationMessage> =
+    fun read(inputStream: InputStream): Sequence<DestinationMessage> =
         object : Sequence<DestinationMessage> {
             override fun iterator(): Iterator<DestinationMessage> =
                 object : Iterator<DestinationMessage> {

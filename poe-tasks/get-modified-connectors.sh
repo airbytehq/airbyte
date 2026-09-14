@@ -12,6 +12,7 @@ NO_JAVA=false
 JSON=false
 PREV_COMMIT=false
 LOCAL_CDK=false
+REQUIRE_VERSION_BUMP=false
 
 # parse flags
 while [[ $# -gt 0 ]]; do
@@ -31,6 +32,9 @@ while [[ $# -gt 0 ]]; do
     --local-cdk|local-cdk)
       LOCAL_CDK=true
       ;;
+    --require-version-bump)
+      REQUIRE_VERSION_BUMP=true
+      ;;
     *)
       echo "Unknown argument: $1" >&2;
       exit 1
@@ -38,6 +42,9 @@ while [[ $# -gt 0 ]]; do
   esac
   shift
 done
+
+# --require-version-bump only applies to --prev-commit, which is the master
+# publish path. It is intentionally a no-op for PR-branch comparisons.
 
 # 1) Fetch the latest from the default branch (using the correct remote)
 if git remote get-url upstream &>/dev/null; then
@@ -51,7 +58,8 @@ git fetch --quiet "$REMOTE" "$DEFAULT_BRANCH"
 ignore_patterns=(
   '.coveragerc'
   'poe_tasks.toml'
-  'README.md'
+  'airbyte-integrations/connectors/[^/]+/README.md'
+  'airbyte-integrations/connectors/[^/]+/CONTRIBUTING.md'
 )
 # join with | into a grouped regex
 ignore_globs="($(IFS='|'; echo "${ignore_patterns[*]}"))$"
@@ -77,18 +85,41 @@ fi
 # 4) merge into one list
 all_changes=$(printf '%s\n%s\n%s\n%s' "$committed" "$staged" "$unstaged" "$untracked")
 
+# 4.5) Define helper function to return empty JSON when no connectors are found
+return_empty_json() {
+  if [ "$JSON" = true ]; then
+    # When the list is empty and JSON is requested, send one item as empty string.
+    # This allows the matrix to run once as a no-op, and be marked as complete for purposes
+    # of required checks.
+    echo '{"connector": [""]}'
+  fi
+  exit 0
+}
+
 # 5) drop ignored files
-filtered=$(printf '%s\n' "$all_changes" | grep -v -E "/${ignore_globs}")
+filtered=$(printf '%s\n' "$all_changes" | grep -v -E "(/${ignore_globs}|^${ignore_globs})" || true)
+if [ -z "$filtered" ]; then
+  echo "⚠️ Warning: No files remaining after filtering. Returning empty connector list." >&2
+  return_empty_json
+fi
 
 # 6) keep only connector paths
 set +e # Ignore errors from grep if no matches are found
 connectors_paths=$(printf '%s\n' "$filtered" | grep -E '^airbyte-integrations/connectors/(source-[^/]+|destination-[^/]+)(/|$)')
+if [ -z "$connectors_paths" ]; then
+  echo "⚠️ Warning: No connector paths found. Returning empty connector list." >&2
+  return_empty_json
+fi
 set -e
 
 # 7) extract just the connector directory name
 dirs=$(printf '%s\n' "$connectors_paths" \
   | sed -E 's|airbyte-integrations/connectors/([^/]+).*|\1|' \
 )
+if [ -z "$dirs" ]; then
+  echo "⚠️ Warning: Failed to extract connector directories. Returning empty connector list." >&2
+  return_empty_json
+fi
 
 # 8) unique list of modified connectors
 connectors=()
@@ -101,6 +132,48 @@ if [ -n "$dirs" ]; then
       echo "⚠️ '$d' directory was not found. This can happen if a connector is removed. Skipping." >&2
     fi
   done <<< "$(printf '%s\n' "$dirs" | sort -u)"
+fi
+
+filter_to_version_bumps() {
+  local parent_commit
+  if ! parent_commit=$(git rev-parse --verify HEAD^ 2>/dev/null); then
+    echo "⚠️ Cannot read the parent commit; keeping all modified connectors." >&2
+    return
+  fi
+
+  local version_bumped=()
+  local connector metadata current_tag parent_tag
+  for connector in "${connectors[@]}"; do
+    metadata="airbyte-integrations/connectors/${connector}/metadata.yaml"
+    if [[ ! -f "$metadata" ]]; then
+      echo "⚠️ Cannot read '$metadata'; keeping '$connector'." >&2
+      version_bumped+=("$connector")
+      continue
+    fi
+    if ! git cat-file -e "${parent_commit}:${metadata}" 2>/dev/null; then
+      version_bumped+=("$connector")
+      continue
+    fi
+    if ! current_tag=$(yq -r '.data.dockerImageTag // ""' "$metadata" 2>/dev/null) ||
+      ! parent_tag=$(git show "${parent_commit}:${metadata}" | yq -r '.data.dockerImageTag // ""' 2>/dev/null); then
+      echo "⚠️ Cannot read the dockerImageTag for '$connector'; keeping it." >&2
+      version_bumped+=("$connector")
+      continue
+    fi
+    if [[ "$current_tag" != "$parent_tag" ]]; then
+      version_bumped+=("$connector")
+    else
+      echo "⚠️ Skipping '$connector': dockerImageTag is unchanged from the parent commit." >&2
+      echo "   To push metadata-only edits to the registry, run the publish workflow with registry-refresh-only." >&2
+    fi
+  done
+  connectors=("${version_bumped[@]}")
+}
+
+if $PREV_COMMIT && $REQUIRE_VERSION_BUMP; then
+  # Compare versions rather than metadata paths: Java and manifest-only changes
+  # can legitimately publish a new version without changing only metadata.yaml.
+  filter_to_version_bumps
 fi
 
 # 9) Define function to print either JSON or newline-delimited list.
@@ -116,12 +189,9 @@ print_list() {
   # If JSON is requested, convert the list to JSON format.
   # This is pre-formatted to send to a GitHub Actions Matrix
   # with 'connector' as the matrix key.
-  # JSON mode: emit {"connector": […]}
+  # E.g.: {"connector": […]}
   if [ $# -eq 0 ]; then
-    # If the list is empty, send one item as empty string.
-    # This allows the matrix to run once as a no-op, and be marked as complete for purposes
-    # of required checks.
-    echo '{"connector": [""]}'
+    return_empty_json
   else
     # If the list is not empty, convert it to JSON format.
     # This is pre-formatted to send to a GitHub Actions Matrix

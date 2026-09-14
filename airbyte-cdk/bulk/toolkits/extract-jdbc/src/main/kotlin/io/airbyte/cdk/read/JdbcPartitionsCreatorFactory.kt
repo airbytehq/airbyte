@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.read
@@ -25,6 +25,8 @@ abstract class JdbcPartitionsCreatorFactory<
     }
 
     abstract fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P>
+
+    fun interface AcquiredResources : AutoCloseable
 }
 
 /** Sequential JDBC implementation of [PartitionsCreatorFactory]. */

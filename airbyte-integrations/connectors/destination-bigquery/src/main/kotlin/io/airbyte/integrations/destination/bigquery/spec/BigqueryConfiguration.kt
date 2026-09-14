@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.spec
@@ -12,6 +12,7 @@ import jakarta.inject.Singleton
 
 data class BigqueryConfiguration(
     val projectId: String,
+    val jobProjectId: String,
     val datasetLocation: BigqueryRegion,
     val datasetId: String,
     val loadingMethod: LoadingMethodConfiguration,
@@ -53,6 +54,7 @@ class BigqueryConfigurationFactory :
             }
         return BigqueryConfiguration(
             projectId = pojo.projectId,
+            jobProjectId = pojo.jobProjectId?.takeUnless(String::isBlank) ?: pojo.projectId,
             pojo.datasetLocation,
             datasetId = pojo.datasetId,
             loadingMethodConfig,

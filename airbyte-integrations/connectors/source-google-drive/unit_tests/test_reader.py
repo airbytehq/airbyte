@@ -12,6 +12,7 @@ import pytest
 from source_google_drive.spec import ServiceAccountCredentials, SourceGoogleDriveSpec
 from source_google_drive.stream_reader import GoogleDriveRemoteFile, SourceGoogleDriveStreamReader
 
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import DeliverRawFiles, DeliverRecords
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
@@ -51,6 +52,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             }
                         ]
@@ -64,6 +66,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/abc/view?usp=drivesdk",
                 )
             ],
@@ -80,6 +83,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             },
                             {
@@ -87,6 +91,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk",
                             },
                         ]
@@ -100,6 +105,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/abc/view?usp=drivesdk",
                 ),
                 GoogleDriveRemoteFile(
@@ -108,6 +114,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/def/view?usp=drivesdk",
                 ),
             ],
@@ -124,6 +131,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             }
                         ]
@@ -135,6 +143,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk",
                             }
                         ]
@@ -148,6 +157,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/abc/view?usp=drivesdk",
                 ),
                 GoogleDriveRemoteFile(
@@ -156,6 +166,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/def/view?usp=drivesdk",
                 ),
             ],
@@ -182,6 +193,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             },
                             {
@@ -189,6 +201,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                         ]
@@ -203,6 +216,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk",
                             },
                             {
@@ -210,6 +224,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subsubfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/subsub/view?usp=drivesdk",
                             },
                         ]
@@ -224,6 +239,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "yet_another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/ghi/view?usp=drivesdk",
                             },
                         ]
@@ -237,6 +253,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/abc/view?usp=drivesdk",
                 ),
                 GoogleDriveRemoteFile(
@@ -245,6 +262,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/def/view?usp=drivesdk",
                 ),
                 GoogleDriveRemoteFile(
@@ -253,6 +271,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/ghi/view?usp=drivesdk",
                 ),
             ],
@@ -269,6 +288,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             },
                             {
@@ -276,6 +296,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                         ]
@@ -290,6 +311,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             },
                             {
@@ -297,6 +319,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subsubfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/subsub/view?usp=drivesdk",
                             },
                         ]
@@ -311,6 +334,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             },
                             {
@@ -318,6 +342,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "link_to_subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                         ]
@@ -331,6 +356,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/abc/view?usp=drivesdk",
                 ),
             ],
@@ -347,6 +373,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             },
                             {
@@ -354,6 +381,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                         ]
@@ -368,6 +396,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk",
                             },
                             {
@@ -375,6 +404,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/jsonl",
                                 "name": "non_matching.jsonl",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/ghi/view?usp=drivesdk",
                             },
                         ]
@@ -388,6 +418,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/def/view?usp=drivesdk",
                 ),
             ],
@@ -404,6 +435,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             },
                             {
@@ -411,6 +443,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                             # This won't get queued because it has no chance of matching the glob
@@ -419,6 +452,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "ignored_subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                         ]
@@ -433,6 +467,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk",
                             },
                             # This will get queued because it matches the prefix (event though it can't match the glob)
@@ -441,6 +476,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subsubfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/subsub/view?usp=drivesdk",
                             },
                         ]
@@ -455,6 +491,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "yet_another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/ghi/view?usp=drivesdk",
                             },
                         ]
@@ -468,6 +505,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/def/view?usp=drivesdk",
                 ),
             ],
@@ -484,6 +522,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             },
                             {
@@ -491,6 +530,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                         ]
@@ -505,6 +545,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk",
                             },
                             # This will get queued because it matches the prefix (event though it can't match the glob)
@@ -513,6 +554,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subsubfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/subsub/view?usp=drivesdk",
                             },
                         ]
@@ -527,6 +569,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "yet_another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/ghi/view?usp=drivesdk",
                             },
                             # This will get queued because it matches the prefix (event though it can't match the glob)
@@ -535,6 +578,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "ignored_subsubsubfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/subsubsub/view?usp=drivesdk",
                             },
                         ]
@@ -549,6 +593,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/ghi/view?usp=drivesdk",
                 ),
             ],
@@ -565,6 +610,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.document",
                                 "name": "MyDoc",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/document/d/abc/edit?usp=drivesdk",
                             }
                         ]
@@ -578,6 +624,7 @@ def flatten_list(list_of_lists):
                     original_mime_type="application/vnd.google-apps.document",
                     mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/document/d/abc/edit?usp=drivesdk",
                 )
             ],
@@ -594,6 +641,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.presentation",
                                 "name": "MySlides",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/presentation/d/abc/edit?usp=drivesdk",
                             }
                         ]
@@ -607,6 +655,7 @@ def flatten_list(list_of_lists):
                     original_mime_type="application/vnd.google-apps.presentation",
                     mime_type="application/pdf",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/presentation/d/abc/edit?usp=drivesdk",
                 )
             ],
@@ -623,6 +672,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.drawing",
                                 "name": "MyDrawing",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/drawings/d/abc/edit?usp=drivesdk",
                             }
                         ]
@@ -636,6 +686,7 @@ def flatten_list(list_of_lists):
                     original_mime_type="application/vnd.google-apps.drawing",
                     mime_type="application/pdf",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/drawings/d/abc/edit?usp=drivesdk",
                 )
             ],
@@ -652,6 +703,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.video",
                                 "name": "MyVideo",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             }
                         ]
@@ -665,6 +717,7 @@ def flatten_list(list_of_lists):
                     original_mime_type="application/vnd.google-apps.video",
                     mime_type="application/vnd.google-apps.video",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/abc/view?usp=drivesdk",
                 )
             ],
@@ -708,6 +761,7 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
                 mime_type="text/csv",
                 original_mime_type="text/csv",
                 last_modified=datetime.datetime(2021, 1, 1),
+                created_at=datetime.datetime(2021, 1, 1),
                 view_link=f"https://docs.google.com/file/d/abc/view?usp=drivesdk",
             ),
             b"test",
@@ -725,6 +779,7 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
                 mime_type="text/csv",
                 original_mime_type="text/csv",
                 last_modified=datetime.datetime(2021, 1, 1),
+                created_at=datetime.datetime(2021, 1, 1),
                 view_link=f"https://docs.google.com/file/d/abc/view?usp=drivesdk",
             ),
             b"test",
@@ -742,6 +797,7 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
                 mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 original_mime_type="application/vnd.google-apps.document",
                 last_modified=datetime.datetime(2021, 1, 1),
+                created_at=datetime.datetime(2021, 1, 1),
                 view_link=f"https://docs.google.com/document/d/abc/edit?usp=drivesdk",
             ),
             b"test",
@@ -812,6 +868,7 @@ def test_open_file(
             GoogleDriveRemoteFile(
                 uri="some/path/in/source/test.jsonl",
                 last_modified=datetime.datetime(2023, 10, 16, 6, 16, 6),
+                created_at=datetime.datetime(2023, 10, 16, 6, 16, 6),
                 mime_type="application/octet-stream",
                 id="1",
                 original_mime_type="application/octet-stream",
@@ -832,6 +889,7 @@ def test_open_file(
             GoogleDriveRemoteFile(
                 uri="subfolder/test2.jsonl",
                 last_modified=datetime.datetime(2023, 10, 19, 1, 43, 56),
+                created_at=datetime.datetime(2023, 10, 19, 1, 43, 56),
                 mime_type="application/octet-stream",
                 id="test2",
                 original_mime_type="application/octet-stream",
@@ -852,6 +910,7 @@ def test_open_file(
             GoogleDriveRemoteFile(
                 uri="testdoc_docx.docx",
                 last_modified=datetime.datetime(2023, 10, 27, 0, 45, 54),
+                created_at=datetime.datetime(2023, 10, 27, 0, 45, 54),
                 mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 id="testdoc_docx",
                 original_mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -868,6 +927,7 @@ def test_open_file(
             GoogleDriveRemoteFile(
                 uri="testdoc_pdf.pdf",
                 last_modified=datetime.datetime(2023, 10, 27, 0, 45, 58),
+                created_at=datetime.datetime(2023, 10, 27, 0, 45, 58),
                 mime_type="application/pdf",
                 id="testdoc_pdf",
                 original_mime_type="application/pdf",
@@ -884,6 +944,7 @@ def test_open_file(
             GoogleDriveRemoteFile(
                 uri="testdoc_ocr_pdf.pdf",
                 last_modified=datetime.datetime(2023, 10, 27, 0, 46, 4),
+                created_at=datetime.datetime(2023, 10, 27, 0, 46, 4),
                 mime_type="application/pdf",
                 id="testdoc_ocr_pdf",
                 original_mime_type="application/pdf",
@@ -899,7 +960,9 @@ def test_open_file(
         pytest.param(
             GoogleDriveRemoteFile(
                 uri="testdoc_google",
+                export_extension=".docx",
                 last_modified=datetime.datetime(2023, 11, 10, 13, 46, 18, 551000),
+                created_at=datetime.datetime(2023, 11, 10, 13, 46, 18, 551000),
                 mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 id="testdoc_google",
                 original_mime_type="application/vnd.google-apps.document",
@@ -915,7 +978,9 @@ def test_open_file(
         pytest.param(
             GoogleDriveRemoteFile(
                 uri="testdoc_presentation",
+                export_extension=".pptx",
                 last_modified=datetime.datetime(2023, 11, 10, 13, 49, 6, 640000),
+                created_at=datetime.datetime(2023, 11, 10, 13, 49, 6, 640000),
                 mime_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
                 id="testdoc_presentation",
                 original_mime_type="application/vnd.google-apps.presentation",
@@ -987,11 +1052,13 @@ def test_upload_file(
             create_reader().upload(file, local_directory="tmp/airbyte-transfer", logger=MagicMock())
     else:
         file_record_data, file_reference = create_reader().upload(file, local_directory=TEST_LOCAL_DIRECTORY, logger=MagicMock())
-        assert expected_paths["staging_file_url"] in file_reference.staging_file_url
+        # The CDK stages every file under a unique subdirectory of the staging directory
+        assert file_reference.staging_file_url.startswith(f"{TEST_LOCAL_DIRECTORY}/")
+        assert file_reference.staging_file_url.endswith(expected_paths["staging_file_url"].replace(f"{TEST_LOCAL_DIRECTORY}/", ""))
         assert expected_paths["file_relative_path"] == file_reference.source_file_relative_path
         assert file.mime_type == file_record_data.mime_type
 
-        assert path.basename(expected_paths["staging_file_url"]) == file_record_data.filename
+        assert path.basename(expected_paths["staging_file_url"]) == file_record_data.file_name
         assert path.dirname(expected_paths["staging_file_url"].replace(f"{TEST_LOCAL_DIRECTORY}/", "")) == file_record_data.folder
 
         assert mock_downloader.next_chunk.call_count == 2
@@ -1010,6 +1077,7 @@ def test_upload_file(
             GoogleDriveRemoteFile(
                 uri="test.csv",
                 last_modified=datetime.datetime(2023, 10, 16, 6, 16, 6),
+                created_at=datetime.datetime(2023, 10, 16, 6, 16, 6),
                 mime_type="text/csv",
                 id="123",
                 original_mime_type="text/csv",
@@ -1022,6 +1090,7 @@ def test_upload_file(
             GoogleDriveRemoteFile(
                 uri="shared_drive_test.csv",
                 last_modified=datetime.datetime(2023, 10, 16, 6, 16, 6),
+                created_at=datetime.datetime(2023, 10, 16, 6, 16, 6),
                 mime_type="text/csv",
                 id="456",
                 original_mime_type="text/csv",
@@ -1071,3 +1140,263 @@ def test_source_uri_format(
 
     file_record_data, _ = create_reader().upload(file, local_directory=TEST_LOCAL_DIRECTORY, logger=MagicMock())
     assert file_record_data.source_uri == expected_source_uri
+
+
+def _mock_listing_service(files):
+    mock_request = MagicMock()
+    mock_request.execute.return_value = {"files": files}
+    files_service = MagicMock()
+    files_service.list.return_value = mock_request
+    files_service.list_next.return_value = None
+    drive_service = MagicMock()
+    drive_service.files.return_value = files_service
+    return drive_service
+
+
+def create_file_transfer_reader():
+    return create_reader(
+        SourceGoogleDriveSpec(
+            folder_url="https://drive.google.com/drive/folders/1Z2Q3",
+            streams=[FileBasedStreamConfig(name="test", format=JsonlFormat())],
+            credentials=ServiceAccountCredentials(auth_type="Service", service_account_info='{"test": "abc"}'),
+            delivery_method=DeliverRawFiles(),
+        )
+    )
+
+
+@pytest.mark.parametrize(
+    "mime_type, extension, file_name, expect_export, expected_mime_type",
+    [
+        pytest.param(
+            "application/vnd.google-apps.document",
+            ".docx",
+            "Report",
+            True,
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            id="Google Doc",
+        ),
+        pytest.param(
+            "application/vnd.google-apps.spreadsheet",
+            ".xlsx",
+            "Budget",
+            True,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            id="Google Sheet",
+        ),
+        pytest.param(
+            "application/vnd.google-apps.presentation",
+            ".pptx",
+            "Presentation",
+            True,
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            id="Google Presentation",
+        ),
+        pytest.param(
+            "application/vnd.google-apps.drawing",
+            ".pdf",
+            "Drawing",
+            True,
+            "application/pdf",
+            id="Google Drawing",
+        ),
+        pytest.param("text/csv", "", "notes.csv", False, "text/csv", id="Binary file"),
+    ],
+)
+@patch("source_google_drive.stream_reader.service_account")
+@patch("source_google_drive.stream_reader.build")
+@patch("source_google_drive.stream_reader.MediaIoBaseDownload")
+def test_upload_paths_use_enumerated_export_extension(
+    mock_basedownload,
+    mock_build_service,
+    mock_service_account,
+    mime_type,
+    extension,
+    file_name,
+    expect_export,
+    expected_mime_type,
+    tmp_path,
+):
+    root_request = MagicMock()
+    root_request.execute.return_value = {
+        "files": [
+            {
+                "id": "docs-folder",
+                "mimeType": "application/vnd.google-apps.folder",
+                "name": "docs",
+                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                "createdTime": "2021-01-01T00:00:00.000Z",
+                "webViewLink": "https://drive.google.com/file/d/docs-folder",
+            }
+        ]
+    }
+    file_request = MagicMock()
+    file_request.execute.return_value = {
+        "files": [
+            {
+                "id": "file-id",
+                "mimeType": mime_type,
+                "name": file_name,
+                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                "createdTime": "2021-01-01T00:00:00.000Z",
+                "webViewLink": "https://drive.google.com/file/d/file-id",
+            }
+        ]
+    }
+    files_service = MagicMock()
+    files_service.list.side_effect = [root_request, file_request]
+    files_service.list_next.return_value = None
+    files_service.get.return_value.execute.return_value = {"size": 4}
+    mock_request = MagicMock()
+    files_service.export_media.return_value = mock_request
+    files_service.get_media.return_value = mock_request
+    drive_service = MagicMock()
+    drive_service.files.return_value = files_service
+    mock_build_service.return_value = drive_service
+
+    mock_downloader = MagicMock()
+
+    def mock_next_chunk(num_retries):
+        handle = mock_basedownload.call_args[0][0]
+        status = MagicMock(resumable_progress=handle.tell(), total_size=4)
+        if handle.tell() > 0:
+            return status, True
+        handle.write(b"test")
+        return status, False
+
+    mock_downloader.next_chunk.side_effect = mock_next_chunk
+    mock_basedownload.return_value = mock_downloader
+
+    reader = create_file_transfer_reader()
+    file = next(iter(reader.get_matching_files(["**/*"], None, MagicMock())))
+    file_record_data, file_reference = reader.upload(file, str(tmp_path), MagicMock())
+
+    expected_relative_path = f"docs/{file_name}{extension}"
+    assert file_reference.staging_file_url.startswith(f"{tmp_path}/")
+    assert file_reference.staging_file_url.endswith(expected_relative_path)
+    assert file_reference.source_file_relative_path == expected_relative_path
+    assert file_record_data.file_name == f"{file_name}{extension}"
+    assert file_record_data.folder == "docs"
+    assert file.mime_type == expected_mime_type
+    if expect_export:
+        files_service.export_media.assert_called_once_with(fileId="file-id", mimeType=expected_mime_type)
+        files_service.get_media.assert_not_called()
+    else:
+        files_service.get_media.assert_called_once_with(fileId="file-id")
+        files_service.export_media.assert_not_called()
+
+
+@patch("source_google_drive.stream_reader.service_account")
+@patch("source_google_drive.stream_reader.build")
+def test_source_file_relative_path_is_uri_for_binary_files(mock_build_service, mock_service_account):
+    mock_build_service.return_value = _mock_listing_service(
+        [
+            {
+                "id": "file-id",
+                "mimeType": "text/csv",
+                "name": "notes.csv",
+                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                "createdTime": "2021-01-01T00:00:00.000Z",
+                "webViewLink": "https://drive.google.com/file/d/file-id",
+            }
+        ]
+    )
+
+    file = next(iter(create_file_transfer_reader().get_matching_files(["*"], None, MagicMock())))
+
+    assert file.uri == "notes.csv"
+    assert file.export_extension is None
+    assert file.source_file_relative_path == file.uri
+
+
+@patch("source_google_drive.stream_reader.service_account")
+@patch("source_google_drive.stream_reader.build")
+def test_records_mode_does_not_append_extension(mock_build_service, mock_service_account):
+    config = SourceGoogleDriveSpec(
+        folder_url="https://drive.google.com/drive/folders/1Z2Q3",
+        streams=[FileBasedStreamConfig(name="test", format=JsonlFormat())],
+        credentials=ServiceAccountCredentials(auth_type="Service", service_account_info='{"test": "abc"}'),
+        delivery_method=DeliverRecords(),
+    )
+    mock_build_service.return_value = _mock_listing_service(
+        [
+            {
+                "id": "file-id",
+                "mimeType": "application/vnd.google-apps.document",
+                "name": "Report",
+                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                "createdTime": "2021-01-01T00:00:00.000Z",
+                "webViewLink": "https://drive.google.com/file/d/file-id",
+            }
+        ]
+    )
+
+    file = next(iter(create_reader(config).get_matching_files(["*"], None, MagicMock())))
+
+    assert file.uri == "Report"
+    assert file.export_extension is None
+    assert file.source_file_relative_path == file.uri
+
+
+@patch("source_google_drive.stream_reader.MediaIoBaseDownload")
+@patch("source_google_drive.stream_reader.service_account")
+@patch("source_google_drive.stream_reader.build")
+def test_upload_paths_unchanged_for_exportable_documents(mock_build_service, mock_service_account, mock_basedownload, tmp_path):
+    file = GoogleDriveRemoteFile(
+        uri="docs/Report",
+        export_extension=".docx",
+        last_modified=datetime.datetime(2023, 10, 16, 6, 16, 6),
+        created_at=datetime.datetime(2023, 10, 16, 6, 16, 6),
+        mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        id="report",
+        original_mime_type="application/vnd.google-apps.document",
+        view_link="https://docs.google.com/document/d/report/edit",
+    )
+    mock_request = MagicMock()
+    mock_downloader = MagicMock()
+    mock_downloader.next_chunk.side_effect = [
+        (MagicMock(resumable_progress=0, total_size=4), False),
+        (MagicMock(resumable_progress=4, total_size=4), True),
+    ]
+    mock_basedownload.return_value = mock_downloader
+    files_service = MagicMock()
+    files_service.get.return_value.execute.return_value = {"size": 4}
+    files_service.export_media.return_value = mock_request
+    mock_build_service.return_value.files.return_value = files_service
+
+    file_record_data, file_reference = create_reader().upload(file, str(tmp_path), MagicMock())
+
+    assert file_reference.staging_file_url.startswith(f"{tmp_path}/")
+    assert file_reference.staging_file_url.endswith("docs/Report.docx")
+    assert file_reference.source_file_relative_path == "docs/Report.docx"
+    assert file_record_data.file_name == "Report.docx"
+    assert file_record_data.folder == "docs"
+
+
+@patch("source_google_drive.stream_reader.service_account")
+@patch("source_google_drive.stream_reader.build")
+def test_google_native_and_binary_with_same_final_name_collide(mock_build_service, mock_service_account):
+    mock_build_service.return_value = _mock_listing_service(
+        [
+            {
+                "id": "google-doc",
+                "mimeType": "application/vnd.google-apps.document",
+                "name": "Report",
+                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                "createdTime": "2021-01-01T00:00:00.000Z",
+                "webViewLink": "https://drive.google.com/file/d/file-id",
+            },
+            {
+                "id": "binary-docx",
+                "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "name": "Report.docx",
+                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                "createdTime": "2021-01-01T00:00:00.000Z",
+                "webViewLink": "https://drive.google.com/file/d/binary-docx",
+            },
+        ]
+    )
+
+    files = list(create_file_transfer_reader().get_matching_files(["*"], None, MagicMock()))
+
+    assert [file.uri for file in files] == ["Report", "Report.docx"]
+    assert [file.source_file_relative_path for file in files] == ["Report.docx", "Report.docx"]

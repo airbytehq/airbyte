@@ -67,6 +67,10 @@ Rate limits for the Linnworks API vary across endpoints. Use the [links in the *
 
 </details>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -74,6 +78,13 @@ Rate limits for the Linnworks API vary across endpoints. Use the [links in the *
 
 | Version | Date       | Pull Request                                             | Subject                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| 0.1.66 | 2025-10-14 | [68061](https://github.com/airbytehq/airbyte/pull/68061) | Update dependencies |
+| 0.1.65 | 2025-10-07 | [67530](https://github.com/airbytehq/airbyte/pull/67530) | Update dependencies |
+| 0.1.64 | 2025-09-30 | [66816](https://github.com/airbytehq/airbyte/pull/66816) | Update dependencies |
+| 0.1.63 | 2025-09-24 | [66657](https://github.com/airbytehq/airbyte/pull/66657) | Update dependencies |
+| 0.1.62 | 2025-09-09 | [66059](https://github.com/airbytehq/airbyte/pull/66059) | Update dependencies |
+| 0.1.61 | 2025-08-23 | [65379](https://github.com/airbytehq/airbyte/pull/65379) | Update dependencies |
+| 0.1.60 | 2025-08-16 | [64985](https://github.com/airbytehq/airbyte/pull/64985) | Update dependencies |
 | 0.1.59 | 2025-08-09 | [64611](https://github.com/airbytehq/airbyte/pull/64611) | Update dependencies |
 | 0.1.58 | 2025-07-19 | [63494](https://github.com/airbytehq/airbyte/pull/63494) | Update dependencies |
 | 0.1.57 | 2025-07-12 | [63107](https://github.com/airbytehq/airbyte/pull/63107) | Update dependencies |

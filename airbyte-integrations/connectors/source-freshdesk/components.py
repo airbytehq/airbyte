@@ -1,128 +1,245 @@
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
-from dataclasses import dataclass
-from typing import Any, List, Mapping, MutableMapping, Optional
+import hashlib
+import json
+import logging
+from dataclasses import InitVar, dataclass, field
+from datetime import datetime, timezone
+from typing import Any, Iterable, Mapping, Optional
 
 import requests
+from requests.auth import HTTPBasicAuth
 
-from airbyte_cdk.entrypoint import logger
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
-from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
-    InterpolatedRequestOptionsProvider,
-    RequestInput,
+from airbyte_cdk import AirbyteTracedException, FailureType
+from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
+from airbyte_cdk.sources.streams.call_rate import APIBudget
+from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.streams.http import HttpClient
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
+from airbyte_cdk.sources.types import Config, StreamSlice
+
+
+logger = logging.getLogger("airbyte")
+
+
+FRESHDESK_EXPORT_DATE_FORMAT = "%d-%m-%Y %H:%M:%S %z"
+RFC3339_SECONDS_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+_EXPORT_UNAVAILABLE_MESSAGE = (
+    "Freshdesk ticket activities export is unavailable. Confirm the API key belongs to an "
+    "account admin and that the ticket activities scheduled export is enabled."
 )
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from airbyte_cdk.sources.types import Record
+
+
+class FreshdeskExportBackoffStrategy(BackoffStrategy):
+    """Honor Retry-After when present, otherwise use exponential backoff for 429/5xx."""
+
+    def backoff_time(self, response_or_exception, attempt_count: int) -> Optional[float]:
+        if isinstance(response_or_exception, requests.Response):
+            retry_after = response_or_exception.headers.get("Retry-After")
+            if retry_after:
+                try:
+                    return float(retry_after)
+                except ValueError:
+                    pass
+        return min(2**attempt_count, 60.0)
 
 
 @dataclass
-class FreshdeskTicketsIncrementalRequester(HttpRequester):
-    """
-    This class is created for the Tickets stream to modify parameters produced by stream slicer and paginator
-    When the paginator hit the page limit it will return the latest record cursor for the next_page_token
-    next_page_token will be used in the stream slicer to get updated cursor filter
-    """
-
-    request_body_json: Optional[RequestInput] = None
-    request_headers: Optional[RequestInput] = None
-    request_parameters: Optional[RequestInput] = None
-    request_body_data: Optional[RequestInput] = None
+class TicketActivitiesRetriever(Retriever):
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    request_timeout: int = 300
+    backoff_strategy: Optional[BackoffStrategy] = field(default=None)
+    api_budget: Optional[APIBudget] = field(default=None)
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        self.request_options_provider = InterpolatedRequestOptionsProvider(
-            request_body_data=self.request_body_data,
-            request_body_json=self.request_body_json,
-            request_headers=self.request_headers,
-            request_parameters=self.request_parameters,
-            config=self.config,
-            parameters=parameters or {},
+        error_mapping = {
+            **DEFAULT_ERROR_MAPPING,
+            401: ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.config_error,
+                error_message=_EXPORT_UNAVAILABLE_MESSAGE,
+            ),
+            403: ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.config_error,
+                error_message=_EXPORT_UNAVAILABLE_MESSAGE,
+            ),
+            404: ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+                failure_type=None,
+                error_message="Freshdesk ticket activities export is not ready yet.",
+            ),
+        }
+        self._http_client = HttpClient(
+            name="ticket_activities",
+            logger=logger,
+            error_handler=HttpStatusErrorHandler(logger, error_mapping=error_mapping),
+            api_budget=self.api_budget,
+            backoff_strategy=self.backoff_strategy or FreshdeskExportBackoffStrategy(),
         )
-        super().__post_init__(parameters)
 
-    def send_request(
+    def read_records(
         self,
-        **kwargs,
-    ) -> Optional[requests.Response]:
-        # pagination strategy returns cursor_filter based on the latest record instead of page when the page limit is hit
-        if type(kwargs["request_params"].get("page")) == str:
-            kwargs["request_params"].pop("page")
-        return super().send_request(**kwargs)
-
-
-@dataclass
-class FreshdeskTicketsIncrementalSync(DatetimeBasedCursor):
-    """
-    This class is created for Tickets stream. When paginator hit the page limit it will return latest record cursor as next_page_token
-    Request parameters will be updated with the next_page_token to continue iterating over results
-    """
-
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        super().__post_init__(parameters=parameters)
-        self.updated_slice = None
-
-    def get_request_params(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
+        records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
-        # if next_page_token is str it is the latest record cursor from the paginator that will be used for updated cursor filter
-        # if next_page_token is int it is the page number
-        next_page_token = next_page_token.get("next_page_token") if next_page_token else None
-        if type(next_page_token) == str:
-            self.updated_slice = next_page_token
+    ) -> Iterable[StreamData]:
+        export_date = self._get_export_date(stream_slice)
+        export_payload = self._get_json(
+            self._export_endpoint,
+            params={"created_at": export_date},
+            auth=HTTPBasicAuth(self.config["api_key"], "X"),
+            allow_missing=True,
+        )
+        if not export_payload:
+            return
 
-        # _get_request_options is modified to return updated cursor filter if exist
-        option_type = RequestOptionType.request_parameter
-        options: MutableMapping[str, Any] = {}
-        if not stream_slice:
-            return options
+        export_data = export_payload
+        if "activities_data" not in export_data:
+            download_url = self._extract_download_url(export_payload)
+            if not download_url:
+                logger.info("No ticket activities export was available for %s", export_date)
+                return
+            export_data = self._get_json(download_url, allow_missing=True) or {}
 
-        if self.start_time_option and self.start_time_option.inject_into == option_type:
-            start_time = stream_slice.get(self._partition_field_start.eval(self.config)) if not self.updated_slice else self.updated_slice
-            options[self.start_time_option.field_name.eval(config=self.config)] = start_time  # type: ignore # field_name is always casted to an interpolated string
-        if self.end_time_option and self.end_time_option.inject_into == option_type:
-            options[self.end_time_option.field_name.eval(config=self.config)] = stream_slice.get(
-                self._partition_field_end.eval(self.config)
-            )  # type: ignore # field_name is always casted to an interpolated string
-        return options
+        records = export_data.get("activities_data") or []
+        if not isinstance(records, list):
+            raise AirbyteTracedException(
+                message="Freshdesk ticket activities export did not contain an `activities_data` array.",
+                failure_type=FailureType.system_error,
+            )
 
+        for record in self._add_stable_ids(records, export_date, stream_slice):
+            yield record
 
-@dataclass
-class FreshdeskTicketsPaginationStrategy(PageIncrement):
-    """
-    This pagination strategy will return latest record cursor for the next_page_token after hitting page count limit
-    """
+    @property
+    def _export_endpoint(self) -> str:
+        return f"https://{self.config['domain']}/api/v2/export/ticket_activities"
 
-    PAGE_LIMIT = 300
-
-    def next_page_token(
-        self,
-        response: requests.Response,
-        last_page_size: int,
-        last_record: Optional[Record],
-        last_page_token_value: Optional[Any],
-    ) -> Optional[Any]:
-        # Stop paginating when there are fewer records than the page size or the current page has no records, or maximum page number is hit
-        if (self._page_size and last_page_size < self._page_size) or last_page_size == 0:
-            return None
-        elif last_page_token_value is None:
-            # If the PageIncrement strategy does not inject on the first request, the incoming last_page_token_value
-            # may be None. When this is the case, we assume we've already requested the first page specified by
-            # start_from_page and must now get the next page
-            return self.start_from_page + 1
-        elif not isinstance(last_page_token_value, int):
-            raise ValueError(f"Last page token value {last_page_token_value} for PageIncrement pagination strategy was not an integer")
-        elif self._page >= self.PAGE_LIMIT:
-            # reset page count as cursor parameter will be updated in the stream slicer
-            self._page = self.start_from_page
-            # get last_record from latest batch, pos. -1, because of ACS order of records
-            last_record_updated_at = last_record["updated_at"]
-            # updating slicer request parameters with last_record state
-            return last_record_updated_at
+    def _get_export_date(self, stream_slice: Optional[StreamSlice]) -> str:
+        if stream_slice and stream_slice.get("start_time"):
+            raw_date = stream_slice["start_time"]
         else:
-            return last_page_token_value + 1
+            raw_date = self.config.get("start_date") or datetime.now(timezone.utc).strftime(RFC3339_SECONDS_FORMAT)
+        return self._parse_datetime(raw_date).date().isoformat()
+
+    def _get_json(
+        self,
+        url: str,
+        params: Optional[Mapping[str, Any]] = None,
+        auth: Optional[HTTPBasicAuth] = None,
+        allow_missing: bool = False,
+    ) -> Optional[Mapping[str, Any]]:
+        headers = None
+        if auth is not None:
+            headers = requests.Request("GET", url, auth=auth).prepare().headers
+        _, response = self._http_client.send_request(
+            http_method="GET",
+            url=url,
+            request_kwargs={"timeout": self.request_timeout},
+            headers=headers,
+            params=params,
+        )
+        if allow_missing and response.status_code == 404:
+            return None
+        response.raise_for_status()
+        try:
+            payload = response.json()
+        except requests.exceptions.JSONDecodeError as exc:
+            raise AirbyteTracedException(
+                message="Freshdesk ticket activities export returned invalid JSON.",
+                failure_type=FailureType.system_error,
+            ) from exc
+        if not isinstance(payload, Mapping):
+            raise AirbyteTracedException(
+                message="Freshdesk ticket activities export returned JSON that was not an object.",
+                failure_type=FailureType.system_error,
+            )
+        return payload
+
+    @staticmethod
+    def _extract_download_url(payload: Mapping[str, Any]) -> Optional[str]:
+        export = payload.get("export")
+        if isinstance(export, Mapping) and isinstance(export.get("url"), str):
+            return export["url"]
+        for key in ("url", "link"):
+            value = payload.get(key)
+            if isinstance(value, str):
+                return value
+        return None
+
+    def _add_stable_ids(
+        self, records: Iterable[Mapping[str, Any]], export_date: str, stream_slice: Optional[StreamSlice]
+    ) -> Iterable[Mapping[str, Any]]:
+        seen_record_hashes: dict[str, int] = {}
+        for record in records:
+            enriched_record = dict(record)
+            if "performed_at" not in enriched_record:
+                raise AirbyteTracedException(
+                    message="Freshdesk ticket activities export record is missing `performed_at`.",
+                    failure_type=FailureType.system_error,
+                )
+            enriched_record["performed_at"] = self._format_datetime(enriched_record["performed_at"])
+            if not self._is_in_stream_slice(enriched_record["performed_at"], stream_slice):
+                continue
+            enriched_record["export_date"] = export_date
+
+            base_hash = self._hash_record(enriched_record)
+            seen_record_hashes[base_hash] = seen_record_hashes.get(base_hash, 0) + 1
+            enriched_record["_airbyte_ticket_activity_id"] = f"{base_hash}:{seen_record_hashes[base_hash]}"
+            yield enriched_record
+
+    @staticmethod
+    def _hash_record(record: Mapping[str, Any]) -> str:
+        serialized_record = json.dumps(record, sort_keys=True, separators=(",", ":"), default=str)
+        return hashlib.sha256(serialized_record.encode("utf-8")).hexdigest()
+
+    @classmethod
+    def _is_in_stream_slice(cls, performed_at: str, stream_slice: Optional[StreamSlice]) -> bool:
+        if stream_slice is None:
+            return True
+        performed_at_datetime = cls._parse_datetime(performed_at)
+        start_time = stream_slice.get("start_time")
+        if start_time and performed_at_datetime < cls._parse_datetime(start_time):
+            return False
+        end_time = stream_slice.get("end_time")
+        if end_time and performed_at_datetime > cls._parse_datetime(end_time):
+            return False
+        return True
+
+    @classmethod
+    def _format_datetime(cls, value: Any) -> Any:
+        if value in (None, ""):
+            return value
+        return cls._parse_datetime(value).strftime(RFC3339_SECONDS_FORMAT)
+
+    @staticmethod
+    def _parse_datetime(value: Any) -> datetime:
+        if isinstance(value, datetime):
+            parsed = value
+        elif isinstance(value, str):
+            parse_value = value
+            if parse_value.endswith("Z"):
+                parse_value = f"{parse_value[:-1]}+0000"
+            for date_format in ("%Y-%m-%dT%H:%M:%S%z", FRESHDESK_EXPORT_DATE_FORMAT, "%Y-%m-%d"):
+                try:
+                    parsed = datetime.strptime(parse_value, date_format)
+                    break
+                except ValueError:
+                    continue
+            else:
+                raise AirbyteTracedException(
+                    message=f"Could not parse Freshdesk ticket activity datetime value `{value}`.",
+                    failure_type=FailureType.system_error,
+                )
+        else:
+            raise AirbyteTracedException(
+                message=f"Could not parse Freshdesk ticket activity datetime value `{value}`.",
+                failure_type=FailureType.system_error,
+            )
+
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)

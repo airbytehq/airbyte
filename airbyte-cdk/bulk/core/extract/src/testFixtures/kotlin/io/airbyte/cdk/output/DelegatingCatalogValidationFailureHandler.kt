@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.output
 
 import io.airbyte.protocol.models.v0.AirbyteLogMessage
@@ -21,5 +21,6 @@ class DelegatingCatalogValidationFailureHandler(
         outputConsumer.accept(
             AirbyteLogMessage().withLevel(AirbyteLogMessage.Level.WARN).withMessage(f.toString()),
         )
+        f.asErrorTrace()?.let { outputConsumer.accept(it) }
     }
 }

@@ -1282,7 +1282,7 @@ spec:
           - "2021-12-01T00:00:00Z"
       num_workers:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 1
         maximum: 20
         default: 10

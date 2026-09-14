@@ -1,0 +1,8 @@
+[
+  {
+    "created": 1704067200,
+    "email": "blocked@example.com",
+    "reason": "Connection timed out",
+    "status": "4.0.0"
+  }
+]

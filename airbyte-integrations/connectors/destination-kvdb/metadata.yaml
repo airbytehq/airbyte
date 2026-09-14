@@ -27,4 +27,8 @@ data:
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests
+  externalDocumentationUrls:
+    - title: KVDB documentation
+      url: https://kvdb.io/
+      type: api_reference
 metadataSpecVersion: "1.0"

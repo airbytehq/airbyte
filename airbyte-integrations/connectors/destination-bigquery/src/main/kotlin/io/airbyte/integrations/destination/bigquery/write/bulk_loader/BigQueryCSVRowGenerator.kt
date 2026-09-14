@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.write.bulk_loader
@@ -33,12 +33,11 @@ class BigQueryCSVRowGenerator {
             )
 
         enrichedRecord.declaredFields.values.forEach { value ->
-            if (value.abValue is NullValue) {
+            validateAirbyteValue(value)
+            val actualValue = value.abValue
+            if (actualValue is NullValue) {
                 return@forEach
             }
-            validateAirbyteValue(value)
-
-            val actualValue = value.abValue
             when (value.type) {
                 is TimestampTypeWithTimezone ->
                     value.abValue = StringValue(formatTimestampWithTimezone(value))

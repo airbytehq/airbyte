@@ -24,3 +24,4 @@ yarn-debug.log*
 yarn-error.log*
 
 CLAUDE.local.md
+.claude/settings.local.json

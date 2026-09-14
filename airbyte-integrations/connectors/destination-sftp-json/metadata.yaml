@@ -10,7 +10,7 @@ data:
     - suite: integrationTests
   connectorType: destination
   definitionId: e9810f61-4bab-46d2-bb22-edfc902e0644
-  dockerImageTag: 0.2.15
+  dockerImageTag: 0.2.16
   dockerRepository: airbyte/destination-sftp-json
   documentationUrl: https://docs.airbyte.com/integrations/destinations/sftp-json
   githubIssueLabel: destination-sftp-json
@@ -27,4 +27,8 @@ data:
   tags:
     - language:python
     - cdk:python
+  externalDocumentationUrls:
+    - title: SFTP protocol documentation
+      url: https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer
+      type: api_reference
 metadataSpecVersion: "1.0"

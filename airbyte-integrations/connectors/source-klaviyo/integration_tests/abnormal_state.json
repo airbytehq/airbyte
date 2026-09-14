@@ -243,5 +243,16 @@
         "name": "email_templates"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2120-10-10T00:00:00+00:00"
+      },
+      "stream_descriptor": {
+        "name": "segments"
+      }
+    }
   }
 ]

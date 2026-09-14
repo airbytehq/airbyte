@@ -1,0 +1,342 @@
+/*
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+ */
+
+package io.airbyte.integrations.destination.snowflake.write
+
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.command.ValidatedJsonUtils
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.message.InputRecord
+import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.test.util.DestinationDataDumper
+import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
+import io.airbyte.cdk.load.test.util.NameMapper
+import io.airbyte.cdk.load.test.util.NoopNameMapper
+import io.airbyte.cdk.load.test.util.OutputRecord
+import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.ColumnDropBehavior
+import io.airbyte.cdk.load.write.DedupBehavior
+import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
+import io.airbyte.cdk.load.write.StronglyTyped
+import io.airbyte.cdk.load.write.UnionBehavior
+import io.airbyte.cdk.load.write.UnknownTypesBehavior
+import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING
+import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING_AND_RAW_OVERRIDE
+import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING_IGNORE_CASING
+import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.getConfigPath
+import io.airbyte.integrations.destination.snowflake.spec.NumberDataType
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import java.nio.file.Files
+import java.nio.file.Path
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
+
+internal val CONFIG_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING)
+internal val CONFIG_IGNORE_CASING_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING_IGNORE_CASING)
+internal val RAW_CONFIG_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING_AND_RAW_OVERRIDE)
+
+// Add number_data_type toggle to the config path.
+internal val NUMBER_38_9_CONFIG: String by lazy {
+    (Jsons.readTree(Files.readString(CONFIG_PATH)) as ObjectNode)
+        .apply { put("number_data_type", "NUMBER(38,9)") }
+        .serializeToString()
+}
+
+class SnowflakeInsertAcceptanceTest :
+    SnowflakeAcceptanceTest(
+        configPath = CONFIG_PATH,
+        dataDumper =
+            SnowflakeDataDumper { spec ->
+                SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
+            },
+        recordMapper = SnowflakeExpectedRecordMapper(),
+        nameMapper = SnowflakeNameMapper(),
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    ) {
+    @Test
+    override fun testAppendSchemaEvolution() {
+        super.testAppendSchemaEvolution()
+    }
+
+    @Test
+    fun testLeadingAndTrailingWhitespaceIsTrimmedByDefault() {
+        val stream = whitespaceStream("test_whitespace_default")
+
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(whitespaceRecord(stream, id = 1, value = " hello   ")),
+        )
+
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(whitespaceExpectedRecord(id = 1, value = "hello")),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    @Test
+    fun testLeadingAndTrailingWhitespaceIsPreservedWhenTrimSpaceIsDisabled() {
+        val stream = whitespaceStream("test_whitespace_disabled")
+        val trimSpaceDisabledConfig = configWithTrimSpace(false)
+
+        runSync(
+            trimSpaceDisabledConfig,
+            stream,
+            listOf(whitespaceRecord(stream, id = 1, value = " hello   ")),
+        )
+
+        dumpAndDiffRecords(
+            ValidatedJsonUtils.parseOne(configSpecClass, trimSpaceDisabledConfig),
+            listOf(whitespaceExpectedRecord(id = 1, value = " hello   ")),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    private fun whitespaceStream(name: String): DestinationStream =
+        DestinationStream(
+            unmappedNamespace = randomizedNamespace,
+            unmappedName = name,
+            generationId = 0,
+            minimumGenerationId = 0,
+            syncId = 42,
+            namespaceMapper = namespaceMapperForMedium(),
+            tableSchema =
+                makeTableSchema(
+                    ObjectType(linkedMapOf("id" to intType, "value" to stringType)),
+                    Append,
+                ),
+        )
+
+    private fun whitespaceRecord(stream: DestinationStream, id: Int, value: String): InputRecord =
+        InputRecord(
+            stream = stream,
+            data = mapOf("id" to id, "value" to value).serializeToString(),
+            emittedAtMs = 1234,
+            checkpointId = checkpointKeyForMedium()?.checkpointId,
+        )
+
+    private fun whitespaceExpectedRecord(id: Int, value: String): OutputRecord =
+        OutputRecord(
+            extractedAt = 1234,
+            generationId = 0,
+            data = mapOf("id" to id, "value" to value),
+            airbyteMeta = OutputRecord.Meta(syncId = 42),
+        )
+
+    private fun configWithTrimSpace(trimSpace: Boolean): String =
+        (Jsons.readTree(updatedConfig).deepCopy<ObjectNode>())
+            .apply { put("trim_space", trimSpace) }
+            .serializeToString()
+}
+
+class SnowflakeInsertIgnoreCasingAcceptanceTest :
+    SnowflakeAcceptanceTest(
+        configPath = CONFIG_IGNORE_CASING_PATH,
+        dataDumper =
+            SnowflakeDataDumper { spec ->
+                SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
+            },
+        recordMapper = SnowflakeExpectedRecordMapper(),
+        nameMapper = SnowflakeNameMapper(),
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
+
+class SnowflakeInsertProtoAcceptanceTest :
+    SnowflakeAcceptanceTest(
+        configPath = CONFIG_PATH,
+        dataDumper =
+            SnowflakeDataDumper { spec ->
+                SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
+            },
+        recordMapper = SnowflakeExpectedRecordMapper(),
+        nameMapper = SnowflakeNameMapper(),
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
+
+class SnowflakeNumberWithScaleInsertAcceptanceTest :
+    SnowflakeAcceptanceTest(
+        configPath = CONFIG_PATH,
+        configContents = NUMBER_38_9_CONFIG,
+        dataDumper =
+            SnowflakeDataDumper { spec ->
+                SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
+            },
+        recordMapper = SnowflakeExpectedRecordMapper(NumberDataType.NUMBER_38_9),
+        nameMapper = SnowflakeNameMapper(),
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+        allTypesBehavior =
+            StronglyTyped(
+                integerCanBeLarge = true,
+                // NUMBER(38,9) holds at most 29 digits left of the decimal point.
+                numberCanBeLarge = false,
+                nestedFloatLosesPrecision = false,
+                numberIsFixedPointPrecision38Scale9 = true,
+            ),
+    ) {
+    @Test
+    override fun testNumericTypes() {
+        super.testNumericTypes()
+    }
+}
+
+class SnowflakeRawInsertAcceptanceTest :
+    SnowflakeAcceptanceTest(
+        configPath = RAW_CONFIG_PATH,
+        dataDumper =
+            SnowflakeRawDataDumper { spec ->
+                SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
+            },
+        recordMapper = SnowflakeExpectedRawRecordMapper,
+        nameMapper = NoopNameMapper,
+        isStreamSchemaRetroactive = false,
+        dedupBehavior = null,
+        nullEqualsUnset = false,
+        coercesLegacyUnions = false,
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    ) {
+    @Test
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+}
+
+class SnowflakeRawInsertProtoAcceptanceTest :
+    SnowflakeAcceptanceTest(
+        configPath = RAW_CONFIG_PATH,
+        dataDumper =
+            SnowflakeRawDataDumper { spec ->
+                SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
+            },
+        recordMapper = SnowflakeExpectedRawRecordMapper,
+        nameMapper = NoopNameMapper,
+        isStreamSchemaRetroactive = false,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        dedupBehavior = null,
+        nullEqualsUnset = false,
+        coercesLegacyUnions = false,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/15495")
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
+    }
+}
+
+abstract class SnowflakeAcceptanceTest(
+    configPath: Path,
+    configContents: String = Files.readString(configPath),
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
+    dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
+    dataDumper: DestinationDataDumper,
+    recordMapper: ExpectedRecordMapper,
+    nameMapper: NameMapper,
+    isStreamSchemaRetroactive: Boolean = true,
+    isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
+    dedupBehavior: DedupBehavior? = DedupBehavior(DedupBehavior.CdcDeletionMode.HARD_DELETE),
+    nullEqualsUnset: Boolean = true,
+    coercesLegacyUnions: Boolean = false,
+    unknownTypesBehavior: UnknownTypesBehavior,
+    allTypesBehavior: StronglyTyped =
+        StronglyTyped(
+            integerCanBeLarge = true,
+            numberCanBeLarge = true,
+            nestedFloatLosesPrecision = false,
+        ),
+) :
+    BasicFunctionalityIntegrationTest(
+        configContents = configContents,
+        configSpecClass = SnowflakeSpecification::class.java,
+        dataDumper = dataDumper,
+        destinationCleaner = SnowflakeDataCleaner,
+        isStreamSchemaRetroactive = isStreamSchemaRetroactive,
+        isStreamSchemaRetroactiveForUnknownTypeToString =
+            isStreamSchemaRetroactiveForUnknownTypeToString,
+        dedupBehavior = dedupBehavior,
+        stringifySchemalessObjects = false,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
+        stringifyUnionObjects = false,
+        commitDataIncrementally = false,
+        commitDataIncrementallyOnAppend = false,
+        commitDataIncrementallyToEmptyDestinationOnAppend = true,
+        commitDataIncrementallyToEmptyDestinationOnDedupe = false,
+        allTypesBehavior = allTypesBehavior,
+        unknownTypesBehavior = unknownTypesBehavior,
+        nullEqualsUnset = nullEqualsUnset,
+        dedupChangeUsesDefault = false,
+        columnDropBehavior = ColumnDropBehavior.RETAIN,
+        testSpeedModeStatsEmission = true,
+        configUpdater = SnowflakeMigrationConfigurationUpdater(),
+        dataChannelMedium = dataChannelMedium,
+        dataChannelFormat = dataChannelFormat,
+        mismatchedTypesUnrepresentable = false,
+        recordMangler = recordMapper,
+        nameMapper = nameMapper,
+        coercesLegacyUnions = coercesLegacyUnions,
+    )
+
+fun stringToMeta(metaAsString: String?): OutputRecord.Meta? {
+    if (metaAsString.isNullOrEmpty()) {
+        return null
+    }
+    val metaJson = Jsons.readTree(metaAsString)
+
+    val changes =
+        (metaJson["changes"] as ArrayNode).map { change ->
+            val changeNode = change as JsonNode
+            Meta.Change(
+                field = changeNode["field"].textValue().uppercase(),
+                change =
+                    AirbyteRecordMessageMetaChange.Change.fromValue(
+                        changeNode["change"].textValue()
+                    ),
+                reason =
+                    AirbyteRecordMessageMetaChange.Reason.fromValue(
+                        changeNode["reason"].textValue()
+                    ),
+            )
+        }
+
+    return OutputRecord.Meta(
+        changes = changes,
+        syncId = metaJson["sync_id"].longValue(),
+    )
+}

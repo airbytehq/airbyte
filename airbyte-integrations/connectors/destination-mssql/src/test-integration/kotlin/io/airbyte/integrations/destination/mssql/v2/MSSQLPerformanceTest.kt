@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql.v2
@@ -105,7 +105,7 @@ class MSSQLStandardInsertPerformanceTest :
 
 class MSSQLBulkInsertPerformanceTest :
     MSSQLPerformanceTest(
-        configContents = Files.readString(Path.of("secrets/bulk_upload_config.json")),
+        configContents = Files.readString(Path.of("secrets/azure_bulk_config.json")),
         configUpdater = FakeConfigurationUpdater,
         getConfiguration = { spec, _ ->
             MSSQLConfigurationFactory().makeWithOverrides(spec as MSSQLSpecification, emptyMap())

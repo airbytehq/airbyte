@@ -1,5 +1,6 @@
 ---
-products: oss-community, oss-enterprise
+products: oss-community
+draft: true
 ---
 
 # Microsoft Azure

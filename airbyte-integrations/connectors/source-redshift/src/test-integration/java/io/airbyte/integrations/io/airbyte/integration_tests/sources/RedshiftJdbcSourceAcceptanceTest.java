@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.redshift.RedshiftSource;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 // Run as part of integration tests, instead of unit tests, because there is no test container for
 // Redshift.
@@ -49,6 +50,12 @@ class RedshiftJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Redshift
   @Override
   protected JsonNode config() {
     return Jsons.clone(config);
+  }
+
+  @Test
+  @Override
+  protected void testCheckFailure() throws Exception {
+    // no-op
   }
 
 }

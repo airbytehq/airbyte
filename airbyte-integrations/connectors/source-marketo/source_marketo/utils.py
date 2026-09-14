@@ -64,18 +64,34 @@ def format_value(value, schema):
         if isinstance(value, int):
             return value
 
-        # Custom Marketo percent type fields can have decimals, so we drop them
-        decimal_index = value.find(".")
-        if decimal_index > 0:
-            value = value[:decimal_index]
-        return int(value)
+        try:
+            # Custom Marketo percent type fields can have decimals, so we drop them
+            decimal_index = value.find(".")
+            if decimal_index > 0:
+                value = value[:decimal_index]
+            return int(value)
+        except (ValueError, TypeError, AttributeError):
+            # Return None if value cannot be converted to integer
+            # This handles cases where Marketo API returns non-numeric strings
+            return None
     elif "string" in field_type:
         return str(value)
     elif "number" in field_type:
-        return float(value)
+        try:
+            return float(value)
+        except (ValueError, TypeError):
+            # Return None if value cannot be converted to float
+            # This handles cases where Marketo API returns non-numeric strings
+            return None
     elif "boolean" in field_type:
         if isinstance(value, bool):
             return value
+        if isinstance(value, (int, float)):
+            # Activity attributes come from a JSON blob, so boolean fields can arrive as numeric 0/1
+            return bool(value)
+        if not isinstance(value, str):
+            # Return None for any other type instead of crashing on an unsupported value
+            return None
         return value.lower() == "true"
 
     return value

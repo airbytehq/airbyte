@@ -3,10 +3,10 @@
 #
 
 import logging
+from datetime import timedelta
 from typing import Any, List, Mapping, Optional, Tuple, Type
 
 import facebook_business
-import pendulum
 
 from airbyte_cdk.models import (
     AdvancedAuth,
@@ -19,12 +19,14 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
 from source_facebook_marketing.api import API
 from source_facebook_marketing.spec import ConnectorConfig, ValidAdStatuses
 from source_facebook_marketing.streams import (
     Activities,
     AdAccount,
     AdCreatives,
+    AdCreativesFromAds,
     Ads,
     AdSets,
     AdsInsights,
@@ -36,15 +38,15 @@ from source_facebook_marketing.streams import (
     AdsInsightsActionVideoSound,
     AdsInsightsActionVideoType,
     AdsInsightsAgeAndGender,
+    AdsInsightsComscoreMarket,
     AdsInsightsCountry,
     AdsInsightsDeliveryDevice,
     AdsInsightsDeliveryPlatform,
     AdsInsightsDeliveryPlatformAndDevicePlatform,
     AdsInsightsDemographicsAge,
+    AdsInsightsDemographicsComscoreMarketRegion,
     AdsInsightsDemographicsCountry,
-    AdsInsightsDemographicsDMARegion,
     AdsInsightsDemographicsGender,
-    AdsInsightsDma,
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
     Campaigns,
@@ -72,11 +74,18 @@ class SourceFacebookMarketing(AbstractSource):
 
         config = ConnectorConfig.parse_obj(config)
 
+        default_ads_insights_action_breakdowns = (
+            config.default_ads_insights_action_breakdowns
+            if config.default_ads_insights_action_breakdowns is not None
+            else AdsInsights.action_breakdowns
+        )
+        config.default_ads_insights_action_breakdowns = default_ads_insights_action_breakdowns
+
         if config.start_date:
-            config.start_date = pendulum.instance(config.start_date)
+            config.start_date = AirbyteDateTime.from_datetime(config.start_date)
 
         if config.end_date:
-            config.end_date = pendulum.instance(config.end_date)
+            config.end_date = AirbyteDateTime.from_datetime(config.end_date)
 
         config.account_ids = list(config.account_ids)
 
@@ -92,13 +101,16 @@ class SourceFacebookMarketing(AbstractSource):
         try:
             config = self._validate_and_transform(config)
 
-            if config.end_date > pendulum.now():
+            if config.end_date > ab_datetime_now():
                 return False, "Date range can not be in the future."
             if config.start_date and config.end_date < config.start_date:
                 return False, "End date must be equal or after start date."
 
             if config.credentials is not None:
-                api = API(access_token=config.credentials.access_token, page_size=config.page_size)
+                api = API(
+                    access_token=config.credentials.access_token,
+                    page_size=config.page_size,
+                )
             else:
                 api = API(access_token=config.access_token, page_size=config.page_size)
 
@@ -140,7 +152,7 @@ class SourceFacebookMarketing(AbstractSource):
             api = API(access_token=config.access_token, page_size=config.page_size)
 
         # if start_date not specified then set default start_date for report streams to 2 years ago
-        report_start_date = config.start_date or pendulum.now().add(years=-2)
+        report_start_date = config.start_date or (ab_datetime_now() - timedelta(days=365 * 2))
 
         insights_args = dict(
             api=api,
@@ -150,6 +162,8 @@ class SourceFacebookMarketing(AbstractSource):
             insights_lookback_window=config.insights_lookback_window,
             insights_job_timeout=config.insights_job_timeout,
             filter_statuses=[status.value for status in [*ValidAdStatuses]],
+            include_incrementality=config.include_incrementality,
+            include_engaged_view=config.include_engaged_view,
         )
         streams = [
             AdAccount(api=api, account_ids=config.account_ids),
@@ -175,11 +189,26 @@ class SourceFacebookMarketing(AbstractSource):
                 fetch_thumbnail_images=config.fetch_thumbnail_images,
                 page_size=config.page_size,
             ),
-            AdsInsights(page_size=config.page_size, **insights_args),
+            AdCreativesFromAds(
+                api=api,
+                account_ids=config.account_ids,
+                fetch_thumbnail_images=config.fetch_thumbnail_images,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                filter_statuses=config.ad_statuses,
+                page_size=config.page_size,
+            ),
+            AdsInsights(
+                page_size=config.page_size,
+                action_breakdowns=config.default_ads_insights_action_breakdowns,
+                # in case user input is an empty list of action_breakdowns we allow empty breakdowns
+                action_breakdowns_allow_empty=config.default_ads_insights_action_breakdowns == [],
+                **insights_args,
+            ),
             AdsInsightsAgeAndGender(page_size=config.page_size, **insights_args),
             AdsInsightsCountry(page_size=config.page_size, **insights_args),
             AdsInsightsRegion(page_size=config.page_size, **insights_args),
-            AdsInsightsDma(page_size=config.page_size, **insights_args),
+            AdsInsightsComscoreMarket(page_size=config.page_size, **insights_args),
             AdsInsightsPlatformAndDevice(page_size=config.page_size, **insights_args),
             AdsInsightsActionType(page_size=config.page_size, **insights_args),
             AdsInsightsActionCarouselCard(page_size=config.page_size, **insights_args),
@@ -193,7 +222,7 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsDeliveryPlatformAndDevicePlatform(page_size=config.page_size, **insights_args),
             AdsInsightsDemographicsAge(page_size=config.page_size, **insights_args),
             AdsInsightsDemographicsCountry(page_size=config.page_size, **insights_args),
-            AdsInsightsDemographicsDMARegion(page_size=config.page_size, **insights_args),
+            AdsInsightsDemographicsComscoreMarketRegion(page_size=config.page_size, **insights_args),
             AdsInsightsDemographicsGender(page_size=config.page_size, **insights_args),
             Campaigns(
                 api=api,
@@ -259,7 +288,10 @@ class SourceFacebookMarketing(AbstractSource):
                         "properties": {
                             "access_token": {
                                 "type": "string",
-                                "path_in_connector_config": ["credentials", "access_token"],
+                                "path_in_connector_config": [
+                                    "credentials",
+                                    "access_token",
+                                ],
                             },
                         },
                     },
@@ -276,11 +308,17 @@ class SourceFacebookMarketing(AbstractSource):
                         "properties": {
                             "client_id": {
                                 "type": "string",
-                                "path_in_connector_config": ["credentials", "client_id"],
+                                "path_in_connector_config": [
+                                    "credentials",
+                                    "client_id",
+                                ],
                             },
                             "client_secret": {
                                 "type": "string",
-                                "path_in_connector_config": ["credentials", "client_secret"],
+                                "path_in_connector_config": [
+                                    "credentials",
+                                    "client_secret",
+                                ],
                             },
                         },
                     },
@@ -312,11 +350,14 @@ class SourceFacebookMarketing(AbstractSource):
                 action_breakdowns=list(set(insight.action_breakdowns)),
                 action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
                 time_increment=insight.time_increment,
-                start_date=insight.start_date or config.start_date or pendulum.now().add(years=-2),
+                time_increment_period=insight.time_increment_period,
+                start_date=insight.start_date or config.start_date or (ab_datetime_now() - timedelta(days=365 * 2)),
                 end_date=insight.end_date or config.end_date,
                 insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
                 insights_job_timeout=insight.insights_job_timeout or config.insights_job_timeout,
                 level=insight.level,
+                include_incrementality=insight.include_incrementality,
+                include_engaged_view=insight.include_engaged_view,
             )
             streams.append(stream)
         return streams

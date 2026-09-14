@@ -2,357 +2,765 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from contextlib import nullcontext
-from unittest.mock import patch
+from urllib.parse import parse_qs, urlencode, urlparse
 
-import pendulum
 import pytest
-import requests
+from components import TwilioConferencesStateMigration
+from conftest import TEST_CONFIG, get_source
 from freezegun import freeze_time
-from source_twilio.auth import HttpBasicAuthenticator
-from source_twilio.source import SourceTwilio
-from source_twilio.streams import (
-    Accounts,
-    Addresses,
-    Alerts,
-    Calls,
-    DependentPhoneNumbers,
-    MessageMedia,
-    Messages,
-    Recordings,
-    TwilioNestedStream,
-    TwilioStream,
-    UsageRecords,
-    UsageTriggers,
-)
 
-from airbyte_cdk.sources.declarative.types import StreamSlice
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.state_builder import StateBuilder
 
 
-TEST_CONFIG = {
-    "account_sid": "airbyte.io",
-    "auth_token": "secret",
-    "start_date": "2022-01-01T00:00:00Z",
-    "lookback_window": 0,
+BASE = "https://api.twilio.com/2010-04-01"
+MONITOR_BASE = "https://monitor.twilio.com/v1"
+
+ACCOUNTS_JSON = {
+    "accounts": [
+        {
+            "sid": "AC123",
+            "date_created": "2022-01-01T00:00:00Z",
+            "subresource_uris": {
+                "addresses": "/2010-04-01/Accounts/AC123/Addresses.json",
+                "calls": "/2010-04-01/Accounts/AC123/Calls.json",
+                "messages": "/2010-04-01/Accounts/AC123/Messages.json",
+                "recordings": "/2010-04-01/Accounts/AC123/Recordings.json",
+            },
+        }
+    ],
 }
-TEST_CONFIG.update(
-    **{
-        "authenticator": HttpBasicAuthenticator((TEST_CONFIG["account_sid"], TEST_CONFIG["auth_token"])),
-    }
-)
 
-TEST_INSTANCE = SourceTwilio()
+
+def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exception: bool = False) -> EntrypointOutput:
+    catalog = CatalogBuilder().with_stream(stream, sync_mode).build()
+    return read(get_source(cfg, state), cfg, catalog, state, expecting_exception)
 
 
 class TestTwilioStream:
-    CONFIG = {"authenticator": TEST_CONFIG.get("authenticator")}
-
-    @pytest.mark.parametrize(
-        "stream_cls, expected",
-        [
-            (Accounts, "accounts"),
-        ],
-    )
-    def test_data_field(self, stream_cls, expected):
-        stream = stream_cls(**self.CONFIG)
-        result = stream.data_field
-        assert result == expected
-
-    @pytest.mark.parametrize(
-        "stream_cls, expected",
-        [
-            (Accounts, ["name"]),
-        ],
-    )
-    def test_changeable_fields(self, stream_cls, expected):
-        with patch.object(Accounts, "changeable_fields", ["name"]):
-            stream = stream_cls(**self.CONFIG)
-            result = stream.changeable_fields
-            assert result == expected
-
-    @pytest.mark.parametrize(
-        "stream_cls, expected",
-        [
-            (Accounts, "Accounts.json"),
-        ],
-    )
-    def test_path(self, stream_cls, expected):
-        stream = stream_cls(**self.CONFIG)
-        result = stream.path()
-        assert result == expected
-
-    @pytest.mark.parametrize(
-        "stream_cls, test_response, expected",
-        [
-            (
-                Accounts,
+    def test_next_page_token(self, requests_mock):
+        accounts_page_1_json = {
+            "accounts": [
                 {
-                    "next_page_uri": "/2010-04-01/Accounts/ACdad/Addresses.json?PageSize=1000&Page=2&PageToken=PAAD42931b949c0dedce94b2f93847fdcf95"
-                },
-                {"Page": "2", "PageSize": "1000", "PageToken": "PAAD42931b949c0dedce94b2f93847fdcf95"},
-            ),
-        ],
-    )
-    def test_next_page_token(self, requests_mock, stream_cls, test_response, expected):
-        stream = stream_cls(**self.CONFIG)
-        url = f"{stream.url_base}{stream.path()}"
-        requests_mock.get(url, json=test_response)
-        response = requests.get(url)
-        result = stream.next_page_token(response)
-        assert result == expected
+                    "sid": "AC123",
+                    "date_created": "2022-01-01T00:00:00Z",
+                    "subresource_uris": {"addresses": "/2010-04-01/Accounts/AC123/Addresses.json"},
+                }
+            ],
+            "next_page_uri": "/2010-04-01/Accounts.json?PageSize=1000&Page=2&PageToken=PAAD42931b949c0dedce94b2f93847fdcf95",
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts_page_1_json, status_code=200)
 
-    @pytest.mark.parametrize(
-        "stream_cls, test_response, expected",
-        [
-            (Accounts, {"accounts": [{"id": "123", "name": "test"}]}, [{"id": "123"}]),
-        ],
-    )
-    def test_parse_response(self, requests_mock, stream_cls, test_response, expected):
-        with patch.object(TwilioStream, "changeable_fields", ["name"]):
-            stream = stream_cls(**self.CONFIG)
-            url = f"{stream.url_base}{stream.path()}"
-            requests_mock.get(url, json=test_response)
-            response = requests.get(url)
-            result = list(stream.parse_response(response))
-            assert result[0]["id"] == expected[0]["id"]
+        accounts_page_2_json = {
+            "accounts": [
+                {
+                    "sid": "AC124",
+                    "date_created": "2022-01-01T00:00:00Z",
+                    "subresource_uris": {"addresses": "/2010-04-01/Accounts/AC123/Addresses.json"},
+                }
+            ]
+        }
+        requests_mock.get(
+            f"{BASE}/Accounts.json?PageSize=1000&Page=2&PageToken=PAAD42931b949c0dedce94b2f93847fdcf95",
+            json=accounts_page_2_json,
+            status_code=200,
+        )
 
-    @pytest.mark.parametrize(
-        "stream_cls, expected",
-        [
-            (Accounts, "5.5"),
-        ],
-    )
-    def test_backoff_time(self, requests_mock, stream_cls, expected):
-        stream = stream_cls(**self.CONFIG)
-        url = f"{stream.url_base}{stream.path()}"
-        test_headers = {"Retry-After": expected}
-        requests_mock.get(url, headers=test_headers)
-        response = requests.get(url)
-        response.status_code = 429
-        result = stream.get_backoff_strategy().backoff_time(response, 1)
-        assert result == float(expected)
+        records = read_from_stream(TEST_CONFIG, "accounts", SyncMode.full_refresh).records
 
-    @pytest.mark.parametrize(
-        "stream_cls, next_page_token, expected",
-        [
-            (
-                Accounts,
-                {"Page": "2", "PageSize": "1000", "PageToken": "PAAD42931b949c0dedce94b2f93847fdcf95"},
-                {"Page": "2", "PageSize": "1000", "PageToken": "PAAD42931b949c0dedce94b2f93847fdcf95"},
-            ),
-        ],
-    )
-    def test_request_params(self, stream_cls, next_page_token, expected):
-        stream = stream_cls(**self.CONFIG)
-        result = stream.request_params(stream_state=None, next_page_token=next_page_token)
-        assert result == expected
+        assert len(records) == 2
 
-    @pytest.mark.parametrize(
-        "original_value, field_schema, expected_value",
-        [
-            ("Fri, 11 Dec 2020 04:28:40 +0000", {"format": "date-time"}, "2020-12-11T04:28:40Z"),
-            ("2020-12-11T04:28:40Z", {"format": "date-time"}, "2020-12-11T04:28:40Z"),
-            ("some_string", {}, "some_string"),
-        ],
-    )
-    def test_transform_function(self, original_value, field_schema, expected_value):
-        assert Accounts.custom_transform_function(original_value, field_schema) == expected_value
+    def test_backoff_time(self, requests_mock, mocker):
+        sleep_mock = mocker.patch("time.sleep")
+
+        requests_mock.register_uri(
+            "GET",
+            f"{BASE}/Accounts.json",
+            [
+                {"status_code": 429, "json": {}, "headers": {"retry-after": "5.5"}},
+                {"status_code": 200, "json": ACCOUNTS_JSON},
+            ],
+        )
+
+        records = read_from_stream(TEST_CONFIG, "accounts", SyncMode.full_refresh).records
+
+        assert len(records) == 1
+        assert sleep_mock.called
+        sleep_mock.assert_any_call(pytest.approx(6.5))
+
+    def test_transform_function(self, requests_mock):
+        accounts_json = {
+            "accounts": [
+                {
+                    "sid": "AC123",
+                    "date_created": "2022-01-01T00:00:00Z",
+                    "date_updated": "Fri, 11 Dec 2020 04:28:40 +0000",
+                    "subresource_uris": {"addresses": "/2010-04-01/Accounts/AC123/Addresses.json"},
+                }
+            ]
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
+
+        records = read_from_stream(TEST_CONFIG, "accounts", SyncMode.full_refresh).records
+
+        assert len(records) == 1
+        assert records[0].record.data["date_created"] == "2022-01-01T00:00:00Z"
+        assert records[0].record.data["date_updated"] == "2020-12-11T04:28:40Z"
 
 
 class TestIncrementalTwilioStream:
-    CONFIG = TEST_CONFIG
-    CONFIG.pop("account_sid")
-    CONFIG.pop("auth_token")
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_calls_includes_date_window_params(self, requests_mock):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
 
-    @pytest.mark.parametrize(
-        "stream_cls, stream_slice, next_page_token, expected",
-        [
-            (
-                Calls,
-                StreamSlice(partition={}, cursor_slice={"EndTime>": "2022-01-01", "EndTime<": "2022-01-02"}),
-                {"Page": "2", "PageSize": "1000", "PageToken": "PAAD42931b949c0dedce94b2f93847fdcf95"},
-                {
-                    "EndTime>": "2022-01-01",
-                    "EndTime<": "2022-01-02",
-                    "Page": "2",
-                    "PageSize": "1000",
-                    "PageToken": "PAAD42931b949c0dedce94b2f93847fdcf95",
-                },
-            ),
-        ],
-    )
-    def test_request_params(self, stream_cls, stream_slice, next_page_token, expected):
-        stream = stream_cls(**self.CONFIG)
-        result = stream.request_params(stream_state=None, stream_slice=stream_slice, next_page_token=next_page_token)
-        assert result == expected
-
-    @pytest.mark.parametrize(
-        "stream_cls, record, expected",
-        [
-            (Calls, [{"end_time": "2022-02-01T00:00:00Z"}], [{"end_time": "2022-02-01T00:00:00Z"}]),
-        ],
-    )
-    def test_read_records(self, stream_cls, record, expected):
-        stream = stream_cls(**self.CONFIG)
-        with patch.object(HttpStream, "read_records", return_value=record):
-            result = stream.read_records(sync_mode=None, stream_slice=StreamSlice(partition={}, cursor_slice={}))
-            assert list(result) == expected
-
-    @pytest.mark.parametrize(
-        "stream_cls, parent_cls_records, extra_slice_keywords",
-        [
-            (Calls, [{"subresource_uris": {"calls": "123"}}, {"subresource_uris": {"calls": "124"}}], ["subresource_uri"]),
-            (Alerts, [{}], []),
-        ],
-    )
-    def test_stream_slices(self, mocker, stream_cls, parent_cls_records, extra_slice_keywords):
-        stream = stream_cls(
-            authenticator=TEST_CONFIG.get("authenticator"), start_date=pendulum.now().subtract(months=13).to_iso8601_string()
+        qs = urlencode({"EndTime>": "2022-11-15", "EndTime<": "2022-11-16", "PageSize": 1000})
+        requests_mock.get(
+            f"{BASE}/Accounts/AC123/Calls.json?{qs}",
+            json={"calls": [{"sid": "CA1", "end_time": "2022-11-15T12:00:00Z"}]},
+            status_code=200,
         )
-        expected_slices = 2 * len(parent_cls_records)  # 2 per year slices per each parent slice
-        if isinstance(stream, TwilioNestedStream):
-            slices_mock_context = mocker.patch.object(stream.parent_stream_instance, "stream_slices", return_value=[{}])
-            records_mock_context = mocker.patch.object(stream.parent_stream_instance, "read_records", return_value=parent_cls_records)
-        else:
-            slices_mock_context, records_mock_context = nullcontext(), nullcontext()
-        with slices_mock_context:
-            with records_mock_context:
-                slices = list(stream.stream_slices(sync_mode="incremental"))
-        assert len(slices) == expected_slices
-        for slice_ in slices:
-            if isinstance(stream, TwilioNestedStream):
-                for kw in extra_slice_keywords:
-                    assert kw in slice_
-            assert slice_[stream.lower_boundary_filter_field] <= slice_[stream.upper_boundary_filter_field]
+
+        records = read_from_stream({**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}, "calls", SyncMode.full_refresh).records
+        assert len(records) == 1
 
     @freeze_time("2022-11-16 12:03:11+00:00")
     @pytest.mark.parametrize(
-        "stream_cls, state, expected_dt_ranges",
-        (
+        "stream_name,path,lower_key,upper_key,state,windows",
+        [
             (
-                Messages,
+                "messages",
+                "/Accounts/AC123/Messages.json",
+                "DateSent>",
+                "DateSent<",
                 {
                     "states": [
                         {
-                            "partition": {"key": "value"},
-                            "cursor": {"date_sent": "2022-11-13 23:39:00"},
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                            "cursor": {"date_sent": "2022-11-13T12:11:10Z"},
                         }
                     ]
                 },
                 [
-                    {"DateSent>": "2022-11-13 23:39:00Z", "DateSent<": "2022-11-14 23:39:00Z"},
-                    {"DateSent>": "2022-11-14 23:39:00Z", "DateSent<": "2022-11-15 23:39:00Z"},
-                    {"DateSent>": "2022-11-15 23:39:00Z", "DateSent<": "2022-11-16 12:03:11Z"},
+                    ("2022-11-13 12:11:10Z", "2022-11-16 12:03:11Z"),
                 ],
             ),
             (
-                UsageRecords,
-                {
-                    "states": [
-                        {
-                            "partition": {"key": "value"},
-                            "cursor": {"start_date": "2021-11-16 00:00:00"},
-                        }
-                    ]
-                },
-                [{"StartDate": "2021-11-16", "EndDate": "2022-11-16"}],
+                "usage_records",
+                "/Accounts/AC123/Usage/Records/Daily.json",
+                "StartDate",
+                "EndDate",
+                {"states": [{"partition": {"account_sid": "AC123"}, "cursor": {"start_date": "2022-11-13"}}]},
+                [
+                    ("2022-11-13", "2022-11-16"),
+                ],
             ),
             (
-                Recordings,
+                "recordings",
+                "/Accounts/AC123/Recordings.json",
+                "DateCreated>",
+                "DateCreated<",
                 {
                     "states": [
                         {
-                            "partition": {"key": "value"},
-                            "cursor": {"date_created": "2021-11-16 00:00:00"},
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Recordings.json"},
+                            "cursor": {"date_created": "2022-10-13 00:00:00Z"},
                         }
                     ]
                 },
                 [
-                    {"DateCreated>": "2021-11-16 00:00:00Z", "DateCreated<": "2022-11-16 00:00:00Z"},
-                    {"DateCreated>": "2022-11-16 00:00:00Z", "DateCreated<": "2022-11-16 12:03:11Z"},
+                    ("2022-10-13 00:00:00Z", "2022-11-12 23:59:59Z"),
+                    ("2022-11-13 00:00:00Z", "2022-11-16 12:03:11Z"),
                 ],
             ),
-        ),
+        ],
     )
-    def test_generate_dt_ranges(self, stream_cls, state, expected_dt_ranges):
-        stream = stream_cls(authenticator=TEST_CONFIG.get("authenticator"), start_date="2000-01-01 00:00:00")
-        stream.state = state
-        dt_ranges = list(stream.generate_date_ranges({"key": "value"}))
-        assert dt_ranges == expected_dt_ranges
+    def test_incremental_calls_with_date_ranges(self, stream_name, path, lower_key, upper_key, state, windows, requests_mock):
+        def _register_date_window(m, path, body_key, lower_key, upper_key, lower_val, upper_val):
+            def _match(req):
+                q = parse_qs(urlparse(req.url).query, keep_blank_values=True)
+                return q.get(lower_key) == [lower_val] and q.get(upper_key) == [upper_val]
+
+            # one matcher per window
+            return m.get(f"{BASE}{path}", json={body_key: [{}]}, status_code=200, additional_matcher=_match)
+
+        # Parent
+        accounts_matcher = requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+
+        # One matcher per expected window (exact query values)
+        child_matchers = [_register_date_window(requests_mock, path, stream_name, lower_key, upper_key, lo, hi) for (lo, hi) in windows]
+
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                stream_name,
+                state,
+            )
+            .build()
+        )
+
+        _ = read_from_stream({**TEST_CONFIG, "start_date": "2000-11-15T00:00:00Z"}, stream_name, SyncMode.incremental, state).records
+
+        assert accounts_matcher.called, "Accounts endpoint was not called"
+        assert all(m.called for m in child_matchers), "Not all date-window URLs were called"
+        assert sum(m.call_count for m in child_matchers) == len(windows)
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_messages_cursor_advances_across_windows(self, requests_mock):
+        """Regression for the stuck-cursor bug (oncall #12688).
+
+        `messages` uses a second-precision ``datetime_format`` (``%Y-%m-%d %H:%M:%SZ``). If
+        ``cursor_granularity`` is finer than that (e.g. ``PT0.000001S``), each slice end
+        (``next_start - granularity``) is truncated to the second when formatted, opening a
+        ~1s gap between consecutive slice intervals that ``merge_intervals`` cannot bridge.
+        The per-partition cursor then never advances past the first window and the stream
+        re-reads its whole history every sync. With a matching granularity (``PT1S``) the
+        intervals merge and the cursor advances to the newest record.
+
+        The assertion checks the cursor lands on the *newest record across every window* (not
+        merely that it moved), so a partial-advance regression where only some slices merge
+        would still fail.
+        """
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+
+        # Each monthly window returns one record dated at its lower bound (DateSent>),
+        # echoed back in the ISO 'T' form the connector normalizes records to.
+        windows = []
+
+        def _messages(request, context):
+            lower = parse_qs(urlparse(request.url).query, keep_blank_values=True).get("DateSent>", ["1970-01-01 00:00:00Z"])[0]
+            windows.append(lower)
+            context.status_code = 200
+            return {"messages": [{"sid": "SM", "date_sent": lower.replace(" ", "T")}]}
+
+        requests_mock.get(f"{BASE}/Accounts/AC123/Messages.json", json=_messages)
+
+        # Saved per-partition state a few months back -> several monthly windows are generated.
+        saved_cursor = "2022-08-16 00:00:00Z"
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "messages",
+                {
+                    "states": [
+                        {
+                            "partition": {"parent_slice": {}, "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                            "cursor": {"date_sent": saved_cursor},
+                        }
+                    ],
+                    "state": {"date_sent": saved_cursor},
+                    "use_global_cursor": False,
+                },
+            )
+            .build()
+        )
+
+        output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
+
+        # The sync must span several windows, otherwise the multi-slice merge isn't exercised.
+        assert len(set(windows)) >= 3, f"expected multiple date windows, got {sorted(set(windows))}"
+
+        # The newest record returned across all windows (records sit at each window's lower bound).
+        # Window bounds and the stored cursor share the second-precision format, so a string
+        # comparison is exact and order-preserving.
+        newest_record = max(windows)
+
+        # Emitted per-partition cursor must land on that newest record -- i.e. every slice merged
+        # and the cursor advanced fully, not just past the first window.
+        final = output.most_recent_state.stream_state.__dict__
+        partition_cursor = final["states"][0]["cursor"]["date_sent"]
+        assert partition_cursor == newest_record, (
+            f"per-partition cursor did not advance to the newest record: "
+            f"cursor={partition_cursor!r}, newest_record={newest_record!r}, saved={saved_cursor!r}"
+        )
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_alerts_pagination_limit_error_message(self, requests_mock):
+        requests_mock.get(
+            f"{MONITOR_BASE}/Alerts",
+            json={
+                "code": 400,
+                "message": "Invalid page and pageSize combination, data is limited to 10,000 results",
+            },
+            status_code=400,
+        )
+
+        output = read_from_stream(TEST_CONFIG, "alerts", SyncMode.incremental, expecting_exception=True)
+
+        assert not output.records
+        assert output.errors
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert "Twilio Alerts request exceeds the 10,000-result pagination limit." in output.get_formatted_error_message()
+        assert "in the source configuration" in output.get_formatted_error_message()
+        assert "fewer Alert records per slice" in output.get_formatted_error_message()
+
+
+class TestConferenceParticipantsStream:
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_conference_participants_only_requests_active_conferences(self, requests_mock):
+        accounts_json = {
+            "accounts": [
+                {
+                    "sid": "AC123",
+                    "date_created": "2022-01-01T00:00:00Z",
+                    "subresource_uris": {
+                        "conferences": "/2010-04-01/Accounts/AC123/Conferences.json",
+                    },
+                }
+            ],
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
+
+        requested_statuses = []
+
+        def _match_active_status(req):
+            q = parse_qs(urlparse(req.url).query, keep_blank_values=True)
+            status = q.get("Status")
+            if status in (["init"], ["in-progress"]):
+                requested_statuses.extend(status)
+                return True
+            return False
+
+        conferences_matcher = requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences.json",
+            json={
+                "conferences": [
+                    {
+                        "sid": "CF2",
+                        "account_sid": "AC123",
+                        "date_created": "2022-11-15T11:00:00Z",
+                        "status": "in-progress",
+                        "subresource_uris": {
+                            "participants": "/2010-04-01/Accounts/AC123/Conferences/CF2/Participants.json",
+                        },
+                    }
+                ]
+            },
+            status_code=200,
+            additional_matcher=_match_active_status,
+        )
+
+        # Participants for in-progress conference CF2
+        requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences/CF2/Participants.json",
+            json={
+                "participants": [
+                    {
+                        "call_sid": "CA2",
+                        "conference_sid": "CF2",
+                        "account_sid": "AC123",
+                        "date_created": "2022-11-15T11:01:00Z",
+                        "date_updated": "2022-11-15T11:05:00Z",
+                        "status": "connected",
+                    }
+                ]
+            },
+            status_code=200,
+        )
+
+        cfg = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
+        records = read_from_stream(cfg, "conference_participants", SyncMode.full_refresh).records
+
+        assert conferences_matcher.called, "Should request conferences with an active Status filter"
+        assert set(requested_statuses) == {"init", "in-progress"}, "Should request both init and in-progress conferences"
+        assert len(records) >= 1
+        assert records[0].record.data["conference_sid"] == "CF2"
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_conference_participants_empty_parent_returns_no_records(self, requests_mock):
+        accounts_json = {
+            "accounts": [
+                {
+                    "sid": "AC123",
+                    "date_created": "2022-01-01T00:00:00Z",
+                    "subresource_uris": {
+                        "conferences": "/2010-04-01/Accounts/AC123/Conferences.json",
+                    },
+                }
+            ],
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
+        requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences.json",
+            json={"conferences": []},
+            status_code=200,
+        )
+
+        cfg = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
+        records = read_from_stream(cfg, "conference_participants", SyncMode.full_refresh).records
+
+        assert len(records) == 0
 
 
 class TestTwilioNestedStream:
-    CONFIG = {"authenticator": TEST_CONFIG.get("authenticator")}
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_message_media_filters_num_media_zero(self, requests_mock):
+        ACCOUNTS_JSON = {
+            "accounts": [
+                {
+                    "sid": "AC123",
+                    "date_created": "2022-01-01T00:00:00Z",
+                    "subresource_uris": {
+                        "addresses": "/2010-04-01/Accounts/AC123/Addresses.json",
+                        "calls": "/2010-04-01/Accounts/AC123/Calls.json",
+                        "messages": "/2010-04-01/Accounts/AC123/Messages.json",
+                        "recordings": "/2010-04-01/Accounts/AC123/Recordings.json",
+                    },
+                }
+            ],
+        }
+        # Parent accounts
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+
+        # Messages: one with num_media "0" (should be filtered out), one with "1" (should be kept)
+        messages_json = {
+            "messages": [
+                {
+                    "sid": "SM0",
+                    "account_sid": "AC123",
+                    "num_media": "0",
+                    "date_sent": "2022-11-16T01:00:00Z",
+                    "subresource_uris": {"media": "/2010-04-01/Accounts/AC123/Messages/SM0/Media.json"},
+                },
+                {
+                    "sid": "SM1",
+                    "account_sid": "AC123",
+                    "num_media": "1",
+                    "date_sent": "2022-11-16T01:00:00Z",
+                    "subresource_uris": {"media": "/2010-04-01/Accounts/AC123/Messages/SM1/Media.json"},
+                },
+            ]
+        }
+        # Ignore query params (date slice, PageSize, etc.) so one matcher handles all windows.
+        requests_mock.get(f"{BASE}/Accounts/AC123/Messages.json", json=messages_json, status_code=200)
+
+        # Only register the valid media endpoint (SM1). If the stream tries SM0, test will fail (unmatched request).
+        media_json = {"media_list": [{"sid": "ME1", "date_created": "2022-11-16T01:05:00Z"}]}
+        media_matcher = requests_mock.get(
+            f"{BASE}/Accounts/AC123/Messages/SM1/Media.json",
+            json=media_json,
+            status_code=200,
+        )
+
+        cfg = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
+        out = read_from_stream(cfg, "message_media", SyncMode.full_refresh)
+        records = out.records
+
+        # Assert we fetched media only for SM1
+        assert media_matcher.called, "Media endpoint for SM1 was not called"
+        assert len(records) == 1, f"Expected 1 media record (only from SM1), got {len(records)}"
+
+    def test_services_stream_reads_from_conversations_api(self, requests_mock):
+        """`services` must hit the Conversations API, not the deprecated Programmable Chat API.
+
+        Twilio's Programmable Chat REST API (`chat.twilio.com/v2`) reaches end of life on
+        June 1, 2026, so the connector routes `services` to `conversations.twilio.com/v1/Services`.
+        """
+        chat_matcher = requests_mock.get("https://chat.twilio.com/v2/Services", status_code=410)
+        conversations_matcher = requests_mock.get(
+            "https://conversations.twilio.com/v1/Services",
+            json={
+                "services": [
+                    {
+                        "sid": "IS11111111111111111111111111111111",
+                        "account_sid": "AC123",
+                        "friendly_name": "Default Conversations Service",
+                        "date_created": "2022-01-01T00:00:00Z",
+                        "date_updated": "2022-01-02T00:00:00Z",
+                        "url": "https://conversations.twilio.com/v1/Services/IS11111111111111111111111111111111",
+                        "links": {},
+                    }
+                ]
+            },
+            status_code=200,
+        )
+
+        records = read_from_stream(TEST_CONFIG, "services", SyncMode.full_refresh).records
+
+        assert conversations_matcher.called, "`services` should call the Conversations API endpoint"
+        assert not chat_matcher.called, "`services` must not call the deprecated Programmable Chat API endpoint"
+        assert len(records) == 1
+
+    def test_roles_stream_reads_from_conversations_api(self, requests_mock):
+        """`roles` must hit the Conversations API, not the deprecated Programmable Chat API.
+
+        The Conversations API preserves Service and Role SIDs, so existing primary keys are
+        unchanged, but the request base URL must be `conversations.twilio.com/v1`.
+        """
+        service_sid = "IS11111111111111111111111111111111"
+        requests_mock.get(
+            "https://conversations.twilio.com/v1/Services",
+            json={
+                "services": [
+                    {
+                        "sid": service_sid,
+                        "account_sid": "AC123",
+                        "friendly_name": "Default Conversations Service",
+                        "date_created": "2022-01-01T00:00:00Z",
+                        "date_updated": "2022-01-02T00:00:00Z",
+                        "url": f"https://conversations.twilio.com/v1/Services/{service_sid}",
+                        "links": {},
+                    }
+                ]
+            },
+            status_code=200,
+        )
+        chat_roles_matcher = requests_mock.get(f"https://chat.twilio.com/v2/Services/{service_sid}/Roles", status_code=410)
+        conversations_roles_matcher = requests_mock.get(
+            f"https://conversations.twilio.com/v1/Services/{service_sid}/Roles",
+            json={
+                "roles": [
+                    {
+                        "sid": "RL22222222222222222222222222222222",
+                        "account_sid": "AC123",
+                        "chat_service_sid": service_sid,
+                        "friendly_name": "service admin",
+                        "type": "service",
+                        "permissions": ["editAnyMessage"],
+                        "date_created": "2022-01-01T00:00:00Z",
+                        "date_updated": "2022-01-02T00:00:00Z",
+                        "url": f"https://conversations.twilio.com/v1/Services/{service_sid}/Roles/RL22222222222222222222222222222222",
+                    }
+                ]
+            },
+            status_code=200,
+        )
+
+        records = read_from_stream(TEST_CONFIG, "roles", SyncMode.full_refresh).records
+
+        assert conversations_roles_matcher.called, "`roles` should call the Conversations API endpoint"
+        assert not chat_roles_matcher.called, "`roles` must not call the deprecated Programmable Chat API endpoint"
+        assert len(records) == 1
+        assert records[0].record.data["chat_service_sid"] == service_sid
 
     @pytest.mark.parametrize(
-        "stream_cls, expected",
+        "stream_name, expected_count",
         [
-            (Addresses, {}),
-            (DependentPhoneNumbers, {}),
-            (MessageMedia, {"num_media": "0"}),
+            ("addresses", 1),
+            ("dependent_phone_numbers", 1),
         ],
     )
-    def test_media_exist_validation(self, stream_cls, expected):
-        stream = stream_cls(**self.CONFIG)
-        result = stream.media_exist_validation
-        assert result == expected
+    def test_stream_http_end_to_end(self, stream_name, expected_count, requests_mock):
+        # 1) Parent: Accounts (provides the subresource_uris.addresses link)
+        accounts_json = {
+            "accounts": [
+                {
+                    "sid": "AC123",
+                    "date_created": "2022-01-01T00:00:00Z",
+                    "subresource_uris": {"addresses": "/2010-04-01/Accounts/AC123/Addresses.json"},
+                }
+            ]
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
 
-    @pytest.mark.parametrize(
-        "stream_cls, parent_stream, record, expected",
-        [
-            (
-                Addresses,
-                Accounts,
-                [{"subresource_uris": {"addresses": "123"}}],
-                [StreamSlice(partition={"subresource_uri": "123"}, cursor_slice={})],
-            ),
-            (
-                DependentPhoneNumbers,
-                Addresses,
-                [{"subresource_uris": {"addresses": "123"}, "sid": "123", "account_sid": "456"}],
-                [StreamSlice(partition={"sid": "123", "account_sid": "456"}, cursor_slice={})],
-            ),
-        ],
-    )
-    def test_stream_slices(self, stream_cls, parent_stream, record, expected):
-        stream = stream_cls(**self.CONFIG)
-        with patch.object(Accounts, "read_records", return_value=record):
-            with patch.object(parent_stream, "stream_slices", return_value=record):
-                with patch.object(parent_stream, "read_records", return_value=record):
-                    result = stream.stream_slices(sync_mode="full_refresh")
-                    assert list(result) == expected
+        # 2) Child: Addresses (collection key must match the stream name: "addresses")
+        addresses_json = {"addresses": [{"sid": "AD1", "account_sid": "AC123"}]}
+        requests_mock.get(f"{BASE}/Accounts/AC123/Addresses.json", json=addresses_json, status_code=200)
+
+        # 3) Grandchild: DependentPhoneNumbers (collection key must be "dependent_phone_numbers")
+        if stream_name == "dependent_phone_numbers":
+            dpn_json = {"dependent_phone_numbers": [{"sid": "PN1", "account_sid": "AC123"}]}
+            requests_mock.get(
+                f"{BASE}/Accounts/AC123/Addresses/AD1/DependentPhoneNumbers.json",
+                json=dpn_json,
+                status_code=200,
+            )
+
+        records = read_from_stream(TEST_CONFIG, stream_name, SyncMode.full_refresh).records
+
+        assert len(records) == expected_count
 
 
-class TestUsageNestedStream:
-    CONFIG = {"authenticator": TEST_CONFIG.get("authenticator")}
-
-    @pytest.mark.parametrize(
-        "stream_cls, expected",
-        [
-            (UsageTriggers, "Triggers"),
-        ],
-    )
-    def test_path_name(self, stream_cls, expected):
-        stream = stream_cls(**self.CONFIG)
-        result = stream.path_name
-        assert result == expected
-
-    @pytest.mark.parametrize(
-        "stream_cls, parent_stream, record, expected",
-        [
-            (
-                UsageTriggers,
-                Accounts,
-                [{"sid": "234", "account_sid": "678", "date_created": "2022-11-16 00:00:00"}],
-                [StreamSlice(partition={"account_sid": "234", "date_created": "2022-11-16 00:00:00"}, cursor_slice={})],
-            ),
-        ],
-    )
-    def test_stream_slices(self, stream_cls, parent_stream, record, expected):
-        stream = stream_cls(**self.CONFIG)
-        with patch.object(Accounts, "read_records", return_value=record):
-            with patch.object(parent_stream, "stream_slices", return_value=record):
-                with patch.object(parent_stream, "read_records", return_value=record):
-                    result = stream.stream_slices()
-                    assert list(result) == expected
+@pytest.mark.parametrize(
+    "input_state,expected_state,should_migrate",
+    [
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    }
+                ]
+            },
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "init",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            True,
+            id="single_partition_duplicated_for_all_statuses",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "init",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "init",
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            True,
+            id="multiple_partitions_each_duplicated_with_own_cursor",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                    }
+                ]
+            },
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "init",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {},
+                    },
+                ]
+            },
+            True,
+            id="partition_without_cursor_gets_empty_cursor",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            None,
+            False,
+            id="already_migrated_no_op",
+        ),
+        pytest.param(
+            {},
+            None,
+            False,
+            id="empty_state_no_op",
+        ),
+    ],
+)
+def test_conferences_state_migration(input_state, expected_state, should_migrate):
+    migration = TwilioConferencesStateMigration()
+    assert migration.should_migrate(input_state) == should_migrate
+    if should_migrate:
+        assert migration.migrate(input_state) == expected_state

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.test.util.destination_process
@@ -179,11 +179,22 @@ class DockerizedDestination(
                 emptyList()
             }
 
+        // Why these Micronaut Envs?
+        // - test: this is only used for tests - this enables loading of test specific config
+        // - cli: in docker mode, we are running via the CLI (random beans expect this)
+        // - destination: this is DockerizedDestination - we're always a destination
+        // - connector: see above - destinations are connectors
+        val micronautEnvEnvVar =
+            listOf(
+                "-e",
+                "MICRONAUT_ENVIRONMENTS=test,docker,cli,destination,connector",
+            )
+
         val additionalEnvEntries =
             envVars.flatMap { (key, value) ->
                 logger.info { "Env vars: $key loaded" }
                 listOf("-e", "$key=$value")
-            } + socketPathEnvVarsMaybe
+            } + micronautEnvEnvVar + socketPathEnvVarsMaybe
 
         // DANGER: env vars can contain secrets, so you MUST NOT log this command.
         val cmd: MutableList<String> =
@@ -391,11 +402,18 @@ class DockerizedDestination(
             }
     }
 
-    override suspend fun sendMessage(message: InputMessage, broadcast: Boolean) {
+    override suspend fun sendMessage(
+        message: InputMessage,
+        broadcast: Boolean,
+        useSingleSocket: Boolean
+    ) {
         awaitReadyForSendingMessages()
         val dataChannels =
             if (broadcast) {
                 destinationDataChannels
+            } else if (useSingleSocket) {
+                // Use only the first socket to preserve message ordering
+                arrayOf(destinationDataChannels[0])
             } else {
                 arrayOf(
                     destinationDataChannels[dataChannelIndex.rotate(destinationDataChannels.size)]

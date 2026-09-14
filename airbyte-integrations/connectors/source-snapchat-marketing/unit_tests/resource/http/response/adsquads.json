@@ -1,0 +1,27 @@
+{
+  "request_status": "SUCCESS",
+  "request_id": "test_request_id",
+  "adsquads": [
+    {
+      "sub_request_status": "SUCCESS",
+      "adsquad": {
+        "id": "test_adsquad_012",
+        "updated_at": "2024-01-15T10:00:00.000Z",
+        "created_at": "2023-01-01T00:00:00.000Z",
+        "name": "Test Ad Squad",
+        "status": "ACTIVE",
+        "campaign_id": "test_campaign_789",
+        "type": "SNAP_ADS",
+        "targeting": {},
+        "targeting_reach_status": "VALID",
+        "placement": "SNAP_ADS",
+        "billing_event": "IMPRESSION",
+        "auto_bid": true,
+        "bid_strategy": "AUTO_BID",
+        "daily_budget_micro": 50000000,
+        "start_time": "2024-01-01T00:00:00.000Z",
+        "optimization_goal": "IMPRESSIONS"
+      }
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mongodb.cdc;
@@ -12,6 +12,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadTimeoutUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
@@ -101,10 +102,56 @@ public class MongoDbCdcInitializer {
     final JsonNode initialDebeziumState =
         mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, serverId);
 
-    final MongoDbCdcState cdcState =
-        (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null || stateManager.getCdcState().state().isNull())
-            ? new MongoDbCdcState(initialDebeziumState, isEnforceSchema)
-            : new MongoDbCdcState(Jsons.clone(stateManager.getCdcState().state()), stateManager.getCdcState().schema_enforced());
+    boolean needsStateMigration = false;
+    String extractedResumeTokenString = null;
+
+    // Check if we have saved CDC state and validate it for corruption or outdated format
+    if (stateManager.getCdcState() != null && stateManager.getCdcState().state() != null) {
+      JsonNode savedCdcState = stateManager.getCdcState().state();
+      String correctlyNormalizedServerId = MongoDbDebeziumPropertiesManager.normalizeToDebeziumFormat(serverId);
+
+      List<Map.Entry<String, JsonNode>> savedStateEntries = new ArrayList<>();
+      savedCdcState.fields().forEachRemaining(savedStateEntries::add);
+      // Check for either corrupted state (multiple partitions) OR migration needed (old database name
+      // format)
+      boolean needsCleaning = hasOldFormatState(savedStateEntries, correctlyNormalizedServerId);
+
+      // Handle problematic state scenarios. Extracting the resume token based on each case.
+      if (needsCleaning) {
+        if (savedCdcState.size() > 1) { // Multiple partitions: Extract resume token from the state with correct server_id format
+          LOGGER.warn("Detected {} partition entries in CDC state - should only have 1", savedCdcState.size());
+          for (Map.Entry<String, JsonNode> entry : savedStateEntries) {
+            String keyString = entry.getKey();
+            if (keyString.contains(correctlyNormalizedServerId)) {
+              extractedResumeTokenString = getTokenFromCorruptedState(entry.getValue().asText());
+              break;
+            }
+          }
+        } else { // Single partition with old format: Extract resume token from the single state (migration case)
+          LOGGER.info("Detected old database name format in CDC state, migrating to connection string format");
+          extractedResumeTokenString = getTokenFromCorruptedState(savedStateEntries.get(0).getValue().asText());
+        }
+        needsStateMigration = true;
+      }
+    }
+
+    final MongoDbCdcState cdcState;
+    if (needsStateMigration && extractedResumeTokenString != null) {
+      JsonNode cleanDebeziumState = MongoDbDebeziumStateUtil.formatState(serverId, extractedResumeTokenString);
+      // Corruption/migration: create a clean state using extracted resume token string
+      cdcState = new MongoDbCdcState(cleanDebeziumState, isEnforceSchema);
+      LOGGER.info("Created clean MongoDbCdcState from extracted resume token");
+    } else if (stateManager.getCdcState() == null ||
+        stateManager.getCdcState().state() == null ||
+        stateManager.getCdcState().state().isNull()) {
+      // No cdc state: create a new state from initial Debezium state.
+      cdcState = new MongoDbCdcState(initialDebeziumState, isEnforceSchema);
+      LOGGER.info("Created new MongoDbCdcState from initial state");
+    } else {
+      // Valid existing state: use the current state
+      cdcState = new MongoDbCdcState(Jsons.clone(stateManager.getCdcState().state()), stateManager.getCdcState().schema_enforced());
+      LOGGER.info("Using existing valid MongoDbCdcState");
+    }
 
     final Optional<BsonDocument> optSavedOffset = mongoDbDebeziumStateUtil.savedOffset(
         Jsons.clone(defaultDebeziumProperties),
@@ -118,9 +165,22 @@ public class MongoDbCdcInitializer {
           "Unable extract the offset out of state, State mutation might not be working. " + cdcState.state());
     }
 
+    // Build cdcStreamList early - needed for validation and later CDC execution
+    final var cdcStreamList = incrementalOnlyStreamsCatalog.getStreams().stream()
+        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
+        .map(s -> s.getStream().getNamespace() + "\\." + s.getStream().getName())
+        .toList();
+
+    // Create Debezium properties for validation - using same pipeline as CDC resumption
+    final var validationOffsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcState.state(), Optional.empty());
+    final var validationPropertiesManager =
+        new MongoDbDebeziumPropertiesManager(Jsons.clone(defaultDebeziumProperties), config.getDatabaseConfig(), incrementalOnlyStreamsCatalog,
+            cdcStreamList);
+    final Properties validationDebeziumProperties = validationPropertiesManager.getDebeziumProperties(validationOffsetManager);
+
     final boolean savedOffsetIsValid =
         optSavedOffset
-            .filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient, databaseNames, streamsByDatabase))
+            .filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient, validationDebeziumProperties))
             .isPresent();
 
     if (!savedOffsetIsValid) {
@@ -174,11 +234,6 @@ public class MongoDbCdcInitializer {
 
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
-
-    final var cdcStreamList = incrementalOnlyStreamsCatalog.getStreams().stream()
-        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
-        .map(s -> s.getStream().getNamespace() + "\\." + s.getStream().getName())
-        .toList();
 
     // We can close the client after the initial snapshot is complete, incremental
     // iterator does not make use of the client.
@@ -260,6 +315,27 @@ public class MongoDbCdcInitializer {
           cdcStreamsCompleteStatusEmitters)
           .flatMap(Collection::stream).toList();
     }
+  }
+
+  private String getTokenFromCorruptedState(String valueString) {
+    try {
+      JsonNode valueJson = Jsons.deserialize(valueString);
+      if (valueJson.has("resume_token")) {
+        return valueJson.get("resume_token").asText();
+      }
+    } catch (Exception e) {
+      LOGGER.warn("Failed to parse value JSON: {}", e.getMessage());
+    }
+    return null;
+  }
+
+  private boolean hasOldFormatState(List<Map.Entry<String, JsonNode>> stateEntries, String correctNormalizedServerId) {
+    for (Map.Entry<String, JsonNode> entry : stateEntries) {
+      if (!entry.getKey().contains(correctNormalizedServerId)) {
+        return true; // Found a state entry that doesn't match current state format
+      }
+    }
+    return false; // All state entries match current state format
   }
 
   /**

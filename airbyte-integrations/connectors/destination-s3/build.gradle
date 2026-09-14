@@ -7,8 +7,8 @@ plugins {
 
 airbyteBulkConnector {
     core = 'load'
-    toolkits = ['load-s3', 'load-avro', 'load-aws']
-    cdk = 'local'
+    toolkits = ['legacy-task-load-s3', 'legacy-task-load-avro', 'load-aws']
+    useLegacyTaskLoader = true
 }
 
 application {

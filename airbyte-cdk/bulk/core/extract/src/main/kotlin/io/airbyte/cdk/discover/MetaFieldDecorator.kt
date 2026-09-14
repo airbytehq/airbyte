@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.discover
@@ -15,7 +15,7 @@ import java.time.OffsetDateTime
 interface MetaFieldDecorator {
 
     /** [MetaField] to use as a global cursor, if applicable. */
-    val globalCursor: FieldOrMetaField?
+    val globalCursor: DataOrMetaField?
 
     /**
      * All [MetaField]s to be found in [Global] stream records.

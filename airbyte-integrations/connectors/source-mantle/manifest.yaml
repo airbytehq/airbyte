@@ -1,0 +1,845 @@
+version: 6.48.15
+
+type: DeclarativeSource
+
+description: This connector use the Mantle API to get customers and subscriptions streams
+
+check:
+  type: CheckStream
+  stream_names:
+    - customers
+
+definitions:
+  streams:
+    customers:
+      type: DeclarativeStream
+      name: customers
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: take
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 500
+            cursor_value: "{{response['cursor']}}"
+            stop_condition: "{{ response.hasNextPage is false }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/customers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - customers
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
+        start_time_option:
+          type: RequestOption
+          field_name: minUpdatedAt
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+    subscriptions:
+      type: DeclarativeStream
+      name: subscriptions
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: take
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10000
+            cursor_value: "{{response['cursor']}}"
+            stop_condition: "{{ response.hasNextPage is false }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/subscriptions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - subscriptions
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subscriptions"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P1D
+        cursor_field: createdAt
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        end_time_option:
+          type: RequestOption
+          field_name: endDate
+          inject_into: request_parameter
+        lookback_window: PT1H
+        start_time_option:
+          type: RequestOption
+          field_name: startDate
+          inject_into: request_parameter
+        cursor_granularity: PT0.001S
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.heymantle.com/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/subscriptions"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    customers:
+      hasRecords: true
+      streamHash: c2aa0aae068606353f572dce2f7fcbb1bea7cb0b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    subscriptions:
+      hasRecords: true
+      streamHash: 28ea0881f084a88638cf3fad7abe79cef3e21059
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    customers: true
+    subscriptions: true
+
+schemas:
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updatedAt
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      test:
+        type:
+          - boolean
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      domain:
+        type:
+          - string
+          - "null"
+      iconUrl:
+        type:
+          - string
+          - "null"
+      contacts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            email:
+              type:
+                - string
+                - "null"
+            label:
+              type:
+                - string
+                - "null"
+            createdAt:
+              type:
+                - string
+                - "null"
+            customers:
+              type:
+                - array
+                - "null"
+            updatedAt:
+              type:
+                - string
+                - "null"
+      industry:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type: string
+      countryCode:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - object
+          - "null"
+      last30Revenue:
+        type:
+          - number
+          - "null"
+      lifetimeValue:
+        type:
+          - number
+          - "null"
+      shopifyDomain:
+        type:
+          - string
+          - "null"
+      shopifyShopId:
+        type:
+          - string
+          - "null"
+      billingAddress:
+        type:
+          - object
+          - "null"
+      appInstallations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            app:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                slug:
+                  type:
+                    - string
+                    - "null"
+                iconUrl:
+                  type:
+                    - string
+                    - "null"
+                createdAt:
+                  type:
+                    - string
+                    - "null"
+                apiClientId:
+                  type:
+                    - string
+                    - "null"
+                development:
+                  type:
+                    - boolean
+                    - "null"
+                displayName:
+                  type:
+                    - string
+                    - "null"
+            appId:
+              type:
+                - string
+                - "null"
+            reviews:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  date:
+                    type:
+                      - string
+                      - "null"
+                  rating:
+                    type:
+                      - number
+                      - "null"
+                  content:
+                    type:
+                      - string
+                      - "null"
+            platformId:
+              type:
+                - string
+                - "null"
+            installedAt:
+              type:
+                - string
+                - "null"
+            customFields:
+              type:
+                - object
+                - "null"
+            subscription:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                plan:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    amount:
+                      type:
+                        - number
+                        - "null"
+                    public:
+                      type:
+                        - boolean
+                        - "null"
+                    visible:
+                      type:
+                        - boolean
+                        - "null"
+                    features:
+                      type:
+                        - object
+                        - "null"
+                    interval:
+                      type:
+                        - string
+                        - "null"
+                    createdAt:
+                      type:
+                        - string
+                        - "null"
+                    trialDays:
+                      type:
+                        - number
+                        - "null"
+                    updatedAt:
+                      type:
+                        - string
+                        - "null"
+                    flexBilling:
+                      type:
+                        - boolean
+                        - "null"
+                    currencyCode:
+                      type:
+                        - string
+                        - "null"
+                    customFields:
+                      type:
+                        - object
+                        - "null"
+                    customerTags:
+                      type:
+                        - array
+                        - "null"
+                    deprecatedAt:
+                      type:
+                        - string
+                        - "null"
+                    shopifyPlans:
+                      type:
+                        - array
+                        - "null"
+                    lifetimeValue:
+                      type:
+                        - number
+                        - "null"
+                    monthlyRevenue:
+                      type:
+                        - number
+                        - "null"
+                    subscriberCount:
+                      type:
+                        - number
+                        - "null"
+                    activeTrialCount:
+                      type:
+                        - number
+                        - "null"
+                    customerExcludeTags:
+                      type:
+                        - array
+                        - "null"
+                    averageLifetimeValue:
+                      type:
+                        - number
+                        - "null"
+                total:
+                  type:
+                    - number
+                    - "null"
+                active:
+                  type:
+                    - boolean
+                    - "null"
+                cancelOn:
+                  type:
+                    - string
+                    - "null"
+                subtotal:
+                  type:
+                    - number
+                    - "null"
+                createdAt:
+                  type:
+                    - string
+                    - "null"
+                lineItems:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      amount:
+                        type:
+                          - number
+                          - "null"
+                      planId:
+                        type:
+                          - string
+                          - "null"
+                      currencyCode:
+                        type:
+                          - string
+                          - "null"
+                      presentmentAmount:
+                        type:
+                          - number
+                          - "null"
+                      presentmentCurrencyCode:
+                        type:
+                          - string
+                          - "null"
+                activatedAt:
+                  type:
+                    - string
+                    - "null"
+                trialStartsAt:
+                  type:
+                    - string
+                    - "null"
+                trialExpiresAt:
+                  type:
+                    - string
+                    - "null"
+                currentPeriodEnd:
+                  type:
+                    - string
+                    - "null"
+                presentmentTotal:
+                  type:
+                    - number
+                    - "null"
+                billingCycleAnchor:
+                  type:
+                    - string
+                    - "null"
+                currentPeriodStart:
+                  type:
+                    - string
+                    - "null"
+                presentmentSubtotal:
+                  type:
+                    - number
+                    - "null"
+            last30Revenue:
+              type:
+                - number
+                - "null"
+            lifetimeValue:
+              type:
+                - number
+                - "null"
+            trialStartsAt:
+              type:
+                - string
+                - "null"
+            uninstalledAt:
+              type:
+                - string
+                - "null"
+            trialExpiresAt:
+              type:
+                - string
+                - "null"
+            churnPrediction:
+              type:
+                - number
+                - "null"
+            churnPredictionLabel:
+              type:
+                - object
+                - "null"
+              properties:
+                label:
+                  type:
+                    - string
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+            averageMonthlyRevenue:
+              type:
+                - number
+                - "null"
+      firstInteractionAt:
+        type:
+          - string
+          - "null"
+      averageMonthlyRevenue:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  subscriptions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - createdAt
+    properties:
+      id:
+        type: string
+      plan:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          amount:
+            type:
+              - number
+              - "null"
+          public:
+            type:
+              - boolean
+              - "null"
+          visible:
+            type:
+              - boolean
+              - "null"
+          features:
+            type:
+              - object
+              - "null"
+          interval:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          trialDays:
+            type:
+              - number
+              - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+          flexBilling:
+            type:
+              - boolean
+              - "null"
+          currencyCode:
+            type:
+              - string
+              - "null"
+          customFields:
+            type:
+              - object
+              - "null"
+          customerTags:
+            type:
+              - array
+              - "null"
+          shopifyPlans:
+            type:
+              - array
+              - "null"
+          lifetimeValue:
+            type:
+              - number
+              - "null"
+          monthlyRevenue:
+            type:
+              - number
+              - "null"
+          subscriberCount:
+            type:
+              - number
+              - "null"
+          activeTrialCount:
+            type:
+              - number
+              - "null"
+          customerExcludeTags:
+            type:
+              - array
+              - "null"
+          averageLifetimeValue:
+            type:
+              - number
+              - "null"
+      total:
+        type:
+          - number
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      frozenAt:
+        type:
+          - string
+          - "null"
+      subtotal:
+        type:
+          - number
+          - "null"
+      createdAt:
+        type: string
+      lineItems:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            amount:
+              type:
+                - number
+                - "null"
+            planId:
+              type:
+                - string
+                - "null"
+            currencyCode:
+              type:
+                - string
+                - "null"
+            presentmentAmount:
+              type:
+                - number
+                - "null"
+            presentmentCurrencyCode:
+              type:
+                - string
+                - "null"
+      canceledAt:
+        type:
+          - string
+          - "null"
+      activatedAt:
+        type:
+          - string
+          - "null"
+      trialStartsAt:
+        type:
+          - string
+          - "null"
+      trialExpiresAt:
+        type:
+          - string
+          - "null"
+      currentPeriodEnd:
+        type:
+          - string
+          - "null"
+      presentmentTotal:
+        type:
+          - number
+          - "null"
+      billingCycleAnchor:
+        type:
+          - string
+          - "null"
+      currentPeriodStart:
+        type:
+          - string
+          - "null"
+      presentmentSubtotal:
+        type:
+          - number
+          - "null"
+    additionalProperties: true

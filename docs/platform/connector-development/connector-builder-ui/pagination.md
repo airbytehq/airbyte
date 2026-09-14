@@ -508,3 +508,7 @@ If pagination parameters aren't being sent correctly:
 - **Check parameter names**: Verify that parameter names match what the API expects
 - **Test interpolation**: For interpolated values, ensure the template syntax is correct
 - **Review API documentation**: Confirm the expected parameter format and location
+
+## Related
+
+- *YAML Components*: [Pagination](/platform/connector-development/config-based/understanding-the-yaml-file/pagination)

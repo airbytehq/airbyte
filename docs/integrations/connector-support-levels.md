@@ -13,7 +13,7 @@ The following table describes the support levels of Airbyte connectors.
 | **Support: Cloud**                   | Supported\* | Supported\*            | No Support                                                                                                                 | Supported\*\*  |
 | **Support: Powered by Airbyte**      | Supported\* | Supported\*            | No Support                                                                                                                 | Supported\*\*  |
 | **Support: Self-Managed Enterprise** | Supported\* | Supported\*            | No Support                                                                                                                 | Supported\*\*  |
-| **Support: Self-Managed Community**  | Slack only  | N/A                    | No Support                                                                                                                 | Slack only     |
+| **Support: Core**  | Slack only  | N/A                    | No Support                                                                                                                 | Slack only     |
 | **Who can use them**                 | Everyone    | Extra license required | Everyone                                                                                                                   | You            |
 
 \*For Airbyte Connectors, Official Support SLAs are only available to customers with Premium
@@ -34,7 +34,7 @@ maintenance/upgrades are owned by the customer.
 
 ## Enterprise connectors
 
-**Enterprise** Connectors are premium connectors available exclusively for Self-Managed Enterprise and Cloud Teams customers at **an additional cost**. These connectors:
+**Enterprise** Connectors are premium connectors available exclusively for Enterprise and Pro customers at **an additional cost**. These connectors:
 
 - Are built and maintained by the Airbyte team.
 - Provide enhanced capabilities and support for critical enterprise systems.
@@ -46,11 +46,11 @@ maintenance/upgrades are owned by the customer.
 **Marketplace** connectors are maintained by Airbyte's community members. These connectors:
 
 - Are not maintained by Airbyte.
-- Do not have support SLAs.
-- Should be used with caution in production.
+- Are not covered by Airbyte support SLAs.
+- Should be tested before production use.
 - Might not be feature complete and may experience backward-incompatible, breaking changes with no notice.
 - Are available to everyone.
-- Can [be improved by people like you](../platform/contributing-to-airbyte/).
+- Can [be improved by people like you](/community/contributing-to-airbyte/).
 
 ## Custom connectors
 

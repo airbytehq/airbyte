@@ -8,7 +8,7 @@ description = "Unit tests for source-linkedin-ads"
 authors = ["Airbyte <contact@airbyte.io>"]
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
-airbyte-cdk = "^6"
+airbyte-cdk = "^7"
 pytest = "^8"
 freezegun = "^1.4.0"
 pytest-mock = "^3.6.1"

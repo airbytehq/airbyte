@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery
@@ -12,8 +12,11 @@ import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 /**
@@ -72,6 +75,38 @@ object TimeWithTimezoneMapper : ExpectedRecordMapper {
                     when (value) {
                         is TimeWithTimezoneValue ->
                             StringValue(value.value.format((DateTimeFormatter.ISO_OFFSET_TIME)))
+                        else -> value
+                    }
+                }
+            )
+        return expectedRecord.copy(data = mappedData)
+    }
+}
+
+class ColumnNameModifyingMapper(private val columnNameGenerator: ColumnNameGenerator) :
+    ExpectedRecordMapper {
+    override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
+        val mappedProperties =
+            expectedRecord.data.values.mapKeysTo(linkedMapOf()) { (k, _) ->
+                columnNameGenerator.getColumnName(k).displayName
+            }
+        return expectedRecord.copy(data = ObjectValue(mappedProperties))
+    }
+}
+
+/** Many warehouse destinations store timestamps in UTC. This mapper implements that conversion. */
+object RootLevelTimestampsToUtcMapper : ExpectedRecordMapper {
+    override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
+        val mappedData =
+            ObjectValue(
+                expectedRecord.data.values.mapValuesTo(linkedMapOf()) { (_, value) ->
+                    when (value) {
+                        is TimeWithTimezoneValue ->
+                            TimeWithTimezoneValue(value.value.withOffsetSameInstant(ZoneOffset.UTC))
+                        is TimestampWithTimezoneValue ->
+                            TimestampWithTimezoneValue(
+                                value.value.withOffsetSameInstant(ZoneOffset.UTC)
+                            )
                         else -> value
                     }
                 }

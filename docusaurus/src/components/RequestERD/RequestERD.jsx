@@ -1,10 +1,10 @@
 import { useLocation } from "@docusaurus/router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { EmailModal } from "./EmailModal";
 import styles from "./RequestERD.module.css";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-const { getRegistryEntry } = require("../../remark/utils");
+const { getRegistryEntry } = require("../../helpers/clientRegistryUtils");
 const { getFromPaths } = require("../../helpers/objects");
 
 export const RequestERD = () => {
@@ -21,9 +21,8 @@ export const RequestERD = () => {
       const entry = await getRegistryEntry({ path: location.pathname });
       const erdUrl = getFromPaths(entry, "erdUrl_[oss|cloud]");
       setHasERD(Boolean(erdUrl));
-      const name = getFromPaths(entry, "name_[oss|cloud]");
       setSource({
-        name,
+        name: entry.name,
         definitionId: entry.definitionId,
       });
     }

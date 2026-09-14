@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.command
@@ -23,6 +23,7 @@ class CliRunnerOutputStream : OutputStream() {
     val beanDefinition: RuntimeBeanDefinition<PrintStream> =
         RuntimeBeanDefinition.builder(PrintStream::class.java) { printStream }
             .singleton(true)
+            .replaces(PrintStream::class.java)
             .build()
 
     override fun write(b: Int) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql.v2
@@ -133,7 +133,7 @@ class MSSQLChecker(
     /** Creates a CSV file with headers matching the required table structure and one test record */
     private fun createTestCsvData(stream: DestinationStream): ByteArray {
         return ByteArrayOutputStream().use { outputStream ->
-            MSSQLCSVFormattingWriter(stream, outputStream, true).use { csvWriter ->
+            MSSQLCSVFormattingWriter(stream, outputStream).use { csvWriter ->
                 // TODO this is kind of dumb
                 val destinationRecord =
                     AirbyteMessage()

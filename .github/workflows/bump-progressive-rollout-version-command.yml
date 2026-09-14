@@ -1,0 +1,50 @@
+name: Bump connector version for progressive rollout
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Pull request number. This PR will be referenced in the changelog line."
+        type: number
+        required: false
+      comment-id:
+        description: "Optional. The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+
+      changelog:
+        description: "Optional. The comment to add to the changelog. If not provided, the PR title will be used."
+        required: false
+        default: ""
+
+      # These must be declared, but they are unused and ignored.
+      # TODO: Infer 'repo' and 'gitref' from PR number on other workflows, so we can remove these.
+      repo:
+        description: "Repo (Ignored)"
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "Ref (Ignored)"
+        required: false
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+run-name: "Bump connector version for progressive rollout in PR: #${{ github.event.inputs.pr }}"
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.inputs.pr }}
+  # Cancel any previous runs on the same branch if they are still in progress
+  cancel-in-progress: true
+
+jobs:
+  bump-progressive-rollout-version:
+    # Delegate to the bump-version workflow with type=rc.
+    uses: ./.github/workflows/bump-version-command.yml
+    with:
+      pr: ${{ github.event.inputs.pr }}
+      comment-id: ${{ github.event.inputs.comment-id }}
+      type: "rc"
+      changelog: ${{ github.event.inputs.changelog }}
+    secrets:
+      GH_PAT_APPROVINGTON_OCTAVIA: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}

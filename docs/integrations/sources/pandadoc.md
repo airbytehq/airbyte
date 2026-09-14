@@ -26,6 +26,10 @@ Airbyte connector for PandaDoc allows users to extract data from PandaDoc and in
 | webhook_subscriptions | uuid | No pagination | ✅ |  ❌  |
 | webhook_events | uuid | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -33,6 +37,35 @@ Airbyte connector for PandaDoc allows users to extract data from PandaDoc and in
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.64 | 2026-09-08 | [85614](https://github.com/airbytehq/airbyte/pull/85614) | Update dependencies |
+| 0.0.63 | 2026-08-18 | [84684](https://github.com/airbytehq/airbyte/pull/84684) | Update dependencies |
+| 0.0.62 | 2026-08-11 | [84063](https://github.com/airbytehq/airbyte/pull/84063) | Update dependencies |
+| 0.0.61 | 2026-08-04 | [83568](https://github.com/airbytehq/airbyte/pull/83568) | Update dependencies |
+| 0.0.60 | 2026-07-28 | [83036](https://github.com/airbytehq/airbyte/pull/83036) | Update dependencies |
+| 0.0.59 | 2026-07-21 | [82531](https://github.com/airbytehq/airbyte/pull/82531) | Update dependencies |
+| 0.0.58 | 2026-07-14 | [81954](https://github.com/airbytehq/airbyte/pull/81954) | Update dependencies |
+| 0.0.57 | 2026-06-30 | [81185](https://github.com/airbytehq/airbyte/pull/81185) | Update dependencies |
+| 0.0.56 | 2026-06-23 | [80578](https://github.com/airbytehq/airbyte/pull/80578) | Update dependencies |
+| 0.0.55 | 2026-06-16 | [79968](https://github.com/airbytehq/airbyte/pull/79968) | Update dependencies |
+| 0.0.54 | 2026-06-09 | [79399](https://github.com/airbytehq/airbyte/pull/79399) | Update dependencies |
+| 0.0.53 | 2026-06-02 | [78897](https://github.com/airbytehq/airbyte/pull/78897) | Update dependencies |
+| 0.0.52 | 2026-04-28 | [77355](https://github.com/airbytehq/airbyte/pull/77355) | Update dependencies |
+| 0.0.51 | 2026-04-21 | [76697](https://github.com/airbytehq/airbyte/pull/76697) | Update dependencies |
+| 0.0.50 | 2026-03-17 | [74964](https://github.com/airbytehq/airbyte/pull/74964) | Update dependencies |
+| 0.0.49 | 2026-03-10 | [74657](https://github.com/airbytehq/airbyte/pull/74657) | Update dependencies |
+| 0.0.48 | 2026-03-03 | [74219](https://github.com/airbytehq/airbyte/pull/74219) | Update dependencies |
+| 0.0.47 | 2026-02-10 | [72587](https://github.com/airbytehq/airbyte/pull/72587) | Update dependencies |
+| 0.0.46 | 2026-01-20 | [71650](https://github.com/airbytehq/airbyte/pull/71650) | Update dependencies |
+| 0.0.45 | 2025-12-18 | [70483](https://github.com/airbytehq/airbyte/pull/70483) | Update dependencies |
+| 0.0.44 | 2025-11-25 | [70084](https://github.com/airbytehq/airbyte/pull/70084) | Update dependencies |
+| 0.0.43 | 2025-11-18 | [69710](https://github.com/airbytehq/airbyte/pull/69710) | Update dependencies |
+| 0.0.42 | 2025-10-29 | [68996](https://github.com/airbytehq/airbyte/pull/68996) | Update dependencies |
+| 0.0.41 | 2025-10-21 | [68309](https://github.com/airbytehq/airbyte/pull/68309) | Update dependencies |
+| 0.0.40 | 2025-10-14 | [67803](https://github.com/airbytehq/airbyte/pull/67803) | Update dependencies |
+| 0.0.39 | 2025-10-07 | [67337](https://github.com/airbytehq/airbyte/pull/67337) | Update dependencies |
+| 0.0.38 | 2025-09-30 | [66391](https://github.com/airbytehq/airbyte/pull/66391) | Update dependencies |
+| 0.0.37 | 2025-09-09 | [65787](https://github.com/airbytehq/airbyte/pull/65787) | Update dependencies |
+| 0.0.36 | 2025-08-23 | [65225](https://github.com/airbytehq/airbyte/pull/65225) | Update dependencies |
 | 0.0.35 | 2025-08-09 | [64704](https://github.com/airbytehq/airbyte/pull/64704) | Update dependencies |
 | 0.0.34 | 2025-08-02 | [64236](https://github.com/airbytehq/airbyte/pull/64236) | Update dependencies |
 | 0.0.33 | 2025-07-26 | [63844](https://github.com/airbytehq/airbyte/pull/63844) | Update dependencies |

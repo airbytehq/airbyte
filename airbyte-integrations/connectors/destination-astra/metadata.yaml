@@ -15,7 +15,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 042ce96f-1158-4662-9543-e2ff015be97a
-  dockerImageTag: 0.1.44
+  dockerImageTag: 0.1.45
   dockerRepository: airbyte/destination-astra
   githubIssueLabel: destination-astra
   icon: astra.svg
@@ -44,4 +44,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: DataStax Astra documentation
+      url: https://docs.datastax.com/en/astra-serverless/docs/
+      type: api_reference
+    - title: Authentication
+      url: https://docs.datastax.com/en/astra-serverless/docs/manage/org/manage-tokens.html
+      type: authentication_guide
+    - title: CQL reference
+      url: https://docs.datastax.com/en/cql-oss/3.x/cql/cql_reference/cqlReferenceTOC.html
+      type: sql_reference
 metadataSpecVersion: "1.0"

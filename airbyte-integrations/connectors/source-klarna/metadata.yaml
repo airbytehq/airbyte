@@ -47,4 +47,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Klarna API reference
+      url: https://docs.klarna.com/api/
+      type: api_reference
+    - title: Klarna authentication
+      url: https://docs.klarna.com/api/authentication/
+      type: authentication_guide
 metadataSpecVersion: "1.0"

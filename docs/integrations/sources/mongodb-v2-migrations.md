@@ -1,5 +1,23 @@
 # MongoDb Migration Guide
 
+## Incident – March 20th, 2026
+
+On March 20th, 2026 between 4:00 AM – 7:00 AM PT, a version change to the MongoDB source connector caused the source configuration page to be overwritten. This incident only impacted Airbyte Cloud users.
+
+While the majority of our users were not impacted and synced as usual, if you had any jobs that ran during the incident window you may have seen the following error:
+
+> `Checking source connection failed – please review this connection's configuration to prevent future syncs from failing.`
+
+The issue has been identified and resolved.
+
+**Am I affected?**
+
+If you updated your source configuration during the incident window, you may find that your source config is now empty. In this case, simply re-enter your connection details and resume syncing as usual.
+
+If you are using **CDC (Incremental) syncs** and your oplog position was lost during this window, you will need to [refresh your connection](https://docs.airbyte.com/platform/operator-guides/refreshes). If you needed to run a full refresh to recover your sync, please reach out to our [Support](https://support.airbyte.com).
+
+If you have any further questions, don't hesitate to contact us.
+
 ## Upgrading to 2.0.0
 
 This version introduces multiple database support for the MongoDB V2 source connector. Previously, the connector only accepted a single database as input, but now it can discover and sync collections from multiple databases in a single connection.

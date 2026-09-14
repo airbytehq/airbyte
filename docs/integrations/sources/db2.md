@@ -56,6 +56,10 @@ Your database user should now be ready for use with Airbyte.
 To set up an SSL connection, you need to use a client certificate. Add it to the "SSL PEM file" field and the connector will automatically add it to the secret keystore.
 You can also enter your own password for the keystore, but if you don't, the password will be generated automatically.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -73,7 +77,7 @@ You can also enter your own password for the keystore, but if you don't, the pas
 | 0.1.20 | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212) | Fix silent exception swallowing in StreamingJdbcDatabase |
 | 0.1.19 | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760) | Removed redundant date-time datatypes formatting |
 | 0.1.18 | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455) | For network isolation, source connector accepts a list of hosts it is allowed to connect to |
-| 0.1.17  | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346)                                                      | Consolidate date/time values mapping for JDBC sources                                                                                     |
+| 0.1.17  | 2022-12-14 | [20346](https://github.com/airbytehq/airbyte/pull/20346)                                                      | Consolidate date/time values mapping for JDBC sources                                                                                     |
 |         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238)                                                      | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
 | 0.1.16  | 2022-09-06 | [16354](https://github.com/airbytehq/airbyte/pull/16354)                                                      | Add custom JDBC params                                                                                                                    |
 | 0.1.15  | 2022-09-01 | [16238](https://github.com/airbytehq/airbyte/pull/16238)                                                      | Emit state messages more frequently                                                                                                       |

@@ -117,6 +117,73 @@ def test_get_report_record_timestamp_without_aggregation(config, mock_user_query
     assert transformed_record["Date"] == expected_record["Date"]
 
 
+def test_search_query_performance_primary_key_distinguishes_rows_by_all_requested_dimensions(config):
+    stream = find_stream("search_query_performance_report_daily", config)
+    assert stream.primary_key == [
+        "TimePeriod",
+        "CustomerId",
+        "AccountId",
+        "CampaignId",
+        "AdGroupId",
+        "AdId",
+        "AdGroupCriterionId",
+        "KeywordId",
+        "Keyword",
+        "SearchQuery",
+        "AdType",
+        "CampaignType",
+        "Language",
+        "Network",
+        "DeviceType",
+        "DeviceOS",
+        "BidMatchType",
+        "DeliveredMatchType",
+        "TopVsOther",
+        "DestinationUrl",
+        "Goal",
+        "GoalType",
+    ]
+    record = {
+        "TimePeriod": "2025-01-01",
+        "CustomerId": "111111",
+        "AccountId": "222222",
+        "CampaignId": "333333",
+        "AdGroupId": "444444",
+        "AdId": "555555",
+        "AdGroupCriterionId": "666666",
+        "KeywordId": "777777",
+        "Keyword": "airbyte",
+        "SearchQuery": "airbyte cloud",
+        "AdType": "ExpandedText",
+        "CampaignType": "Search",
+        "Language": "English",
+        "Network": "OwnedAndOperatedAndSyndicatedSearch",
+        "DeviceType": "Computer",
+        "DeviceOS": "Windows",
+        "BidMatchType": "Exact",
+        "DeliveredMatchType": "Exact",
+        "TopVsOther": "Top",
+        "DestinationUrl": "https://airbyte.example/landing-a",
+        "Goal": "Signup",
+        "GoalType": "Url",
+    }
+    duplicate_old_key_record = {
+        **record,
+        "CustomerId": "111112",
+        "AdGroupId": "444445",
+        "AdId": "555556",
+        "AdGroupCriterionId": "666667",
+        "KeywordId": "777778",
+        "Network": "Content",
+        "BidMatchType": "Phrase",
+        "DestinationUrl": "https://airbyte.example/landing-b",
+        "Goal": "Trial",
+        "GoalType": "Event",
+    }
+
+    assert tuple(record[field] for field in stream.primary_key) != tuple(duplicate_old_key_record[field] for field in stream.primary_key)
+
+
 @freeze_time("2024-01-01")
 @pytest.mark.parametrize(
     "stream_name",
@@ -166,3 +233,101 @@ def test_get_report_record_timestamp_hourly(stream_name, mock_auth_token, mock_u
     source = get_source(TEST_CONFIG, state)
     output = read(source, TEST_CONFIG, catalog, state)
     assert "2023-01-01T15:00:00+00:00" == output.records[0].record.data["TimePeriod"]
+
+
+@pytest.mark.parametrize(
+    "test_name,config,custom_report_config,expected_name",
+    [
+        (
+            "camel_case_conversion_enabled_by_default",
+            {},  # Default config with no disable flag at custom report level
+            {"name": "MyCustomReport"},
+            "my_custom_report",
+        ),
+        (
+            "camel_case_conversion_enabled_explicitly",
+            {},
+            {"name": "CampaignPerformanceDaily", "disable_custom_report_names_camel_to_snake_conversion": False},
+            "campaign_performance_daily",
+        ),
+        (
+            "camel_case_conversion_disabled",
+            {},
+            {"name": "MyExactReportName", "disable_custom_report_names_camel_to_snake_conversion": True},
+            "MyExactReportName",
+        ),
+        (
+            "snake_case_unchanged_when_enabled",
+            {},
+            {"name": "already_snake_case"},
+            "already_snake_case",
+        ),
+        (
+            "snake_case_unchanged_when_disabled",
+            {},
+            {"name": "already_snake_case", "disable_custom_report_names_camel_to_snake_conversion": True},
+            "already_snake_case",
+        ),
+        (
+            "complex_camel_case_conversion_enabled",
+            {},
+            {"name": "MyVeryComplexReportNameWithManyWords"},
+            "my_very_complex_report_name_with_many_words",
+        ),
+        (
+            "complex_camel_case_conversion_disabled",
+            {},
+            {"name": "MyVeryComplexReportNameWithManyWords", "disable_custom_report_names_camel_to_snake_conversion": True},
+            "MyVeryComplexReportNameWithManyWords",
+        ),
+        (
+            "single_word_unchanged",
+            {},
+            {"name": "report"},
+            "report",
+        ),
+        (
+            "single_capital_word_converted",
+            {},
+            {"name": "Report"},
+            "report",
+        ),
+        (
+            "single_capital_word_unchanged_when_disabled",
+            {},
+            {"name": "Report", "disable_custom_report_names_camel_to_snake_conversion": True},
+            "Report",
+        ),
+    ],
+)
+def test_custom_report_name_conversion(test_name, config, custom_report_config, expected_name):
+    """Test that custom report name conversion works correctly based on configuration."""
+    # Base custom report configuration with required fields
+    base_custom_report = {
+        "reporting_object": "AccountPerformanceReportRequest",
+        "report_columns": ["AccountId", "AccountName", "Impressions", "Clicks"],
+        "report_aggregation": "Daily",
+    }
+
+    # Merge the test-specific config with the base config
+    custom_report = {**base_custom_report, **custom_report_config}
+
+    # Create the full config with custom_reports
+    full_config = {**TEST_CONFIG, **config, "custom_reports": [custom_report]}
+
+    # Get the source and its streams
+    source = get_source(full_config)
+    streams = source.streams(config=full_config)
+
+    # Find the custom report stream by checking all stream names
+    custom_stream = None
+    for stream in streams:
+        # Custom report streams should have the expected name
+        if stream.name == expected_name:
+            custom_stream = stream
+            break
+
+    assert (
+        custom_stream is not None
+    ), f"Expected custom report stream '{expected_name}' not found. Available streams: {[s.name for s in streams]}"
+    assert custom_stream.name == expected_name

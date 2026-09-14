@@ -1,0 +1,1254 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: >-
+  Sync travel and spend data from Perk into your data warehouse.
+
+  This source connector syncs users, trips, bookings, cost centers, invoices,
+  invoice lines, and profiles.
+
+  Configuration requires your Perk API key and a start date from which to sync
+  data.
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    trips:
+      type: DeclarativeStream
+      name: trips
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: trips
+          http_method: GET
+          request_headers:
+            Api-Version: "1"
+          request_parameters:
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - trips
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/trips"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_gte
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+    users:
+      type: DeclarativeStream
+      name: users
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users
+          http_method: GET
+          request_headers:
+            Api-Version: "1"
+          request_parameters:
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    bookings:
+      type: DeclarativeStream
+      name: bookings
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: bookings
+          http_method: GET
+          request_headers:
+            Api-Version: "1"
+          request_parameters:
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - bookings
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bookings"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_gte
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+    invoices:
+      type: DeclarativeStream
+      name: invoices
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: invoices
+          http_method: GET
+          request_headers:
+            Api-Version: "1"
+          request_parameters:
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - invoices
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoices"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: issuing_date
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          field_name: issuing_date_gte
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+    profiles:
+      type: DeclarativeStream
+      name: profiles
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: profiles
+          http_method: GET
+          request_headers:
+            Api-Version: "1"
+          request_parameters:
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - profiles
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/profiles"
+    cost_centers:
+      type: DeclarativeStream
+      name: cost_centers
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: cost_centers
+          http_method: GET
+          request_headers:
+            Api-Version: "1"
+          request_parameters:
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - cost_centers
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cost_centers"
+    invoices_lines:
+      type: DeclarativeStream
+      name: invoices_lines
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: invoices/lines
+          http_method: GET
+          request_headers:
+            Api-Version: "1"
+          request_parameters:
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - invoice_lines
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoices_lines"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: issuing_date
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          field_name: issuing_date_gte
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.travelperk.com/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: ApiKey {{ config['api_key'] }}
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/trips"
+  - $ref: "#/definitions/streams/bookings"
+  - $ref: "#/definitions/streams/cost_centers"
+  - $ref: "#/definitions/streams/invoices"
+  - $ref: "#/definitions/streams/profiles"
+  - $ref: "#/definitions/streams/invoices_lines"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - start_date
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 1
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        description: ISO8601 Date-time (e.g. 2024-09-19T00:00:00Z)
+        order: 0
+        title: Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    trips:
+      hasRecords: true
+      streamHash: 261e5948b73757d22f4eaa064be20b30424400f8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: ed8b4718e0a635c2ed0c9f2de26897679bec6942
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    bookings:
+      hasRecords: true
+      streamHash: 823b9010ce4ccd1bd11a6b0d153343463c3a86e0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    invoices:
+      hasRecords: true
+      streamHash: 4a1044c962fd5249d0a2ee712d906f6a68f5f891
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    profiles:
+      hasRecords: true
+      streamHash: bdb59c3f20feb06f07b4a503b7e241a0a6b0994b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    cost_centers:
+      hasRecords: true
+      streamHash: 38d6fa0b59121654271f5c79b151bf33e1e83300
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    invoices_lines:
+      hasRecords: true
+      streamHash: b1f65c168d5769702f858e2958f80398ba6e6a3f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    trips: false
+    users: false
+    bookings: false
+    invoices: false
+    profiles: false
+    cost_centers: false
+    invoices_lines: false
+
+schemas:
+  trips:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - modified
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      end:
+        type:
+          - string
+          - "null"
+      start:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      modified:
+        type: string
+      booker_id:
+        type:
+          - string
+          - "null"
+      trip_name:
+        type:
+          - string
+          - "null"
+      end_location:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          latitude:
+            type:
+              - number
+              - string
+              - "null"
+          iata_code:
+            type:
+              - string
+              - "null"
+          longitude:
+            type:
+              - number
+              - string
+              - "null"
+      start_location:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          latitude:
+            type:
+              - number
+              - string
+              - "null"
+          iata_code:
+            type:
+              - string
+              - "null"
+          longitude:
+            type:
+              - number
+              - string
+              - "null"
+      end_datetime_utc:
+        type:
+          - string
+          - "null"
+      end_datetime_local:
+        type:
+          - string
+          - "null"
+      start_datetime_utc:
+        type:
+          - string
+          - "null"
+      start_datetime_local:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - object
+          - "null"
+        properties:
+          title:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          middle_name:
+            type:
+              - string
+              - "null"
+      email:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      locale:
+        type:
+          - string
+          - "null"
+      user_name:
+        type:
+          - string
+          - "null"
+      phone_numbers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      emergency_contact:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+      preferred_language:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  bookings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - modified
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      end:
+        type:
+          - string
+          - "null"
+      legs:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            segments:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  origin:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      time:
+                        type:
+                          - string
+                          - "null"
+                      location:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          name:
+                            type:
+                              - string
+                              - "null"
+                          address:
+                            type:
+                              - string
+                              - "null"
+                          latitude:
+                            type:
+                              - string
+                              - "null"
+                          iata_code:
+                            type:
+                              - string
+                              - "null"
+                          longitude:
+                            type:
+                              - string
+                              - "null"
+                  destination:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      time:
+                        type:
+                          - string
+                          - "null"
+                      location:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          name:
+                            type:
+                              - string
+                              - "null"
+                          address:
+                            type:
+                              - string
+                              - "null"
+                          latitude:
+                            type:
+                              - string
+                              - "null"
+                          iata_code:
+                            type:
+                              - string
+                              - "null"
+                          longitude:
+                            type:
+                              - string
+                              - "null"
+                  external_id:
+                    type:
+                      - string
+                      - "null"
+      start:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      trip_id:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          latitude:
+            type:
+              - string
+              - "null"
+          longitude:
+            type:
+              - string
+              - "null"
+      modified:
+        type: string
+      references:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+    additionalProperties: true
+  invoices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - issuing_date
+    properties:
+      pdf:
+        type:
+          - string
+          - "null"
+      mode:
+        type:
+          - string
+          - "null"
+      total:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      to_date:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      due_date:
+        type:
+          - string
+          - "null"
+      from_date:
+        type:
+          - string
+          - "null"
+      reference:
+        type:
+          - string
+          - "null"
+      profile_id:
+        type:
+          - string
+          - "null"
+      issuing_date:
+        type: string
+      profile_name:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      taxes_summary:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            total:
+              type:
+                - string
+                - "null"
+            subtotal:
+              type:
+                - string
+                - "null"
+            tax_amount:
+              type:
+                - string
+                - "null"
+            tax_regime:
+              type:
+                - string
+                - "null"
+            tax_percentage:
+              type:
+                - string
+                - "null"
+      billing_period:
+        type:
+          - string
+          - "null"
+      billing_information:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          legal_name:
+            type:
+              - string
+              - "null"
+          vat_number:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          country_name:
+            type:
+              - string
+              - "null"
+          address_line_1:
+            type:
+              - string
+              - "null"
+          address_line_2:
+            type:
+              - string
+              - "null"
+      travelperk_bank_account:
+        type:
+          - object
+          - "null"
+        properties:
+          bic:
+            type:
+              - string
+              - "null"
+          bank_name:
+            type:
+              - string
+              - "null"
+          reference:
+            type:
+              - string
+              - "null"
+          account_number:
+            type:
+              - string
+              - "null"
+      credit_used_for_customer_payment:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  profiles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      billing_period:
+        type:
+          - string
+          - "null"
+      billing_information:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          legal_name:
+            type:
+              - string
+              - "null"
+          vat_number:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          address_line_1:
+            type:
+              - string
+              - "null"
+          address_line_2:
+            type:
+              - string
+              - "null"
+      payment_method_type:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  cost_centers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      count_users:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  invoices_lines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - issuing_date
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          booker:
+            type:
+              - object
+              - "null"
+            properties:
+              name:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              external_id:
+                type:
+                  - string
+                  - "null"
+          labels:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          vendor:
+            type:
+              - object
+              - "null"
+            properties:
+              code:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          service:
+            type:
+              - string
+              - "null"
+          trip_id:
+            type:
+              - number
+              - "null"
+          end_date:
+            type:
+              - string
+              - "null"
+          approvers:
+            type:
+              - array
+              - "null"
+          travelers:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                email:
+                  type:
+                    - string
+                    - "null"
+                external_id:
+                  type:
+                    - string
+                    - "null"
+          trip_name:
+            type:
+              - string
+              - "null"
+          start_date:
+            type:
+              - string
+              - "null"
+          cost_center:
+            type:
+              - string
+              - "null"
+          out_of_policy:
+            type:
+              - boolean
+              - "null"
+          related_vertical:
+            type:
+              - string
+              - "null"
+          service_location:
+            type:
+              - object
+              - "null"
+            properties:
+              origin:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  city:
+                    type:
+                      - string
+                      - "null"
+                  code:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  country:
+                    type:
+                      - string
+                      - "null"
+                  latitude:
+                    type:
+                      - string
+                      - "null"
+                  longitude:
+                    type:
+                      - string
+                      - "null"
+                  country_code:
+                    type:
+                      - string
+                      - "null"
+              destination:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  city:
+                    type:
+                      - string
+                      - "null"
+                  code:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  country:
+                    type:
+                      - string
+                      - "null"
+                  latitude:
+                    type:
+                      - string
+                      - "null"
+                  longitude:
+                    type:
+                      - string
+                      - "null"
+                  country_code:
+                    type:
+                      - string
+                      - "null"
+              hotel_location:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  city:
+                    type:
+                      - string
+                      - "null"
+                  country:
+                    type:
+                      - string
+                      - "null"
+                  latitude:
+                    type:
+                      - string
+                      - "null"
+                  longitude:
+                    type:
+                      - string
+                      - "null"
+                  country_code:
+                    type:
+                      - string
+                      - "null"
+      id:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      due_date:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - number
+          - "null"
+      profile_id:
+        type:
+          - string
+          - "null"
+      tax_amount:
+        type:
+          - string
+          - "null"
+      tax_regime:
+        type:
+          - string
+          - "null"
+      unit_price:
+        type:
+          - string
+          - "null"
+      expense_date:
+        type:
+          - string
+          - "null"
+      invoice_mode:
+        type:
+          - string
+          - "null"
+      issuing_date:
+        type: string
+      profile_name:
+        type:
+          - string
+          - "null"
+      total_amount:
+        type:
+          - string
+          - "null"
+      invoice_status:
+        type:
+          - string
+          - "null"
+      tax_percentage:
+        type:
+          - string
+          - "null"
+      invoice_serial_number:
+        type:
+          - string
+          - "null"
+      non_taxable_unit_price:
+        type:
+          - string
+          - "null"
+    additionalProperties: true

@@ -1,0 +1,363 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/postgres",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Postgres Destination Specification",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "host" : {
+        "type" : "string",
+        "description" : "Hostname of the database.",
+        "title" : "Host",
+        "group" : "connection",
+        "order" : 0
+      },
+      "port" : {
+        "type" : "integer",
+        "description" : "Port of the database.",
+        "title" : "Port",
+        "group" : "connection",
+        "order" : 1,
+        "minimum" : 0,
+        "maximum" : 65536,
+        "examples" : [ "5432" ]
+      },
+      "database" : {
+        "type" : "string",
+        "description" : "Name of the database.",
+        "title" : "Database Name",
+        "group" : "connection",
+        "order" : 2
+      },
+      "schema" : {
+        "type" : "string",
+        "description" : "The default schema tables are written. If not specified otherwise, the \"public\" schema will be used.",
+        "title" : "Default Schema",
+        "group" : "connection",
+        "order" : 3,
+        "examples" : [ "public" ],
+        "default" : "public"
+      },
+      "username" : {
+        "type" : "string",
+        "description" : "Username to access the database.",
+        "title" : "Username",
+        "group" : "connection",
+        "order" : 4
+      },
+      "password" : {
+        "type" : "string",
+        "description" : "Password associated with the username.",
+        "title" : "Password",
+        "group" : "connection",
+        "order" : 5,
+        "airbyte_secret" : true
+      },
+      "ssl" : {
+        "type" : "boolean",
+        "description" : "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
+        "title" : "SSL Connection",
+        "default" : true,
+        "airbyte_hidden" : true,
+        "order" : 6
+      },
+      "ssl_mode" : {
+        "oneOf" : [ {
+          "title" : "disable",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Disable SSL.",
+          "properties" : {
+            "mode" : {
+              "type" : "string",
+              "enum" : [ "disable" ],
+              "default" : "disable"
+            }
+          },
+          "required" : [ "mode" ]
+        }, {
+          "title" : "allow",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Allow SSL mode.",
+          "properties" : {
+            "mode" : {
+              "type" : "string",
+              "enum" : [ "allow" ],
+              "default" : "allow"
+            }
+          },
+          "required" : [ "mode" ]
+        }, {
+          "title" : "prefer",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Prefer SSL mode.",
+          "properties" : {
+            "mode" : {
+              "type" : "string",
+              "enum" : [ "prefer" ],
+              "default" : "prefer"
+            }
+          },
+          "required" : [ "mode" ]
+        }, {
+          "title" : "require",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Require SSL mode.",
+          "properties" : {
+            "mode" : {
+              "type" : "string",
+              "enum" : [ "require" ],
+              "default" : "require"
+            }
+          },
+          "required" : [ "mode" ]
+        }, {
+          "title" : "verify-ca",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Verify-ca SSL mode.",
+          "properties" : {
+            "mode" : {
+              "type" : "string",
+              "enum" : [ "verify-ca" ],
+              "default" : "verify-ca"
+            },
+            "ca_certificate" : {
+              "type" : "string",
+              "description" : "CA certificate",
+              "title" : "CA Certificate",
+              "airbyte_secret" : true,
+              "multiline" : true,
+              "order" : 1
+            },
+            "client_key_password" : {
+              "type" : "string",
+              "description" : "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+              "title" : "Client Key Password",
+              "airbyte_secret" : true,
+              "order" : 2
+            }
+          },
+          "required" : [ "mode", "ca_certificate" ]
+        }, {
+          "title" : "verify-full",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Verify-full SSL mode.",
+          "properties" : {
+            "mode" : {
+              "type" : "string",
+              "enum" : [ "verify-full" ],
+              "default" : "verify-full"
+            },
+            "ca_certificate" : {
+              "type" : "string",
+              "description" : "CA certificate",
+              "title" : "CA Certificate",
+              "airbyte_secret" : true,
+              "multiline" : true,
+              "order" : 1
+            },
+            "client_certificate" : {
+              "type" : "string",
+              "description" : "Client certificate",
+              "title" : "Client Certificate",
+              "airbyte_secret" : true,
+              "multiline" : true,
+              "order" : 2
+            },
+            "client_key" : {
+              "type" : "string",
+              "description" : "Client key",
+              "title" : "Client Key",
+              "airbyte_secret" : true,
+              "multiline" : true,
+              "order" : 3
+            },
+            "client_key_password" : {
+              "type" : "string",
+              "description" : "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+              "title" : "Client Key Password",
+              "airbyte_secret" : true,
+              "order" : 4
+            }
+          },
+          "required" : [ "mode", "ca_certificate", "client_certificate", "client_key" ]
+        } ],
+        "description" : "SSL connection modes.\n  <b>disable</b> - Disables encryption of communication between Airbyte and destination database.\n  <b>allow</b> - Enables encryption only when required by the destination database.\n  <b>prefer</b> - Allows unencrypted connections only if the destination database does not support encryption.\n  <b>require</b> - Always require encryption. If the destination database server does not support encryption, connection will fail.\n  <b>verify-ca</b> - Always require encryption and verifies that the destination database server has a valid SSL certificate.\n  <b>verify-full</b> - This is the most secure mode. Always require encryption and verifies the identity of the destination database server.\n See more information - <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
+        "title" : "SSL Modes",
+        "group" : "connection",
+        "order" : 7,
+        "type" : "object"
+      },
+      "cdc_deletion_mode" : {
+        "type" : "string",
+        "default" : "Hard delete",
+        "enum" : [ "Hard delete", "Soft delete" ],
+        "description" : "Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes.",
+        "title" : "CDC deletion mode",
+        "group" : "sync_behavior",
+        "order" : 8,
+        "always_show" : true
+      },
+      "jdbc_url_params" : {
+        "type" : "string",
+        "description" : "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "title" : "JDBC URL Params",
+        "group" : "connection",
+        "order" : 9
+      },
+      "raw_data_schema" : {
+        "type" : "string",
+        "description" : "Airbyte will use this schema for various internal tables. In legacy raw tables mode, the raw tables will be stored in this schema. Defaults to \"airbyte_internal\".",
+        "title" : "Airbyte Internal Schema Name",
+        "group" : "connection",
+        "order" : 10
+      },
+      "disable_type_dedupe" : {
+        "type" : "boolean",
+        "description" : "Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions",
+        "title" : "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)",
+        "group" : "connection",
+        "order" : 11
+      },
+      "drop_cascade" : {
+        "type" : "boolean",
+        "description" : "Drop tables with CASCADE. WARNING! This will delete all data in all dependent objects (views, etc.). Use with caution. This option is intended for usecases which can easily rebuild the dependent objects.",
+        "title" : "Drop tables with CASCADE. (WARNING! Risk of unrecoverable data loss)",
+        "group" : "connection",
+        "order" : 12
+      },
+      "unconstrained_number" : {
+        "type" : "boolean",
+        "description" : "Create numeric columns as unconstrained DECIMAL instead of NUMBER(38, 9). This will allow increased precision in numeric values. (this is disabled by default for backwards compatibility, but is recommended to enable)",
+        "title" : "Unconstrained numeric columns",
+        "group" : "connection",
+        "order" : 13
+      },
+      "tunnel_method" : {
+        "oneOf" : [ {
+          "title" : "No Tunnel",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "No ssh tunnel needed to connect to database",
+          "properties" : {
+            "tunnel_method" : {
+              "type" : "string",
+              "enum" : [ "NO_TUNNEL" ],
+              "default" : "NO_TUNNEL"
+            }
+          },
+          "required" : [ "tunnel_method" ]
+        }, {
+          "title" : "SSH Key Authentication",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Connect through a jump server tunnel host using username and ssh key",
+          "properties" : {
+            "tunnel_method" : {
+              "type" : "string",
+              "enum" : [ "SSH_KEY_AUTH" ],
+              "default" : "SSH_KEY_AUTH"
+            },
+            "tunnel_host" : {
+              "type" : "string",
+              "description" : "Hostname of the jump server host that allows inbound ssh tunnel.",
+              "title" : "SSH Tunnel Jump Server Host",
+              "order" : 1
+            },
+            "tunnel_port" : {
+              "type" : "integer",
+              "default" : 22,
+              "description" : "Port on the proxy/jump server that accepts inbound ssh connections.",
+              "title" : "SSH Connection Port",
+              "order" : 2,
+              "minimum" : 0,
+              "maximum" : 65536
+            },
+            "tunnel_user" : {
+              "type" : "string",
+              "description" : "OS-level username for logging into the jump server host",
+              "title" : "SSH Login Username",
+              "order" : 3
+            },
+            "ssh_key" : {
+              "type" : "string",
+              "description" : "OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )",
+              "title" : "SSH Private Key",
+              "order" : 4,
+              "multiline" : true,
+              "airbyte_secret" : true
+            }
+          },
+          "required" : [ "tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user", "ssh_key" ]
+        }, {
+          "title" : "Password Authentication",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Connect through a jump server tunnel host using username and password authentication",
+          "properties" : {
+            "tunnel_method" : {
+              "type" : "string",
+              "enum" : [ "SSH_PASSWORD_AUTH" ],
+              "default" : "SSH_PASSWORD_AUTH"
+            },
+            "tunnel_host" : {
+              "type" : "string",
+              "description" : "Hostname of the jump server host that allows inbound ssh tunnel.",
+              "title" : "SSH Tunnel Jump Server Host",
+              "order" : 1
+            },
+            "tunnel_port" : {
+              "type" : "integer",
+              "default" : 22,
+              "description" : "Port on the proxy/jump server that accepts inbound ssh connections.",
+              "title" : "SSH Connection Port",
+              "order" : 2,
+              "minimum" : 0,
+              "maximum" : 65536
+            },
+            "tunnel_user" : {
+              "type" : "string",
+              "description" : "OS-level username for logging into the jump server host",
+              "title" : "SSH Login Username",
+              "order" : 3
+            },
+            "tunnel_user_password" : {
+              "type" : "string",
+              "description" : "OS-level password for logging into the jump server host",
+              "title" : "Password",
+              "order" : 4,
+              "airbyte_secret" : true
+            }
+          },
+          "required" : [ "tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user", "tunnel_user_password" ]
+        } ],
+        "description" : "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
+        "title" : "SSH Tunnel Method",
+        "group" : "connection",
+        "order" : 14,
+        "type" : "object"
+      }
+    },
+    "required" : [ "host", "port", "database", "schema", "username" ],
+    "groups" : [ {
+      "id" : "connection",
+      "title" : "Connection"
+    }, {
+      "id" : "sync_behavior",
+      "title" : "Sync Behavior"
+    }, {
+      "id" : "advanced",
+      "title" : "Advanced"
+    } ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ]
+}

@@ -62,4 +62,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Google Analytics Reporting API v4
+      url: https://developers.google.com/analytics/devguides/reporting/core/v4
+      type: api_reference
+    - title: Google Analytics authentication
+      url: https://developers.google.com/analytics/devguides/reporting/core/v4/authorization
+      type: authentication_guide
+    - title: Google Analytics quotas
+      url: https://developers.google.com/analytics/devguides/reporting/core/v4/limits-quotas
+      type: rate_limits
+    - title: Google Cloud Status
+      url: https://status.cloud.google.com/
+      type: status_page
 metadataSpecVersion: "1.0"

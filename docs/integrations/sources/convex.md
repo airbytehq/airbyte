@@ -68,6 +68,10 @@ In the Data tab, you should see the tables and a sample of the data that will be
 3. Click "Generate a deploy key".
 4. Copy the generated deploy key into the `access_key` field in Airbyte.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -75,6 +79,9 @@ In the Data tab, you should see the tables and a sample of the data that will be
 
 | Version | Date       | Pull Request                                             | Subject                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------- |
+| 0.4.51 | 2025-10-07 | [65777](https://github.com/airbytehq/airbyte/pull/65777) | Update dependencies |
+| 0.4.50 | 2025-08-23 | [65287](https://github.com/airbytehq/airbyte/pull/65287) | Update dependencies |
+| 0.4.49 | 2025-08-16 | [65003](https://github.com/airbytehq/airbyte/pull/65003) | Update dependencies |
 | 0.4.48 | 2025-08-09 | [64798](https://github.com/airbytehq/airbyte/pull/64798) | Update dependencies |
 | 0.4.47 | 2025-07-19 | [63533](https://github.com/airbytehq/airbyte/pull/63533) | Update dependencies |
 | 0.4.46 | 2025-07-12 | [62996](https://github.com/airbytehq/airbyte/pull/62996) | Update dependencies |

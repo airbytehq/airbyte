@@ -1,5 +1,5 @@
 ---
-products: all
+products: cloud-teams
 ---
 
 # Rejected records
@@ -24,7 +24,7 @@ Look at the following example.
 | 456 | Emerald          | Sanja     | 234-567-8901 | 456 Fake Street |
 | 789 | Sebastian Argyos |           | 345-678-9012 | 789 Fake Street |
 
-Imagine you want to move this data into your CRM, Salesforce. However, your Salesforce object requires that everyone has a first and last name. In this case, Sebastian Argyos' last name has been combined with his first name. From Salesforce's perspective, he doesn't have a last name. As a result, it rejects this record.
+Imagine you want to move this data into HubSpot. However, HubSpot requires that everyone has a first and last name. In this case, Sebastian Argyos' last name has been combined with his first name. From HubSpot's perspective, he doesn't have a last name. As a result, it rejects this record.
 
 ## Where rejected records go
 
@@ -42,7 +42,7 @@ If you've configured a storage bucket for rejected records, Airbyte links to it 
 
 You can also monitor logs for them.
 
-```json title="snowflake_salesforce_logs_12345_txt.txt"
+```json title="snowflake_hubspot_logs_12345_txt.txt"
 Sync summary: {
   // ...
   "totalStats" : {
@@ -66,16 +66,6 @@ Sync summary: {
   }
 }
 ```
-
-### When Airbyte can't display rejected record statistics
-
-Airbyte can only display rejected records statistics and a link to your storage bucket if the source connector sends state messages back to Airbyte correctly.
-
-- [Airbyte connectors](/integrations/connector-support-levels) implement this correctly for all sync modes.
-
-- [Marketplace connectors](/integrations/connector-support-levels) may or may not implement this correctly. Generally, only incremental sync modes are reliable in this way.
-
-Regardless of whether the connector reports statistics back to Airbyte, rejected records are still populated in your storage bucket if you set this up in the destination connector.
 
 ## Fixing rejected records so Airbyte can sync them
 

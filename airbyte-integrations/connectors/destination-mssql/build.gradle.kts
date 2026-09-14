@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 plugins {
@@ -11,8 +11,8 @@ plugins {
 
 airbyteBulkConnector {
     core = "load"
-    toolkits = listOf("load-azure-blob-storage", "load-db")
-    cdk = "local"
+    toolkits = listOf("legacy-task-load-azure-blob-storage", "legacy-task-load-db")
+    useLegacyTaskLoader = true
 }
 
 application {
@@ -35,7 +35,7 @@ application {
 }
 
 val junitVersion = "5.11.4"
-val testContainersVersion = "1.20.5"
+val testContainersVersion = "1.21.4"
 
 configurations.configureEach {
     // Exclude additional SLF4J providers from all classpaths

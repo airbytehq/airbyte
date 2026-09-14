@@ -1,41 +1,196 @@
 # Uptick
-Extract data from Uptick - The new standard in
-fire inspection software.
+
+Extract data from Uptick, a field service management platform designed for the fire protection industry.
+
+## Prerequisites
+
+The connector authenticates with the Uptick API using OAuth 2.0 with the password grant, so you need both an OAuth application and an Uptick user account:
+
+- Your Uptick instance URL, for example `https://yourcompany.onuptick.com`.
+- An OAuth Client ID and Client Secret generated from your Uptick instance.
+- The email address and password of an Uptick user account. The connector signs in as this user, so the account must have permission to view every resource you want to sync.
+
+To generate the OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance, select **Create Application**, provide a name, and save. Uptick generates the Client ID and Client Secret for you. For step-by-step instructions, see [Uptick API - Getting started](https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started).
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `base_url` | `string` | Base Url. Ex: https://demo-fire.onuptick.com/ |  |
-| `client_id` | `string` | Client ID.  |  |
-| `client_secret` | `string` | Client secret.  |  |
-| `client_refresh_token` | `string` | Refresh token.  |  |
-| `oauth_access_token` | `string` | Access token. The current access token. This field might be overridden by the connector based on the token refresh endpoint response. |  |
-| `oauth_token_expiry_date` | `string` | Token expiry date. The date the current access token expires in. This field might be overridden by the connector based on the token refresh endpoint response. |  |
-| `start_date` | `string` | Start Date. Fetch data starting from this date (by default 2025-01-01) | 2025-01-01 |
-| `end_date` | `string` | End Date. Fetch data up until this date |  |
+| `base_url` | `string` | Your Uptick instance URL, for example `https://yourcompany.onuptick.com`. Do not include a trailing slash. |  |
+| `client_id` | `string` | OAuth Client ID generated from Control Panel > Uptick API. |  |
+| `client_secret` | `string` | OAuth Client Secret generated from Control Panel > Uptick API. |  |
+| `username` | `string` | Email address for an Uptick user account with API access. |  |
+| `password` | `string` | Password for the Uptick user account. |  |
 
 ## Streams
+
+The Uptick connector syncs data from the following streams, organized by functional area:
+
+### Core business entities
+
+- `tasks` - Work tasks and maintenance requests with scheduling, priority, and assignment details
+- `taskcategories` - Categories for organizing tasks
+- `tasksessions` - Time tracking entries for work performed on tasks
+- `rounds` - Work rounds for technician scheduling and route management
+- `projects` - Project management entities for larger initiatives
+- `clients` - Customer organizations and contact information
+- `clientgroups` - Client organization groupings
+- `clientcontacts` - Contact people associated with clients
+- `properties` - Physical locations where work is performed
+- `propertycontacts` - Contact people associated with properties
+- `contractors` - External service providers and subcontractors
+- `users` - System users including technicians and staff
+- `servicegroups` - Service categorization for organizing work types
+
+### Financial and billing
+
+- `invoices` - Customer invoices and billing information
+- `invoicelineitems` - Individual line items within invoices
+- `creditnotes` - Credit notes for refunds and adjustments
+- `creditnotelineitems` - Line items within credit notes
+- `billingcards` - Billing card information for cost allocation
+- `billingcontracts` - Recurring billing contracts for ongoing services
+- `billingcontractlineitems` - Line items within billing contracts
+- `costcentres` - Cost center assignments for financial tracking
+- `task_profitability` - Profitability metrics and financial performance data for tasks
+
+### Purchasing and supply chain
+
+- `purchaseorders` - Purchase orders for materials and services
+- `purchaseorderlineitems` - Individual items within purchase orders
+- `purchaseorderbills` - Bills received for purchase orders
+- `purchaseorderbilllineitems` - Line items within purchase order bills
+- `purchaseorderdockets` - Delivery dockets for purchase orders
+- `suppliers` - Vendor and supplier information
+- `products` - Products and materials catalog
+
+### Asset management and inspections
+
+- `assets` - Physical assets requiring maintenance and inspection
+- `assettypes` - Categories and specifications for asset types
+- `assettypevariants` - Variants and configurations of asset types
+- `routines` - Scheduled maintenance and inspection routines
+- `routineservices` - Routine service configurations for properties and assets
+- `routineservicelevels` - Service level definitions for routine services
+- `routineservicetypes` - Types and categories of routine services
+- `routineserviceleveltypes` - Service level type classifications
+- `majorservices` - Major service records for assets
+- `servicetasks` - Individual work activities on tasks
+- `subtasks` - Links programme maintenance routines to tasks
+- `remarks` - Issues, defects, and observations during inspections
+- `remarkevents` - Events and actions taken on remarks
+- `promptquestions` - Prompt questions asked during service report completion
+- `promptanswergroups` - Groupings of prompt answers per service task and section
+- `promptanswers` - Individual answers to prompt questions
+- `appointments` - Scheduled appointments for work and inspections
+
+### Quality and compliance
+
+- `accreditations` - Technician certifications and qualifications
+- `accreditationtypes` - Types of certifications and accreditations
+
+### Sales
+
+- `servicequotes` - Quotes for service work
+- `servicequotefixedlineitems` - Fixed price line items within service quotes
+- `servicequotedoandchargelineitems` - Do-and-charge line items within service quotes
+- `servicequoteproductlineitems` - Product line items within service quotes
+- `defectquotes` - Quotes for remedial work on identified defects
+- `defectquotelineitems` - Line items within defect quotes
+
+### Organization and location
+
+- `branches` - Business locations and organizational units
+
+### Stream details
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| tasks | id | DefaultPaginator | ✅ |  ❌  |
-| taskcategories | id | DefaultPaginator | ✅ |  ❌  |
-| clients | id | DefaultPaginator | ✅ |  ❌  |
-| clientgroups | id | DefaultPaginator | ✅ |  ❌  |
-| properties | id | DefaultPaginator | ✅ |  ❌  |
-| taskprofitability | id | No pagination | ✅ |  ❌  |
-| invoices | id | DefaultPaginator | ✅ |  ❌  |
-| projects | id | DefaultPaginator | ✅ |  ❌  |
-| servicequotes | id | DefaultPaginator | ✅ |  ❌  |
-| defectquotes | id | DefaultPaginator | ✅ |  ❌  |
-| suppliers | id | DefaultPaginator | ✅ |  ❌  |
-| purchaseorders | id | DefaultPaginator | ✅ |  ❌  |
-| assets | id | DefaultPaginator | ✅ |  ❌  |
-| routines | id | DefaultPaginator | ✅ |  ❌  |
-| billingcard | id | DefaultPaginator | ✅ |  ❌  |
-| purchaseorderbills | id | DefaultPaginator | ✅ |  ❌  |
-| purchaseorderdockets | id | DefaultPaginator | ✅ |  ❌  |
-| invoicelineitems |  | DefaultPaginator | ✅ |  ❌  |
+| `tasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `taskcategories` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `clients` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `clientgroups` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `properties` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `invoices` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `projects` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `servicequotes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `defectquotes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `suppliers` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `purchaseorders` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `purchaseorderlineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `assets` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `routines` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `billingcards` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `purchaseorderbills` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `purchaseorderbilllineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `purchaseorderdockets` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `invoicelineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `users` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `servicegroups` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `costcentres` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `accreditationtypes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `accreditations` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `branches` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `creditnotes` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `creditnotelineitems` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `remarks` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `assettypes` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `assettypevariants` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `products` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `rounds` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `tasksessions` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `contractors` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `appointments` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `billingcontracts` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `billingcontractlineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `defectquotelineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `servicequotefixedlineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `servicequotedoandchargelineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `servicequoteproductlineitems` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `remarkevents` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `routineservices` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `routineservicelevels` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `routineservicetypes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `routineserviceleveltypes` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `servicetasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `subtasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `task_profitability` | `task_id` | `DefaultPaginator` | ✅ | ✅ |
+| `clientcontacts` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `propertycontacts` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `promptquestions` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `promptanswergroups` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `promptanswers` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `majorservices` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+
+### API version and fields
+
+Every stream except `task_profitability` reads a pinned Uptick endpoint under `/api/v2.15/`. The `task_profitability` stream reads the intelligence report at `/api/v2/intelligencereports/profitability_by_task/`, which resolves to whichever minor version Uptick currently treats as the latest.
+
+Each stream requests a fixed list of fields using Uptick's sparse fieldsets, so a stream carries a curated subset of what the endpoint can return rather than every field. Fields that Uptick adds later show up only after the connector is updated. Uptick keeps roughly three minor API versions live at a time and retires the oldest, so connector releases that move to a newer minor version can add, rename, or remove fields. The [Uptick API patch notes](https://support.uptickhq.com/en/articles/6728314-uptick-api-overview-and-patch-notes) list what changed in each version.
+
+### Relationship fields
+
+Uptick returns related records in a JSON:API `relationships` object. The connector flattens each relationship into a scalar `<relationship>_id` column, such as `client_id` on `clientcontacts` or `property_id` on `propertycontacts`. Use these columns to join streams in your destination.
+
+Prompt data spans three streams, and Uptick reworked its prompt model in API v2.15, so those joins are worth spelling out:
+
+- `promptanswers.answergroup_id` joins `promptanswergroups.id`, and `promptanswers.question_id` joins `promptquestions.id`.
+- `promptanswergroups.servicetask_id` and `promptanswergroups.task_id` tie a group of answers back to the service task or task the answers were recorded against.
+- `promptquestions.section_id` and `promptanswergroups.section_id` reference Uptick prompt sections. The connector doesn't sync prompt sections, so you can't resolve these IDs to section names from synced data alone.
+
+### Incremental sync
+
+For streams that support incremental sync, the connector uses each record's `updated` timestamp as the cursor and fetches only records changed since the last sync through the Uptick API's `updatedsince` filter. Streams that support only full refresh are re-read in full on every sync.
+
+Airbyte still offers incremental sync in the UI for the streams marked `❌ (no soft delete)`, because the connector defines the `updated` cursor for every stream. Avoid it for those streams: their Uptick endpoints don't report deletions, so an incremental sync keeps records in your destination after they're deleted in Uptick. Sync them in full refresh mode instead.
+
+## Rate limits
+
+Uptick enforces rate limits and reasonable-use guidelines on its API. When Uptick throttles a request, the connector reads the `Retry-After` response header and waits the indicated time before retrying, for up to five attempts. To stay within these limits, sync only the streams and fields you need and schedule syncs no more frequently than your reporting requires.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -44,7 +199,53 @@ fire inspection software.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.8 | 2025-08-09 | [64845](https://github.com/airbytehq/airbyte/pull/64845) | Update dependencies |
+| 1.1.2 | 2026-09-08 | [85702](https://github.com/airbytehq/airbyte/pull/85702) | Update dependencies |
+| 1.1.1 | 2026-08-18 | [84790](https://github.com/airbytehq/airbyte/pull/84790) | Update dependencies |
+| 1.1.0 | 2026-08-12 | [83710](https://github.com/airbytehq/airbyte/pull/83710) | Add 6 new streams (clientcontacts, propertycontacts, promptquestions, promptanswergroups, promptanswers, majorservices), add fields to the clients, properties, invoices, defectquotes, servicequotes, users, and purchaseorders streams, and make relationship field extraction null-safe |
+| 1.0.3 | 2026-08-11 | [84162](https://github.com/airbytehq/airbyte/pull/84162) | Update dependencies |
+| 1.0.2 | 2026-08-04 | [83652](https://github.com/airbytehq/airbyte/pull/83652) | Update dependencies |
+| 1.0.1 | 2026-07-28 | [83098](https://github.com/airbytehq/airbyte/pull/83098) | Update dependencies |
+| 1.0.0 | 2026-07-21 | [73740](https://github.com/airbytehq/airbyte/pull/73740) | Upgrade the Uptick API to v2.15 and remove deprecated fields from the branches, defectquotelineitems, servicetasks, and tasksessions streams |
+| 0.5.16 | 2026-07-21 | [82628](https://github.com/airbytehq/airbyte/pull/82628) | Update dependencies |
+| 0.5.15 | 2026-07-14 | [81991](https://github.com/airbytehq/airbyte/pull/81991) | Update dependencies |
+| 0.5.14 | 2026-06-30 | [81268](https://github.com/airbytehq/airbyte/pull/81268) | Update dependencies |
+| 0.5.13 | 2026-06-23 | [80682](https://github.com/airbytehq/airbyte/pull/80682) | Update dependencies |
+| 0.5.12 | 2026-06-16 | [80076](https://github.com/airbytehq/airbyte/pull/80076) | Update dependencies |
+| 0.5.11 | 2026-06-09 | [79539](https://github.com/airbytehq/airbyte/pull/79539) | Update dependencies |
+| 0.5.10 | 2026-06-02 | [79025](https://github.com/airbytehq/airbyte/pull/79025) | Update dependencies |
+| 0.5.9 | 2026-04-28 | [77504](https://github.com/airbytehq/airbyte/pull/77504) | Update dependencies |
+| 0.5.8 | 2026-04-21 | [76809](https://github.com/airbytehq/airbyte/pull/76809) | Update dependencies |
+| 0.5.7 | 2026-03-31 | [75703](https://github.com/airbytehq/airbyte/pull/75703) | Update dependencies |
+| 0.5.6 | 2026-03-17 | [75044](https://github.com/airbytehq/airbyte/pull/75044) | Update dependencies |
+| 0.5.5 | 2026-03-10 | [74493](https://github.com/airbytehq/airbyte/pull/74493) | Update dependencies |
+| 0.5.4 | 2026-02-24 | [73926](https://github.com/airbytehq/airbyte/pull/73926) | Update dependencies |
+| 0.5.3 | 2026-02-23 | [72302](https://github.com/airbytehq/airbyte/pull/72302) | Add fields to defectquotes and projects streams |
+| 0.5.2 | 2026-02-17 | [73433](https://github.com/airbytehq/airbyte/pull/73433) | Update dependencies |
+| 0.5.1 | 2026-02-10 | [73007](https://github.com/airbytehq/airbyte/pull/73007) | Update dependencies |
+| 0.5.0 | 2026-01-22 | [71122](https://github.com/airbytehq/airbyte/pull/71122) | Add invoice_id to invoicelineitems, and add 6 new streams: servicetasks, routineservices, routineservicelevels, routineservicetypes, routineserviceleveltypes, subtasks |
+| 0.4.3 | 2026-01-20 | [72056](https://github.com/airbytehq/airbyte/pull/72056) | Update dependencies |
+| 0.4.2 | 2026-01-14 | [71437](https://github.com/airbytehq/airbyte/pull/71437) | Update dependencies |
+| 0.4.1 | 2025-12-18 | [70713](https://github.com/airbytehq/airbyte/pull/70713) | Update dependencies |
+| 0.4.0 | 2025-12-10 | [68194](https://github.com/airbytehq/airbyte/pull/68194) | Remove expensive calculation fields from tasksessions, add more streams, including task profitability |
+| 0.3.9 | 2025-11-25 | [70176](https://github.com/airbytehq/airbyte/pull/70176) | Update dependencies |
+| 0.3.8 | 2025-11-18 | [69684](https://github.com/airbytehq/airbyte/pull/69684) | Update dependencies |
+| 0.3.7 | 2025-10-29 | [68880](https://github.com/airbytehq/airbyte/pull/68880) | Update dependencies |
+| 0.3.6 | 2025-10-21 | [68365](https://github.com/airbytehq/airbyte/pull/68365) | Update dependencies |
+| 0.3.5 | 2025-10-17 | [67585](https://github.com/airbytehq/airbyte/pull/67585) | Remove projectsectiontask and add more incremental sync streams |
+| 0.3.4 | 2025-10-14 | [67855](https://github.com/airbytehq/airbyte/pull/67855) | Update dependencies |
+| 0.3.3 | 2025-10-07 | [67515](https://github.com/airbytehq/airbyte/pull/67515) | Update dependencies |
+| 0.3.2 | 2025-10-03 | [67020](https://github.com/airbytehq/airbyte/pull/67020) | Remove start_date, include more task fields |
+| 0.3.1 | 2025-09-30 | [66839](https://github.com/airbytehq/airbyte/pull/66839) | Update dependencies |
+| 0.3.0 | 2025-09-25 | [66410](https://github.com/airbytehq/airbyte/pull/66410) | Add more streams |
+| 0.2.4 | 2025-09-24 | [66598](https://github.com/airbytehq/airbyte/pull/66598) | Update dependencies |
+| 0.2.3 | 2025-09-09 | [65733](https://github.com/airbytehq/airbyte/pull/65733) | Update dependencies |
+| 0.2.2 | 2025-09-07 | [65534](https://github.com/airbytehq/airbyte/pull/65534) | Add extra_fields to property stream |
+| 0.2.1 | 2025-08-24 | [65445](https://github.com/airbytehq/airbyte/pull/65445) | Update dependencies |
+| 0.2.0 | 2025-08-22 | | Update task profitability stream to use start_date parameter |
+| 0.0.11 | 2025-08-21 | [65061](https://github.com/airbytehq/airbyte/pull/65061) | Add users and task profitability streams |
+| 0.0.10 | 2025-08-15 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
+| 0.0.9 | 2025-08-14 | [64170](https://github.com/airbytehq/airbyte/pull/64170) | adds cursor pagination, incremental sync and rate limiting |
+| 0.0.8 | 2025-08-10 | [64845](https://github.com/airbytehq/airbyte/pull/64845) | Update dependencies |
 | 0.0.7 | 2025-08-02 | [64403](https://github.com/airbytehq/airbyte/pull/64403) | Update dependencies |
 | 0.0.6 | 2025-07-26 | [64055](https://github.com/airbytehq/airbyte/pull/64055) | Update dependencies |
 | 0.0.5 | 2025-07-20 | [63685](https://github.com/airbytehq/airbyte/pull/63685) | Update dependencies |

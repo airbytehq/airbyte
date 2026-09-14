@@ -1,4 +1,4 @@
-# Property chunking
+# Property Chunking
 
 Property chunking enables connectors to handle APIs with limitations on the number of properties that you can fetch per request. This feature breaks down large property lists into smaller, manageable chunks and merges the results back into complete records. Some connectors require this capability to work with APIs that have property limits.
 

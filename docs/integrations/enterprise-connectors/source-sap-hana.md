@@ -1,10 +1,21 @@
 ---
 dockerRepository: airbyte/source-sap-hana-enterprise
+enterprise-connector: true
 ---
 
 # Source SAP HANA
 
-Airbyte's incubating SAP HANA enterprise source connector currently offers Full Refresh and Incrementals syncs for streams. Support for Change Data Capture (CDC) is available using a trigger-based approach.n.
+<HideInUI>
+
+:::info We no longer sell this connector
+
+Airbyte no longer sells this connector, but we continue to support it if you purchased it in the past.
+
+:::
+
+</HideInUI>
+
+Airbyte's incubating SAP HANA enterprise source connector currently offers Full Refresh and Incrementals syncs for streams. Support for Change Data Capture (CDC) is available using a trigger-based approach.
 
 ## Features
 

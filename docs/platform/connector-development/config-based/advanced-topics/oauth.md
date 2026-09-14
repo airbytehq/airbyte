@@ -1,5 +1,5 @@
 # OAuth Authentication Methods
-At Aribyte, we offer two options for authentication using `OAuth2.0`:
+At Airbyte, we offer two options for authentication using `OAuth2.0`:
 
 1. **Airbyte's Own OAuth Application**: With this option, you do not need to create your own OAuth application with the data provider. This is typically applied to `Airbyte Cloud` customers as a `pick-and-use` scenario.
 2. **Declarative OAuth2.0**: This option requires you to provide your own `client id` and `client secret` (parameters may vary based on the data provider's preferences). You will need to supply the configuration, which will be processed and executed by the Airbyte platform on your behalf (self-managed configuration).
@@ -805,7 +805,7 @@ You can apply the `in-variable` tranformations based on your use-case and use th
 | urldecode         | URL-decodes a string.                          | `{{ 'hello%20world'\|urlencode }}`                 | `'hello world'`                                                           |
 | b64encode         | Encodes a string using Base64.                 | `{{ 'hello'\|b64encode }}`                         | `aGVsbG8=`                                                                     |
 | b64decode         | Decodes a Base64 encoded string.               | `{{ 'aGVsbG8='\|b64decode }}`                      | `hello`                                                                        |
-| codechallengeS256 | Encodes the input string using `base64` + `SHA-256`. | `{{ 'id_123:secret_456'\|codechallengeS256 }}` | `kdlBQTTftIOzHnzQoqp3dQ5jBsSehFTjg1meg1gL3OY` |
+| codechallengeS256 | PKCE S256 challenge: unpadded `base64url` of the `SHA-256` digest (RFC 7636). | `{{ 'id_123:secret_456'\|codechallengeS256 }}` | `kdlBQTTftIOzHnzQoqp3dQ5jBsSehFTjg1meg1gL3OY` |
 
 #### Commonly used `Jinja2` in-variables interpolation methods available (the list is not exhaustive)
 

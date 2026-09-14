@@ -2,17 +2,209 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
+from pathlib import Path
+from urllib.parse import parse_qs, urlparse
+
 import pytest
+import requests_mock as rm
+import yaml
 from source_facebook_pages.source import SourceFacebookPages
 
+from airbyte_cdk.models import (
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    FailureType,
+    SyncMode,
+)
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 
-@pytest.mark.parametrize("error_code", (400, 429, 500))
-def test_retries(mocker, requests_mock, error_code):
-    mocker.patch("time.sleep")
-    requests_mock.get("https://graph.facebook.com/1?fields=access_token&access_token=token", json={"access_token": "access"})
-    requests_mock.get("https://graph.facebook.com/v21.0/1", [{"status_code": error_code}, {"json": {"data": {}}}])
-    source = SourceFacebookPages()
-    stream = source.streams({"page_id": 1, "access_token": "token"})[0]
-    for slice_ in stream.stream_slices(sync_mode="full_refresh"):
-        list(stream.read_records(sync_mode="full_refresh", stream_slice=slice_))
-    assert requests_mock.call_count >= 3
+
+CONFIG = {"page_id": "1", "access_token": "token"}
+ACCESS_TOKEN_URL = "https://graph.facebook.com/1?fields=access_token&access_token=token"
+PAGE_URL = "https://graph.facebook.com/v24.0/1"
+FEED_URL = "https://graph.facebook.com/v24.0/1/feed"
+MANIFEST_PATH = Path(__file__).parents[1] / "source_facebook_pages" / "manifest.yaml"
+
+
+def _make_catalog(stream_name, selected_fields):
+    return ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name=stream_name,
+                    json_schema={
+                        "type": "object",
+                        "properties": {field: {"type": ["string", "null"]} for field in selected_fields},
+                    },
+                    supported_sync_modes=[SyncMode.full_refresh],
+                ),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            )
+        ]
+    )
+
+
+def _get_fields_from_request(request_history, target_url_path):
+    for req in request_history:
+        parsed = urlparse(req.url)
+        if parsed.path == target_url_path:
+            params = parse_qs(parsed.query)
+            if "fields" in params:
+                return params["fields"][0]
+    return None
+
+
+def read_from_stream(config, stream: str, sync_mode, expecting_exception: bool = False) -> EntrypointOutput:
+    catalog = CatalogBuilder().with_stream(stream, sync_mode).build()
+    return read(SourceFacebookPages(catalog=catalog, config=config), config, catalog, expecting_exception=expecting_exception)
+
+
+@pytest.mark.parametrize(
+    "stream_name,selected_fields,mock_url,mock_response,url_path",
+    [
+        pytest.param(
+            "page",
+            ["id", "name", "category"],
+            PAGE_URL,
+            {"id": "1", "name": "Test Page", "category": "Business"},
+            "/v24.0/1",
+            id="page_stream_filters_to_3_fields",
+        ),
+        pytest.param(
+            "post",
+            ["id", "message", "created_time"],
+            FEED_URL,
+            {"data": [{"id": "1_123", "message": "Hello", "created_time": "2024-01-01T00:00:00+0000"}], "paging": {}},
+            "/v24.0/1/feed",
+            id="post_stream_filters_to_3_fields",
+        ),
+        pytest.param(
+            "page",
+            ["id", "fan_count"],
+            PAGE_URL,
+            {"id": "1", "fan_count": "100"},
+            "/v24.0/1",
+            id="page_stream_filters_to_2_fields",
+        ),
+    ],
+)
+def test_stream_filters_fields_to_configured_catalog(stream_name, selected_fields, mock_url, mock_response, url_path):
+    catalog = _make_catalog(stream_name, selected_fields)
+
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        m.get(mock_url, json=mock_response)
+
+        source = SourceFacebookPages(catalog=catalog, config=CONFIG)
+        logger = logging.getLogger("test")
+        list(source.read(logger, CONFIG, catalog))
+
+        raw_fields = _get_fields_from_request(m.request_history, url_path)
+        assert raw_fields is not None, f"Expected a request to {url_path} with fields parameter"
+        requested_fields = set(raw_fields.split(","))
+        assert requested_fields == set(selected_fields), f"Expected fields {set(selected_fields)}, got {requested_fields}"
+
+
+def test_without_catalog_at_init_requests_all_fields():
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        m.get(PAGE_URL, json={"id": "1", "name": "Test Page"})
+
+        source = SourceFacebookPages(config=CONFIG)
+        catalog = _make_catalog("page", ["id"])
+        logger = logging.getLogger("test")
+        list(source.read(logger, CONFIG, catalog))
+
+        raw_fields = _get_fields_from_request(m.request_history, "/v24.0/1")
+        assert raw_fields is not None, "Expected a request to /v24.0/1 with fields parameter"
+        requested_fields = raw_fields.split(",")
+        assert (
+            len(requested_fields) > 3
+        ), f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
+
+
+def test_facebook_bad_request_fails_without_retrying():
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        page_request = m.get(
+            PAGE_URL,
+            json={
+                "error": {
+                    "message": "(#200) Requires pages_read_engagement permission to manage the object",
+                    "type": "OAuthException",
+                    "code": 100,
+                }
+            },
+            status_code=400,
+        )
+
+        output = read_from_stream(CONFIG, "page", SyncMode.full_refresh, expecting_exception=True)
+
+        assert not output.records
+        assert page_request.call_count == 1
+        assert output.errors
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        formatted_error_message = output.get_formatted_error_message()
+        assert "Facebook API request contains invalid Page fields, metrics, or permissions." in formatted_error_message
+        assert "Facebook returned: (#200) Requires pages_read_engagement permission" in formatted_error_message
+        assert "pages_read_engagement" in output.errors[0].trace.error.internal_message
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        pytest.param({"message": "(#4) Application request limit reached", "type": "OAuthException", "code": 4}, id="rate_limit_code"),
+        pytest.param(
+            {"message": "An unexpected error has occurred.", "type": "OAuthException", "code": 100, "is_transient": True},
+            id="is_transient",
+        ),
+    ],
+)
+def test_facebook_transient_bad_request_is_retried(error):
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        page_request = m.get(
+            PAGE_URL,
+            [
+                {"json": {"error": error}, "status_code": 400},
+                {"json": {"id": "1", "name": "page"}, "status_code": 200},
+            ],
+        )
+
+        output = read_from_stream(CONFIG, "page", SyncMode.full_refresh)
+
+        assert page_request.call_count == 2
+        assert len(output.records) == 1
+        assert not output.errors
+
+
+def test_facebook_app_approval_error_is_config_error():
+    manifest = yaml.safe_load(MANIFEST_PATH.read_text())
+    response_filter = manifest["definitions"]["requester"]["error_handler"]["response_filters"][0]
+
+    assert response_filter["error_message_contains"] == "This application has not been approved to use this API"
+    assert response_filter["failure_type"] == FailureType.config_error.value
+    assert response_filter["error_message"].startswith(
+        "The application used to create the Facebook access token has not been approved to use this API."
+    )
+
+
+def test_invalid_insights_metric_error_is_not_retried():
+    manifest = yaml.safe_load(MANIFEST_PATH.read_text())
+    response_filters = manifest["definitions"]["requester"]["error_handler"]["response_filters"]
+
+    invalid_metric_filters = [f for f in response_filters if f.get("error_message_contains") == "must be a valid insights metric"]
+    assert len(invalid_metric_filters) == 1, "Expected exactly one response filter for Meta's invalid-metric error"
+
+    invalid_metric_filter = invalid_metric_filters[0]
+    assert invalid_metric_filter["action"] == "FAIL"
+    assert invalid_metric_filter["failure_type"] == FailureType.system_error.value
+
+    # An invalid metric is permanent, so the filter must be evaluated before the blanket 400 retry.
+    blanket_400_index = next(i for i, f in enumerate(response_filters) if f.get("http_codes") == [400])
+    assert response_filters.index(invalid_metric_filter) < blanket_400_index

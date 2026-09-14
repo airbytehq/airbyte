@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.snowflake
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.DataField
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
@@ -21,13 +21,13 @@ import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.jdbc.LocalDateFieldType
-import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
 import io.airbyte.cdk.jdbc.LocalTimeFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.Equal
 import io.airbyte.cdk.read.From
@@ -113,7 +113,7 @@ class SnowflakeSourceOperations() :
             "DATETIME",
             "TIMESTAMP",
             "TIMESTAMP_NTZ",
-            "TIMESTAMPNTZ", -> LocalDateTimeFieldType
+            "TIMESTAMPNTZ", -> SnowflakeLocalDateTimeFieldType
             "BINARY",
             "VARBINARY", -> BytesFieldType
             "VARIANT",
@@ -149,7 +149,7 @@ class SnowflakeSourceOperations() :
                 is SelectColumnMaxValue -> "MAX(${column.sql()})"
             }
 
-    fun Field.sql(): String = "\"$id\""
+    fun DataField.sql(): String = "\"$id\""
 
     fun FromNode.sql(): String =
         when (this) {
@@ -164,7 +164,7 @@ class SnowflakeSourceOperations() :
                         " SAMPLE (${sampleRatePercentage.toPlainString()})"
                     }
                 val innerFrom: String = From(name, namespace).sql() + sample
-                val inner = "SELECT * $innerFrom ORDER BY RANDOM()"
+                val inner = "SELECT * $innerFrom ${where?.sql() ?: ""} ORDER BY RANDOM()"
                 "FROM (SELECT * FROM ($inner) LIMIT $sampleSize)"
             }
         }
@@ -192,7 +192,14 @@ class SnowflakeSourceOperations() :
             is OrderBy -> "ORDER BY " + columns.joinToString(", ") { it.sql() }
         }
 
-    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> = where.bindings()
+    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> =
+        from.bindings() + where.bindings() + limit.bindings()
+
+    fun FromNode.bindings(): List<SelectQuery.Binding> =
+        when (this) {
+            is FromSample -> where?.bindings() ?: listOf()
+            else -> listOf()
+        }
 
     fun WhereNode.bindings(): List<SelectQuery.Binding> =
         when (this) {
@@ -222,6 +229,15 @@ class SnowflakeSourceOperations() :
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
         recordData: ObjectNode
+    ) {
+        return
+    }
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: NativeRecordPayload
     ) {
         return
     }

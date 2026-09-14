@@ -15,7 +15,13 @@ definitions:
       primary_key:
         - transaction_id
       retriever:
-        type: SimpleRetriever
+        # Reads a date window in halves when PayPal rejects it with RESULTSET_TOO_LARGE.
+        # The partition fields and datetime format must match the incremental_sync cursor below.
+        type: CustomRetriever
+        class_name: source_declarative_manifest.components.DateWindowSplittingRetriever
+        partition_field_start: start_time
+        partition_field_end: end_time
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         requester:
           $ref: "#/definitions/base_requester"
           path: v1/reporting/transactions
@@ -35,10 +41,13 @@ definitions:
                   - type: HttpResponseFilter
                     http_codes:
                       - 400
-                    action: IGNORE
+                    action: FAIL
                     predicate: >-
                       {{ 'Data for the given start date is not available' in
                       response['message']}}
+                # Asks the retriever to narrow the date window on HTTP 400 RESULTSET_TOO_LARGE.
+              - type: CustomErrorHandler
+                class_name: source_declarative_manifest.components.ResultSetTooLargeErrorHandler
         record_selector:
           type: RecordSelector
           extractor:
@@ -47,6 +56,9 @@ definitions:
               - transaction_details
         paginator:
           type: DefaultPaginator
+          # A custom retriever cannot pass the requester url_base to its paginator, so it is repeated here.
+          $parameters:
+            url_base: https://api-m.{{ "sandbox." if config["is_sandbox"] }}paypal.com/
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
@@ -102,6 +114,7 @@ definitions:
             - path:
                 - transaction_id
               value: "{{ record['transaction_info']['transaction_id'] }}"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -290,12 +303,13 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: updated_time_cut
         cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
           - "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(config.get('dispute_start_date') if config.get('dispute_start_date') and day_delta(-180) <= config.get('dispute_start_date') else day_delta(-180), '%Y-%m-%dT%H:%M:%S.%fZ')[:23] + 'Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         start_time_option:
           type: RequestOption
           field_name: update_time_after
@@ -307,7 +321,7 @@ definitions:
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(config.get('dispute_end_date') if config.get('dispute_end_date') and day_delta(-180) <= config.get('dispute_end_date') else (now_utc() - duration('PT30M')), '%Y-%m-%dT%H:%M:%S.%fZ')[:23] + 'Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         step: P{{ config.get('time_window', 7) }}D
         cursor_granularity: PT1S
       transformations:

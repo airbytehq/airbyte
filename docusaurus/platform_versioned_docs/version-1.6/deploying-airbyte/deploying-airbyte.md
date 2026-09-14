@@ -102,7 +102,6 @@ Each of these integrations can be configured to suit your specific needs and is 
 Before you can configure this stuff in a cloud provider, you need to set up your policies:
 
 - [AWS Policies](./infrastructure/aws.md#policies)
-- [Azure Policies](./infrastructure/azure.md#policies)
 - [GCP Policies](./infrastructure/gcp.md#policies)
 
 After your policies are set up, here's a list of customizations.

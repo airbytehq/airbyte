@@ -41,7 +41,7 @@ After creating your account you will be able to get your `Client ID` and `Secret
 
 :::info
 
-By default, syncs are run with a slice period of 7 days. If you see errors with the message `Result set size is greater than the maximum limit` or an error code like `RESULTSET_TOO_LARGE`:
+By default, syncs are run with a slice period of 7 days. PayPal caps a transaction search at 10K records, and the `transactions` stream automatically retries a rejected slice as smaller date ranges. The sync only fails if a one-second date range is still rejected. If a sync fails with `Result set size is greater than the maximum limit` or `RESULTSET_TOO_LARGE`:
 
 - Try lower the size of the slice period in your optional parameters in your connection configuration.
 - You can try to lower the scheduling sync window in case a day slice period is not enough. Lowering the sync period it may help avoid reaching the 10K limit.
@@ -257,6 +257,10 @@ The below table contains the configuraiton parameters available for this connect
 | `array`          | `array`      |
 | `object`         | `object`     |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -264,6 +268,44 @@ The below table contains the configuraiton parameters available for this connect
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.6.48 | 2026-09-08 | [84916](https://github.com/airbytehq/airbyte/pull/84916) | Retry oversized `transactions` date slices as smaller date ranges instead of failing the sync on the first `RESULTSET_TOO_LARGE` response |
+| 2.6.47 | 2026-09-08 | [85594](https://github.com/airbytehq/airbyte/pull/85594) | Update dependencies |
+| 2.6.46 | 2026-08-26 | [79676](https://github.com/airbytehq/airbyte/pull/79676) | Fix `transaction_id` primary key emitted as null for IDs resembling scientific notation |
+| 2.6.45 | 2026-08-18 | [84690](https://github.com/airbytehq/airbyte/pull/84690) | Update dependencies |
+| 2.6.44 | 2026-08-11 | [84075](https://github.com/airbytehq/airbyte/pull/84075) | Update dependencies |
+| 2.6.43 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 2.6.42 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 2.6.40 — 2.6.41 is built on SDM 7.23.7, which breaks bundled custom components |
+| 2.6.41 | 2026-07-28 | [83052](https://github.com/airbytehq/airbyte/pull/83052) | Update dependencies |
+| 2.6.40 | 2026-07-21 | [82533](https://github.com/airbytehq/airbyte/pull/82533) | Update dependencies |
+| 2.6.39 | 2026-07-14 | [81962](https://github.com/airbytehq/airbyte/pull/81962) | Update dependencies |
+| 2.6.38 | 2026-06-30 | [81175](https://github.com/airbytehq/airbyte/pull/81175) | Update dependencies |
+| 2.6.37 | 2026-06-23 | [80610](https://github.com/airbytehq/airbyte/pull/80610) | Update dependencies |
+| 2.6.36 | 2026-06-16 | [79986](https://github.com/airbytehq/airbyte/pull/79986) | Update dependencies |
+| 2.6.35 | 2026-06-09 | [79456](https://github.com/airbytehq/airbyte/pull/79456) | Update dependencies |
+| 2.6.34 | 2026-06-02 | [78907](https://github.com/airbytehq/airbyte/pull/78907) | Update dependencies |
+| 2.6.33 | 2026-04-28 | [77335](https://github.com/airbytehq/airbyte/pull/77335) | Update dependencies |
+| 2.6.32 | 2026-04-21 | [76710](https://github.com/airbytehq/airbyte/pull/76710) | Update dependencies |
+| 2.6.31 | 2026-04-07 | [76135](https://github.com/airbytehq/airbyte/pull/76135) | Fix undefined `security_context` variable in payments generator utility script |
+| 2.6.30 | 2026-03-31 | [75850](https://github.com/airbytehq/airbyte/pull/75850) | Update dependencies |
+| 2.6.29 | 2026-03-24 | [75396](https://github.com/airbytehq/airbyte/pull/75396) | Update dependencies |
+| 2.6.28 | 2026-03-10 | [74484](https://github.com/airbytehq/airbyte/pull/74484) | Update dependencies |
+| 2.6.27 | 2026-03-03 | [73875](https://github.com/airbytehq/airbyte/pull/73875) | Update dependencies |
+| 2.6.26 | 2026-02-26 | [74027](https://github.com/airbytehq/airbyte/pull/74027) | Fix INVALID_DATE_TIME_FORMAT error on disputes stream by using 3-digit milliseconds |
+| 2.6.25 | 2026-02-17 | [73574](https://github.com/airbytehq/airbyte/pull/73574) | Update dependencies |
+| 2.6.24 | 2026-02-10 | [73171](https://github.com/airbytehq/airbyte/pull/73171) | Update dependencies |
+| 2.6.23 | 2026-02-03 | [72637](https://github.com/airbytehq/airbyte/pull/72637) | Update dependencies |
+| 2.6.22 | 2026-01-22 | [70967](https://github.com/airbytehq/airbyte/pull/70967) | Update HTTP response action for 400 error transactions from IGNORE to FAIL |
+| 2.6.21 | 2026-01-20 | [71652](https://github.com/airbytehq/airbyte/pull/71652) | Update dependencies |
+| 2.6.20 | 2025-12-18 | [70505](https://github.com/airbytehq/airbyte/pull/70505) | Update dependencies |
+| 2.6.19 | 2025-11-25 | [69974](https://github.com/airbytehq/airbyte/pull/69974) | Update dependencies |
+| 2.6.18 | 2025-11-18 | [69668](https://github.com/airbytehq/airbyte/pull/69668) | Update dependencies |
+| 2.6.17 | 2025-10-29 | [69044](https://github.com/airbytehq/airbyte/pull/69044) | Update dependencies |
+| 2.6.16 | 2025-10-21 | [68286](https://github.com/airbytehq/airbyte/pull/68286) | Update dependencies |
+| 2.6.15 | 2025-10-14 | [67760](https://github.com/airbytehq/airbyte/pull/67760) | Update dependencies |
+| 2.6.14 | 2025-10-07 | [67348](https://github.com/airbytehq/airbyte/pull/67348) | Update dependencies |
+| 2.6.13 | 2025-09-30 | [66378](https://github.com/airbytehq/airbyte/pull/66378) | Update dependencies |
+| 2.6.12 | 2025-09-09 | [65835](https://github.com/airbytehq/airbyte/pull/65835) | Update dependencies |
+| 2.6.11 | 2025-08-23 | [65171](https://github.com/airbytehq/airbyte/pull/65171) | Update dependencies |
 | 2.6.10 | 2025-08-09 | [64716](https://github.com/airbytehq/airbyte/pull/64716) | Update dependencies |
 | 2.6.9 | 2025-08-02 | [64258](https://github.com/airbytehq/airbyte/pull/64258) | Update dependencies |
 | 2.6.8 | 2025-07-26 | [63821](https://github.com/airbytehq/airbyte/pull/63821) | Update dependencies |

@@ -2,19 +2,21 @@
 
 This page guides you through the process of setting up the [Chroma](https://docs.trychroma.com/?lang=py) destination connector.
 
-## Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | Yes                  |       |
-
 #### Output Schema
 
 Only one stream will exist to collect data from all source streams. This will be in a [collection](https://docs.trychroma.com/usage-guide#using-collections) in [Chroma](https://docs.trychroma.com/?lang=py) whose name will be defined by the user, and validated and corrected by Airbyte.
 
 For each record, a UUID string is generated and used as the document id. The embeddings generated as defined will be stored as embeddings. Data in the text fields will be stored as documents and those in the metadata fields will be stored as metadata.
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Getting Started \(Airbyte Open Source\)
 
@@ -70,6 +72,10 @@ You should now have all the requirements needed to configure Chroma as a destina
   - **Cohere API key** if using Cohere for embedding
   - Embedding **Field name** and **Embedding dimensions** if getting the embeddings from stream records
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 ## Changelog
 
 <details>
@@ -77,6 +83,7 @@ You should now have all the requirements needed to configure Chroma as a destina
 
 | Version | Date       | Pull Request                                              | Subject                                                      |
 |:--------|:-----------| :-------------------------------------------------------- |:-------------------------------------------------------------|
+| 0.0.55 | 2026-08-13 | [84361](https://github.com/airbytehq/airbyte/pull/84361) | Update the CDK to remediate CVE-2025-68664 in the langchain dependency |
 | 0.0.54 | 2025-05-03 | [59326](https://github.com/airbytehq/airbyte/pull/59326) | Update dependencies |
 | 0.0.53 | 2025-04-26 | [58256](https://github.com/airbytehq/airbyte/pull/58256) | Update dependencies |
 | 0.0.52 | 2025-04-12 | [57652](https://github.com/airbytehq/airbyte/pull/57652) | Update dependencies |

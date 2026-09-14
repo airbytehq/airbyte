@@ -4,9 +4,12 @@ This page contains the setup guide and reference information for the YouTube Ana
 
 ## Prerequisites
 
+The Google account you authorize must own or manage a YouTube channel. All YouTube Reporting API data belongs to a channel or a content owner, so an account with no associated channel cannot read any data and setup fails with a 401. If you see the error `The authorized Google account does not appear to have an associated YouTube channel`, create a channel for that account or re-authenticate with an account that already has one.
+
 YouTube does not start to generate a report until you create a [reporting job](https://developers.google.com/youtube/reporting/v1/reports#step-3:-create-a-reporting-job) for that report.
-Airbyte creates a reporting job for your report or uses current reporting job if it's already exists.
+Airbyte creates a reporting job for your report, or uses the current reporting job if it already exists, during the **first sync** of that stream. Setting up the source does not create any reporting jobs.
 The report will be available within 48 hours of creating the reporting job and will be for the day that the job was scheduled.
+Because of this, on a brand-new source the first sync creates the jobs and returns no records for the report streams; records begin to arrive on a sync that runs at least 48 hours after that first sync.
 For example, if you schedule a job on September 1, 2015, then the report for September 1, 2015, will be ready on September 3, 2015.
 The report for September 2, 2015, will be posted on September 4, 2015, and so forth.
 Youtube also generates historical data reports covering the 30-day period prior to when you created the job. Airbyte syncs all available historical data too.
@@ -30,12 +33,20 @@ Youtube also generates historical data reports covering the 30-day period prior 
 
 ### For Airbyte OSS:
 
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the YouTube Analytics connector and select **YouTube Analytics** from the Source type dropdown.
-4. Select `client_id`
-5. Select `client_secret`
-6. Select `refresh_token`
-7. Click `Set up source`.
+1. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+2. On the Set up the source page, enter the name for the YouTube Analytics connector and select **YouTube Analytics** from the Source type dropdown.
+3. Enter your `client_id`
+4. Enter your `client_secret`
+5. Enter your `refresh_token`
+6. Click `Set up source`.
+
+### Content Owner ID (Optional)
+
+The **Content Owner ID** field is for YouTube partners who participate in the [YouTube Partner Program](https://support.google.com/youtube/answer/72851) and manage multiple channels through a content owner account. This includes Multi-Channel Networks (MCNs) and media companies that manage content across multiple YouTube channels.
+
+- If you are a regular YouTube channel owner, leave this field empty. The connector will retrieve data for the channel associated with your OAuth credentials.
+- If you are a YouTube partner with a content owner account, enter your content owner ID to retrieve data for channels managed under that account.
+- To find your content owner ID, you can check the URL when logged into the [YouTube Studio](https://studio.youtube.com/) (look for the `o=` parameter), use the [YouTube Content ID API](https://developers.google.com/youtube/partner/docs/v1/contentOwners/list), or contact your YouTube partner manager.
 
 ## Supported sync modes
 
@@ -52,42 +63,83 @@ The YouTube Analytics source connector supports the following [sync modes](https
 
 ## Supported Streams
 
+- [report_types](https://developers.google.com/youtube/reporting/v1/reference/rest/v1/reportTypes/list) - The report types available to your channel or content owner. Full refresh only. The connection check uses this stream because it returns data with valid credentials alone and requires no reporting job.
 - [channel_annotations_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-annotations)
-- [channel_basic_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-user-activity)
+- [channel_basic_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-user-activity)
 - [channel_cards_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-cards)
-- [channel_combined_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-combined)
+- [channel_combined_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-combined)
 - [channel_demographics_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-viewer-demographics)
-- [channel_device_os_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-device-type-and-operating-system)
+- [channel_device_os_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-device-type-and-operating-system)
 - [channel_end_screens_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-end-screens)
-- [channel_playback_location_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-playback-locations)
-- [channel_province_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-province)
+- [channel_playback_location_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-playback-locations)
+- [channel_province_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-province)
 - [channel_sharing_service_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-content-sharing)
-- [channel_subtitles_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-subtitles)
-- [channel_traffic_source_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-traffic-sources)
-- [playlist_basic_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-user-activity)
-- [playlist_combined_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-combined)
-- [playlist_device_os_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-device-type-and-operating-system)
-- [playlist_playback_location_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-playback-locations)
-- [playlist_province_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-province)
-- [playlist_traffic_source_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-traffic-sources)
+- [channel_subtitles_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-subtitles)
+- [channel_traffic_source_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-traffic-sources)
+- [playlist_basic_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-user-activity)
+- [playlist_combined_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-combined)
+- [playlist_device_os_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-device-type-and-operating-system)
+- [playlist_playback_location_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-playback-locations)
+- [playlist_province_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-province)
+- [playlist_traffic_source_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-traffic-sources)
+
+## YouTube API Services usage disclosure
+
+This connector uses [YouTube API Services](https://developers.google.com/youtube/analytics) to retrieve data from YouTube. By using this connector, you agree to be bound by the [YouTube Terms of Service](https://www.youtube.com/t/terms).
+
+YouTube API Services are provided by Google. For information about how Google handles data, review the [Google Privacy Policy](https://www.google.com/policies/privacy).
+
+When using OAuth 2.0 authentication, this connector accesses authorized user data. You can revoke the connector's access to your Google account at any time through the [Google security settings page](https://myaccount.google.com/connections?filters=3,4&hl=en). To delete stored data that was previously synced, remove the relevant connection in your Airbyte workspace or delete the data from your configured destination.
 
 ## Performance considerations
+
+The YouTube Reporting API has the following quota limits:
 
 - Free requests per day: 20,000
 - Free requests per 100 seconds: 100
 - Free requests per minute: 60
 
-Quota usage is not an issue because data is retrieved once and then filtered, sorted, and queried within the application.
+The connector retrieves bulk report data from YouTube's reporting jobs, which minimizes API quota usage compared to making individual queries for each metric.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                        |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------- |
+| Version | Date | Pull Request | Subject |
+| :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
+| 1.4.0 | 2026-09-09 | [85335](https://github.com/airbytehq/airbyte/pull/85335) | Restore incremental syncs for report streams: only newly created report files are requested and downloaded instead of re-downloading every retained report on each sync. Reports that YouTube re-issues with corrected data are now picked up, where previously they were silently skipped. Existing connections are migrated automatically; no action is required. |
+| 1.3.4 | 2026-09-08 | [85727](https://github.com/airbytehq/airbyte/pull/85727) | Update dependencies |
+| 1.3.3 | 2026-08-21 | [84945](https://github.com/airbytehq/airbyte/pull/84945) | Fail fast with a clear transient error when the daily YouTube API project quota is exhausted, and correctly classify rate-limited and server-error responses |
+| 1.3.2 | 2026-08-18 | [84816](https://github.com/airbytehq/airbyte/pull/84816) | Update dependencies |
+| 1.3.1 | 2026-08-11 | [82653](https://github.com/airbytehq/airbyte/pull/82653) | Update dependencies |
+| 1.3.0 | 2026-08-03 | [83286](https://github.com/airbytehq/airbyte/pull/83286) | Add new `report_types` stream, fix `check` failures, and explain 401s caused by a Google account with no YouTube channel |
+| 1.2.12 | 2026-07-23 | [82712](https://github.com/airbytehq/airbyte/pull/82712) | Fix setup check failure by pointing the connection check at the always-available `channel_basic_a3` report instead of `channel_annotations_a1` |
+| 1.2.11 | 2026-07-14 | [82069](https://github.com/airbytehq/airbyte/pull/82069) | Update dependencies |
+| 1.2.10 | 2026-06-30 | [81330](https://github.com/airbytehq/airbyte/pull/81330) | Update dependencies |
+| 1.2.9 | 2026-06-23 | [80732](https://github.com/airbytehq/airbyte/pull/80732) | Update dependencies |
+| 1.2.8 | 2026-06-16 | [80106](https://github.com/airbytehq/airbyte/pull/80106) | Update dependencies |
+| 1.2.7 | 2026-06-09 | [79579](https://github.com/airbytehq/airbyte/pull/79579) | Update dependencies |
+| 1.2.6 | 2026-06-02 | [79073](https://github.com/airbytehq/airbyte/pull/79073) | Update dependencies |
+| 1.2.5 | 2026-04-28 | [77489](https://github.com/airbytehq/airbyte/pull/77489) | Update dependencies |
+| 1.2.4 | 2026-04-21 | [74693](https://github.com/airbytehq/airbyte/pull/74693) | Update dependencies |
+| 1.2.3 | 2026-02-24 | [73149](https://github.com/airbytehq/airbyte/pull/73149) | Update dependencies |
+| 1.2.2 | 2026-02-03 | [72635](https://github.com/airbytehq/airbyte/pull/72635) | Update dependencies |
+| 1.2.1 | 2026-01-20 | [72048](https://github.com/airbytehq/airbyte/pull/72048) | Update dependencies |
+| 1.2.0 | 2026-01-14 | [71377](https://github.com/airbytehq/airbyte/pull/71377) | Promoting release candidate 1.2.0-rc.2 to a main version. |
+| 1.2.0-rc.2 | 2026-01-09 | [71244](https://github.com/airbytehq/airbyte/pull/71244) | Fix incorrect report_id key and remove additional error message |
+| 1.2.0-rc.1 | 2026-01-07 | [71169](https://github.com/airbytehq/airbyte/pull/71169) | Add optional content_owner_id config for multi-channel support and improve error handling |
+| 1.1.2 | 2025-12-18 | [70715](https://github.com/airbytehq/airbyte/pull/70715) | Update dependencies |
+| 1.1.1 | 2025-12-02 | [64964](https://github.com/airbytehq/airbyte/pull/64964) | Update dependencies |
+| 1.1.0 | 2025-11-17 | [69352](https://github.com/airbytehq/airbyte/pull/69352) | Promoting release candidate 1.1.0-rc.1 to a main version. |
+| 1.1.0-rc.1 | 2025-11-02 | [42838](https://github.com/airbytehq/airbyte/pull/42838) | Migrate to Manifest-only |
+| 1.0.0 | 2025-10-30 | [66558](https://github.com/airbytehq/airbyte/pull/66558) | Update deprecated channel and playlist BULK reports |
 | 0.2.0 | 2025-02-07 | [53196](https://github.com/airbytehq/airbyte/pull/53196) | Update check connection and empty responses |
-| 0.1.7 | 2025-02-26 | [54696](https://github.com/airbytehq/airbyte/pull/54696) | Update requests-mock dependency versionb |
+| 0.1.7 | 2025-02-26 | [54696](https://github.com/airbytehq/airbyte/pull/54696) | Update requests-mock dependency version |
 | 0.1.6 | 2024-06-17 | [39529](https://github.com/airbytehq/airbyte/pull/39529) | Pin CDK version to 0.38.0 |
 | 0.1.5 | 2024-05-21 | [38546](https://github.com/airbytehq/airbyte/pull/38546) | [autopull] base image + poetry + up_to_date |
 | 0.1.4 | 2023-05-22 | [26420](https://github.com/airbytehq/airbyte/pull/26420) | Migrate to advancedAuth |

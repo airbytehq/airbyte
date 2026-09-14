@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.snowflake
 
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.JdbcMetadataQuerier.ColumnMetadata
 import io.airbyte.cdk.discover.JdbcMetadataQuerier.PrimaryKeyRow
@@ -44,6 +44,7 @@ import kotlin.use
  */
 class SnowflakeSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
+    val schema: String? = null,
 ) : MetadataQuerier by base {
     private val log = KotlinLogging.logger {}
 
@@ -122,9 +123,11 @@ class SnowflakeSourceMetadataQuerier(
 
     override fun fields(
         streamID: StreamIdentifier,
-    ): List<Field> {
+    ): List<EmittedField> {
         val table: TableName = findTableName(streamID) ?: return listOf()
-        return columnMetadata(table).map { Field(it.label, base.fieldTypeMapper.toFieldType(it)) }
+        return columnMetadata(table).map {
+            EmittedField(it.label, base.fieldTypeMapper.toFieldType(it))
+        }
     }
 
     fun columnMetadata(table: TableName): List<ColumnMetadata> {
@@ -154,7 +157,7 @@ class SnowflakeSourceMetadataQuerier(
     ): String {
         val querySpec =
             SelectQuerySpec(
-                SelectColumns(columnIDs.map { Field(it, NullFieldType) }),
+                SelectColumns(columnIDs.map { EmittedField(it, NullFieldType) }),
                 From(table.name, table.namespace()),
                 limit = Limit(0),
             )
@@ -231,8 +234,8 @@ class SnowflakeSourceMetadataQuerier(
             for (namespace in
                 base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
                 // Query all schemas in the current database
-                dbmd.getTables(namespace, null, null, arrayOf("TABLE", "VIEW")).use { rs: ResultSet
-                    ->
+                dbmd.getTables(namespace, schema, null, arrayOf("TABLE", "VIEW")).use {
+                    rs: ResultSet ->
                     while (rs.next()) {
                         val tableName =
                             TableName(
@@ -328,7 +331,7 @@ class SnowflakeSourceMetadataQuerier(
                         checkQueries,
                         jdbcConnectionFactory,
                     )
-                return SnowflakeSourceMetadataQuerier(base)
+                return SnowflakeSourceMetadataQuerier(base, config.schema)
             }
         }
 

@@ -2,6 +2,35 @@
 
 This guide helps you navigate any issues when you deploy Airbyte with `abctl`.
 
+## Installer Script Errors
+
+These errors occur when running the `curl -LsfS https://get.airbyte.com | bash -` installer script to install the `abctl` binary itself. For errors that occur when running `abctl local install`, see [Common Errors](#common-errors).
+
+### "Is a directory"
+
+- Error: `main: line 179: /tmp/abctl_install.XXXX/: Is a directory`
+
+The installer script queries the GitHub Releases API for an asset matching your OS and architecture (e.g. `linux-amd64`). If no matching asset is found, the download filename variable is empty and the script tries to write to the temp directory path itself, producing this error.
+
+Common causes:
+
+- Your OS or architecture isn't detected correctly (for example, an uncommon `uname` output that doesn't match the expected patterns).
+- The GitHub API rate limit was hit, returning an empty or error response instead of release data.
+
+Install abctl using an alternative method instead. See the [abctl installation options](/platform/deploying-airbyte/abctl/#install-abctl) for Homebrew, Go, and manual download instructions.
+
+### Permission denied during installation
+
+- Error: `Permission denied` or `Neither root or sudo`
+
+The installer needs write access to the install directory (default `/usr/local/bin`). If you don't have `sudo` access or want to install to a different location, set the `DIR_INSTALL` environment variable.
+
+```shell
+DIR_INSTALL=$HOME/bin curl -LsfS https://get.airbyte.com | bash -
+```
+
+Make sure the target directory exists and is in your `PATH`.
+
 ## Common Errors
 
 ### Airbyte Bootloader failed to start
@@ -173,6 +202,10 @@ Version `0.15.0` had a bug when users have `secrets.yaml` file. You must upgrade
 
 ## FAQ
 
+### Can I use abctl with an existing Kubernetes cluster?
+
+No. abctl creates and manages its own [kind](https://kind.sigs.k8s.io/) cluster inside Docker. It cannot target an existing Kubernetes cluster. If you already have a Kubernetes cluster, use the [Helm chart deployment guide](/platform/deploying-airbyte/chart-v2-community) to install Airbyte directly.
+
 ### Using standard tools to interact with an Airbyte instance that was installed with `abctl`
 
 `abctl` install Airbyte into a kind cluster on your local machine. If you'd like to interact directly with any of the underlying infrastructure, you can use standard tooling. You will need to make sure these tools are installed (or install them yourself). Any of these out of the box tools will work with an Airbyte instance installed with `abctl`.
@@ -181,7 +214,7 @@ If you want to interact with the pods or resources inside the cluster you can us
 
 [kind](https://kind.sigs.k8s.io/) is a tool for creating a K8s cluster using docker instead of having to install a local K8s cluster. You only need to think about kind if you want to make an adjustment to the cluster itself.
 
-For more advanced interactions (e.g. loading custom docker containers), read more in [developing locally](/platform/contributing-to-airbyte/developing-locally#using-abctl-for-airbyte-development).
+For more advanced interactions (e.g. loading custom docker containers), read more in [developing locally](/community/contributing-to-airbyte/developing-locally#using-abctl-for-airbyte-development).
 
 ### Unable To Locate User Email
 

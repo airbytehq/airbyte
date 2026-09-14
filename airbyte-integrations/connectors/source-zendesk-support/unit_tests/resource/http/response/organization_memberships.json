@@ -1,0 +1,22 @@
+{
+  "organization_memberships": [
+    {
+      "id": 12345,
+      "url": "https://d3v-airbyte.zendesk.com/api/v2/organization_memberships/12345.json",
+      "user_id": 67890,
+      "organization_id": 11111,
+      "default": true,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "meta": {
+    "has_more": false,
+    "after_cursor": null,
+    "before_cursor": null
+  },
+  "links": {
+    "prev": null,
+    "next": null
+  }
+}

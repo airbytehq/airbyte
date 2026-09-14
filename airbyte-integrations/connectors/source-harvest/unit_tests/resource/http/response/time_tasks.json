@@ -1,0 +1,17 @@
+{
+  "results": [
+    {
+      "task_id": 1,
+      "task_name": "Design",
+      "total_hours": 40.0,
+      "billable_hours": 38.0,
+      "currency": "USD",
+      "billable_amount": 5700.0
+    }
+  ],
+  "per_page": 50,
+  "total_pages": 1,
+  "total_entries": 1,
+  "page": 1,
+  "links": {}
+}

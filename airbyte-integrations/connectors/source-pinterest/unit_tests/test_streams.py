@@ -3,30 +3,16 @@
 #
 
 import os
-from http import HTTPStatus
-from unittest.mock import MagicMock, patch
 
 import pytest
-import requests
-from source_pinterest.components.components import AdAccountRecordExtractor
-from source_pinterest.streams import (
-    AdAccountValidationStream,
-    AnalyticsApiBackoffStrategyDecorator,
-    NonJSONResponse,
-    PinterestAnalyticsStream,
-    PinterestErrorHandler,
-    PinterestStream,
-    PinterestSubStream,
-)
-from source_pinterest.utils import get_analytics_columns
+from components import AdAccountRecordExtractor, CustomReportStatusChunkStateMigration, StatusChunkPartitionRouter
 
-from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
-from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-from .conftest import get_stream_by_name
-from .utils import create_requests_response
+from .conftest import get_stream_by_name, read_from_stream
 
 
 os.environ["REQUEST_CACHE_PATH"] = "/tmp"
@@ -35,142 +21,16 @@ _RETRY_AFTER_HEADER = "XRetry-After"
 _A_MAX_TIME = 10
 
 
-@pytest.fixture
-def patch_base_class(mocker):
-    # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(PinterestStream, "path", "v0/example_endpoint")
-    mocker.patch.object(PinterestStream, "primary_key", "test_primary_key")
-    mocker.patch.object(PinterestStream, "__abstractmethods__", set())
-    #
-    mocker.patch.object(PinterestSubStream, "path", "v0/example_endpoint")
-    mocker.patch.object(PinterestSubStream, "primary_key", "test_primary_key")
-    mocker.patch.object(PinterestSubStream, "next_page_token", None)
-    mocker.patch.object(PinterestSubStream, "parse_response", {})
-    mocker.patch.object(PinterestSubStream, "__abstractmethods__", set())
-    #
-    mocker.patch.object(PinterestAnalyticsStream, "path", "v0/example_endpoint")
-    mocker.patch.object(PinterestAnalyticsStream, "primary_key", "test_primary_key")
-    mocker.patch.object(PinterestAnalyticsStream, "next_page_token", None)
-    mocker.patch.object(PinterestAnalyticsStream, "parse_response", {})
-    mocker.patch.object(PinterestAnalyticsStream, "__abstractmethods__", set())
-
-
-def test_request_params(patch_base_class):
-    stream = PinterestStream(config=MagicMock())
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_params = {}
-    assert stream.request_params(**inputs) == expected_params
-
-
-def test_next_page_token(patch_base_class, test_response):
-    stream = PinterestStream(config=MagicMock())
-    inputs = {"response": test_response}
-    expected_token = {"bookmark": "string"}
-    assert stream.next_page_token(**inputs) == expected_token
-
-
-def test_parse_response(patch_base_class, test_response, test_current_stream_state):
-    stream = PinterestStream(config=MagicMock())
-    inputs = {"response": test_response, "stream_state": test_current_stream_state}
-    expected_parsed_object = {}
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
-
-
 def test_parse_response_with_sensitive_data(requests_mock, test_config):
     """Test that sensitive data is removed"""
-    stream = get_stream_by_name("catalogs_feeds", test_config)
     requests_mock.get(
         url="https://api.pinterest.com/v5/catalogs/feeds",
         json={"items": [{"id": "CatalogsFeeds1", "credentials": {"password": "bla"}}]},
     )
     actual_response = [
-        dict(record)
-        for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh)
-        for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
+        record.record.data for record in read_from_stream(test_config, "catalogs_feeds", sync_mode=SyncMode.full_refresh).records
     ]
     assert actual_response == [{"id": "CatalogsFeeds1"}]
-
-
-def test_request_headers(patch_base_class):
-    stream = PinterestStream(config=MagicMock())
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_headers = {}
-    assert stream.request_headers(**inputs) == expected_headers
-
-
-def test_http_method(patch_base_class):
-    stream = PinterestStream(config=MagicMock())
-    expected_method = "GET"
-    assert stream.http_method == expected_method
-
-
-@pytest.mark.parametrize(
-    ("http_status", "expected_response_action"),
-    (
-        (HTTPStatus.OK, ResponseAction.SUCCESS),
-        (HTTPStatus.BAD_REQUEST, ResponseAction.FAIL),
-        (HTTPStatus.TOO_MANY_REQUESTS, ResponseAction.RETRY),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, ResponseAction.RETRY),
-    ),
-)
-def test_response_action(requests_mock, patch_base_class, http_status, expected_response_action):
-    response_mock = create_requests_response(requests_mock, http_status, {})
-    stream = PinterestStream(config=MagicMock())
-    assert stream._http_client._error_handler.interpret_response(response_mock).response_action == expected_response_action
-
-
-@pytest.mark.parametrize(
-    ("test_response", "status_code", "expected_response_action"),
-    (
-        ({"code": 8, "message": "You have exceeded your rate limit. Try again later."}, 429, ResponseAction.RETRY),
-        ({"message": "You got data!"}, 200, ResponseAction.SUCCESS),
-    ),
-)
-@patch("time.sleep", return_value=None)
-def test_declarative_stream_response_action_on_max_rate_limit_error(
-    mock_sleep, requests_mock, test_response, status_code, expected_response_action
-):
-    response_mock = create_requests_response(requests_mock, status_code, {})
-    error_handler = PinterestErrorHandler(logger=MagicMock(), stream_name="any_stream_name")
-    assert error_handler.interpret_response(response_mock).response_action == expected_response_action
-
-
-def test_non_json_response(requests_mock, patch_base_class):
-    url = "https://api.pinterest.com/v5/boards"
-    requests_mock.get(url, text="some response", status_code=200)
-    response_mock = requests.get(url)
-    error_handler = PinterestErrorHandler(logger=MagicMock(), stream_name="any_stream_name")
-
-    with pytest.raises(NonJSONResponse) as exception:
-        error_handler.interpret_response(response_mock).response_action == ResponseAction.RETRY
-    assert "Received unexpected response in non json format" in str(exception)
-
-
-@pytest.mark.parametrize(("response", "expected_backoff_time"), (({"code": 1}, 1),))
-def test_analytics_stream_backoff_time(requests_mock, response, expected_backoff_time):
-    url = "https://api.pinterest.com/v5/boards"
-    requests_mock.get(
-        url,
-        json={"code": 1},
-        status_code=400,
-    )
-    response = requests.get(url)
-
-    assert AnalyticsApiBackoffStrategyDecorator().backoff_time(response) == 1
-
-
-def test_analytics_stream_request_params(patch_base_class):
-    stream = PinterestAnalyticsStream(parent=None, config=MagicMock())
-    stream.analytics_target_ids = "target_id"
-    stream_slice = {"start_date": "2024-04-04", "end_date": "2024-04-05", "parent": {"id": "parent_id"}}
-    expected_params = {
-        "start_date": "2024-04-04",
-        "end_date": "2024-04-05",
-        "granularity": "DAY",
-        "columns": get_analytics_columns(),
-        "target_id": "parent_id",
-    }
-    assert stream.request_params(stream_state={}, stream_slice=stream_slice) == expected_params
 
 
 @pytest.mark.parametrize(
@@ -214,23 +74,11 @@ def test_path(test_config, stream_name, stream_slice, expected_path):
     if stream_slice:
         stream_slice = StreamSlice(partition=stream_slice, cursor_slice={})
 
-    result = stream.retriever.requester.get_path(stream_slice=stream_slice, stream_state=None, next_page_token=None)
+    result = stream._stream_partition_generator._partition_factory._retriever.requester.get_path(
+        stream_slice=stream_slice, stream_state=None, next_page_token=None
+    )
+
     assert result == expected_path
-
-
-def test_ad_account_request_params():
-    config = {"authenticator": MagicMock(), "account_id": "123456"}
-    stream = AdAccountValidationStream(config=config)
-
-    path = stream.path()
-    assert "123456" in path
-
-
-def test_ad_account_request_no_id():
-    config = {"authenticator": MagicMock()}
-    stream = AdAccountValidationStream(config=config)
-    params = stream.request_params(stream_slice={}, stream_state={})
-    assert "account_id" not in params
 
 
 def test_extract_records_with_items(test_response):
@@ -243,3 +91,162 @@ def test_extract_records_single_account(test_response_single_account):
     extractor = AdAccountRecordExtractor()
     result = extractor.extract_records(test_response_single_account)
     assert result == [{"id": "1234"}]
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "expected_partitions"),
+    [
+        pytest.param({}, [{}], id="empty"),
+        pytest.param(
+            {"campaign_statuses": [], "ad_group_statuses": [], "ad_statuses": []},
+            [{}],
+            id="explicit-empty-lists",
+        ),
+        pytest.param(
+            {"campaign_statuses": ["RUNNING", "PAUSED"]},
+            [{"campaign_statuses_chunk": ["PAUSED", "RUNNING"]}],
+            id="under-limit-sorted",
+        ),
+        pytest.param(
+            {"campaign_statuses": ["C6", "C5", "C4", "C3", "C2", "C1"]},
+            [{"campaign_statuses_chunk": ["C1", "C2", "C3", "C4", "C5", "C6"]}],
+            id="exact-limit-single-chunk",
+        ),
+    ],
+)
+def test_status_chunk_partition_router_empty_and_under_limit(kwargs, expected_partitions):
+    router = StatusChunkPartitionRouter(config={}, parameters={}, **kwargs)
+    stream_slices = list(router.stream_slices())
+
+    assert [stream_slice.partition for stream_slice in stream_slices] == expected_partitions
+    assert all(stream_slice.cursor_slice == {} for stream_slice in stream_slices)
+
+
+def test_status_chunk_partition_router_chunks_status_combinations():
+    campaign_statuses = ["C1", "C2", "C3", "C4", "C5", "C6", "C7"]
+    ad_group_statuses = ["G1", "G2"]
+    ad_statuses = ["A1", "A2", "A3", "A4", "A5", "A6", "A7"]
+    router = StatusChunkPartitionRouter(
+        config={},
+        parameters={},
+        campaign_statuses=campaign_statuses,
+        ad_group_statuses=ad_group_statuses,
+        ad_statuses=ad_statuses,
+        level="PIN_PROMOTION",
+    )
+
+    stream_slices = list(router.stream_slices())
+    partitions = [stream_slice.partition for stream_slice in stream_slices]
+
+    assert len(partitions) == 4
+    assert all(stream_slice.cursor_slice == {} for stream_slice in stream_slices)
+    # Assert the full cartesian pairing, not just per-dimension chunk sets - an
+    # implementation repeating some combinations while dropping others must fail here.
+    campaign_chunks = (tuple(campaign_statuses[:6]), tuple(campaign_statuses[6:]))
+    ad_chunks = (tuple(ad_statuses[:6]), tuple(ad_statuses[6:]))
+    assert {
+        (
+            tuple(partition["campaign_statuses_chunk"]),
+            tuple(partition["ad_group_statuses_chunk"]),
+            tuple(partition["ad_statuses_chunk"]),
+        )
+        for partition in partitions
+    } == {(campaign_chunk, tuple(ad_group_statuses), ad_chunk) for campaign_chunk in campaign_chunks for ad_chunk in ad_chunks}
+    assert all(len(partition["campaign_statuses_chunk"]) <= 6 for partition in partitions)
+    assert all(len(partition["ad_group_statuses_chunk"]) <= 6 for partition in partitions)
+    assert all(len(partition["ad_statuses_chunk"]) <= 6 for partition in partitions)
+
+    # Reordering the same status sets must produce identical partitions - partition keys
+    # feed per-partition cursors, and a config reorder must not orphan them.
+    reordered = StatusChunkPartitionRouter(
+        config={},
+        parameters={},
+        campaign_statuses=list(reversed(campaign_statuses)),
+        ad_group_statuses=list(reversed(ad_group_statuses)),
+        ad_statuses=list(reversed(ad_statuses)),
+        level="PIN_PROMOTION",
+    )
+    assert [stream_slice.partition for stream_slice in reordered.stream_slices()] == partitions
+
+
+def test_status_chunk_partition_router_rejects_chunking_above_report_level():
+    seven_ad_statuses = ["APPROVED", "PAUSED", "PENDING", "REJECTED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"]
+
+    unsafe_router = StatusChunkPartitionRouter(config={}, parameters={}, ad_statuses=seven_ad_statuses, level="CAMPAIGN")
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(unsafe_router.stream_slices())
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert "ad_statuses" in exc_info.value.message
+
+    safe_router = StatusChunkPartitionRouter(config={}, parameters={}, ad_statuses=seven_ad_statuses, level="PIN_PROMOTION")
+    assert len(list(safe_router.stream_slices())) == 2
+
+    under_limit_router = StatusChunkPartitionRouter(config={}, parameters={}, ad_statuses=["APPROVED"], level="ADVERTISER")
+    assert len(list(under_limit_router.stream_slices())) == 1
+
+
+def test_status_chunk_state_migration_copies_legacy_account_cursors():
+    campaign_statuses = ["C1", "C2", "C3", "C4", "C5", "C6", "C7"]
+    migration = CustomReportStatusChunkStateMigration(
+        config={},
+        campaign_statuses=campaign_statuses,
+        ad_group_statuses=["G1"],
+        ad_statuses=["A1"],
+    )
+    already_chunked_entry = {
+        "partition": {"id": 789, "parent_slice": {}, "campaign_statuses_chunk": ["C1"]},
+        "cursor": {"DATE": "2026-05-22"},
+    }
+    legacy_state = {
+        "states": [
+            {"partition": {"id": 123, "parent_slice": {}}, "cursor": {"DATE": "2026-05-20"}},
+            {"partition": {"id": 456, "parent_slice": {}}, "cursor": {"DATE": "2026-05-18"}},
+            already_chunked_entry,
+        ],
+        "state": {"DATE": "2026-05-18"},
+        "use_global_cursor": False,
+        "lookback_window": 42,
+    }
+
+    assert migration.should_migrate(legacy_state) is True
+    migrated = migration.migrate(legacy_state)
+
+    # 2 legacy accounts x 2 campaign chunks (x 1 ad-group chunk x 1 ad chunk) + 1 passthrough
+    assert len(migrated["states"]) == 5
+    assert already_chunked_entry in migrated["states"]
+    fanned_out = [entry for entry in migrated["states"] if entry is not already_chunked_entry]
+    assert {
+        (entry["partition"]["id"], tuple(entry["partition"]["campaign_statuses_chunk"]), entry["cursor"]["DATE"]) for entry in fanned_out
+    } == {
+        (account_id, campaign_chunk, cursor_date)
+        for account_id, cursor_date in ((123, "2026-05-20"), (456, "2026-05-18"))
+        for campaign_chunk in (tuple(campaign_statuses[:6]), tuple(campaign_statuses[6:]))
+    }
+    assert all(entry["partition"]["parent_slice"] == {} for entry in fanned_out)
+    assert all(entry["partition"]["ad_group_statuses_chunk"] == ["G1"] for entry in fanned_out)
+    assert all(entry["partition"]["ad_statuses_chunk"] == ["A1"] for entry in fanned_out)
+    # Top-level per-partition-cursor keys must survive the migration untouched.
+    assert migrated["state"] == {"DATE": "2026-05-18"}
+    assert migrated["use_global_cursor"] is False
+    assert migrated["lookback_window"] == 42
+
+
+def test_status_chunk_state_migration_skips_when_filters_absent_or_already_chunked():
+    migration = CustomReportStatusChunkStateMigration(config={}, campaign_statuses=["RUNNING"])
+    already_chunked = {
+        "states": [
+            {
+                "partition": {"id": "123", "campaign_statuses_chunk": ["RUNNING"]},
+                "cursor": {"DATE": "2026-05-20"},
+            }
+        ]
+    }
+    global_cursor_only = {"states": [], "state": {"DATE": "2026-05-20"}, "use_global_cursor": True}
+
+    assert CustomReportStatusChunkStateMigration(config={}).should_migrate({"states": [{"partition": {"id": "123"}}]}) is False
+    assert migration.should_migrate(already_chunked) is False
+    assert migration.should_migrate({"DATE": "2026-05-20"}) is False
+    assert migration.should_migrate({}) is False
+    assert migration.should_migrate(global_cursor_only) is False
+    # An entry without a cursor is not a legacy per-partition entry - never fan it out.
+    assert migration.should_migrate({"states": [{"partition": {"id": "123", "parent_slice": {}}}]}) is False

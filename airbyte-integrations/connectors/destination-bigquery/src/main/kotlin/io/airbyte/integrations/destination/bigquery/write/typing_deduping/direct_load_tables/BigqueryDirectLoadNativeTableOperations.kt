@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables
 
 import com.google.cloud.bigquery.BigQuery
+import com.google.cloud.bigquery.BigQueryException
 import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.StandardSQLTypeName
 import com.google.cloud.bigquery.StandardTableDefinition
@@ -91,20 +92,26 @@ class BigqueryDirectLoadNativeTableOperations(
         }
     }
 
-    override suspend fun getGenerationId(tableName: TableName): Long {
-        val result =
-            bigquery.query(
-                QueryJobConfiguration.of(
-                    "SELECT _airbyte_generation_id FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1",
-                ),
-            )
-        val value = result.iterateAll().first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
-        return if (value.isNull) {
-            0
-        } else {
-            value.longValue
+    override suspend fun getGenerationId(tableName: TableName): Long =
+        try {
+            val result =
+                bigquery.query(
+                    QueryJobConfiguration.of(
+                        "SELECT _airbyte_generation_id FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1",
+                    ),
+                )
+            val value = result.iterateAll().first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
+            if (value.isNull) {
+                0L
+            } else {
+                value.longValue
+            }
+        } catch (e: BigQueryException) {
+            logger.error(e) {
+                "Failed to retrieve the generation ID for table ${tableName.toPrettyString()}"
+            }
+            0L
         }
-    }
 
     /**
      * Bigquery doesn't support changing a table's partitioning / clustering scheme in-place. So
@@ -203,18 +210,18 @@ class BigqueryDirectLoadNativeTableOperations(
             // but that seems like a weird enough situation that we shouldn't worry about it.
             return """
                 CAST(
-                  CASE JSON_TYPE($columnName)
-                    WHEN 'object' THEN TO_JSON_STRING($columnName)
-                    WHEN 'array' THEN TO_JSON_STRING($columnName)
-                    ELSE JSON_VALUE($columnName)
+                  CASE JSON_TYPE(`$columnName`)
+                    WHEN 'object' THEN TO_JSON_STRING(`$columnName`)
+                    WHEN 'array' THEN TO_JSON_STRING(`$columnName`)
+                    ELSE JSON_VALUE(`$columnName`)
                   END
                   AS $newType
                 )
                 """.trimIndent()
         } else if (newType == StandardSQLTypeName.JSON) {
-            return "TO_JSON($columnName)"
+            return "TO_JSON(`$columnName`)"
         } else {
-            return "CAST($columnName AS $newType)"
+            return "CAST(`$columnName` AS $newType)"
         }
     }
 
@@ -383,12 +390,12 @@ class BigqueryDirectLoadNativeTableOperations(
             databaseHandler.executeWithRetries(
                 """
                 ALTER TABLE $tableId
-                  RENAME COLUMN `$realColumnName` TO $backupColumnName,
-                  RENAME COLUMN `$tempColumnName` TO $realColumnName
+                  RENAME COLUMN `$realColumnName` TO `$backupColumnName`,
+                  RENAME COLUMN `$tempColumnName` TO `$realColumnName`
                 """.trimIndent(),
             )
             databaseHandler.executeWithRetries(
-                """ALTER TABLE $tableId DROP COLUMN $backupColumnName""",
+                """ALTER TABLE $tableId DROP COLUMN `$backupColumnName`""",
             )
         }
     }

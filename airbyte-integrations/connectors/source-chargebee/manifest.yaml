@@ -1211,6 +1211,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
+                    http_codes:
+                      - 404
+                    action: IGNORE
+                    error_message: Entity unavailable. Subscription may have been deleted.
+                  - type: HttpResponseFilter
                     predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
@@ -2068,7 +2073,7 @@ spec:
         order: 3
       num_workers:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 1
         maximum: 50
         default: 3

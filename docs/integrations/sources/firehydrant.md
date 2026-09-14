@@ -8,9 +8,10 @@ The Airbyte connector for FireHydrant enables seamless data integration between 
 | `api_token` | `string` | API Token. Bot token to use for authenticating with the FireHydrant API. You can find or create a bot token by logging into your organization and visiting the Bot users page at https://app.firehydrant.io/organizations/bots. |  |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| enviroments | id | DefaultPaginator | ✅ |  ❌  |
+| environments | id | DefaultPaginator | ✅ |  ❌  |
 | services | id | DefaultPaginator | ✅ |  ❌  |
 | functionalities | id | DefaultPaginator | ✅ |  ❌  |
 | teams | id | DefaultPaginator | ✅ |  ❌  |
@@ -50,13 +51,50 @@ The Airbyte connector for FireHydrant enables seamless data integration between 
 | task_lists | id | DefaultPaginator | ✅ |  ❌  |
 | checklist_templates | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date              | Pull Request | Subject        |
+|---------|-------------------|--------------|----------------|
+| 1.0.17 | 2026-09-08 | [85500](https://github.com/airbytehq/airbyte/pull/85500) | Update dependencies |
+| 1.0.16 | 2026-08-18 | [84574](https://github.com/airbytehq/airbyte/pull/84574) | Update dependencies |
+| 1.0.15 | 2026-08-11 | [83937](https://github.com/airbytehq/airbyte/pull/83937) | Update dependencies |
+| 1.0.14 | 2026-08-04 | [83453](https://github.com/airbytehq/airbyte/pull/83453) | Update dependencies |
+| 1.0.13 | 2026-07-28 | [82899](https://github.com/airbytehq/airbyte/pull/82899) | Update dependencies |
+| 1.0.12 | 2026-07-21 | [82399](https://github.com/airbytehq/airbyte/pull/82399) | Update dependencies |
+| 1.0.11 | 2026-07-14 | [81827](https://github.com/airbytehq/airbyte/pull/81827) | Update dependencies |
+| 1.0.10 | 2026-06-30 | [81048](https://github.com/airbytehq/airbyte/pull/81048) | Update dependencies |
+| 1.0.9 | 2026-06-23 | [80438](https://github.com/airbytehq/airbyte/pull/80438) | Update dependencies |
+| 1.0.8 | 2026-06-16 | [79865](https://github.com/airbytehq/airbyte/pull/79865) | Update dependencies |
+| 1.0.7 | 2026-06-09 | [79313](https://github.com/airbytehq/airbyte/pull/79313) | Update dependencies |
+| 1.0.6 | 2026-06-02 | [78681](https://github.com/airbytehq/airbyte/pull/78681) | Update dependencies |
+| 1.0.5 | 2026-04-28 | [77221](https://github.com/airbytehq/airbyte/pull/77221) | Update dependencies |
+| 1.0.4 | 2026-04-21 | [76592](https://github.com/airbytehq/airbyte/pull/76592) | Update dependencies |
+| 1.0.3 | 2026-03-31 | [75721](https://github.com/airbytehq/airbyte/pull/75721) | Update dependencies |
+| 1.0.2 | 2026-03-17 | [74945](https://github.com/airbytehq/airbyte/pull/74945) | Update dependencies |
+| 1.0.1 | 2026-03-03 | [73781](https://github.com/airbytehq/airbyte/pull/73781) | Update dependencies |
+| 1.0.0 | 2026-02-24 | [74008](https://github.com/airbytehq/airbyte/pull/74008) | Rename `enviroments` stream to `environments` |
+| 0.0.45 | 2026-02-17 | [73410](https://github.com/airbytehq/airbyte/pull/73410) | Update dependencies |
+| 0.0.44 | 2026-02-10 | [73170](https://github.com/airbytehq/airbyte/pull/73170) | Update dependencies |
+| 0.0.43 | 2026-01-20 | [71971](https://github.com/airbytehq/airbyte/pull/71971) | Update dependencies |
+| 0.0.42 | 2026-01-14 | [71616](https://github.com/airbytehq/airbyte/pull/71616) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70540](https://github.com/airbytehq/airbyte/pull/70540) | Update dependencies |
+| 0.0.40 | 2025-11-25 | [70000](https://github.com/airbytehq/airbyte/pull/70000) | Update dependencies |
+| 0.0.39 | 2025-11-18 | [69449](https://github.com/airbytehq/airbyte/pull/69449) | Update dependencies |
+| 0.0.38 | 2025-10-29 | [68816](https://github.com/airbytehq/airbyte/pull/68816) | Update dependencies |
+| 0.0.37 | 2025-10-21 | [68450](https://github.com/airbytehq/airbyte/pull/68450) | Update dependencies |
+| 0.0.36 | 2025-10-14 | [68056](https://github.com/airbytehq/airbyte/pull/68056) | Update dependencies |
+| 0.0.35 | 2025-10-07 | [67293](https://github.com/airbytehq/airbyte/pull/67293) | Update dependencies |
+| 0.0.34 | 2025-09-30 | [66774](https://github.com/airbytehq/airbyte/pull/66774) | Update dependencies |
+| 0.0.33 | 2025-09-24 | [65853](https://github.com/airbytehq/airbyte/pull/65853) | Update dependencies |
+| 0.0.32 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
+| 0.0.31 | 2025-08-23 | [65275](https://github.com/airbytehq/airbyte/pull/65275) | Update dependencies |
 | 0.0.30 | 2025-08-09 | [64699](https://github.com/airbytehq/airbyte/pull/64699) | Update dependencies |
 | 0.0.29 | 2025-08-02 | [64358](https://github.com/airbytehq/airbyte/pull/64358) | Update dependencies |
 | 0.0.28 | 2025-07-26 | [63989](https://github.com/airbytehq/airbyte/pull/63989) | Update dependencies |
@@ -86,6 +124,6 @@ The Airbyte connector for FireHydrant enables seamless data integration between 
 | 0.0.4 | 2024-12-21 | [50022](https://github.com/airbytehq/airbyte/pull/50022) | Update dependencies |
 | 0.0.3 | 2024-12-14 | [49520](https://github.com/airbytehq/airbyte/pull/49520) | Update dependencies |
 | 0.0.2 | 2024-12-12 | [49205](https://github.com/airbytehq/airbyte/pull/49205) | Update dependencies |
-| 0.0.1 | 2024-11-08 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1   | 2024-11-08 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>

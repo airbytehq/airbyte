@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, MutableMapping
+from typing import Any, Mapping, MutableMapping
 from unittest import mock
 
-import responses
+from source_github.streams import GithubStream
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
@@ -61,13 +61,13 @@ class ProjectsResponsesAPI:
         return res
 
     @classmethod
-    def register(cls, data):
-        responses.upsert("GET", cls.projects_url, json=cls.get_json_projects(data))
+    def register(cls, data, requests_mock):
+        requests_mock.get(cls.projects_url, json=cls.get_json_projects(data))
         for project_id, project in enumerate(data, start=1):
-            responses.upsert("GET", cls.columns_url.format(project_id=project_id), json=cls.get_json_columns(project, project_id))
+            requests_mock.get(cls.columns_url.format(project_id=project_id), json=cls.get_json_columns(project, project_id))
             for n, column in enumerate(project.get("columns", []), start=1):
                 column_id = int(str(project_id) + str(n))
-                responses.upsert("GET", cls.cards_url.format(column_id=column_id), json=cls.get_json_cards(column, column_id))
+                requests_mock.get(cls.cards_url.format(column_id=column_id), json=cls.get_json_cards(column, column_id))
 
 
 def command_check(source: Source, config):
@@ -77,3 +77,18 @@ def command_check(source: Source, config):
         source_spec: ConnectorSpecification = source.spec(logger)
         check_config_against_spec_or_exit(connector_config, source_spec)
     return source.check(logger, config)
+
+
+class ProbeStream(GithubStream):
+    """A plain repo-scoped Python stream for tests that exercise `GithubStreamABC.read_records`'s
+    error handling or the shared authenticator through a real `HttpStream`: `GET
+    repos/{repository}/probe_stream?per_page=100`, no parent, no cache, no envelope.
+
+    `Deployments` used to play this role until Step 5 moved it to the manifest. Every remaining
+    Python stream is unsuitable for one of three reasons: it is parent-driven (`PullRequestCommits`,
+    `ProjectColumns`, `TeamMembers`, ...), it is GraphQL, or it sets `use_cache = True`, which
+    replays cached pages and stops a request counter from advancing.
+    """
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {"$schema": "https://json-schema.org/draft-07/schema#", "type": "object", "properties": {}}

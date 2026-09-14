@@ -40,6 +40,10 @@ The RD Station Marketing source connector supports the following [sync modes](ht
 
 Each endpoint has its own performance limitations, which also consider the account plan. For more informations, visit the page [API request limit](https://developers.rdstation.com/reference/limite-de-requisicoes-da-api?lng=en).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -47,6 +51,7 @@ Each endpoint has its own performance limitations, which also consider the accou
 
 | Version | Date       | Pull Request                                              | Subject                          |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------- |
+| 0.3.24 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
 | 0.3.23 | 2025-05-10 | [60134](https://github.com/airbytehq/airbyte/pull/60134) | Update dependencies |
 | 0.3.22 | 2025-05-03 | [58497](https://github.com/airbytehq/airbyte/pull/58497) | Update dependencies |
 | 0.3.21 | 2025-04-12 | [57845](https://github.com/airbytehq/airbyte/pull/57845) | Update dependencies |

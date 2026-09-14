@@ -3,22 +3,16 @@
 #
 
 import datetime
-import logging
 from calendar import timegm
-from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, List, Mapping
 
 import feedparser
 import pytz
 import requests
 from dateutil.parser import parse
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
-from airbyte_cdk.sources.declarative.types import StreamSlice
-from airbyte_cdk.sources.streams.core import Stream
 
 
 class CustomExtractor(RecordExtractor):

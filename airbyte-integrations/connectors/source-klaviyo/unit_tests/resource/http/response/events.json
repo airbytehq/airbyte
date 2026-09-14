@@ -1,0 +1,42 @@
+[
+  {
+    "type": "event",
+    "id": "event_001",
+    "attributes": {
+      "timestamp": "2024-01-15T10:30:00+00:00",
+      "datetime": "2024-01-15T10:30:00+00:00",
+      "uuid": "550e8400-e29b-41d4-a716-446655440000",
+      "event_properties": {
+        "value": 99.99,
+        "currency": "USD",
+        "items": [
+          {
+            "product_id": "prod_001",
+            "product_name": "Test Product",
+            "quantity": 2,
+            "price": 49.99
+          }
+        ]
+      }
+    },
+    "relationships": {
+      "metric": {
+        "data": {
+          "type": "metric",
+          "id": "metric_001"
+        }
+      },
+      "attributions": {
+        "data": [
+          {
+            "type": "attribution",
+            "id": "attr_001"
+          }
+        ]
+      }
+    },
+    "links": {
+      "self": "https://a.klaviyo.com/api/events/event_001"
+    }
+  }
+]

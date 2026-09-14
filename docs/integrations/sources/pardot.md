@@ -15,6 +15,7 @@ This page contains the setup guide and reference information for the [Pardot (Sa
 ## Setup Guide
 
 ### Required configuration options
+
 - **Pardot Business Unit ID** (`pardot_business_unit_id`): This value uniquely identifies your account, and can be found at Setup > Pardot > Pardot Account Setup
 
 - **Client ID** (`client_id`): The Consumer Key that can be found when viewing your app in Salesforce
@@ -24,9 +25,8 @@ This page contains the setup guide and reference information for the [Pardot (Sa
 - **Refresh Token** (`refresh_token`): Salesforce Refresh Token used for Airbyte to access your Salesforce account. If you don't know what this is, follow [this guide](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) to retrieve it.
 
 ### Optional configuration options
-- **Start Date** (`start_date`): UTC date and time in the format `2020-01-25T00:00:00Z`. Any data before this date will not be replicated. Defaults to `2007-01-01T00:00:00Z` (the year Pardot was launched)
 
-- **Page Size Limit** (`page_size`): The default page size to return; defaults to `1000` (which is Pardot's maximum). Does not apply to the Email Clicks stream which uses the v4 API and is limited to 200 per page.
+- **Start Date** (`start_date`): UTC date and time in the format `2020-01-25T00:00:00Z`. Any data before this date will not be replicated. Defaults to `2007-01-01T00:00:00Z` (the year Pardot was launched)
 
 - **Is Sandbox App?** (`is_sandbox`): Whether or not the app is in a Salesforce sandbox. If you do not know what this is, assume it is false.
 
@@ -89,10 +89,47 @@ Several output streams are available from this source. Unless noted otherwise, s
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
+| 1.0.54 | 2026-09-08 | [85565](https://github.com/airbytehq/airbyte/pull/85565) | Update dependencies |
+| 1.0.53 | 2026-08-18 | [84703](https://github.com/airbytehq/airbyte/pull/84703) | Update dependencies |
+| 1.0.52 | 2026-08-11 | [84070](https://github.com/airbytehq/airbyte/pull/84070) | Update dependencies |
+| 1.0.51 | 2026-08-04 | [83553](https://github.com/airbytehq/airbyte/pull/83553) | Update dependencies |
+| 1.0.50 | 2026-07-28 | [83046](https://github.com/airbytehq/airbyte/pull/83046) | Update dependencies |
+| 1.0.49 | 2026-07-21 | [82532](https://github.com/airbytehq/airbyte/pull/82532) | Update dependencies |
+| 1.0.48 | 2026-07-14 | [81946](https://github.com/airbytehq/airbyte/pull/81946) | Update dependencies |
+| 1.0.47 | 2026-06-30 | [81183](https://github.com/airbytehq/airbyte/pull/81183) | Update dependencies |
+| 1.0.46 | 2026-06-23 | [80586](https://github.com/airbytehq/airbyte/pull/80586) | Update dependencies |
+| 1.0.45 | 2026-06-16 | [79997](https://github.com/airbytehq/airbyte/pull/79997) | Update dependencies |
+| 1.0.44 | 2026-06-09 | [79466](https://github.com/airbytehq/airbyte/pull/79466) | Update dependencies |
+| 1.0.43 | 2026-06-02 | [78883](https://github.com/airbytehq/airbyte/pull/78883) | Update dependencies |
+| 1.0.42 | 2026-04-28 | [77362](https://github.com/airbytehq/airbyte/pull/77362) | Update dependencies |
+| 1.0.41 | 2026-04-21 | [76711](https://github.com/airbytehq/airbyte/pull/76711) | Update dependencies |
+| 1.0.40 | 2026-03-31 | [75820](https://github.com/airbytehq/airbyte/pull/75820) | Update dependencies |
+| 1.0.39 | 2026-03-24 | [75021](https://github.com/airbytehq/airbyte/pull/75021) | Update dependencies |
+| 1.0.38 | 2026-03-10 | [74501](https://github.com/airbytehq/airbyte/pull/74501) | Update dependencies |
+| 1.0.37 | 2026-03-03 | [74170](https://github.com/airbytehq/airbyte/pull/74170) | Update dependencies |
+| 1.0.36 | 2026-02-10 | [73068](https://github.com/airbytehq/airbyte/pull/73068) | Update dependencies |
+| 1.0.35 | 2026-01-20 | [72176](https://github.com/airbytehq/airbyte/pull/72176) | Update dependencies |
+| 1.0.34 | 2026-01-14 | [71683](https://github.com/airbytehq/airbyte/pull/71683) | Update dependencies |
+| 1.0.33 | 2025-12-18 | [70501](https://github.com/airbytehq/airbyte/pull/70501) | Update dependencies |
+| 1.0.32 | 2025-11-25 | [70091](https://github.com/airbytehq/airbyte/pull/70091) | Update dependencies |
+| 1.0.31 | 2025-11-18 | [69674](https://github.com/airbytehq/airbyte/pull/69674) | Update dependencies |
+| 1.0.30 | 2025-10-29 | [69020](https://github.com/airbytehq/airbyte/pull/69020) | Update dependencies |
+| 1.0.29 | 2025-10-21 | [68326](https://github.com/airbytehq/airbyte/pull/68326) | Update dependencies |
+| 1.0.28 | 2025-10-14 | [67800](https://github.com/airbytehq/airbyte/pull/67800) | Update dependencies |
+| 1.0.27 | 2025-10-07 | [67342](https://github.com/airbytehq/airbyte/pull/67342) | Update dependencies |
+| 1.0.26 | 2025-09-30 | [66393](https://github.com/airbytehq/airbyte/pull/66393) | Update dependencies |
+| 1.0.25 | 2025-09-24 | [66592](https://github.com/airbytehq/airbyte/pull/66592) | Fix pagination when >100K records returned |
+| 1.0.24 | 2025-09-09 | [65782](https://github.com/airbytehq/airbyte/pull/65782) | Update dependencies |
+| 1.0.23 | 2025-08-23 | [65172](https://github.com/airbytehq/airbyte/pull/65172) | Update dependencies |
+| 1.0.22 | 2025-08-16 | [64794](https://github.com/airbytehq/airbyte/pull/64794) | Update dependencies |
 | 1.0.21 | 2025-08-02 | [64264](https://github.com/airbytehq/airbyte/pull/64264) | Update dependencies |
 | 1.0.20 | 2025-07-26 | [63887](https://github.com/airbytehq/airbyte/pull/63887) | Update dependencies |
 | 1.0.19 | 2025-07-19 | [63399](https://github.com/airbytehq/airbyte/pull/63399) | Update dependencies |

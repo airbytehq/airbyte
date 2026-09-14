@@ -32,3 +32,7 @@ Reach out to your service representative or system admin to find the parameters 
 ### Output schema
 
 To understand your Sugar CRM database schema, see the [VarDefs](https://support.sugarcrm.com/Documentation/Sugar_Developer/Sugar_Developer_Guide_11.0/Data_Framework/Vardefs/) documentation. Otherwise, the schema will be loaded according to the rules of the underlying database's connector.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.

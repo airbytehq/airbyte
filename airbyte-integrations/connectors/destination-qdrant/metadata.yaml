@@ -6,10 +6,10 @@ data:
       enabled: true
   allowedHosts:
     hosts:
-      - "${indexing.url}"
+      - ${indexing.url}
       - api.openai.com
       - api.cohere.ai
-      - "${embedding.api_base}"
+      - ${embedding.api_base}
   resourceRequirements:
     jobSpecific:
       - jobType: sync
@@ -22,7 +22,7 @@ data:
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 6eb1198a-6d38-43e5-aaaa-dccd8f71db2b
-  dockerImageTag: 0.1.41
+  dockerImageTag: 0.1.42
   dockerRepository: airbyte/destination-qdrant
   githubIssueLabel: destination-qdrant
   icon: qdrant.svg
@@ -40,4 +40,14 @@ data:
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests
+  externalDocumentationUrls:
+    - title: Qdrant documentation
+      url: https://qdrant.tech/documentation/
+      type: api_reference
+    - title: Release notes
+      url: https://github.com/qdrant/qdrant/releases
+      type: api_release_history
+    - title: Authentication
+      url: https://qdrant.tech/documentation/guides/security/
+      type: authentication_guide
 metadataSpecVersion: "1.0"

@@ -4,26 +4,28 @@ This page contains the setup guide and reference information for the Facebook Pa
 
 ## Prerequisites
 
-To set up the Facebook Pages source connector with Airbyte, you'll need to create your Facebook Application and use both long-lived Page access token and Facebook Page ID.
+To set up the Facebook Pages source connector, you need a Facebook app, a long-lived Page access token, and the ID of the Page you want to sync.
 
 :::note
-The Facebook Pages souce connector is currently only compatible with v15 of the Facebook Graph API.
+This connector calls v24.0 of the Facebook Graph API.
 :::
+
+Meta only returns Page Insights data for Pages with 100 or more likes, and the connector checks the connection by reading the `page_insights` stream. If your Page has fewer than 100 likes, expect the connection check and both insights streams to return no data or fail.
 
 ## Setup guide
 
 ### Step 1: Set up Facebook Pages
 
-1. Create Facebook Developer Account. Follow [instruction](https://developers.facebook.com/async/registration/) to create one.
-2. Create [Facebook App](https://developers.facebook.com/apps/). Choose "Company" as the purpose of the app. Fill out the remaining fields to create your app, then follow along the "Connect a User Page" section.
-3. Connect a User [Page](https://developers.facebook.com/tools/explorer/). Choose your app at `Meta App` field. Choose your Page at `User or Page` field. Add next permission:
+1. Create a Facebook Developer Account. Follow [these instructions](https://developers.facebook.com/async/registration/) to create one.
+2. Create a [Facebook App](https://developers.facebook.com/apps/). Choose "Company" as the purpose of the app. Fill out the remaining fields to create your app, then follow along the "Connect a User Page" section.
+3. Connect a User [Page](https://developers.facebook.com/tools/explorer/) using the Graph API Explorer. Choose your app in the `Meta App` field. Choose your Page in the `User or Page` field. Add the following permissions:
    - pages_read_engagement
    - pages_read_user_content
    - pages_show_list
    - read_insights
 4. Click Generate Access Token and follow instructions.
 
-After all the steps, it should look something like this
+After all the steps, it should look something like this:
 
 ![](/.gitbook/assets/facebook-pages-1.png)
 
@@ -32,21 +34,24 @@ After all the steps, it should look something like this
 
 ### Step 2: Set up the Facebook Pages connector in Airbyte
 
-### For Airbyte Cloud:
+1. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+2. Select **Facebook Pages** and enter a name for the source.
+3. For **Page Access Token**, enter the long-lived Page token you generated in Step 1. The connector also accepts a long-lived User token, as long as that user can generate a Page token for the Page you configure.
+4. For **Page ID**, enter the Page's ID or username. If your Page URL is `https://www.facebook.com/Test-1111111111`, use `Test-1111111111`.
+5. (Optional) Set **Page Size** to control the number of records requested per API call for the `post` and `post_insights` streams. The default is 100, and valid values are 1 through 100. Decrease it if you see "Please reduce the amount of data you're asking for" errors.
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. On the Set up the source page, enter the name for the Facebook Pages connector and select **Facebook Pages** from the Source type dropdown.
-4. Fill in Page Access Token with Long-Lived Page Token
-5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be`Test-1111111111`)
+### Creating your own OAuth App
 
-### For Airbyte OSS:
+Follow this [Facebook documentation](https://developers.facebook.com/docs/development/create-an-app/) to create an OAuth App.
 
-1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source.
-3. On the Set up the source page, enter the name for the Facebook Pages connector and select **Facebook Pages** from the Source type dropdown.
-4. Fill in Page Access Token with Long-Lived Page Token
-5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be`Test-1111111111`)
+Required permissions for your OAuth App to sync data using the Facebook Pages source connector:
+
+- `pages_read_engagement`
+- `pages_read_user_content`
+- `pages_show_list`
+- `read_insights`
+
+If you encounter permission errors for specific Page fields, see [Meta's Permissions Reference](https://developers.facebook.com/docs/permissions) for additional permissions you might need. As a rule it's best to request the lowest number of permissions you can to function normally.
 
 ## Supported sync modes
 
@@ -57,10 +62,88 @@ The Facebook Pages source connector supports the following [sync modes](https://
 
 ## Supported Streams
 
-- [Page](https://developers.facebook.com/docs/graph-api/reference/v19.0/page/#overview)
-- [Post](https://developers.facebook.com/docs/graph-api/reference/v19.0/page/feed)
-- [Page Insights](https://developers.facebook.com/docs/graph-api/reference/v19.0/page/insights)
-- [Post Insights](https://developers.facebook.com/docs/graph-api/reference/v19.0/insights)
+| Stream | Graph API endpoint | Notes |
+| :--- | :--- | :--- |
+| `page` | [`/{page-id}`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/#overview) | One record describing the Page. Airbyte requests only the fields you select in the connection's **Schema** tab. |
+| `post` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed) | One record per post. Paginated, so **Page Size** applies. Airbyte requests only the fields you select. |
+| `page_insights` | [`/{page-id}/insights`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights) | One record per metric and period, not per day. Requests a fixed set of metrics. |
+| `post_insights` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed) with an `insights.metric(...)` field selection | Post-level [insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights), one record per metric and period. Paginated, so **Page Size** applies. Requests a fixed set of metrics. |
+
+You can't choose which insights metrics to sync. The connector requests these:
+
+- `page_insights`: `page_total_actions`, `page_post_engagements`, `page_fan_adds_by_paid_non_paid_unique`, `page_media_view`, `page_total_media_view_unique`
+- `post_insights`: `post_media_view`, `post_total_media_view_unique`, `post_clicks`, `post_clicks_by_type`, `post_reactions_by_type_total`
+
+Both insights streams inherit Meta's own limits on Page Insights: data is available only for Pages with 100 or more likes, most metrics refresh once every 24 hours, and Meta retains at most two years of history.
+
+## Reference
+
+This connector uses the [Meta Graph API](https://developers.facebook.com/docs/graph-api/) with the `https://graph.facebook.com/v24.0` endpoint.
+Airbyte requests the selected Page and Post fields from the connector catalog, and requests a fixed set of Page Insights and Post Insights metrics.
+
+For programmatic configuration, use these parameter names:
+
+| Field | Required | Description |
+| :--- | :---: | :--- |
+| `access_token` | Yes | Long-lived Page access token for the Facebook Page. The connector also accepts a long-lived User access token that can generate a Page access token for the configured Page. |
+| `page_id` | Yes | Facebook Page ID. |
+| `page_size` | No | Number of records to request per page for the `post` and `post_insights` streams. Defaults to `100`. Valid values are `1` through `100`. |
+
+## Limitations & Troubleshooting
+
+### "This application has not been approved to use this API" error
+
+This error means Meta rejected the API request because the app that generated the token isn't approved for the requested API, permission, or Page field.
+
+To resolve this error, use a token from an app that has access to the permissions required by the streams you sync:
+
+- `pages_read_engagement`
+- `pages_read_user_content`
+- `pages_show_list`
+- `read_insights`
+
+If you use your own Meta app, it might need [App Review](https://developers.facebook.com/docs/resp-plat-initiatives/appreview/tutorial/) and Advanced Access before it can use these permissions in production.
+The person who generates the token must also be able to perform the required task on the Page.
+For Page Insights, Meta requires access to a Page that you own or administer, or on which you can perform the `ANALYZE` task.
+
+### "Please reduce the amount of data you're asking for" error
+
+This error occurs when the Facebook Graph API considers the total response data too large. Starting from version 2.1.3, the connector treats it as a configuration error and fails the sync instead of retrying, because retrying the same request never succeeds. There are two ways to resolve it:
+
+- **Remove fields from the request via the Schema Tab.** Go to your connection's Schema Tab and deselect fields you don't need for the affected stream. This reduces the number of fields included in API requests. Supported streams: `page`, `post`.
+- **Reduce page size.** Set the **Page Size** configuration parameter to a lower value (e.g., 25 or 50). This reduces the number of records fetched per API request. Supported streams: `post`, `post_insights`.
+
+### "Facebook API request contains invalid Page fields, metrics, or permissions" error
+
+Starting from version 2.1.3, the connector fails a sync with this configuration error when the Graph API rejects a request with HTTP 400 for a reason it can't retry, and includes Facebook's own error message so you can see what was rejected. Earlier versions retried these requests several times before failing, which hid the message from Facebook.
+
+To resolve it, read the Facebook message that follows the error. It usually names a Page or Post field your token isn't allowed to read, or a field Meta no longer supports. Deselect that field in the connection's **Schema** tab, or use a token with the [required permissions](#creating-your-own-oauth-app).
+
+### Reach metrics missing from Page Insights and Post Insights
+
+Meta retired the `page_impressions_*_unique` and `post_impressions_*_unique` metrics. Because the Graph API
+rejects an entire Insights request when any single requested metric is invalid, requesting them returned
+`(#100) The value must be a valid insights metric` and broke both insights streams — and, since the connection
+check queries `page_insights`, source setup as well. See
+[Meta's deprecated metrics list](https://developers.facebook.com/docs/platforminsights/page/deprecated-metrics/).
+
+Starting from version 2.1.2 the connector no longer requests them. Only total reach has a replacement; the paid,
+viral, non-viral, fan and organic reach breakdowns were retired with no equivalent and are permanently
+unavailable from the API.
+
+| Stream | No longer emitted | Replacement |
+| :--- | :--- | :--- |
+| `page_insights` | `page_impressions_unique` | `page_total_media_view_unique` |
+| `page_insights` | `page_impressions_paid_unique`, `page_impressions_viral_unique`, `page_impressions_nonviral_unique` | none |
+| `post_insights` | `post_impressions_unique` | `post_total_media_view_unique` |
+| `post_insights` | `post_impressions_paid_unique`, `post_impressions_fan_unique`, `post_impressions_organic_unique`, `post_impressions_viral_unique`, `post_impressions_nonviral_unique` | none |
+
+The stream schemas are unchanged, so no schema refresh is needed. Rows for the removed metrics simply stop
+arriving; clear the affected streams if you prefer a consistent history in your destination.
+
+### Product catalogs field not available
+
+Starting from version 2.0.4, the `product_catalogs` field is no longer synced in the Page stream and will always be `null`. This is because the Facebook Graph API only returns product catalogs that are owned directly by the Page, not catalogs owned by a Business. Since most product catalogs are now created as Business-owned catalogs (Page-owned catalogs are a legacy feature), and this connector uses Page access tokens, the `product_catalogs` field would not return meaningful data for most users.
 
 ## Data type map
 
@@ -73,67 +156,83 @@ The Facebook Pages source connector supports the following [sync modes](https://
 
 ## Performance considerations
 
-Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting follow the instructions in the Setup Guide below to access better rate limits.
+Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting, follow the instructions in the Setup Guide above to generate a Long-Lived Page Token.
 
-See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) for more information on requesting a quota upgrade.
+The Graph API can report rate limits with HTTP 400 and an error code such as `4`, `17`, `32`, `613`, or `80001`. Starting from version 2.1.3, the connector recognizes these codes, and any error Meta marks as transient, and retries the request with backoff instead of failing immediately. Retries are limited, so if your Page stays throttled long enough to exhaust them, the sync still fails with a transient error and succeeds on a later attempt once the quota resets.
+
+See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) for the full list of codes and for information on requesting a quota upgrade.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-|:--------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
+|:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.3 | 2026-09-08 | [78077](https://github.com/airbytehq/airbyte/pull/78077) | Fail fast on deterministic Facebook API bad request errors as config errors, surface the Facebook error message, and keep retrying rate-limit and transient errors. |
+| 2.1.2 | 2026-08-17 | [84408](https://github.com/airbytehq/airbyte/pull/84408) | Remove Page/Post Insights metrics deprecated by Meta and request `page_total_media_view_unique` / `post_total_media_view_unique` instead; fail fast with Meta's own message on invalid-metric errors. |
+| 2.1.1 | 2026-05-22 | [78342](https://github.com/airbytehq/airbyte/pull/78342) | Classify Facebook app-approval errors as configuration errors. |
+| 2.1.0 | 2026-03-02 | [72949](https://github.com/airbytehq/airbyte/pull/72949) | Use QueryProperties with JsonSchemaPropertySelector to limit API field requests to user-selected fields; add configurable page_size for post and post_insights streams |
+| 2.0.4 | 2026-01-29 | [72253](https://github.com/airbytehq/airbyte/pull/72253) | Remove product_catalogs from fields request parameter |
+| 2.0.3 | 2025-12-01 | [70248](https://github.com/airbytehq/airbyte/pull/70248) | Use correct pagination parameter name (`limit` instead of `page_size`) |
+| 2.0.2 | 2025-12-01 | [70258](https://github.com/airbytehq/airbyte/pull/70258) | Use Post stream for check, handle 400 error in Page stream |
+| 2.0.1 | 2025-11-27 | [70242](https://github.com/airbytehq/airbyte/pull/70242) | Refresh in-app documentation to reflect v24 API version |
+| 2.0.0 | 2025-11-19 | [69714](https://github.com/airbytehq/airbyte/pull/69714) | Upgrade Facebook API to v24.0 |
+| 1.1.4 | 2025-08-14 | [64141](https://github.com/airbytehq/airbyte/pull/64141) | Upgrade Facebook API to v23.0 |
 | 1.1.3 | 2025-07-12 | [60391](https://github.com/airbytehq/airbyte/pull/60391) | Update dependencies |
 | 1.1.2 | 2025-05-10 | [60043](https://github.com/airbytehq/airbyte/pull/60043) | Update dependencies |
 | 1.1.1 | 2025-05-03 | [53787](https://github.com/airbytehq/airbyte/pull/53787) | Update dependencies |
 | 1.1.0 | 2025-04-30 | [59126](https://github.com/airbytehq/airbyte/pull/59126) | Re-enable in cloud and update versions |
 | 1.0.32 | 2025-02-01 | [52793](https://github.com/airbytehq/airbyte/pull/52793) | Update dependencies |
 | 1.0.31  | 2025-01-27 | [52122](https://github.com/airbytehq/airbyte/pull/52122/files) | Upgrade Facebook API to v21.0                                                                                                                                          |
-| 1.0.30  | 2025-01-25 | [52373](https://github.com/airbytehq/airbyte/pull/52373) | Update dependencies                                                                                                                                                    |
-| 1.0.29  | 2025-01-18 | [51637](https://github.com/airbytehq/airbyte/pull/51637) | Update dependencies                                                                                                                                                    |
-| 1.0.28  | 2025-01-11 | [51056](https://github.com/airbytehq/airbyte/pull/51056) | Update dependencies                                                                                                                                                    |
-| 1.0.27  | 2025-01-04 | [50923](https://github.com/airbytehq/airbyte/pull/50923) | Update dependencies                                                                                                                                                    |
-| 1.0.26  | 2024-12-28 | [50530](https://github.com/airbytehq/airbyte/pull/50530) | Update dependencies                                                                                                                                                    |
-| 1.0.25  | 2024-12-21 | [49997](https://github.com/airbytehq/airbyte/pull/49997) | Update dependencies                                                                                                                                                    |
-| 1.0.24  | 2024-12-14 | [49154](https://github.com/airbytehq/airbyte/pull/49154) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
-| 1.0.23  | 2024-10-29 | [47737](https://github.com/airbytehq/airbyte/pull/47737) | Update dependencies                                                                                                                                                    |
-| 1.0.22  | 2024-10-21 | [47025](https://github.com/airbytehq/airbyte/pull/47025) | Update dependencies                                                                                                                                                    |
-| 1.0.21  | 2024-10-12 | [46807](https://github.com/airbytehq/airbyte/pull/46807) | Update dependencies                                                                                                                                                    |
-| 1.0.20  | 2024-10-05 | [46461](https://github.com/airbytehq/airbyte/pull/46461) | Update dependencies                                                                                                                                                    |
-| 1.0.19  | 2024-09-28 | [46133](https://github.com/airbytehq/airbyte/pull/46133) | Update dependencies                                                                                                                                                    |
-| 1.0.18  | 2024-09-21 | [45734](https://github.com/airbytehq/airbyte/pull/45734) | Update dependencies                                                                                                                                                    |
-| 1.0.17  | 2024-09-14 | [45563](https://github.com/airbytehq/airbyte/pull/45563) | Update dependencies                                                                                                                                                    |
-| 1.0.16  | 2024-09-07 | [45311](https://github.com/airbytehq/airbyte/pull/45311) | Update dependencies                                                                                                                                                    |
-| 1.0.15  | 2024-08-31 | [45052](https://github.com/airbytehq/airbyte/pull/45052) | Update dependencies                                                                                                                                                    |
-| 1.0.14  | 2024-08-24 | [44664](https://github.com/airbytehq/airbyte/pull/44664) | Update dependencies                                                                                                                                                    |
-| 1.0.13  | 2024-08-17 | [44234](https://github.com/airbytehq/airbyte/pull/44234) | Update dependencies                                                                                                                                                    |
-| 1.0.12  | 2024-08-12 | [43729](https://github.com/airbytehq/airbyte/pull/43729) | Update dependencies                                                                                                                                                    |
-| 1.0.11  | 2024-08-10 | [43477](https://github.com/airbytehq/airbyte/pull/43477) | Update dependencies                                                                                                                                                    |
-| 1.0.10  | 2024-08-03 | [43224](https://github.com/airbytehq/airbyte/pull/43224) | Update dependencies                                                                                                                                                    |
-| 1.0.9   | 2024-07-27 | [42787](https://github.com/airbytehq/airbyte/pull/42787) | Update dependencies                                                                                                                                                    |
-| 1.0.8   | 2024-07-20 | [42255](https://github.com/airbytehq/airbyte/pull/42255) | Update dependencies                                                                                                                                                    |
-| 1.0.7   | 2024-07-13 | [41685](https://github.com/airbytehq/airbyte/pull/41685) | Update dependencies                                                                                                                                                    |
-| 1.0.6   | 2024-07-10 | [41543](https://github.com/airbytehq/airbyte/pull/41543) | Update dependencies                                                                                                                                                    |
-| 1.0.5   | 2024-07-09 | [41126](https://github.com/airbytehq/airbyte/pull/41126) | Update dependencies                                                                                                                                                    |
-| 1.0.4   | 2024-07-06 | [40812](https://github.com/airbytehq/airbyte/pull/40812) | Update dependencies                                                                                                                                                    |
-| 1.0.3   | 2024-06-25 | [40500](https://github.com/airbytehq/airbyte/pull/40500) | Update dependencies                                                                                                                                                    |
-| 1.0.2   | 2024-06-22 | [40058](https://github.com/airbytehq/airbyte/pull/40058) | Update dependencies                                                                                                                                                    |
-| 1.0.1   | 2024-06-06 | [39243](https://github.com/airbytehq/airbyte/pull/39243) | [autopull] Upgrade base image to v1.2.2                                                                                                                                |
-| 1.0.0   | 2024-03-14 | [36015](https://github.com/airbytehq/airbyte/pull/36015) | Upgrade Facebook API to v19.0                                                                                                                                          |
-| 0.3.0   | 2023-06-26 | [27728](https://github.com/airbytehq/airbyte/pull/27728) | License Update: Elv2                                                                                                                                                   |
-| 0.2.5   | 2023-04-13 | [26939](https://github.com/airbytehq/airbyte/pull/26939) | Add advancedAuth to the connector spec                                                                                                                                 |
-| 0.2.4   | 2023-04-13 | [25143](https://github.com/airbytehq/airbyte/pull/25143) | Update insight metrics request params                                                                                                                                  |
-| 0.2.3   | 2023-02-23 | [23395](https://github.com/airbytehq/airbyte/pull/23395) | Parse datetime to rfc3339                                                                                                                                              |
-| 0.2.2   | 2023-02-10 | [22804](https://github.com/airbytehq/airbyte/pull/22804) | Retry 500 errors                                                                                                                                                       |
-| 0.2.1   | 2022-12-29 | [20925](https://github.com/airbytehq/airbyte/pull/20925) | Fix tests; modify expected records                                                                                                                                     |
-| 0.2.0   | 2022-11-24 | [19788](https://github.com/airbytehq/airbyte/pull/19788) | Migrate lo low-code; Beta certification; Upgrade Facebook API to v.15                                                                                                  |
-| 0.1.6   | 2021-12-22 | [9032](https://github.com/airbytehq/airbyte/pull/9032) | Remove deprecated field `live_encoders` from Page stream                                                                                                               |
-| 0.1.5   | 2021-11-26 | [8267](https://github.com/airbytehq/airbyte/pull/8267) | updated all empty objects in schemas for Page and Post streams                                                                                                         |
-| 0.1.4   | 2021-11-26 | [](https://github.com/airbytehq/airbyte/pull/)           | Remove unsupported insights_export field from Pages request                                                                                                            |
-| 0.1.3   | 2021-10-28 | [7440](https://github.com/airbytehq/airbyte/pull/7440)   | Generate Page token from config access token                                                                                                                           |
-| 0.1.2   | 2021-10-18 | [7128](https://github.com/airbytehq/airbyte/pull/7128)   | Upgrade Facebook API to v.12                                                                                                                                           |
-| 0.1.1   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438)   | Annotate Oauth2 flow initialization parameters in connector specification                                                                                              |
-| 0.1.0   | 2021-09-01 | [5158](https://github.com/airbytehq/airbyte/pull/5158)   | Initial Release                                                                                                                                                        |
+| 1.0.30  | 2025-01-25 | [52373](https://github.com/airbytehq/airbyte/pull/52373)       | Update dependencies                                                                                                                                                    |
+| 1.0.29  | 2025-01-18 | [51637](https://github.com/airbytehq/airbyte/pull/51637)       | Update dependencies                                                                                                                                                    |
+| 1.0.28  | 2025-01-11 | [51056](https://github.com/airbytehq/airbyte/pull/51056)       | Update dependencies                                                                                                                                                    |
+| 1.0.27  | 2025-01-04 | [50923](https://github.com/airbytehq/airbyte/pull/50923)       | Update dependencies                                                                                                                                                    |
+| 1.0.26  | 2024-12-28 | [50530](https://github.com/airbytehq/airbyte/pull/50530)       | Update dependencies                                                                                                                                                    |
+| 1.0.25  | 2024-12-21 | [49997](https://github.com/airbytehq/airbyte/pull/49997)       | Update dependencies                                                                                                                                                    |
+| 1.0.24  | 2024-12-14 | [49154](https://github.com/airbytehq/airbyte/pull/49154)       | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 1.0.23  | 2024-10-29 | [47737](https://github.com/airbytehq/airbyte/pull/47737)       | Update dependencies                                                                                                                                                    |
+| 1.0.22  | 2024-10-21 | [47025](https://github.com/airbytehq/airbyte/pull/47025)       | Update dependencies                                                                                                                                                    |
+| 1.0.21  | 2024-10-12 | [46807](https://github.com/airbytehq/airbyte/pull/46807)       | Update dependencies                                                                                                                                                    |
+| 1.0.20  | 2024-10-05 | [46461](https://github.com/airbytehq/airbyte/pull/46461)       | Update dependencies                                                                                                                                                    |
+| 1.0.19  | 2024-09-28 | [46133](https://github.com/airbytehq/airbyte/pull/46133)       | Update dependencies                                                                                                                                                    |
+| 1.0.18  | 2024-09-21 | [45734](https://github.com/airbytehq/airbyte/pull/45734)       | Update dependencies                                                                                                                                                    |
+| 1.0.17  | 2024-09-14 | [45563](https://github.com/airbytehq/airbyte/pull/45563)       | Update dependencies                                                                                                                                                    |
+| 1.0.16  | 2024-09-07 | [45311](https://github.com/airbytehq/airbyte/pull/45311)       | Update dependencies                                                                                                                                                    |
+| 1.0.15  | 2024-08-31 | [45052](https://github.com/airbytehq/airbyte/pull/45052)       | Update dependencies                                                                                                                                                    |
+| 1.0.14  | 2024-08-24 | [44664](https://github.com/airbytehq/airbyte/pull/44664)       | Update dependencies                                                                                                                                                    |
+| 1.0.13  | 2024-08-17 | [44234](https://github.com/airbytehq/airbyte/pull/44234)       | Update dependencies                                                                                                                                                    |
+| 1.0.12  | 2024-08-12 | [43729](https://github.com/airbytehq/airbyte/pull/43729)       | Update dependencies                                                                                                                                                    |
+| 1.0.11  | 2024-08-10 | [43477](https://github.com/airbytehq/airbyte/pull/43477)       | Update dependencies                                                                                                                                                    |
+| 1.0.10  | 2024-08-03 | [43224](https://github.com/airbytehq/airbyte/pull/43224)       | Update dependencies                                                                                                                                                    |
+| 1.0.9   | 2024-07-27 | [42787](https://github.com/airbytehq/airbyte/pull/42787)       | Update dependencies                                                                                                                                                    |
+| 1.0.8   | 2024-07-20 | [42255](https://github.com/airbytehq/airbyte/pull/42255)       | Update dependencies                                                                                                                                                    |
+| 1.0.7   | 2024-07-13 | [41685](https://github.com/airbytehq/airbyte/pull/41685)       | Update dependencies                                                                                                                                                    |
+| 1.0.6   | 2024-07-10 | [41543](https://github.com/airbytehq/airbyte/pull/41543)       | Update dependencies                                                                                                                                                    |
+| 1.0.5   | 2024-07-09 | [41126](https://github.com/airbytehq/airbyte/pull/41126)       | Update dependencies                                                                                                                                                    |
+| 1.0.4   | 2024-07-06 | [40812](https://github.com/airbytehq/airbyte/pull/40812)       | Update dependencies                                                                                                                                                    |
+| 1.0.3   | 2024-06-25 | [40500](https://github.com/airbytehq/airbyte/pull/40500)       | Update dependencies                                                                                                                                                    |
+| 1.0.2   | 2024-06-22 | [40058](https://github.com/airbytehq/airbyte/pull/40058)       | Update dependencies                                                                                                                                                    |
+| 1.0.1   | 2024-06-06 | [39243](https://github.com/airbytehq/airbyte/pull/39243)       | [autopull] Upgrade base image to v1.2.2                                                                                                                                |
+| 1.0.0   | 2024-03-14 | [36015](https://github.com/airbytehq/airbyte/pull/36015)       | Upgrade Facebook API to v19.0                                                                                                                                          |
+| 0.3.0   | 2023-06-26 | [27728](https://github.com/airbytehq/airbyte/pull/27728)       | License Update: Elv2                                                                                                                                                   |
+| 0.2.5   | 2023-04-13 | [26939](https://github.com/airbytehq/airbyte/pull/26939)       | Add advancedAuth to the connector spec                                                                                                                                 |
+| 0.2.4   | 2023-04-13 | [25143](https://github.com/airbytehq/airbyte/pull/25143)       | Update insight metrics request params                                                                                                                                  |
+| 0.2.3   | 2023-02-23 | [23395](https://github.com/airbytehq/airbyte/pull/23395)       | Parse datetime to rfc3339                                                                                                                                              |
+| 0.2.2   | 2023-02-10 | [22804](https://github.com/airbytehq/airbyte/pull/22804)       | Retry 500 errors                                                                                                                                                       |
+| 0.2.1   | 2022-12-29 | [20925](https://github.com/airbytehq/airbyte/pull/20925)       | Fix tests; modify expected records                                                                                                                                     |
+| 0.2.0   | 2022-11-24 | [19788](https://github.com/airbytehq/airbyte/pull/19788)       | Migrate lo low-code; Beta certification; Upgrade Facebook API to v.15                                                                                                  |
+| 0.1.6   | 2021-12-22 | [9032](https://github.com/airbytehq/airbyte/pull/9032)         | Remove deprecated field `live_encoders` from Page stream                                                                                                               |
+| 0.1.5   | 2021-11-26 | [8267](https://github.com/airbytehq/airbyte/pull/8267)         | updated all empty objects in schemas for Page and Post streams                                                                                                         |
+| 0.1.4   | 2021-11-26 | [](https://github.com/airbytehq/airbyte/pull/)                 | Remove unsupported insights_export field from Pages request                                                                                                            |
+| 0.1.3   | 2021-10-28 | [7440](https://github.com/airbytehq/airbyte/pull/7440)         | Generate Page token from config access token                                                                                                                           |
+| 0.1.2   | 2021-10-18 | [7128](https://github.com/airbytehq/airbyte/pull/7128)         | Upgrade Facebook API to v.12                                                                                                                                           |
+| 0.1.1   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438)         | Annotate Oauth2 flow initialization parameters in connector specification                                                                                              |
+| 0.1.0   | 2021-09-01 | [5158](https://github.com/airbytehq/airbyte/pull/5158)         | Initial Release                                                                                                                                                        |
 
 </details>

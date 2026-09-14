@@ -1,8 +1,8 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.h2.H2TestFixture
 import io.airbyte.cdk.h2source.H2SourceConfiguration
 import io.airbyte.cdk.h2source.H2SourceConfigurationFactory
@@ -32,7 +32,8 @@ class JdbcSelectQuerierTest {
         h2.execute("INSERT INTO kv (k, v) VALUES (1, 'foo'), (2, 'bar'), (3, NULL);")
     }
 
-    val columns: List<Field> = listOf(Field("k", IntFieldType), Field("v", StringFieldType))
+    val columns: List<EmittedField> =
+        listOf(EmittedField("k", IntFieldType), EmittedField("v", StringFieldType))
 
     @Test
     fun testVanilla() {

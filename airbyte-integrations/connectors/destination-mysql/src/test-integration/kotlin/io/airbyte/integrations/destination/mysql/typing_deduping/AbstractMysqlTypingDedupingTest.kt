@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mysql.typing_deduping
@@ -94,8 +94,8 @@ abstract class AbstractMysqlTypingDedupingTest : JdbcTypingDedupingTest(SQLDiale
         private lateinit var containerizedConfig: ObjectNode
         /**
          * The config with host/port accessible from the host's network. (technically, this is still
-         * within the airbyte-ci container, but `containerizedConfig` is intended for containers in
-         * the docker-in-docker matryoshka doll)
+         * within the CI container, but `containerizedConfig` is intended for containers in the
+         * docker-in-docker matryoshka doll)
          */
         private lateinit var bareMetalConfig: ObjectNode
 

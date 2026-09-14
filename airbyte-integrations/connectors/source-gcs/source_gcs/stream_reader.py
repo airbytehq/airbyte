@@ -1,11 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import gzip
+import io
 import itertools
 import json
 import logging
 import tempfile
-from datetime import datetime, timedelta
+import urllib.parse
+from datetime import datetime
 from io import IOBase, StringIO
 from typing import Iterable, List, Optional
 
@@ -14,10 +17,11 @@ import smart_open
 from google.cloud import storage
 from google.oauth2 import credentials, service_account
 
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import DeliverRawFiles
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from source_gcs.config import Config
-from source_gcs.helpers import GCSRemoteFile
+from source_gcs.helpers import GCSUploadableRemoteFile
 from source_gcs.zip_helper import ZipHelper
 
 
@@ -35,11 +39,13 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
     Stream reader for Google Cloud Storage (GCS).
     """
 
+    _GZIP_MAGIC = b"\x1f\x8b"
+
     def __init__(self):
         super().__init__()
         self._gcs_client = None
         self._config = None
-        self.tmp_dir = tempfile.TemporaryDirectory()
+        self._zip_temp_dirs: list[tempfile.TemporaryDirectory] = []
 
     @property
     def config(self) -> Config:
@@ -77,7 +83,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
     def gcs_client(self) -> storage.Client:
         return self._initialize_gcs_client()
 
-    def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[GCSRemoteFile]:
+    def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[GCSUploadableRemoteFile]:
         """
         Retrieve all files matching the specified glob patterns in GCS.
         """
@@ -98,16 +104,30 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                     last_modified = blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
 
                     if not start_date or last_modified >= start_date:
+                        # gs:// URI keeps query parameters out of the CDK Parquet
+                        # parser, which would otherwise interpret them as Hive
+                        # partition columns (issue #80940).  For Service Account
+                        # auth, displayed_uri carries the canonical HTTPS path so
+                        # the Cursor state key is byte-identical to the pre-fix
+                        # value (signed-URL path, percent-encoded, no query string).
+                        uri = f"gs://{blob.bucket.name}/{blob.name}"
                         if self.config.credentials.auth_type == "Client":
-                            uri = f"gs://{blob.bucket.name}/{blob.name}"
+                            displayed_uri = None
                         else:
-                            uri = blob.generate_signed_url(expiration=timedelta(days=7), version="v4")
+                            displayed_uri = f"https://storage.googleapis.com/{blob.bucket.name}/{urllib.parse.quote(blob.name, safe='/~')}"
 
-                        file_extension = ".".join(blob.name.split(".")[1:])
-                        remote_file = GCSRemoteFile(uri=uri, last_modified=last_modified, mime_type=file_extension)
+                        remote_file = GCSUploadableRemoteFile(
+                            uri=uri,
+                            blob=blob,
+                            last_modified=last_modified,
+                            mime_type=".".join(blob.name.split(".")[1:]),
+                            displayed_uri=displayed_uri,
+                        )
 
-                        if file_extension == "zip":
-                            yield from ZipHelper(blob, remote_file, self.tmp_dir).get_gcs_remote_files()
+                        if blob.name.endswith(".zip") and not isinstance(self.config.delivery_method, DeliverRawFiles):
+                            tmp_dir = tempfile.TemporaryDirectory()
+                            self._zip_temp_dirs.append(tmp_dir)
+                            yield from ZipHelper(blob, remote_file, tmp_dir.name).get_gcs_remote_files()
                         else:
                             yield remote_file
         except Exception as exc:
@@ -122,7 +142,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             prefix=prefix,
         ) from exc
 
-    def open_file(self, file: GCSRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
+    def open_file(self, file: GCSUploadableRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         """
         Open and yield a remote file from GCS for reading.
         """
@@ -135,6 +155,18 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
         else:
             compression = "disable"
 
+        # For gs:// URIs whose blob has Content-Encoding: gzip, bypass
+        # smart_open and handle decompression directly.  GCS decompressive
+        # transcoding conflicts with google-cloud-storage BlobReader's
+        # ranged downloads, producing "incorrect header check" errors.
+        if (
+            file.uri.startswith("gs://")
+            and file.blob is not None
+            and getattr(file.blob, "content_encoding", None) == "gzip"
+            and compression == "disable"
+        ):
+            return self._open_gzip_encoded_blob(file, mode, encoding, logger)
+
         try:
             result = smart_open.open(
                 file.uri, mode=mode.value, compression=compression, encoding=encoding, transport_params={"client": self.gcs_client}
@@ -146,3 +178,37 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             logger.exception(oe)
             raise oe
         return result
+
+    def _open_gzip_encoded_blob(
+        self,
+        file: GCSUploadableRemoteFile,
+        mode: FileReadMode,
+        encoding: Optional[str],
+        logger: logging.Logger,
+    ) -> IOBase:
+        """Open a GCS blob whose `Content-Encoding` is `gzip` using a raw download.
+
+        `raw_download=True` tells google-cloud-storage to skip decompressive
+        transcoding and return the stored bytes directly.  We then inspect the
+        gzip magic number to decide whether the content is genuinely compressed
+        or mislabeled, and wrap the stream accordingly.
+
+        The resulting stream is seekable and does not require loading the entire
+        object into memory.
+        """
+        blob_reader = file.blob.open("rb", raw_download=True)
+        magic = blob_reader.read(2)
+        blob_reader.seek(0)
+
+        if magic == self._GZIP_MAGIC:
+            stream: IOBase = gzip.GzipFile(fileobj=blob_reader)
+        else:
+            logger.info(
+                "Object %s has Content-Encoding: gzip but content is not gzip-compressed. Reading as plain text.",
+                file.uri,
+            )
+            stream = blob_reader
+
+        if mode == FileReadMode.READ:
+            return io.TextIOWrapper(stream, encoding=encoding or "utf-8")
+        return stream

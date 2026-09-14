@@ -1,0 +1,40 @@
+[
+  {
+    "type": "profile",
+    "id": "profile_excluded_001",
+    "attributes": {
+      "email": "excluded@example.com",
+      "phone_number": "+1234567890",
+      "external_id": "ext_excluded_001",
+      "first_name": "Jane",
+      "last_name": "Smith",
+      "organization": "Excluded Corp",
+      "locale": "en-US",
+      "created": "2024-01-01T10:00:00+00:00",
+      "updated": "2024-01-15T12:30:00+00:00",
+      "subscriptions": {
+        "email": {
+          "marketing": {
+            "can_receive_email_marketing": false,
+            "consent": "UNSUBSCRIBED",
+            "consent_timestamp": "2024-01-10T10:00:00+00:00",
+            "suppression": [
+              {
+                "reason": "USER_SUPPRESSED",
+                "timestamp": "2024-01-10T10:00:00+00:00"
+              }
+            ]
+          }
+        },
+        "sms": {
+          "marketing": {
+            "can_receive_sms_marketing": false
+          }
+        }
+      }
+    },
+    "links": {
+      "self": "https://a.klaviyo.com/api/profiles/profile_excluded_001"
+    }
+  }
+]

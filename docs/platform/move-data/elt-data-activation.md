@@ -4,10 +4,6 @@ products: all
 
 # Data activation (reverse ETL)
 
-:::info
-Data activation is in early access. If you'd like to be an early adopter, [fill out this form](https://form.typeform.com/to/STc7a0jx).
-:::
-
 Data activation enables you to move data out of your data warehouse and into the operational tools where work happens, like CRMs, marketing platforms, and support systems. With this capability, you can deliver modeled data directly to points of action and systems people already use, helping your organization respond faster and more effectively.
 
 This page introduces the concept of data activation, outlines how it works within the Airbyte platform, and describes common use cases.
@@ -16,7 +12,7 @@ This page introduces the concept of data activation, outlines how it works withi
 
 ## What's data activation?
 
-Data Activation operationalizes data by syncing it from storage systems&mdash;typically data warehouses&mdash;into the tools that business teams use daily. These tools include platforms like Salesforce, HubSpot, Marketo, Zendesk, and others.
+Data Activation operationalizes data by syncing it from storage systems&mdash;typically data warehouses&mdash;into the tools that business teams use daily. These tools include platforms like HubSpot, Customer.io, Marketo, Zendesk, and others.
 
 Instead of limiting insights to dashboards and reports, data activation enables data to directly power workflows and decisions in real time in the places people need it.
 
@@ -24,7 +20,7 @@ The terms "data activation" and "reverse ETL" are sometimes used interchangeably
 
 ### Key characteristics
 
-- **Warehouse-to-app sync**: transfer data from warehouses (e.g., Snowflake, BigQuery, Redshift) to operational destinations like Salesforce or Customer.io.
+- **Warehouse-to-app sync**: transfer data from warehouses (e.g., Snowflake, BigQuery, Redshift) to operational destinations like HubSpot or Customer.io.
 
 - **Reverse ETL**: a method used in data activation to extract, transform, and load data from warehouses into SaaS tools.
 
@@ -62,17 +58,17 @@ Data Activation aligns with the shift toward operational analytics in modern dat
 
 Teams in sales, marketing, support, and finance often rely on operational systems that are disconnected from your data warehouse. Data activation bridges this gap, replacing manual exports, ad hoc pipelines, or no data at all with automated, governed workflows.
 
-### Example: Revenue operations
+### Example: Marketing automation
 
-- **User**: Revenue Operations Manager.
+- **User**: Marketing Operations Manager.
 
-- **Objective**: Help sales reps prioritize high-intent accounts.
+- **Objective**: Help the marketing team target high-intent users with personalized campaigns.
 
-- **Challenge**: Usage metrics exist in Snowflake, but sales reps work in Salesforce.
+- **Challenge**: Product usage and engagement data lives in Snowflake, but the marketing team works in HubSpot.
 
-- **Solution**: Use Airbyte to sync product usage scores from your data warehouse to custom fields in Salesforce.
+- **Solution**: Use Airbyte to sync engagement scores and audience segments from your data warehouse to contact properties in HubSpot.
 
-- **Result**: Reps can view up-to-date engagement scores directly in their CRM and prioritize outreach accordingly.
+- **Result**: Marketers can build targeted campaigns using up-to-date engagement data directly in their marketing platform.
 
 ### Additional use cases
 
@@ -87,9 +83,9 @@ Teams in sales, marketing, support, and finance often rely on operational system
 
 To start activating your data with Airbyte, see the following topics.
 
-- [Set up a source](../using-airbyte/getting-started/add-a-source)
-- [Set up a destination](../using-airbyte/getting-started/add-a-destination)
-- [Set up a connection](add-connection)
+- [Set up a source](../using-airbyte/getting-started/add-a-source): The data warehouse or other source you're syncing data from.
+- [Set up a destination](../using-airbyte/getting-started/add-a-destination): The CRM, marketing platform, or support system you're syncing data to.
+- [Set up a connection](add-connection): Learn how to create a connection to a data activation destination and map fields from your source to your destination.
 
 More resources:
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.hubspot.http
@@ -60,6 +60,14 @@ class HubSpotOperationRepositoryTest {
                 Request(
                     method = RequestMethod.GET,
                     url = "https://api.hubapi.com/crm/v3/schemas/DEAL"
+                )
+            )
+        } returns (aResponse(200, anUnavailableObject().build()))
+        every {
+            httpClient.send(
+                Request(
+                    method = RequestMethod.GET,
+                    url = "https://api.hubapi.com/crm/v3/schemas/PRODUCT"
                 )
             )
         } returns (aResponse(200, anUnavailableObject().build()))

@@ -32,6 +32,10 @@ MailerLite API has a global rate limit of 120 requests per minute.
 
 - MailerLite API Key
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -39,6 +43,30 @@ MailerLite API has a global rate limit of 120 requests per minute.
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------|
+| 1.1.33 | 2026-07-14 | [81926](https://github.com/airbytehq/airbyte/pull/81926) | Update dependencies |
+| 1.1.32 | 2026-06-30 | [81136](https://github.com/airbytehq/airbyte/pull/81136) | Update dependencies |
+| 1.1.31 | 2026-06-23 | [80543](https://github.com/airbytehq/airbyte/pull/80543) | Update dependencies |
+| 1.1.30 | 2026-06-16 | [79930](https://github.com/airbytehq/airbyte/pull/79930) | Update dependencies |
+| 1.1.29 | 2026-06-09 | [79383](https://github.com/airbytehq/airbyte/pull/79383) | Update dependencies |
+| 1.1.28 | 2026-06-02 | [78823](https://github.com/airbytehq/airbyte/pull/78823) | Update dependencies |
+| 1.1.27 | 2026-04-28 | [77311](https://github.com/airbytehq/airbyte/pull/77311) | Update dependencies |
+| 1.1.26 | 2026-04-21 | [76646](https://github.com/airbytehq/airbyte/pull/76646) | Update dependencies |
+| 1.1.25 | 2026-03-17 | [74976](https://github.com/airbytehq/airbyte/pull/74976) | Update dependencies |
+| 1.1.24 | 2026-03-10 | [74542](https://github.com/airbytehq/airbyte/pull/74542) | Update dependencies |
+| 1.1.23 | 2026-02-24 | [73411](https://github.com/airbytehq/airbyte/pull/73411) | Update dependencies |
+| 1.1.22 | 2026-01-20 | [72030](https://github.com/airbytehq/airbyte/pull/72030) | Update dependencies |
+| 1.1.21 | 2026-01-14 | [71476](https://github.com/airbytehq/airbyte/pull/71476) | Update dependencies |
+| 1.1.20 | 2025-12-18 | [70784](https://github.com/airbytehq/airbyte/pull/70784) | Update dependencies |
+| 1.1.19 | 2025-11-25 | [70034](https://github.com/airbytehq/airbyte/pull/70034) | Update dependencies |
+| 1.1.18 | 2025-11-18 | [69503](https://github.com/airbytehq/airbyte/pull/69503) | Update dependencies |
+| 1.1.17 | 2025-10-29 | [68963](https://github.com/airbytehq/airbyte/pull/68963) | Update dependencies |
+| 1.1.16 | 2025-10-21 | [68315](https://github.com/airbytehq/airbyte/pull/68315) | Update dependencies |
+| 1.1.15 | 2025-10-14 | [68023](https://github.com/airbytehq/airbyte/pull/68023) | Update dependencies |
+| 1.1.14 | 2025-10-07 | [67521](https://github.com/airbytehq/airbyte/pull/67521) | Update dependencies |
+| 1.1.13 | 2025-09-30 | [66813](https://github.com/airbytehq/airbyte/pull/66813) | Update dependencies |
+| 1.1.12 | 2025-09-24 | [66642](https://github.com/airbytehq/airbyte/pull/66642) | Update dependencies |
+| 1.1.11 | 2025-09-09 | [66071](https://github.com/airbytehq/airbyte/pull/66071) | Update dependencies |
+| 1.1.10 | 2025-08-23 | [65376](https://github.com/airbytehq/airbyte/pull/65376) | Update dependencies |
 | 1.1.9 | 2025-08-09 | [64616](https://github.com/airbytehq/airbyte/pull/64616) | Update dependencies |
 | 1.1.8 | 2025-08-02 | [64294](https://github.com/airbytehq/airbyte/pull/64294) | Update dependencies |
 | 1.1.7 | 2025-07-19 | [63517](https://github.com/airbytehq/airbyte/pull/63517) | Update dependencies |

@@ -7,11 +7,11 @@ data:
       - ${shop}.myshopify.com
       - shopify.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorSubtype: api
   connectorType: source
   definitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
-  dockerImageTag: 3.0.7
+  dockerImageTag: 4.0.0
   dockerRepository: airbyte/source-shopify
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
   erdUrl: https://dbdocs.io/airbyteio/source-shopify?view=relationships
@@ -31,6 +31,13 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
     breakingChanges:
       1.0.0:
         message: "This upgrade brings changes to certain streams after migration to Shopify API version `2023-07`, more details in this PR: https://github.com/airbytehq/airbyte/pull/29361."
@@ -90,6 +97,13 @@ data:
           - scopeType: stream
             impactedScopes:
               ["countries", "product_variants", "articles", "blogs", "pages"]
+      4.0.0:
+        message: "The `orders.processed_at` and `order_refunds.processed_at` fields are now declared as `format: date-time`. Typed destinations will change these columns from string/VARCHAR to timestamp-with-timezone. Refresh the source schema and resync the `orders` and `order_refunds` streams, and update any downstream SQL, dbt models, or BI logic that treats these columns as text. See https://docs.airbyte.com/integrations/sources/shopify-migrations."
+        upgradeDeadline: "2026-09-09"
+        deadlineAction: "disable"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["orders", "order_refunds"]
   suggestedStreams:
     streams:
       - customers
@@ -162,4 +176,32 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Shopify Admin API
+      url: https://shopify.dev/docs/api/admin-rest
+      type: api_reference
+    - title: Developer changelog
+      url: https://shopify.dev/changelog
+      type: api_release_history
+    - title: Shopify API changelog
+      url: https://shopify.dev/docs/api/release-notes
+      type: api_release_history
+    - title: Shopify authentication
+      url: https://shopify.dev/docs/apps/auth
+      type: authentication_guide
+    - title: Shopify GraphQL Admin API
+      url: https://shopify.dev/docs/api/admin-graphql
+      type: api_reference
+    - title: REST to GraphQL migration guide
+      url: https://shopify.dev/docs/apps/build/graphql/migrate
+      type: api_deprecations
+    - title: Shopify rate limits
+      url: https://shopify.dev/docs/api/usage/rate-limits
+      type: rate_limits
+    - title: Shopify API versioning and deprecation policy
+      url: https://shopify.dev/docs/api/usage/versioning
+      type: api_deprecations
+    - title: Shopify Status
+      url: https://www.shopifystatus.com/
+      type: status_page
 metadataSpecVersion: "1.0"

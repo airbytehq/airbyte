@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.read
@@ -58,4 +58,6 @@ interface JdbcSharedState {
     fun tryAcquireResourcesForReader(
         resourcesTypes: List<ResourceType>
     ): Map<ResourceType, JdbcPartitionReader.AcquiredResource>?
+
+    fun tryAcquireResourcesForCreatorFactory(): JdbcPartitionsCreatorFactory.AcquiredResources?
 }

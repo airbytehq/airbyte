@@ -5,10 +5,10 @@
 import json
 import logging
 from dataclasses import dataclass
+from datetime import timedelta
 from time import sleep
 
 import backoff
-import pendulum
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
@@ -30,8 +30,8 @@ backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, 
 class MyFacebookAdsApi(FacebookAdsApi):
     """Custom Facebook API class to intercept all API calls and handle call rate limits"""
 
-    MAX_RATE, MAX_PAUSE_INTERVAL = (95, pendulum.duration(minutes=10))
-    MIN_RATE, MIN_PAUSE_INTERVAL = (85, pendulum.duration(minutes=2))
+    MAX_RATE, MAX_PAUSE_INTERVAL = (95, timedelta(minutes=10))
+    MIN_RATE, MIN_PAUSE_INTERVAL = (85, timedelta(minutes=2))
 
     # see `_should_restore_page_size` method docstring for more info.
     # attribute to handle the reduced request limit
@@ -56,7 +56,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
     @staticmethod
     def _parse_call_rate_header(headers):
         usage = 0
-        pause_interval = pendulum.duration()
+        pause_interval = timedelta()
 
         usage_header_business = headers.get("x-business-use-case-usage")
         usage_header_app = headers.get("x-app-usage")
@@ -64,15 +64,15 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
         if usage_header_ad_account:
             usage_header_ad_account_loaded = json.loads(usage_header_ad_account)
-            usage = max(usage, usage_header_ad_account_loaded.get("acc_id_util_pct"))
+            usage = max(usage, float(usage_header_ad_account_loaded.get("acc_id_util_pct", 0)))
 
         if usage_header_app:
             usage_header_app_loaded = json.loads(usage_header_app)
             usage = max(
                 usage,
-                usage_header_app_loaded.get("call_count"),
-                usage_header_app_loaded.get("total_time"),
-                usage_header_app_loaded.get("total_cputime"),
+                float(usage_header_app_loaded.get("call_count", 0)),
+                float(usage_header_app_loaded.get("total_time", 0)),
+                float(usage_header_app_loaded.get("total_cputime", 0)),
             )
 
         if usage_header_business:
@@ -81,13 +81,13 @@ class MyFacebookAdsApi(FacebookAdsApi):
                 usage_limits = usage_header_business_loaded.get(business_object_id)[0]
                 usage = max(
                     usage,
-                    usage_limits.get("call_count"),
-                    usage_limits.get("total_cputime"),
-                    usage_limits.get("total_time"),
+                    float(usage_limits.get("call_count", 0)),
+                    float(usage_limits.get("total_cputime", 0)),
+                    float(usage_limits.get("total_time", 0)),
                 )
                 pause_interval = max(
                     pause_interval,
-                    pendulum.duration(minutes=usage_limits.get("estimated_time_to_regain_access", 0)),
+                    timedelta(minutes=usage_limits.get("estimated_time_to_regain_access", 0)),
                 )
 
         return usage, pause_interval
@@ -142,8 +142,8 @@ class MyFacebookAdsApi(FacebookAdsApi):
         if ads_insights_throttle:
             ads_insights_throttle = json.loads(ads_insights_throttle)
             self._ads_insights_throttle = self.Throttle(
-                per_application=ads_insights_throttle.get("app_id_util_pct", 0),
-                per_account=ads_insights_throttle.get("acc_id_util_pct", 0),
+                per_application=float(ads_insights_throttle.get("app_id_util_pct", 0)),
+                per_account=float(ads_insights_throttle.get("acc_id_util_pct", 0)),
             )
 
     def _should_restore_default_page_size(self, params):
@@ -197,4 +197,4 @@ class API:
     @staticmethod
     def _find_account(account_id: str) -> AdAccount:
         """Actual implementation of find account"""
-        return AdAccount(f"act_{account_id}").api_get()
+        return AdAccount(f"act_{account_id}").api_get(fields=["timezone_name"])

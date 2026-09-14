@@ -50,33 +50,37 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 3. On the Set up the source page, select GitHub from the Source type dropdown.
 4. Enter a name for the GitHub connector.
 5. To authenticate:
-<!-- env:cloud -->
+   <!-- env:cloud -->
 
-- **For Airbyte Cloud:** **Authenticate your GitHub account** to authorize your GitHub account. Airbyte will authenticate the GitHub account you are already logged in to. Please make sure you are logged into the right account.
-  <!-- /env:cloud -->
-  <!-- env:oss -->
+   - **For Airbyte Cloud:** **Authenticate your GitHub account** to authorize your GitHub account. Airbyte will authenticate the GitHub account you are already logged in to. Please make sure you are logged into the right account.
+   <!-- /env:cloud -->
+   <!-- env:oss -->
 
-- **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
-<!-- /env:oss -->
+   - **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+   <!-- /env:oss -->
 
 6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
 
-:::caution
-Repositories with the wrong name or repositories that do not exist or have the wrong name format will be skipped with `WARN` message in the logs.
-:::
+   :::caution
+   Repositories with the wrong name or repositories that do not exist or have the wrong name format will be skipped with `WARN` message in the logs.
+   :::
 
 7. **Start date (Optional)** - The date from which you'd like to replicate data for streams. For streams which support this configuration, only data generated on or after the start date will be replicated.
 
-- These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
+   - These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
 
-- The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `pull_request_stats`, `repositories`, `tags`, `teams`, `users`
+   - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `repositories`, `tags`, `teams`, `users`
 
 8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
+9. **API URL (Optional)** - If you use a self-hosted GitHub instance, enter its API URL, for example `https://github.company.org`. Leave empty to use `https://api.github.com/`.
+10. **Max Waiting Time (in minutes) (Optional)** - Maximum time the connector waits when every configured API token is rate-limited before it fails the sync. The default is 120 minutes, which covers GitHub's 60-minute rate limit reset window plus margin. You can set any value between 1 and 240 minutes. If you provide multiple personal access tokens, the connector rotates through them first, and only waits after every token is exhausted.
+
+11. **Number of Concurrent Threads (Optional)** - How many partitions the connector reads in parallel. The default is 4 and the maximum is 25. While the declarative migration is in progress this setting applies only to the streams already moved to the declarative manifest (`repositories`, `assignees`, `branches`, `collaborators`, `issue_labels`, `tags`, `organizations`, `teams`, `users`, `events`, `pull_requests`, `commit_comments`, `issue_milestones`, `stargazers`, `projects`, `issue_events`, `deployments`, `workflows`, `comments`, `issues`, `review_comments`); the remaining streams are still read one at a time. Raising it speeds up those streams but increases the risk of hitting GitHub's secondary rate limits.
 
 ### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
-Click Sources and then click + New source.
+2. Click Sources and then click + New source.
 3. On the Set up the source page, select GitHub from the Source type dropdown.
 4. Enter a name for the GitHub connector.
 
@@ -129,12 +133,12 @@ This connector outputs the following incremental streams:
 - [Pull request comment reactions](https://docs.github.com/en/rest/reactions/reactions?apiVersion=2022-11-28#list-reactions-for-a-pull-request-review-comment)
 - [Pull request stats](https://docs.github.com/en/graphql/reference/objects#pullrequest)
 - [Pull requests](https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests)
-- [Releases](https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#list-releases)
+- [Releases](https://docs.github.com/en/graphql/reference/objects#release)
 - [Repositories](https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-organization-repositories)
 - [Review comments](https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28#list-review-comments-in-a-repository)
 - [Reviews](https://docs.github.com/en/rest/pulls/reviews?apiVersion=2022-11-28#list-reviews-for-a-pull-request)
 - [Stargazers](https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-stargazers)
-- [WorkflowJobs](https://docs.github.com/pt/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run)
+- [WorkflowJobs](https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run)
 - [WorkflowRuns](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository)
 - [Workflows](https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows)
 
@@ -148,32 +152,37 @@ This connector outputs the following incremental streams:
    - read only new records;
    - output only new records.
 
-2. Streams `workflow_runs` and `worflow_jobs` is almost pure incremental:
+2. Streams `workflow_runs` and `workflow_jobs` are almost pure incremental:
 
    - read new records and some portion of old records (in past 30 days) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
-   - the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
+   - the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/en/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
    - output only new records.
 
 3. Other 19 incremental streams are also incremental but with one difference, they:
 
    - read all records;
    - output only new records.
-     Please, consider this behaviour when using those 19 incremental streams because it may affect you API call limits.
+
+   Consider this behavior when using these incremental streams, because it may affect your API call limits.
 
 4. Sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
    **The "Start date" configuration option does not apply to the streams below, because the GitHub API does not include dates which can be used for filtering:**
 
-- `assignees`
-- `branches`
-- `collaborators`
-- `issue_labels`
-- `organizations`
-- `pull_request_commits`
-- `pull_request_stats`
-- `repositories`
-- `tags`
-- `teams`
-- `users`
+   - `assignees`
+   - `branches`
+   - `collaborators`
+   - `issue_labels`
+   - `organizations`
+   - `pull_request_commits`
+   - `tags`
+   - `teams`
+   - `users`
+
+5. Adding a repository or organization to a connection that has already synced does not backfill its history. See [Adding repositories or organizations to an existing connection](#adding-repositories-or-organizations-to-an-existing-connection).
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Limitations & Troubleshooting
 
@@ -187,9 +196,10 @@ Expand to see details about GitHub connector limitations and troubleshooting.
 #### Rate limiting
 
 You can use a personal access token to make API requests. Additionally, you can authorize a GitHub App or OAuth app, which can then make API requests on your behalf.
-All of these requests count towards your personal rate limit of 5,000 requests per hour (15,000 requests per hour if the app is owned by a GitHub Enterprise Cloud organization ).
+All of these requests count towards your personal rate limit of 5,000 requests per hour (15,000 requests per hour if the app is owned by a GitHub Enterprise Cloud organization).
 
-:::info `REST API` and `GraphQL API` rate limits are counted separately
+:::info
+`REST API` and `GraphQL API` rate limits are counted separately. The REST API uses a request-based limit, while the GraphQL API uses a [point-based limit](https://docs.github.com/en/graphql/overview/rate-limits-and-node-limits-for-the-graphql-api) where each query costs a calculated number of points. Streams that use the GraphQL API include `pull_request_stats`, `reviews`, `pull_request_comment_reactions`, `issue_reactions`, `releases`, and `projects_v2`.
 :::
 
 :::tip
@@ -198,9 +208,54 @@ In the event that limits are reached before all streams have been read, it is re
 1. Utilize Incremental sync mode.
 2. Set a higher sync interval.
 3. Divide the sync into separate connections with a smaller number of streams.
-   :::
+4. Provide multiple personal access tokens in the **Personal Access Tokens** field, separated by commas. The connector rotates through all tokens and only waits once every token's rate limit is exhausted.
+
+:::
+
+When every configured token is rate-limited, the connector waits for the limit to reset rather than failing immediately. The wait is capped by the **Max Waiting Time (in minutes)** configuration option (default: 120 minutes, maximum: 240 minutes), and that cap applies both when the connector already knows its tokens are spent and when GitHub rejects a request and asks it to wait. Rate-limit exhaustion is classified as a transient error, so Airbyte will retry the sync according to your connection's retry behavior if the connector does exceed this wait. If you supply several tokens, a rate-limited request switches to another token instead of waiting, whatever this setting is.
+
+**Test connection** is exempt from the wait: it answers within seconds with the rate-limit message instead of sleeping, so a rate-limited token never leaves the connection setup page hanging.
 
 Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
+
+#### Adding repositories or organizations to an existing connection
+
+Widening the **GitHub Repositories** field on a connection that has already synced does not backfill what the new repositories or organizations did in the past. The connector keeps one sync position per repository or organization, and a newly added one starts from the connection's current overall position instead of from your configured **Start date**. Anything created or last updated before that position is never emitted, and the sync reports no warning or error.
+
+For example, a connection syncing `docker/*` since 2026-01-01 that you widen to `docker/*, airbytehq/*` will pick up the `airbytehq` repositories updated after 2026-01-01, but not the ones whose last update is older than that.
+
+To pull the full history of a newly added repository or organization, clear the affected streams (or refresh the connection) after saving the new value, then sync. Each stream then re-reads from the beginning of the range it supports — your configured **Start date** for streams that honor it, and everything available for the streams listed above that do not.
+
+This currently affects the `repositories` stream. Other streams still fall back to the **Start date** for a repository they have not seen before; they will follow the rule above as they move to the connector's declarative implementation.
+
+#### GitHub Enterprise Server with rate limiting disabled
+
+GitHub Enterprise Server ships with HTTP API rate limiting turned off, and an instance in that state answers `GET /rate_limit` with `404 Rate limiting is not enabled.`. The connector reads that as "this instance does not track quotas" and continues without quota tracking — it no longer treats it as a failed connection. Requests are still authenticated, multiple tokens are still used in turn, and any rate limiting the instance *does* enforce (secondary rate limits are a separate GHES setting) is still honored through the usual retry and backoff.
+
+#### Releases stream asset limit
+
+The Releases stream uses the GitHub GraphQL API and fetches up to 100 assets per release. Releases with more than 100 assets will only include the first 100. Sub-pagination for release assets is not currently supported.
+
+#### Unreadable repositories and repeated server errors
+
+When a repository cannot be read for a reason that is specific to that repository, the connector logs a message and moves on to the next one, so a single bad repository does not fail the whole stream. This covers a repository that was deleted or renamed (`404`), one your token cannot access (`403`), one with no commits yet (`409`), and one where the feature backing the stream is turned off — for example the `issue_labels` stream on a repository with Issues disabled (`410`).
+
+Repeated server errors are treated differently as of version 2.2.0. If GitHub keeps answering `502 Bad Gateway` or `504 Gateway Timeout` after the connector has retried, the stream now fails instead of skipping the affected repository or organization and continuing. Earlier versions logged a warning, skipped it, and reported the sync as successful — which meant a sync could complete with records silently missing. Affected streams so far: `repositories` (since 2.2.0), `assignees`, `branches`, `collaborators`, `issue_labels`, `tags`, `organizations`, `teams`, `users` (since 2.3.0), `events`, `pull_requests`, `commit_comments`, `issue_milestones`, `stargazers`, `projects`, `issue_events`, `deployments`, `workflows`, `comments`, `issues`, `review_comments` (since 2.4.0). If a sync starts failing on one of these after upgrading, it is worth checking whether that repository or organization was already being skipped before.
+
+The same streams also stopped resuming mid-stream. A failed attempt used to pick up from the repository or organization it stopped at; it now restarts the stream from the first one. Nothing is lost — the retry re-reads what it already read — but a stream that fails late costs its earlier partitions' requests again against your rate limit. Same versions as above. For `issues` this also means state is now saved once per repository rather than once per page, so an interrupted sync restarts the repository it was reading instead of resuming part-way through it.
+
+#### One repeated record per repository on `comments`, `issues` and `review_comments`
+
+As of version 2.4.0, each incremental sync of these three streams re-emits the single record whose `updated_at` is exactly the timestamp the previous sync stopped at. GitHub's `since` filter is inclusive, so that record is always on the first page, and the connector no longer filters it out locally. The record is unchanged, and destinations using **Incremental | Append + Deduped** collapse it on the primary key; on **Incremental | Append** you will see one extra row per repository per sync.
+
+#### One repeated record per repository on the semi-incremental streams
+
+As of version 2.4.0, each incremental sync of `events`, `pull_requests`, `commit_comments`, `issue_milestones`, `stargazers`, `projects`, `issue_events`, `deployments`, `workflows` re-emits the single record per repository whose cursor value (`updated_at`, `created_at` or `starred_at`) is exactly the timestamp the previous sync stopped at. These streams read GitHub's listing and filter it locally; the connector used to keep only records strictly newer than the saved cursor and now keeps the boundary record too. The record is unchanged, and destinations using **Incremental | Append + Deduped** collapse it on the primary key; on **Incremental | Append** you will see one extra row per repository per sync.
+
+Two smaller changes in the same release:
+
+- `pull_requests` now fills `base.repo_id` with the id of the base repository. Earlier versions always emitted `null` there because of a bug in the record transformation; `head.repo_id` is unchanged.
+- `pull_requests` always lists a repository newest-first. Earlier versions listed it oldest-first on the very first sync of a connection, which let a failed first sync resume part-way through a repository; a failed attempt now restarts the repository, as it already did on every later sync.
 
 #### Permissions and scopes
 
@@ -223,8 +278,70 @@ Your token should have at least the `repo` scope. Depending on which streams you
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
-|:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.4.0 | 2026-09-09 | [85786](https://github.com/airbytehq/airbyte/pull/85786) | Declarative migration Steps 5 and 6 - move the events, pull_requests, commit_comments, issue_milestones, stargazers, projects, issue_events, deployments, workflows, comments, issues and review_comments streams to the manifest. Each incremental sync of these streams now re-emits the one record per repository whose cursor equals the previous sync's cursor, `pull_requests` fills `base.repo_id` (always null before) and always lists newest-first, `issues` checkpoints once per repository instead of once per page, and a repository that keeps returning 502/504 after retries fails the stream instead of being skipped with the sync still reported as successful |
+| 2.3.0 | 2026-09-08 | [85746](https://github.com/airbytehq/airbyte/pull/85746) | Declarative migration Steps 3 and 4 - move the assignees, branches, collaborators, issue_labels, tags, organizations, teams and users streams to the manifest. For these eight streams, a repository or organization that keeps returning 502/504 after retries now fails the stream instead of being skipped with the sync still reported as successful, and a failed attempt restarts the stream instead of resuming from the repository or organization it stopped at. Also fixes a 2.2.0 regression where a `403` on one listed repository (SAML-protected organizations, most often) failed the sync instead of skipping that repository and syncing the rest |
+| 2.2.3 | 2026-09-08 | [85494](https://github.com/airbytehq/airbyte/pull/85494) | Update dependencies |
+| 2.2.2 | 2026-09-01 | [85253](https://github.com/airbytehq/airbyte/pull/85253) | Fix syncs hanging until the platform heartbeat timeout when a wildcard repository entry (`owner/*`) names a user account instead of an organization: the org-scoped streams no longer receive an unverified login, and a skipped stream slice can no longer be retried indefinitely |
+| 2.2.1 | 2026-09-01 | [85244](https://github.com/airbytehq/airbyte/pull/85244) | Update dependencies |
+| 2.2.0 | 2026-08-27 | [81428](https://github.com/airbytehq/airbyte/pull/81428) | Declarative migration Step 2 - multi-token auth shared by all streams (now rotates off a rate-limited token instead of waiting for its reset), spec in manifest, declarative Repositories stream, new optional `num_workers` setting for concurrent partition reads, a request budget matching GitHub's 900-points/minute secondary rate limit, Max Waiting Time now bounding every rate-limit wait so Test connection fails fast instead of sleeping until the reset, and support for GitHub Enterprise Server instances with rate limiting disabled |
+| 2.1.42 | 2026-08-25 | [85011](https://github.com/airbytehq/airbyte/pull/85011) | Update dependencies |
+| 2.1.41 | 2026-08-18 | [84569](https://github.com/airbytehq/airbyte/pull/84569) | Update dependencies |
+| 2.1.40 | 2026-08-11 | [83943](https://github.com/airbytehq/airbyte/pull/83943) | Update dependencies |
+| 2.1.39 | 2026-08-04 | [83469](https://github.com/airbytehq/airbyte/pull/83469) | Update dependencies |
+| 2.1.38 | 2026-07-28 | [82893](https://github.com/airbytehq/airbyte/pull/82893) | Update dependencies |
+| 2.1.37 | 2026-07-21 | [81799](https://github.com/airbytehq/airbyte/pull/81799) | Update dependencies |
+| 2.1.36 | 2026-07-14 | [82093](https://github.com/airbytehq/airbyte/pull/82093) | Promoted release candidate to GA |
+| 2.1.36-rc.1 | 2026-07-08 | [80133](https://github.com/airbytehq/airbyte/pull/80133) | Switch base class from AbstractSource to YamlDeclarativeSource (Step 1 of declarative migration) |
+| 2.1.35 | 2026-07-07 | [81440](https://github.com/airbytehq/airbyte/pull/81440) | Update dependencies |
+| 2.1.34 | 2026-06-30 | [81084](https://github.com/airbytehq/airbyte/pull/81084) | Update dependencies |
+| 2.1.33 | 2026-06-23 | [80440](https://github.com/airbytehq/airbyte/pull/80440) | Update dependencies |
+| 2.1.32 | 2026-06-16 | [79802](https://github.com/airbytehq/airbyte/pull/79802) | Update dependencies |
+| 2.1.31 | 2026-06-08 | [79196](https://github.com/airbytehq/airbyte/pull/79196) | Upgrade cryptography from 44.0.3 to 46.0.7 to resolve CVE-2026-26007 |
+| 2.1.30 | 2026-06-09 | [79312](https://github.com/airbytehq/airbyte/pull/79312) | Update dependencies |
+| 2.1.29 | 2026-06-02 | [78702](https://github.com/airbytehq/airbyte/pull/78702) | Update dependencies |
+| 2.1.28 | 2026-05-07 | [77847](https://github.com/airbytehq/airbyte/pull/77847) | Reduce GraphQL `releases` query cost (mark as large stream), bound page-size halving at 1, and improve 504 Gateway Timeout error messages |
+| 2.1.27 | 2026-05-02 | [77685](https://github.com/airbytehq/airbyte/pull/77685) | Make `parse_response` and error-handler helpers defensive against unexpected response shapes (HTML error pages, malformed JSON, missing keys) |
+| 2.1.26 | 2026-05-02 | [77681](https://github.com/airbytehq/airbyte/pull/77681) | Treat 410 "Issues/Projects disabled" responses as skip-the-slice instead of failing the stream |
+| 2.1.25 | 2026-05-01 | [77690](https://github.com/airbytehq/airbyte/pull/77690) | Replaced placeholder and raw-passthrough error messages with actionable text including HTTP status codes, affected resources, and likely causes |
+| 2.1.24 | 2026-04-28 | [77238](https://github.com/airbytehq/airbyte/pull/77238) | Update dependencies |
+| 2.1.23 | 2026-04-22 | [76922](https://github.com/airbytehq/airbyte/pull/76922) | Handle `None` response in `read_records` error handler so transport-layer failures (connection errors, timeouts) surface as transient errors instead of `AttributeError` |
+| 2.1.22 | 2026-04-22 | [74758](https://github.com/airbytehq/airbyte/pull/74758) | Fix rate limit sleep blocking heartbeat; classify rate limit errors as transient; increase default max_waiting_time to 120 minutes to cover GitHub's hourly rate limit window |
+| 2.1.21 | 2026-04-21 | [74586](https://github.com/airbytehq/airbyte/pull/74586) | Update dependencies |
+| 2.1.20 | 2026-04-15 | [76275](https://github.com/airbytehq/airbyte/pull/76275) | Bump airbyte-cdk to >=7.12.0 to fix OAuth `scope=null` in consent URL |
+| 2.1.19 | 2026-04-08 | [76090](https://github.com/airbytehq/airbyte/pull/76090) | Fix 403 permission errors misclassified as retryable, causing infinite retry loops |
+| 2.1.18 | 2026-04-07 | [76124](https://github.com/airbytehq/airbyte/pull/76124) | Fix silent error swallowing in exception handlers for ContributorActivity, GithubStreamABC, and Releases streams |
+| 2.1.17 | 2026-04-07 | [76080](https://github.com/airbytehq/airbyte/pull/76080) | Fix remaining NameError references to removed MessageRepresentationAirbyteTracedErrors in ContributorActivity stream |
+| 2.1.16 | 2026-04-03 | [76038](https://github.com/airbytehq/airbyte/pull/76038) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException |
+| 2.1.15 | 2026-03-27 | [75508](https://github.com/airbytehq/airbyte/pull/75508) | Add declarative OAuth with `oauth_connector_input_specification` and granular scopes |
+| 2.1.14 | 2026-03-09 | [74284](https://github.com/airbytehq/airbyte/pull/74284) | Fix heartbeat timeout for pull_request_stats by using descending sort on incremental syncs |
+| 2.1.13 | 2026-03-03 | [73698](https://github.com/airbytehq/airbyte/pull/73698) | feat(source-github): use GraphQL API for Releases stream to bypass 10k REST limit |
+| 2.1.12 | 2026-03-03 | [74204](https://github.com/airbytehq/airbyte/pull/74204) | Update dependencies |
+| 2.1.11 | 2026-02-24 | [73785](https://github.com/airbytehq/airbyte/pull/73785) | Update dependencies |
+| 2.1.10 | 2026-02-10 | [73061](https://github.com/airbytehq/airbyte/pull/73061) | Update dependencies |
+| 2.1.9 | 2026-01-27 | [72375](https://github.com/airbytehq/airbyte/pull/72375) | Update dependencies |
+| 2.1.8 | 2026-01-20 | [71986](https://github.com/airbytehq/airbyte/pull/71986) | Update dependencies |
+| 2.1.7 | 2026-01-14 | [71400](https://github.com/airbytehq/airbyte/pull/71400) | Update dependencies |
+| 2.1.6 | 2025-12-18 | [70729](https://github.com/airbytehq/airbyte/pull/70729) | Update dependencies |
+| 2.1.5 | 2025-12-02 | [70286](https://github.com/airbytehq/airbyte/pull/70286) | Update dependencies |
+| 2.1.4 | 2025-11-25 | [69887](https://github.com/airbytehq/airbyte/pull/69887) | Update dependencies |
+| 2.1.3 | 2025-11-18 | [69421](https://github.com/airbytehq/airbyte/pull/69421) | Update dependencies |
+| 2.1.2 | 2025-11-11 | [69271](https://github.com/airbytehq/airbyte/pull/69271) | Update dependencies |
+| 2.1.1 | 2025-11-04 | [69002](https://github.com/airbytehq/airbyte/pull/69002) | Update dependencies |
+| 2.1.0 | 2025-10-29 | [68637](https://github.com/airbytehq/airbyte/pull/68637) | Update dependencies |
+| 2.0.0 | 2025-10-22 | [68095](https://github.com/airbytehq/airbyte/pull/68095) | **Breaking Change**: Renames `+1` and `-1` fields to `plus_one` and `minus_one` respectively. |
+| 1.9.2 | 2025-10-21 | [68332](https://github.com/airbytehq/airbyte/pull/68332) | Update dependencies |
+| 1.9.1 | 2025-10-20 | [68197](https://github.com/airbytehq/airbyte/pull/68197) | Promoting release candidate 1.9.1-rc.1 to a main version. |
+| 1.9.1-rc.1 | 2025-10-13 | [67584](https://github.com/airbytehq/airbyte/pull/67584) | Graceful error handling of invalid credentials when running operations |
+| 1.9.0 | 2025-10-13 | [67708](https://github.com/airbytehq/airbyte/pull/67708) | Promoting release candidate 1.9.0-rc.3 to a main version. |
+| 1.9.0-rc.3 | 2025-10-09 | [67589](https://github.com/airbytehq/airbyte/pull/67589) | Fix min time to wait on token rate limits |
+| 1.9.0-rc.2 | 2025-10-03 | [67026](https://github.com/airbytehq/airbyte/pull/67026) | Fix converting datetime in workflows stream |
+| 1.9.0-rc.1 | 2025-10-02 | [66736](https://github.com/airbytehq/airbyte/pull/66736) | Update to airbyte-cdk v^7 |
+| 1.8.42 | 2025-09-30 | [66166](https://github.com/airbytehq/airbyte/pull/66166) | Update dependencies |
+| 1.8.41 | 2025-09-09 | [66065](https://github.com/airbytehq/airbyte/pull/66065) | Update dependencies |
+| 1.8.40 | 2025-08-23 | [65375](https://github.com/airbytehq/airbyte/pull/65375) | Update dependencies |
+| 1.8.39 | 2025-08-16 | [64982](https://github.com/airbytehq/airbyte/pull/64982) | Update dependencies |
 | 1.8.38 | 2025-08-09 | [64580](https://github.com/airbytehq/airbyte/pull/64580) | Update dependencies |
 | 1.8.37 | 2025-08-02 | [64231](https://github.com/airbytehq/airbyte/pull/64231) | Update dependencies |
 | 1.8.36 | 2025-07-26 | [63810](https://github.com/airbytehq/airbyte/pull/63810) | Update dependencies |
@@ -314,86 +431,86 @@ Your token should have at least the `repo` scope. Depending on which streams you
 | 0.4.11 | 2023-05-12 | [26025](https://github.com/airbytehq/airbyte/pull/26025) | Added more transparent depiction of the personal access token expired |
 | 0.4.10 | 2023-05-15 | [26075](https://github.com/airbytehq/airbyte/pull/26075) | Add more specific error message description for no repos case. |
 | 0.4.9 | 2023-05-01 | [24523](https://github.com/airbytehq/airbyte/pull/24523) | Add undeclared columns to spec |
-| 0.4.8   | 2023-04-19 | [00000](https://github.com/airbytehq/airbyte/pull/25312)                                                          | Fix repo name validation                                                                                                                                            |
-| 0.4.7   | 2023-03-24 | [24457](https://github.com/airbytehq/airbyte/pull/24457)                                                          | Add validation and transformation for repositories config                                                                                                           |
-| 0.4.6   | 2023-03-24 | [24398](https://github.com/airbytehq/airbyte/pull/24398)                                                          | Fix caching for `get_starting_point` in stream "Commits"                                                                                                            |
-| 0.4.5   | 2023-03-23 | [24417](https://github.com/airbytehq/airbyte/pull/24417)                                                          | Add pattern_descriptors to fields with an expected format                                                                                                           |
-| 0.4.4   | 2023-03-17 | [24255](https://github.com/airbytehq/airbyte/pull/24255)                                                          | Add field groups and titles to improve display of connector setup form                                                                                              |
-| 0.4.3   | 2023-03-04 | [22993](https://github.com/airbytehq/airbyte/pull/22993)                                                          | Specified date formatting in specification                                                                                                                          |
-| 0.4.2   | 2023-03-03 | [23467](https://github.com/airbytehq/airbyte/pull/23467)                                                          | Added user friendly messages, added AirbyteTracedException config_error, updated SAT                                                                                |
-| 0.4.1   | 2023-01-27 | [22039](https://github.com/airbytehq/airbyte/pull/22039)                                                          | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                                                         |
-| 0.4.0   | 2023-01-20 | [21457](https://github.com/airbytehq/airbyte/pull/21457)                                                          | Use GraphQL for `issue_reactions` stream                                                                                                                            |
-| 0.3.12  | 2023-01-18 | [21481](https://github.com/airbytehq/airbyte/pull/21481)                                                          | Handle 502 Bad Gateway error with proper log message                                                                                                                |
-| 0.3.11  | 2023-01-06 | [21084](https://github.com/airbytehq/airbyte/pull/21084)                                                          | Raise Error if no organizations or repos are available during read                                                                                                  |
-| 0.3.10  | 2022-12-15 | [20523](https://github.com/airbytehq/airbyte/pull/20523)                                                          | Revert changes from 0.3.9                                                                                                                                           |
-| 0.3.9   | 2022-12-14 | [19978](https://github.com/airbytehq/airbyte/pull/19978)                                                          | Update CDK dependency; move custom HTTPError handling into `AvailabilityStrategy` classes                                                                           |
-| 0.3.8   | 2022-11-10 | [19299](https://github.com/airbytehq/airbyte/pull/19299)                                                          | Fix events and workflow_runs datetimes                                                                                                                              |
-| 0.3.7   | 2022-10-20 | [18213](https://github.com/airbytehq/airbyte/pull/18213)                                                          | Skip retry on HTTP 200                                                                                                                                              |
-| 0.3.6   | 2022-10-11 | [17852](https://github.com/airbytehq/airbyte/pull/17852)                                                          | Use default behaviour, retry on 429 and all 5XX errors                                                                                                              |
-| 0.3.5   | 2022-10-07 | [17715](https://github.com/airbytehq/airbyte/pull/17715)                                                          | Improve 502 handling for `comments` stream                                                                                                                          |
-| 0.3.4   | 2022-10-04 | [17555](https://github.com/airbytehq/airbyte/pull/17555)                                                          | Skip repository if got HTTP 500 for WorkflowRuns stream                                                                                                             |
-| 0.3.3   | 2022-09-28 | [17287](https://github.com/airbytehq/airbyte/pull/17287)                                                          | Fix problem with "null" `cursor_field` for WorkflowJobs stream                                                                                                      |
-| 0.3.2   | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304)                                                          | Migrate to per-stream state.                                                                                                                                        |
-| 0.3.1   | 2022-09-21 | [16947](https://github.com/airbytehq/airbyte/pull/16947)                                                          | Improve error logging when handling HTTP 500 error                                                                                                                  |
-| 0.3.0   | 2022-09-09 | [16534](https://github.com/airbytehq/airbyte/pull/16534)                                                          | Add new stream `WorkflowJobs`                                                                                                                                       |
-| 0.2.46  | 2022-08-17 | [15730](https://github.com/airbytehq/airbyte/pull/15730)                                                          | Validate input organizations and repositories                                                                                                                       |
-| 0.2.45  | 2022-08-11 | [15420](https://github.com/airbytehq/airbyte/pull/15420)                                                          | "User" object can be "null"                                                                                                                                         |
-| 0.2.44  | 2022-08-01 | [14795](https://github.com/airbytehq/airbyte/pull/14795)                                                          | Use GraphQL for `pull_request_comment_reactions` stream                                                                                                             |
-| 0.2.43  | 2022-07-26 | [15049](https://github.com/airbytehq/airbyte/pull/15049)                                                          | Bugfix schemas for streams `deployments`, `workflow_runs`, `teams`                                                                                                  |
-| 0.2.42  | 2022-07-12 | [14613](https://github.com/airbytehq/airbyte/pull/14613)                                                          | Improve schema for stream `pull_request_commits` added "null"                                                                                                       |
-| 0.2.41  | 2022-07-03 | [14376](https://github.com/airbytehq/airbyte/pull/14376)                                                          | Add Retry for GraphQL API Resource limitations                                                                                                                      |
-| 0.2.40  | 2022-07-01 | [14338](https://github.com/airbytehq/airbyte/pull/14338)                                                          | Revert: "Rename field `mergeable` to `is_mergeable`"                                                                                                                |
-| 0.2.39  | 2022-06-30 | [14274](https://github.com/airbytehq/airbyte/pull/14274)                                                          | Rename field `mergeable` to `is_mergeable`                                                                                                                          |
-| 0.2.38  | 2022-06-27 | [13989](https://github.com/airbytehq/airbyte/pull/13989)                                                          | Use GraphQL for `reviews` stream                                                                                                                                    |
-| 0.2.37  | 2022-06-21 | [13955](https://github.com/airbytehq/airbyte/pull/13955)                                                          | Fix "secondary rate limit" not retrying                                                                                                                             |
-| 0.2.36  | 2022-06-20 | [13926](https://github.com/airbytehq/airbyte/pull/13926)                                                          | Break point added for `workflows_runs` stream                                                                                                                       |
-| 0.2.35  | 2022-06-16 | [13763](https://github.com/airbytehq/airbyte/pull/13763)                                                          | Use GraphQL for `pull_request_stats` stream                                                                                                                         |
-| 0.2.34  | 2022-06-14 | [13707](https://github.com/airbytehq/airbyte/pull/13707)                                                          | Fix API sorting, fix `get_starting_point` caching                                                                                                                   |
-| 0.2.33  | 2022-06-08 | [13558](https://github.com/airbytehq/airbyte/pull/13558)                                                          | Enable caching only for parent streams                                                                                                                              |
-| 0.2.32  | 2022-06-07 | [13531](https://github.com/airbytehq/airbyte/pull/13531)                                                          | Fix different result from `get_starting_point` when reading by pages                                                                                                |
-| 0.2.31  | 2022-05-24 | [13115](https://github.com/airbytehq/airbyte/pull/13115)                                                          | Add incremental support for streams `WorkflowRuns`                                                                                                                  |
-| 0.2.30  | 2022-05-09 | [12294](https://github.com/airbytehq/airbyte/pull/12294)                                                          | Add incremental support for streams `CommitCommentReactions`, `IssueCommentReactions`, `IssueReactions`, `PullRequestCommentReactions`, `Repositories`, `Workflows` |
-| 0.2.29  | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482)                                                          | Update input configuration copy                                                                                                                                     |
-| 0.2.28  | 2022-04-21 | [11893](https://github.com/airbytehq/airbyte/pull/11893)                                                          | Add new streams `TeamMembers`, `TeamMemberships`                                                                                                                    |
-| 0.2.27  | 2022-04-02 | [11678](https://github.com/airbytehq/airbyte/pull/11678)                                                          | Fix "PAT Credentials" in spec                                                                                                                                       |
-| 0.2.26  | 2022-03-31 | [11623](https://github.com/airbytehq/airbyte/pull/11623)                                                          | Re-factored incremental sync for `Reviews` stream                                                                                                                   |
-| 0.2.25  | 2022-03-31 | [11567](https://github.com/airbytehq/airbyte/pull/11567)                                                          | Improve code for better error handling                                                                                                                              |
-| 0.2.24  | 2022-03-30 | [9251](https://github.com/airbytehq/airbyte/pull/9251)                                                            | Add Streams Workflow and WorkflowRuns                                                                                                                               |
-| 0.2.23  | 2022-03-17 | [11212](https://github.com/airbytehq/airbyte/pull/11212)                                                          | Improve documentation and spec for Beta                                                                                                                             |
-| 0.2.22  | 2022-03-10 | [10878](https://github.com/airbytehq/airbyte/pull/10878)                                                          | Fix error handling for unavailable streams with 404 status code                                                                                                     |
-| 0.2.21  | 2022-03-04 | [10749](https://github.com/airbytehq/airbyte/pull/10749)                                                          | Add new stream `ProjectCards`                                                                                                                                       |
-| 0.2.20  | 2022-02-16 | [10385](https://github.com/airbytehq/airbyte/pull/10385)                                                          | Add new stream `Deployments`, `ProjectColumns`, `PullRequestCommits`                                                                                                |
-| 0.2.19  | 2022-02-07 | [10211](https://github.com/airbytehq/airbyte/pull/10211)                                                          | Add human-readable error in case of incorrect organization or repo name                                                                                             |
-| 0.2.18  | 2021-02-09 | [10193](https://github.com/airbytehq/airbyte/pull/10193)                                                          | Add handling secondary rate limits                                                                                                                                  |
-| 0.2.17  | 2021-02-02 | [9999](https://github.com/airbytehq/airbyte/pull/9999)                                                            | Remove BAD_GATEWAY code from backoff_time                                                                                                                           |
-| 0.2.16  | 2021-02-02 | [9868](https://github.com/airbytehq/airbyte/pull/9868)                                                            | Add log message for streams that are restricted for OAuth. Update oauth scopes.                                                                                     |
-| 0.2.15  | 2021-01-26 | [9802](https://github.com/airbytehq/airbyte/pull/9802)                                                            | Add missing fields for auto_merge in pull request stream                                                                                                            |
-| 0.2.14  | 2021-01-21 | [9664](https://github.com/airbytehq/airbyte/pull/9664)                                                            | Add custom pagination size for large streams                                                                                                                        |
-| 0.2.13  | 2021-01-20 | [9619](https://github.com/airbytehq/airbyte/pull/9619)                                                            | Fix logging for function `should_retry`                                                                                                                             |
-| 0.2.11  | 2021-01-17 | [9492](https://github.com/airbytehq/airbyte/pull/9492)                                                            | Remove optional parameter `Accept` for reaction`s streams to fix error with 502 HTTP status code in response                                                        |
-| 0.2.10  | 2021-01-03 | [7250](https://github.com/airbytehq/airbyte/pull/7250)                                                            | Use CDK caching and convert PR-related streams to incremental                                                                                                       |
-| 0.2.9   | 2021-12-29 | [9179](https://github.com/airbytehq/airbyte/pull/9179)                                                            | Use default retry delays on server error responses                                                                                                                  |
-| 0.2.8   | 2021-12-07 | [8524](https://github.com/airbytehq/airbyte/pull/8524)                                                            | Update connector fields title/description                                                                                                                           |
-| 0.2.7   | 2021-12-06 | [8518](https://github.com/airbytehq/airbyte/pull/8518)                                                            | Add connection retry with GitHub                                                                                                                                    |
-| 0.2.6   | 2021-11-24 | [8030](https://github.com/airbytehq/airbyte/pull/8030)                                                            | Support start date property for PullRequestStats and Reviews streams                                                                                                |
-| 0.2.5   | 2021-11-21 | [8170](https://github.com/airbytehq/airbyte/pull/8170)                                                            | Fix slow check connection for organizations with a lot of repos                                                                                                     |
-| 0.2.4   | 2021-11-11 | [7856](https://github.com/airbytehq/airbyte/pull/7856)                                                            | Resolve $ref fields in some stream schemas                                                                                                                          |
-| 0.2.3   | 2021-10-06 | [6833](https://github.com/airbytehq/airbyte/pull/6833)                                                            | Fix config backward compatability                                                                                                                                   |
-| 0.2.2   | 2021-10-05 | [6761](https://github.com/airbytehq/airbyte/pull/6761)                                                            | Add oauth worflow specification                                                                                                                                     |
-| 0.2.1   | 2021-09-22 | [6223](https://github.com/airbytehq/airbyte/pull/6223)                                                            | Add option to pull commits from user-specified branches                                                                                                             |
-| 0.2.0   | 2021-09-19 | [5898](https://github.com/airbytehq/airbyte/pull/5898) and [6227](https://github.com/airbytehq/airbyte/pull/6227) | Don't minimize any output fields & add better error handling                                                                                                        |
-| 0.1.11  | 2021-09-15 | [5949](https://github.com/airbytehq/airbyte/pull/5949)                                                            | Add caching for all streams                                                                                                                                         |
-| 0.1.10  | 2021-09-09 | [5860](https://github.com/airbytehq/airbyte/pull/5860)                                                            | Add reaction streams                                                                                                                                                |
-| 0.1.9   | 2021-09-02 | [5788](https://github.com/airbytehq/airbyte/pull/5788)                                                            | Handling empty repository, check method using RepositoryStats stream                                                                                                |
-| 0.1.8   | 2021-09-01 | [5757](https://github.com/airbytehq/airbyte/pull/5757)                                                            | Add more streams                                                                                                                                                    |
-| 0.1.7   | 2021-08-27 | [5696](https://github.com/airbytehq/airbyte/pull/5696)                                                            | Handle negative backoff values                                                                                                                                      |
-| 0.1.6   | 2021-08-18 | [5456](https://github.com/airbytehq/airbyte/pull/5223)                                                            | Add MultipleTokenAuthenticator                                                                                                                                      |
-| 0.1.5   | 2021-08-18 | [5456](https://github.com/airbytehq/airbyte/pull/5456)                                                            | Fix set up validation                                                                                                                                               |
-| 0.1.4   | 2021-08-13 | [5136](https://github.com/airbytehq/airbyte/pull/5136)                                                            | Support syncing multiple repositories/organizations                                                                                                                 |
-| 0.1.3   | 2021-08-03 | [5156](https://github.com/airbytehq/airbyte/pull/5156)                                                            | Extended existing schemas with `users` property for certain streams                                                                                                 |
-| 0.1.2   | 2021-07-13 | [4708](https://github.com/airbytehq/airbyte/pull/4708)                                                            | Fix bug with IssueEvents stream and add handling for rate limiting                                                                                                  |
-| 0.1.1   | 2021-07-07 | [4590](https://github.com/airbytehq/airbyte/pull/4590)                                                            | Fix schema in the `pull_request` stream                                                                                                                             |
-| 0.1.0   | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174)                                                            | New Source: GitHub                                                                                                                                                  |
+| 0.4.8 | 2023-04-19 | [25312](https://github.com/airbytehq/airbyte/pull/25312) | Fix repo name validation |
+| 0.4.7 | 2023-03-24 | [24457](https://github.com/airbytehq/airbyte/pull/24457) | Add validation and transformation for repositories config |
+| 0.4.6 | 2023-03-24 | [24398](https://github.com/airbytehq/airbyte/pull/24398) | Fix caching for `get_starting_point` in stream "Commits" |
+| 0.4.5 | 2023-03-23 | [24417](https://github.com/airbytehq/airbyte/pull/24417) | Add pattern_descriptors to fields with an expected format |
+| 0.4.4 | 2023-03-17 | [24255](https://github.com/airbytehq/airbyte/pull/24255) | Add field groups and titles to improve display of connector setup form |
+| 0.4.3 | 2023-03-04 | [22993](https://github.com/airbytehq/airbyte/pull/22993) | Specified date formatting in specification |
+| 0.4.2 | 2023-03-03 | [23467](https://github.com/airbytehq/airbyte/pull/23467) | Added user friendly messages, added AirbyteTracedException config_error, updated SAT |
+| 0.4.1 | 2023-01-27 | [22039](https://github.com/airbytehq/airbyte/pull/22039) | Set `AvailabilityStrategy` for streams explicitly to `None` |
+| 0.4.0 | 2023-01-20 | [21457](https://github.com/airbytehq/airbyte/pull/21457) | Use GraphQL for `issue_reactions` stream |
+| 0.3.12 | 2023-01-18 | [21481](https://github.com/airbytehq/airbyte/pull/21481) | Handle 502 Bad Gateway error with proper log message |
+| 0.3.11 | 2023-01-06 | [21084](https://github.com/airbytehq/airbyte/pull/21084) | Raise Error if no organizations or repos are available during read |
+| 0.3.10 | 2022-12-15 | [20523](https://github.com/airbytehq/airbyte/pull/20523) | Revert changes from 0.3.9 |
+| 0.3.9 | 2022-12-14 | [19978](https://github.com/airbytehq/airbyte/pull/19978) | Update CDK dependency; move custom HTTPError handling into `AvailabilityStrategy` classes |
+| 0.3.8 | 2022-11-10 | [19299](https://github.com/airbytehq/airbyte/pull/19299) | Fix events and workflow_runs datetimes |
+| 0.3.7 | 2022-10-20 | [18213](https://github.com/airbytehq/airbyte/pull/18213) | Skip retry on HTTP 200 |
+| 0.3.6 | 2022-10-11 | [17852](https://github.com/airbytehq/airbyte/pull/17852) | Use default behaviour, retry on 429 and all 5XX errors |
+| 0.3.5 | 2022-10-07 | [17715](https://github.com/airbytehq/airbyte/pull/17715) | Improve 502 handling for `comments` stream |
+| 0.3.4 | 2022-10-04 | [17555](https://github.com/airbytehq/airbyte/pull/17555) | Skip repository if got HTTP 500 for WorkflowRuns stream |
+| 0.3.3 | 2022-09-28 | [17287](https://github.com/airbytehq/airbyte/pull/17287) | Fix problem with "null" `cursor_field` for WorkflowJobs stream |
+| 0.3.2 | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state. |
+| 0.3.1 | 2022-09-21 | [16947](https://github.com/airbytehq/airbyte/pull/16947) | Improve error logging when handling HTTP 500 error |
+| 0.3.0 | 2022-09-09 | [16534](https://github.com/airbytehq/airbyte/pull/16534) | Add new stream `WorkflowJobs` |
+| 0.2.46 | 2022-08-17 | [15730](https://github.com/airbytehq/airbyte/pull/15730) | Validate input organizations and repositories |
+| 0.2.45 | 2022-08-11 | [15420](https://github.com/airbytehq/airbyte/pull/15420) | "User" object can be "null" |
+| 0.2.44 | 2022-08-01 | [14795](https://github.com/airbytehq/airbyte/pull/14795) | Use GraphQL for `pull_request_comment_reactions` stream |
+| 0.2.43 | 2022-07-26 | [15049](https://github.com/airbytehq/airbyte/pull/15049) | Bugfix schemas for streams `deployments`, `workflow_runs`, `teams` |
+| 0.2.42 | 2022-07-12 | [14613](https://github.com/airbytehq/airbyte/pull/14613) | Improve schema for stream `pull_request_commits` added "null" |
+| 0.2.41 | 2022-07-03 | [14376](https://github.com/airbytehq/airbyte/pull/14376) | Add Retry for GraphQL API Resource limitations |
+| 0.2.40 | 2022-07-01 | [14338](https://github.com/airbytehq/airbyte/pull/14338) | Revert: "Rename field `mergeable` to `is_mergeable`" |
+| 0.2.39 | 2022-06-30 | [14274](https://github.com/airbytehq/airbyte/pull/14274) | Rename field `mergeable` to `is_mergeable` |
+| 0.2.38 | 2022-06-27 | [13989](https://github.com/airbytehq/airbyte/pull/13989) | Use GraphQL for `reviews` stream |
+| 0.2.37 | 2022-06-21 | [13955](https://github.com/airbytehq/airbyte/pull/13955) | Fix "secondary rate limit" not retrying |
+| 0.2.36 | 2022-06-20 | [13926](https://github.com/airbytehq/airbyte/pull/13926) | Break point added for `workflows_runs` stream |
+| 0.2.35 | 2022-06-16 | [13763](https://github.com/airbytehq/airbyte/pull/13763) | Use GraphQL for `pull_request_stats` stream |
+| 0.2.34 | 2022-06-14 | [13707](https://github.com/airbytehq/airbyte/pull/13707) | Fix API sorting, fix `get_starting_point` caching |
+| 0.2.33 | 2022-06-08 | [13558](https://github.com/airbytehq/airbyte/pull/13558) | Enable caching only for parent streams |
+| 0.2.32 | 2022-06-07 | [13531](https://github.com/airbytehq/airbyte/pull/13531) | Fix different result from `get_starting_point` when reading by pages |
+| 0.2.31 | 2022-05-24 | [13115](https://github.com/airbytehq/airbyte/pull/13115) | Add incremental support for streams `WorkflowRuns` |
+| 0.2.30 | 2022-05-09 | [12294](https://github.com/airbytehq/airbyte/pull/12294) | Add incremental support for streams `CommitCommentReactions`, `IssueCommentReactions`, `IssueReactions`, `PullRequestCommentReactions`, `Repositories`, `Workflows` |
+| 0.2.29 | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
+| 0.2.28 | 2022-04-21 | [11893](https://github.com/airbytehq/airbyte/pull/11893) | Add new streams `TeamMembers`, `TeamMemberships` |
+| 0.2.27 | 2022-04-02 | [11678](https://github.com/airbytehq/airbyte/pull/11678) | Fix "PAT Credentials" in spec |
+| 0.2.26 | 2022-03-31 | [11623](https://github.com/airbytehq/airbyte/pull/11623) | Re-factored incremental sync for `Reviews` stream |
+| 0.2.25 | 2022-03-31 | [11567](https://github.com/airbytehq/airbyte/pull/11567) | Improve code for better error handling |
+| 0.2.24 | 2022-03-30 | [9251](https://github.com/airbytehq/airbyte/pull/9251) | Add Streams Workflow and WorkflowRuns |
+| 0.2.23 | 2022-03-17 | [11212](https://github.com/airbytehq/airbyte/pull/11212) | Improve documentation and spec for Beta |
+| 0.2.22 | 2022-03-10 | [10878](https://github.com/airbytehq/airbyte/pull/10878) | Fix error handling for unavailable streams with 404 status code |
+| 0.2.21 | 2022-03-04 | [10749](https://github.com/airbytehq/airbyte/pull/10749) | Add new stream `ProjectCards` |
+| 0.2.20 | 2022-02-16 | [10385](https://github.com/airbytehq/airbyte/pull/10385) | Add new stream `Deployments`, `ProjectColumns`, `PullRequestCommits` |
+| 0.2.19 | 2022-02-07 | [10211](https://github.com/airbytehq/airbyte/pull/10211) | Add human-readable error in case of incorrect organization or repo name |
+| 0.2.18 | 2021-02-09 | [10193](https://github.com/airbytehq/airbyte/pull/10193) | Add handling secondary rate limits |
+| 0.2.17 | 2021-02-02 | [9999](https://github.com/airbytehq/airbyte/pull/9999) | Remove BAD_GATEWAY code from backoff_time |
+| 0.2.16 | 2021-02-02 | [9868](https://github.com/airbytehq/airbyte/pull/9868) | Add log message for streams that are restricted for OAuth. Update oauth scopes. |
+| 0.2.15 | 2021-01-26 | [9802](https://github.com/airbytehq/airbyte/pull/9802) | Add missing fields for auto_merge in pull request stream |
+| 0.2.14 | 2021-01-21 | [9664](https://github.com/airbytehq/airbyte/pull/9664) | Add custom pagination size for large streams |
+| 0.2.13 | 2021-01-20 | [9619](https://github.com/airbytehq/airbyte/pull/9619) | Fix logging for function `should_retry` |
+| 0.2.11 | 2021-01-17 | [9492](https://github.com/airbytehq/airbyte/pull/9492) | Remove optional parameter `Accept` for reaction`s streams to fix error with 502 HTTP status code in response |
+| 0.2.10 | 2021-01-03 | [7250](https://github.com/airbytehq/airbyte/pull/7250) | Use CDK caching and convert PR-related streams to incremental |
+| 0.2.9 | 2021-12-29 | [9179](https://github.com/airbytehq/airbyte/pull/9179) | Use default retry delays on server error responses |
+| 0.2.8 | 2021-12-07 | [8524](https://github.com/airbytehq/airbyte/pull/8524) | Update connector fields title/description |
+| 0.2.7 | 2021-12-06 | [8518](https://github.com/airbytehq/airbyte/pull/8518) | Add connection retry with GitHub |
+| 0.2.6 | 2021-11-24 | [8030](https://github.com/airbytehq/airbyte/pull/8030) | Support start date property for PullRequestStats and Reviews streams |
+| 0.2.5 | 2021-11-21 | [8170](https://github.com/airbytehq/airbyte/pull/8170) | Fix slow check connection for organizations with a lot of repos |
+| 0.2.4 | 2021-11-11 | [7856](https://github.com/airbytehq/airbyte/pull/7856) | Resolve $ref fields in some stream schemas |
+| 0.2.3 | 2021-10-06 | [6833](https://github.com/airbytehq/airbyte/pull/6833) | Fix config backward compatability |
+| 0.2.2 | 2021-10-05 | [6761](https://github.com/airbytehq/airbyte/pull/6761) | Add oauth worflow specification |
+| 0.2.1 | 2021-09-22 | [6223](https://github.com/airbytehq/airbyte/pull/6223) | Add option to pull commits from user-specified branches |
+| 0.2.0      | 2021-09-19 | [5898](https://github.com/airbytehq/airbyte/pull/5898) and [6227](https://github.com/airbytehq/airbyte/pull/6227) | Don't minimize any output fields & add better error handling                                                                                                           |
+| 0.1.11     | 2021-09-15 | [5949](https://github.com/airbytehq/airbyte/pull/5949)                                                            | Add caching for all streams                                                                                                                                            |
+| 0.1.10     | 2021-09-09 | [5860](https://github.com/airbytehq/airbyte/pull/5860)                                                            | Add reaction streams                                                                                                                                                   |
+| 0.1.9      | 2021-09-02 | [5788](https://github.com/airbytehq/airbyte/pull/5788)                                                            | Handling empty repository, check method using RepositoryStats stream                                                                                                   |
+| 0.1.8      | 2021-09-01 | [5757](https://github.com/airbytehq/airbyte/pull/5757)                                                            | Add more streams                                                                                                                                                       |
+| 0.1.7      | 2021-08-27 | [5696](https://github.com/airbytehq/airbyte/pull/5696)                                                            | Handle negative backoff values                                                                                                                                         |
+| 0.1.6      | 2021-08-18 | [5223](https://github.com/airbytehq/airbyte/pull/5223)                                                            | Add MultipleTokenAuthenticator                                                                                                                                         |
+| 0.1.5      | 2021-08-18 | [5456](https://github.com/airbytehq/airbyte/pull/5456)                                                            | Fix set up validation                                                                                                                                                  |
+| 0.1.4      | 2021-08-13 | [5136](https://github.com/airbytehq/airbyte/pull/5136)                                                            | Support syncing multiple repositories/organizations                                                                                                                    |
+| 0.1.3      | 2021-08-03 | [5156](https://github.com/airbytehq/airbyte/pull/5156)                                                            | Extended existing schemas with `users` property for certain streams                                                                                                    |
+| 0.1.2      | 2021-07-13 | [4708](https://github.com/airbytehq/airbyte/pull/4708)                                                            | Fix bug with IssueEvents stream and add handling for rate limiting                                                                                                     |
+| 0.1.1      | 2021-07-07 | [4590](https://github.com/airbytehq/airbyte/pull/4590)                                                            | Fix schema in the `pull_request` stream                                                                                                                                |
+| 0.1.0      | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174)                                                            | New Source: GitHub                                                                                                                                                     |
 
 </details>
 

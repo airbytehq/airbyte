@@ -81,10 +81,23 @@ When a sync runs for the first time using CDC, Airbyte performs an initial consi
 
 If seeing `EventDataDeserializationException` errors intermittently with root cause `EOFException` or `SocketException`, you may need to extend the following _MySql server_ timeout values by running:
 
+**For MySQL 8.0.26 and later:**
+
+```sql
+SET GLOBAL replica_net_timeout = 120;
+SET GLOBAL thread_pool_idle_timeout = 120;
 ```
-set global slave_net_timeout = 120;
-set global thread_pool_idle_timeout = 120;
+
+**For MySQL versions before 8.0.26:**
+
+```sql
+SET GLOBAL slave_net_timeout = 120;
+SET GLOBAL thread_pool_idle_timeout = 120;
 ```
+
+:::note
+`slave_net_timeout` was renamed to `replica_net_timeout` in MySQL 8.0.26. Use the appropriate variable depending on your MySQL version.
+:::
 
 ### (Advanced) Enable GTIDs
 
@@ -95,7 +108,7 @@ Global transaction identifiers \(GTIDs\) uniquely identify transactions that occ
 
 ### (Advanced) Setting up initial CDC waiting time
 
-The MySQl connector may need some time to start processing the data in the CDC mode in the following scenarios:
+The MySQL connector may need some time to start processing the data in the CDC mode in the following scenarios:
 
 - When the connection is set up for the first time and a snapshot is needed
 - When the connector has a lot of change logs to process
@@ -106,7 +119,7 @@ If you know there are database changes to be synced, but the connector cannot re
 
 ### (Advanced) Set up server timezone
 
-In CDC mode, the MySQl connector may need a timezone configured if the existing MySQL database been set up with a system timezone that is not recognized by the [IANA Timezone Database](https://www.iana.org/time-zones).
+In CDC mode, the MySQL connector may need a timezone configured if the existing MySQL database been set up with a system timezone that is not recognized by the [IANA Timezone Database](https://www.iana.org/time-zones).
 
 In this case, you can configure the server timezone to the equivalent IANA timezone compliant timezone. (e.g. CEST -> Europe/Berlin).
 

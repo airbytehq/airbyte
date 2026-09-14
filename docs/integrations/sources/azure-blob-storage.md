@@ -86,18 +86,19 @@ In the `Manage / Certificates & secrets` panel, click `Client Secrets` and creat
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Azure Blob Storage from the Source type dropdown.
 4. Enter a name for the Azure Blob Storage connector.
-5. Enter the name of your Azure **Account**.
-6. Enter your Tenant ID and Click **Authenticate your Azure Blob Storage account**.
-7. Log in and authorize the Azure Blob Storage account.
-8. Enter the name of the **Container** containing your files to replicate.
-9. Add a stream
+5. Choose a [delivery method](/platform/using-airbyte/delivery-methods) for your data.
+6. Enter the name of your Azure **Account**.
+7. Enter your Tenant ID and Click **Authenticate your Azure Blob Storage account**.
+8. Log in and authorize the Azure Blob Storage account.
+9. Enter the name of the **Container** containing your files to replicate.
+10. Add a stream
    1. Write the **File Type**
    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
    3. Give a **Name** to the stream
    4. (Optional)—If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
-10. (Optional) Enter the endpoint to use for the data replication.
-11. (Optional) Enter the desired start date from which to begin replicating data.
+11. (Optional) Enter the endpoint to use for the data replication.
+12. (Optional) Enter the desired start date from which to begin replicating data.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -107,22 +108,23 @@ In the `Manage / Certificates & secrets` panel, click `Client Secrets` and creat
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Azure Blob Storage from the Source type dropdown.
 4. Enter a name for the Azure Blob Storage connector.
-5. Enter the name of your Azure **Storage Account** and **container**.
-6. Choose the Authentication method.
+5. Choose a [delivery method](/platform/using-airbyte/delivery-methods) for your data.
+6. Enter the name of your Azure **Storage Account** and **container**.
+7. Choose the Authentication method.
    1. If you are accessing through a Storage Account Key, choose `Authenticate via Storage Account Key` and enter the key.
    1. If you are accessing through a Service Principal, choose the `Authenticate via Client Credentials`.
      0. See [above](#step-1-set-up-azure-blob-storage) regarding setting IAM role bindings for the Service Principal and getting detail of the app registration
      1. Enter the `Directory (tenant) ID` value from app registration in Azure Portal into the `Tenant ID` field.
-     2. Enter the `Application (client) ID` from Azure Portal into the `Tenant ID` field. Note this is **not** the secret ID
+     2. Enter the `Application (client) ID` from Azure Portal into the `Client ID` field. Note this is **not** the secret ID
      3. Enter the Secret `Value` from Azure Portal into the `Client Secret` field.
-9. Add a stream
+8. Add a stream
    1. Write the **File Type**
    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
    3. Give a **Name** to the stream
    4. (Optional)—If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
-10. (Optional) Enter the endpoint to use for the data replication.
-11. (Optional) Enter the desired start date from which to begin replicating data.
+9. (Optional) Enter the endpoint to use for the data replication.
+10. (Optional) Enter the desired start date from which to begin replicating data.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -274,11 +276,7 @@ There are currently no options for JSONL parsing.
 
 <FieldAnchor field="streams.0.format[unstructured],streams.1.format[unstructured],streams.2.format[unstructured]">
 
-#### Document File Type Format (Experimental)
-
-:::warning
-The Document File Type Format is currently an experimental feature and not subject to SLAs. Use at your own risk.
-:::
+#### Document File Type Format
 
 The Document File Type Format is a special format that allows you to extract text from Markdown, TXT, PDF, Word and Powerpoint documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`), Word (`docx`) or Powerpoint (`.pptx`) file.
 
@@ -290,17 +288,69 @@ This connector utilizes the open source [Unstructured](https://unstructured-io.g
 
 </FieldAnchor>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Performance considerations
 
 The Azure Blob Storage connector should not encounter any [Microsoft API limitations](https://learn.microsoft.com/en-us/azure/storage/blobs/scalability-targets#scale-targets-for-blob-storage) under normal usage.
+
+### Copy raw files limitations
+
+When using the **Copy raw files** [delivery method](/platform/using-airbyte/delivery-methods):
+
+- Maximum file size: 1.5 GB per file
+- Requires Airbyte version 1.2.0 or later (1.7.0+ for metadata support)
+- Only works with file-based destinations that support file transfer
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                      |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| Version    | Date       | Pull Request                                             | Subject                                                                                      |
+|:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.8.33 | 2026-09-08 | [85398](https://github.com/airbytehq/airbyte/pull/85398) | Update dependencies |
+| 0.8.32 | 2026-09-01 | [85241](https://github.com/airbytehq/airbyte/pull/85241) | Update dependencies |
+| 0.8.31 | 2026-08-25 | [85007](https://github.com/airbytehq/airbyte/pull/85007) | Update dependencies |
+| 0.8.30 | 2026-08-18 | [84471](https://github.com/airbytehq/airbyte/pull/84471) | Update dependencies |
+| 0.8.29 | 2026-08-11 | [83826](https://github.com/airbytehq/airbyte/pull/83826) | Update dependencies |
+| 0.8.28 | 2026-08-04 | [83347](https://github.com/airbytehq/airbyte/pull/83347) | Update dependencies |
+| 0.8.27 | 2026-07-28 | [82801](https://github.com/airbytehq/airbyte/pull/82801) | Update dependencies |
+| 0.8.26 | 2026-07-22 | [82241](https://github.com/airbytehq/airbyte/pull/82241) | Bump base image to python-connector-base 4.1.1 (Python 3.13.14) |
+| 0.8.25 | 2026-07-21 | [82311](https://github.com/airbytehq/airbyte/pull/82311) | Update dependencies |
+| 0.8.24 | 2026-07-14 | [81715](https://github.com/airbytehq/airbyte/pull/81715) | Update dependencies |
+| 0.8.23 | 2026-07-07 | [81437](https://github.com/airbytehq/airbyte/pull/81437) | Update dependencies |
+| 0.8.22 | 2026-06-30 | [80986](https://github.com/airbytehq/airbyte/pull/80986) | Update dependencies |
+| 0.8.21 | 2026-06-23 | [80365](https://github.com/airbytehq/airbyte/pull/80365) | Update dependencies |
+| 0.8.20 | 2026-06-16 | [79773](https://github.com/airbytehq/airbyte/pull/79773) | Update dependencies |
+| 0.8.19 | 2026-06-09 | [79224](https://github.com/airbytehq/airbyte/pull/79224) | Update dependencies |
+| 0.8.18 | 2026-06-02 | [78559](https://github.com/airbytehq/airbyte/pull/78559) | Update dependencies |
+| 0.8.17 | 2026-04-28 | [77147](https://github.com/airbytehq/airbyte/pull/77147) | Update dependencies |
+| 0.8.16 | 2026-04-21 | [75028](https://github.com/airbytehq/airbyte/pull/75028) | Update dependencies |
+| 0.8.15 | 2026-03-10 | [74507](https://github.com/airbytehq/airbyte/pull/74507) | Update dependencies |
+| 0.8.14 | 2026-03-03 | [74178](https://github.com/airbytehq/airbyte/pull/74178) | Update dependencies |
+| 0.8.13 | 2026-02-17 | [73438](https://github.com/airbytehq/airbyte/pull/73438) | Update dependencies |
+| 0.8.12 | 2026-01-27 | [72368](https://github.com/airbytehq/airbyte/pull/72368) | Update dependencies |
+| 0.8.11 | 2026-01-20 | [71921](https://github.com/airbytehq/airbyte/pull/71921) | Update dependencies |
+| 0.8.10 | 2026-01-14 | [71450](https://github.com/airbytehq/airbyte/pull/71450) | Update dependencies |
+| 0.8.9 | 2026-01-07 | [71000](https://github.com/airbytehq/airbyte/pull/71000) | Enable 'Copy raw files' delivery method for file transfers |
+| 0.8.8 | 2025-12-18 | [70804](https://github.com/airbytehq/airbyte/pull/70804) | Update dependencies |
+| 0.8.7 | 2025-12-03 | [70316](https://github.com/airbytehq/airbyte/pull/70316) | Increase memory for check_connection to 4096Mi |
+| 0.8.6 | 2025-12-02 | [70291](https://github.com/airbytehq/airbyte/pull/70291) | Update dependencies |
+| 0.8.5 | 2025-11-25 | [69910](https://github.com/airbytehq/airbyte/pull/69910) | Update dependencies |
+| 0.8.4 | 2025-11-18 | [69579](https://github.com/airbytehq/airbyte/pull/69579) | Update dependencies |
+| 0.8.3 | 2025-11-11 | [69269](https://github.com/airbytehq/airbyte/pull/69269) | Update dependencies |
+| 0.8.2 | 2025-11-04 | [69156](https://github.com/airbytehq/airbyte/pull/69156) | Update dependencies |
+| 0.8.1 | 2025-10-29 | [68376](https://github.com/airbytehq/airbyte/pull/68376) | Update dependencies |
+| 0.8.0 | 2025-10-27 | [68615](https://github.com/airbytehq/airbyte/pull/68615) | Update dependencies |
+| 0.7.0 | 2025-10-27 | [68663](https://github.com/airbytehq/airbyte/pull/68663) | Promoting release candidate 0.7.0-rc.1 to a main version. |
+| 0.7.0-rc.1 | 2025-10-21 | [68161](https://github.com/airbytehq/airbyte/pull/68161) | Update to airbyte-cdk ^v7 |
+| 0.6.16 | 2025-10-14 | [68015](https://github.com/airbytehq/airbyte/pull/68015) | Update dependencies |
+| 0.6.15 | 2025-10-07 | [67171](https://github.com/airbytehq/airbyte/pull/67171) | Update dependencies |
+| 0.6.14 | 2025-09-30 | [66167](https://github.com/airbytehq/airbyte/pull/66167) | Update dependencies |
+| 0.6.13 | 2025-08-23 | [65326](https://github.com/airbytehq/airbyte/pull/65326) | Update dependencies |
 | 0.6.12 | 2025-07-26 | [63800](https://github.com/airbytehq/airbyte/pull/63800) | Update dependencies |
 | 0.6.11 | 2025-07-19 | [63472](https://github.com/airbytehq/airbyte/pull/63472) | Update dependencies |
 | 0.6.10 | 2025-07-12 | [63067](https://github.com/airbytehq/airbyte/pull/63067) | Update dependencies |

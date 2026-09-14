@@ -1,15 +1,16 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql
 
+import io.airbyte.cdk.read.cdc.PartiallyOrdered
 import kotlin.io.path.Path
 import kotlin.io.path.extension
 
 /** WAL position datum for MySQL. */
 data class MySqlSourceCdcPosition(val fileName: String, val position: Long) :
-    Comparable<MySqlSourceCdcPosition> {
+    PartiallyOrdered<MySqlSourceCdcPosition> {
 
     /**
      * Numerical value encoded in the extension of the binlog file name.

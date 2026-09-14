@@ -1,0 +1,181 @@
+/* ── Section headings ────────────────────────────────────── */
+
+.sectionHeading {
+  margin-bottom: 4px;
+}
+
+.sectionSubheading {
+  color: var(--color-grey-500);
+  margin-bottom: 20px;
+}
+
+/* ── Quick Install ───────────────────────────────────────── */
+
+.quickInstall {
+  margin: 32px 0;
+  padding: 24px 28px;
+  border-radius: 12px;
+  background-color: var(--color-ae-bg);
+  border: 1px solid var(--color-ae-card-border);
+}
+
+.quickInstallTabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--color-ae-card-border);
+  margin-bottom: 20px;
+}
+
+.quickInstallTab {
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: inherit;
+  font-weight: 500;
+  color: var(--color-grey-500);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.quickInstallTab:hover {
+  color: var(--ifm-color-primary);
+}
+
+.quickInstallTabActive {
+  color: var(--ifm-color-primary);
+  border-bottom-color: var(--ifm-color-primary);
+}
+
+.quickInstallBody {
+  min-height: 100px;
+}
+
+.quickInstallCode {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background-color: var(--color-grey-40);
+  border: 1px solid var(--color-grey-100);
+  margin-bottom: 12px;
+  overflow-x: auto;
+}
+
+.quickInstallCode code {
+  white-space: nowrap;
+  color: var(--ifm-code-color);
+  background: none;
+  padding: 0;
+  border: none;
+}
+
+.quickInstallCopy {
+  flex-shrink: 0;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: inherit;
+  font-weight: 600;
+  border: 1px solid var(--color-grey-100);
+  background: var(--color-white);
+  color: var(--ifm-heading-color);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.quickInstallCopy:hover {
+  border-color: var(--ifm-color-primary);
+}
+
+.quickInstallDescription {
+  color: var(--color-grey-500);
+  margin-bottom: 12px;
+}
+
+/* ── Tools label ─────────────────────────────────────────── */
+
+.toolsLabel {
+  color: var(--color-grey-500);
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+/* ── Tool Chips (inside tabs) ────────────────────────────── */
+
+.toolChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.toolChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--color-grey-100);
+  background: var(--color-white);
+  text-decoration: none;
+  font-size: inherit;
+  color: var(--ifm-heading-color);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.toolChip:hover {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 1px 6px rgba(97, 94, 255, 0.1);
+  text-decoration: none;
+}
+
+.toolChipIcon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+[data-theme="dark"] .toolChipIcon {
+  filter: invert(1);
+}
+
+/* ── Skills Section (SDK tab only) ───────────────────────── */
+
+.skillsSection {
+  margin-top: 16px;
+}
+
+.skillsLabel {
+  color: var(--color-grey-500);
+  margin-bottom: 8px;
+}
+
+.skillsChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.skillChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px dashed var(--color-grey-100);
+  background: transparent;
+  text-decoration: none;
+  font-size: inherit;
+  color: var(--ifm-heading-color);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.skillChip:hover {
+  border-color: var(--ifm-color-primary);
+  background: var(--color-white);
+  text-decoration: none;
+}
+

@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.ConfigErrorException
@@ -8,6 +8,7 @@ import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
+import io.airbyte.cdk.command.TableFilter
 import io.airbyte.cdk.jdbc.SSLCertificateUtils
 import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.DataChannelMedium.SOCKET
@@ -41,11 +42,13 @@ data class MySqlSourceConfiguration(
     override val jdbcUrlFmt: String,
     override val jdbcProperties: Map<String, String>,
     override val namespaces: Set<String>,
+    override val tableFilters: List<TableFilter>,
     val incrementalConfiguration: IncrementalConfiguration,
     override val maxConcurrency: Int,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     override val checkpointTargetInterval: Duration,
     override val checkPrivileges: Boolean,
+    val treatTinyint1AsInteger: Boolean,
     override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
     val debeziumKeepAliveInterval: Duration = Duration.ofMinutes(1),
 ) : JdbcSourceConfiguration, CdcSourceConfiguration {
@@ -121,7 +124,9 @@ constructor(
         // Configure SSH tunneling.
         val sshTunnel: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
         val sshOpts: SshConnectionOptions =
-            SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
+            SshConnectionOptions.fromAdditionalProperties(
+                pojo.getAdditionalProperties() ?: emptyMap()
+            )
 
         // Configure SSL encryption.
         if (
@@ -145,6 +150,27 @@ constructor(
         val jdbcUrlFmt = "jdbc:mysql://${address}"
         jdbcProperties["useCursorFetch"] = "true"
         jdbcProperties["sessionVariables"] = "autocommit=0"
+
+        val treatTinyint1AsInteger: Boolean = pojo.treatTinyint1AsInteger ?: false
+        if (treatTinyint1AsInteger) {
+            jdbcProperties["tinyInt1isBit"] = "false"
+        }
+
+        // Only validate table filters if schemas are explicitly configured
+        val tableFilters = pojo.tableFilters ?: emptyList()
+
+        // Convert MySQL TableFilter to JDBC TableFilter for validation
+        val jdbcTableFilters: List<TableFilter> =
+            tableFilters.map {
+                TableFilter().apply {
+                    schemaName = it.databaseName
+                    patterns = it.patterns
+                }
+            }
+
+        pojo.database.let { schema ->
+            JdbcSourceConfiguration.validateTableFilters(setOf(schema), jdbcTableFilters)
+        }
 
         // Internal configuration settings.
         val checkpointTargetInterval: Duration =
@@ -188,10 +214,12 @@ constructor(
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
             namespaces = setOf(pojo.database),
+            tableFilters = jdbcTableFilters,
             incrementalConfiguration = incremental,
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,
+            treatTinyint1AsInteger = treatTinyint1AsInteger,
         )
     }
 

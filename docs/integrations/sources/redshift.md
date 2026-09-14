@@ -52,6 +52,10 @@ Next is to provide the necessary information on how to connect to your cluster s
 
 All Redshift connections are encrypted using SSL
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -59,6 +63,7 @@ All Redshift connections are encrypted using SSL
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.5.5 | 2026-06-03 | [74769](https://github.com/airbytehq/airbyte/pull/74769) | Handle timezone-aware timestamps in cursor parsing and fix DST offset in `timestamptz` reads |
 | 0.5.4 | 2025-07-10 | [62922](https://github.com/airbytehq/airbyte/pull/62922) | Convert to new gradle build flow |
 | 0.5.3 | 2024-12-18 | [49893](https://github.com/airbytehq/airbyte/pull/49893) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.5.2 | 2024-02-13 | [35223](https://github.com/airbytehq/airbyte/pull/35223) | Adopt CDK 0.20.4 |
@@ -67,8 +72,8 @@ All Redshift connections are encrypted using SSL
 | (none)  | 2023-11-17 | [32616](https://github.com/airbytehq/airbyte/pull/32616) | Improve timestamptz handling                                                                                                              |
 | 0.4.0   | 2023-06-26 | [27737](https://github.com/airbytehq/airbyte/pull/27737) | License Update: Elv2                                                                                                                      |
 | 0.3.17  | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212) | Fix silent exception swallowing in StreamingJdbcDatabase                                                                                  |
-| 0.3.16  | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346) | Consolidate date/time values mapping for JDBC sources                                                                                     |
-| 0.3.15  | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
+| 0.3.16  | 2022-12-14 | [20346](https://github.com/airbytehq/airbyte/pull/20346) | Consolidate date/time values mapping for JDBC sources                                                                                     |
+| 0.3.15  | 2022-10-13 | [16238](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
 | 0.3.14  | 2022-09-01 | [16258](https://github.com/airbytehq/airbyte/pull/16258) | Emit state messages more frequently                                                                                                       |
 | 0.3.13  | 2022-05-25 |                                                          | Added JDBC URL params                                                                                                                     |
 | 0.3.12  | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field                                 |

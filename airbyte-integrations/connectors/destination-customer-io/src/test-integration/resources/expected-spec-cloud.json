@@ -6,7 +6,34 @@
     "type" : "object",
     "additionalProperties" : true,
     "properties" : {
+      "credentials" : {
+        "description" : "Enter the site ID and API key to authenticate.",
+        "title" : "Credentials",
+        "order" : 0,
+        "type" : "object",
+        "additionalProperties" : true,
+        "properties" : {
+          "siteId" : {
+            "type" : "string",
+            "description" : "Enter your Customer IO <a href=\"https://docs.customer.io/integrations/sdk/ios/getting-started/auth/#get-your-api-key\">Site ID</a>.",
+            "title" : "Site ID",
+            "airbyte_secret" : true,
+            "always_show" : true,
+            "order" : 1
+          },
+          "apiKey" : {
+            "type" : "string",
+            "description" : "Enter your Customer IO <a href=\"https://docs.customer.io/integrations/sdk/ios/getting-started/auth/#get-your-api-key\">API Key</a>.",
+            "title" : "API Key",
+            "airbyte_secret" : true,
+            "always_show" : true,
+            "order" : 2
+          }
+        },
+        "required" : [ "siteId", "apiKey" ]
+      },
       "object_storage_config" : {
+        "title" : "Object Storage Spec",
         "oneOf" : [ {
           "type" : "object",
           "additionalProperties" : true,
@@ -178,34 +205,7 @@
           "title" : "S3",
           "required" : [ "storage_type", "s3_bucket_name", "s3_bucket_region", "bucket_path", "format" ]
         } ],
-        "title" : "Object Storage Configuration",
         "type" : "object"
-      },
-      "credentials" : {
-        "description" : "Enter the site ID and API key to authenticate.",
-        "title" : "Credentials",
-        "order" : 0,
-        "type" : "object",
-        "additionalProperties" : true,
-        "properties" : {
-          "siteId" : {
-            "type" : "string",
-            "description" : "Enter your Customer IO <a href=\"https://docs.customer.io/integrations/sdk/ios/getting-started/auth/#get-your-api-key\">Site ID</a>.",
-            "title" : "Site ID",
-            "airbyte_secret" : true,
-            "always_show" : true,
-            "order" : 1
-          },
-          "apiKey" : {
-            "type" : "string",
-            "description" : "Enter your Customer IO <a href=\"https://docs.customer.io/integrations/sdk/ios/getting-started/auth/#get-your-api-key\">API Key</a>.",
-            "title" : "API Key",
-            "airbyte_secret" : true,
-            "always_show" : true,
-            "order" : 2
-          }
-        },
-        "required" : [ "siteId", "apiKey" ]
       }
     },
     "required" : [ "credentials" ]

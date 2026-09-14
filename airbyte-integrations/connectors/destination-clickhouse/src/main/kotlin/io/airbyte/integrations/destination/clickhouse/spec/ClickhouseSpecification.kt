@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse.spec
@@ -17,7 +17,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
-import io.airbyte.integrations.destination.clickhouse.write.load.ClickhouseDirectLoader.Constants.MAX_BATCH_SIZE_RECORDS
+import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration.Defaults.RECORDS_PER_AGGREGATE
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.micronaut.context.annotation.ConfigurationBuilder
 import io.micronaut.context.annotation.Requires
@@ -33,6 +33,8 @@ sealed class ClickhouseSpecification : ConfigurationSpecification() {
     abstract val enableJson: Boolean?
     abstract fun getTunnelMethodValue(): SshTunnelMethodConfiguration?
     abstract val recordWindowSize: Long?
+    abstract val useReplicatedEngines: Boolean?
+    abstract val clusterName: String?
 }
 
 @Singleton
@@ -109,7 +111,33 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
     )
     @get:JsonProperty("record_window_size")
     @get:JsonSchemaInject(json = """{"order": 8}""")
-    override val recordWindowSize: Long? = MAX_BATCH_SIZE_RECORDS
+    override val recordWindowSize: Long? = RECORDS_PER_AGGREGATE
+
+    @get:JsonSchemaTitle("Enable Replication")
+    @get:JsonPropertyDescription(
+        "Enable this to ensure synced data is replicated across all nodes in a self-managed" +
+            " ClickHouse cluster. Not needed for single-node deployments or ClickHouse Cloud." +
+            " See the <a href=\"https://clickhouse.com/docs/engines/table-engines/mergetree-family/replication\">" +
+            "ClickHouse replication docs</a> for more information."
+    )
+    @get:JsonProperty("use_replicated_engines")
+    @get:JsonSchemaInject(json = """{"order": 9, "default": false, "group": "advanced"}""")
+    override val useReplicatedEngines: Boolean? = false
+
+    @get:JsonSchemaTitle("Cluster Name")
+    @get:JsonPropertyDescription(
+        "Name of your ClickHouse cluster. When provided, table definitions are automatically" +
+            " propagated to all cluster nodes. Required for clusters using the Atomic database" +
+            " engine. Leave empty for single-node setups, ClickHouse Cloud, or databases using" +
+            " the <a href=\"https://clickhouse.com/docs/engines/database-engines/replicated\">" +
+            "Replicated database engine</a>."
+    )
+    @get:JsonProperty("cluster_name")
+    @get:JsonSchemaInject(
+        json =
+            """{"order": 10, "default": "", "group": "advanced", "pattern": "^[A-Za-z0-9_.-]*$"}"""
+    )
+    override val clusterName: String? = ""
 }
 
 @Singleton
@@ -186,7 +214,11 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
     )
     @get:JsonProperty("record_window_size")
     @get:JsonSchemaInject(json = """{"order": 8}""")
-    override val recordWindowSize: Long? = MAX_BATCH_SIZE_RECORDS
+    override val recordWindowSize: Long? = RECORDS_PER_AGGREGATE
+
+    @get:JsonIgnore override val useReplicatedEngines: Boolean? = false
+
+    @get:JsonIgnore override val clusterName: String? = ""
 }
 
 enum class ClickhouseConnectionProtocol(@get:JsonValue val value: String) {

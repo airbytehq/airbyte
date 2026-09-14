@@ -39,4 +39,17 @@ data:
   #         secretStore:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: CoinGecko API documentation
+      url: https://www.coingecko.com/en/api/documentation
+      type: api_reference
+    - title: CoinGecko authentication
+      url: https://www.coingecko.com/en/api/documentation
+      type: authentication_guide
+    - title: CoinGecko rate limits
+      url: https://www.coingecko.com/en/api/pricing
+      type: rate_limits
+    - title: CoinGecko Status
+      url: https://status.coingecko.com/
+      type: status_page
 metadataSpecVersion: "1.0"

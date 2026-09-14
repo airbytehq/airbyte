@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.read
@@ -10,7 +10,10 @@ import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.command.TableFilter
+import io.airbyte.cdk.data.IntCodec
+import io.airbyte.cdk.data.LocalDateCodec
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
@@ -22,6 +25,7 @@ import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.output.CatalogValidationFailure
 import io.airbyte.cdk.output.DataChannelFormat
 import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
@@ -34,9 +38,9 @@ import org.junit.jupiter.api.Assertions
 
 object TestFixtures {
 
-    val id = Field("id", IntFieldType)
-    val ts = Field("ts", LocalDateFieldType)
-    val msg = Field("msg", StringFieldType)
+    val id = EmittedField("id", IntFieldType)
+    val ts = EmittedField("ts", LocalDateFieldType)
+    val msg = EmittedField("msg", StringFieldType)
 
     fun stream(
         withPK: Boolean = true,
@@ -66,14 +70,15 @@ object TestFixtures {
     fun record(
         pk: Int? = null,
         cursor: LocalDate? = null,
-    ): ObjectNode =
-        Jsons.readTree(
-            listOfNotNull(
-                    """ "${id.id}" : $pk """.takeIf { pk != null },
-                    """ "${ts.id}" : "$cursor" """.takeIf { cursor != null },
-                )
-                .joinToString(",", "{", "}")
-        ) as ObjectNode
+    ): SelectQuerier.ResultRow =
+        JdbcSelectQuerier.ResultRow(
+            mutableMapOf(
+                "id" to FieldValueEncoder(pk, IntCodec),
+                "ts" to FieldValueEncoder(cursor, LocalDateCodec)
+            ),
+            mutableMapOf(),
+            mutableMapOf(),
+        )
 
     fun sharedState(
         global: Boolean = false,
@@ -142,6 +147,8 @@ object TestFixtures {
             get() = TODO("Not yet implemented")
         override val namespaces: Set<String>
             get() = TODO("Not yet implemented")
+        override val tableFilters: List<TableFilter>
+            get() = TODO("Not yet implemented")
         override val realPort: Int
             get() = TODO("Not yet implemented")
         override val sshTunnel: SshTunnelMethodConfiguration
@@ -168,7 +175,8 @@ object TestFixtures {
                 override fun next(): SelectQuerier.ResultRow =
                     object : SelectQuerier.ResultRow {
                         override val data: NativeRecordPayload = wrapped.next()
-                        override val changes: Map<Field, FieldValueChange> = emptyMap()
+                        override val changes: Map<EmittedField, FieldValueChange> = emptyMap()
+                        override val nonEmittedData: NativeRecordPayload = mutableMapOf()
                     }
                 override fun close() {}
             }

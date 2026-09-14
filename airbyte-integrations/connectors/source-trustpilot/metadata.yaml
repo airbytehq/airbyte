@@ -41,4 +41,8 @@ data:
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.48.10@sha256:09947fb38d07e515f9901a12f22cc44f1512f6148703341de80403c0e0c1b8c3
+  externalDocumentationUrls:
+    - title: Trustpilot API documentation
+      url: https://developers.trustpilot.com/
+      type: api_reference
 metadataSpecVersion: "1.0"

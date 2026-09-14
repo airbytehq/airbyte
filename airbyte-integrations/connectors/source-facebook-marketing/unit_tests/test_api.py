@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pendulum
+from datetime import timedelta
+
 import pytest
 import source_facebook_marketing
 from facebook_business import FacebookAdsApi, FacebookSession
@@ -22,27 +23,27 @@ class TestMyFacebookAdsApi:
         [
             (
                 95,
-                pendulum.duration(minutes=5),
-                pendulum.duration(minutes=1),
+                timedelta(minutes=5),
+                timedelta(minutes=1),
                 96,
-                pendulum.duration(minutes=6),
-                pendulum.duration(minutes=6),
+                timedelta(minutes=6),
+                timedelta(minutes=6),
             ),
             (
                 95,
-                pendulum.duration(minutes=5),
-                pendulum.duration(minutes=2),
+                timedelta(minutes=5),
+                timedelta(minutes=2),
                 96,
-                pendulum.duration(minutes=1),
-                pendulum.duration(minutes=5),
+                timedelta(minutes=1),
+                timedelta(minutes=5),
             ),
             (
                 95,
-                pendulum.duration(minutes=5),
-                pendulum.duration(minutes=1),
+                timedelta(minutes=5),
+                timedelta(minutes=1),
                 93,
-                pendulum.duration(minutes=4),
-                pendulum.duration(minutes=4),
+                timedelta(minutes=4),
+                timedelta(minutes=4),
             ),
         ],
     )
@@ -67,36 +68,36 @@ class TestMyFacebookAdsApi:
         "min_pause_interval,usages_pause_intervals,expected_output",
         [
             (
-                pendulum.duration(minutes=1),  # min_pause_interval
+                timedelta(minutes=1),  # min_pause_interval
                 [
-                    (5, pendulum.duration(minutes=6)),
-                    (7, pendulum.duration(minutes=5)),
+                    (5, timedelta(minutes=6)),
+                    (7, timedelta(minutes=5)),
                 ],  # usages_pause_intervals
-                (7, pendulum.duration(minutes=6)),  # expected_output
+                (7, timedelta(minutes=6)),  # expected_output
             ),
             (
-                pendulum.duration(minutes=10),  # min_pause_interval
+                timedelta(minutes=10),  # min_pause_interval
                 [
-                    (5, pendulum.duration(minutes=6)),
-                    (7, pendulum.duration(minutes=5)),
+                    (5, timedelta(minutes=6)),
+                    (7, timedelta(minutes=5)),
                 ],  # usages_pause_intervals
-                (7, pendulum.duration(minutes=10)),  # expected_output
+                (7, timedelta(minutes=10)),  # expected_output
             ),
             (
-                pendulum.duration(minutes=10),  # min_pause_interval
+                timedelta(minutes=10),  # min_pause_interval
                 [  # usages_pause_intervals
-                    (9, pendulum.duration(minutes=6)),
+                    (9, timedelta(minutes=6)),
                 ],
-                (9, pendulum.duration(minutes=10)),  # expected_output
+                (9, timedelta(minutes=10)),  # expected_output
             ),
             (
-                pendulum.duration(minutes=10),  # min_pause_interval
+                timedelta(minutes=10),  # min_pause_interval
                 [  # usages_pause_intervals
-                    (-1, pendulum.duration(minutes=1)),
-                    (-2, pendulum.duration(minutes=10)),
-                    (-3, pendulum.duration(minutes=100)),
+                    (-1, timedelta(minutes=1)),
+                    (-2, timedelta(minutes=10)),
+                    (-3, timedelta(minutes=100)),
                 ],
-                (0, pendulum.duration(minutes=100)),  # expected_output
+                (0, timedelta(minutes=100)),  # expected_output
             ),
         ],
     )
@@ -171,6 +172,57 @@ class TestMyFacebookAdsApi:
             source_facebook_marketing.api.logger.warning.assert_called_with(
                 f"Facebook API Utilization is too high ({usage})%, pausing for {fb_api._compute_pause_interval.return_value}"
             )
+
+    @pytest.mark.parametrize(
+        "headers,expected_usage",
+        [
+            # String-typed values from Facebook API JSON (the bug scenario)
+            (
+                {"x-ad-account-usage": '{"acc_id_util_pct": "75.5"}'},
+                75.5,
+            ),
+            # Numeric values (normal case, should still work)
+            (
+                {"x-ad-account-usage": '{"acc_id_util_pct": 42}'},
+                42,
+            ),
+            # String-typed values in x-app-usage header
+            (
+                {"x-app-usage": '{"call_count": "10", "total_time": "20.5", "total_cputime": "5"}'},
+                20.5,
+            ),
+            # String-typed values in x-business-use-case-usage header
+            (
+                {
+                    "x-business-use-case-usage": '{"biz_123": [{"call_count": "30", "total_cputime": "60", "total_time": "45", "estimated_time_to_regain_access": 0}]}'
+                },
+                60,
+            ),
+            # Missing keys should default to 0
+            (
+                {"x-ad-account-usage": "{}"},
+                0,
+            ),
+            # No rate-limit headers at all
+            (
+                {},
+                0,
+            ),
+        ],
+    )
+    def test_parse_call_rate_header_handles_string_values(self, fb_api, headers, expected_usage):
+        usage, _ = fb_api._parse_call_rate_header(headers)
+        assert usage == expected_usage
+        assert isinstance(usage, (int, float))
+
+    def test_update_insights_throttle_limit_casts_string_values(self, fb_api, mocker):
+        mock_response = mocker.Mock()
+        mock_response.headers.return_value = {"x-fb-ads-insights-throttle": '{"app_id_util_pct": "55.5", "acc_id_util_pct": "30"}'}
+        fb_api._update_insights_throttle_limit(mock_response)
+        assert fb_api._ads_insights_throttle.per_application == 55.5
+        assert fb_api._ads_insights_throttle.per_account == 30.0
+        assert isinstance(fb_api._ads_insights_throttle.per_application, float)
+        assert isinstance(fb_api._ads_insights_throttle.per_account, float)
 
     def test_find_account(self, api, account_id, requests_mock):
         requests_mock.register_uri(

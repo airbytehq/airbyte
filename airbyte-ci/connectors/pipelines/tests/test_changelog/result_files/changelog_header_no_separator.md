@@ -1,1 +1,0 @@
-The changelog table in the documentation file is missing the header delimiter.

@@ -6,6 +6,7 @@ import json
 from datetime import datetime
 from unittest.mock import MagicMock
 
+import freezegun
 import pytest
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
@@ -218,6 +219,42 @@ CONFIG_ERRORS = [
                     "type": "OAuthException",
                     "code": 3018,
                     "fbtrace_id": "Ag-P22y80OSEXM4qsGk2T9P",
+                }
+            },
+        },
+    ),
+    (
+        "error_100_subcode_2446289_no_access_to_resource",
+        "No access to resource.",
+        {
+            "status_code": 400,
+            "json": {
+                "error": {
+                    "message": "(#100) No access to resource.",
+                    "type": "OAuthException",
+                    "code": 100,
+                    "error_subcode": 2446289,
+                    "fbtrace_id": "Ag-P22y80OSEXM4qsGk2T9P",
+                }
+            },
+        },
+    ),
+    (
+        "error_400_invalid_oauth_access_token_cannot_parse",
+        "The access token for this connection is invalid or corrupted. "
+        "This may be caused by browser autofill overwriting the OAuth token with saved credentials. "
+        "Please re-authenticate your Facebook connection by clicking 'Authenticate your account' and saving the configuration. "
+        "See https://docs.airbyte.com/integrations/sources/facebook-marketing#connection-check-fails-with-invalid-access-token-after-re-authenticating for details. "
+        "If re-authentication does not resolve the issue, go to facebook.com > Settings > Business Integrations, "
+        "remove the Airbyte app, and then re-authenticate again.",
+        {
+            "status_code": 400,
+            "json": {
+                "error": {
+                    "message": "Invalid OAuth access token - Cannot parse access token",
+                    "type": "OAuthException",
+                    "code": 190,
+                    "fbtrace_id": "ANDUkKsQWt5hhp9CkhgTjdt",
                 }
             },
         },
@@ -453,6 +490,7 @@ class TestRealErrors:
             assert error.failure_type == failure_type
             assert (friendly_msg) in error.message
 
+    @freezegun.freeze_time("2011-12-31")
     @pytest.mark.parametrize("name, friendly_msg, config_error_response", CONFIG_ERRORS)
     def test_config_error_insights_account_info_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
@@ -476,6 +514,7 @@ class TestRealErrors:
             assert error.failure_type == FailureType.config_error
             assert friendly_msg in error.message
 
+    @freezegun.freeze_time("2011-12-31")
     @pytest.mark.parametrize("name, friendly_msg, config_error_response", [CONFIG_ERRORS[0]])
     def test_config_error_insights_during_actual_nodes_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
@@ -501,6 +540,7 @@ class TestRealErrors:
             assert error.failure_type == FailureType.config_error
             assert friendly_msg in error.message
 
+    @freezegun.freeze_time("2011-12-31")
     def test_retry_for_cannot_include_error(self, requests_mock):
         """Error raised randomly for insights stream. Oncall: https://github.com/airbytehq/oncall/issues/4868"""
 
@@ -590,6 +630,65 @@ class TestRealErrors:
             stream_state={},
         )
         assert list(record_gen) == [{"account_id": "unknown_account", "id": "act_unknown_account"}]
+
+
+class TestNoneApiErrorMessage:
+    """Regression tests for oncall/issues/11621: TypeError when api_error_message() returns None."""
+
+    @freezegun.freeze_time("2011-12-31")
+    def test_retry_logic_does_not_crash_when_api_error_message_is_none(self, some_config, requests_mock):
+        """A 400 response with no 'message' in the error body must not raise TypeError in should_retry_api_error."""
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["account_id", "account_currency"],
+            insights_lookback_window=28,
+        )
+        requests_mock.register_uri("GET", f"{act_url}", [ad_account_response])
+        response_no_message = {
+            "status_code": 400,
+            "json": {
+                "error": {
+                    "type": "OAuthException",
+                    "code": 100,
+                }
+            },
+        }
+        requests_mock.register_uri("GET", f"{act_url}insights", [response_no_message])
+
+        with pytest.raises(AirbyteTracedException):
+            slice_ = list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={}))[0]
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_, stream_state={}))
+
+    def test_retry_logic_does_not_crash_for_ad_creatives_when_api_error_message_is_none(self, some_config, requests_mock):
+        """Non-insights streams also go through the same retry path; verify no TypeError."""
+        requests_mock.reset_mock()
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdCreatives(api=api, account_ids=some_config["account_ids"])
+
+        requests_mock.register_uri("GET", f"{act_url}", [ad_account_response])
+        response_no_message = {
+            "status_code": 400,
+            "json": {
+                "error": {
+                    "type": "OAuthException",
+                    "code": 100,
+                }
+            },
+        }
+        requests_mock.register_uri("GET", f"{act_url}adcreatives", [response_no_message])
+
+        with pytest.raises(AirbyteTracedException):
+            list(
+                stream.read_records(
+                    sync_mode=SyncMode.full_refresh,
+                    stream_state={},
+                    stream_slice={"account_id": account_id},
+                )
+            )
 
 
 def test_traced_exception_with_api_error():

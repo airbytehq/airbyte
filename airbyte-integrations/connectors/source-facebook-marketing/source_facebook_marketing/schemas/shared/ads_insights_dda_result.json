@@ -1,0 +1,8 @@
+{
+  "description": "Schema for AdsInsightsDdaResult type fields used by DDA-related insights.",
+  "type": ["null", "array"],
+  "items": {
+    "type": "object",
+    "additionalProperties": true
+  }
+}

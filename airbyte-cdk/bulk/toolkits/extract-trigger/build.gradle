@@ -1,0 +1,14 @@
+dependencies {
+    // TODO: Currently prints warning:
+    //  The dependency resolution engine wasn't able to find a version of module org.jetbrains.kotlin:kotlin-stdlib
+    //  which satisfied all requirements because the graph wasn't stable enough. The highest version was selected in
+    //  order to stabilize selection. Features available in a stable graph like version alignment are not guaranteed
+    //  in this case.
+
+    // TODO: Currently transitive:
+    //  Airbyte Protocol v18.  Check other toolkits for same issue.
+    //  Jakarta
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract')
+    implementation project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-extract-jdbc')
+}
