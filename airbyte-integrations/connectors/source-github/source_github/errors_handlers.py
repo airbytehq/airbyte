@@ -22,7 +22,11 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
     401: ErrorResolution(
         response_action=ResponseAction.RETRY,
         failure_type=FailureType.config_error,
-        error_message="Conflict.",
+        error_message=(
+            "GitHub authentication failed (HTTP 401). "
+            "The configured Personal Access Token or OAuth credentials may be expired, revoked, "
+            "or missing required scopes. Please verify or renew your credentials."
+        ),
     ),
     403: ErrorResolution(
         response_action=ResponseAction.FAIL,
@@ -37,7 +41,10 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
     404: ErrorResolution(
         response_action=ResponseAction.RETRY,
         failure_type=FailureType.config_error,
-        error_message="Conflict.",
+        error_message=(
+            "GitHub resource not found (HTTP 404). "
+            "The repository or organization may not exist, may be private, or the token may lack access to it."
+        ),
     ),
     409: ErrorResolution(
         response_action=ResponseAction.RETRY,
