@@ -65,9 +65,16 @@ class SnowflakeBeanFactory {
     fun snowflakeS3Copy(
         columnManager: io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager,
         snowflakeConfiguration: SnowflakeConfiguration,
-    ): SnowflakeS3Copy = S3CopyConfiguration.fromEnvironment()?.let {
-        EnabledSnowflakeS3Copy(it, columnManager, snowflakeConfiguration)
-    } ?: DisabledSnowflakeS3Copy
+        specFactory: SnowflakeMigratingConfigurationSpecificationSupplier,
+    ): SnowflakeS3Copy {
+        val injectedSpecification = specFactory.get()
+        return S3CopyConfiguration.fromEnvironment(
+                injectedSpecification,
+                S3CopyConfiguration.previewEnvironment(System.getenv()),
+            )
+            ?.let { EnabledSnowflakeS3Copy(it, columnManager, snowflakeConfiguration) }
+            ?: DisabledSnowflakeS3Copy
+    }
 
     @Singleton
     fun tempTableNameGenerator(

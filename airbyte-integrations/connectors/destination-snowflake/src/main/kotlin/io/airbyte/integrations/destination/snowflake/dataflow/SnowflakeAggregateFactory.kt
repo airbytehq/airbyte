@@ -11,12 +11,12 @@ import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.copy.DisabledSnowflakeS3Copy
+import io.airbyte.integrations.destination.snowflake.copy.SnowflakeS3Copy
 import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
-import io.airbyte.integrations.destination.snowflake.copy.DisabledSnowflakeS3Copy
-import io.airbyte.integrations.destination.snowflake.copy.SnowflakeS3Copy
 import jakarta.inject.Singleton
 
 @Singleton

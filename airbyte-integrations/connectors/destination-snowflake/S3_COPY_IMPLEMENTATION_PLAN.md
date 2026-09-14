@@ -1,17 +1,19 @@
 # Snowflake CSV copies to Airbyte-owned S3
 
-Status: implementation in progress. The run layout below supersedes the original content-addressed schema location and generation directory described later in this plan.
+Status: Fusion preview implementation. The exact run layout and temporary routing contract below apply to this preview; broader rollout checks remain planned.
 
 The selected layout is:
 
 ```text
-fusion/workspaces/<workspace_uuid>/sources/<source_uuid>/connections/<connection_uuid>/streams/<escaped_original_stream_name>/runs/<run_uuid>/
+s3://airbyte-fusion-context-store/fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/connections/<connection_uuid>/destinations/<destination_uuid>/syncs/runs/<epoch_seconds>/<run_uuid>/streams/<escaped_original_stream_name>/
   schema.json
   generation-cutoff.json  # only when a cutoff is requested
   batches/<batch_uuid>.csv.gz
 ```
 
-`AIRBYTE_S3_COPY_WORKSPACE_ID` and `AIRBYTE_S3_COPY_CONNECTION_ID` are required UUIDs for enabled writes. `AIRBYTE_S3_COPY_PREFIX` defaults to `fusion`. Stream names preserve case and use percent-encoded UTF-8 path components. Setup writes the run's schema and any cutoff before ingestion; generation IDs remain in metadata rather than directory names. Schema IDs remain layout references in both schema JSON and batch metadata. Consumers resolve `schema.json` in the parent of the batch's `batches` directory.
+Preview writes force enabled `true`, bucket `airbyte-fusion-context-store`, region `us-west-2`, role `arn:aws:iam::506572016262:role/fusion-snowflake-sync-copy`, and prefix `fusion`. The five optional, TEMPORARY top-level advanced config fields are `organization_id`, `workspace_id`, `source_id`, `connection_id`, and `destination_id`. Each nullable string has UUID format: config overrides its matching `AIRBYTE_S3_COPY_<NAME>_ID` environment variable, then defaults to `00000000-0000-0000-0000-000000000000`. Supplied values must have the canonical UUID shape; uppercase is normalized, and blank or shortened UUIDs are rejected.
+
+`epoch_seconds` is captured once when the write service/run is created using `Instant.now().epochSecond`, alongside a new run UUID, and passed explicitly to the path helper. All streams and batches in that run reuse it. Stream names preserve original case and use percent-encoded UTF-8 path components. The helper returns the trailing slash; schema, cutoff, and batch suffixes are appended without another slash. Before uploading sidecars, setup validates every stream path against S3's 1024-byte key limit, including the longest `batches/<batch_uuid>.csv.gz` suffix. Setup writes the run's schema and any cutoff before ingestion; generation IDs remain in metadata rather than directory names. All five IDs, the run UUID, and epoch appear in both sidecars and batch metadata (`epoch_seconds` in JSON, `epoch-seconds` in S3 headers). Consumers resolve `schema.json` in the parent of the batch's `batches` directory.
 
 Repository baseline: `aa28ceeac4e`, reviewed September 9, 2026. Snowflake uses bulk CDK `core = "load"`, `load-csv`, and CDK version `1.0.25`; the checked-in load CDK has the same version.
 
@@ -27,7 +29,7 @@ This is an at-least-once archive of load inputs. Completed S3 objects can includ
 
 Make the following choices for v1:
 
-- Enable through internal destination environment variables, latched for the lifetime of the write process. Default off.
+- Force the temporary Fusion preview route in the write-only factory; latch the IDs, epoch, and run UUID for the process lifetime.
 - Copy the exact compressed file bytes, with no additional row serialization, recompression, or local spool file.
 - Gate existing batch completion on Snowflake and S3. Use the existing CDK checkpoint mechanism.
 - Store generation information on each data object and write separate JSON generation-cutoff events.
@@ -54,33 +56,22 @@ This is a shared checkpoint boundary, not an atomic transaction between Snowflak
 
 Also, [PipelineRunner](../../../airbyte-cdk/bulk/core/load/src/main/kotlin/io/airbyte/cdk/load/dataflow/pipeline/PipelineRunner.kt) flushes final states before stream teardown. A batch may load into a temporary Snowflake table that is merged or swapped later. The new guarantee concerns archived load inputs and existing checkpoint semantics; it does not add a guarantee about final table publication.
 
-## 3. Internal environment contract
+## 3. Temporary preview configuration contract
 
-Use a dedicated `S3CopyConfiguration`, separate from `SnowflakeConfiguration` and the connector specification. Read it through a Micronaut factory that checks the operation and enablement flag before binding or validating enabled-only fields. The factory must return a no-op implementation for non-write operations and disabled writes without initializing AWS clients or discovering credentials.
+`S3CopyConfiguration.fromEnvironment(spec, env)` is a pure parser, separate from Snowflake connection settings. It accepts a supplied environment map so tests can route to mocks. Without the preview overlay it defaults disabled and validates enabled-only fields only for enabled writes. The write-only `SnowflakeBeanFactory` obtains the parsed `injectedSpecification` from the migrating supplier and passes `previewEnvironment(System.getenv())`; only this factory applies the forced preview routing. `@Requires(property = Operation.PROPERTY, value = "write")` gates this before any AWS initialization for `spec` and `check`.
 
-Proposed variables:
+| Setting | Preview behavior |
+| --- | --- |
+| `AIRBYTE_S3_COPY_ENABLED` | Forced `true` by the preview factory. |
+| `AIRBYTE_S3_COPY_BUCKET` | Forced `airbyte-fusion-context-store`. |
+| `AIRBYTE_S3_COPY_REGION` | Forced `us-west-2`. |
+| `AIRBYTE_S3_COPY_ROLE_ARN` | Forced `arn:aws:iam::506572016262:role/fusion-snowflake-sync-copy`. |
+| `AIRBYTE_S3_COPY_PREFIX` | Forced `fusion`; the pure parser normalizes surrounding slashes and rejects an empty prefix. |
+| `organization_id`, `workspace_id`, `source_id`, `connection_id`, `destination_id` | Optional TEMPORARY nullable UUID strings in the top-level advanced group of both cloud and OSS specs. |
+| `AIRBYTE_S3_COPY_ORGANIZATION_ID`, `AIRBYTE_S3_COPY_WORKSPACE_ID`, `AIRBYTE_S3_COPY_SOURCE_ID`, `AIRBYTE_S3_COPY_CONNECTION_ID`, `AIRBYTE_S3_COPY_DESTINATION_ID` | Fallbacks for absent/null config fields, then zero UUID. |
+| `AIRBYTE_S3_COPY_EXTERNAL_ID` | Optional STS external ID, preserved by the preview overlay. |
 
-| Variable | Requirement | Meaning |
-| --- | --- | --- |
-| `AIRBYTE_S3_COPY_ENABLED` | Defaults to `false` | Accept explicit `true` or `false`; reject other values for `write`. |
-| `AIRBYTE_S3_COPY_ROLE_ARN` | Required when enabled | Target IAM role assumed by this connector for archive writes. |
-| `AIRBYTE_S3_COPY_BUCKET` | Required when enabled | Airbyte-owned bucket name. |
-| `AIRBYTE_S3_COPY_REGION` | Required when enabled | Bucket region; configure the S3 client and a regional STS endpoint explicitly. |
-| `AIRBYTE_S3_COPY_CONNECTION_ID` | Required when enabled | Stable Airbyte connection UUID, unchanged across attempts and syncs. |
-| `AIRBYTE_S3_COPY_PREFIX` | Defaults to `snowflake-copy/v1` | Deployment-controlled root prefix. Normalize surrounding slashes and reject an empty root. |
-| `AIRBYTE_S3_COPY_EXTERNAL_ID` | Optional | STS external ID, if required by the target role's trust policy. |
-
-The flag and role are sufficient to express opt-in and authorization intent, but they do not identify the bucket, region, or connection. Supply those additional routing values through environment variables as well. Keep them as deployment settings; they do not enter the user-facing connector spec. Existing job ID and attempt environment variables may be added to diagnostic metadata if available, but correctness must not depend on them.
-
-Rules:
-
-1. `spec` and `check` ignore this feature even if the flag is set. They must neither contact AWS nor fail because archive configuration is missing.
-2. A disabled write ignores enabled-only configuration, including malformed values. The existing write behavior remains available without any AWS setup.
-3. An enabled write validates the complete configuration before ingesting records. A missing role, invalid connection ID, credential failure, or denied upload fails the write. It never silently disables copying.
-4. Report archive failures as internal destination failures, identifying the failing operation. Do not describe an Airbyte-owned role or bucket error as invalid customer Snowflake credentials.
-5. Do not change the environment or feature decision during an active write. Platform retries of an opted-in sync must retain the same decision and routing.
-
-The platform work is a small but required companion: inject these values into the destination container, provide its bootstrap identity, and gate enablement on connector versions that implement the contract. An older image can ignore unknown environment variables, so setting the flag alone is not evidence that copying occurred.
+Malformed supplied IDs fail enabled writes before ingestion; a valid config value overrides even a malformed environment fallback. No AWS access keys or secret credentials are hardcoded or added to the specification. Existing ambient workload credentials bootstrap AssumeRole. Non-write commands require no archive AWS setup. The temporary fields and forced routing must be revisited before general rollout; the environment enable flag cannot disable this preview factory.
 
 ## 4. Credentials, dependencies, and resource ownership
 
@@ -115,13 +106,14 @@ Resource cleanup needs an explicit owner. The current [DestinationLifecycle](../
 Use original stream identity for archive routing. The buffer's execution table may be temporary and must not become the archive's stream identity.
 
 ```text
-<prefix>/connections/<connection_uuid>/streams/<stream_key>/
-  schemas/<schema_id>.json
-  generations/<generation_id>/runs/<run_uuid>/batches/<batch_uuid>.csv.gz
-  events/<run_uuid>/generation-cutoff.json
+s3://airbyte-fusion-context-store/fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/connections/<connection_uuid>/destinations/<destination_uuid>/syncs/runs/<epoch_seconds>/<run_uuid>/streams/<escaped_original_stream_name>/
+  schema.json
+  generation-cutoff.json
+  batches/<batch_uuid>.csv.gz
 ```
 
 - `stream_key`: SHA-256 of a canonical JSON object containing the unmapped namespace and name. Preserve the distinction between a null and empty namespace. Store the readable original and mapped identities in the schema/event JSON.
+- `epoch_seconds`: captured once at run creation, shared by all streams, sidecars, and batch headers.
 - `run_uuid`: generated once per connector write process. Catalog `syncId` is also recorded, but is not relied on for attempt uniqueness.
 - `batch_uuid`: generated once per closed CSV file, before beginning the upload. Reuse the same key and metadata for SDK retries of that upload.
 - `schema_id`: SHA-256 of the canonical descriptor body, excluding the ID itself. Preserve column-array order when canonicalizing.
@@ -137,7 +129,12 @@ Set the following user metadata on the upload request. Values are short ASCII st
 ```json
 {
   "format-version": "1",
-  "connection-id": "00000000-0000-0000-0000-000000000001",
+  "organization-id": "00000000-0000-0000-0000-000000000001",
+  "workspace-id": "00000000-0000-0000-0000-000000000002",
+  "source-id": "00000000-0000-0000-0000-000000000003",
+  "connection-id": "00000000-0000-0000-0000-000000000004",
+  "destination-id": "00000000-0000-0000-0000-000000000005",
+  "epoch-seconds": "1789400000",
   "stream-key": "<sha256>",
   "generation-id": "42",
   "sync-id": "12345",
@@ -154,10 +151,11 @@ S3 user metadata has a 2 KB limit and lowercase keys. Keep column lists, Unicode
 
 ### Schema descriptors
 
-Write descriptors as `application/json` before ingesting data. Their successful upload is a prerequisite for returning successfully from writer setup. Rewriting a content-addressed descriptor on a later run is acceptable because its bytes are identical; no `HEAD` request or read permission is necessary.
+Write descriptors as `application/json` before ingesting data. Their successful upload is a prerequisite for returning successfully from writer setup. Each stream has its own `schema.json` in each run; schema IDs still hash the descriptor body independently of run identity. No `HEAD` request or read permission is necessary.
 
 The descriptor contains:
 
+- All five routing UUIDs, run UUID, epoch seconds, generation and sync IDs, and the schema ID.
 - Contract version, connector name/version, and format identifier `snowflake-load-csv-gzip-v1`.
 - Original and mapped stream descriptors, and the logical final Snowflake database/schema/table. Exclude temporary table names from stable identity.
 - Mode: schema columns or legacy raw table.
@@ -178,7 +176,12 @@ For a supported stream with `minimumGenerationId > 0`, write one event per run b
   "format_version": 1,
   "event_type": "generation_cutoff_requested",
   "event_id": "<uuid>",
-  "connection_id": "00000000-0000-0000-0000-000000000001",
+  "organization_id": "00000000-0000-0000-0000-000000000001",
+  "workspace_id": "00000000-0000-0000-0000-000000000002",
+  "source_id": "00000000-0000-0000-0000-000000000003",
+  "connection_id": "00000000-0000-0000-0000-000000000004",
+  "destination_id": "00000000-0000-0000-0000-000000000005",
+  "epoch_seconds": 1789400000,
   "stream_key": "<sha256>",
   "stream": {"namespace": "public", "name": "orders"},
   "mapped_stream": {"namespace": "analytics", "name": "orders"},
@@ -304,7 +307,7 @@ Exercise an ordinary aggregate flush, the final partial aggregate at EOF, and mu
 - Force multipart with a lowered test threshold, inject a mid-transfer failure, and verify completion/abort behavior. Exercise a file above the single-request upload limit in a targeted SDK test or pre-rollout job.
 - Test real STS trust/external-ID failures, prefix denial, and a run spanning credential refresh. Use separate reader credentials in the test harness if it needs to inspect objects; do not widen the production writer role for test convenience.
 - Run STDIO and socket ingestion through the feature. Compare representative throughput, CPU, heap, retained temporary bytes, and checkpoint latency with copying disabled/enabled. Verify that buffers and upload slots stay bounded when S3 is throttled.
-- Re-run the existing Snowflake unit suite and relevant acceptance/spec checks. Expected cloud and OSS specs should be identical to their existing snapshots.
+- Re-run the existing Snowflake unit suite and relevant acceptance/spec checks. Cloud and OSS spec snapshots include the five optional temporary UUID fields; central tests should compare them with the actual generated specification.
 
 Implementation validation commands, from the repository root:
 
@@ -319,7 +322,7 @@ The second command requires configured service test resources; the repository's 
 
 ### Change 1: internal configuration and AWS uploader
 
-Add the gated configuration/factory, minimal AWS dependencies in [build.gradle.kts](build.gradle.kts), resource ownership, and file uploader. Add deterministic uploader/configuration tests. Use dedicated internal Micronaut properties or [application-connector.yml](src/main/resources/application-connector.yml) bindings without eagerly validating disabled settings. Keep the feature default off.
+Add the gated configuration/factory, minimal AWS dependencies in [build.gradle.kts](build.gradle.kts), resource ownership, and file uploader. Add deterministic uploader/configuration tests. Use dedicated internal Micronaut properties or [application-connector.yml](src/main/resources/application-connector.yml) bindings without eagerly validating disabled settings. Keep preview routing isolated to the write factory; retain the pure parser for mock routing.
 
 Deliverable: an independently testable service that uploads an existing file under the assumed role and returns only on terminal success, with bounded resource use.
 
@@ -337,11 +340,11 @@ Deliverable: the stated data/checkpoint contract is enforced on both regular and
 
 ### Change 4: deployment and pilot
 
-Provision the Airbyte-owned bucket, scoped role/trust, encryption, and incomplete-upload lifecycle. Wire environment injection with connector-version gating and stable opt-in across attempts. Verify bootstrap identity in each worker environment intended for the pilot. Select the first opted-in connections internally; retain the flag as the rollout control.
+Provision the Airbyte-owned bucket, scoped role/trust, encryption, and incomplete-upload lifecycle. Wire environment injection with connector-version gating and stable opt-in across attempts. Verify bootstrap identity in each worker environment intended for the pilot. The preview forces enablement; restore an explicit rollout control before general availability.
 
 Log one startup event identifying copy enablement and the archive contract version. Add counters for files/bytes/records successfully copied, failures by operation, retries, and metadata events; add timers for copy duration, waiting for a copy slot, and extra flush wait after Snowflake succeeds. Use existing connector metrics/logging facilities. Keep connection/run/batch identifiers in structured diagnostic logs instead of high-cardinality metric labels. Do not log payloads, credential material, or full configuration.
 
-Run failure injection before expanding enablement. A slow or unavailable S3 service should visibly delay/fail opted-in writes. Disabling the flag applies to future attempts/syncs and creates a deliberate archive coverage gap; it must not become an automatic response to an upload failure. No rollback deletes archive data.
+Run failure injection before expanding enablement. A slow or unavailable S3 service should visibly delay/fail opted-in writes. The preview overlay overrides the enable flag, so disabling requires a code/deployment change; do not automatically disable after an upload failure. No rollback deletes archive data.
 
 ## 10. Acceptance criteria and remaining deployment inputs
 
@@ -352,7 +355,7 @@ The implementation is complete when:
 - Descriptors and requested generation cutoffs are durable before relevant state can be emitted, including streams with no rows.
 - Failures propagate, retries remain at least once, and completed S3 data survives failed attempts and refreshes.
 - Long-running writes refresh credentials; cancellation and timeouts do not delete files still in use or leak unbounded transfers.
-- Disabled writes and non-write commands require no AWS setup and preserve the public specification.
+- The pure parser supports disabled writes without AWS setup. Non-write commands do not initialize archive AWS clients; the public specification exposes only the five optional temporary routing fields.
 - Real-service tests establish role access, multipart behavior, and acceptable resource use before rollout.
 
-The remaining inputs are deployment values, not connector design blockers: bucket/region/prefix, the connection-ID injection source, target role and optional external ID, and the bootstrap identity available to the destination workload. Confirm those before the first enabled deployment. No format conversion, Iceberg dependency, or generic CDK implementation is needed to deliver this contract.
+The preview bucket, region, prefix, and role are fixed above. The coordinator reported provisioning the private AES256 bucket, one-day incomplete-upload lifecycle, prefix-scoped role policy, and successful real AssumeRole/Put verification. Central build, generated-spec validation, and runtime tests remain coordinator-owned. Platform ID injection and worker bootstrap identity remain rollout concerns. No format conversion, Iceberg dependency, or generic CDK implementation is needed to deliver this contract.
