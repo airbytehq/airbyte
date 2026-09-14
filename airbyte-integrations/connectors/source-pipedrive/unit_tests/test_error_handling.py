@@ -124,9 +124,13 @@ def test_429_is_rate_limited_and_retried_after_ratelimit_reset() -> None:
 def test_429_exhausting_retries_fails_as_rate_limited() -> None:
     with HttpMocker() as http_mocker:
         deals = deals_request()
+        # A 429 without `x-ratelimit-remaining` tells the API budget that zero calls are left and fills its
+        # moving-window bucket; with `time.sleep` patched out the budget then gives up before the eleventh
+        # request on fast machines. Reporting spare burst calls keeps the test on the retry path it targets:
+        # the daily token budget is exhausted while the 2-second window still has room.
         http_mocker.get(
             deals,
-            pipedrive_error(429, "request over limit", headers={"x-ratelimit-reset": "2"}),
+            pipedrive_error(429, "request over limit", headers={"x-ratelimit-reset": "2", "x-ratelimit-remaining": "19"}),
         )
 
         output = read_stream("deals", expecting_exception=True)

@@ -170,6 +170,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 3.0.1 | 2026-09-14 | [85919](https://github.com/airbytehq/airbyte/pull/85919) | Test-only release: cover the streams the sandbox cannot populate with mock-server tests and make the 429 retry test deterministic |
 | 3.0.0 | 2026-09-14 | [85812](https://github.com/airbytehq/airbyte/pull/85812) | Read `deals`, `persons`, `organizations`, `activities`, `products`, `pipelines`, `stages` and `deal_products` from Pipedrive API v2, add the `deals_archived` stream, read `notes`, `files`, `filters`, `users` and `leads` from their list endpoints instead of Recents, add primary keys to twelve streams, type the date fields and expose deleted deals |
 | 2.6.0 | 2026-09-10 | [85775](https://github.com/airbytehq/airbyte/pull/85775) | Add the `call_logs`, `lead_sources`, `legacy_teams`, `projects`, `tasks`, `deal_installments`, `deal_flow` and `permission_set_assignments` streams |
 | 2.5.0 | 2026-09-10 | [85772](https://github.com/airbytehq/airbyte/pull/85772) | Throttle requests to Pipedrive's burst limit with one shared API budget and add the `num_workers` option for parallel streams |
