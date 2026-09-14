@@ -37,6 +37,7 @@ class GoogleSheets:
         """
         try:
             stream = self.open_worksheet(stream_name)
+            stream.resize(rows=2, cols=stream.cols)
             stream.clear()
         except WorksheetNotFound:
             self.spreadsheet.add_worksheet(stream_name)
