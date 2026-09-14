@@ -92,5 +92,5 @@ data:
       type: api_deprecations
     - title: OpenAPI specification
       url: https://developers.pipedrive.com/docs/api/v1/openapi.yaml
-      type: spec_repository
+      type: openapi_spec
 metadataSpecVersion: "1.0"
