@@ -218,6 +218,36 @@ class TestSearchAnalyticsSiteReportBySiteStream(TestCase):
         assert all(e.trace.error.failure_type == FailureType.config_error for e in aggregation_type_errors)
 
     @HttpMocker()
+    def test_unrelated_400_is_not_config_error(self, http_mocker: HttpMocker) -> None:
+        """Test that an unrelated 400 error is not classified as a config error.
+
+        The FAIL filter is scoped to Google's "is not a valid aggregation type"
+        message, so a generic 400 falls back to the CDK default: system_error
+        without the aggregationType remediation message.
+        """
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        def bad_request_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            """Return a generic 400 error unrelated to aggregationType."""
+            context.status_code = 400
+            return json.dumps({"error": {"code": 400, "message": "Invalid request"}})
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=bad_request_callback,
+        )
+
+        output = self._read_stream(config)
+
+        assert output.errors
+        assert not any("Invalid aggregationType" in (e.trace.error.message or "") for e in output.errors)
+        non_summary_errors = [e for e in output.errors if "did not sync successfully" not in (e.trace.error.message or "")]
+        assert non_summary_errors
+        assert all(e.trace.error.failure_type == FailureType.system_error for e in non_summary_errors)
+
+    @HttpMocker()
     def test_incremental_sync_first_sync_no_state(self, http_mocker: HttpMocker) -> None:
         """Test incremental sync with no prior state (first sync).
 
