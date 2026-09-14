@@ -57,6 +57,10 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
     def reduce_request_record_limit(details):
         _, exc, _ = sys.exc_info()
+        # Only attempt limit reduction for FacebookRequestError, not for
+        # network-level exceptions like ConnectionError which lack http_status().
+        if not isinstance(exc, FacebookRequestError):
+            return
         # the list of error patterns to track,
         # in order to reduce the request page size and retry
         error_patterns = [
