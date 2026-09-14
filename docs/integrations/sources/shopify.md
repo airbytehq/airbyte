@@ -163,6 +163,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Transactions](https://shopify.dev/api/admin-rest/latest/resources/transaction#top) — Uses the BULK API by default. Enabling **Add `user_id` to Transactions** switches this stream to the REST API, which returns the `user_id` field but syncs more slowly.
 
 ### Entity-Relationship Diagram (ERD)
+
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ## Capturing deleted records
@@ -202,7 +203,9 @@ Most stores don't need to change these settings. Adjust them if BULK jobs time o
 | **Lookback Window (in Days)** | 0 | Rewinds the saved cursor by this many days on each incremental sync so the connector re-fetches recent records. Accepts 0 to 30. Use a small value of 1 to 3 days if a sync misses records because updates occur while it runs. It has no effect on Collects or Balance Transactions, which sync by record ID. |
 
 ## Marketing Attribution data
+
 Data related to [marketing attribution](https://www.shopify.com/au/blog/marketing-attribution) can be found across a few different streams. Sync these streams to understand marketing performance:
+
 - `Customer Journey Summary` (firstVisit.source, firstVisit.sourcetype)
 - `Orders` (referring_site, source_name)
 - `Abandoned Checkouts` (referring_site, source_name)
@@ -295,6 +298,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 ### Troubleshooting
 
+- If a sync fails with "Shopify access token is invalid or has expired." or "Failed to access the Shopify store with provided API token", Shopify rejected the connector's credentials. For **API Password** authentication, the custom app's Admin API access token was revoked or regenerated (for example, the app was uninstalled or reinstalled). Open the custom app's **API credentials** in Shopify, copy the current **Admin API access token**, and paste it into the **API Password** field of your source. For **OAuth2.0** authentication, re-authenticate the source. The connector reports this as a configuration error, so rerunning the sync without updating the credentials fails the same way.
 - If you encounter access errors while using **OAuth2.0** authentication, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the client's store first. Once the access is granted, you should be able to proceed with **OAuth2.0** authentication.
 - If you receive a "The BULK job couldn't be created at this time, since another job is running." error, please [check your operation's progress](https://shopify.dev/docs/api/usage/bulk-operations/queries#check-an-operations-progress) with the `Shopify GraphQL BULK` api.
 - If you receive a "checkpoint collision is detected" error for a stream, see [BULK job checkpoint collisions](#bulk-job-checkpoint-collisions) above to tell a self-clearing failure from a blocked stream.
