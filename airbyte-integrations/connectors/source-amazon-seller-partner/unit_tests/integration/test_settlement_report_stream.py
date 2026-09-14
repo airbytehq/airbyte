@@ -14,10 +14,12 @@ import gzip
 from http import HTTPStatus
 
 import freezegun
+import pendulum
 import pytest
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import MARKETPLACE_ID, NOW, ConfigBuilder
 from .request_builder import RequestBuilder
@@ -63,16 +65,43 @@ def _report(report_id: str, processing_status: str, report_document_id: str | No
     return report
 
 
-def _list_reports_request() -> HttpRequest:
+def _list_reports_request(created_since: pendulum.DateTime = _START_DATE) -> HttpRequest:
     return (
         RequestBuilder.get_reports_endpoint()
         .with_query_params(
             {
                 "reportTypes": _STREAM_NAME,
                 "pageSize": "100",
-                "createdSince": _START_DATE.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "createdSince": created_since.strftime("%Y-%m-%dT%H:%M:%SZ"),
                 "createdUntil": _END_DATE.strftime("%Y-%m-%dT%H:%M:%SZ"),
             }
+        )
+        .build()
+    )
+
+
+def _state_with_listing_checkpoint(checkpoint: pendulum.DateTime) -> list:
+    """State as persisted by the stream, with the report-listing helper's cursor set to `checkpoint`."""
+    cursor = checkpoint.strftime("%Y-%m-%dT%H:%M:%SZ")
+    return (
+        StateBuilder()
+        .with_stream_state(
+            _STREAM_NAME,
+            {
+                "use_global_cursor": False,
+                "states": [],
+                "state": {"dataEndTime": cursor},
+                "lookback_window": 0,
+                "parent_state": {
+                    "flat_file_settlement_v2_document_helper": {
+                        "use_global_cursor": False,
+                        "states": [],
+                        "state": {"dataEndTime": cursor},
+                        "lookback_window": 0,
+                        "parent_state": {"flat_file_settlement_v2_helper": {"dataEndTime": cursor}},
+                    }
+                },
+            },
         )
         .build()
     )
@@ -171,6 +200,37 @@ def test_given_document_lookup_forbidden_once_when_read_then_retried_and_records
     assert len(output.errors) == 0
     assert len(output.records) == _RECORDS_PER_DOCUMENT
     http_mocker.assert_number_of_calls(document_request, 2)
+
+
+@freezegun.freeze_time(NOW.isoformat())
+@HttpMocker()
+def test_given_state_and_lookback_window_when_read_then_reports_listed_from_before_checkpoint(http_mocker: HttpMocker) -> None:
+    """
+    A report that was still IN_PROGRESS at the previous checkpoint has no document yet; the configured lookback window
+    re-lists reports created shortly before the checkpoint so it is downloaded once DONE.
+    """
+    checkpoint = NOW.subtract(days=10)
+    lookback_hours = 6
+
+    http_mocker.clear_all_matchers()
+    mock_auth(http_mocker)
+    http_mocker.get(
+        _list_reports_request(created_since=checkpoint.subtract(hours=lookback_hours)),
+        _list_reports_response([_report(_DONE_REPORT_ID, "DONE", _DONE_REPORT_DOCUMENT_ID)]),
+    )
+    document_request, download_request = _mock_document_chain(http_mocker, _DONE_REPORT_DOCUMENT_ID, _DONE_DOWNLOAD_URL)
+
+    output = read_output(
+        config_builder=_config().with_report_stream_lookback_window_in_hours(lookback_hours),
+        stream_name=_STREAM_NAME,
+        sync_mode=SyncMode.incremental,
+        state=_state_with_listing_checkpoint(checkpoint),
+    )
+
+    assert len(output.errors) == 0
+    assert len(output.records) == _RECORDS_PER_DOCUMENT
+    http_mocker.assert_number_of_calls(document_request, 1)
+    http_mocker.assert_number_of_calls(download_request, 1)
 
 
 @freezegun.freeze_time(NOW.isoformat())
