@@ -23,10 +23,7 @@
         "airbyte_secret": true
       }
     },
-    "required": [
-      "project_id",
-      "credentials_json"
-    ]
+    "required": ["project_id", "credentials_json"]
   },
   "supportsNormalization": false,
   "supportsDBT": false,

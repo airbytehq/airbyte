@@ -3,6 +3,7 @@ package io.airbyte.integrations.source.bigqueryv2
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.DataField
@@ -45,7 +46,9 @@ import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.WhereNode
 import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.micronaut.context.annotation.Primary
+import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
 
@@ -60,8 +63,14 @@ import java.time.OffsetDateTime
  */
 @Singleton
 @Primary
-class BigQuerySourceOperations :
-    JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator, JdbcAirbyteStreamFactory {
+class BigQuerySourceOperations
+@Inject
+constructor(
+    private val tableTypes: BigQueryTableTypes,
+) : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator, JdbcAirbyteStreamFactory {
+
+    /** For tests: every stream is assumed to be a table. */
+    constructor() : this(BigQueryTableTypes())
 
     override val globalCursor: MetaField? = null
 
@@ -114,8 +123,14 @@ class BigQuerySourceOperations :
             is From -> "FROM ${tableReference(name, namespace)}"
             is FromSample -> {
                 // TABLESAMPLE SYSTEM is a BigQuery block-level sample; the percentage is a literal.
+                // It is rejected on views, materialized views and external tables, which are
+                // sampled with a plain LIMIT instead.
+                val streamID =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withName(name).withNamespace(namespace)
+                    )
                 val sample: String =
-                    if (sampleRateInv == 1L) ""
+                    if (sampleRateInv == 1L || !tableTypes.supportsTableSample(streamID)) ""
                     else " TABLESAMPLE SYSTEM (${sampleRatePercentage.toPlainString()} PERCENT)"
                 val inner: String =
                     listOf(

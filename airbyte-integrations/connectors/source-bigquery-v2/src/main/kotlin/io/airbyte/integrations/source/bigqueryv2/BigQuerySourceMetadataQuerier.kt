@@ -49,6 +49,8 @@ class BigQuerySourceMetadataQuerier(
      * concurrently, since DISCOVER calls [fields] for each of them in turn. CHECK only needs one.
      */
     private val prefetchNamespaces: Boolean = true,
+    /** Receives the type (table, view, ...) of every fetched table, for the query generator. */
+    private val tableTypes: BigQueryTableTypes = BigQueryTableTypes(),
 ) : MetadataQuerier {
 
     private val executorDelegate: Lazy<ExecutorService> = lazy {
@@ -141,7 +143,9 @@ class BigQuerySourceMetadataQuerier(
     internal fun fetchTable(streamID: StreamIdentifier): Table? {
         val tableId = TableId.of(config.projectId, streamID.namespace, streamID.name)
         log.info { "Fetching metadata of table $tableId." }
-        return bigquery.getTable(tableId)
+        val table: Table? = bigquery.getTable(tableId)
+        tableTypes.register(streamID, table?.getDefinition<TableDefinition>()?.type)
+        return table
     }
 
     /** BigQuery implementation of [MetadataQuerier.Factory]. */
@@ -154,6 +158,7 @@ class BigQuerySourceMetadataQuerier(
         val selectQueryGenerator: SelectQueryGenerator,
         val fieldTypeMapper: JdbcMetadataQuerier.FieldTypeMapper,
         val checkQueries: JdbcCheckQueries,
+        val tableTypes: BigQueryTableTypes,
         @Value("\${${Operation.PROPERTY}:discover}") private val operation: String = "discover",
     ) : MetadataQuerier.Factory<BigQuerySourceConfiguration> {
         /**
@@ -174,6 +179,7 @@ class BigQuerySourceMetadataQuerier(
                 BigQueryClientFactory.create(config),
                 config,
                 prefetchNamespaces = operation != CHECK_OPERATION,
+                tableTypes = tableTypes,
             )
         }
     }

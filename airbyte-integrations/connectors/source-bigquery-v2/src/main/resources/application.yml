@@ -44,8 +44,20 @@ airbyte:
               to use project my-project.
             error: config
           - pattern: "(?i).*Not found: (Dataset|Table|Project).*"
+            # Captured from the real service on 2026-09-14 (check with an unknown dataset_id).
             input-example: >-
               com.google.cloud.bigquery.BigQueryException: Not found: Dataset my-project:missing_dataset
+            error: config
+          - pattern: "(?i).*Project .* is not found.*"
+            # Captured from the real service on 2026-09-14 (check with an unknown project_id).
+            input-example: >-
+              com.google.cloud.bigquery.BigQueryException: Project my-project is not found. Make sure it references
+              valid GCP project that hasn't been deleted.; Project id: my-project
+            error: config
+          - pattern: "(?i).*No valid credentials provided.*"
+            # The JDBC driver's message when the private key cannot be parsed (captured 2026-09-14).
+            input-example: >-
+              com.google.cloud.bigquery.exception.BigQueryJdbcRuntimeException: No valid credentials provided.
             error: config
           - pattern: "(?i).*invalid_grant.*"
             input-example: >-

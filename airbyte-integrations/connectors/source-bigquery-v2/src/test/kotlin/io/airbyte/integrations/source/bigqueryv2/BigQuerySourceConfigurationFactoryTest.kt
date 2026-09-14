@@ -3,6 +3,8 @@ package io.airbyte.integrations.source.bigqueryv2
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.util.Jsons
+import java.security.KeyPairGenerator
+import java.util.Base64
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -45,7 +47,11 @@ class BigQuerySourceConfigurationFactoryTest {
             String.format(config.jdbcUrlFmt, config.realHost, config.realPort),
         )
         Assertions.assertEquals(
-            mapOf("ProjectId" to "my-project", "OAuthPvtKey" to SERVICE_ACCOUNT_KEY),
+            mapOf(
+                "ProjectId" to "my-project",
+                "OAuthServiceAcctEmail" to "airbyte@my-project.iam.gserviceaccount.com",
+                "OAuthPvtKey" to PRIVATE_KEY_PEM,
+            ),
             config.jdbcProperties,
         )
         Assertions.assertEquals("www.googleapis.com", config.realHost)
@@ -72,7 +78,7 @@ class BigQuerySourceConfigurationFactoryTest {
     fun testCredentialsAreNotInToStringNorInTheJdbcUrl() {
         val config: BigQuerySourceConfiguration = make(configJson())
         Assertions.assertFalse(config.toString().contains("PRIVATE KEY"), config.toString())
-        Assertions.assertFalse(config.toString().contains("OAuthPvtKey=" + SERVICE_ACCOUNT_KEY))
+        Assertions.assertFalse(config.toString().contains(PRIVATE_KEY_PEM), config.toString())
         Assertions.assertFalse(config.jdbcUrlFmt.contains("PRIVATE KEY"))
     }
 
@@ -147,6 +153,23 @@ class BigQuerySourceConfigurationFactoryTest {
     }
 
     @Test
+    fun testPrivateKeyMustBeParseable() {
+        val badKey: String =
+            SERVICE_ACCOUNT_KEY.replace(
+                Jsons.writeValueAsString(PRIVATE_KEY_PEM),
+                "\"-----BEGIN PRIVATE KEY-----\\nMIIB\\n-----END PRIVATE KEY-----\\n\"",
+            )
+        val e =
+            Assertions.assertThrows(ConfigErrorException::class.java) {
+                make(configJson(credentialsJson = badKey))
+            }
+        Assertions.assertTrue(
+            e.message!!.startsWith("'credentials_json' has an invalid 'private_key'"),
+            e.message,
+        )
+    }
+
+    @Test
     fun testMakeLetsConfigErrorsThrough() {
         val e =
             Assertions.assertThrows(ConfigErrorException::class.java) {
@@ -175,17 +198,29 @@ class BigQuerySourceConfigurationFactoryTest {
     }
 
     companion object {
+        /** A throwaway RSA key generated for this test run, PEM-encoded like a real key file. */
+        val PRIVATE_KEY_PEM: String =
+            KeyPairGenerator.getInstance("RSA")
+                .apply { initialize(1024) }
+                .generateKeyPair()
+                .private
+                .encoded
+                .let { der: ByteArray ->
+                    "-----BEGIN PRIVATE KEY-----\n" +
+                        Base64.getMimeEncoder(64, "\n".toByteArray()).encodeToString(der) +
+                        "\n-----END PRIVATE KEY-----\n"
+                }
+
         val SERVICE_ACCOUNT_KEY: String =
-            """
-{
-  "type": "service_account",
-  "project_id": "my-project",
-  "private_key_id": "abc",
-  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIB\n-----END PRIVATE KEY-----\n",
-  "client_email": "airbyte@my-project.iam.gserviceaccount.com",
-  "client_id": "123",
-  "token_uri": "https://oauth2.googleapis.com/token"
-}
-""".trim()
+            Jsons.writeValueAsString(
+                Jsons.objectNode()
+                    .put("type", "service_account")
+                    .put("project_id", "my-project")
+                    .put("private_key_id", "abc")
+                    .put("private_key", PRIVATE_KEY_PEM)
+                    .put("client_email", "airbyte@my-project.iam.gserviceaccount.com")
+                    .put("client_id", "123")
+                    .put("token_uri", "https://oauth2.googleapis.com/token")
+            )
     }
 }

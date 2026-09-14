@@ -31,7 +31,8 @@ private val log = KotlinLogging.logger {}
  * Emulator deviations from BigQuery worth knowing when reading the fixtures:
  * - `tableConstraints` passed to `tables.insert` are echoed back by `tables.get`, but a DDL
  * `PRIMARY KEY ... NOT ENFORCED` clause is dropped;
- * - `NOT NULL` columns of DDL-created tables come back as `NULLABLE` (`tables.insert` keeps `REQUIRED`);
+ * - `NOT NULL` columns of DDL-created tables come back as `NULLABLE` (`tables.insert` keeps
+ * `REQUIRED`);
  * - `INFORMATION_SCHEMA` only has `SCHEMATA`, `TABLES`, `TABLE_OPTIONS` and `COLUMNS`;
  * - a `FLOAT64` nested in an `ARRAY<STRUCT<...>>` cannot be inserted into (type mismatch FLOAT vs
  * DOUBLE).
@@ -97,9 +98,9 @@ object BigQueryEmulatorTestFixture {
 
     /**
      * Seeds the datasets used by the check and discover tests: every BigQuery type, nested
-     * `STRUCT`/`ARRAY` columns, a table with a `PRIMARY KEY`, a view, a table without rows, a
-     * second dataset and a dataset without tables. The default `--project` dataset of the container
-     * image (if any) is left alone.
+     * `STRUCT`/`ARRAY` columns, a table with a `PRIMARY KEY` and three rows (for the incremental
+     * read tests), a view, a table without rows, a second dataset and a dataset without tables. The
+     * default `--project` dataset of the container image (if any) is left alone.
      */
     fun seed(bigquery: BigQuery) {
         log.info { "Seeding the BigQuery emulator." }
@@ -186,6 +187,16 @@ INSERT INTO `$DATASET`.`all_types` VALUES (
                         .build()
                 )
                 .build()
+        )
+        bigquery.query(
+            QueryJobConfiguration.of(
+                """
+INSERT INTO `$DATASET`.`with_pk` VALUES
+  (1, 1, TIMESTAMP '2024-01-01 00:00:00'),
+  (1, 2, TIMESTAMP '2024-01-02 00:00:00'),
+  (2, 1, TIMESTAMP '2024-01-03 00:00:00')
+"""
+            )
         )
         bigquery.create(
             TableInfo.of(

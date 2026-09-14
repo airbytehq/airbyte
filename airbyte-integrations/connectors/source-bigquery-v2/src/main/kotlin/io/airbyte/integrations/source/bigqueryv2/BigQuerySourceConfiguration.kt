@@ -17,7 +17,10 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.security.KeyFactory
+import java.security.spec.PKCS8EncodedKeySpec
 import java.time.Duration
+import java.util.Base64
 
 private val log = KotlinLogging.logger {}
 
@@ -117,9 +120,8 @@ constructor(
                 ?: throw ConfigErrorException("Missing required 'credentials_json' property.")
         val datasetId: String? = pojo.datasetId?.trim()?.takeIf { it.isNotEmpty() }
         val emulatorHost: String? = BigQueryEmulator.hostOrNull()
-        if (emulatorHost == null) {
-            validateServiceAccountKey(credentialsJson)
-        }
+        val serviceAccountKey: ServiceAccountKey? =
+            if (emulatorHost == null) parseServiceAccountKey(credentialsJson) else null
 
         val maxConcurrency: Int =
             when (DataChannelMedium.valueOf(dataChannelMedium)) {
@@ -132,12 +134,16 @@ constructor(
         val jdbcProperties: MutableMap<String, String> = mutableMapOf("ProjectId" to projectId)
         val jdbcUrlFmt: String
         val realHost: String
-        if (emulatorHost == null) {
-            // OAuthType 0: service account; OAuthPvtKey accepts the raw JSON key contents.
+        if (serviceAccountKey != null) {
+            // OAuthType 0: service account. The driver only reads a key *file* (OAuthPvtKeyPath)
+            // or the PEM private key together with the service account email; the key JSON
+            // passed inline as OAuthPvtKey is rejected with "No valid credentials provided."
+            // (verified against driver 1.4.0).
             jdbcUrlFmt =
                 "jdbc:bigquery://${BigQuerySourceConfiguration.BIGQUERY_API_URL};" +
                     "ProjectId=$projectId;OAuthType=0"
-            jdbcProperties["OAuthPvtKey"] = credentialsJson
+            jdbcProperties[JDBC_SERVICE_ACCOUNT_EMAIL] = serviceAccountKey.clientEmail
+            jdbcProperties[JDBC_PRIVATE_KEY] = serviceAccountKey.privateKey
             realHost = BigQuerySourceConfiguration.BIGQUERY_API_HOST
         } else {
             // OAuthType 2: pre-generated token; the emulator does not authenticate requests.
@@ -159,11 +165,18 @@ constructor(
         )
     }
 
+    /** The parts of a service account key that the JDBC driver needs. */
+    data class ServiceAccountKey(val clientEmail: String, val privateKey: String)
+
     companion object {
         const val SERVICE_ACCOUNT_TYPE = "service_account"
+        /** JDBC property holding the service account email (`client_email`). */
+        const val JDBC_SERVICE_ACCOUNT_EMAIL = "OAuthServiceAcctEmail"
+        /** JDBC property holding the PEM-encoded PKCS#8 private key (`private_key`). */
+        const val JDBC_PRIVATE_KEY = "OAuthPvtKey"
 
         /** Fails fast, with a precise message, on credentials the driver could not use. */
-        fun validateServiceAccountKey(credentialsJson: String) {
+        fun parseServiceAccountKey(credentialsJson: String): ServiceAccountKey {
             val node: JsonNode =
                 try {
                     Jsons.readTree(credentialsJson)
@@ -182,12 +195,37 @@ constructor(
                     "'credentials_json' must be a service account key (\"type\": \"$SERVICE_ACCOUNT_TYPE\"), got \"type\": ${type?.let { "\"$it\"" } ?: "null"}.",
                 )
             }
-            for (required in listOf("client_email", "private_key")) {
-                if (node.get(required)?.asText().isNullOrBlank()) {
-                    throw ConfigErrorException(
-                        "'credentials_json' is missing the '$required' property of a service account key.",
+            fun required(property: String): String =
+                node.get(property)?.asText()?.takeIf { it.isNotBlank() }
+                    ?: throw ConfigErrorException(
+                        "'credentials_json' is missing the '$property' property of a service account key.",
                     )
-                }
+            val privateKey: String = required("private_key")
+            validatePrivateKey(privateKey)
+            return ServiceAccountKey(
+                clientEmail = required("client_email"),
+                privateKey = privateKey
+            )
+        }
+
+        /**
+         * The JDBC driver reports any unusable key as "No valid credentials provided."; parsing the
+         * PEM-encoded PKCS#8 key here gives the user a precise message instead.
+         */
+        fun validatePrivateKey(privateKeyPem: String) {
+            val base64: String =
+                privateKeyPem
+                    .replace("-----BEGIN PRIVATE KEY-----", "")
+                    .replace("-----END PRIVATE KEY-----", "")
+                    .filterNot { it.isWhitespace() }
+            try {
+                val der: ByteArray = Base64.getDecoder().decode(base64)
+                KeyFactory.getInstance("RSA").generatePrivate(PKCS8EncodedKeySpec(der))
+            } catch (e: Exception) {
+                throw ConfigErrorException(
+                    "'credentials_json' has an invalid 'private_key': expected a PEM-encoded PKCS#8 RSA private key (${e.message}).",
+                    e,
+                )
             }
         }
     }

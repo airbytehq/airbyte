@@ -134,10 +134,7 @@
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": false,
       "default_cursor_field": [],
       "source_defined_primary_key": [],
@@ -180,10 +177,7 @@
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": false,
       "default_cursor_field": [],
       "source_defined_primary_key": [],
@@ -203,10 +197,7 @@
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": false,
       "default_cursor_field": [],
       "source_defined_primary_key": [],
@@ -233,20 +224,10 @@
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": false,
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "order_id"
-        ],
-        [
-          "line"
-        ]
-      ],
+      "source_defined_primary_key": [["order_id"], ["line"]],
       "namespace": "airbyte_test",
       "is_resumable": true
     },
@@ -286,10 +267,7 @@
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": false,
       "default_cursor_field": [],
       "source_defined_primary_key": [],

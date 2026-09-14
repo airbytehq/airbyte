@@ -7,7 +7,9 @@
 `google-cloud-bigquery` 2.67.0 client built from the same credentials. The legacy connector is the
 parity oracle for `spec`, `check` and `discover`; saved configurations must keep working unchanged.
 
-Only Stages 1 (`spec` + `check`) and 2 (`discover`) are implemented. `read` is not.
+Stages 1 (`spec` + `check`), 2 (`discover`), 3 (first `read`, stream statuses) and 4 (`read`:
+full refresh, cursor-based incremental with resume, legacy state translation) are implemented.
+Stage 5 (validation at scale) is not.
 
 ## Build and test
 
@@ -18,11 +20,11 @@ export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home 
 ./gradlew :airbyte-integrations:connectors:source-bigquery-v2:assemble    # builds airbyte/source-bigquery-v2:dev
 ```
 
-The tests never reach Google: `BigQuerySourceCheckTest` and `BigQuerySourceDiscoverTest` start
-`ghcr.io/goccy/bigquery-emulator:0.8.1` once through Testcontainers (`BigQueryEmulatorTestFixture`,
-`org.testcontainers:gcloud:1.21.4` `BigQueryEmulatorContainer`) and seed it with the native client;
-`BigQuerySourceSpecTest`, `BigQuerySourceConfigurationFactoryTest`, `BigQueryFieldTypesTest` and
-`BigQuerySelectQueryGeneratorTest` are plain unit tests.
+The tests never reach Google: `BigQuerySourceCheckTest`, `BigQuerySourceDiscoverTest` and
+`BigQuerySourceReadTest` start `ghcr.io/goccy/bigquery-emulator:0.8.1` once through Testcontainers
+(`BigQueryEmulatorTestFixture`, `org.testcontainers:gcloud:1.21.4` `BigQueryEmulatorContainer`) and
+seed it with the native client; `BigQuerySourceSpecTest`, `BigQuerySourceConfigurationFactoryTest`,
+`BigQueryFieldTypesTest` and `BigQuerySelectQueryGeneratorTest` are plain unit tests.
 
 There is no `spotlessApply` task for connectors. Format with the ktfmt version CI uses:
 
@@ -51,11 +53,14 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-bigquery-v2:dev discover
 }
 ```
 
-The key must be a service account key (`"type": "service_account"` with `client_email` and
-`private_key`); anything else fails fast in `BigQuerySourceConfigurationFactory` with a precise
-`ConfigErrorException`. The JDBC URL is
-`jdbc:bigquery://https://www.googleapis.com/bigquery/v2:443;ProjectId=<project>;OAuthType=0` and the
-key travels as the `OAuthPvtKey` JDBC property (the CDK logs the URL, never the properties).
+The key must be a service account key (`"type": "service_account"` with `client_email` and a
+PEM-encoded PKCS#8 `private_key`); anything else fails fast in `BigQuerySourceConfigurationFactory`
+with a precise `ConfigErrorException`. The JDBC URL is
+`jdbc:bigquery://https://www.googleapis.com/bigquery/v2:443;ProjectId=<project>;OAuthType=0` and
+the credentials travel as the JDBC properties `OAuthServiceAcctEmail` (= `client_email`) and
+`OAuthPvtKey` (= the PEM `private_key`), which is what Google's driver expects for `OAuthType=0`
+(besides `OAuthPvtKeyPath`, a key *file*); passing the whole key JSON inline is rejected with
+"No valid credentials provided." The CDK logs the URL, never the properties.
 
 ## The BigQuery emulator
 
@@ -147,17 +152,41 @@ connections and needs a breaking-change evaluation before release):
   `SELECT 1 FROM UNNEST([1]) WHERE FALSE` over JDBC, so a dataset without tables fails with
   "Discovered zero tables." where legacy succeeded (legacy behaviour inferred from its code, not run).
 
-Still to be checked against a real BigQuery project (no credentials yet; the legacy image has no
-emulator setting, so nothing above has been diffed image-to-image):
+Checked against the `dataline-integration-testing` project on 2026-09-14 with the service account
+key of the legacy connector's integration tests (the skill's `parity/run-checks.sh`,
+`run-discover.sh`, `run-read.sh`, `diff-catalogs.py` and `diff-records.py`; both images were run with
+the same configs, and `read` with configured catalogs derived from each image's own `discover`):
 
-- `discover` on the same project with `airbyte/source-bigquery:0.4.5` and the `dev` image, diffed
-  with the skill's `parity/diff-catalogs.py` (which labels the deliberate differences above).
-- Primary keys declared by DDL (`PRIMARY KEY (...) NOT ENFORCED`) reaching `tableConstraints`.
-- The messages of real authentication and permission failures, and the
-  `airbyte.connector.exception-classifiers` rules in `application.yml` that classify them (the
-  `input-example`s were written from documentation, not captured).
-- `REQUIRED` modes, `numRows`, `INFORMATION_SCHEMA` and the Google JDBC driver's `getColumns`
-  output against the real service.
+- `check`: both images succeed with and without `dataset_id`. Failure messages differ in wording
+  only: unknown dataset -> `Not found: Dataset <project>:<dataset>` in both (legacy appends
+  ` was not found in location US`); unknown project -> v2 `Project <id> is not found. Make sure it
+  references valid GCP project that hasn't been deleted.`, legacy `ProjectId must be non-empty`;
+  broken private key -> v2 `'credentials_json' has an invalid 'private_key'...` (validated in the
+  config factory because the driver only says `No valid credentials provided.`), legacy `Unexpected
+  exception reading PKCS#8 data`; `authorized_user` JSON -> v2 factory message, legacy `'type' value
+  'authorized_user' not recognized`. All are classified `config_error`.
+- `discover`: a 50-table dataset written by destination-bigquery differs only by the deliberate
+  type upgrades listed above (382 typed `TIMESTAMP`/`DATE` columns, 217 typed `JSON` columns);
+  two small tables differ only by `is_resumable: false` and `source_defined_cursor: false`, which
+  the legacy connector did not emit at all.
+- `read`: same records (`INT64`, `NUMERIC`, `FLOAT64`, `BOOL`, `STRING`, `TIMESTAMP`, `JSON`) for
+  `id_and_name` (3 rows), a `NUMERIC`-keyed datatype table (5 rows) and two destination-written
+  tables (4 and 11 rows). Differences are the deliberate ones: `TIMESTAMP` keeps microseconds
+  (`2025-09-09T12:17:43.462000Z`, legacy `2025-09-09T12:17:43Z`) and `JSON` columns are emitted as
+  JSON rather than as a string. The state after an incremental read is
+  `{"primary_key":{},"cursors":{"id":3}}` (legacy `{"stream_name":...,"cursor_field":["id"],
+  "cursor":"3","cursor_record_count":1}`); resuming v2 from the **legacy** state file emits no
+  records, as the legacy connector would (`WHERE id > 3`).
+- **Known gap**: the Bulk CDK drops every column whose name starts with `_ab_` at READ time
+  (`MetaField.isMetaFieldID`, meant for the CDC meta fields), so `test_parquet`'s
+  `_ab_source_file_url` and `_ab_source_file_last_modified` are advertised by `discover` but
+  missing from v2 records while legacy emitted them. Tables written by Airbyte destinations
+  commonly have such columns; this needs a CDK change (skip only the connector's own meta fields).
+
+Not yet exercised against the real service (needs a seeded dataset; creating one with the shared
+key is pending approval): `DATE`, `DATETIME`, `TIME`, `BYTES`, `GEOGRAPHY`, `INTERVAL`, `RANGE`,
+`STRUCT`/`ARRAY` values, temporal cursors, `TABLESAMPLE` on views/external tables, primary keys
+declared by DDL, and the driver's `getColumns` output. All of these pass on the emulator.
 
 ## Stage status and next steps
 
@@ -165,27 +194,31 @@ emulator setting, so nothing above has been diffed image-to-image):
 |---|---|
 | 1. `spec` + `check` | Done: `BigQuerySourceConfigurationSpecification`, `BigQuerySourceConfiguration(Factory)`, `BigQueryClientFactory`, check queries and exception classifiers in `application.yml`; tests `BigQuerySourceSpecTest`, `BigQuerySourceConfigurationFactoryTest`, `BigQuerySourceCheckTest` |
 | 2. `discover` | Done: `BigQuerySourceMetadataQuerier` (native client, prefetch per dataset, `check` fetches one table), `BigQueryFieldTypes` (+ `BigQueryStructFieldType`/`BigQueryArrayFieldType`), `BigQuerySourceOperations.create()` renders nested schemas; snapshots `expected-catalog-single-dataset.json`, `expected-catalog-all-datasets.json` |
-| 3. first `read` (stream statuses) | To do |
-| 4. `read` | To do |
+| 3. first `read` (stream statuses) | Done: `read` boots on the toolkit's `JdbcConcurrentPartitionsCreatorFactory`/`DefaultJdbcSharedState`; `BigQuerySourceReadTest` checks `STARTED`/`COMPLETE` for populated, empty and view streams and `STARTED`/`INCOMPLETE` + config error for a missing one |
+| 4. `read` | Done: full refresh, cursor incremental with checkpoint and resume, legacy state translation; verified against the real service for scalar types |
+| 5. validation at scale | To do |
 
-Stage 3: with `extract-jdbc` the `PartitionsCreatorFactory`, `JdbcPartitionsCreator` and
-`JdbcPartitionReader` are provided; the connector must supply a `JdbcPartitionFactory` bean with its
-partition and stream-state classes (start from the toolkit's `DefaultJdbcPartition*`), so that
-`read` boots, runs one partition per stream and emits `STARTED`/`COMPLETE`. The
-`MetaFieldDecorator` no-op already exists (`BigQuerySourceOperations.decorateRecordData`).
-Gate: an in-process `read` against the emulator (populated table, `no_rows`, a missing table) and
-`docker run ... read` with the same configured catalog.
+How `read` is put together:
 
-Stage 4: `BigQuerySourceOperations` already renders GoogleSQL for the CDK query AST (backtick
-quoting, `dataset.table` relative to the connection project, literal `LIMIT`, `TABLESAMPLE SYSTEM
-(<pct> PERCENT)` inside a subquery, `?` bindings, `SELECT MAX(cursor)`), unit-tested in
-`BigQuerySelectQueryGeneratorTest` but never executed. Open questions, all to be verified against
-the driver: `STRUCT`/`ARRAY` values arriving as `java.sql.Struct`/`java.sql.Array` and their
-conversion in `BigQueryJsonValueGetter` (struct attributes are currently keyed by position, not
-field name); `TIMESTAMP` through `getObject(idx, OffsetDateTime::class.java)`
-(`OffsetDateTimeFieldType`); `DATETIME`/`TIME`/`DATE` accessors; `NUMERIC`/`BIGNUMERIC` precision;
-whether `TABLESAMPLE` is legal on views; driver knobs `EnableHighThroughputAPI` (Storage Read API,
-off by default), `MaximumBytesBilled`, `JobCreationMode`; cursor-based incremental with the same
-state shape the legacy connector persisted (capture it from the legacy image first); record parity
-with legacy `BigQuerySourceOperations.rowToJson` (`DATE`/`DATETIME`/`TIMESTAMP` rendered as ISO-8601,
-`BYTES` base64, nested records by index).
+- Partitions, readers, sampling, checkpointing and the emitted state shape are the `extract-jdbc`
+  defaults (`DefaultJdbcPartition*`, `DefaultJdbcStreamStateValue`: `{"primary_key": {...},
+  "cursors": {...}}`). `application.yml` selects `mode: concurrent` with sampling; on STDIO
+  `maxConcurrency` is 1, so tables below the target partition size are read by a single
+  non-resumable `SELECT`, i.e. one BigQuery job per table plus up to three small sampling jobs.
+- `BigQueryJdbcPartitionFactory` (`@Primary`) wraps `DefaultJdbcPartitionFactory` and only steps
+  in when the stream's state is in the legacy `source-bigquery` shape
+  (`BigQueryLegacyStreamState`): the legacy cursor string is converted to the cursor column's
+  typed JSON value (numbers, ISO-8601 temporals, base64 bytes) and the stream resumes with
+  `WHERE cursor > <legacy cursor>`; a legacy state whose `cursor_field` does not match the
+  configured cursor, or that cannot be interpreted, resets the stream.
+- `BigQueryTableTypes` remembers the `TableDefinition.Type` of every table fetched by the
+  metadata querier; `BigQuerySourceOperations` only emits `TABLESAMPLE SYSTEM` for tables and
+  snapshots and samples views, materialized views and external tables with a plain `LIMIT`.
+- `STRUCT`/`ARRAY` values arrive from the driver as `java.sql.Struct`/`java.sql.Array`;
+  `BigQueryNestedValueGetter`/`BigQueryValues` convert them to JSON using the nested schema
+  (struct attributes keyed by field name, nested temporals rendered with the CDK codecs, `JSON`
+  strings parsed).
+
+Next: Stage 5 (terabyte-scale table, memory, checkpoint cadence, kill-and-resume, bytes billed vs
+legacy), the real-service checks listed above once a dataset can be seeded, a CDK fix or workaround
+for `_ab_*` columns, the docs page, and a breaking-change evaluation of the deliberate deviations.

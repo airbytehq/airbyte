@@ -5,10 +5,16 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.cloud.bigquery.Field
+import com.google.cloud.bigquery.FieldValue
+import com.google.cloud.bigquery.FieldValueList
 import com.google.cloud.bigquery.StandardSQLTypeName
 import io.airbyte.cdk.data.ArrayAirbyteSchemaType
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
+import io.airbyte.cdk.data.LocalDateCodec
+import io.airbyte.cdk.data.LocalDateTimeCodec
+import io.airbyte.cdk.data.LocalTimeCodec
+import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
@@ -26,9 +32,20 @@ import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.util.Jsons
+import java.math.BigDecimal
+import java.nio.ByteBuffer
 import java.sql.Array
 import java.sql.ResultSet
 import java.sql.Struct
+import java.sql.Time
+import java.sql.Timestamp
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 
 /**
  * Maps BigQuery column types to [FieldType]s.
@@ -119,11 +136,17 @@ data object JsonNodeEncoder : JsonEncoder<JsonNode> {
 
 /**
  * A BigQuery `STRUCT` (`RECORD`) column. [fields] is null when the nested schema is unknown (type
- * derived from JDBC metadata rather than from the table schema).
+ * derived from JDBC metadata rather than from the table schema); nested values are then keyed by
+ * position.
  */
 data class BigQueryStructFieldType(
     val fields: List<EmittedField>?,
-) : JdbcFieldType<JsonNode>(LeafAirbyteSchemaType.JSONB, BigQueryJsonValueGetter, JsonNodeEncoder) {
+) :
+    JdbcFieldType<JsonNode>(
+        LeafAirbyteSchemaType.JSONB,
+        BigQueryNestedValueGetter(fields = fields, elementType = null),
+        JsonNodeEncoder,
+    ) {
 
     fun jsonSchema(): ObjectNode {
         val schema: ObjectNode = Jsons.objectNode().put("type", "object")
@@ -144,7 +167,7 @@ data class BigQueryArrayFieldType(
 ) :
     JdbcFieldType<JsonNode>(
         ArrayAirbyteSchemaType(elementType.airbyteSchemaType),
-        BigQueryJsonValueGetter,
+        BigQueryNestedValueGetter(fields = null, elementType = elementType),
         JsonNodeEncoder,
     ) {
 
@@ -155,55 +178,146 @@ data class BigQueryArrayFieldType(
 }
 
 /**
- * Reads a `STRUCT` or `ARRAY` column value from the JDBC driver as JSON. The driver returns
- * `java.sql.Struct` and `java.sql.Array` instances whose elements are Java values, nested structs
- * or arrays; scalars are converted with Jackson. Record-level conversion is exercised in the READ
- * stage.
+ * Reads a `STRUCT` or `ARRAY` column value from the JDBC driver as JSON, using the nested schema (
+ * [fields] of a struct, [elementType] of an array) to name struct attributes and to render nested
+ * scalars the way their own [FieldType] would.
  */
-data object BigQueryJsonValueGetter : JdbcGetter<JsonNode> {
+data class BigQueryNestedValueGetter(
+    val fields: List<EmittedField>?,
+    val elementType: FieldType?,
+) : JdbcGetter<JsonNode> {
     override fun get(rs: ResultSet, colIdx: Int): JsonNode? {
         val value: Any = rs.getObject(colIdx) ?: return null
-        return toJson(value)
+        if (rs.wasNull()) return null
+        return BigQueryValues.toJson(value, fields, elementType)
     }
+}
 
-    fun toJson(value: Any?): JsonNode =
-        when (value) {
+/**
+ * Converts the Java objects returned by the JDBC driver for BigQuery values into JSON. Scalars are
+ * rendered like the corresponding [FieldType] would render them at the top level (temporal types
+ * with the CDK codecs, `BYTES` as base64, `JSON` as parsed JSON); `java.sql.Struct` attributes,
+ * `java.sql.Array` elements, maps, lists and the native client's `FieldValue`s are converted
+ * recursively.
+ */
+object BigQueryValues {
+
+    /** [type] is the BigQuery [FieldType] of the value when known. */
+    fun toJson(value: Any?, type: FieldType?): JsonNode =
+        when (type) {
+            is BigQueryStructFieldType -> toJson(value, type.fields, null)
+            is BigQueryArrayFieldType -> toJson(value, null, type.elementType)
+            else -> toJson(value, null, null, type)
+        }
+
+    /**
+     * [fields] names the attributes of a struct value, [elementType] types the elements of an array
+     * value; [scalarType] types a scalar value.
+     */
+    fun toJson(
+        value: Any?,
+        fields: List<EmittedField>?,
+        elementType: FieldType?,
+        scalarType: FieldType? = null,
+    ): JsonNode {
+        return when (value) {
             null -> Jsons.nullNode()
             is JsonNode -> value
-            is Struct -> {
-                val node: ObjectNode = Jsons.objectNode()
-                val attributes: kotlin.Array<Any?> = value.attributes
-                for ((i, attribute) in attributes.withIndex()) {
-                    node.set<JsonNode>(i.toString(), toJson(attribute))
-                }
-                node
-            }
-            is Array -> {
-                val node: ArrayNode = Jsons.arrayNode()
-                val elements: kotlin.Array<*> = value.array as kotlin.Array<*>
-                for (element in elements) {
-                    node.add(toJson(element))
-                }
-                node
+            is Struct -> structToJson(value.attributes.asList(), fields)
+            is Array -> arrayToJson((value.array as kotlin.Array<*>).asList(), elementType)
+            is FieldValue -> fieldValueToJson(value, fields, elementType, scalarType)
+            is FieldValueList -> {
+                // The driver's own list type: a struct when the schema says so, else an array.
+                if (fields != null || elementType == null) structToJson(value, fields)
+                else arrayToJson(value, elementType)
             }
             is Map<*, *> -> {
                 val node: ObjectNode = Jsons.objectNode()
+                val byName: Map<String, FieldType> =
+                    fields?.associate { it.id to it.type } ?: emptyMap()
                 for ((k, v) in value) {
-                    node.set<JsonNode>(k.toString(), toJson(v))
+                    node.set<JsonNode>(k.toString(), toJson(v, byName[k.toString()]))
                 }
                 node
             }
-            is Iterable<*> -> {
-                val node: ArrayNode = Jsons.arrayNode()
-                for (element in value) {
-                    node.add(toJson(element))
-                }
-                node
-            }
+            is Iterable<*> -> arrayToJson(value.toList(), elementType)
+            is kotlin.Array<*> -> arrayToJson(value.asList(), elementType)
+            is String -> stringToJson(value, fields, elementType, scalarType)
             is ByteArray -> Jsons.binaryNode(value)
+            is ByteBuffer ->
+                Jsons.binaryNode(value.array().copyOfRange(value.position(), value.limit()))
+            is OffsetDateTime -> OffsetDateTimeCodec.encode(value)
+            is ZonedDateTime -> OffsetDateTimeCodec.encode(value.toOffsetDateTime())
+            is Instant -> OffsetDateTimeCodec.encode(value.atOffset(ZoneOffset.UTC))
+            is LocalDateTime -> LocalDateTimeCodec.encode(value)
+            is LocalDate -> LocalDateCodec.encode(value)
+            is LocalTime -> LocalTimeCodec.encode(value)
+            is Timestamp ->
+                if (scalarType?.airbyteSchemaType == LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE)
+                    OffsetDateTimeCodec.encode(value.toInstant().atOffset(ZoneOffset.UTC))
+                else LocalDateTimeCodec.encode(value.toLocalDateTime())
+            is java.sql.Date -> LocalDateCodec.encode(value.toLocalDate())
+            is Time -> LocalTimeCodec.encode(value.toLocalTime())
+            is BigDecimal -> Jsons.numberNode(value)
             is Number,
-            is Boolean,
-            is String -> Jsons.valueToTree(value)
+            is Boolean -> Jsons.valueToTree(value)
             else -> Jsons.textNode(value.toString())
         }
+    }
+
+    private fun structToJson(attributes: List<Any?>, fields: List<EmittedField>?): JsonNode {
+        val node: ObjectNode = Jsons.objectNode()
+        for ((i, attribute) in attributes.withIndex()) {
+            val field: EmittedField? = fields?.getOrNull(i)
+            node.set<JsonNode>(field?.id ?: i.toString(), toJson(attribute, field?.type))
+        }
+        return node
+    }
+
+    private fun arrayToJson(elements: List<Any?>, elementType: FieldType?): JsonNode {
+        val node: ArrayNode = Jsons.arrayNode()
+        for (element in elements) {
+            node.add(toJson(element, elementType))
+        }
+        return node
+    }
+
+    private fun fieldValueToJson(
+        value: FieldValue,
+        fields: List<EmittedField>?,
+        elementType: FieldType?,
+        scalarType: FieldType?,
+    ): JsonNode =
+        when {
+            value.isNull -> Jsons.nullNode()
+            value.attribute == FieldValue.Attribute.RECORD ->
+                structToJson(value.recordValue, fields)
+            value.attribute == FieldValue.Attribute.REPEATED ->
+                arrayToJson(value.repeatedValue, elementType)
+            else -> toJson(value.value, fields, elementType, scalarType)
+        }
+
+    /**
+     * A string standing for a nested value: JSON text for `STRUCT`/`ARRAY`/`JSON` values, otherwise
+     * a scalar in its BigQuery text form.
+     */
+    private fun stringToJson(
+        value: String,
+        fields: List<EmittedField>?,
+        elementType: FieldType?,
+        scalarType: FieldType?,
+    ): JsonNode {
+        if (fields != null || elementType != null || scalarType is JsonStringFieldType) {
+            val parsed: JsonNode? =
+                try {
+                    Jsons.readTree(value)
+                } catch (_: Exception) {
+                    null
+                }
+            if (parsed != null && (parsed.isContainerNode || scalarType is JsonStringFieldType)) {
+                return toJson(parsed, fields, elementType, scalarType)
+            }
+        }
+        return Jsons.textNode(value)
+    }
 }
