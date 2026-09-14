@@ -65,6 +65,10 @@ For existing **Airbyte Cloud** customers, if you are currently using the **API P
 
 Authentication to the Shopify API requires a [custom application](https://help.shopify.com/en/manual/apps/app-types/custom-apps). Follow these instructions to create a custom app and find your Admin API Access Token.
 
+:::note
+The steps below describe custom apps created in the Shopify admin, which Shopify now calls [legacy custom apps](https://help.shopify.com/en/manual/apps/managing-apps#manage-legacy-custom-apps). Custom apps created after January 1, 2026 are created in the [Dev Dashboard](https://shopify.dev/docs/apps/build/dev-dashboard/create-apps-using-dev-dashboard) instead, and Shopify's documented way to authenticate them is the [client credentials grant](https://shopify.dev/docs/apps/build/dev-dashboard/get-api-access-tokens), which issues access tokens that expire after 24 hours. A token like that works in the **API Password** field for one day and then fails with "Shopify access token is invalid or has expired." If you already have a legacy custom app, keep using its Admin API access token. Otherwise, use **OAuth2.0** authentication where available.
+:::
+
 1. Log in to your Shopify account.
 2. In the dashboard, navigate to **Settings** > **App and sales channels** > **Develop apps** > **Create an app**.
 3. Select a name for your new app.
@@ -298,7 +302,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 ### Troubleshooting
 
-- If a sync fails with "Shopify access token is invalid or has expired." or "Failed to access the Shopify store with provided API token", Shopify rejected the connector's credentials. For **API Password** authentication, the custom app's Admin API access token was revoked or regenerated (for example, the app was uninstalled or reinstalled). Open the custom app's **API credentials** in Shopify, copy the current **Admin API access token**, and paste it into the **API Password** field of your source. For **OAuth2.0** authentication, re-authenticate the source. The connector reports this as a configuration error, so rerunning the sync without updating the credentials fails the same way.
+- If a sync fails with "Shopify access token is invalid or has expired." or "Failed to access the Shopify store with provided API token", Shopify rejected the connector's credentials. For **API Password** authentication, either the token came from a Dev Dashboard app and expired after 24 hours (see the note under [Create a custom app](#create-a-custom-app)), or the legacy custom app's Admin API access token was revoked or regenerated, for example because the app was uninstalled. Open the legacy custom app's **API credentials** in Shopify, copy the current **Admin API access token**, and paste it into the **API Password** field of your source. For **OAuth2.0** authentication, re-authenticate the source. The connector reports this as a configuration error, so rerunning the sync without updating the credentials fails the same way.
 - If you encounter access errors while using **OAuth2.0** authentication, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the client's store first. Once the access is granted, you should be able to proceed with **OAuth2.0** authentication.
 - If you receive a "The BULK job couldn't be created at this time, since another job is running." error, please [check your operation's progress](https://shopify.dev/docs/api/usage/bulk-operations/queries#check-an-operations-progress) with the `Shopify GraphQL BULK` api.
 - If you receive a "checkpoint collision is detected" error for a stream, see [BULK job checkpoint collisions](#bulk-job-checkpoint-collisions) above to tell a self-clearing failure from a blocked stream.
