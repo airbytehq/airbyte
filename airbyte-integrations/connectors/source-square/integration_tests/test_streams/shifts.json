@@ -12,6 +12,17 @@
             "location_id": {
               "type": ["null", "string"]
             },
+            "declared_cash_tip_money": {
+              "type": ["null", "object"],
+              "properties": {
+                "amount": {
+                  "type": ["null", "integer"]
+                },
+                "currency": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
             "timezone": {
               "type": ["null", "string"]
             },
@@ -37,6 +48,12 @@
                       "type": ["null", "string"]
                     }
                   }
+                },
+                "job_id": {
+                  "type": ["null", "string"]
+                },
+                "tip_eligible": {
+                  "type": ["null", "boolean"]
                 }
               }
             },
