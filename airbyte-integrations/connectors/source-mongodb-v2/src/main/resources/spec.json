@@ -133,6 +133,14 @@
                 "type": "boolean",
                 "always_show": true,
                 "order": 7
+              },
+              "tls": {
+                "title": "TLS Enabled",
+                "description": "Enable TLS/SSL for the connection. Required when connecting to Amazon DocumentDB. The connector image includes the AWS RDS CA bundle, so no additional certificate configuration is needed.",
+                "default": false,
+                "type": "boolean",
+                "always_show": true,
+                "order": 8
               }
             }
           }

@@ -35,8 +35,10 @@ public class MongoConnectionUtils {
         .driverName(DRIVER_NAME)
         .build();
 
+    final boolean tlsEnabled = config.isTlsEnabled();
     final MongoClientSettings.Builder mongoClientSettingsBuilder = MongoClientSettings.builder()
         .applyConnectionString(mongoConnectionString)
+        .applyToSslSettings(builder -> builder.enabled(tlsEnabled))
         .readPreference(ReadPreference.secondaryPreferred());
 
     if (config.hasAuthCredentials()) {
