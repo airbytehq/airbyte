@@ -21,6 +21,10 @@ Airbyte Cloud is updated continuously. You always have the latest features and f
 
   To adjust your plan, open Airbyte Cloud and click **Organization settings** > **Plans**. See [Manage billing and credits](/platform/cloud/managing-airbyte-cloud/manage-credits) for more help.
 
+Platform
+
+- If SCIM provisioning is enabled for your organization, the notice on a workspace's Members page now explains what to do instead of adding members directly: assign permissions to a user group under Organization settings > User Groups, and manage that group's membership in your identity provider. Previously, the notice only said your identity provider controls membership, without pointing you to user groups.
+
 ## September 10, 2026
 
 Platform
