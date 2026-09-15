@@ -58,6 +58,12 @@ data:
     - language:java
   connectorTestSuitesOptions:
     - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SNOWFLAKE_KEY_PAIR__CREDS
+          fileName: config_key_pair.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
     - title: Snowflake documentation
       url: https://docs.snowflake.com/
