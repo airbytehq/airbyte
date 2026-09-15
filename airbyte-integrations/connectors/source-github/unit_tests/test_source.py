@@ -300,9 +300,9 @@ def test_streams_page_size(rate_limit_mock_response, requests_mock):
                 "access_token": "test_token",
                 "repository": "airbyte/test",
             },
-            38,
+            18,
         ),
-        ({"access_token": "test_token", "repository": "airbyte/test"}, 38),
+        ({"access_token": "test_token", "repository": "airbyte/test"}, 18),
     ),
 )
 def test_streams_config_start_date(config, expected, rate_limit_mock_response, requests_mock):
@@ -421,9 +421,11 @@ def test_read_routes_manifest_streams_to_concurrent_and_python_streams_to_synchr
 
 
 def test_read_with_empty_manifest_skips_concurrent_read(rate_limit_mock_response, requests_mock):
+    """A catalog holding only Python streams must not start the concurrent source. `issues` moved
+    to the manifest in Step 6, so this uses `pull_request_stats`, which stays Python until Step 9."""
     requests_mock.get("https://api.github.com/repos/airbyte/test", json={"full_name": "airbyte/test"})
     source = SourceGithub(config=_CONFIG)
-    catalog = CatalogBuilder().with_stream(name="teams", sync_mode=SyncMode.full_refresh).build()
+    catalog = CatalogBuilder().with_stream(name="pull_request_stats", sync_mode=SyncMode.full_refresh).build()
 
     with (
         patch.object(ConcurrentSource, "read", return_value=iter([])) as concurrent_read,
@@ -434,4 +436,4 @@ def test_read_with_empty_manifest_skips_concurrent_read(rate_limit_mock_response
     concurrent_read.assert_not_called()
     synchronous_read.assert_called_once()
     synchronous_catalog = synchronous_read.call_args.args[3]
-    assert [s.stream.name for s in synchronous_catalog.streams] == ["teams"]
+    assert [s.stream.name for s in synchronous_catalog.streams] == ["pull_request_stats"]

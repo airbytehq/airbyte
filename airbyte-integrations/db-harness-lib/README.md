@@ -42,6 +42,34 @@ reviewers a tag they can re-run against. Build locally with the connector's
 `./gradlew :airbyte-integrations:connectors:<connector>:dockerBuildx` only for
 code that is not on a pushed PR branch.
 
+## CDC config templates need an incremental catalog
+
+When no `--catalog` is given, `run.sh` derives the read catalog from
+`discover` with `--sync-mode` defaulting to `full_refresh` and no
+cursor. Under a CDC config template that catalog configures zero CDC
+streams: the connector still runs its global CDC feed and emits a
+cold-start state, but the read never exercises CDC and the second
+round may reject its own state with a misleading error (for
+`source-mssql`, `Incumbent CDC state is invalid ... Saved offset no
+longer present`). In comparison mode this fails identically on
+control and target, so it looks like a pre-existing connector bug.
+
+Whenever the config uses `replication_method.method == "CDC"`, pass
+either an explicit `--catalog=PATH` (the CDC skills ship one, e.g.
+`fixtures/catalogs/users-cdc.json`) or derive an incremental one:
+
+```bash
+--sync-mode=incremental --cursor-field=CURSOR --streams=TABLE1,TABLE2
+```
+
+The cursor field is the stream's source-defined CDC cursor
+(`_ab_cdc_cursor` for the bulk-CDK sources). `--streams` matters
+because `discover` can surface engine bookkeeping tables that have no
+CDC capture (SQL Server's `dbo.systranschemas`); see the engine skill
+for its specifics. `run.sh` refuses to run `read` when a CDC config
+would get a full-refresh derived catalog and exits 2 with the flags
+to pass.
+
 ## Minimal engine shim example
 
 A connector-specific skill can keep its engine scripts and fixtures while
