@@ -10,10 +10,11 @@
 # Docker assigned to the backend container at runtime.
 #
 # Env:
-#   BACKEND_NAME            container name
+#   BACKEND_MODE            local (default) or remote
+#   BACKEND_NAME            container name (local mode)
 set -euo pipefail
 
-BACKEND_NAME="${BACKEND_NAME:?engine shim must export BACKEND_NAME}"
+BACKEND_MODE="${BACKEND_MODE:-local}"
 CONFIG_HOST_JQ="${CONFIG_HOST_JQ:-.host = \$h}"
 
 if [[ $# -lt 2 ]]; then
@@ -27,6 +28,14 @@ if [[ ! -f "$TEMPLATE" ]]; then
   exit 2
 fi
 
+mkdir -p "$(dirname "$OUTPUT")"
+if [[ "$BACKEND_MODE" == remote ]]; then
+  jq . "$TEMPLATE" > "$OUTPUT"
+  echo "[render-config] $TEMPLATE → $OUTPUT (remote backend, no host substitution)" >&2
+  exit 0
+fi
+
+BACKEND_NAME="${BACKEND_NAME:?engine shim must export BACKEND_NAME}"
 BACKEND_IP=$(docker inspect "$BACKEND_NAME" \
   --format '{{.NetworkSettings.Networks.bridge.IPAddress}}')
 if [[ -z "$BACKEND_IP" ]]; then
@@ -35,6 +44,5 @@ if [[ -z "$BACKEND_IP" ]]; then
   exit 1
 fi
 
-mkdir -p "$(dirname "$OUTPUT")"
 jq --arg h "$BACKEND_IP" "$CONFIG_HOST_JQ" "$TEMPLATE" > "$OUTPUT"
 echo "[render-config] $TEMPLATE → $OUTPUT (host=$BACKEND_IP)" >&2
