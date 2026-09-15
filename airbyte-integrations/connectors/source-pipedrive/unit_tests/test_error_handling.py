@@ -12,7 +12,17 @@ single missing or inaccessible parent instead of failing the whole sync.
 import logging
 
 import pytest
-from _helpers import CONFIG, collection, deals_request, get_source, pipedrive_error, read_stream, request
+from _helpers import (
+    CONFIG,
+    collection,
+    deals_archived_request,
+    deals_request,
+    empty_v2_page,
+    get_source,
+    pipedrive_error,
+    read_stream,
+    request,
+)
 
 from airbyte_cdk.models import FailureType, Status
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
@@ -46,7 +56,7 @@ def test_401_fails_as_config_error_with_pipedrive_error_text() -> None:
 def test_check_with_invalid_token_returns_401_config_message() -> None:
     with HttpMocker() as http_mocker:
         # The check stream is `currencies` (#85764); `deals` is kept for manifests that still check on it.
-        http_mocker.get(request("v1/currencies"), pipedrive_error(401, "unauthorized access"))
+        http_mocker.get(request("v1/currencies", {"limit": "50"}), pipedrive_error(401, "unauthorized access"))
         http_mocker.get(deals_request(), pipedrive_error(401, "unauthorized access"))
 
         status = get_source().check(logging.getLogger("airbyte"), CONFIG)
@@ -114,9 +124,13 @@ def test_429_is_rate_limited_and_retried_after_ratelimit_reset() -> None:
 def test_429_exhausting_retries_fails_as_rate_limited() -> None:
     with HttpMocker() as http_mocker:
         deals = deals_request()
+        # A 429 without `x-ratelimit-remaining` tells the API budget that zero calls are left and fills its
+        # moving-window bucket; with `time.sleep` patched out the budget then gives up before the eleventh
+        # request on fast machines. Reporting spare burst calls keeps the test on the retry path it targets:
+        # the daily token budget is exhausted while the 2-second window still has room.
         http_mocker.get(
             deals,
-            pipedrive_error(429, "request over limit", headers={"x-ratelimit-reset": "2"}),
+            pipedrive_error(429, "request over limit", headers={"x-ratelimit-reset": "2", "x-ratelimit-remaining": "19"}),
         )
 
         output = read_stream("deals", expecting_exception=True)
@@ -148,7 +162,7 @@ def test_5xx_is_retried(status_code: int) -> None:
 
 
 def _deal_products_request(deal_id: int):
-    return request(f"v1/deals/{deal_id}/products")
+    return request(f"api/v2/deals/{deal_id}/products", {"limit": "500"})
 
 
 @pytest.mark.parametrize(
@@ -162,6 +176,7 @@ def _deal_products_request(deal_id: int):
 def test_deal_products_skips_missing_or_forbidden_parent_deal(status_code: int, error: str) -> None:
     with HttpMocker() as http_mocker:
         deals = deals_request()
+        http_mocker.get(deals_archived_request(), empty_v2_page())
         http_mocker.get(
             deals,
             collection([{"id": 1, "update_time": "2024-02-01 00:00:00"}, {"id": 2, "update_time": "2024-02-01 00:00:00"}]),
@@ -181,6 +196,7 @@ def test_deal_products_skips_missing_or_forbidden_parent_deal(status_code: int, 
 def test_deal_products_still_fails_on_401() -> None:
     with HttpMocker() as http_mocker:
         deals = deals_request()
+        http_mocker.get(deals_archived_request(), empty_v2_page())
         http_mocker.get(deals, collection([{"id": 1, "update_time": "2024-02-01 00:00:00"}]))
         http_mocker.get(_deal_products_request(1), pipedrive_error(401, "unauthorized access"))
 
@@ -191,11 +207,11 @@ def test_deal_products_still_fails_on_401() -> None:
 
 
 def _mail_threads_request(folder: str):
-    return request("v1/mailbox/mailThreads", {"folder": folder})
+    return request("v1/mailbox/mailThreads", {"folder": folder, "limit": "50"})
 
 
 def _mail_messages_request(thread_id: int):
-    return request(f"v1/mailbox/mailThreads/{thread_id}/mailMessages")
+    return request(f"v1/mailbox/mailThreads/{thread_id}/mailMessages", {"limit": "50"})
 
 
 def test_mail_skips_missing_parent_thread() -> None:
