@@ -83,6 +83,22 @@ class S3DataLakeSpecification :
         json = """{"examples":[200], "default": 200, "order": 8, "airbyte_hidden": true}"""
     )
     val flushBatchSizeMb: Long? = null
+
+    @get:JsonSchemaTitle("Normalize Column Names")
+    @get:JsonPropertyDescription(
+        "When enabled, column names are normalized before being written to Iceberg: they are " +
+            "converted to lowercase, any character other than a letter, digit, or underscore is " +
+            "replaced with an underscore, and names that are reserved words in Snowflake are " +
+            "prefixed with an underscore (for example, \"userId\" becomes \"userid\", " +
+            "\"Foo.Bar\" becomes \"foo_bar\", and \"CURRENT_DATE\" becomes \"_current_date\"). " +
+            "Use this when downstream query engines, such as Snowflake reading through a Glue " +
+            "catalog, cannot query mixed-case or special-character column names. IMPORTANT: " +
+            "toggling this option for streams that have already been synced requires manually " +
+            "clearing each affected stream's data and running a full refresh."
+    )
+    @get:JsonProperty("normalize_column_names", required = false)
+    @get:JsonSchemaInject(json = """{"default": false, "order": 9}""")
+    val normalizeColumnNames: Boolean? = null
 }
 
 @Singleton
