@@ -19741,6 +19741,7 @@ streams:
         type: HttpRequester
         url: https://{{ config.customer_domain }}/api/pms/reservations
         http_method: GET
+        use_cache: false
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
         error_handler:
