@@ -29,7 +29,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/actions
+          path: /v3/actions
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -37,6 +37,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - actions
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
+            stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -92,7 +107,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/follow_ups
+          path: /v3/follow_ups
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -100,6 +115,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - follow_ups
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
+            stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -817,6 +847,27 @@ schemas:
           slack_user_id:
             type:
               - string
+              - "null"
+      category:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          rank:
+            type:
+              - number
               - "null"
       created_at:
         type:
