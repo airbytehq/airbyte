@@ -8,7 +8,6 @@ import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
-import io.airbyte.cdk.jdbc.BooleanFieldType
 import io.airbyte.cdk.jdbc.BytesFieldType
 import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.JsonStringFieldType
@@ -162,7 +161,7 @@ class BigQueryProtobufEncodingTest {
             BigDecimal("12345678901234567890.123456789"),
             roundTrip(BigDecimalFieldType, BigDecimal("12345678901234567890.123456789"))
         )
-        Assertions.assertEquals(true, roundTrip(BooleanFieldType, true))
+        Assertions.assertEquals(true, roundTrip(BigQueryBooleanFieldType, true))
         Assertions.assertEquals("alice", roundTrip(StringFieldType, "alice"))
         Assertions.assertEquals("POINT(1 2)", roundTrip(PokemonFieldType, "POINT(1 2)"))
         // BYTES travel as base64 text, like on the STDIO channel.

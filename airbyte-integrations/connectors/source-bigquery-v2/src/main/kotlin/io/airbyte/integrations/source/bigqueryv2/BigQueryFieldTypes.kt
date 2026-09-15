@@ -12,6 +12,7 @@ import com.google.cloud.bigquery.FieldValue
 import com.google.cloud.bigquery.FieldValueList
 import com.google.cloud.bigquery.StandardSQLTypeName
 import io.airbyte.cdk.data.ArrayAirbyteSchemaType
+import io.airbyte.cdk.data.BooleanCodec
 import io.airbyte.cdk.data.JsonCodec
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LocalDateCodec
@@ -21,7 +22,7 @@ import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
-import io.airbyte.cdk.jdbc.BooleanFieldType
+import io.airbyte.cdk.jdbc.BooleanAccessor
 import io.airbyte.cdk.jdbc.BytesFieldType
 import io.airbyte.cdk.jdbc.DateAccessor
 import io.airbyte.cdk.jdbc.DoubleFieldType
@@ -86,7 +87,7 @@ object BigQueryFieldTypes {
     fun fromTypeName(typeName: String?): FieldType =
         when (typeName?.uppercase()) {
             "BOOL",
-            "BOOLEAN" -> BooleanFieldType
+            "BOOLEAN" -> BigQueryBooleanFieldType
             "INT64",
             "INT",
             "SMALLINT",
@@ -154,6 +155,35 @@ data object JsonNodeCodec : ProtobufAwareCustomConnectorJsonCodec<JsonNode> {
 
     override fun valueForProtobufEncoding(v: JsonNode): Any? =
         if (v.isNull || v.isMissingNode) null else Jsons.writeValueAsString(v)
+}
+
+/**
+ * BigQuery `BOOL`. The JDBC driver's `getBoolean` throws a `NullPointerException` on a NULL value
+ * (`Cannot invoke "java.lang.Boolean.booleanValue()" because the return value of
+ * "BigQueryTypeRegistry.convert(Object, Class)" is null`, driver 1.4.0, verified on the service on
+ * 2026-09-15), which the toolkit's `BooleanFieldType` turns into a spurious
+ * `SOURCE_RETRIEVAL_ERROR` change on every record with a NULL `BOOL`. `getObject` returns the boxed
+ * `Boolean`, or null.
+ */
+data object BigQueryBooleanFieldType :
+    LosslessJdbcFieldType<Boolean, Boolean>(
+        LeafAirbyteSchemaType.BOOLEAN,
+        NullSafeBooleanGetter,
+        BooleanCodec,
+        BooleanCodec,
+        BooleanAccessor,
+    )
+
+data object NullSafeBooleanGetter : JdbcGetter<Boolean> {
+    override fun get(rs: ResultSet, colIdx: Int): Boolean? {
+        val value: Any = rs.getObject(colIdx) ?: return null
+        if (rs.wasNull()) return null
+        return when (value) {
+            is Boolean -> value
+            is Number -> value.toInt() != 0
+            else -> value.toString().toBooleanStrict()
+        }
+    }
 }
 
 /**

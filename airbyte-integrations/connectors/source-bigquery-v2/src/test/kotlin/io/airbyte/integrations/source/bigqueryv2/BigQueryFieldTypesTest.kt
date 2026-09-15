@@ -8,7 +8,6 @@ import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
-import io.airbyte.cdk.jdbc.BooleanFieldType
 import io.airbyte.cdk.jdbc.BytesFieldType
 import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.JsonStringFieldType
@@ -17,8 +16,13 @@ import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.util.Jsons
+import java.sql.ResultSet
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 
 class BigQueryFieldTypesTest {
 
@@ -28,11 +32,31 @@ class BigQueryFieldTypesTest {
     private fun repeated(name: String, type: StandardSQLTypeName, vararg sub: Field): Field =
         Field.newBuilder(name, type, *sub).setMode(Field.Mode.REPEATED).build()
 
+    /** The driver's `getBoolean` throws on NULL; the getter must not call it. */
+    @Test
+    fun testNullSafeBooleanGetter() {
+        val rs: ResultSet = mock(ResultSet::class.java)
+        `when`(rs.getObject(1)).thenReturn(null)
+        `when`(rs.getObject(2)).thenReturn(java.lang.Boolean.TRUE)
+        `when`(rs.getObject(3)).thenReturn("false")
+        `when`(rs.getObject(4)).thenReturn(1L)
+        `when`(rs.wasNull()).thenReturn(false)
+        Assertions.assertNull(NullSafeBooleanGetter.get(rs, 1))
+        Assertions.assertEquals(true, NullSafeBooleanGetter.get(rs, 2))
+        Assertions.assertEquals(false, NullSafeBooleanGetter.get(rs, 3))
+        Assertions.assertEquals(true, NullSafeBooleanGetter.get(rs, 4))
+        verify(rs, never()).getBoolean(1)
+        Assertions.assertEquals(
+            Jsons.booleanNode(true),
+            BigQueryBooleanFieldType.jsonEncoder.encode(true)
+        )
+    }
+
     @Test
     fun testScalarTypes() {
         val expected: Map<StandardSQLTypeName, FieldType> =
             mapOf(
-                StandardSQLTypeName.BOOL to BooleanFieldType,
+                StandardSQLTypeName.BOOL to BigQueryBooleanFieldType,
                 StandardSQLTypeName.INT64 to LongFieldType,
                 StandardSQLTypeName.FLOAT64 to DoubleFieldType,
                 StandardSQLTypeName.NUMERIC to BigDecimalFieldType,

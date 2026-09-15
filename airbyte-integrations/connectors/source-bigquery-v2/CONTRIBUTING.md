@@ -306,6 +306,12 @@ How `read` is put together:
   `GEOGRAPHY` (GeoJSON in that rendering) turned back into WKT (`GeoJson.toWkt`), numbers parsed
   as `BigDecimal`. `TIMESTAMP` stays on the driver (`OffsetDateTime`, epoch-based, exact).
   `WHERE`/`ORDER BY` keep the native columns.
+- A fourth driver bug, found on the real service on 2026-09-15 (`test_parquet.flag`): the driver's
+  `getBoolean` throws `NullPointerException: Cannot invoke "java.lang.Boolean.booleanValue()"
+  because the return value of "BigQueryTypeRegistry.convert(Object, Class)" is null` on a NULL
+  `BOOL`, which the toolkit's `BooleanFieldType` reports as a `SOURCE_RETRIEVAL_ERROR` change on
+  the record (the value is still null). `BigQueryBooleanFieldType` reads `BOOL` with `getObject`
+  (`NullSafeBooleanGetter`) instead.
 
 Next: Stage 5 (terabyte-scale table, memory, checkpoint cadence, kill-and-resume, bytes billed vs
 legacy), a CDK fix or workaround for `_ab_*` columns, the docs page, and a breaking-change
