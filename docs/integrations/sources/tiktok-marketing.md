@@ -178,6 +178,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.16 | 2026-09-15 | [86277](https://github.com/airbytehq/airbyte/pull/86277) | Update dependencies |
 | 5.1.15 | 2026-09-11 | [85796](https://github.com/airbytehq/airbyte/pull/85796) | Stop enabling production-only streams for legacy configs with an empty `secret` |
 | 5.1.14 | 2026-09-09 | [85187](https://github.com/airbytehq/airbyte/pull/85187) | Retry transient TikTok API error 51002 |
 | 5.1.13 | 2026-09-08 | [85704](https://github.com/airbytehq/airbyte/pull/85704) | Update dependencies |
