@@ -195,8 +195,7 @@ constructor(
                     // Validate poll interval vs heartbeat interval
                     val pollIntervalMs =
                         incrementalSpec.pollIntervalMs
-                            ?: MsSqlServerSourceConfigurationSpecification
-                                .DEFAULT_POLL_INTERVAL_MS
+                            ?: MsSqlServerSourceConfigurationSpecification.DEFAULT_POLL_INTERVAL_MS
                     val heartbeatIntervalMs =
                         MsSqlServerSourceConfigurationSpecification.DEFAULT_HEARTBEAT_INTERVAL_MS
                     if (pollIntervalMs >= heartbeatIntervalMs) {

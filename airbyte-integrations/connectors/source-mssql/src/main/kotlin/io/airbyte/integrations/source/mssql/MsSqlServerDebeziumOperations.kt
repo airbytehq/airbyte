@@ -812,7 +812,8 @@ class MsSqlServerDebeziumOperations(
             // `poll.interval.ms`controls how often Debezium queries for new data
             // This value is now configurable and validated to be smaller than heartbeat.interval.ms
             .with("poll.interval.ms", cdcConfiguration.pollIntervalMs.toString())
-            // `max.iteration.transactions` limit Debezium to query for n-th LSN. Helpful to reduce memory
+            // `max.iteration.transactions` limit Debezium to query for n-th LSN. Helpful to reduce
+            // memory
             // in small connections. However, it will slow performance on many CDC-enabled tables.
             // 0 means unbounded: Debezium fetches everything up to the current max LSN in one pass.
             .with(
