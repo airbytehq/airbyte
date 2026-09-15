@@ -153,6 +153,47 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonProperty("number_data_type", defaultValue = "FLOAT")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 12}""")
     val numberDataTypeConversion: NumberDataType? = null
+
+    // TEMPORARY: preview routing overrides until the platform injects all five IDs.
+    @get:JsonSchemaTitle("Organization ID (Temporary)")
+    @get:JsonPropertyDescription(
+        "Temporary Fusion preview organization UUID. Overrides AIRBYTE_S3_COPY_ORGANIZATION_ID; defaults to the zero UUID when neither is supplied."
+    )
+    @get:JsonProperty("organization_id")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 13, "format": "uuid"}""")
+    val organizationId: String? = null
+
+    @get:JsonSchemaTitle("Workspace ID (Temporary)")
+    @get:JsonPropertyDescription(
+        "Temporary Fusion preview workspace UUID. Overrides AIRBYTE_S3_COPY_WORKSPACE_ID; defaults to the zero UUID when neither is supplied."
+    )
+    @get:JsonProperty("workspace_id")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 14, "format": "uuid"}""")
+    val workspaceId: String? = null
+
+    @get:JsonSchemaTitle("Source ID (Temporary)")
+    @get:JsonPropertyDescription(
+        "Temporary Fusion preview source UUID. Overrides AIRBYTE_S3_COPY_SOURCE_ID; defaults to the zero UUID when neither is supplied."
+    )
+    @get:JsonProperty("source_id")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 15, "format": "uuid"}""")
+    val sourceId: String? = null
+
+    @get:JsonSchemaTitle("Connection ID (Temporary)")
+    @get:JsonPropertyDescription(
+        "Temporary Fusion preview connection UUID. Overrides AIRBYTE_S3_COPY_CONNECTION_ID; defaults to the zero UUID when neither is supplied."
+    )
+    @get:JsonProperty("connection_id")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 16, "format": "uuid"}""")
+    val connectionId: String? = null
+
+    @get:JsonSchemaTitle("Destination ID (Temporary)")
+    @get:JsonPropertyDescription(
+        "Temporary Fusion preview destination UUID. Overrides AIRBYTE_S3_COPY_DESTINATION_ID; defaults to the zero UUID when neither is supplied."
+    )
+    @get:JsonProperty("destination_id")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 17, "format": "uuid"}""")
+    val destinationId: String? = null
 }
 
 @JsonTypeInfo(

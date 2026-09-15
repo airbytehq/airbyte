@@ -166,6 +166,46 @@
         "title" : "Decimal Data Type",
         "group" : "advanced",
         "order" : 12
+      },
+      "organization_id" : {
+        "type" : "string",
+        "description" : "Temporary Fusion preview organization UUID. Overrides AIRBYTE_S3_COPY_ORGANIZATION_ID; defaults to the zero UUID when neither is supplied.",
+        "title" : "Organization ID (Temporary)",
+        "group" : "advanced",
+        "order" : 13,
+        "format" : "uuid"
+      },
+      "workspace_id" : {
+        "type" : "string",
+        "description" : "Temporary Fusion preview workspace UUID. Overrides AIRBYTE_S3_COPY_WORKSPACE_ID; defaults to the zero UUID when neither is supplied.",
+        "title" : "Workspace ID (Temporary)",
+        "group" : "advanced",
+        "order" : 14,
+        "format" : "uuid"
+      },
+      "source_id" : {
+        "type" : "string",
+        "description" : "Temporary Fusion preview source UUID. Overrides AIRBYTE_S3_COPY_SOURCE_ID; defaults to the zero UUID when neither is supplied.",
+        "title" : "Source ID (Temporary)",
+        "group" : "advanced",
+        "order" : 15,
+        "format" : "uuid"
+      },
+      "connection_id" : {
+        "type" : "string",
+        "description" : "Temporary Fusion preview connection UUID. Overrides AIRBYTE_S3_COPY_CONNECTION_ID; defaults to the zero UUID when neither is supplied.",
+        "title" : "Connection ID (Temporary)",
+        "group" : "advanced",
+        "order" : 16,
+        "format" : "uuid"
+      },
+      "destination_id" : {
+        "type" : "string",
+        "description" : "Temporary Fusion preview destination UUID. Overrides AIRBYTE_S3_COPY_DESTINATION_ID; defaults to the zero UUID when neither is supplied.",
+        "title" : "Destination ID (Temporary)",
+        "group" : "advanced",
+        "order" : 17,
+        "format" : "uuid"
       }
     },
     "required" : [ "host", "role", "warehouse", "database", "schema", "username" ],
