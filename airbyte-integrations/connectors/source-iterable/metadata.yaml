@@ -61,11 +61,14 @@ data:
       url: https://api.iterable.com/api/docs
       type: api_reference
     - title: Iterable authentication
-      url: https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-
+      url: https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys
       type: authentication_guide
     - title: Iterable rate limits
-      url: https://support.iterable.com/hc/en-us/articles/360045714132-API-Rate-Limits
+      url: https://support.iterable.com/hc/en-us/articles/41044692130196-Getting-Started-with-Iterable-s-API
       type: rate_limits
+    - title: Iterable release notes
+      url: https://support.iterable.com/hc/en-us/sections/115001574603-Release-Notes
+      type: api_release_history
     - title: Iterable Status
       url: https://status.iterable.com/
       type: status_page
