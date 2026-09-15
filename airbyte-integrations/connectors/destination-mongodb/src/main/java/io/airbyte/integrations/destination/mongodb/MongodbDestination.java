@@ -136,7 +136,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
   }
 
   @VisibleForTesting
-  String getConnectionString(final JsonNode config) {
+  protected String getConnectionString(final JsonNode config) {
     final var credentials = config.get(MongoUtils.AUTH_TYPE).get(MongoUtils.AUTHORIZATION).asText().equals(MongoUtils.LOGIN_AND_PASSWORD)
         ? String.format("%s:%s@", config.get(MongoUtils.AUTH_TYPE).get(JdbcUtils.USERNAME_KEY).asText(),
             config.get(MongoUtils.AUTH_TYPE).get(JdbcUtils.PASSWORD_KEY).asText())
