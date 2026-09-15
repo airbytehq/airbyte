@@ -218,21 +218,31 @@ class MySqlSourceConfigurationTest {
 
         val truststorePath: String =
             Path.of(URI.create(config.jdbcProperties["trustCertificateKeyStoreUrl"])).toString()
-        Assertions.assertEquals("verify_ca", config.debeziumSslProperties["ssl.mode"])
-        Assertions.assertEquals(truststorePath, config.debeziumSslProperties["ssl.truststore"])
+        Assertions.assertEquals(
+            "verify_ca",
+            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_MODE]
+        )
+        Assertions.assertEquals(
+            truststorePath,
+            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_TRUSTSTORE]
+        )
         Assertions.assertTrue(Files.exists(Path.of(truststorePath)))
         Assertions.assertEquals(
             "client-pass",
-            config.debeziumSslProperties["ssl.truststore.password"]
+            config.debeziumSslProperties[
+                    MySqlSourceConfigurationFactory.DEBEZIUM_SSL_TRUSTSTORE_PASS]
         )
 
         val keystorePath: String =
             Path.of(URI.create(config.jdbcProperties["clientCertificateKeyStoreUrl"])).toString()
-        Assertions.assertEquals(keystorePath, config.debeziumSslProperties["ssl.keystore"])
+        Assertions.assertEquals(
+            keystorePath,
+            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_KEYSTORE]
+        )
         Assertions.assertTrue(Files.exists(Path.of(keystorePath)))
         Assertions.assertEquals(
             "client-pass",
-            config.debeziumSslProperties["ssl.keystore.password"]
+            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_KEYSTORE_PASS]
         )
     }
 
@@ -248,18 +258,30 @@ class MySqlSourceConfigurationTest {
 
         val config = factory.makeWithoutExceptionHandling(pojo)
 
-        Assertions.assertEquals("verify_ca", config.debeziumSslProperties["ssl.mode"])
+        Assertions.assertEquals(
+            "verify_ca",
+            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_MODE]
+        )
 
         val truststorePath: String =
             Path.of(URI.create(config.jdbcProperties["trustCertificateKeyStoreUrl"])).toString()
-        Assertions.assertEquals(truststorePath, config.debeziumSslProperties["ssl.truststore"])
+        Assertions.assertEquals(
+            truststorePath,
+            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_TRUSTSTORE]
+        )
         Assertions.assertTrue(Files.exists(Path.of(truststorePath)))
         Assertions.assertFalse(
-            config.debeziumSslProperties["ssl.truststore.password"].isNullOrBlank()
+            config.debeziumSslProperties[
+                    MySqlSourceConfigurationFactory.DEBEZIUM_SSL_TRUSTSTORE_PASS]
+                .isNullOrBlank()
         )
 
-        Assertions.assertNull(config.debeziumSslProperties["ssl.keystore"])
-        Assertions.assertNull(config.debeziumSslProperties["ssl.keystore.password"])
+        Assertions.assertNull(
+            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_KEYSTORE]
+        )
+        Assertions.assertNull(
+            config.debeziumSslProperties[MySqlSourceConfigurationFactory.DEBEZIUM_SSL_KEYSTORE_PASS]
+        )
     }
 
     @Test
@@ -274,7 +296,10 @@ class MySqlSourceConfigurationTest {
 
         val config = factory.makeWithoutExceptionHandling(pojo)
 
-        Assertions.assertEquals(mapOf("ssl.mode" to "required"), config.debeziumSslProperties)
+        Assertions.assertEquals(
+            mapOf(MySqlSourceConfigurationFactory.DEBEZIUM_SSL_MODE to "required"),
+            config.debeziumSslProperties
+        )
     }
 
     @Test

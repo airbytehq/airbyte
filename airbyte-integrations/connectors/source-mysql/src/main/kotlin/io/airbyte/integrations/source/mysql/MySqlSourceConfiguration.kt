@@ -360,12 +360,11 @@ constructor(
         const val KEY_STORE_TYPE_PKCS12: String = "PKCS12"
         const val SSL_MODE: String = "sslMode"
 
-        // Debezium SSL property keys, without the `database.` prefix that
-        // DebeziumPropertiesBuilder.withDatabase adds.
-        const val DEBEZIUM_SSL_MODE: String = "ssl.mode"
-        const val DEBEZIUM_SSL_TRUSTSTORE: String = "ssl.truststore"
-        const val DEBEZIUM_SSL_TRUSTSTORE_PASS: String = "ssl.truststore.password"
-        const val DEBEZIUM_SSL_KEYSTORE: String = "ssl.keystore"
-        const val DEBEZIUM_SSL_KEYSTORE_PASS: String = "ssl.keystore.password"
+        // Debezium MySQL connector properties read by the embedded binlog client.
+        const val DEBEZIUM_SSL_MODE: String = "database.ssl.mode"
+        const val DEBEZIUM_SSL_TRUSTSTORE: String = "database.ssl.truststore"
+        const val DEBEZIUM_SSL_TRUSTSTORE_PASS: String = "database.ssl.truststore.password"
+        const val DEBEZIUM_SSL_KEYSTORE: String = "database.ssl.keystore"
+        const val DEBEZIUM_SSL_KEYSTORE_PASS: String = "database.ssl.keystore.password"
     }
 }
