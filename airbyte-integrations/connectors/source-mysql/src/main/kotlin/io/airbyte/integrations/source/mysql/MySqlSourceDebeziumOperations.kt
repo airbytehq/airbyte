@@ -53,8 +53,6 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.math.BigDecimal
-import java.net.URI
-import java.nio.file.Path
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLSyntaxErrorException
@@ -485,14 +483,14 @@ class MySqlSourceDebeziumOperations(
                     configuration.debeziumKeepAliveInterval.toMillis().toString(),
                 )
                 .withDatabase(configuration.jdbcProperties)
+                // Debezium's binlog client reads ssl.* rather than the JDBC driver's ssl
+                // properties.
+                .withDatabase(configuration.debeziumSslProperties)
                 .withDatabase("hostname", tunnelSession.address.hostName)
                 .withDatabase("port", tunnelSession.address.port.toString())
                 .withDatabase("dbname", databaseName)
                 .withDatabase("server.id", serverID.toString())
                 .withDatabase("include.list", databaseName)
-                .also {
-                    addDebeziumSslPropertiesFromJdbcProperties(it, configuration.jdbcProperties)
-                }
                 .withOffset()
                 .withSchemaHistory()
                 .run {
@@ -519,40 +517,6 @@ class MySqlSourceDebeziumOperations(
         // https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-property-database-server-id
         const val MIN_SERVER_ID = 5400
         const val MAX_SERVER_ID = 6400
-
-        /**
-         * Translates JDBC-style SSL properties (consumed by the MySQL JDBC driver during Debezium's
-         * snapshot phase) into the corresponding Debezium MySQL connector SSL properties used by
-         * the embedded binlog client (`mysql-binlog-connector-java`). Without these, Debezium falls
-         * back to its default `preferred` SSL mode and ignores any configured trust/key stores when
-         * connecting to the binlog stream, which breaks `verify_ca`/`verify_identity` deployments
-         * that require X.509 client certificate auth.
-         *
-         * See
-         * https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-property-database-ssl-mode
-         */
-        internal fun addDebeziumSslPropertiesFromJdbcProperties(
-            builder: DebeziumPropertiesBuilder,
-            jdbcProperties: Map<String, String>,
-        ) {
-            jdbcProperties[MySqlSourceConfigurationFactory.SSL_MODE]
-                ?.takeUnless { it.isBlank() }
-                ?.let { builder.withDatabase("ssl.mode", it) }
-            jdbcProperties[MySqlSourceConfigurationFactory.TRUST_KEY_STORE_URL]
-                ?.takeUnless { it.isBlank() }
-                ?.let { builder.withDatabase("ssl.truststore", keyStoreUrlToPath(it)) }
-            jdbcProperties[MySqlSourceConfigurationFactory.TRUST_KEY_STORE_PASS]
-                ?.takeUnless { it.isBlank() }
-                ?.let { builder.withDatabase("ssl.truststore.password", it) }
-            jdbcProperties[MySqlSourceConfigurationFactory.CLIENT_KEY_STORE_URL]
-                ?.takeUnless { it.isBlank() }
-                ?.let { builder.withDatabase("ssl.keystore", keyStoreUrlToPath(it)) }
-            jdbcProperties[MySqlSourceConfigurationFactory.CLIENT_KEY_STORE_PASS]
-                ?.takeUnless { it.isBlank() }
-                ?.let { builder.withDatabase("ssl.keystore.password", it) }
-        }
-
-        private fun keyStoreUrlToPath(url: String): String = Path.of(URI.create(url)).toString()
 
         const val MAX_UNCOMPRESSED_LENGTH = 1024 * 1024
         const val STATE = "state"
