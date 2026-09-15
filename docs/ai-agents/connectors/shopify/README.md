@@ -53,46 +53,46 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](./REFERENCE.md#customers-list), [Get](./REFERENCE.md#customers-get), [Create](./REFERENCE.md#customers-create), [Update](./REFERENCE.md#customers-update), [Delete](./REFERENCE.md#customers-delete), [Context Store Search](./REFERENCE.md#customers-context-store-search) |
-| Orders | [List](./REFERENCE.md#orders-list), [Get](./REFERENCE.md#orders-get), [Create](./REFERENCE.md#orders-create), [Update](./REFERENCE.md#orders-update), [Delete](./REFERENCE.md#orders-delete), [Context Store Search](./REFERENCE.md#orders-context-store-search) |
-| Products | [List](./REFERENCE.md#products-list), [Get](./REFERENCE.md#products-get), [Create](./REFERENCE.md#products-create), [Update](./REFERENCE.md#products-update), [Delete](./REFERENCE.md#products-delete), [Context Store Search](./REFERENCE.md#products-context-store-search) |
-| Product Variants | [List](./REFERENCE.md#product-variants-list), [Get](./REFERENCE.md#product-variants-get), [Create](./REFERENCE.md#product-variants-create), [Update](./REFERENCE.md#product-variants-update), [Delete](./REFERENCE.md#product-variants-delete), [Context Store Search](./REFERENCE.md#product-variants-context-store-search) |
-| Product Images | [List](./REFERENCE.md#product-images-list), [Get](./REFERENCE.md#product-images-get), [Context Store Search](./REFERENCE.md#product-images-context-store-search) |
-| Abandoned Checkouts | [List](./REFERENCE.md#abandoned-checkouts-list), [Context Store Search](./REFERENCE.md#abandoned-checkouts-context-store-search) |
-| Locations | [List](./REFERENCE.md#locations-list), [Get](./REFERENCE.md#locations-get), [Context Store Search](./REFERENCE.md#locations-context-store-search) |
-| Inventory Levels | [List](./REFERENCE.md#inventory-levels-list), [Context Store Search](./REFERENCE.md#inventory-levels-context-store-search) |
-| Inventory Items | [List](./REFERENCE.md#inventory-items-list), [Get](./REFERENCE.md#inventory-items-get), [Context Store Search](./REFERENCE.md#inventory-items-context-store-search) |
-| Shop | [Get](./REFERENCE.md#shop-get), [Context Store Search](./REFERENCE.md#shop-context-store-search) |
-| Price Rules | [List](./REFERENCE.md#price-rules-list), [Get](./REFERENCE.md#price-rules-get), [Context Store Search](./REFERENCE.md#price-rules-context-store-search) |
-| Discount Codes | [List](./REFERENCE.md#discount-codes-list), [Get](./REFERENCE.md#discount-codes-get), [Create](./REFERENCE.md#discount-codes-create), [Update](./REFERENCE.md#discount-codes-update), [Delete](./REFERENCE.md#discount-codes-delete), [Context Store Search](./REFERENCE.md#discount-codes-context-store-search) |
-| Custom Collections | [List](./REFERENCE.md#custom-collections-list), [Get](./REFERENCE.md#custom-collections-get), [Create](./REFERENCE.md#custom-collections-create), [Update](./REFERENCE.md#custom-collections-update), [Delete](./REFERENCE.md#custom-collections-delete), [Context Store Search](./REFERENCE.md#custom-collections-context-store-search) |
-| Smart Collections | [List](./REFERENCE.md#smart-collections-list), [Get](./REFERENCE.md#smart-collections-get), [Context Store Search](./REFERENCE.md#smart-collections-context-store-search) |
-| Collects | [List](./REFERENCE.md#collects-list), [Get](./REFERENCE.md#collects-get), [Context Store Search](./REFERENCE.md#collects-context-store-search) |
-| Draft Orders | [List](./REFERENCE.md#draft-orders-list), [Get](./REFERENCE.md#draft-orders-get), [Create](./REFERENCE.md#draft-orders-create), [Update](./REFERENCE.md#draft-orders-update), [Delete](./REFERENCE.md#draft-orders-delete), [Context Store Search](./REFERENCE.md#draft-orders-context-store-search) |
-| Fulfillments | [List](./REFERENCE.md#fulfillments-list), [Get](./REFERENCE.md#fulfillments-get), [Context Store Search](./REFERENCE.md#fulfillments-context-store-search) |
-| Order Refunds | [List](./REFERENCE.md#order-refunds-list), [Get](./REFERENCE.md#order-refunds-get), [Context Store Search](./REFERENCE.md#order-refunds-context-store-search) |
+| Customers | [List](./REFERENCE.md#customers-list), [Get](./REFERENCE.md#customers-get), [Create](./REFERENCE.md#customers-create), [Update](./REFERENCE.md#customers-update), [Delete](./REFERENCE.md#customers-delete), [Context Store Search](./REFERENCE.md#customers-context-store-search), [Context Store SQL Query](./REFERENCE.md#customers-context-store-sql-query) |
+| Orders | [List](./REFERENCE.md#orders-list), [Get](./REFERENCE.md#orders-get), [Create](./REFERENCE.md#orders-create), [Update](./REFERENCE.md#orders-update), [Delete](./REFERENCE.md#orders-delete), [Context Store Search](./REFERENCE.md#orders-context-store-search), [Context Store SQL Query](./REFERENCE.md#orders-context-store-sql-query) |
+| Products | [List](./REFERENCE.md#products-list), [Get](./REFERENCE.md#products-get), [Create](./REFERENCE.md#products-create), [Update](./REFERENCE.md#products-update), [Delete](./REFERENCE.md#products-delete), [Context Store Search](./REFERENCE.md#products-context-store-search), [Context Store SQL Query](./REFERENCE.md#products-context-store-sql-query) |
+| Product Variants | [List](./REFERENCE.md#product-variants-list), [Get](./REFERENCE.md#product-variants-get), [Create](./REFERENCE.md#product-variants-create), [Update](./REFERENCE.md#product-variants-update), [Delete](./REFERENCE.md#product-variants-delete), [Context Store Search](./REFERENCE.md#product-variants-context-store-search), [Context Store SQL Query](./REFERENCE.md#product-variants-context-store-sql-query) |
+| Product Images | [List](./REFERENCE.md#product-images-list), [Get](./REFERENCE.md#product-images-get), [Context Store Search](./REFERENCE.md#product-images-context-store-search), [Context Store SQL Query](./REFERENCE.md#product-images-context-store-sql-query) |
+| Abandoned Checkouts | [List](./REFERENCE.md#abandoned-checkouts-list), [Context Store Search](./REFERENCE.md#abandoned-checkouts-context-store-search), [Context Store SQL Query](./REFERENCE.md#abandoned-checkouts-context-store-sql-query) |
+| Locations | [List](./REFERENCE.md#locations-list), [Get](./REFERENCE.md#locations-get), [Context Store Search](./REFERENCE.md#locations-context-store-search), [Context Store SQL Query](./REFERENCE.md#locations-context-store-sql-query) |
+| Inventory Levels | [List](./REFERENCE.md#inventory-levels-list), [Context Store Search](./REFERENCE.md#inventory-levels-context-store-search), [Context Store SQL Query](./REFERENCE.md#inventory-levels-context-store-sql-query) |
+| Inventory Items | [List](./REFERENCE.md#inventory-items-list), [Get](./REFERENCE.md#inventory-items-get), [Context Store Search](./REFERENCE.md#inventory-items-context-store-search), [Context Store SQL Query](./REFERENCE.md#inventory-items-context-store-sql-query) |
+| Shop | [Get](./REFERENCE.md#shop-get), [Context Store Search](./REFERENCE.md#shop-context-store-search), [Context Store SQL Query](./REFERENCE.md#shop-context-store-sql-query) |
+| Price Rules | [List](./REFERENCE.md#price-rules-list), [Get](./REFERENCE.md#price-rules-get), [Context Store Search](./REFERENCE.md#price-rules-context-store-search), [Context Store SQL Query](./REFERENCE.md#price-rules-context-store-sql-query) |
+| Discount Codes | [List](./REFERENCE.md#discount-codes-list), [Get](./REFERENCE.md#discount-codes-get), [Create](./REFERENCE.md#discount-codes-create), [Update](./REFERENCE.md#discount-codes-update), [Delete](./REFERENCE.md#discount-codes-delete), [Context Store Search](./REFERENCE.md#discount-codes-context-store-search), [Context Store SQL Query](./REFERENCE.md#discount-codes-context-store-sql-query) |
+| Custom Collections | [List](./REFERENCE.md#custom-collections-list), [Get](./REFERENCE.md#custom-collections-get), [Create](./REFERENCE.md#custom-collections-create), [Update](./REFERENCE.md#custom-collections-update), [Delete](./REFERENCE.md#custom-collections-delete), [Context Store Search](./REFERENCE.md#custom-collections-context-store-search), [Context Store SQL Query](./REFERENCE.md#custom-collections-context-store-sql-query) |
+| Smart Collections | [List](./REFERENCE.md#smart-collections-list), [Get](./REFERENCE.md#smart-collections-get), [Context Store Search](./REFERENCE.md#smart-collections-context-store-search), [Context Store SQL Query](./REFERENCE.md#smart-collections-context-store-sql-query) |
+| Collects | [List](./REFERENCE.md#collects-list), [Get](./REFERENCE.md#collects-get), [Context Store Search](./REFERENCE.md#collects-context-store-search), [Context Store SQL Query](./REFERENCE.md#collects-context-store-sql-query) |
+| Draft Orders | [List](./REFERENCE.md#draft-orders-list), [Get](./REFERENCE.md#draft-orders-get), [Create](./REFERENCE.md#draft-orders-create), [Update](./REFERENCE.md#draft-orders-update), [Delete](./REFERENCE.md#draft-orders-delete), [Context Store Search](./REFERENCE.md#draft-orders-context-store-search), [Context Store SQL Query](./REFERENCE.md#draft-orders-context-store-sql-query) |
+| Fulfillments | [List](./REFERENCE.md#fulfillments-list), [Get](./REFERENCE.md#fulfillments-get), [Context Store Search](./REFERENCE.md#fulfillments-context-store-search), [Context Store SQL Query](./REFERENCE.md#fulfillments-context-store-sql-query) |
+| Order Refunds | [List](./REFERENCE.md#order-refunds-list), [Get](./REFERENCE.md#order-refunds-get), [Context Store Search](./REFERENCE.md#order-refunds-context-store-search), [Context Store SQL Query](./REFERENCE.md#order-refunds-context-store-sql-query) |
 | Transactions | [List](./REFERENCE.md#transactions-list), [Get](./REFERENCE.md#transactions-get) |
-| Tender Transactions | [List](./REFERENCE.md#tender-transactions-list), [Context Store Search](./REFERENCE.md#tender-transactions-context-store-search) |
-| Countries | [List](./REFERENCE.md#countries-list), [Get](./REFERENCE.md#countries-get), [Context Store Search](./REFERENCE.md#countries-context-store-search) |
-| Metafield Shops | [List](./REFERENCE.md#metafield-shops-list), [Get](./REFERENCE.md#metafield-shops-get), [Context Store Search](./REFERENCE.md#metafield-shops-context-store-search) |
-| Metafield Customers | [List](./REFERENCE.md#metafield-customers-list), [Context Store Search](./REFERENCE.md#metafield-customers-context-store-search) |
-| Metafield Products | [List](./REFERENCE.md#metafield-products-list), [Context Store Search](./REFERENCE.md#metafield-products-context-store-search) |
-| Metafield Orders | [List](./REFERENCE.md#metafield-orders-list), [Context Store Search](./REFERENCE.md#metafield-orders-context-store-search) |
-| Metafield Draft Orders | [List](./REFERENCE.md#metafield-draft-orders-list), [Context Store Search](./REFERENCE.md#metafield-draft-orders-context-store-search) |
-| Metafield Locations | [List](./REFERENCE.md#metafield-locations-list), [Context Store Search](./REFERENCE.md#metafield-locations-context-store-search) |
-| Metafield Product Variants | [List](./REFERENCE.md#metafield-product-variants-list), [Context Store Search](./REFERENCE.md#metafield-product-variants-context-store-search) |
-| Metafield Smart Collections | [List](./REFERENCE.md#metafield-smart-collections-list), [Context Store Search](./REFERENCE.md#metafield-smart-collections-context-store-search) |
-| Metafield Product Images | [List](./REFERENCE.md#metafield-product-images-list), [Context Store Search](./REFERENCE.md#metafield-product-images-context-store-search) |
+| Tender Transactions | [List](./REFERENCE.md#tender-transactions-list), [Context Store Search](./REFERENCE.md#tender-transactions-context-store-search), [Context Store SQL Query](./REFERENCE.md#tender-transactions-context-store-sql-query) |
+| Countries | [List](./REFERENCE.md#countries-list), [Get](./REFERENCE.md#countries-get), [Context Store Search](./REFERENCE.md#countries-context-store-search), [Context Store SQL Query](./REFERENCE.md#countries-context-store-sql-query) |
+| Metafield Shops | [List](./REFERENCE.md#metafield-shops-list), [Get](./REFERENCE.md#metafield-shops-get), [Context Store Search](./REFERENCE.md#metafield-shops-context-store-search), [Context Store SQL Query](./REFERENCE.md#metafield-shops-context-store-sql-query) |
+| Metafield Customers | [List](./REFERENCE.md#metafield-customers-list), [Context Store Search](./REFERENCE.md#metafield-customers-context-store-search), [Context Store SQL Query](./REFERENCE.md#metafield-customers-context-store-sql-query) |
+| Metafield Products | [List](./REFERENCE.md#metafield-products-list), [Context Store Search](./REFERENCE.md#metafield-products-context-store-search), [Context Store SQL Query](./REFERENCE.md#metafield-products-context-store-sql-query) |
+| Metafield Orders | [List](./REFERENCE.md#metafield-orders-list), [Context Store Search](./REFERENCE.md#metafield-orders-context-store-search), [Context Store SQL Query](./REFERENCE.md#metafield-orders-context-store-sql-query) |
+| Metafield Draft Orders | [List](./REFERENCE.md#metafield-draft-orders-list), [Context Store Search](./REFERENCE.md#metafield-draft-orders-context-store-search), [Context Store SQL Query](./REFERENCE.md#metafield-draft-orders-context-store-sql-query) |
+| Metafield Locations | [List](./REFERENCE.md#metafield-locations-list), [Context Store Search](./REFERENCE.md#metafield-locations-context-store-search), [Context Store SQL Query](./REFERENCE.md#metafield-locations-context-store-sql-query) |
+| Metafield Product Variants | [List](./REFERENCE.md#metafield-product-variants-list), [Context Store Search](./REFERENCE.md#metafield-product-variants-context-store-search), [Context Store SQL Query](./REFERENCE.md#metafield-product-variants-context-store-sql-query) |
+| Metafield Smart Collections | [List](./REFERENCE.md#metafield-smart-collections-list), [Context Store Search](./REFERENCE.md#metafield-smart-collections-context-store-search), [Context Store SQL Query](./REFERENCE.md#metafield-smart-collections-context-store-sql-query) |
+| Metafield Product Images | [List](./REFERENCE.md#metafield-product-images-list), [Context Store Search](./REFERENCE.md#metafield-product-images-context-store-search), [Context Store SQL Query](./REFERENCE.md#metafield-product-images-context-store-sql-query) |
 | Customer Address | [List](./REFERENCE.md#customer-address-list), [Get](./REFERENCE.md#customer-address-get) |
-| Fulfillment Orders | [List](./REFERENCE.md#fulfillment-orders-list), [Get](./REFERENCE.md#fulfillment-orders-get), [Context Store Search](./REFERENCE.md#fulfillment-orders-context-store-search) |
-| Pages | [List](./REFERENCE.md#pages-list), [Get](./REFERENCE.md#pages-get), [Create](./REFERENCE.md#pages-create), [Update](./REFERENCE.md#pages-update), [Delete](./REFERENCE.md#pages-delete), [Context Store Search](./REFERENCE.md#pages-context-store-search) |
-| Blogs | [List](./REFERENCE.md#blogs-list), [Get](./REFERENCE.md#blogs-get), [Create](./REFERENCE.md#blogs-create), [Update](./REFERENCE.md#blogs-update), [Delete](./REFERENCE.md#blogs-delete), [Context Store Search](./REFERENCE.md#blogs-context-store-search) |
-| Articles | [List](./REFERENCE.md#articles-list), [Get](./REFERENCE.md#articles-get), [Create](./REFERENCE.md#articles-create), [Update](./REFERENCE.md#articles-update), [Delete](./REFERENCE.md#articles-delete), [Context Store Search](./REFERENCE.md#articles-context-store-search) |
-| Balance Transactions | [List](./REFERENCE.md#balance-transactions-list), [Context Store Search](./REFERENCE.md#balance-transactions-context-store-search) |
-| Disputes | [List](./REFERENCE.md#disputes-list), [Get](./REFERENCE.md#disputes-get), [Context Store Search](./REFERENCE.md#disputes-context-store-search) |
-| Metafield Pages | [List](./REFERENCE.md#metafield-pages-list), [Context Store Search](./REFERENCE.md#metafield-pages-context-store-search) |
-| Metafield Blogs | [List](./REFERENCE.md#metafield-blogs-list), [Context Store Search](./REFERENCE.md#metafield-blogs-context-store-search) |
-| Metafield Articles | [List](./REFERENCE.md#metafield-articles-list), [Context Store Search](./REFERENCE.md#metafield-articles-context-store-search) |
+| Fulfillment Orders | [List](./REFERENCE.md#fulfillment-orders-list), [Get](./REFERENCE.md#fulfillment-orders-get), [Context Store Search](./REFERENCE.md#fulfillment-orders-context-store-search), [Context Store SQL Query](./REFERENCE.md#fulfillment-orders-context-store-sql-query) |
+| Pages | [List](./REFERENCE.md#pages-list), [Get](./REFERENCE.md#pages-get), [Create](./REFERENCE.md#pages-create), [Update](./REFERENCE.md#pages-update), [Delete](./REFERENCE.md#pages-delete), [Context Store Search](./REFERENCE.md#pages-context-store-search), [Context Store SQL Query](./REFERENCE.md#pages-context-store-sql-query) |
+| Blogs | [List](./REFERENCE.md#blogs-list), [Get](./REFERENCE.md#blogs-get), [Create](./REFERENCE.md#blogs-create), [Update](./REFERENCE.md#blogs-update), [Delete](./REFERENCE.md#blogs-delete), [Context Store Search](./REFERENCE.md#blogs-context-store-search), [Context Store SQL Query](./REFERENCE.md#blogs-context-store-sql-query) |
+| Articles | [List](./REFERENCE.md#articles-list), [Get](./REFERENCE.md#articles-get), [Create](./REFERENCE.md#articles-create), [Update](./REFERENCE.md#articles-update), [Delete](./REFERENCE.md#articles-delete), [Context Store Search](./REFERENCE.md#articles-context-store-search), [Context Store SQL Query](./REFERENCE.md#articles-context-store-sql-query) |
+| Balance Transactions | [List](./REFERENCE.md#balance-transactions-list), [Context Store Search](./REFERENCE.md#balance-transactions-context-store-search), [Context Store SQL Query](./REFERENCE.md#balance-transactions-context-store-sql-query) |
+| Disputes | [List](./REFERENCE.md#disputes-list), [Get](./REFERENCE.md#disputes-get), [Context Store Search](./REFERENCE.md#disputes-context-store-search), [Context Store SQL Query](./REFERENCE.md#disputes-context-store-sql-query) |
+| Metafield Pages | [List](./REFERENCE.md#metafield-pages-list), [Context Store Search](./REFERENCE.md#metafield-pages-context-store-search), [Context Store SQL Query](./REFERENCE.md#metafield-pages-context-store-sql-query) |
+| Metafield Blogs | [List](./REFERENCE.md#metafield-blogs-list), [Context Store Search](./REFERENCE.md#metafield-blogs-context-store-search), [Context Store SQL Query](./REFERENCE.md#metafield-blogs-context-store-sql-query) |
+| Metafield Articles | [List](./REFERENCE.md#metafield-articles-list), [Context Store Search](./REFERENCE.md#metafield-articles-context-store-search), [Context Store SQL Query](./REFERENCE.md#metafield-articles-context-store-sql-query) |
 | Draft Order Complete | [Update](./REFERENCE.md#draft-order-complete-update) |
 | Inventory Set | [Create](./REFERENCE.md#inventory-set-create) |
 | Inventory Adjust | [Create](./REFERENCE.md#inventory-adjust-create) |
@@ -178,6 +178,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -245,9 +249,91 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `ShopifyConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.shopify import ShopifyConnector
+
+connector = connect("shopify", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@ShopifyConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="shopify_inspect",
+    docs_tool="shopify_read_docs",
+)
+async def shopify_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@ShopifyConnector.agent_tool(framework="pydantic_ai")
+async def shopify_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@ShopifyConnector.agent_tool(framework="pydantic_ai")
+async def shopify_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.shopify import ShopifyConnector
+
+connector = connect("shopify", workspace_name="<your_workspace_name>")
+
+@ShopifyConnector.agent_tool(
+    inspect_tool="shopify_inspect",
+    docs_tool="shopify_read_docs",
+)
+async def shopify_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@ShopifyConnector.agent_tool()
+async def shopify_inspect():
+    return await connector.inspect_connector()
+
+@ShopifyConnector.agent_tool()
+async def shopify_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (shopify_inspect, shopify_read_docs, shopify_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `ShopifyConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `ShopifyConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `ShopifyConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -434,6 +520,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -445,7 +535,8 @@ from airbyte_agent_sdk.connectors.shopify.models import ShopifyAccessTokenAuthen
 connector = ShopifyConnector(
     auth_config=ShopifyAccessTokenAuthenticationAuthConfig(
         api_key="<Your Shopify Admin API access token>"
-    )
+    ),
+    shop="<Your Shopify store name (e.g., 'my-store' from my-store.myshopify.com)>"
 )
 
 tools = build_connector_tools(connector, framework="pydantic_ai")
@@ -463,7 +554,8 @@ from airbyte_agent_sdk.connectors.shopify.models import ShopifyAccessTokenAuthen
 connector = ShopifyConnector(
     auth_config=ShopifyAccessTokenAuthenticationAuthConfig(
         api_key="<Your Shopify Admin API access token>"
-    )
+    ),
+    shop="<Your Shopify store name (e.g., 'my-store' from my-store.myshopify.com)>"
 )
 
 tools = build_connector_tools(connector, framework="langchain")
@@ -488,7 +580,8 @@ from airbyte_agent_sdk.connectors.shopify.models import ShopifyAccessTokenAuthen
 connector = ShopifyConnector(
     auth_config=ShopifyAccessTokenAuthenticationAuthConfig(
         api_key="<Your Shopify Admin API access token>"
-    )
+    ),
+    shop="<Your Shopify store name (e.g., 'my-store' from my-store.myshopify.com)>"
 )
 
 tools = build_connector_tools(connector, framework="openai_agents")
@@ -508,7 +601,8 @@ from airbyte_agent_sdk.connectors.shopify.models import ShopifyAccessTokenAuthen
 connector = ShopifyConnector(
     auth_config=ShopifyAccessTokenAuthenticationAuthConfig(
         api_key="<Your Shopify Admin API access token>"
-    )
+    ),
+    shop="<Your Shopify store name (e.g., 'my-store' from my-store.myshopify.com)>"
 )
 
 mcp = FastMCP("Shopify Agent")
@@ -517,9 +611,101 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `ShopifyConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.shopify import ShopifyConnector
+from airbyte_agent_sdk.connectors.shopify.models import ShopifyAccessTokenAuthenticationAuthConfig
+
+connector = ShopifyConnector(
+    auth_config=ShopifyAccessTokenAuthenticationAuthConfig(
+        api_key="<Your Shopify Admin API access token>"
+    ),
+    shop="<Your Shopify store name (e.g., 'my-store' from my-store.myshopify.com)>"
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@ShopifyConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="shopify_inspect",
+    docs_tool="shopify_read_docs",
+)
+async def shopify_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@ShopifyConnector.agent_tool(framework="pydantic_ai")
+async def shopify_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@ShopifyConnector.agent_tool(framework="pydantic_ai")
+async def shopify_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.shopify import ShopifyConnector
+from airbyte_agent_sdk.connectors.shopify.models import ShopifyAccessTokenAuthenticationAuthConfig
+
+connector = ShopifyConnector(
+    auth_config=ShopifyAccessTokenAuthenticationAuthConfig(
+        api_key="<Your Shopify Admin API access token>"
+    ),
+    shop="<Your Shopify store name (e.g., 'my-store' from my-store.myshopify.com)>"
+)
+
+@ShopifyConnector.agent_tool(
+    inspect_tool="shopify_inspect",
+    docs_tool="shopify_read_docs",
+)
+async def shopify_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@ShopifyConnector.agent_tool()
+async def shopify_inspect():
+    return await connector.inspect_connector()
+
+@ShopifyConnector.agent_tool()
+async def shopify_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (shopify_inspect, shopify_read_docs, shopify_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `ShopifyConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `ShopifyConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `ShopifyConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -531,7 +717,8 @@ from airbyte_agent_sdk.connectors.shopify.models import ShopifyAccessTokenAuthen
 connector = ShopifyConnector(
     auth_config=ShopifyAccessTokenAuthenticationAuthConfig(
         api_key="<Your Shopify Admin API access token>"
-    )
+    ),
+    shop="<Your Shopify store name (e.g., 'my-store' from my-store.myshopify.com)>"
 )
 
 agent = Agent("openai:gpt-4o")
@@ -552,7 +739,8 @@ from airbyte_agent_sdk.connectors.shopify.models import ShopifyAccessTokenAuthen
 connector = ShopifyConnector(
     auth_config=ShopifyAccessTokenAuthenticationAuthConfig(
         api_key="<Your Shopify Admin API access token>"
-    )
+    ),
+    shop="<Your Shopify store name (e.g., 'my-store' from my-store.myshopify.com)>"
 )
 
 @tool
@@ -574,7 +762,8 @@ from airbyte_agent_sdk.connectors.shopify.models import ShopifyAccessTokenAuthen
 connector = ShopifyConnector(
     auth_config=ShopifyAccessTokenAuthenticationAuthConfig(
         api_key="<Your Shopify Admin API access token>"
-    )
+    ),
+    shop="<Your Shopify store name (e.g., 'my-store' from my-store.myshopify.com)>"
 )
 
 # strict_mode=False because `params: dict` is permissive and the default strict
@@ -599,7 +788,8 @@ from airbyte_agent_sdk.connectors.shopify.models import ShopifyAccessTokenAuthen
 connector = ShopifyConnector(
     auth_config=ShopifyAccessTokenAuthenticationAuthConfig(
         api_key="<Your Shopify Admin API access token>"
-    )
+    ),
+    shop="<Your Shopify store name (e.g., 'my-store' from my-store.myshopify.com)>"
 )
 
 mcp = FastMCP("Shopify Agent")
