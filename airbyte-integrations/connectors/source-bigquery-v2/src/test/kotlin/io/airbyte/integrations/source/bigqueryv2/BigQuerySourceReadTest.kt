@@ -52,7 +52,7 @@ class BigQuerySourceReadTest {
         val output: BufferingOutputConsumer = read(configured)
 
         Assertions.assertEquals(
-            mapOf("all_types" to 1, "no_rows" to 0, "with_pk" to 3, "all_types_view" to 1),
+            mapOf("all_types" to 2, "no_rows" to 0, "with_pk" to 3, "all_types_view" to 2),
             output.recordsByStream().mapValues { it.value.size } +
                 mapOf("no_rows" to output.recordsByStream()["no_rows"].orEmpty().size),
             output.dump(),
@@ -69,7 +69,8 @@ class BigQuerySourceReadTest {
             Assertions.assertNotNull(output.lastState(stream), "state of $stream\n" + output.dump())
         }
 
-        val allTypes: JsonNode = output.recordsByStream()["all_types"]!!.single().data
+        val allTypesRecords: List<AirbyteRecordMessage> = output.recordsByStream()["all_types"]!!
+        val allTypes: JsonNode = allTypesRecords.single { it.data["id"].asLong() == 1L }.data
         Assertions.assertEquals(1L, allTypes["id"].asLong(), allTypes.toString())
         Assertions.assertEquals("alice", allTypes["name"].asText(), allTypes.toString())
         Assertions.assertTrue(allTypes["active"].asBoolean(), allTypes.toString())
@@ -119,7 +120,42 @@ class BigQuerySourceReadTest {
             allTypes["line_items"],
             allTypes.toString(),
         )
-        val view: JsonNode = output.recordsByStream()["all_types_view"]!!.single().data
+        // The all-NULL row: every type goes through the driver's NULL path without a retrieval
+        // error (the driver's primitive getters throw on NULL, see BigQueryFieldTypes).
+        val nullRow: AirbyteRecordMessage = allTypesRecords.single { it.data["id"].asLong() == 2L }
+        Assertions.assertTrue(nullRow.meta?.changes.isNullOrEmpty(), nullRow.toString())
+        for (column in
+            listOf(
+                "name",
+                "price",
+                "big",
+                "ratio",
+                "active",
+                "blob",
+                "day",
+                "local_ts",
+                "ts",
+                "tod",
+                "geo",
+                "doc",
+                "span",
+                "address",
+            )) {
+            Assertions.assertTrue(nullRow.data[column]?.isNull == true, "$column of $nullRow")
+        }
+        // BigQuery stores a NULL ARRAY as an empty array.
+        for (column in listOf("tags", "line_items")) {
+            val value: JsonNode? = nullRow.data[column]
+            Assertions.assertTrue(
+                value != null && (value.isNull || (value.isArray && value.isEmpty)),
+                "$column of $nullRow",
+            )
+        }
+        val view: JsonNode =
+            output
+                .recordsByStream()["all_types_view"]!!
+                .single { it.data["id"].asLong() == 1L }
+                .data
         Assertions.assertEquals(
             setOf("id", "name", "address"),
             view.fieldNames().asSequence().toSet()

@@ -306,12 +306,20 @@ How `read` is put together:
   `GEOGRAPHY` (GeoJSON in that rendering) turned back into WKT (`GeoJson.toWkt`), numbers parsed
   as `BigDecimal`. `TIMESTAMP` stays on the driver (`OffsetDateTime`, epoch-based, exact).
   `WHERE`/`ORDER BY` keep the native columns.
-- A fourth driver bug, found on the real service on 2026-09-15 (`test_parquet.flag`): the driver's
-  `getBoolean` throws `NullPointerException: Cannot invoke "java.lang.Boolean.booleanValue()"
-  because the return value of "BigQueryTypeRegistry.convert(Object, Class)" is null` on a NULL
-  `BOOL`, which the toolkit's `BooleanFieldType` reports as a `SOURCE_RETRIEVAL_ERROR` change on
-  the record (the value is still null). `BigQueryBooleanFieldType` reads `BOOL` with `getObject`
-  (`NullSafeBooleanGetter`) instead.
+- A fourth driver bug, found on the real service on 2026-09-15 (`test_parquet.flag`, then
+  `rodi_proto_type_test.purchases.user_id`): every primitive getter of the driver's
+  `BigQueryBaseResultSet` (`getBoolean`, `getLong`, `getInt`, `getShort`, `getByte`, `getDouble`,
+  `getFloat`) is `getObject` + `BigQueryTypeRegistry.convert(value, Class)` + an unboxing without a
+  null check, so a NULL value throws `NullPointerException: Cannot invoke "java.lang.Long.longValue()"
+  because the return value of "BigQueryTypeRegistry.convert(Object, Class)" is null`. The toolkit's
+  `BooleanFieldType`/`LongFieldType`/`DoubleFieldType` call those getters before `wasNull`, and
+  `JdbcSelectQuerier` reports the exception as a `SOURCE_RETRIEVAL_ERROR` change on the record (the
+  value is null either way; on `purchases`, 1.2M records, exactly the 21 NULL `INT64` values carried
+  the change). `BigQueryBooleanFieldType`, `BigQueryLongFieldType` and `BigQueryDoubleFieldType`
+  read `BOOL`/`INT64`/`FLOAT64` with `getObject` (`NullSafeGetter`) instead; the object getters
+  (`getString`, `getBytes`, `getBigDecimal`, `getObject(int, Class)`) return null and are not
+  affected. The emulator fixture's `all_types` table has an all-NULL row (`id = 2`) so that the
+  tests read every type's NULL path.
 
 Next: Stage 5 (terabyte-scale table, memory, checkpoint cadence, kill-and-resume, bytes billed vs
 legacy), a CDK fix or workaround for `_ab_*` columns, the docs page, and a breaking-change

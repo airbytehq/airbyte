@@ -98,9 +98,10 @@ object BigQueryEmulatorTestFixture {
 
     /**
      * Seeds the datasets used by the check and discover tests: every BigQuery type, nested
-     * `STRUCT`/`ARRAY` columns, a table with a `PRIMARY KEY` and three rows (for the incremental
-     * read tests), a view, a table without rows, a second dataset and a dataset without tables. The
-     * default `--project` dataset of the container image (if any) is left alone.
+     * `STRUCT`/`ARRAY` columns (one full row and one all-NULL row), a table with a `PRIMARY KEY`
+     * and three rows (for the incremental read tests), a view, a table without rows, a second
+     * dataset and a dataset without tables. The default `--project` dataset of the container image
+     * (if any) is left alone.
      */
     fun seed(bigquery: BigQuery) {
         log.info { "Seeding the BigQuery emulator." }
@@ -163,6 +164,17 @@ INSERT INTO `$DATASET`.`all_types` VALUES (
   ST_GEOGFROMTEXT('POINT(1 2)'), JSON '{"a":1}', MAKE_INTERVAL(2021, 10, 10, 10, 10, 10),
   STRUCT('Paris' AS city, 75001 AS zip, STRUCT(TIME '08:00:00' AS observed_at) AS geo), ['a', 'b'],
   [STRUCT('sku-1' AS sku, 2 AS qty, [STRUCT('SUMMER' AS code, 10 AS pct)] AS discounts)]
+)
+"""
+            )
+        )
+        // A row with a NULL in every nullable column: the driver's primitive getters throw on
+        // NULL (see BigQueryFieldTypes), so every type's NULL path is read by the tests.
+        bigquery.query(
+            QueryJobConfiguration.of(
+                """
+INSERT INTO `$DATASET`.`all_types` VALUES (
+  2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 )
 """
             )

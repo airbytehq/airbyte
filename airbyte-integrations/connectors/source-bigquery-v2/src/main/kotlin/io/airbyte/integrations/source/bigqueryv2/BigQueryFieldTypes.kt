@@ -13,11 +13,13 @@ import com.google.cloud.bigquery.FieldValueList
 import com.google.cloud.bigquery.StandardSQLTypeName
 import io.airbyte.cdk.data.ArrayAirbyteSchemaType
 import io.airbyte.cdk.data.BooleanCodec
+import io.airbyte.cdk.data.DoubleCodec
 import io.airbyte.cdk.data.JsonCodec
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LocalDateCodec
 import io.airbyte.cdk.data.LocalDateTimeCodec
 import io.airbyte.cdk.data.LocalTimeCodec
+import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.FieldType
@@ -25,12 +27,12 @@ import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BooleanAccessor
 import io.airbyte.cdk.jdbc.BytesFieldType
 import io.airbyte.cdk.jdbc.DateAccessor
-import io.airbyte.cdk.jdbc.DoubleFieldType
+import io.airbyte.cdk.jdbc.DoubleAccessor
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.jdbc.JdbcGetter
 import io.airbyte.cdk.jdbc.JdbcSetter
 import io.airbyte.cdk.jdbc.JsonStringFieldType
-import io.airbyte.cdk.jdbc.LongFieldType
+import io.airbyte.cdk.jdbc.LongAccessor
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
 import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
@@ -62,9 +64,11 @@ import java.util.Base64
 /**
  * Maps BigQuery column types to [FieldType]s.
  *
- * Scalars reuse the `extract-jdbc` field types (the JDBC driver returns `INT64` as `Long`,
- * `NUMERIC`/`BIGNUMERIC` as `BigDecimal`, `DATE`/`TIME`/`DATETIME`/`TIMESTAMP` as `java.sql`
- * temporal types, `BYTES` as `byte[]`, `JSON`/`GEOGRAPHY`/`INTERVAL`/`RANGE` as `String`). `STRUCT`
+ * Scalars reuse the `extract-jdbc` field types where the JDBC driver behaves
+ * (`NUMERIC`/`BIGNUMERIC` as `BigDecimal`, `TIMESTAMP` as `OffsetDateTime`, `BYTES` as `byte[]`,
+ * `JSON`/`GEOGRAPHY`/`INTERVAL`/`RANGE` as `String`). `BOOL`/`INT64`/`FLOAT64` get connector types
+ * which read with `getObject` ([NullSafeGetter], the driver's primitive getters throw on NULL);
+ * `DATE`/`DATETIME`/`TIME` are selected as text ([BigQueryTextTemporalFieldType]). `STRUCT`
  * (RECORD) and `ARRAY` (REPEATED) columns get connector-defined types which carry the nested
  * schema, so that the catalog advertises `properties` and `items`.
  *
@@ -94,9 +98,9 @@ object BigQueryFieldTypes {
             "INTEGER",
             "BIGINT",
             "TINYINT",
-            "BYTEINT" -> LongFieldType
+            "BYTEINT" -> BigQueryLongFieldType
             "FLOAT64",
-            "FLOAT" -> DoubleFieldType
+            "FLOAT" -> BigQueryDoubleFieldType
             "NUMERIC",
             "DECIMAL",
             "BIGNUMERIC",
@@ -158,13 +162,57 @@ data object JsonNodeCodec : ProtobufAwareCustomConnectorJsonCodec<JsonNode> {
 }
 
 /**
- * BigQuery `BOOL`. The JDBC driver's `getBoolean` throws a `NullPointerException` on a NULL value
- * (`Cannot invoke "java.lang.Boolean.booleanValue()" because the return value of
- * "BigQueryTypeRegistry.convert(Object, Class)" is null`, driver 1.4.0, verified on the service on
- * 2026-09-15), which the toolkit's `BooleanFieldType` turns into a spurious
- * `SOURCE_RETRIEVAL_ERROR` change on every record with a NULL `BOOL`. `getObject` returns the boxed
- * `Boolean`, or null.
+ * BigQuery `BOOL`, `INT64` and `FLOAT64` are read with `getObject` instead of the JDBC primitive
+ * getters.
+ *
+ * Every primitive getter of the driver's `BigQueryBaseResultSet` (`getBoolean`, `getLong`,
+ * `getInt`, `getShort`, `getByte`, `getDouble`, `getFloat`; driver 1.4.0) is `getObject` followed
+ * by `BigQueryTypeRegistry.convert(value, Long.class)` and an unboxing without a null check, so a
+ * NULL value throws `NullPointerException: Cannot invoke "java.lang.Long.longValue()" because the
+ * return value of "BigQueryTypeRegistry.convert(Object, Class)" is null`. The toolkit's
+ * `BooleanFieldType`, `LongFieldType` and `DoubleFieldType` call those getters before `wasNull`,
+ * and `JdbcSelectQuerier` turns the exception into a spurious `SOURCE_RETRIEVAL_ERROR` change on
+ * every record with a NULL in such a column (the value is null either way). Seen on the real
+ * service on 2026-09-15 (`test_parquet.flag`, `rodi_proto_type_test.purchases.user_id`).
+ * `getObject` returns the boxed value, or null. The object getters (`getString`, `getBytes`,
+ * `getBigDecimal`, `getObject(int, Class)`) return null for NULL, so the other scalar types are not
+ * affected.
  */
+sealed class NullSafeGetter<T : Any>(private val convert: (Any) -> T) : JdbcGetter<T> {
+    override fun get(rs: ResultSet, colIdx: Int): T? {
+        val value: Any = rs.getObject(colIdx) ?: return null
+        if (rs.wasNull()) return null
+        return convert(value)
+    }
+}
+
+data object NullSafeBooleanGetter :
+    NullSafeGetter<Boolean>({ value ->
+        when (value) {
+            is Boolean -> value
+            is Number -> value.toInt() != 0
+            else -> value.toString().toBooleanStrict()
+        }
+    })
+
+data object NullSafeLongGetter :
+    NullSafeGetter<Long>({ value ->
+        when (value) {
+            is Long -> value
+            is Number -> value.toLong()
+            else -> value.toString().toLong()
+        }
+    })
+
+data object NullSafeDoubleGetter :
+    NullSafeGetter<Double>({ value ->
+        when (value) {
+            is Double -> value
+            is Number -> value.toDouble()
+            else -> value.toString().toDouble()
+        }
+    })
+
 data object BigQueryBooleanFieldType :
     LosslessJdbcFieldType<Boolean, Boolean>(
         LeafAirbyteSchemaType.BOOLEAN,
@@ -174,17 +222,23 @@ data object BigQueryBooleanFieldType :
         BooleanAccessor,
     )
 
-data object NullSafeBooleanGetter : JdbcGetter<Boolean> {
-    override fun get(rs: ResultSet, colIdx: Int): Boolean? {
-        val value: Any = rs.getObject(colIdx) ?: return null
-        if (rs.wasNull()) return null
-        return when (value) {
-            is Boolean -> value
-            is Number -> value.toInt() != 0
-            else -> value.toString().toBooleanStrict()
-        }
-    }
-}
+data object BigQueryLongFieldType :
+    LosslessJdbcFieldType<Long, Long>(
+        LeafAirbyteSchemaType.INTEGER,
+        NullSafeLongGetter,
+        LongCodec,
+        LongCodec,
+        LongAccessor,
+    )
+
+data object BigQueryDoubleFieldType :
+    LosslessJdbcFieldType<Double, Double>(
+        LeafAirbyteSchemaType.NUMBER,
+        NullSafeDoubleGetter,
+        DoubleCodec,
+        DoubleCodec,
+        DoubleAccessor,
+    )
 
 /**
  * BigQuery `DATE`, `DATETIME` and `TIME` columns are selected as `CAST(col AS STRING)` and parsed

@@ -9,9 +9,7 @@ import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BytesFieldType
-import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.JsonStringFieldType
-import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
@@ -83,7 +81,7 @@ class BigQueryProtobufEncodingTest {
                 fields =
                     listOf(
                         EmittedField("city", StringFieldType),
-                        EmittedField("zip", LongFieldType)
+                        EmittedField("zip", BigQueryLongFieldType)
                     )
             )
         val value: JsonNode = Jsons.readTree("""{"city":"Paris","zip":75001}""")
@@ -107,7 +105,7 @@ class BigQueryProtobufEncodingTest {
                     fields =
                         listOf(
                             EmittedField("sku", StringFieldType),
-                            EmittedField("qty", LongFieldType),
+                            EmittedField("qty", BigQueryLongFieldType),
                             EmittedField("observed_at", BigQueryTimeFieldType),
                         )
                 )
@@ -121,9 +119,9 @@ class BigQueryProtobufEncodingTest {
     fun testNullsAreEncodedAsProtobufNull() {
         Assertions.assertNull(roundTrip(BigQueryStructFieldType(fields = null), null))
         Assertions.assertNull(roundTrip(BigQueryStructFieldType(fields = null), Jsons.nullNode()))
-        Assertions.assertNull(roundTrip(BigQueryArrayFieldType(LongFieldType), null))
+        Assertions.assertNull(roundTrip(BigQueryArrayFieldType(BigQueryLongFieldType), null))
         Assertions.assertNull(roundTrip(BigQueryDateFieldType, null))
-        Assertions.assertNull(roundTrip(LongFieldType, null))
+        Assertions.assertNull(roundTrip(BigQueryLongFieldType, null))
     }
 
     @Test
@@ -148,14 +146,14 @@ class BigQueryProtobufEncodingTest {
     fun testScalarTypesRoundTrip() {
         val timestamp = OffsetDateTime.parse("2021-10-20T11:22:33.123456Z")
         Assertions.assertEquals(timestamp, roundTrip(OffsetDateTimeFieldType, timestamp))
-        Assertions.assertEquals(BigInteger.valueOf(42L), roundTrip(LongFieldType, 42L))
+        Assertions.assertEquals(BigInteger.valueOf(42L), roundTrip(BigQueryLongFieldType, 42L))
         Assertions.assertEquals(
             BigInteger.valueOf(Long.MIN_VALUE),
-            roundTrip(LongFieldType, Long.MIN_VALUE)
+            roundTrip(BigQueryLongFieldType, Long.MIN_VALUE)
         )
         Assertions.assertEquals(
             0,
-            BigDecimal("0.25").compareTo(roundTrip(DoubleFieldType, 0.25) as BigDecimal)
+            BigDecimal("0.25").compareTo(roundTrip(BigQueryDoubleFieldType, 0.25) as BigDecimal)
         )
         Assertions.assertEquals(
             BigDecimal("12345678901234567890.123456789"),

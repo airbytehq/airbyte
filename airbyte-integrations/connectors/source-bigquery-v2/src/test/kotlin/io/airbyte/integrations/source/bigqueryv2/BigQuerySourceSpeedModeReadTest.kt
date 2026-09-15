@@ -235,7 +235,7 @@ class BigQuerySourceSpeedModeReadTest {
                 )
             }
             Assertions.assertEquals(
-                mapOf("all_types" to 1, "with_pk" to 3, "all_types_view" to 1),
+                mapOf("all_types" to 2, "with_pk" to 3, "all_types_view" to 2),
                 socketRecords.mapValues { it.value.size }
             )
 
