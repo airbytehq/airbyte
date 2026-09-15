@@ -145,7 +145,8 @@ data class CdcIncrementalConfiguration(
     val initialWaitingSeconds: Duration,
     val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior,
     val initialLoadTimeout: Duration,
-    val pollIntervalMs: Int
+    val pollIntervalMs: Int,
+    val maxIterationTransactions: Int
 ) : IncrementalConfiguration
 
 enum class InvalidCdcCursorPositionBehavior {
@@ -192,7 +193,10 @@ constructor(
                         }
 
                     // Validate poll interval vs heartbeat interval
-                    val pollIntervalMs = incrementalSpec.pollIntervalMs ?: 500
+                    val pollIntervalMs =
+                        incrementalSpec.pollIntervalMs
+                            ?: MsSqlServerSourceConfigurationSpecification
+                                .DEFAULT_POLL_INTERVAL_MS
                     val heartbeatIntervalMs =
                         MsSqlServerSourceConfigurationSpecification.DEFAULT_HEARTBEAT_INTERVAL_MS
                     if (pollIntervalMs >= heartbeatIntervalMs) {
@@ -202,11 +206,22 @@ constructor(
                         )
                     }
 
+                    val maxIterationTransactions =
+                        incrementalSpec.maxIterationTransactions
+                            ?: MsSqlServerSourceConfigurationSpecification
+                                .DEFAULT_MAX_ITERATION_TRANSACTIONS
+                    if (maxIterationTransactions < 0) {
+                        throw ConfigErrorException(
+                            "Max transactions per CDC iteration ($maxIterationTransactions) must be 0 (unbounded) or a positive number."
+                        )
+                    }
+
                     CdcIncrementalConfiguration(
                         initialWaitingSeconds,
                         invalidCdcCursorPositionBehavior,
                         initialLoadTimeout,
                         pollIntervalMs,
+                        maxIterationTransactions,
                     )
                 }
             }

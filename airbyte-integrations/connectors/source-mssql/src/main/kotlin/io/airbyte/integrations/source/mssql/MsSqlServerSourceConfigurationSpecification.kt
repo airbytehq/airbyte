@@ -238,6 +238,9 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
 
     companion object {
         const val DEFAULT_HEARTBEAT_INTERVAL_MS = 15000L
+        const val DEFAULT_POLL_INTERVAL_MS = 500
+        // Debezium's own default for `max.iteration.transactions`
+        const val DEFAULT_MAX_ITERATION_TRANSACTIONS = 500
     }
 }
 
@@ -379,7 +382,17 @@ class Cdc : IncrementalConfigurationSpecification {
     )
     @JsonSchemaDefault("500")
     @JsonSchemaInject(json = """{"order":4, "max": 14999, "min": 100,"always_show": true}""")
-    var pollIntervalMs: Int? = 500
+    var pollIntervalMs: Int? = MsSqlServerSourceConfigurationSpecification.DEFAULT_POLL_INTERVAL_MS
+
+    @JsonProperty("max_iteration_transactions")
+    @JsonSchemaTitle("Max Transactions per CDC Iteration (Advanced)")
+    @JsonPropertyDescription(
+        "The maximum number of transactions Debezium reads from the transaction log in each streaming iteration. The limit counts transactions across the entire database, not only the tables in this connection, so a database with many CDC-enabled tables outside the connection can fall behind at the default. Raise it, or set 0 for unbounded, to catch up faster on a large CDC backlog; higher values increase the connector's memory usage. Defaults to 500.",
+    )
+    @JsonSchemaDefault("500")
+    @JsonSchemaInject(json = """{"order":5, "min": 0, "always_show": true}""")
+    var maxIterationTransactions: Int? =
+        MsSqlServerSourceConfigurationSpecification.DEFAULT_MAX_ITERATION_TRANSACTIONS
 }
 
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.replication_method")
