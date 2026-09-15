@@ -2,7 +2,7 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
-## September 14, 2026
+## September 15, 2026
 
 **Important**: Updated pricing model
 
