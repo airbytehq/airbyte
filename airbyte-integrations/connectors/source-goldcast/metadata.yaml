@@ -31,10 +31,12 @@ data:
         message: >-
           The `event_members` stream no longer enumerates a fixed list of properties inside
           `props`. Registration fields are defined per Goldcast workspace, so `props` is now a
-          schemaless object: V2 destinations serialise it to a JSON string, which preserves every
-          field every workspace defines instead of only the eleven that happened to be listed.
-          Users reading `props.<field>` as a nested column will need to refresh the source schema,
-          reset the `event_members` stream, and parse the JSON string instead. Please refer to the
+          schemaless object. On S3 and GCS in Avro or Parquet format this changes the `props`
+          column from a record of the eleven listed fields to a JSON string that preserves every
+          field every workspace defines; readers of `props.<field>` need to refresh the source
+          schema and parse the JSON string instead. Database and data-lake destinations (BigQuery,
+          Snowflake, Redshift, Postgres, S3 Data Lake, GCS Data Lake) already store `props` as a
+          complete JSON value and are not affected. Please refer to the
           [migration guide](https://docs.airbyte.com/integrations/sources/goldcast-migrations) for
           more information.
         upgradeDeadline: "2026-10-31"
