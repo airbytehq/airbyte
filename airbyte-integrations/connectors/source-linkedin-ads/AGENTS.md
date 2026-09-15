@@ -172,6 +172,7 @@ The LinkedIn Marketing API supports date-based filtering on analytics and campai
 | lead_form_responses | medium | child | none | none | deferred_child |  |
 | lead_forms | medium | child | none | none | deferred_child |  |
 | videos | medium | child | none | none | deferred_child | Videos referenced by ad creatives, resolved creative -> post -> video by URN (the account-level finder is application-gated); `/videos` exposes no modification timestamp, so incremental is not available |
+| organizations | small | top-level | none | none | deferred_no_api_support | Organization ACL rows of the authenticated member (`organizationAcls?q=roleAssignee`); the endpoint exposes no modification timestamp, so incremental is not available |
 
 ### Future incremental stream candidates
 

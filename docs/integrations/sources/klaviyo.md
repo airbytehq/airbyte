@@ -199,6 +199,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.4 | 2026-09-15 | [86109](https://github.com/airbytehq/airbyte/pull/86109) | Update dependencies |
 | 3.0.3 | 2026-09-10 | [85217](https://github.com/airbytehq/airbyte/pull/85217) | Send the `global_exclusions` cursor filter to Klaviyo, with a one-hour lookback window, so incremental syncs no longer re-page all profiles; a first/stateless sync still returns the full suppression list. |
 | 3.0.2 | 2026-09-08 | [84635](https://github.com/airbytehq/airbyte/pull/84635) | Update dependencies |
 | 3.0.1 | 2026-08-21 | [84908](https://github.com/airbytehq/airbyte/pull/84908) | Fail fast with a rate limit error instead of sleeping for hours when Klaviyo returns a daily-quota `Retry-After` |
