@@ -256,5 +256,13 @@ How `read` is put together:
   `WHERE`/`ORDER BY` keep the native columns.
 
 Next: Stage 5 (terabyte-scale table, memory, checkpoint cadence, kill-and-resume, bytes billed vs
-legacy), the real-service checks listed above once a dataset can be seeded, a CDK fix or workaround
-for `_ab_*` columns, the docs page, and a breaking-change evaluation of the deliberate deviations.
+legacy), a CDK fix or workaround for `_ab_*` columns, the docs page, and a breaking-change
+evaluation of the deliberate deviations.
+
+Known scaling limit of `discover` without `dataset_id`: on the test project (45,080 datasets,
+127,127 tables of CI leftovers) v2 fetched about 500 tables per minute and had reached 1.4 GiB
+after 31,000 tables when the run was stopped, because `BigQuerySourceMetadataQuerier` keeps every
+fetched `Table` (full schema) until the operation ends and the default JVM heap in a small
+container is about 1.9 GiB. Keeping only the fields and primary key per table would make memory
+scale with the catalog instead; a catalog of that many streams is impractical for the platform
+regardless, so users of such projects should set `dataset_id`.
