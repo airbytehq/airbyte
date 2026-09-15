@@ -1,0 +1,17 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-applovin-ads:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    bypass_reason: "No AppLovin Report Key is available in CI at this time"
+  discovery:
+    bypass_reason: "No AppLovin Report Key is available in CI at this time"
+  basic_read:
+    bypass_reason: "No AppLovin Report Key is available in CI at this time"
+  incremental:
+    bypass_reason: "No AppLovin Report Key is available in CI at this time"
+  full_refresh:
+    bypass_reason: "No AppLovin Report Key is available in CI at this time"
