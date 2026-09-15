@@ -69,7 +69,7 @@ class IterableStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        Iterable API does not support pagination
+        Most Iterable endpoints do not support pagination; streams that do override this.
         """
         return None
 
@@ -383,9 +383,26 @@ class IterableExportEventsStreamAdjustableRange(IterableExportStreamAdjustableRa
 
 class Campaigns(IterableStream):
     data_field = "campaigns"
+    page_size = 1000
+
+    def __init__(self, authenticator, region: str = "US"):
+        self._page = 1
+        super().__init__(authenticator, region)
 
     def path(self, **kwargs) -> str:
         return "campaigns"
+
+    def request_params(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
+        next_page_token = kwargs.get("next_page_token")
+        page = next_page_token["page"] if next_page_token else 1
+        self._page = page
+        return {"page": page, "pageSize": self.page_size}
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        response_json = response.json() or {}
+        if len(response_json.get(self.data_field, [])) < self.page_size:
+            return None
+        return {"page": self._page + 1}
 
 
 class CampaignsMetrics(IterableStream):
