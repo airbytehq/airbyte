@@ -273,5 +273,38 @@
         "updated_at": "2222-01-21T00:00:00.000Z"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "prospect_pools"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "tags"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "user_permissions"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
   }
 ]

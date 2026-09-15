@@ -349,6 +349,48 @@
       "primary_key": [["id"]],
       "cursor_field": ["updated_at"],
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "prospect_pools",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "tags",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "user_permissions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
     }
   ]
 }
