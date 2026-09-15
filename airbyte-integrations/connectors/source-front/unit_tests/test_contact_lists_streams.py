@@ -63,9 +63,7 @@ def _page(items: list, next_url: str | None = None) -> dict:
     "stream_name,parent_path,parent_id,expected_path",
     [
         pytest.param("contact_groups", None, None, "/contact_lists", id="contact_groups"),
-        pytest.param(
-            "teammates_contact_groups", "/teammates", "tea_1", "/teammates/tea_1/contact_lists", id="teammates_contact_groups"
-        ),
+        pytest.param("teammates_contact_groups", "/teammates", "tea_1", "/teammates/tea_1/contact_lists", id="teammates_contact_groups"),
         pytest.param("teams_contact_groups", "/teams", "tim_1", "/teams/tim_1/contact_lists", id="teams_contact_groups"),
     ],
 )
