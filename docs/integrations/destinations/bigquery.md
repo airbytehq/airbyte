@@ -280,6 +280,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.3 | 2026-09-15 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Handle a table that disappears between setup and start in direct-load mode by recreating it instead of failing with a NullPointerException. |
 | 3.1.2 | 2026-09-09 |[85804](https://github.com/airbytehq/airbyte/pull/85804 | Update loading method UI: reorder to show GCS Staging (Recommended) first, improve descriptions for both loading methods. |
 | 3.1.1 | 2026-09-09 | [79178](https://github.com/airbytehq/airbyte/pull/79178) | Classify BigQuery custom quota exceeded errors as config errors instead of system errors. |
 | 3.1.0 | 2026-08-25 | [85041](https://github.com/airbytehq/airbyte/pull/85041) | Add optional `job_project_id` field for BigQuery job quota isolation |
