@@ -28,8 +28,8 @@ abstract class DebeziumPropertiesManager(
         // debezium engine configuration
         offsetManager.setDebeziumProperties(props)
         // default values from debezium CommonConnectorConfig
-        props.setProperty("max.batch.size", "2048")
-        props.setProperty("max.queue.size", "8192")
+        props.putIfAbsent("max.batch.size", "2048")
+        props.putIfAbsent("max.queue.size", "8192")
 
         props.setProperty("errors.max.retries", "0")
         // This property must be strictly less than errors.retry.delay.max.ms
@@ -61,7 +61,7 @@ abstract class DebeziumPropertiesManager(
         props.setProperty("decimal.handling.mode", "string")
 
         // https://debezium.io/documentation/reference/2.2/connectors/postgresql.html#postgresql-property-max-queue-size-in-bytes
-        props.setProperty("max.queue.size.in.bytes", BYTE_VALUE_256_MB)
+        props.putIfAbsent("max.queue.size.in.bytes", BYTE_VALUE_256_MB)
 
         // WARNING : Never change the value of this otherwise all the connectors would start syncing
         // from
