@@ -19,6 +19,7 @@ _REPORT_STREAMS = {"flow_series_reports", "campaign_values_reports"}
 # The metrics stream ignores start_date so that every metric definition is synced and can be
 # joined against events (https://github.com/airbytehq/airbyte/pull/61338).
 _METRICS_EXPECTED_START = "1970-01-01T00:00:00Z"
+_GLOBAL_EXCLUSIONS_EXPECTED_START = "1970-01-01T00:00:00Z"
 
 
 def _collect_start_datetime_templates(node):
@@ -41,6 +42,7 @@ def test_manifest_uses_one_year_default_for_every_stream():
     manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
     streams = manifest["definitions"]["streams"]
     metrics_templates = _collect_start_datetime_templates(streams.pop("metrics"))
+    global_exclusions_templates = _collect_start_datetime_templates(streams.pop("global_exclusions"))
     report_templates = [template for name in sorted(_REPORT_STREAMS) for template in _collect_start_datetime_templates(streams.pop(name))]
     templates = _collect_start_datetime_templates(streams)
 
@@ -48,6 +50,7 @@ def test_manifest_uses_one_year_default_for_every_stream():
     assert all(template == _EXPECTED_TEMPLATE for template in templates)
     assert report_templates == [_REPORT_TEMPLATE] * len(_REPORT_STREAMS)
     assert metrics_templates == [_METRICS_EXPECTED_START]
+    assert global_exclusions_templates == [_GLOBAL_EXCLUSIONS_EXPECTED_START]
 
 
 @freeze_time("2024-06-15T12:00:00Z")
