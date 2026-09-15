@@ -57,7 +57,7 @@ internal class S3DataLakeTableSchemaMapperTest {
         "'\${weird}', __weird_",
         "1field_with_a_leading_number, 1field_with_a_leading_number",
         "_airbyte_raw_id, _airbyte_raw_id",
-        // Snowflake reserved keywords get an underscore prefix, after the other rules
+        // SQL reserved keywords get an underscore prefix
         "CURRENT_DATE, _current_date",
         "constraint, _constraint",
         "Current.Timestamp, _current_timestamp",

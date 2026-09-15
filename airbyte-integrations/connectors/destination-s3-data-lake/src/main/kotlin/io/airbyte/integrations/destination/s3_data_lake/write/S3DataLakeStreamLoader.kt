@@ -52,16 +52,8 @@ class S3DataLakeStreamLoader(
         withFinalColumnNames(icebergUtil.toIcebergSchema(stream = stream))
 
     /**
-     * [IcebergUtil.toIcebergSchema] builds the schema from the *input* column names. Records, on
-     * the other hand, arrive keyed by the *final* column names resolved by the CDK (see
-     * [io.airbyte.cdk.load.schema.TableSchemaMapper]), so the two have to agree. Rename the
-     * top-level user columns here, keeping field IDs (and therefore identifier fields and sort
-     * order) intact.
-     *
-     * Airbyte meta columns are skipped: they are not part of the stream's input schema, so
-     * [io.airbyte.cdk.load.schema.model.StreamTableSchema.getFinalColumnName] has no mapping for
-     * them, and their names (`_airbyte_raw_id`, ...) are already lowercase alphanumeric/underscore,
-     * so normalization would leave them unchanged anyway.
+     * Renames top-level columns from input names to final names (resolved by the CDK's
+     * [io.airbyte.cdk.load.schema.TableSchemaMapper]), keeping field IDs intact.
      */
     private fun withFinalColumnNames(schema: Schema): Schema {
         val fields =
@@ -77,13 +69,9 @@ class S3DataLakeStreamLoader(
     }
 
     /**
-     * Enabling `normalize_column_names` on a connection whose table already exists makes every
-     * affected column look like a drop + add to the schema synchronizer: the old column is deleted
-     * and a fresh, empty one is created under the new name. Rather than silently discarding data,
-     * refuse to proceed unless this sync is a truncate refresh, which rebuilds the table anyway.
-     *
-     * Only checked while the option is on. With it off the connector behaves exactly as it did
-     * before the option existed, so a source-side rename keeps its historical drop + add semantics.
+     * Refuses to sync when enabling `normalize_column_names` would rename existing columns (which
+     * would appear as drop + add, silently discarding data). Truncate refreshes are allowed since
+     * they rebuild the table.
      */
     private fun failOnNormalizationRenames(existingSchema: Schema) {
         if (!icebergConfiguration.normalizeColumnNames || stream.isSingleGenerationTruncate()) {

@@ -330,18 +330,14 @@ In particular, when using AWS Glue, the connector will:
 
 ### Column names
 
-By default, column names are written to Iceberg exactly as they appear in the source (for example `userId` or `Foo.Bar`). Some query engines cannot read such tables through a Glue catalog: [Snowflake](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-glue) only supports lowercase identifiers, and special characters in column names are a common source of query failures.
+By default, column names are written to Iceberg exactly as they appear in the source (for example `Foo.Bar` or `userId`). Some query engines cannot read tables with mixed-case or special-character column names through a Glue catalog.
 
-Enable the **Normalize Column Names** option to normalize every column name before it is written:
+Enable the **Normalize Column Names** option to normalize every column name before it is written. The name is converted to lowercase, accents are removed, and every character other than a letter, digit, or underscore is replaced with an underscore. For example, `Foo.Bar` becomes `foo_bar`.
 
-- The name is converted to lowercase: `userId` becomes `userid` and `URLs` becomes `urls`.
-- Accents are removed, and every character other than a letter, digit, or underscore is replaced with an underscore: `Foo.Bar` becomes `foo_bar`, `my-column` becomes `my_column`, and `spécial` becomes `special`. Leading digits are kept as-is.
-- Names that are [reserved words in Snowflake](https://docs.snowflake.com/en/sql-reference/reserved-keywords) are prefixed with an underscore: `CURRENT_DATE` becomes `_current_date`.
-
-Names that normalize to the same value are made unique with a numeric suffix: `ID` and `id` become `id` and `id_1`, and `Foo.Bar` and `foo_bar` become `foo_bar` and `foo_bar_1`. Airbyte's own `_airbyte_*` columns already satisfy these rules and are never renamed. The option applies to every catalog type.
+Names that normalize to the same value are made unique with a numeric suffix (`ID` and `id` become `id` and `id_1`). Airbyte's own `_airbyte_*` columns already satisfy these rules and are never renamed. The option applies to every catalog type.
 
 :::caution Changing the option on an existing connection
-Enabling **Normalize Column Names** on a connection whose tables already exist changes the column names of those tables. Because the connector treats a renamed column as a dropped column plus a new column, syncing without resetting would discard the data in the old columns. The connector therefore refuses to sync such a stream until you [clear its data](../../platform/operator-guides/clear) and run a full refresh, which recreates the table with the new column names. Disabling the option again is not detected in the same way, so clear the affected streams before turning it off as well.
+Enabling **Normalize Column Names** on a connection whose tables already exist changes the column names of those tables. The connector refuses to sync until you [clear the stream's data](../../platform/operator-guides/clear) and run a full refresh, which recreates the table with the new column names. Clear the affected streams before disabling the option as well.
 :::
 
 ## Deduplication
@@ -432,7 +428,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.4.0 | 2026-09-14 | [85827](https://github.com/airbytehq/airbyte/pull/85827) | Add `normalize_column_names` option: lowercase column names, replace non-alphanumeric characters with underscores, and prefix Snowflake reserved words. |
+| 0.4.0 | 2026-09-14 | [85827](https://github.com/airbytehq/airbyte/pull/85827) | Add `normalize_column_names` option: lowercase column names, replace non-alphanumeric characters with underscores, and prefix SQL reserved keywords. |
 | 0.3.53 | 2026-08-24 | [84994](https://github.com/airbytehq/airbyte/pull/84994) | Upgrade to Bulk CDK 1.0.25. |
 | 0.3.52 | 2026-06-23 | [80349](https://github.com/airbytehq/airbyte/pull/80349) | Remove awssdk:bundle fat jar to fix OOMKilled during CHECK operations |
 | 0.3.51 | 2026-06-15 | [79123](https://github.com/airbytehq/airbyte/pull/79123) | Update Apache Iceberg dependencies. |
