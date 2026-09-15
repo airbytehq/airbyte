@@ -11,6 +11,9 @@ import com.google.cloud.bigquery.FieldList
 import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.StandardSQLTypeName
 import com.google.cloud.bigquery.StandardTableDefinition
+import com.google.cloud.bigquery.Table
+import com.google.cloud.bigquery.TableDefinition
+import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.TimePartitioning
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
@@ -33,6 +36,9 @@ import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.clusteringMatches
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.partitioningMatches
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator.Companion.toDialectType
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlTableOperations
+import io.mockk.coVerify
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -309,5 +315,84 @@ class BigqueryDirectLoadNativeTableOperationsTest {
             operations.getGenerationId(TableName("test_namespace", "test_table"))
         }
         Assertions.assertEquals(0L, result)
+    }
+
+    @Test
+    fun testEnsureSchemaMatchesCreatesTableWhenMissing() {
+        val bigquery = Mockito.mock(BigQuery::class.java)
+        Mockito.`when`(bigquery.getTable(Mockito.any(TableId::class.java))).thenReturn(null)
+        val sqlOperations = mockk<BigqueryDirectLoadSqlTableOperations>(relaxed = true)
+        val stream =
+            DestinationStream(
+                "ns",
+                "tbl",
+                Append,
+                ObjectType(linkedMapOf("a1" to FieldType(IntegerType, nullable = true))),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 0,
+                namespaceMapper = NamespaceMapper()
+            )
+        val tableName = TableName("ns", "tbl")
+        val columnNameMapping = ColumnNameMapping(mapOf("a1" to "a2"))
+        val operations =
+            BigqueryDirectLoadNativeTableOperations(
+                bigquery,
+                sqlOperations,
+                Mockito.mock(),
+                projectId = "unused",
+                tempTableNameGenerator = DefaultTempTableNameGenerator("unused"),
+            )
+
+        runBlocking { operations.ensureSchemaMatches(stream, tableName, columnNameMapping) }
+
+        coVerify(exactly = 1) {
+            sqlOperations.createTable(stream, tableName, columnNameMapping, replace = false)
+        }
+    }
+
+    @Test
+    fun testEnsureSchemaMatchesNoOpWhenSchemaMatches() {
+        val bigquery = Mockito.mock(BigQuery::class.java)
+        val table = Mockito.mock(Table::class.java)
+        val existingTable = Mockito.mock(StandardTableDefinition::class.java, RETURNS_DEEP_STUBS)
+        Mockito.`when`(bigquery.getTable(Mockito.any(TableId::class.java))).thenReturn(table)
+        Mockito.`when`(table.getDefinition<TableDefinition>()).thenReturn(existingTable)
+        Mockito.`when`(existingTable.schema!!.fields)
+            .thenReturn(FieldList.of(Field.of("a2", StandardSQLTypeName.INT64)))
+        Mockito.`when`(existingTable.clustering)
+            .thenReturn(Clustering.newBuilder().setFields(listOf("_airbyte_extracted_at")).build())
+        Mockito.`when`(existingTable.timePartitioning)
+            .thenReturn(
+                TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
+                    .setField("_airbyte_extracted_at")
+                    .build()
+            )
+        val sqlOperations = mockk<BigqueryDirectLoadSqlTableOperations>(relaxed = true)
+        val stream =
+            DestinationStream(
+                "ns",
+                "tbl",
+                Append,
+                ObjectType(linkedMapOf("a1" to FieldType(IntegerType, nullable = true))),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 0,
+                namespaceMapper = NamespaceMapper()
+            )
+        val tableName = TableName("ns", "tbl")
+        val columnNameMapping = ColumnNameMapping(mapOf("a1" to "a2"))
+        val operations =
+            BigqueryDirectLoadNativeTableOperations(
+                bigquery,
+                sqlOperations,
+                Mockito.mock(),
+                projectId = "unused",
+                tempTableNameGenerator = DefaultTempTableNameGenerator("unused"),
+            )
+
+        runBlocking { operations.ensureSchemaMatches(stream, tableName, columnNameMapping) }
+
+        coVerify(exactly = 0) { sqlOperations.createTable(any(), any(), any(), any()) }
     }
 }
