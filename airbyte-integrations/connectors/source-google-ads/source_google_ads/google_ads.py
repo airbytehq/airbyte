@@ -3,6 +3,7 @@
 #
 
 
+import json
 from enum import Enum
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping
 
@@ -11,6 +12,8 @@ from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.v23.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
 from google.api_core.exceptions import InternalServerError, ServerError, ServiceUnavailable, TooManyRequests
 from google.auth import exceptions
+from google.auth.transport.requests import Request as GoogleAuthRequest
+from google.oauth2 import service_account
 from google.protobuf import json_format
 from google.protobuf.message import Message
 from proto.marshal.collections import Repeated, RepeatedComposite
@@ -22,6 +25,63 @@ from .utils import logger
 
 
 API_VERSION = "v23"
+SERVICE_ACCOUNT_AUTH_TYPE = "Service"
+# Matches `google.ads.googleads.oauth2._SERVICE_ACCOUNT_SCOPES`.
+GOOGLE_ADS_OAUTH_SCOPE = "https://www.googleapis.com/auth/adwords"
+
+
+def uses_service_account_auth(credentials: Mapping[str, Any]) -> bool:
+    return credentials.get("auth_type") == SERVICE_ACCOUNT_AUTH_TYPE or "service_account_info" in credentials
+
+
+def build_service_account_credentials(credentials: Mapping[str, Any]) -> service_account.Credentials:
+    """Build (optionally subject-delegated) Google service account credentials from the connector config.
+
+    Shared by the Google Ads SDK client below and by the declarative
+    `GoogleAdsServiceAccountAuthenticator` in `components.py`, so both auth paths parse
+    `service_account_info` and classify bad key material identically.
+
+    The key never touches disk. `GoogleAdsClient.load_from_dict` only supports service
+    accounts via a `json_key_file_path` on disk, but `GoogleAdsClient` itself accepts a
+    credentials object directly, so the private key stays in memory.
+    """
+    info = credentials.get("service_account_info")
+    if info is None:
+        raise AirbyteTracedException(
+            message="Service account credentials are missing the `service_account_info` field. Please provide the JSON key contents in the connector configuration.",
+            failure_type=FailureType.config_error,
+        )
+
+    if isinstance(info, str):
+        try:
+            info = json.loads(info)
+        except json.JSONDecodeError as e:
+            raise AirbyteTracedException(
+                message="The `service_account_info` field is not valid JSON. Paste the full contents of your service account key file.",
+                failure_type=FailureType.config_error,
+            ) from e
+
+    if not isinstance(info, Mapping):
+        raise AirbyteTracedException(
+            message="The `service_account_info` field must be a JSON object containing service account key material.",
+            failure_type=FailureType.config_error,
+        )
+
+    try:
+        account_credentials = service_account.Credentials.from_service_account_info(dict(info), scopes=[GOOGLE_ADS_OAUTH_SCOPE])
+    except ValueError as e:
+        raise AirbyteTracedException(
+            message="The `service_account_info` field is not a usable service account key. Paste the full, unmodified contents of your service account key file.",
+            failure_type=FailureType.config_error,
+        ) from e
+
+    impersonated_email = credentials.get("impersonated_email")
+    return account_credentials.with_subject(impersonated_email) if impersonated_email else account_credentials
+
+
+def _prepare_credentials_for_sdk(credentials: Mapping[str, Any]) -> MutableMapping[str, Any]:
+    """Drop the Airbyte-only `auth_type` discriminator before handing the config to the SDK."""
+    return {key: value for key, value in credentials.items() if key != "auth_type"}
 
 
 def on_give_up(details):
@@ -67,7 +127,19 @@ class GoogleAds:
     @staticmethod
     def get_google_ads_client(credentials) -> GoogleAdsClient:
         try:
-            return GoogleAdsClient.load_from_dict(credentials, version=API_VERSION)
+            if uses_service_account_auth(credentials):
+                account_credentials = build_service_account_credentials(credentials)
+                # `load_from_dict` refreshes credentials eagerly, which is what surfaces unusable
+                # key material as a `RefreshError` here rather than mid-sync. Match that.
+                account_credentials.refresh(GoogleAuthRequest())
+                return GoogleAdsClient(
+                    credentials=account_credentials,
+                    developer_token=credentials["developer_token"],
+                    login_customer_id=credentials.get("login_customer_id"),
+                    use_proto_plus=credentials.get("use_proto_plus", True),
+                    version=API_VERSION,
+                )
+            return GoogleAdsClient.load_from_dict(_prepare_credentials_for_sdk(credentials), version=API_VERSION)
         except exceptions.RefreshError as e:
             message = "The authentication to Google Ads has expired. Re-authenticate to restore access to Google Ads."
             raise AirbyteTracedException(message=message, failure_type=FailureType.config_error) from e
