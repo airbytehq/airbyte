@@ -61,7 +61,7 @@ streams:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
         error_handler:
           type: DefaultErrorHandler
-          max_retries: 10
+          max_retries: 5
           backoff_strategies:
             - type: ExponentialBackoffStrategy
               factor: 2
