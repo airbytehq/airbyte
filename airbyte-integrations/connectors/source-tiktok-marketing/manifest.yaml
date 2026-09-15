@@ -5975,7 +5975,7 @@ streams:
   - $ref: "#/definitions/creative_assets_videos_stream"
   # The following streams are only included if the config is not using a sandbox account for authentication
   - type: ConditionalStreams
-    condition: "{{ config.get('credentials', {}).get('auth_type') != 'sandbox_access_token' if 'credentials' in config else config.get('environment', {}).get('secret') is not none }}"
+    condition: "{{ config.get('credentials', {}).get('auth_type') != 'sandbox_access_token' if 'credentials' in config else (config.get('environment', {}).get('secret') or '') != '' }}"
     streams:
     - $ref: "#/definitions/advertiser_ids_stream"
     - $ref: "#/definitions/ads_reports_by_country_daily_stream"
