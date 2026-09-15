@@ -8,8 +8,8 @@
 parity oracle for `spec`, `check` and `discover`; saved configurations must keep working unchanged.
 
 Stages 1 (`spec` + `check`), 2 (`discover`), 3 (first `read`, stream statuses) and 4 (`read`:
-full refresh, cursor-based incremental with resume, legacy state translation) are implemented.
-Stage 5 (validation at scale) is not.
+full refresh, cursor-based incremental with resume, legacy state translation, speed mode over Unix
+domain sockets in JSONL or protobuf) are implemented. Stage 5 (validation at scale) is not.
 
 ## Build and test
 
@@ -23,8 +23,10 @@ export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home 
 The tests never reach Google: `BigQuerySourceCheckTest`, `BigQuerySourceDiscoverTest` and
 `BigQuerySourceReadTest` start `ghcr.io/goccy/bigquery-emulator:0.8.1` once through Testcontainers
 (`BigQueryEmulatorTestFixture`, `org.testcontainers:gcloud:1.21.4` `BigQueryEmulatorContainer`) and
-seed it with the native client; `BigQuerySourceSpecTest`, `BigQuerySourceConfigurationFactoryTest`,
-`BigQueryFieldTypesTest` and `BigQuerySelectQueryGeneratorTest` are plain unit tests.
+seed it with the native client (`BigQuerySourceSpeedModeReadTest` additionally connects to the
+connector's Unix domain sockets, see "Speed mode" below); `BigQuerySourceSpecTest`,
+`BigQuerySourceConfigurationFactoryTest`, `BigQueryFieldTypesTest`, `BigQueryValuesTest`,
+`BigQueryProtobufEncodingTest` and `BigQuerySelectQueryGeneratorTest` are plain unit tests.
 
 There is no `spotlessApply` task for connectors. Format with the ktfmt version CI uses:
 
@@ -61,6 +63,55 @@ the credentials travel as the JDBC properties `OAuthServiceAcctEmail` (= `client
 `OAuthPvtKey` (= the PEM `private_key`), which is what Google's driver expects for `OAuthType=0`
 (besides `OAuthPvtKeyPath`, a key *file*); passing the whole key JSON inline is rejected with
 "No valid credentials provided." The CDK logs the URL, never the properties.
+
+## Speed mode (socket data channel)
+
+`metadata.yaml` declares `connectorIPCOptions.dataChannel` with `SOCKET`/`STDIO` transports and
+`JSONL`/`PROTOBUF` serializations, so the platform may run `read` in speed mode: records, and a
+copy of every state, go straight to the destination over Unix domain sockets while logs, traces
+and states also go to stdout as usual. The platform configures it with environment variables,
+which `application.yml` maps to the `airbyte.connector.data-channel.*` Micronaut properties:
+
+- `DATA_CHANNEL_MEDIUM`: `STDIO` (default) or `SOCKET`;
+- `DATA_CHANNEL_FORMAT`: `JSONL` (default) or `PROTOBUF` (records and states on the sockets only;
+  stdout stays JSON);
+- `DATA_CHANNEL_SOCKET_PATHS`: comma-separated socket file paths, e.g.
+  `/tmp/sockets/socket-1.sock,/tmp/sockets/socket-2.sock`. The connector creates and listens on
+  every path; the destination connects.
+
+```bash
+docker run --rm -e DATA_CHANNEL_MEDIUM=SOCKET -e DATA_CHANNEL_FORMAT=PROTOBUF \
+  -e DATA_CHANNEL_SOCKET_PATHS=/tmp/sockets/socket-1.sock,/tmp/sockets/socket-2.sock \
+  -v $PWD/secrets:/secrets -v bq-sockets:/tmp/sockets airbyte/source-bigquery-v2:dev \
+  read --config /secrets/config.json --catalog /secrets/catalog.json
+```
+
+(the sockets must live on a volume another container can mount; Unix domain sockets do not work
+across a Docker Desktop bind mount). The log shows `Read configured with data channel medium:
+SOCKET. data channel format: PROTOBUF`, and the partition readers wait until a client has
+connected to a socket.
+
+What is connector-specific:
+
+- **Concurrency**: `BigQuerySourceConfigurationFactory` sets `maxConcurrency` to 1 on `STDIO` and
+  to the number of socket paths on `SOCKET` (the spec has no concurrency property, for parity with
+  the legacy `spec.json`), so every socket is fed by one BigQuery query at a time.
+- **Protobuf values**: the CDK encodes each native column value by the field's Airbyte type. The
+  `extract-jdbc` scalar types and the text-parsed `BigQueryDateFieldType`/`BigQueryDateTimeFieldType`/
+  `BigQueryTimeFieldType` (`LocalDate`/`LocalDateTime`/`LocalTime`, so dates before 1582 and
+  microseconds survive) are encoded natively; `STRUCT` and `ARRAY` columns hold a `JsonNode` and
+  their `JsonNodeCodec` is a `ProtobufAwareCustomConnectorJsonCodec` that serializes the node, which
+  is how the CDK expects `object`/`array` fields on the wire. In protobuf records the fields have no
+  names: they are in alphabetical order of the catalog's `properties`, so the READ-time catalog
+  validation dropping a column would misalign the destination (`StateManagerFactory.toStream`).
+- Everything else (socket lifecycle, probe packets, `partition_id`/`id` on records and states,
+  routing through `OutputMessageRouter`) is the `extract`/`extract-jdbc` toolkit.
+
+Tests: `BigQueryProtobufEncodingTest` round-trips every field type through the CDK's protobuf
+encoder and decoder, including a fixture row compared with its JSON rendering;
+`BigQuerySourceSpeedModeReadTest` (`@Isolated`, sets the `airbyte.connector.data-channel.*` system
+properties for the duration of the read) runs the emulator catalog once on STDIO and once over two
+sockets in each format, playing the destination, and checks records, states and statuses.
 
 ## The BigQuery emulator
 
@@ -220,7 +271,7 @@ Everything above the emulator also passes on the real service; nothing is emulat
 | 1. `spec` + `check` | Done: `BigQuerySourceConfigurationSpecification`, `BigQuerySourceConfiguration(Factory)`, `BigQueryClientFactory`, check queries and exception classifiers in `application.yml`; tests `BigQuerySourceSpecTest`, `BigQuerySourceConfigurationFactoryTest`, `BigQuerySourceCheckTest` |
 | 2. `discover` | Done: `BigQuerySourceMetadataQuerier` (native client, prefetch per dataset, `check` fetches one table), `BigQueryFieldTypes` (+ `BigQueryStructFieldType`/`BigQueryArrayFieldType`), `BigQuerySourceOperations.create()` renders nested schemas; snapshots `expected-catalog-single-dataset.json`, `expected-catalog-all-datasets.json` |
 | 3. first `read` (stream statuses) | Done: `read` boots on the toolkit's `JdbcConcurrentPartitionsCreatorFactory`/`DefaultJdbcSharedState`; `BigQuerySourceReadTest` checks `STARTED`/`COMPLETE` for populated, empty and view streams and `STARTED`/`INCOMPLETE` + config error for a missing one |
-| 4. `read` | Done: full refresh, cursor incremental with checkpoint and resume, legacy state translation; verified against the real service for scalar types |
+| 4. `read` | Done: full refresh, cursor incremental with checkpoint and resume, legacy state translation; verified against the real service for scalar types. Speed mode (socket data channel, JSONL and protobuf) tested on the emulator |
 | 5. validation at scale | To do |
 
 How `read` is put together:
@@ -230,6 +281,7 @@ How `read` is put together:
   "cursors": {...}}`). `application.yml` selects `mode: concurrent` with sampling; on STDIO
   `maxConcurrency` is 1, so tables below the target partition size are read by a single
   non-resumable `SELECT`, i.e. one BigQuery job per table plus up to three small sampling jobs.
+  In speed mode `maxConcurrency` is the number of sockets (see "Speed mode" above).
 - `BigQueryJdbcPartitionFactory` (`@Primary`) wraps `DefaultJdbcPartitionFactory` and only steps
   in when the stream's state is in the legacy `source-bigquery` shape
   (`BigQueryLegacyStreamState`): the legacy cursor string is converted to the cursor column's

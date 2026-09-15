@@ -63,6 +63,30 @@ class BigQuerySourceConfigurationFactoryTest {
     }
 
     @Test
+    fun testConcurrencyFollowsTheSocketCountInSpeedMode() {
+        val spec: BigQuerySourceConfigurationSpecification = parse(configJson())
+        val stdio =
+            BigQuerySourceConfigurationFactory(
+                dataChannelMedium = "STDIO",
+                socketPaths = emptyList()
+            )
+        Assertions.assertEquals(1, stdio.makeWithoutExceptionHandling(spec).maxConcurrency)
+        val sockets =
+            BigQuerySourceConfigurationFactory(
+                dataChannelMedium = "SOCKET",
+                socketPaths = listOf("/tmp/s1.sock", "/tmp/s2.sock", "/tmp/s3.sock"),
+            )
+        Assertions.assertEquals(3, sockets.makeWithoutExceptionHandling(spec).maxConcurrency)
+        // A socket medium without any path still yields a usable configuration.
+        val noSockets =
+            BigQuerySourceConfigurationFactory(
+                dataChannelMedium = "SOCKET",
+                socketPaths = emptyList()
+            )
+        Assertions.assertEquals(1, noSockets.makeWithoutExceptionHandling(spec).maxConcurrency)
+    }
+
+    @Test
     fun testDatasetBecomesTheOnlyNamespace() {
         val config: BigQuerySourceConfiguration = make(configJson(datasetId = " my_dataset "))
         Assertions.assertEquals("my_dataset", config.datasetId)

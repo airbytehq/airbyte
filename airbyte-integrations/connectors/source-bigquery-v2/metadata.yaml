@@ -5,6 +5,14 @@ data:
   connectorBuildOptions:
     baseImage: docker.io/airbyte/java-connector-base:2.0.4@sha256:5f343797cfcf021ca98ba9bdf5970ef66cbf6222d8cc17b0d61d13860a5bcc2b
   connectorSubtype: database
+  # Speed mode: records (and a copy of the states) can go to the destination over Unix domain
+  # sockets, as JSONL or protobuf, when the platform sets DATA_CHANNEL_MEDIUM=SOCKET,
+  # DATA_CHANNEL_FORMAT and DATA_CHANNEL_SOCKET_PATHS (see application.yml).
+  connectorIPCOptions:
+    dataChannel:
+      version: "0.0.2"
+      supportedSerialization: ["JSONL", "PROTOBUF"]
+      supportedTransport: ["SOCKET", "STDIO"]
   connectorTestSuitesOptions:
     - suite: unitTests
   connectorType: source

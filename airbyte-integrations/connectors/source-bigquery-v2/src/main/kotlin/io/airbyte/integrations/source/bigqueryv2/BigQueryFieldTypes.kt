@@ -13,7 +13,6 @@ import com.google.cloud.bigquery.FieldValueList
 import com.google.cloud.bigquery.StandardSQLTypeName
 import io.airbyte.cdk.data.ArrayAirbyteSchemaType
 import io.airbyte.cdk.data.JsonCodec
-import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LocalDateCodec
 import io.airbyte.cdk.data.LocalDateTimeCodec
@@ -37,6 +36,7 @@ import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.jdbc.TimeAccessor
 import io.airbyte.cdk.jdbc.TimestampAccessor
+import io.airbyte.cdk.output.sockets.ProtobufAwareCustomConnectorJsonCodec
 import io.airbyte.cdk.util.Jsons
 import java.math.BigDecimal
 import java.nio.ByteBuffer
@@ -140,9 +140,20 @@ object BigQueryFieldTypes {
         }
 }
 
-/** Encodes values which are already JSON. */
-data object JsonNodeEncoder : JsonEncoder<JsonNode> {
+/**
+ * Codec for values which are already JSON ([BigQueryStructFieldType], [BigQueryArrayFieldType]).
+ *
+ * On the socket data channel in `PROTOBUF` format the CDK encodes an object or array field from its
+ * serialized text ([io.airbyte.cdk.output.sockets.valueForProtobufEncoding]), so the node is
+ * rendered with the same mapper as the JSON records; a JSON `null` becomes a protobuf null.
+ */
+data object JsonNodeCodec : ProtobufAwareCustomConnectorJsonCodec<JsonNode> {
     override fun encode(decoded: JsonNode): JsonNode = decoded
+
+    override fun decode(encoded: JsonNode): JsonNode = encoded
+
+    override fun valueForProtobufEncoding(v: JsonNode): Any? =
+        if (v.isNull || v.isMissingNode) null else Jsons.writeValueAsString(v)
 }
 
 /**
@@ -242,7 +253,7 @@ data class BigQueryStructFieldType(
     JdbcFieldType<JsonNode>(
         LeafAirbyteSchemaType.JSONB,
         BigQueryNestedValueGetter(fields = fields, elementType = null),
-        JsonNodeEncoder,
+        JsonNodeCodec,
     ) {
 
     fun jsonSchema(): ObjectNode {
@@ -265,7 +276,7 @@ data class BigQueryArrayFieldType(
     JdbcFieldType<JsonNode>(
         ArrayAirbyteSchemaType(elementType.airbyteSchemaType),
         BigQueryNestedValueGetter(fields = null, elementType = elementType),
-        JsonNodeEncoder,
+        JsonNodeCodec,
     ) {
 
     fun jsonSchema(): ObjectNode =
