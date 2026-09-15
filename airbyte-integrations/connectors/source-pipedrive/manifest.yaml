@@ -18,51 +18,96 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: api/v2/deals
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: deal
+            limit: "500"
+            sort_by: update_time
+            sort_direction: asc
+            status: "open,won,lost,deleted"
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
               - data
-              - "*"
-            nullable_nested_field: data
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+          $ref: "#/definitions/v2_cursor_paginator"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
         cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
           - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: since_timestamp
+          field_name: updated_since
           inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/deals"
+
+    # GET /api/v2/deals returns only not-archived deals; archived deals are served by /api/v2/deals/archived
+    # with the same parameters and record shape, so they are read as a separate stream (same schema).
+    deals_archived:
+      type: DeclarativeStream
+      name: deals_archived
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api/v2/deals/archived
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "500"
+            sort_by: update_time
+            sort_direction: asc
+            status: "open,won,lost,deleted"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/v2_cursor_paginator"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deals"
+
     deal_fields:
       type: DeclarativeStream
       name: deal_fields
+      primary_key:
+        - key
       retriever:
         type: SimpleRetriever
         requester:
@@ -125,21 +170,18 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: v1/files
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: file
+            limit: "100"
+            sort: "update_time ASC"
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
               - data
-              - "*"
-            nullable_nested_field: data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -159,14 +201,12 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: since_timestamp
-          inject_into: request_parameter
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/files"
+
     filters:
       type: DeclarativeStream
       name: filters
@@ -176,51 +216,26 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: v1/filters
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: filter
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
               - data
-              - "*"
-            nullable_nested_field: data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: update_time
-        cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: since_timestamp
-          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/filters"
+
     lead_labels:
       type: DeclarativeStream
       name: lead_labels
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -243,6 +258,8 @@ definitions:
     leads:
       type: DeclarativeStream
       name: leads
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -252,6 +269,7 @@ definitions:
           request_parameters:
             api_token: "{{ config['api_token'] }}"
             limit: "50"
+            sort: "update_time ASC"
         record_selector:
           type: RecordSelector
           extractor:
@@ -267,6 +285,21 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -280,21 +313,18 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: v1/notes
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: note
+            limit: "500"
+            sort: "update_time ASC"
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
               - data
-              - "*"
-            nullable_nested_field: data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -309,19 +339,21 @@ definitions:
         cursor_field: update_time
         cursor_datetime_formats:
           - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: since_timestamp
+          field_name: updated_since
           inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/notes"
+
     activities:
       type: DeclarativeStream
       name: activities
@@ -331,51 +363,47 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: api/v2/activities
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: activity
+            limit: "500"
+            sort_by: update_time
+            sort_direction: asc
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
               - data
-              - "*"
-            nullable_nested_field: data
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+          $ref: "#/definitions/v2_cursor_paginator"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
         cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
           - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: since_timestamp
+          field_name: updated_since
           inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/activities"
+
     activity_types:
       type: DeclarativeStream
       name: activity_types
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -398,6 +426,8 @@ definitions:
     activity_fields:
       type: DeclarativeStream
       name: activity_fields
+      primary_key:
+        - key
       retriever:
         type: SimpleRetriever
         requester:
@@ -429,6 +459,8 @@ definitions:
     currencies:
       type: DeclarativeStream
       name: currencies
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -503,12 +535,13 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/organizations
+          path: api/v2/organizations
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: organization
+            limit: "500"
+            sort_by: update_time
+            sort_direction: asc
         record_selector:
           type: RecordSelector
           extractor:
@@ -516,21 +549,33 @@ definitions:
             field_path:
               - data
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+          $ref: "#/definitions/v2_cursor_paginator"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/organizations"
+
     organization_fields:
       type: DeclarativeStream
       name: organization_fields
+      primary_key:
+        - key
       retriever:
         type: SimpleRetriever
         requester:
@@ -562,6 +607,8 @@ definitions:
     permission_sets:
       type: DeclarativeStream
       name: permission_sets
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -590,51 +637,47 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: api/v2/persons
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: person
+            limit: "500"
+            sort_by: update_time
+            sort_direction: asc
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
               - data
-              - "*"
-            nullable_nested_field: data
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+          $ref: "#/definitions/v2_cursor_paginator"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
         cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
           - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: since_timestamp
+          field_name: updated_since
           inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/persons"
+
     person_fields:
       type: DeclarativeStream
       name: person_fields
+      primary_key:
+        - key
       retriever:
         type: SimpleRetriever
         requester:
@@ -672,48 +715,24 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: api/v2/pipelines
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: pipeline
+            limit: "500"
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
               - data
-              - "*"
-            nullable_nested_field: data
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: update_time
-        cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: since_timestamp
-          inject_into: request_parameter
+          $ref: "#/definitions/v2_cursor_paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/pipelines"
+
     products:
       type: DeclarativeStream
       name: products
@@ -723,51 +742,47 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: api/v2/products
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: product
+            limit: "500"
+            sort_by: update_time
+            sort_direction: asc
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
               - data
-              - "*"
-            nullable_nested_field: data
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+          $ref: "#/definitions/v2_cursor_paginator"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
         cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
           - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: since_timestamp
+          field_name: updated_since
           inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/products"
+
     product_fields:
       type: DeclarativeStream
       name: product_fields
+      primary_key:
+        - key
       retriever:
         type: SimpleRetriever
         requester:
@@ -799,6 +814,8 @@ definitions:
     roles:
       type: DeclarativeStream
       name: roles
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -836,48 +853,24 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: api/v2/stages
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: stage
+            limit: "500"
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
               - data
-              - "*"
-            nullable_nested_field: data
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: update_time
-        cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: since_timestamp
-          inject_into: request_parameter
+          $ref: "#/definitions/v2_cursor_paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/stages"
+
     users:
       type: DeclarativeStream
       name: users
@@ -887,60 +880,35 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: v1/users
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: user
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - data
-              - "*"
-              - data
-              - "*"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: modified
-        cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: since_timestamp
-          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/users"
+
     deal_products:
       type: DeclarativeStream
       name: deal_products
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/deals/{{ stream_slice.parent_id }}/products
+          path: api/v2/deals/{{ stream_slice['parent_id'] }}/products
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
+            limit: "500"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -953,14 +921,7 @@ definitions:
             field_path:
               - data
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+          $ref: "#/definitions/v2_cursor_paginator"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -969,10 +930,16 @@ definitions:
               partition_field: parent_id
               stream:
                 $ref: "#/definitions/streams/deals"
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/deals_archived"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/deal_products"
+
     mailThreads:
       type: DeclarativeStream
       name: mailThreads
@@ -984,6 +951,9 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v1/mailbox/mailThreads
           http_method: GET
+          # The CDK caches parent streams in one sqlite file per stream; the four folder partitions of this
+          # parent are read concurrently and corrupt that cache, so the cache stays off for mailThreads.
+          use_cache: false
           request_parameters:
             api_token: "{{ config['api_token'] }}"
             limit: "50"
@@ -1242,6 +1212,11 @@ definitions:
                 partition_field: parent_id
                 stream:
                   $ref: "#/definitions/streams/deals"
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: parent_id
+                stream:
+                  $ref: "#/definitions/streams/deals_archived"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1293,6 +1268,12 @@ definitions:
               incremental_dependency: true
               stream:
                 $ref: "#/definitions/streams/deals"
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              incremental_dependency: true
+              stream:
+                $ref: "#/definitions/streams/deals_archived"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: log_time
@@ -1451,6 +1432,7 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/deals"
+  - $ref: "#/definitions/streams/deals_archived"
   - $ref: "#/definitions/streams/deal_fields"
   - $ref: "#/definitions/streams/goals"
   - $ref: "#/definitions/streams/files"
@@ -1605,26 +1587,6 @@ metadata:
     deal_installments: false
     deal_flow: false
     permission_set_assignments: false
-  yamlComponents:
-    streams:
-      deals:
-        - recordSelector
-      files:
-        - recordSelector
-      filters:
-        - recordSelector
-      notes:
-        - recordSelector
-      activities:
-        - recordSelector
-      persons:
-        - recordSelector
-      pipelines:
-        - recordSelector
-      products:
-        - recordSelector
-      stages:
-        - recordSelector
   testedStreams:
     deal_fields:
       streamHash: 2dcceac0c36936299612f3ba221532446d068fd8
@@ -1746,216 +1708,31 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      active:
-        type:
-          - "null"
-          - boolean
-      activities_count:
-        type:
-          - "null"
-          - integer
-      add_time:
-        type:
-          - "null"
-          - string
-      cc_email:
-        type:
-          - "null"
-          - string
-      close_time:
-        type:
-          - "null"
-          - string
-      creator_user_id:
-        type:
-          - "null"
-          - integer
-      currency:
-        type:
-          - "null"
-          - string
-      deleted:
-        type:
-          - "null"
-          - boolean
-      done_activities_count:
-        type:
-          - "null"
-          - integer
-      email_messages_count:
-        type:
-          - "null"
-          - integer
-      expected_close_date:
-        type:
-          - "null"
-          - string
-        format: date
-      files_count:
-        type:
-          - "null"
-          - integer
-      first_won_time:
-        type:
-          - "null"
-          - string
-      followers_count:
-        type:
-          - "null"
-          - integer
-      formatted_value:
-        type:
-          - "null"
-          - string
-      formatted_weighted_value:
-        type:
-          - "null"
-          - string
       id:
         type:
           - "null"
           - integer
-      label:
-        type:
-          - "null"
-          - string
-      last_activity_date:
-        type:
-          - "null"
-          - string
-        format: date
-      last_activity_id:
-        type:
-          - "null"
-          - integer
-      last_incoming_mail_time:
-        type:
-          - "null"
-          - string
-      last_outgoing_mail_time:
-        type:
-          - "null"
-          - string
-      lost_reason:
-        type:
-          - "null"
-          - string
-      lost_time:
-        type:
-          - "null"
-          - string
-      next_activity_date:
-        type:
-          - "null"
-          - string
-        format: date
-      next_activity_duration:
-        type:
-          - "null"
-          - string
-      next_activity_id:
-        type:
-          - "null"
-          - integer
-      next_activity_note:
-        type:
-          - "null"
-          - string
-      next_activity_subject:
-        type:
-          - "null"
-          - string
-      next_activity_time:
-        type:
-          - "null"
-          - string
-      next_activity_type:
-        type:
-          - "null"
-          - string
-      notes_count:
-        type:
-          - "null"
-          - integer
-      org_hidden:
-        type:
-          - "null"
-          - boolean
-      org_id:
-        type:
-          - "null"
-          - integer
-      org_name:
-        type:
-          - "null"
-          - string
-      owner_name:
-        type:
-          - "null"
-          - string
-      participants_count:
-        type:
-          - "null"
-          - integer
-      person_hidden:
-        type:
-          - "null"
-          - boolean
-      person_id:
-        type:
-          - "null"
-          - integer
-      person_name:
-        type:
-          - "null"
-          - string
-      pipeline_id:
-        type:
-          - "null"
-          - integer
-      probability:
-        type:
-          - "null"
-          - number
-      products_count:
-        type:
-          - "null"
-          - integer
-      rotten_time:
-        type:
-          - "null"
-          - string
-      stage_change_time:
-        type:
-          - "null"
-          - string
-      stage_id:
-        type:
-          - "null"
-          - integer
-      stage_order_nr:
-        type:
-          - "null"
-          - integer
-      status:
-        type:
-          - "null"
-          - string
       title:
         type:
           - "null"
           - string
-      undone_activities_count:
+      owner_id:
         type:
           - "null"
           - integer
-      update_time:
+      person_id:
         type:
           - "null"
-          - string
-        airbyte_type: timestamp_without_timezone
-        format: date-time
-      user_id:
+          - integer
+      org_id:
+        type:
+          - "null"
+          - integer
+      pipeline_id:
+        type:
+          - "null"
+          - integer
+      stage_id:
         type:
           - "null"
           - integer
@@ -1963,22 +1740,147 @@ schemas:
         type:
           - "null"
           - number
-      visible_to:
+      currency:
         type:
           - "null"
           - string
-      weighted_value:
+      add_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      update_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      stage_change_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      is_deleted:
+        type:
+          - "null"
+          - boolean
+      is_archived:
+        type:
+          - "null"
+          - boolean
+      status:
+        type:
+          - "null"
+          - string
+      probability:
         type:
           - "null"
           - number
-      weighted_value_currency:
+      lost_reason:
         type:
           - "null"
           - string
+      visible_to:
+        type:
+          - "null"
+          - integer
+      close_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      archive_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      local_close_date:
+        type:
+          - "null"
+          - string
+        format: date
+      local_lost_date:
+        type:
+          - "null"
+          - string
+        format: date
+      local_won_date:
+        type:
+          - "null"
+          - string
+        format: date
       won_time:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      lost_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      expected_close_date:
+        type:
+          - "null"
+          - string
+        format: date
+      label_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      origin:
+        type:
+          - "null"
+          - string
+      origin_id:
+        type:
+          - "null"
+          - string
+      channel:
+        type:
+          - "null"
+          - integer
+      channel_id:
+        type:
+          - "null"
+          - string
+      source_lead_id:
+        type:
+          - "null"
+          - string
+        format: uuid
+      arr:
+        type:
+          - "null"
+          - number
+      mrr:
+        type:
+          - "null"
+          - number
+      acv:
+        type:
+          - "null"
+          - number
+      custom_fields:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      creator_user_id:
+        type:
+          - "null"
+          - integer
+
   deal_fields:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1992,7 +1894,8 @@ schemas:
         type:
           - "null"
           - string
-        format: "%Y-%m-%d %H:%M:%S"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       add_visible_flag:
         type:
           - "null"
@@ -2111,7 +2014,8 @@ schemas:
         type:
           - "null"
           - string
-        format: "%Y-%m-%d %H:%M:%S"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       use_field:
         type:
           - "null"
@@ -2244,6 +2148,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       cid:
         type:
           - "null"
@@ -2371,6 +2277,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       custom_view_id:
         type:
           - "null"
@@ -2397,6 +2305,14 @@ schemas:
         type:
           - "null"
           - integer
+      filter_code:
+        type:
+          - "null"
+          - string
+      last_used_time:
+        type:
+          - "null"
+          - string
       visible_to:
         type:
           - "null"
@@ -2410,6 +2326,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       color:
         type:
           - "null"
@@ -2426,6 +2344,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
   leads:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -2435,6 +2355,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       creator_id:
         type:
           - "null"
@@ -2484,6 +2406,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       value:
         type:
           - "null"
@@ -2514,6 +2438,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       content:
         type:
           - "null"
@@ -2621,11 +2547,27 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      id:
+        type:
+          - "null"
+          - integer
+      subject:
+        type:
+          - "null"
+          - string
       type:
         type:
           - "null"
           - string
-      active_flag:
+      owner_id:
+        type:
+          - "null"
+          - integer
+      creator_user_id:
+        type:
+          - "null"
+          - integer
+      is_deleted:
         type:
           - "null"
           - boolean
@@ -2633,91 +2575,39 @@ schemas:
         type:
           - "null"
           - string
-      assigned_to_user_id:
-        type:
-          - "null"
-          - integer
-      attendees:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - object
-          properties:
-            email_address:
-              type:
-                - "null"
-                - string
-            is_organizer:
-              type:
-                - "null"
-                - integer
-            name:
-              type:
-                - "null"
-                - string
-            person_id:
-              type:
-                - "null"
-                - integer
-            status:
-              type:
-                - "null"
-                - string
-            user_id:
-              type:
-                - "null"
-                - integer
-      busy_flag:
-        type:
-          - "null"
-          - boolean
-      calendar_sync_include_context:
-        type:
-          - "null"
-          - boolean
-      company_id:
-        type:
-          - "null"
-          - integer
-      conference_meeting_client:
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      update_time:
         type:
           - "null"
           - string
-      conference_meeting_id:
-        type:
-          - "null"
-          - string
-      conference_meeting_url:
-        type:
-          - "null"
-          - string
-      created_by_user_id:
-        type:
-          - "null"
-          - integer
-      deal_dropbox_bcc:
-        type:
-          - "null"
-          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       deal_id:
         type:
           - "null"
           - integer
-      deal_title:
+      lead_id:
         type:
           - "null"
           - string
-      done:
+      person_id:
         type:
           - "null"
-          - boolean
+          - integer
+      org_id:
+        type:
+          - "null"
+          - integer
+      project_id:
+        type:
+          - "null"
+          - integer
       due_date:
         type:
           - "null"
           - string
+        format: date
       due_time:
         type:
           - "null"
@@ -2726,127 +2616,66 @@ schemas:
         type:
           - "null"
           - string
-      file:
+      busy:
         type:
           - "null"
-          - object
-        properties:
-          clean_name:
-            type:
-              - "null"
-              - string
-          id:
-            type:
-              - "null"
-              - string
-          url:
-            type:
-              - "null"
-              - string
-      gcal_event_id:
+          - boolean
+      done:
         type:
           - "null"
-          - string
-      google_calendar_etag:
-        type:
-          - "null"
-          - string
-      google_calendar_id:
-        type:
-          - "null"
-          - string
-      id:
-        type:
-          - "null"
-          - integer
-      last_notification_time:
-        type:
-          - "null"
-          - string
-      last_notification_user_id:
-        type:
-          - "null"
-          - integer
-      lead_id:
-        type:
-          - "null"
-          - string
-      location:
-        type:
-          - "null"
-          - string
-      location_admin_area_level_1:
-        type:
-          - "null"
-          - string
-      location_admin_area_level_2:
-        type:
-          - "null"
-          - string
-      location_country:
-        type:
-          - "null"
-          - string
-      location_formatted_address:
-        type:
-          - "null"
-          - string
-      location_lat:
-        type:
-          - "null"
-          - number
-      location_locality:
-        type:
-          - "null"
-          - string
-      location_long:
-        type:
-          - "null"
-          - number
-      location_postal_code:
-        type:
-          - "null"
-          - string
-      location_route:
-        type:
-          - "null"
-          - string
-      location_street_number:
-        type:
-          - "null"
-          - string
-      location_sublocality:
-        type:
-          - "null"
-          - string
-      location_subpremise:
-        type:
-          - "null"
-          - string
+          - boolean
       marked_as_done_time:
         type:
           - "null"
           - string
-      note:
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      location:
         type:
           - "null"
-          - string
-      notification_language_id:
-        type:
-          - "null"
-          - integer
-      org_id:
-        type:
-          - "null"
-          - integer
-      org_name:
-        type:
-          - "null"
-          - string
-      owner_name:
-        type:
-          - "null"
-          - string
+          - object
+        additionalProperties: true
+        properties:
+          value:
+            type:
+              - "null"
+              - string
+          country:
+            type:
+              - "null"
+              - string
+          admin_area_level_1:
+            type:
+              - "null"
+              - string
+          admin_area_level_2:
+            type:
+              - "null"
+              - string
+          locality:
+            type:
+              - "null"
+              - string
+          sublocality:
+            type:
+              - "null"
+              - string
+          route:
+            type:
+              - "null"
+              - string
+          street_number:
+            type:
+              - "null"
+              - string
+          subpremise:
+            type:
+              - "null"
+              - string
+          postal_code:
+            type:
+              - "null"
+              - string
       participants:
         type:
           - "null"
@@ -2855,24 +2684,59 @@ schemas:
           type:
             - "null"
             - object
+          additionalProperties: true
           properties:
             person_id:
               type:
                 - "null"
                 - integer
-            primary_flag:
+            primary:
               type:
                 - "null"
                 - boolean
-      person_dropbox_bcc:
+      attendees:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            email:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            status:
+              type:
+                - "null"
+                - string
+            is_organizer:
+              type:
+                - "null"
+                - boolean
+            person_id:
+              type:
+                - "null"
+                - integer
+            user_id:
+              type:
+                - "null"
+                - integer
+      conference_meeting_client:
         type:
           - "null"
           - string
-      person_id:
+      conference_meeting_url:
         type:
           - "null"
-          - integer
-      person_name:
+          - string
+      conference_meeting_id:
         type:
           - "null"
           - string
@@ -2880,56 +2744,28 @@ schemas:
         type:
           - "null"
           - string
-      rec_master_activity_id:
+      priority:
         type:
           - "null"
           - integer
-      rec_rule:
-        type:
-          - "null"
-          - string
-      rec_rule_extension:
-        type:
-          - "null"
-          - string
-      reference_id:
+      outcome:
         type:
           - "null"
           - integer
-      reference_type:
+      note:
         type:
           - "null"
           - string
-      series:
+      custom_fields:
         type:
           - "null"
-          - string
-      source_timezone:
+          - object
+        additionalProperties: true
+      private:
         type:
           - "null"
-          - string
-      subject:
-        type:
-          - "null"
-          - string
-      type_name:
-        type:
-          - "null"
-          - string
-      update_time:
-        type:
-          - "null"
-          - string
-        airbyte_type: timestamp_without_timezone
-        format: date-time
-      update_user_id:
-        type:
-          - "null"
-          - integer
-      user_id:
-        type:
-          - "null"
-          - integer
+          - boolean
+
   activity_types:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2943,6 +2779,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       color:
         type:
           - "null"
@@ -2990,6 +2828,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       add_visible_flag:
         type:
           - "null"
@@ -3093,6 +2933,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
   currencies:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3289,277 +3131,122 @@ schemas:
           - "null"
           - integer
   organizations:
-    type:
-      - "null"
-      - object
+    type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      active_flag:
-        type:
-          - "null"
-          - boolean
-      activities_count:
-        type:
-          - "null"
-          - number
-      add_time:
-        type:
-          - "null"
-          - string
-      address:
-        type:
-          - "null"
-          - string
-      address_admin_area_level_1:
-        type:
-          - "null"
-          - string
-      address_admin_area_level_2:
-        type:
-          - "null"
-          - string
-      address_country:
-        type:
-          - "null"
-          - string
-      address_formatted_address:
-        type:
-          - "null"
-          - string
-      address_locality:
-        type:
-          - "null"
-          - string
-      address_postal_code:
-        type:
-          - "null"
-          - string
-      address_route:
-        type:
-          - "null"
-          - string
-      address_street_number:
-        type:
-          - "null"
-          - string
-      address_sublocality:
-        type:
-          - "null"
-          - string
-      address_subpremise:
-        type:
-          - "null"
-          - string
-      category_id:
-        type:
-          - "null"
-          - integer
-      cc_email:
-        type:
-          - "null"
-          - string
-      closed_deals_count:
-        type:
-          - "null"
-          - number
-      company_id:
-        type:
-          - "null"
-          - number
-      country_code:
-        type:
-          - "null"
-          - string
-      delete_time:
-        type:
-          - "null"
-          - string
-      done_activities_count:
-        type:
-          - "null"
-          - number
-      email_messages_count:
-        type:
-          - "null"
-          - number
-      files_count:
-        type:
-          - "null"
-          - number
-      first_char:
-        type:
-          - "null"
-          - string
-      followers_count:
-        type:
-          - "null"
-          - number
       id:
         type:
           - "null"
-          - number
-      label:
-        type:
-          - "null"
-          - number
-      last_activity_date:
-        type:
-          - "null"
-          - string
-      last_activity_id:
-        type:
-          - "null"
-          - number
-      lost_deals_count:
-        type:
-          - "null"
-          - number
+          - integer
       name:
         type:
           - "null"
           - string
-      next_activity_date:
-        type:
-          - "null"
-          - string
-      next_activity_id:
-        type:
-          - "null"
-          - number
-      next_activity_time:
-        type:
-          - "null"
-          - string
-      notes_count:
-        type:
-          - "null"
-          - number
-      open_deals_count:
-        type:
-          - "null"
-          - number
       owner_id:
         type:
           - "null"
-          - object
-          - number
-        properties:
-          active_flag:
-            type:
-              - "null"
-              - boolean
-          email:
-            type:
-              - "null"
-              - string
-          has_pic:
-            type:
-              - "null"
-              - number
-          id:
-            type:
-              - "null"
-              - number
-          name:
-            type:
-              - "null"
-              - string
-          pic_hash:
-            type:
-              - "null"
-              - string
-          value:
-            type:
-              - "null"
-              - number
-      owner_name:
+          - integer
+      add_time:
         type:
           - "null"
           - string
-      people_count:
-        type:
-          - "null"
-          - number
-      picture_id:
-        type:
-          - "null"
-          - object
-        properties:
-          active_flag:
-            type:
-              - "null"
-              - boolean
-          add_time:
-            type:
-              - "null"
-              - string
-          added_by_user_id:
-            type:
-              - "null"
-              - number
-          item_id:
-            type:
-              - "null"
-              - number
-          item_type:
-            type:
-              - "null"
-              - string
-          pictures:
-            type:
-              - "null"
-              - object
-            properties:
-              "128":
-                type:
-                  - "null"
-                  - string
-              "512":
-                type:
-                  - "null"
-                  - string
-          update_time:
-            type:
-              - "null"
-              - string
-          value:
-            type:
-              - "null"
-              - number
-      related_closed_deals_count:
-        type:
-          - "null"
-          - number
-      related_lost_deals_count:
-        type:
-          - "null"
-          - number
-      related_open_deals_count:
-        type:
-          - "null"
-          - number
-      related_won_deals_count:
-        type:
-          - "null"
-          - number
-      undone_activities_count:
-        type:
-          - "null"
-          - number
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       update_time:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      is_deleted:
+        type:
+          - "null"
+          - boolean
       visible_to:
         type:
           - "null"
-          - number
-          - string
-      won_deals_count:
+          - integer
+      address:
         type:
           - "null"
-          - number
+          - object
+        additionalProperties: true
+        properties:
+          value:
+            type:
+              - "null"
+              - string
+          country:
+            type:
+              - "null"
+              - string
+          admin_area_level_1:
+            type:
+              - "null"
+              - string
+          admin_area_level_2:
+            type:
+              - "null"
+              - string
+          locality:
+            type:
+              - "null"
+              - string
+          sublocality:
+            type:
+              - "null"
+              - string
+          route:
+            type:
+              - "null"
+              - string
+          street_number:
+            type:
+              - "null"
+              - string
+          subpremise:
+            type:
+              - "null"
+              - string
+          postal_code:
+            type:
+              - "null"
+              - string
+      label_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      website:
+        type:
+          - "null"
+          - string
+      linkedin:
+        type:
+          - "null"
+          - string
+      industry:
+        type:
+          - "null"
+          - integer
+      annual_revenue:
+        type:
+          - "null"
+          - integer
+      employee_count:
+        type:
+          - "null"
+          - integer
+      custom_fields:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+
   organization_fields:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -3573,6 +3260,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       add_visible_flag:
         type:
           - "null"
@@ -3728,108 +3417,7 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      active_flag:
-        type:
-          - "null"
-          - boolean
-      activities_count:
-        type:
-          - "null"
-          - integer
-      add_time:
-        type:
-          - "null"
-          - string
-      cc_email:
-        type:
-          - "null"
-          - string
-      closed_deals_count:
-        type:
-          - "null"
-          - integer
-      company_id:
-        type:
-          - "null"
-          - integer
-      delete_time:
-        type:
-          - "null"
-          - string
-      done_activities_count:
-        type:
-          - "null"
-          - integer
-      email:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - object
-          properties:
-            label:
-              type:
-                - "null"
-                - string
-            primary:
-              type:
-                - "null"
-                - boolean
-            value:
-              type:
-                - "null"
-                - string
-      email_messages_count:
-        type:
-          - "null"
-          - integer
-      files_count:
-        type:
-          - "null"
-          - integer
-      first_char:
-        type:
-          - "null"
-          - string
-      first_name:
-        type:
-          - "null"
-          - string
-      followers_count:
-        type:
-          - "null"
-          - integer
       id:
-        type:
-          - "null"
-          - integer
-      label:
-        type:
-          - "null"
-          - integer
-      last_activity_date:
-        type:
-          - "null"
-          - string
-      last_activity_id:
-        type:
-          - "null"
-          - integer
-      last_incoming_mail_time:
-        type:
-          - "null"
-          - string
-      last_name:
-        type:
-          - "null"
-          - string
-      last_outgoing_mail_time:
-        type:
-          - "null"
-          - string
-      lost_deals_count:
         type:
           - "null"
           - integer
@@ -3837,33 +3425,11 @@ schemas:
         type:
           - "null"
           - string
-      next_activity_date:
+      first_name:
         type:
           - "null"
           - string
-        format: date
-      next_activity_id:
-        type:
-          - "null"
-          - integer
-      next_activity_time:
-        type:
-          - "null"
-          - string
-        format: time
-      notes_count:
-        type:
-          - "null"
-          - integer
-      open_deals_count:
-        type:
-          - "null"
-          - integer
-      org_id:
-        type:
-          - "null"
-          - integer
-      org_name:
+      last_name:
         type:
           - "null"
           - string
@@ -3871,19 +3437,23 @@ schemas:
         type:
           - "null"
           - integer
-      owner_name:
+      org_id:
+        type:
+          - "null"
+          - integer
+      add_time:
         type:
           - "null"
           - string
-      participant_closed_deals_count:
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      update_time:
         type:
           - "null"
-          - integer
-      participant_open_deals_count:
-        type:
-          - "null"
-          - integer
-      phone:
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      emails:
         type:
           - "null"
           - array
@@ -3891,8 +3461,9 @@ schemas:
           type:
             - "null"
             - object
+          additionalProperties: true
           properties:
-            label:
+            value:
               type:
                 - "null"
                 - string
@@ -3900,94 +3471,139 @@ schemas:
               type:
                 - "null"
                 - boolean
+            label:
+              type:
+                - "null"
+                - string
+      phones:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
             value:
               type:
                 - "null"
                 - string
-      picture_128_url:
+            primary:
+              type:
+                - "null"
+                - boolean
+            label:
+              type:
+                - "null"
+                - string
+      is_deleted:
         type:
           - "null"
-          - string
-      picture_id:
-        type:
-          - "null"
-          - object
-        properties:
-          active_flag:
-            type:
-              - "null"
-              - boolean
-          add_time:
-            type:
-              - "null"
-              - string
-          added_by_user_id:
-            type:
-              - "null"
-              - integer
-          item_id:
-            type:
-              - "null"
-              - integer
-          item_type:
-            type:
-              - "null"
-              - string
-          pictures:
-            type:
-              - "null"
-              - object
-            properties:
-              "128":
-                type:
-                  - "null"
-                  - string
-              "512":
-                type:
-                  - "null"
-                  - string
-          update_time:
-            type:
-              - "null"
-              - string
-          value:
-            type:
-              - "null"
-              - integer
-      related_closed_deals_count:
-        type:
-          - "null"
-          - integer
-      related_lost_deals_count:
-        type:
-          - "null"
-          - integer
-      related_open_deals_count:
-        type:
-          - "null"
-          - integer
-      related_won_deals_count:
-        type:
-          - "null"
-          - integer
-      undone_activities_count:
-        type:
-          - "null"
-          - integer
-      update_time:
-        type:
-          - "null"
-          - string
-        airbyte_type: timestamp_without_timezone
-        format: date-time
+          - boolean
       visible_to:
         type:
           - "null"
-          - string
-      won_deals_count:
+          - integer
+      label_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      picture_id:
         type:
           - "null"
           - integer
+      postal_address:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          value:
+            type:
+              - "null"
+              - string
+          country:
+            type:
+              - "null"
+              - string
+          admin_area_level_1:
+            type:
+              - "null"
+              - string
+          admin_area_level_2:
+            type:
+              - "null"
+              - string
+          locality:
+            type:
+              - "null"
+              - string
+          sublocality:
+            type:
+              - "null"
+              - string
+          route:
+            type:
+              - "null"
+              - string
+          street_number:
+            type:
+              - "null"
+              - string
+          subpremise:
+            type:
+              - "null"
+              - string
+          postal_code:
+            type:
+              - "null"
+              - string
+      notes:
+        type:
+          - "null"
+          - string
+      im:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            value:
+              type:
+                - "null"
+                - string
+            primary:
+              type:
+                - "null"
+                - boolean
+            label:
+              type:
+                - "null"
+                - string
+      birthday:
+        type:
+          - "null"
+          - string
+        format: date
+      job_title:
+        type:
+          - "null"
+          - string
+      custom_fields:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+
   person_fields:
     type: object
     $schema: http://json-schema.org/schema#
@@ -4001,6 +3617,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       add_visible_flag:
         type:
           - "null"
@@ -4097,6 +3715,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       use_field:
         type:
           - "null"
@@ -4106,18 +3726,6 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      active:
-        type:
-          - "null"
-          - boolean
-      add_time:
-        type:
-          - "null"
-          - string
-      deal_probability:
-        type:
-          - "null"
-          - boolean
       id:
         type:
           - "null"
@@ -4130,30 +3738,11 @@ schemas:
         type:
           - "null"
           - integer
-      selected:
+      is_deleted:
         type:
           - "null"
           - boolean
-      update_time:
-        type:
-          - "null"
-          - string
-        airbyte_type: timestamp_without_timezone
-        format: date-time
-      url_title:
-        type:
-          - "null"
-          - string
-  products:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      description:
-        type:
-          - "null"
-          - string
-      active_flag:
+      is_deal_probability_enabled:
         type:
           - "null"
           - boolean
@@ -4161,22 +3750,20 @@ schemas:
         type:
           - "null"
           - string
-      category:
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      update_time:
         type:
           - "null"
           - string
-      code:
-        type:
-          - "null"
-          - string
-      files_count:
-        type:
-          - "null"
-          - integer
-      first_char:
-        type:
-          - "null"
-          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+
+  products:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
       id:
         type:
           - "null"
@@ -4185,20 +3772,86 @@ schemas:
         type:
           - "null"
           - string
+      code:
+        type:
+          - "null"
+          - string
+      unit:
+        type:
+          - "null"
+          - string
+      tax:
+        type:
+          - "null"
+          - number
+      is_deleted:
+        type:
+          - "null"
+          - boolean
+      is_linkable:
+        type:
+          - "null"
+          - boolean
+      visible_to:
+        type:
+          - "null"
+          - integer
       owner_id:
         type:
           - "null"
           - integer
-      owner_name:
+      add_time:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      update_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      description:
+        type:
+          - "null"
+          - string
+      category:
+        type:
+          - "null"
+          - string
+      custom_fields:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      billing_frequency:
+        type:
+          - "null"
+          - string
+      billing_frequency_cycles:
+        type:
+          - "null"
+          - integer
       prices:
-        type: array
+        type:
+          - "null"
+          - array
         items:
-          type: object
+          type:
+            - "null"
+            - object
+          additionalProperties: true
           properties:
+            price:
+              type:
+                - "null"
+                - number
             cost:
+              type:
+                - "null"
+                - number
+            product_id:
               type:
                 - "null"
                 - integer
@@ -4206,44 +3859,15 @@ schemas:
               type:
                 - "null"
                 - string
-            id:
+            direct_cost:
               type:
                 - "null"
-                - integer
-            overhead_cost:
+                - number
+            notes:
               type:
                 - "null"
-                - integer
-            price:
-              type:
-                - "null"
-                - integer
-            product_id:
-              type:
-                - "null"
-                - integer
-      selectable:
-        type:
-          - "null"
-          - boolean
-      tax:
-        type:
-          - "null"
-          - integer
-      unit:
-        type:
-          - "null"
-          - string
-      update_time:
-        type:
-          - "null"
-          - string
-        airbyte_type: timestamp_without_timezone
-        format: date-time
-      visible_to:
-        type:
-          - "null"
-          - string
+                - string
+
   product_fields:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -4257,6 +3881,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       add_visible_flag:
         type:
           - "null"
@@ -4354,6 +3980,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       use_field:
         type:
           - "null"
@@ -4400,19 +4028,11 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      active_flag:
-        type:
-          - "null"
-          - boolean
-      add_time:
-        type:
-          - "null"
-          - string
-      deal_probability:
+      id:
         type:
           - "null"
           - integer
-      id:
+      order_nr:
         type:
           - "null"
           - integer
@@ -4420,36 +4040,39 @@ schemas:
         type:
           - "null"
           - string
-      order_nr:
-        type:
-          - "null"
-          - integer
-      pipeline_deal_probability:
+      is_deleted:
         type:
           - "null"
           - boolean
+      deal_probability:
+        type:
+          - "null"
+          - integer
       pipeline_id:
         type:
           - "null"
           - integer
-      pipeline_name:
-        type:
-          - "null"
-          - string
-      rotten_days:
-        type:
-          - "null"
-          - integer
-      rotten_flag:
+      is_deal_rot_enabled:
         type:
           - "null"
           - boolean
+      days_to_rotten:
+        type:
+          - "null"
+          - integer
+      add_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       update_time:
         type:
           - "null"
           - string
-        airbyte_type: timestamp_without_timezone
         format: date-time
+        airbyte_type: timestamp_with_timezone
+
   users:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -4467,6 +4090,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       default_currency:
         type:
           - "null"
@@ -4491,10 +4116,34 @@ schemas:
         type:
           - "null"
           - integer
+      is_deleted:
+        type:
+          - "null"
+          - boolean
       is_you:
         type:
           - "null"
           - boolean
+      access:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            app:
+              type:
+                - "null"
+                - string
+            admin:
+              type:
+                - "null"
+                - boolean
+            permission_set_id:
+              type:
+                - "null"
+                - string
       lang:
         type:
           - "null"
@@ -4503,6 +4152,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       locale:
         type:
           - "null"
@@ -4511,6 +4162,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       name:
         type:
           - "null"
@@ -4537,65 +4190,29 @@ schemas:
           - string
   deal_products:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      active_flag:
-        type:
-          - "null"
-          - boolean
-      add_time:
-        type:
-          - "null"
-          - string
-      comments:
-        type:
-          - "null"
-          - string
-      currency:
-        type:
-          - "null"
-          - string
-      deal_id:
-        type:
-          - "null"
-          - integer
-      discount_percentage:
-        type:
-          - "null"
-          - integer
-      duration:
-        type:
-          - "null"
-          - integer
-      duration_unit:
-        type:
-          - "null"
-          - string
-      enabled_flag:
-        type:
-          - "null"
-          - boolean
       id:
         type:
           - "null"
           - integer
-      item_price:
+      sum:
+        type:
+          - "null"
+          - number
+      tax:
+        type:
+          - "null"
+          - number
+      deal_id:
         type:
           - "null"
           - integer
-      last_edit:
-        type:
-          - "null"
-          - string
       name:
         type:
           - "null"
           - string
-      order_nr:
-        type:
-          - "null"
-          - integer
       product_id:
         type:
           - "null"
@@ -4604,30 +4221,72 @@ schemas:
         type:
           - "null"
           - integer
-      quantity:
+      order_nr:
         type:
           - "null"
           - integer
-      quantity_formatted:
+      add_time:
         type:
           - "null"
           - string
-      sum:
-        type:
-          - "null"
-          - integer
-      sum_formatted:
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      update_time:
         type:
           - "null"
           - string
-      sum_no_discount:
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      comments:
         type:
           - "null"
-          - integer
-      tax:
+          - string
+      currency:
+        type:
+          - "null"
+          - string
+      discount:
         type:
           - "null"
           - number
+      discount_type:
+        type:
+          - "null"
+          - string
+      quantity:
+        type:
+          - "null"
+          - number
+      item_price:
+        type:
+          - "null"
+          - number
+      tax_method:
+        type:
+          - "null"
+          - string
+      is_enabled:
+        type:
+          - "null"
+          - boolean
+      billing_frequency:
+        type:
+          - "null"
+          - string
+      billing_frequency_cycles:
+        type:
+          - "null"
+          - integer
+      billing_start_date:
+        type:
+          - "null"
+          - string
+        format: date
+      is_deleted:
+        type:
+          - "null"
+          - boolean
+
   mailThreads:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
