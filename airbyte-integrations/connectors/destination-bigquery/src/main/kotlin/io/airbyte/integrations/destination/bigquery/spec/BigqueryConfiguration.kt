@@ -20,6 +20,12 @@ data class BigqueryConfiguration(
     val cdcDeletionMode: CdcDeletionMode,
     val internalTableDataset: String,
     val legacyRawTablesOnly: Boolean,
+    // TEMPORARY: preview routing overrides until the platform injects all five IDs.
+    val organizationId: String? = null,
+    val workspaceId: String? = null,
+    val sourceId: String? = null,
+    val connectionId: String? = null,
+    val destinationId: String? = null,
 ) : DestinationConfiguration() {
     override val numOpenStreamWorkers = 3
     // currently the base cdk declares 0.2 as the default.
@@ -68,6 +74,11 @@ class BigqueryConfigurationFactory :
                     pojo.internalTableDataset!!
                 },
             legacyRawTablesOnly = pojo.legacyRawTablesOnly ?: false,
+            organizationId = pojo.organizationId,
+            workspaceId = pojo.workspaceId,
+            sourceId = pojo.sourceId,
+            connectionId = pojo.connectionId,
+            destinationId = pojo.destinationId,
         )
     }
 }

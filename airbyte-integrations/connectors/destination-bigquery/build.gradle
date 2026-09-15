@@ -34,6 +34,19 @@ application {
 }
 
 dependencies {
+    // Connector-local Java SDK; GCS continues to use its existing Kotlin SDK and credentials.
+    implementation enforcedPlatform('software.amazon.awssdk:bom:2.46.0')
+    implementation('software.amazon.awssdk:s3') {
+        exclude group: 'software.amazon.awssdk', module: 'apache-client'
+        exclude group: 'software.amazon.awssdk', module: 'apache5-client'
+    }
+    implementation('software.amazon.awssdk:sts') {
+        exclude group: 'software.amazon.awssdk', module: 'apache-client'
+        exclude group: 'software.amazon.awssdk', module: 'apache5-client'
+    }
+    implementation 'software.amazon.awssdk:netty-nio-client'
+    implementation 'software.amazon.awssdk:url-connection-client'
+
     // Ideally we would just rely on the bom version:
     // implementation 'com.google.cloud:google-cloud-bigquery'
     // but we're still waiting for google to cut another release.
