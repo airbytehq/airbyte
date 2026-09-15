@@ -173,4 +173,9 @@ httpx
 async
 Automations
 enum
+
+# Agent SDK terms
+
+build_connector_tools
+[Cc]allable(s)?
 uv

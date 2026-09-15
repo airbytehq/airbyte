@@ -7,6 +7,16 @@ enterprise-connector: true
 
 <HideInUI>
 
+:::info We no longer sell this connector
+
+Airbyte no longer sells this connector, but we continue to support it if you purchased it in the past.
+
+:::
+
+</HideInUI>
+
+<HideInUI>
+
 This page contains the setup guide and reference information for the [SharePoint Lists Enterprise](https://portal.azure.com) source connector.
 
 </HideInUI>

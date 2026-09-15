@@ -848,6 +848,7 @@ class HubspotCustomObjectsSchemaLoader(SchemaLoader):
 
     def _field_to_property_schema(self, field: Mapping[str, Any]) -> Mapping[str, Any]:
         field_type = field["type"]
+        treat_as_string = bool(self.config.get("treat_numbers_and_booleans_as_strings", False))
 
         if field_type in ["string", "enumeration", "phone_number", "object_coordinates", "json"]:
             return {"type": ["null", "string"]}
@@ -856,8 +857,12 @@ class HubspotCustomObjectsSchemaLoader(SchemaLoader):
         elif field_type == "date":
             return {"type": ["null", "string"], "format": "date"}
         elif field_type == "number":
+            if treat_as_string:
+                return {"type": ["null", "string"]}
             return {"type": ["null", "number"]}
         elif field_type == "boolean" or field_type == "bool":
+            if treat_as_string:
+                return {"type": ["null", "string"]}
             return {"type": ["null", "boolean"]}
         else:
             logger.warn(f"Field {field['name']} has unrecognized type: {field['type']} casting to string.")

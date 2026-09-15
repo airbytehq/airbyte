@@ -148,7 +148,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
-| 0.1.28 | 2026-06-08 | [79191](https://github.com/airbytehq/airbyte/pull/79191) | Emit warning and fail sync when >50% of records are silently skipped due to NetSuite workflow locks (USER_ERROR) |
+| 0.1.29 | 2026-09-15 | [79191](https://github.com/airbytehq/airbyte/pull/79191) | Emit warning and fail sync when >50% of records are silently skipped due to NetSuite workflow locks (USER_ERROR) |
+| 0.1.28 | 2026-08-17 | [79654](https://github.com/airbytehq/airbyte/pull/79654) | Fix incremental sync permanently dropping records modified between the sync time and account-local midnight; retry a rejected date format on the same slice instead of skipping it |
 | 0.1.27 | 2025-10-14 | [67787](https://github.com/airbytehq/airbyte/pull/67787) | Update dependencies |
 | 0.1.26 | 2025-10-07 | [67429](https://github.com/airbytehq/airbyte/pull/67429) | Update dependencies |
 | 0.1.25 | 2025-09-30 | [66934](https://github.com/airbytehq/airbyte/pull/66934) | Update dependencies |

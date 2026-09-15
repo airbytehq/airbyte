@@ -44,8 +44,8 @@ internal class S3DataLakeAggregateFactoryTest {
         val stream = makeStream()
         val schema =
             Schema(
-                Types.NestedField.of(1, true, "id", Types.LongType.get()),
-                Types.NestedField.of(2, true, "name", Types.StringType.get()),
+                Types.NestedField.optional(1, "id", Types.LongType.get()),
+                Types.NestedField.optional(2, "name", Types.StringType.get()),
             )
         val table: Table = mockk { every { newAppend() } returns mockk<AppendFiles>() }
         val append: AppendFiles = mockk {
