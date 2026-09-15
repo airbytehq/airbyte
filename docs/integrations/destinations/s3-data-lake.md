@@ -328,6 +328,18 @@ In particular, when using AWS Glue, the connector will:
 - Lowercase all stream [table names and namespaces](https://docs.aws.amazon.com/glue/latest/webapi/API_Table.html)
 - Change any non-alphanumeric character in a table name/namespace to an [underscore](https://docs.aws.amazon.com/glue/latest/dg/define-database.html) for compatibility with Athena
 
+### Column names
+
+By default, column names are written to Iceberg exactly as they appear in the source (for example `Foo.Bar` or `userId`). Some query engines cannot read tables with mixed-case or special-character column names through a Glue catalog.
+
+Enable the **Normalize Column Names** option to normalize every column name before it is written. The name is converted to lowercase, accents are removed, and every character other than a letter, digit, or underscore is replaced with an underscore. For example, `Foo.Bar` becomes `foo_bar`.
+
+Names that normalize to the same value are made unique with a numeric suffix (`ID` and `id` become `id` and `id_1`). Airbyte's own `_airbyte_*` columns already satisfy these rules and are never renamed. The option applies to every catalog type.
+
+:::caution Changing the option on an existing connection
+Enabling **Normalize Column Names** on a connection whose tables already exist changes the column names of those tables. The connector refuses to sync until you [clear the stream's data](../../platform/operator-guides/clear) and run a full refresh, which recreates the table with the new column names. Clear the affected streams before disabling the option as well.
+:::
+
 ## Deduplication
 
 This connector uses a merge-on-read strategy to support deduplication.
@@ -416,6 +428,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.0 | 2026-09-14 | [85827](https://github.com/airbytehq/airbyte/pull/85827) | Add `normalize_column_names` option: lowercase column names, replace non-alphanumeric characters with underscores, and prefix SQL reserved keywords. |
 | 0.3.53 | 2026-08-24 | [84994](https://github.com/airbytehq/airbyte/pull/84994) | Upgrade to Bulk CDK 1.0.25. |
 | 0.3.52 | 2026-06-23 | [80349](https://github.com/airbytehq/airbyte/pull/80349) | Remove awssdk:bundle fat jar to fix OOMKilled during CHECK operations |
 | 0.3.51 | 2026-06-15 | [79123](https://github.com/airbytehq/airbyte/pull/79123) | Update Apache Iceberg dependencies. |
