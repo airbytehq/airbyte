@@ -1,5 +1,5 @@
 dependencies {
-    api platform('io.debezium:debezium-bom:3.1.2.Final')
+    api platform('io.debezium:debezium-bom:3.6.2.Final')
     api 'io.debezium:debezium-api'
     api 'io.debezium:debezium-embedded'
 
@@ -10,7 +10,9 @@ dependencies {
 
     testFixturesImplementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
     testFixturesImplementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract'))
-    testFixturesImplementation platform('org.testcontainers:testcontainers-bom:1.21.4')
+    // enforced: Debezium 3.6's BOM would otherwise pull Testcontainers 2.x
+    testFixturesImplementation enforcedPlatform('org.testcontainers:testcontainers-bom:1.21.4')
+    testImplementation enforcedPlatform('org.testcontainers:testcontainers-bom:1.21.4')
     constraints {
         testFixturesImplementation('org.testcontainers:testcontainers') {
             version {
@@ -23,7 +25,10 @@ dependencies {
     testImplementation 'io.debezium:debezium-connector-postgres'
     testImplementation 'io.debezium:debezium-connector-mongodb'
     testImplementation 'io.debezium:debezium-connector-sqlserver'
-    testFixturesImplementation 'io.debezium:debezium-testing-testcontainers' // required for testing with mongo
+    // required for testing with mongo; Debezium 3.6 pulls Testcontainers 2.x, the CDK is pinned to 1.21.4
+    testFixturesImplementation('io.debezium:debezium-testing-testcontainers') {
+        exclude group: 'org.testcontainers'
+    }
     testFixturesImplementation 'io.mockk:mockk:1.14.4'
     testImplementation 'org.testcontainers:mysql'
     testImplementation 'org.testcontainers:postgresql'

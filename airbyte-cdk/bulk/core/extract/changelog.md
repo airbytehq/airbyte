@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.2.0 — 2026-09-11
+
+[#85846](https://github.com/airbytehq/airbyte/issues/85846) — Upgrade Debezium to 3.6.2.Final so that MySQL 8.4 tagged GTIDs (WL#15294) parse, and add a per-column `partialConverters(column)` hook to `RelationalColumnCustomConverter.Handler`.
+
 ### 1.1.11 — 2026-09-02
 
 [#85313](https://github.com/airbytehq/airbyte/pull/85313) — Tolerate empty STREAM-typed input state in global (CDC) mode instead of failing.

@@ -23,6 +23,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import org.apache.kafka.connect.data.SchemaBuilder
 
 class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
@@ -35,6 +36,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
             DatetimeMicrosHandler,
             DateHandler,
             TimeHandler,
+            NullableTimestampHandler,
             TimestampHandler
         )
 
@@ -184,15 +186,42 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
             )
     }
 
+    /**
+     * TIMESTAMP columns which permit NULL. A NULL here is a genuine value, so it is passed through
+     * and the schema is nullable, unlike [TimestampHandler].
+     */
+    data object NullableTimestampHandler : RelationalColumnCustomConverter.Handler {
+        override fun matches(column: RelationalColumn): Boolean =
+            column.typeName().equals("TIMESTAMP", ignoreCase = true) && column.isOptional
+
+        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string().optional()
+
+        override val partialConverters: List<PartialConverter> =
+            listOf(NullFallThrough) + TimestampHandler.valueConverters
+    }
+
+    /**
+     * NOT NULL TIMESTAMP columns. Since Debezium 3.6 the zero-date sentinel arrives as NULL rather
+     * than as 0, which would violate the required field. Such a column cannot hold a genuine NULL,
+     * so a NULL here is always a zero-date and is mapped to the Unix epoch, as before.
+     */
     data object TimestampHandler : RelationalColumnCustomConverter.Handler {
+
+        private val EPOCH_TIMESTAMP: String =
+            OffsetDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC)
+                .format(OffsetDateTimeCodec.formatter)
+
         override fun matches(column: RelationalColumn): Boolean =
             column.typeName().equals("TIMESTAMP", ignoreCase = true)
 
         override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
 
-        override val partialConverters: List<PartialConverter> =
+        private val zeroDateToEpoch = PartialConverter {
+            if (it == null) Converted(EPOCH_TIMESTAMP) else NoConversion
+        }
+
+        internal val valueConverters: List<PartialConverter> =
             listOf(
-                NullFallThrough,
                 PartialConverter {
                     if (it is ZonedDateTime) {
                         val offsetDateTime: OffsetDateTime = it.toOffsetDateTime()
@@ -213,5 +242,32 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
                     }
                 }
             )
+
+        override val partialConverters: List<PartialConverter> =
+            listOf(zeroDateToEpoch) + valueConverters
+
+        /**
+         * Debezium resolves the column's schema default by invoking the converter once, before any
+         * row, with the DDL default as input. Left alone that would make a zero-date row fall back
+         * to the DDL default instead of the epoch. Overriding that first call keeps the epoch
+         * mapping, matching the behaviour of Debezium's own ZeroDateFallbackConverter.
+         *
+         * Columns without a DDL default get no such call, so the flag is only armed when there is
+         * one, and a row value can never be mistaken for it.
+         */
+        override fun partialConverters(column: RelationalColumn): List<PartialConverter> {
+            if (!column.hasDefaultValue()) {
+                return partialConverters
+            }
+            val defaultValueResolved = AtomicBoolean()
+            val overrideDdlDefault = PartialConverter {
+                if (defaultValueResolved.compareAndSet(false, true)) {
+                    Converted(EPOCH_TIMESTAMP)
+                } else {
+                    NoConversion
+                }
+            }
+            return listOf(overrideDdlDefault) + partialConverters
+        }
     }
 }
