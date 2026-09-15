@@ -1,0 +1,9 @@
+{"type":"RECORD","record":{"stream":"overwrite_articles","data":{"id":1,"title":"overwrite first","body":"full refresh row one","category":"overwrite"},"emitted_at":1710000000000}}
+{"type":"RECORD","record":{"stream":"overwrite_articles","data":{"id":2,"title":"overwrite second","body":"full refresh row two","category":"overwrite"},"emitted_at":1710000001000}}
+{"type":"STATE","state":{"data":{"phase":"overwrite flushed"}}}
+{"type":"RECORD","record":{"stream":"append_events","data":{"id":10,"title":"append first","body":"append mode keeps existing rows","category":"append"},"emitted_at":1710000002000}}
+{"type":"RECORD","record":{"stream":"append_events","data":{"id":11,"title":"append second","body":"another append row","category":"append"},"emitted_at":1710000003000}}
+{"type":"STATE","state":{"data":{"phase":"append flushed"}}}
+{"type":"RECORD","record":{"namespace":"manual","stream":"dedup_docs","data":{"id":100,"title":"dedup original","body":"old content that should be replaced on next sync","category":"dedup"},"emitted_at":1710000004000}}
+{"type":"RECORD","record":{"namespace":"manual","stream":"dedup_docs","data":{"id":101,"title":"dedup second","body":"second dedup row","category":"dedup"},"emitted_at":1710000005000}}
+{"type":"STATE","state":{"data":{"phase":"dedup flushed"}}}
