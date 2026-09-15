@@ -28,7 +28,7 @@ class TestSprintIssuesStream(TestCase):
 
     This is an incremental substream that depends on sprints as parent.
     Uses SprintIssuesSubstreamPartitionRouter custom component.
-    Endpoint: /rest/agile/1.0/sprint/{sprintId}/issue
+    Endpoint: /rest/software/1.0/sprint/{sprintId}/issue
     Extract field: issues
     Primary key: id (composite: sprintId-issueId)
     Cursor field: updated

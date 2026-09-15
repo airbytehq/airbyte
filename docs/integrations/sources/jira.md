@@ -262,6 +262,7 @@ The connector uses these configuration fields for programmatic setup with PyAirb
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.0 | 2026-09-14 | [80198](https://github.com/airbytehq/airbyte/pull/80198) | Migrate `board_issues` and `sprint_issues` streams from deprecated `/rest/agile/1.0/` endpoints to `/rest/software/1.0/` with cursor-based pagination per Atlassian RFC-127 |
 | 6.0.2 | 2026-09-10 | [85802](https://github.com/airbytehq/airbyte/pull/85802) | Stop config migration from adding empty `api_token`, `email`, and `domain` fields to OAuth or partially-migrated configs |
 | 6.0.1 | 2026-07-27 | [82702](https://github.com/airbytehq/airbyte/pull/82702) | Increase `issue_worklogs` page size to 5000 to reduce the number of paginated requests |
 | 6.0.0 | 2026-06-24 | [80279](https://github.com/airbytehq/airbyte/pull/80279) | Remove deprecated `issue_field_configurations` stream (Atlassian removing endpoint July 2026) |
