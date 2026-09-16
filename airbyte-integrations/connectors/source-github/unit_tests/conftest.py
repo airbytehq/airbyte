@@ -1,11 +1,21 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import os
+import shutil
 
 import pytest
 
 
 os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
+
+
+@pytest.fixture(autouse=True)
+def clear_request_cache():
+    """The manifest resolver streams use `use_cache: true`, which persists HTTP
+    responses in a sqlite file across tests — a cached listing from one test would
+    shadow another test's mock for the same URL. Start every test with a clean cache."""
+    shutil.rmtree(os.environ["REQUEST_CACHE_PATH"], ignore_errors=True)
+    yield
 
 
 @pytest.fixture(name="rate_limit_mock_response")

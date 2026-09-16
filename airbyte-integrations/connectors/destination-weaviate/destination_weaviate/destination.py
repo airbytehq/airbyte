@@ -11,8 +11,14 @@ from airbyte_cdk.destinations.vector_db_based.document_processor import Document
 from airbyte_cdk.destinations.vector_db_based.embedder import Embedder, create_from_config
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    ConnectorSpecification,
+    DestinationSyncMode,
+    Status,
+)
 from destination_weaviate.config import ConfigModel
 from destination_weaviate.indexer import WeaviateIndexer
 from destination_weaviate.no_embedder import NoEmbedder

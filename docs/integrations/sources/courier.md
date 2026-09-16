@@ -64,6 +64,10 @@ The Courier source connector supports the following [sync modes](https://docs.ai
 
 Courier's [API reference](https://www.courier.com/docs/reference/) does not address rate limiting but the connector implements exponential backoff when a 429 response status code is received.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

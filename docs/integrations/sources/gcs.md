@@ -75,15 +75,13 @@ Use the service account ID from above, grant read access to your target bucket. 
 
 #### File urls
 
-The Google Cloud Storage (GCS) source connector uses `signed url` to work with files when source authenticated with `Service Account Information` and `gs://{blob.bucket.name}/{blob.name}` when source authenticated via Google (OAuth).
-This is important to know that File urls are used in the connection state. 
+The Google Cloud Storage (GCS) source connector reads files through the authenticated GCS client using `gs://{bucket}/{blob}` URIs for both authentication types. The `_ab_source_file_url` record field contains `https://storage.googleapis.com/{bucket}/{blob}` for `Service Account Information` authentication and `gs://{bucket}/{blob}` for Google (OAuth) authentication.
+This is important to know that File urls are used in the connection state.
 So if you change authorization type, and you use Incremental sync the next sync will not use old state and reread provided files in Full Refresh mode(like initial sync), next syncs will be Incremental as expected.
 
 #### Sanitize File URLs
 
-When using Service Account authentication, signed URLs contain credential-bearing query parameters such as `X-Goog-Credential` and `X-Goog-Signature`. By default, these are included in the `_ab_source_file_url` field of synced records.
-
-To remove these sensitive parameters from the `_ab_source_file_url` field, enable the **Sanitize File URLs** option in the advanced settings. When enabled, the connector strips query parameters from signed URLs, so only the base URL is stored in records. This option has no effect when using OAuth authentication, since OAuth does not use signed URLs.
+Deprecated - this option has no effect. The connector no longer generates signed URLs for Service Account authentication, so `_ab_source_file_url` never contains credential-bearing query parameters such as `X-Goog-Credential` or `X-Goog-Signature`. The option stays in the connector specification only so that existing configurations keep validating.
 
 ## Path Patterns
 
@@ -137,7 +135,7 @@ As you can probably tell, there are many ways to achieve the same goal with path
 
 ## User Schema
 
-When using the Avro, Jsonl, CSV or Parquet format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the experimental Document file type format.**
+When using the Avro, Jsonl, CSV or Parquet format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the Document file type format.**
 
 Providing a schema allows for more control over the output of this stream. Without a provided schema, columns and datatypes will be inferred from the first created file in the bucket matching your path pattern and suffix. This will probably be fine in most cases but there may be situations you want to enforce a schema instead, e.g.:
 
@@ -235,13 +233,36 @@ Google Cloud Storage (GCS) supports following file formats:
  - unstructured document format
  - excel
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-|:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :----------- | :----------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.10.33 | 2026-09-15 | [86057](https://github.com/airbytehq/airbyte/pull/86057) | Update dependencies |
+| 0.10.32 | 2026-09-11 | [84891](https://github.com/airbytehq/airbyte/pull/84891) | Fix spurious Parquet columns from signed URL query parameters (Service Account auth); `_ab_source_file_url` now contains the clean canonical HTTPS path instead of a signed URL; Service Account syncs now read `Content-Encoding: gzip` objects through the gs:// client instead of failing on the signed URL; `sanitize_signed_urls` option is deprecated (no-op) |
+| 0.10.31 | 2026-09-08 | [85491](https://github.com/airbytehq/airbyte/pull/85491) | Update dependencies |
+| 0.10.30 | 2026-09-01 | [85245](https://github.com/airbytehq/airbyte/pull/85245) | Update dependencies |
+| 0.10.29 | 2026-08-25 | [85012](https://github.com/airbytehq/airbyte/pull/85012) | Update dependencies |
+| 0.10.28 | 2026-08-18 | [84572](https://github.com/airbytehq/airbyte/pull/84572) | Update dependencies |
+| 0.10.27 | 2026-08-11 | [83924](https://github.com/airbytehq/airbyte/pull/83924) | Update dependencies |
+| 0.10.26 | 2026-08-04 | [83471](https://github.com/airbytehq/airbyte/pull/83471) | Update dependencies |
+| 0.10.25 | 2026-07-28 | [82925](https://github.com/airbytehq/airbyte/pull/82925) | Update dependencies |
+| 0.10.24 | 2026-07-22 | [82238](https://github.com/airbytehq/airbyte/pull/82238) | Bump base image to python-connector-base 4.1.1 (Python 3.13.14) |
+| 0.10.23 | 2026-07-21 | [82394](https://github.com/airbytehq/airbyte/pull/82394) | Update dependencies |
+| 0.10.22 | 2026-07-14 | [81818](https://github.com/airbytehq/airbyte/pull/81818) | Update dependencies |
+| 0.10.21 | 2026-07-07 | [81441](https://github.com/airbytehq/airbyte/pull/81441) | Update dependencies |
+| 0.10.20 | 2026-06-30 | [81081](https://github.com/airbytehq/airbyte/pull/81081) | Update dependencies |
+| 0.10.19 | 2026-06-22 | [74242](https://github.com/airbytehq/airbyte/pull/74242) | Handle GCS objects with `Content-Encoding: gzip` that fail on ranged/chunked downloads through OAuth/Client auth |
+| 0.10.18 | 2026-06-23 | [80443](https://github.com/airbytehq/airbyte/pull/80443) | Update dependencies |
+| 0.10.17 | 2026-06-16 | [79871](https://github.com/airbytehq/airbyte/pull/79871) | Update dependencies |
+| 0.10.16 | 2026-06-09 | [79336](https://github.com/airbytehq/airbyte/pull/79336) | Update dependencies |
+| 0.10.15 | 2026-06-02 | [78684](https://github.com/airbytehq/airbyte/pull/78684) | Update dependencies |
 | 0.10.14 | 2026-04-27 | [77033](https://github.com/airbytehq/airbyte/pull/77033) | Add `sanitize_signed_urls` option to strip Service Account credentials from `_ab_source_file_url` signed URL query parameters |
 | 0.10.13 | 2026-04-28 | [77257](https://github.com/airbytehq/airbyte/pull/77257) | Update dependencies |
 | 0.10.12 | 2026-04-21 | [76591](https://github.com/airbytehq/airbyte/pull/76591) | Update dependencies |
