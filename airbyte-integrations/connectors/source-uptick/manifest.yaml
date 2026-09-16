@@ -31,7 +31,7 @@ definitions:
         response_filters:
           - type: HttpResponseFilter
             http_codes: [401]
-            action: FAIL
+            action: REFRESH_TOKEN_THEN_RETRY
             failure_type: config_error
             error_message: "Uptick rejected the client credentials or user login."
           - type: HttpResponseFilter
@@ -167,7 +167,7 @@ spec:
     type: ConfigNormalizationRules
     transformations:
       - type: ConfigAddFields
-        condition: "{{ 'base_url' in config }}"
+        condition: "{{ config.get('base_url') is string }}"
         fields:
           - type: AddedFieldDefinition
             path: ["base_url"]
