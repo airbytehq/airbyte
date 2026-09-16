@@ -31,7 +31,7 @@ definitions:
         response_filters:
           - type: HttpResponseFilter
             http_codes: [401]
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: FAIL
             failure_type: config_error
             error_message: "Uptick rejected the client credentials or user login."
           - type: HttpResponseFilter
@@ -112,7 +112,7 @@ api_budget:
       matchers: []
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config['num_workers'] if config.get('num_workers') is not none else 3 }}"
+  default_concurrency: "{{ config['num_workers'] if (config.get('num_workers') is number and config['num_workers'] >= 1) else 3 }}"
   max_concurrency: 10
 spec:
   type: Spec
