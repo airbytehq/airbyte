@@ -81,7 +81,7 @@ class TestDashboardsStream(TestCase):
         NOTE: This test validates pagination for the 'dashboards' stream, but many streams
         use the same DefaultPaginator configuration (startAt/maxResults with CursorPagination),
         so this provides pagination coverage for: boards, board_issues, dashboards, filters,
-        groups, issue_changelogs, issue_comments, issue_field_configurations,
+        groups, issue_changelogs, issue_comments,
         issue_notification_schemes, issue_priorities, issue_resolutions, issue_type_schemes,
         issue_type_screen_schemes, issue_worklogs, labels, project_components, project_versions,
         projects, screen_schemes, screens, sprints, workflows, workflow_schemes

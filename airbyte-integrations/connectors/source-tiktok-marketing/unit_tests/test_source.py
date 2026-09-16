@@ -6,16 +6,50 @@ import json
 from unittest.mock import MagicMock
 
 import pytest
+import yaml
 
 from airbyte_cdk.models import ConnectorSpecification, Status
 
-from .conftest import get_source
+from .conftest import _YAML_FILE_PATH, get_source
+
+
+_PRODUCTION_ONLY_STREAMS = {
+    "advertiser_ids",
+    "ads_reports_by_country_daily",
+    "ad_groups_reports_by_country_daily",
+    "advertisers_reports_daily",
+    "advertisers_audience_reports_daily",
+    "advertisers_audience_reports_by_country_daily",
+    "advertisers_audience_reports_by_platform_daily",
+    "ads_reports_by_country_hourly",
+    "advertisers_reports_hourly",
+    "ad_groups_reports_by_country_hourly",
+    "advertisers_reports_lifetime",
+    "advertisers_audience_reports_lifetime",
+    "spark_ads",
+    "pixels",
+    "pixel_instant_page_events",
+    "pixel_events_statistics",
+}
+_COMMON_STREAMS = {"advertisers", "ads", "ad_groups", "campaigns"}
+
+
+def _walk_response_filters(value):
+    if isinstance(value, dict):
+        if isinstance(value.get("response_filters"), list):
+            yield value["response_filters"]
+        for child in value.values():
+            yield from _walk_response_filters(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from _walk_response_filters(child)
 
 
 @pytest.mark.parametrize(
     "config, stream_len",
     [
         ({"access_token": "token", "environment": {"app_id": "1111", "secret": "secret"}, "start_date": "2021-04-01"}, 44),
+        ({"access_token": "token", "environment": {"app_id": "1111", "secret": ""}, "start_date": "2021-04-01"}, 28),
         ({"access_token": "token", "start_date": "2021-01-01", "environment": {"advertiser_id": "1111"}}, 28),
         (
             {
@@ -42,9 +76,75 @@ def test_source_streams(config, stream_len):
     assert len(streams) == stream_len
 
 
+@pytest.mark.parametrize(
+    "config, expects_production_streams",
+    [
+        (
+            {"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111", "secret": ""}},
+            False,
+        ),
+        (
+            {"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111", "secret": None}},
+            False,
+        ),
+        ({"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111"}}, False),
+        (
+            {"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111", "secret": "secret"}},
+            True,
+        ),
+        (
+            {
+                "access_token": "token",
+                "start_date": "2021-04-01",
+                "credentials": {"auth_type": "sandbox_access_token", "advertiser_id": "1111", "access_token": "token"},
+            },
+            False,
+        ),
+        (
+            {
+                "access_token": "token",
+                "start_date": "2021-04-01",
+                "credentials": {
+                    "auth_type": "oauth2.0",
+                    "app_id": "1111",
+                    "secret": "secret",
+                    "access_token": "token",
+                },
+            },
+            True,
+        ),
+    ],
+)
+def test_conditional_production_streams(config, expects_production_streams):
+    names = {stream.name for stream in get_source(config=config, state=None).streams(config=config)}
+    production_set = _PRODUCTION_ONLY_STREAMS
+
+    if expects_production_streams:
+        assert production_set <= names
+    else:
+        assert production_set.isdisjoint(names)
+    assert _COMMON_STREAMS <= names
+
+
 def test_source_spec(config):
     spec = get_source(config=config, state=None).spec(logger=None)
     assert isinstance(spec, ConnectorSpecification)
+
+
+def test_51004_retry_handlers_also_retry_51002():
+    with _YAML_FILE_PATH.open() as manifest_file:
+        manifest = yaml.safe_load(manifest_file)
+
+    for response_filters in _walk_response_filters(manifest):
+        retries_51004 = any(
+            "response.get('code') == 51004" in response_filter.get("predicate", "") and response_filter.get("action") == "RETRY"
+            for response_filter in response_filters
+        )
+        if retries_51004:
+            assert any(
+                "response.get('code') == 51002" in response_filter.get("predicate", "") and response_filter.get("action") == "RETRY"
+                for response_filter in response_filters
+            )
 
 
 @pytest.fixture(name="config")
@@ -95,7 +195,7 @@ def test_source_check_connection_ok(config, requests_mock):
             (Status.FAILED, "Stream advertisers is not available: Access token is incorrect or has been revoked."),
             None,
         ),
-        ({"code": 40100, "message": "App reaches the QPS limit."}, None, 6),
+        ({"code": 40100, "message": "App reaches the QPS limit."}, None, 10),
     ],
 )
 @pytest.mark.usefixtures("mock_sleep")

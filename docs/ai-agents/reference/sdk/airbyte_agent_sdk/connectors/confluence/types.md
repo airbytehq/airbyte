@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.confluence.types.AuditEqCondition | airbyte_agent_sdk.connectors.confluence.types.AuditNeqCondition | airbyte_agent_sdk.connectors.confluence.types.AuditGtCondition | airbyte_agent_sdk.connectors.confluence.types.AuditGteCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLtCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLteCondition | airbyte_agent_sdk.connectors.confluence.types.AuditInCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLikeCondition | airbyte_agent_sdk.connectors.confluence.types.AuditFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.AuditKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.AuditContainsCondition | airbyte_agent_sdk.connectors.confluence.types.AuditNotCondition | airbyte_agent_sdk.connectors.confluence.types.AuditAndCondition | airbyte_agent_sdk.connectors.confluence.types.AuditOrCondition | airbyte_agent_sdk.connectors.confluence.types.AuditAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.confluence.types.AuditEqCondition | airbyte_agent_sdk.connectors.confluence.types.AuditNeqCondition | airbyte_agent_sdk.connectors.confluence.types.AuditGtCondition | airbyte_agent_sdk.connectors.confluence.types.AuditGteCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLtCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLteCondition | airbyte_agent_sdk.connectors.confluence.types.AuditInCondition | airbyte_agent_sdk.connectors.confluence.types.AuditStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.AuditEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.AuditFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.AuditKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.AuditContainsCondition | airbyte_agent_sdk.connectors.confluence.types.AuditArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.AuditNotCondition | airbyte_agent_sdk.connectors.confluence.types.AuditAndCondition | airbyte_agent_sdk.connectors.confluence.types.AuditOrCondition | airbyte_agent_sdk.connectors.confluence.types.AuditAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AuditAnyCondition"></a>
@@ -121,10 +121,24 @@ Classes
     `sys_admin: Any`
     :   Indicates if the user triggering the audit event is a system admin.
 
+<a id="AuditArrayContainsCondition"></a>
+
+`AuditArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.confluence.types.AuditAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AuditContainsCondition"></a>
 
 `AuditContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -133,6 +147,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.confluence.types.AuditAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AuditEndswithCondition"></a>
+
+`AuditEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.confluence.types.AuditStringFilter`
     :   The type of the None singleton.
 
 <a id="AuditEqCondition"></a>
@@ -271,20 +299,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.confluence.types.AuditStringFilter`
     :   The type of the None singleton.
 
-<a id="AuditLikeCondition"></a>
-
-`AuditLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.confluence.types.AuditStringFilter`
-    :   The type of the None singleton.
-
 <a id="AuditListParams"></a>
 
 `AuditListParams(*args, **kwargs)`
@@ -372,7 +386,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.confluence.types.AuditEqCondition | airbyte_agent_sdk.connectors.confluence.types.AuditNeqCondition | airbyte_agent_sdk.connectors.confluence.types.AuditGtCondition | airbyte_agent_sdk.connectors.confluence.types.AuditGteCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLtCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLteCondition | airbyte_agent_sdk.connectors.confluence.types.AuditInCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLikeCondition | airbyte_agent_sdk.connectors.confluence.types.AuditFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.AuditKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.AuditContainsCondition | airbyte_agent_sdk.connectors.confluence.types.AuditNotCondition | airbyte_agent_sdk.connectors.confluence.types.AuditAndCondition | airbyte_agent_sdk.connectors.confluence.types.AuditOrCondition | airbyte_agent_sdk.connectors.confluence.types.AuditAnyCondition`
+    `not: airbyte_agent_sdk.connectors.confluence.types.AuditEqCondition | airbyte_agent_sdk.connectors.confluence.types.AuditNeqCondition | airbyte_agent_sdk.connectors.confluence.types.AuditGtCondition | airbyte_agent_sdk.connectors.confluence.types.AuditGteCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLtCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLteCondition | airbyte_agent_sdk.connectors.confluence.types.AuditInCondition | airbyte_agent_sdk.connectors.confluence.types.AuditStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.AuditEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.AuditFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.AuditKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.AuditContainsCondition | airbyte_agent_sdk.connectors.confluence.types.AuditArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.AuditNotCondition | airbyte_agent_sdk.connectors.confluence.types.AuditAndCondition | airbyte_agent_sdk.connectors.confluence.types.AuditOrCondition | airbyte_agent_sdk.connectors.confluence.types.AuditAnyCondition`
     :   The type of the None singleton.
 
 <a id="AuditOrCondition"></a>
@@ -394,7 +408,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.confluence.types.AuditEqCondition | airbyte_agent_sdk.connectors.confluence.types.AuditNeqCondition | airbyte_agent_sdk.connectors.confluence.types.AuditGtCondition | airbyte_agent_sdk.connectors.confluence.types.AuditGteCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLtCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLteCondition | airbyte_agent_sdk.connectors.confluence.types.AuditInCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLikeCondition | airbyte_agent_sdk.connectors.confluence.types.AuditFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.AuditKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.AuditContainsCondition | airbyte_agent_sdk.connectors.confluence.types.AuditNotCondition | airbyte_agent_sdk.connectors.confluence.types.AuditAndCondition | airbyte_agent_sdk.connectors.confluence.types.AuditOrCondition | airbyte_agent_sdk.connectors.confluence.types.AuditAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.confluence.types.AuditEqCondition | airbyte_agent_sdk.connectors.confluence.types.AuditNeqCondition | airbyte_agent_sdk.connectors.confluence.types.AuditGtCondition | airbyte_agent_sdk.connectors.confluence.types.AuditGteCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLtCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLteCondition | airbyte_agent_sdk.connectors.confluence.types.AuditInCondition | airbyte_agent_sdk.connectors.confluence.types.AuditStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.AuditEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.AuditFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.AuditKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.AuditContainsCondition | airbyte_agent_sdk.connectors.confluence.types.AuditArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.AuditNotCondition | airbyte_agent_sdk.connectors.confluence.types.AuditAndCondition | airbyte_agent_sdk.connectors.confluence.types.AuditOrCondition | airbyte_agent_sdk.connectors.confluence.types.AuditAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AuditSearchFilter"></a>
@@ -452,7 +466,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.confluence.types.AuditEqCondition | airbyte_agent_sdk.connectors.confluence.types.AuditNeqCondition | airbyte_agent_sdk.connectors.confluence.types.AuditGtCondition | airbyte_agent_sdk.connectors.confluence.types.AuditGteCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLtCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLteCondition | airbyte_agent_sdk.connectors.confluence.types.AuditInCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLikeCondition | airbyte_agent_sdk.connectors.confluence.types.AuditFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.AuditKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.AuditContainsCondition | airbyte_agent_sdk.connectors.confluence.types.AuditNotCondition | airbyte_agent_sdk.connectors.confluence.types.AuditAndCondition | airbyte_agent_sdk.connectors.confluence.types.AuditOrCondition | airbyte_agent_sdk.connectors.confluence.types.AuditAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.confluence.types.AuditEqCondition | airbyte_agent_sdk.connectors.confluence.types.AuditNeqCondition | airbyte_agent_sdk.connectors.confluence.types.AuditGtCondition | airbyte_agent_sdk.connectors.confluence.types.AuditGteCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLtCondition | airbyte_agent_sdk.connectors.confluence.types.AuditLteCondition | airbyte_agent_sdk.connectors.confluence.types.AuditInCondition | airbyte_agent_sdk.connectors.confluence.types.AuditStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.AuditEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.AuditFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.AuditKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.AuditContainsCondition | airbyte_agent_sdk.connectors.confluence.types.AuditArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.AuditNotCondition | airbyte_agent_sdk.connectors.confluence.types.AuditAndCondition | airbyte_agent_sdk.connectors.confluence.types.AuditOrCondition | airbyte_agent_sdk.connectors.confluence.types.AuditAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.confluence.types.AuditSortFilter]`
@@ -502,10 +516,24 @@ Classes
     `sys_admin: Literal['asc', 'desc']`
     :   Indicates if the user triggering the audit event is a system admin.
 
+<a id="AuditStartswithCondition"></a>
+
+`AuditStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.confluence.types.AuditStringFilter`
+    :   The type of the None singleton.
+
 <a id="AuditStringFilter"></a>
 
 `AuditStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -565,7 +593,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.confluence.types.BlogPostsEqCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsNeqCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsGtCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsGteCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLtCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLteCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsInCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLikeCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsContainsCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsNotCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsAndCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsOrCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.confluence.types.BlogPostsEqCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsNeqCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsGtCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsGteCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLtCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLteCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsInCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsContainsCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsNotCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsAndCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsOrCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BlogPostsAnyCondition"></a>
@@ -628,10 +656,24 @@ Classes
     `version: Any`
     :   Version information
 
+<a id="BlogPostsArrayContainsCondition"></a>
+
+`BlogPostsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.confluence.types.BlogPostsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="BlogPostsContainsCondition"></a>
 
 `BlogPostsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -640,6 +682,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.confluence.types.BlogPostsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="BlogPostsEndswithCondition"></a>
+
+`BlogPostsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.confluence.types.BlogPostsStringFilter`
     :   The type of the None singleton.
 
 <a id="BlogPostsEqCondition"></a>
@@ -792,20 +848,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.confluence.types.BlogPostsStringFilter`
     :   The type of the None singleton.
 
-<a id="BlogPostsLikeCondition"></a>
-
-`BlogPostsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.confluence.types.BlogPostsStringFilter`
-    :   The type of the None singleton.
-
 <a id="BlogPostsListParams"></a>
 
 `BlogPostsListParams(*args, **kwargs)`
@@ -899,7 +941,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.confluence.types.BlogPostsEqCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsNeqCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsGtCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsGteCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLtCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLteCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsInCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLikeCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsContainsCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsNotCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsAndCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsOrCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.confluence.types.BlogPostsEqCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsNeqCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsGtCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsGteCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLtCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLteCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsInCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsContainsCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsNotCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsAndCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsOrCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsAnyCondition`
     :   The type of the None singleton.
 
 <a id="BlogPostsOrCondition"></a>
@@ -921,7 +963,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.confluence.types.BlogPostsEqCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsNeqCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsGtCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsGteCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLtCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLteCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsInCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLikeCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsContainsCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsNotCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsAndCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsOrCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.confluence.types.BlogPostsEqCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsNeqCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsGtCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsGteCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLtCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLteCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsInCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsContainsCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsNotCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsAndCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsOrCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BlogPostsSearchFilter"></a>
@@ -973,7 +1015,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.confluence.types.BlogPostsEqCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsNeqCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsGtCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsGteCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLtCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLteCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsInCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLikeCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsContainsCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsNotCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsAndCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsOrCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.confluence.types.BlogPostsEqCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsNeqCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsGtCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsGteCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLtCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsLteCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsInCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsContainsCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsNotCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsAndCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsOrCondition | airbyte_agent_sdk.connectors.confluence.types.BlogPostsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.confluence.types.BlogPostsSortFilter]`
@@ -1017,10 +1059,24 @@ Classes
     `version: Literal['asc', 'desc']`
     :   Version information
 
+<a id="BlogPostsStartswithCondition"></a>
+
+`BlogPostsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.confluence.types.BlogPostsStringFilter`
+    :   The type of the None singleton.
+
 <a id="BlogPostsStringFilter"></a>
 
 `BlogPostsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1074,7 +1130,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.confluence.types.GroupsEqCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsGtCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsGteCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLtCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLteCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsInCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLikeCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsNotCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsAndCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsOrCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.confluence.types.GroupsEqCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsGtCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsGteCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLtCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLteCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsInCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsNotCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsAndCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsOrCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="GroupsAnyCondition"></a>
@@ -1122,10 +1178,24 @@ Classes
     `type_: Any`
     :   The type of group
 
+<a id="GroupsArrayContainsCondition"></a>
+
+`GroupsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.confluence.types.GroupsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="GroupsContainsCondition"></a>
 
 `GroupsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1134,6 +1204,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.confluence.types.GroupsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="GroupsEndswithCondition"></a>
+
+`GroupsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.confluence.types.GroupsStringFilter`
     :   The type of the None singleton.
 
 <a id="GroupsEqCondition"></a>
@@ -1251,20 +1335,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.confluence.types.GroupsStringFilter`
     :   The type of the None singleton.
 
-<a id="GroupsLikeCondition"></a>
-
-`GroupsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.confluence.types.GroupsStringFilter`
-    :   The type of the None singleton.
-
 <a id="GroupsListParams"></a>
 
 `GroupsListParams(*args, **kwargs)`
@@ -1343,7 +1413,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.confluence.types.GroupsEqCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsGtCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsGteCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLtCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLteCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsInCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLikeCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsNotCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsAndCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsOrCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.confluence.types.GroupsEqCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsGtCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsGteCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLtCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLteCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsInCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsNotCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsAndCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsOrCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsAnyCondition`
     :   The type of the None singleton.
 
 <a id="GroupsOrCondition"></a>
@@ -1365,7 +1435,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.confluence.types.GroupsEqCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsGtCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsGteCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLtCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLteCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsInCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLikeCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsNotCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsAndCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsOrCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.confluence.types.GroupsEqCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsGtCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsGteCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLtCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLteCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsInCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsNotCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsAndCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsOrCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="GroupsSearchFilter"></a>
@@ -1402,7 +1472,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.confluence.types.GroupsEqCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsGtCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsGteCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLtCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLteCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsInCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLikeCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsNotCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsAndCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsOrCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.confluence.types.GroupsEqCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsGtCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsGteCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLtCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsLteCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsInCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsNotCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsAndCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsOrCondition | airbyte_agent_sdk.connectors.confluence.types.GroupsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.confluence.types.GroupsSortFilter]`
@@ -1431,10 +1501,24 @@ Classes
     `type_: Literal['asc', 'desc']`
     :   The type of group
 
+<a id="GroupsStartswithCondition"></a>
+
+`GroupsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.confluence.types.GroupsStringFilter`
+    :   The type of the None singleton.
+
 <a id="GroupsStringFilter"></a>
 
 `GroupsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1473,7 +1557,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.confluence.types.PagesEqCondition | airbyte_agent_sdk.connectors.confluence.types.PagesNeqCondition | airbyte_agent_sdk.connectors.confluence.types.PagesGtCondition | airbyte_agent_sdk.connectors.confluence.types.PagesGteCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLtCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLteCondition | airbyte_agent_sdk.connectors.confluence.types.PagesInCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLikeCondition | airbyte_agent_sdk.connectors.confluence.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.PagesContainsCondition | airbyte_agent_sdk.connectors.confluence.types.PagesNotCondition | airbyte_agent_sdk.connectors.confluence.types.PagesAndCondition | airbyte_agent_sdk.connectors.confluence.types.PagesOrCondition | airbyte_agent_sdk.connectors.confluence.types.PagesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.confluence.types.PagesEqCondition | airbyte_agent_sdk.connectors.confluence.types.PagesNeqCondition | airbyte_agent_sdk.connectors.confluence.types.PagesGtCondition | airbyte_agent_sdk.connectors.confluence.types.PagesGteCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLtCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLteCondition | airbyte_agent_sdk.connectors.confluence.types.PagesInCondition | airbyte_agent_sdk.connectors.confluence.types.PagesStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.PagesEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.PagesContainsCondition | airbyte_agent_sdk.connectors.confluence.types.PagesArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.PagesNotCondition | airbyte_agent_sdk.connectors.confluence.types.PagesAndCondition | airbyte_agent_sdk.connectors.confluence.types.PagesOrCondition | airbyte_agent_sdk.connectors.confluence.types.PagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PagesAnyCondition"></a>
@@ -1551,10 +1635,24 @@ Classes
     `version: Any`
     :   Version information
 
+<a id="PagesArrayContainsCondition"></a>
+
+`PagesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.confluence.types.PagesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="PagesContainsCondition"></a>
 
 `PagesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1563,6 +1661,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.confluence.types.PagesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="PagesEndswithCondition"></a>
+
+`PagesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.confluence.types.PagesStringFilter`
     :   The type of the None singleton.
 
 <a id="PagesEqCondition"></a>
@@ -1730,20 +1842,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.confluence.types.PagesStringFilter`
     :   The type of the None singleton.
 
-<a id="PagesLikeCondition"></a>
-
-`PagesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.confluence.types.PagesStringFilter`
-    :   The type of the None singleton.
-
 <a id="PagesListParams"></a>
 
 `PagesListParams(*args, **kwargs)`
@@ -1837,7 +1935,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.confluence.types.PagesEqCondition | airbyte_agent_sdk.connectors.confluence.types.PagesNeqCondition | airbyte_agent_sdk.connectors.confluence.types.PagesGtCondition | airbyte_agent_sdk.connectors.confluence.types.PagesGteCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLtCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLteCondition | airbyte_agent_sdk.connectors.confluence.types.PagesInCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLikeCondition | airbyte_agent_sdk.connectors.confluence.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.PagesContainsCondition | airbyte_agent_sdk.connectors.confluence.types.PagesNotCondition | airbyte_agent_sdk.connectors.confluence.types.PagesAndCondition | airbyte_agent_sdk.connectors.confluence.types.PagesOrCondition | airbyte_agent_sdk.connectors.confluence.types.PagesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.confluence.types.PagesEqCondition | airbyte_agent_sdk.connectors.confluence.types.PagesNeqCondition | airbyte_agent_sdk.connectors.confluence.types.PagesGtCondition | airbyte_agent_sdk.connectors.confluence.types.PagesGteCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLtCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLteCondition | airbyte_agent_sdk.connectors.confluence.types.PagesInCondition | airbyte_agent_sdk.connectors.confluence.types.PagesStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.PagesEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.PagesContainsCondition | airbyte_agent_sdk.connectors.confluence.types.PagesArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.PagesNotCondition | airbyte_agent_sdk.connectors.confluence.types.PagesAndCondition | airbyte_agent_sdk.connectors.confluence.types.PagesOrCondition | airbyte_agent_sdk.connectors.confluence.types.PagesAnyCondition`
     :   The type of the None singleton.
 
 <a id="PagesOrCondition"></a>
@@ -1859,7 +1957,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.confluence.types.PagesEqCondition | airbyte_agent_sdk.connectors.confluence.types.PagesNeqCondition | airbyte_agent_sdk.connectors.confluence.types.PagesGtCondition | airbyte_agent_sdk.connectors.confluence.types.PagesGteCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLtCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLteCondition | airbyte_agent_sdk.connectors.confluence.types.PagesInCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLikeCondition | airbyte_agent_sdk.connectors.confluence.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.PagesContainsCondition | airbyte_agent_sdk.connectors.confluence.types.PagesNotCondition | airbyte_agent_sdk.connectors.confluence.types.PagesAndCondition | airbyte_agent_sdk.connectors.confluence.types.PagesOrCondition | airbyte_agent_sdk.connectors.confluence.types.PagesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.confluence.types.PagesEqCondition | airbyte_agent_sdk.connectors.confluence.types.PagesNeqCondition | airbyte_agent_sdk.connectors.confluence.types.PagesGtCondition | airbyte_agent_sdk.connectors.confluence.types.PagesGteCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLtCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLteCondition | airbyte_agent_sdk.connectors.confluence.types.PagesInCondition | airbyte_agent_sdk.connectors.confluence.types.PagesStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.PagesEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.PagesContainsCondition | airbyte_agent_sdk.connectors.confluence.types.PagesArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.PagesNotCondition | airbyte_agent_sdk.connectors.confluence.types.PagesAndCondition | airbyte_agent_sdk.connectors.confluence.types.PagesOrCondition | airbyte_agent_sdk.connectors.confluence.types.PagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PagesSearchFilter"></a>
@@ -1926,7 +2024,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.confluence.types.PagesEqCondition | airbyte_agent_sdk.connectors.confluence.types.PagesNeqCondition | airbyte_agent_sdk.connectors.confluence.types.PagesGtCondition | airbyte_agent_sdk.connectors.confluence.types.PagesGteCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLtCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLteCondition | airbyte_agent_sdk.connectors.confluence.types.PagesInCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLikeCondition | airbyte_agent_sdk.connectors.confluence.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.PagesContainsCondition | airbyte_agent_sdk.connectors.confluence.types.PagesNotCondition | airbyte_agent_sdk.connectors.confluence.types.PagesAndCondition | airbyte_agent_sdk.connectors.confluence.types.PagesOrCondition | airbyte_agent_sdk.connectors.confluence.types.PagesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.confluence.types.PagesEqCondition | airbyte_agent_sdk.connectors.confluence.types.PagesNeqCondition | airbyte_agent_sdk.connectors.confluence.types.PagesGtCondition | airbyte_agent_sdk.connectors.confluence.types.PagesGteCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLtCondition | airbyte_agent_sdk.connectors.confluence.types.PagesLteCondition | airbyte_agent_sdk.connectors.confluence.types.PagesInCondition | airbyte_agent_sdk.connectors.confluence.types.PagesStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.PagesEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.PagesContainsCondition | airbyte_agent_sdk.connectors.confluence.types.PagesArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.PagesNotCondition | airbyte_agent_sdk.connectors.confluence.types.PagesAndCondition | airbyte_agent_sdk.connectors.confluence.types.PagesOrCondition | airbyte_agent_sdk.connectors.confluence.types.PagesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.confluence.types.PagesSortFilter]`
@@ -1985,10 +2083,24 @@ Classes
     `version: Literal['asc', 'desc']`
     :   Version information
 
+<a id="PagesStartswithCondition"></a>
+
+`PagesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.confluence.types.PagesStringFilter`
+    :   The type of the None singleton.
+
 <a id="PagesStringFilter"></a>
 
 `PagesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2057,7 +2169,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.confluence.types.SpacesEqCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesNeqCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesGtCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesGteCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLtCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLteCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesInCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLikeCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesContainsCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesNotCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesAndCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesOrCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.confluence.types.SpacesEqCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesNeqCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesGtCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesGteCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLtCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLteCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesInCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesContainsCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesNotCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesAndCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesOrCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SpacesAnyCondition"></a>
@@ -2126,10 +2238,24 @@ Classes
     `type_: Any`
     :   Space type (global or personal)
 
+<a id="SpacesArrayContainsCondition"></a>
+
+`SpacesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.confluence.types.SpacesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="SpacesContainsCondition"></a>
 
 `SpacesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2138,6 +2264,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.confluence.types.SpacesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SpacesEndswithCondition"></a>
+
+`SpacesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.confluence.types.SpacesStringFilter`
     :   The type of the None singleton.
 
 <a id="SpacesEqCondition"></a>
@@ -2293,20 +2433,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.confluence.types.SpacesStringFilter`
     :   The type of the None singleton.
 
-<a id="SpacesLikeCondition"></a>
-
-`SpacesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.confluence.types.SpacesStringFilter`
-    :   The type of the None singleton.
-
 <a id="SpacesListParams"></a>
 
 `SpacesListParams(*args, **kwargs)`
@@ -2399,7 +2525,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.confluence.types.SpacesEqCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesNeqCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesGtCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesGteCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLtCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLteCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesInCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLikeCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesContainsCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesNotCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesAndCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesOrCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.confluence.types.SpacesEqCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesNeqCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesGtCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesGteCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLtCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLteCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesInCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesContainsCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesNotCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesAndCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesOrCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesAnyCondition`
     :   The type of the None singleton.
 
 <a id="SpacesOrCondition"></a>
@@ -2421,7 +2547,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.confluence.types.SpacesEqCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesNeqCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesGtCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesGteCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLtCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLteCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesInCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLikeCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesContainsCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesNotCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesAndCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesOrCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.confluence.types.SpacesEqCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesNeqCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesGtCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesGteCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLtCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLteCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesInCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesContainsCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesNotCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesAndCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesOrCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SpacesSearchFilter"></a>
@@ -2479,7 +2605,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.confluence.types.SpacesEqCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesNeqCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesGtCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesGteCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLtCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLteCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesInCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLikeCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesContainsCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesNotCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesAndCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesOrCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.confluence.types.SpacesEqCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesNeqCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesGtCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesGteCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLtCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesLteCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesInCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesStartswithCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesEndswithCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesFuzzyCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesKeywordCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesContainsCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesArrayContainsCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesNotCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesAndCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesOrCondition | airbyte_agent_sdk.connectors.confluence.types.SpacesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.confluence.types.SpacesSortFilter]`
@@ -2529,10 +2655,24 @@ Classes
     `type_: Literal['asc', 'desc']`
     :   Space type (global or personal)
 
+<a id="SpacesStartswithCondition"></a>
+
+`SpacesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.confluence.types.SpacesStringFilter`
+    :   The type of the None singleton.
+
 <a id="SpacesStringFilter"></a>
 
 `SpacesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
