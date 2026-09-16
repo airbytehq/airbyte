@@ -10,7 +10,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoSecurityException;
+import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
@@ -27,8 +29,10 @@ import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.protocol.models.v0.*;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.bson.BsonDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,6 +99,31 @@ public class MongoDbSource extends BaseConnector implements Source {
               .withMessage("Target MongoDB databases do not contain any authorized collections. Databases without permissions: "
                   + String.join(", ", databasesWithoutPermission))
               .withStatus(AirbyteConnectionStatus.Status.FAILED);
+        }
+
+        /*
+         * Verify that the configured MongoDB user has the changeStream privilege action on each database
+         * with authorized collections. Without this privilege, CDC syncs fail later at the resume-token
+         * step with a MongoCommandException(errorCode=13). Catching this at check time surfaces an
+         * actionable error before the first sync attempt.
+         */
+        for (final String databaseName : databaseNames) {
+          if (databasesWithoutPermission.contains(databaseName)) {
+            continue;
+          }
+          try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> cursor =
+              mongoClient.getDatabase(databaseName).watch(Collections.emptyList(), BsonDocument.class).cursor()) {
+            cursor.tryNext();
+          } catch (final MongoCommandException e) {
+            if (e.getErrorCode() == MongoConstants.UNAUTHORIZED_ERROR_CODE) {
+              LOGGER.error("MongoDB user is not authorized to open a change stream on database: {}", databaseName, e);
+              return new AirbyteConnectionStatus()
+                  .withMessage("MongoDB user is not authorized to perform the changeStream privilege action on database \""
+                      + databaseName + "\".")
+                  .withStatus(AirbyteConnectionStatus.Status.FAILED);
+            }
+            throw e;
+          }
         }
 
         if (!ClusterType.REPLICA_SET.equals(mongoClient.getClusterDescription().getType())) {
