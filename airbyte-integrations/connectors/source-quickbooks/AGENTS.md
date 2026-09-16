@@ -67,7 +67,7 @@ The `error_message` strings are deterministic and interpolate nothing: they stat
 
 ## Rate limits and concurrency
 
-Intuit documents [throttling](https://developer.intuit.com/app/developer/qbo/docs/develop/troubleshooting/error-codes#rate-limits) at 500 requests per minute per realm and 40 concurrent requests per app, answered with HTTP 429. The connector declares no `api_budget` and no `concurrency_level`, so streams run sequentially and one request at a time — comfortably inside both limits, at the cost of sync duration on companies with long histories (28 streams × one request per 30-day window per page). `max_results` (default 200, max 1,000 per Intuit's query limits) is the lever that reduces page count.
+Intuit documents [throttling](https://developer.intuit.com/app/developer/qbo/docs/develop/troubleshooting/error-codes#rate-limits) at 500 requests per minute per realm and 40 concurrent requests per app, answered with HTTP 429. The manifest declares both: `api_budget` is a `FixedWindowCallRatePolicy` of 500 calls per `PT1M` across all endpoints, and `concurrency_level` runs 4 streams at a time (`max_concurrency: 40`, matching Intuit's concurrent-request cap). Without an explicit `concurrency_level` the CDK's `ConcurrentDeclarativeSource` would still run 2 streams concurrently, so the declaration is what makes the limit deliberate rather than incidental. `max_results` (default 200, max 1,000 per Intuit's query limits) is the lever that reduces page count on companies with long histories (28 streams × one request per 30-day window per page).
 
 ## Config shape history
 
