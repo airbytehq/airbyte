@@ -36,7 +36,7 @@ This page contains the setup guide and reference information for the Zendesk Cha
 4. Enter the name for the Zendesk Chat connector.
 5. For **Subdomain**, enter your [Zendesk subdomain](https://support.zendesk.com/hc/en-us/articles/4409381383578-Where-can-I-find-my-Zendesk-subdomain-) (for example, if your Zendesk URL is `https://mycompany.zendesk.com`, enter `mycompany`).
 6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated.
-7. For **Authorization Method**, select **Access Token** from the dropdown and enter your Zendesk [access token](https://developer.zendesk.com/documentation/live-chat/getting-started/auth/). The token must have `read` scope.
+7. For **Authorization Method**, select **Access Token** from the dropdown and enter your Zendesk [access token](https://developer.zendesk.com/documentation/live-chat/getting-started/auth/). The token must have the `read` and `chat` scopes.
 8. Click **Set up source**.
 <!-- /env:oss -->
 
@@ -75,11 +75,11 @@ The Zendesk Chat API enforces a rate limit of [200 requests per minute](https://
 Zendesk Chat returned a `401 Unauthorized` response, so the connector stops the sync and reports a configuration error. To resolve it:
 
 - **Airbyte Cloud**: Edit the source and click **Authenticate your Zendesk Chat account** to re-authorize the connection.
-- **Airbyte Open Source**: Generate a new [access token](https://developer.zendesk.com/documentation/live-chat/getting-started/auth/) with the `read` scope and update the **Access Token** field.
+- **Airbyte Open Source**: Generate a new [access token](https://developer.zendesk.com/documentation/live-chat/getting-started/auth/) with the `read` and `chat` scopes and update the **Access Token** field.
 
-### Deleted records return 404
+### Requests that return 404
 
-When Zendesk Chat returns a `404 Not Found` response for a record, the connector skips the record and continues the sync instead of failing.
+When Zendesk Chat returns a `404 Not Found` response to any request, the connector ignores that response and continues the sync instead of failing. No records from that request are emitted. This most often happens when a record has been deleted, but it applies to every stream and every request, so a 404 on a list request drops that page of results.
 
 ## Data type map
 
