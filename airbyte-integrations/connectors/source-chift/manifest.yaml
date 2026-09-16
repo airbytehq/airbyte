@@ -213,7 +213,9 @@ spec:
         order: 3
         title: Start Date
         description: >-
-          Only `executions` started on or after this date are synced. Optional; defaults to
+          Only `executions` started on or after this date are synced. Use the
+          `YYYY-MM-DDTHH:MM:SS` format, for example 2026-01-01T00:00:00; a date without a time,
+          or a value carrying a `Z` suffix or a UTC offset, is rejected. Optional; defaults to
           1970-01-01T00:00:00, which syncs everything.
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
         examples:
