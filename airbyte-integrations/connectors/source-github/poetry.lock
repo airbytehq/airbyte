@@ -2,14 +2,14 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "7.28.3.post4.dev34504922288"
+version = "7.28.3.post9.dev35118356794"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.14,>=3.10"
 groups = ["main"]
 files = [
-    {file = "airbyte_cdk-7.28.3.post4.dev34504922288-py3-none-any.whl", hash = "sha256:0547c668cac7bdd33ac7541c05e19f3db536188298cc1701128d209db7206d2a"},
-    {file = "airbyte_cdk-7.28.3.post4.dev34504922288.tar.gz", hash = "sha256:48baa9d38d083147d581af4bfa9a7df6c63e07b83e90b0af4cfe238d1c1c7c71"},
+    {file = "airbyte_cdk-7.28.3.post9.dev35118356794-py3-none-any.whl", hash = "sha256:0832212862e310c10130de1d3f08e7e874827312c27c04a8f171ee6efc2bde45"},
+    {file = "airbyte_cdk-7.28.3.post9.dev35118356794.tar.gz", hash = "sha256:226e5caf2e38ce84d975a19e3488e3921a1469ebb44c12ea96836f03e17af86c"},
 ]
 
 [package.dependencies]
@@ -796,18 +796,6 @@ protobuf = ">=6.33.5,<8.0.0"
 
 [package.extras]
 grpc = ["grpcio (>=1.59.0,<2.0.0)"]
-
-[[package]]
-name = "graphql-core"
-version = "3.2.12"
-description = "GraphQL implementation for Python, a port of GraphQL.js, the JavaScript reference implementation for GraphQL."
-optional = false
-python-versions = "<4,>=3.7"
-groups = ["main"]
-files = [
-    {file = "graphql_core-3.2.12-py3-none-any.whl", hash = "sha256:3d8f104532070485e13caa4092c1e71cda2ba6cffd96e98f285111ee10ed1e51"},
-    {file = "graphql_core-3.2.12.tar.gz", hash = "sha256:4579094d5fc8a1a59555a9b18e51b320779d9bbc63e2302c519af0c4919d9543"},
-]
 
 [[package]]
 name = "grpc-google-iam-v1"
@@ -3028,25 +3016,6 @@ test = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "ini2toml[lite] (>=
 type = ["importlib_metadata (>=7.0.2) ; python_version < \"3.10\"", "jaraco.develop (>=7.21) ; sys_platform != \"cygwin\"", "mypy (==1.14.*)", "pytest-mypy"]
 
 [[package]]
-name = "sgqlc"
-version = "16.3"
-description = "Simple GraphQL Client"
-optional = false
-python-versions = ">=3.7,<4.0"
-groups = ["main"]
-files = [
-    {file = "sgqlc-16.3-py3-none-any.whl", hash = "sha256:89d468386a4ba4b5ade991623228b6fb0a25bea1f25643ccac130fb3ef565b72"},
-    {file = "sgqlc-16.3.tar.gz", hash = "sha256:be08857775aa3e65ef7b2c1f0cdcc65dd5794907b162b393c189187fee664558"},
-]
-
-[package.dependencies]
-graphql-core = ">=3.1.7,<4.0.0"
-
-[package.extras]
-requests = ["requests"]
-websocket = ["websocket-client"]
-
-[[package]]
 name = "six"
 version = "1.17.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -3385,4 +3354,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.14"
-content-hash = "19d72e0f9fa884e9441fd18dfd4ce3d610b5b3a06ed5d4f2ba182b7ef670a63e"
+content-hash = "25d576b8a0cedace3451a4facdc4958a44e3ccff70f1da6dcd5bbcd414f54d7d"
