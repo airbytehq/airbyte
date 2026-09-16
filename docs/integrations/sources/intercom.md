@@ -97,7 +97,7 @@ The Intercom source connector supports the following streams:
 
 ## Performance considerations
 
-The connector is restricted by normal Intercom [rate limits](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting). The default limit is 10,000 API calls per minute per app, with a workspace-level cap of 25,000 API calls per minute. The connector monitors the `X-RateLimit-Remaining` header and proactively throttles itself before hitting the API rate limit, trading sync speed for stability. If the API returns a `429 Too Many Requests` response, the connector retries automatically.
+The connector is restricted by normal Intercom [rate limits](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting). The default limit is 10,000 API calls per minute per app, with a workspace-level cap of 25,000 API calls per minute; Intercom can grant higher limits to individual workspaces on request. The connector monitors the `X-RateLimit-Remaining` header and proactively throttles itself before hitting the API rate limit, trading sync speed for stability. If the API returns a `429 Too Many Requests` response, the connector retries automatically.
 
 The connector uses an **API Rate Limit** setting (default: `9500` requests per minute) to control its request budget. A per-10-second window is derived automatically (`api_rate_limit / 6`). If your Intercom workspace has an elevated rate limit, for example 150,000/min, increase this value to allow the connector to use your full API throughput.
 
@@ -127,7 +127,7 @@ To prevent conflicts inside a sync, the connector blocks simultaneous reads from
 
 ### Recommendation for reducing sync times
 
-Because these streams must read all records on every sync, syncing Companies and Company Segments alongside other streams in the same connection can increase the total sync duration for that connection. To avoid this, sync the Companies and Company Segments streams in a separate connection from your other Intercom streams, and avoid running that connection at the same time as any other sync that uses the same Intercom app and includes the Companies endpoint.
+Because these streams must read all records on every sync, syncing Companies and Company Segments alongside other streams in the same connection can increase the total sync duration for that connection. To avoid this, sync the Companies and Company Segments streams in a separate connection from your other Intercom streams, and avoid running that connection at the same time as any other sync that uses the same Intercom app and includes the Companies or Company Segments streams.
 
 ## IP allow list
 
