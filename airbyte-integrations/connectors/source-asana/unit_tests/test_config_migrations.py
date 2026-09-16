@@ -35,8 +35,8 @@ def test__modify_and_save():
     assert modified_config.get("credentials")
 
 
-def test_migrate_legacy_config_emits_control_message(tmp_path, capsys):
-    AsanaConfigMigration.message_repository = InMemoryMessageRepository()
+def test_migrate_legacy_config_emits_control_message(tmp_path, capsys, monkeypatch):
+    monkeypatch.setattr(AsanaConfigMigration, "message_repository", InMemoryMessageRepository())
     config = {"access_token": "asdfcxz"}
     config_path = tmp_path / "config.json"
     config_path.write_text(json.dumps(config))
