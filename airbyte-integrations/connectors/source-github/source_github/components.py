@@ -5,7 +5,7 @@
 from dataclasses import dataclass
 from datetime import timedelta
 from itertools import groupby
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 
@@ -13,8 +13,7 @@ from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordEx
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
-from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, Record, StreamSlice
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 
@@ -118,25 +117,6 @@ class WorkflowJobsLegacyStateMigration(StateMigration):
 
 
 @dataclass
-class FlattenAuthorTransformation(RecordTransformation):
-    """`ContributorActivity.transform`: lift the `author` object's fields onto the record."""
-
-    config: Config
-    parameters: Mapping[str, Any]
-
-    def transform(
-        self,
-        record: Dict[str, Any],
-        config: Optional[Config] = None,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-    ) -> None:
-        author = record.pop("author", None)
-        if author:
-            record.update(author)
-
-
-@dataclass
 class CommitsBranchPartitionRouter(SubstreamPartitionRouter):
     """One partition per branch to pull commits from, resolved the way `Commits.stream_slices` did.
 
@@ -147,6 +127,12 @@ class CommitsBranchPartitionRouter(SubstreamPartitionRouter):
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         configured = set(self.config.get("branches") or [])
+        # groupby groups only adjacent items. Branch slices arrive repo-by-repo because
+        # SubstreamPartitionRouter iterates parent partitions outer / parent records inner, and
+        # repository_partition_router emits each repository once -- UnionPartitionRouter dedupes
+        # partition values (union_partition_router.py:55-70), so a repository matched by both an
+        # explicit entry and a wildcard is not visited twice. Without that, each duplicate group
+        # would re-emit the same branch partitions.
         for repository, branch_slices in groupby(super().stream_slices(), key=lambda s: s.partition["parent_slice"]["repository"]):
             branch_slices = list(branch_slices)
             wanted = [s for s in branch_slices if f"{repository}/{s.partition['branch']}" in configured]
@@ -165,9 +151,16 @@ class WorkflowRunsPaginationStrategy(CursorPaginationStrategy):
     """Stop paging once the page's oldest run was created more than 32 days before the slice start.
 
     Runs are listed newest-created first and can be re-run for 32 days, so nothing older can still
-    change: the legacy `WorkflowRuns.read_records` broke out of the page loop there. The slice start
-    travels in a request header because the paginator only sees the records that survived the
-    client-side filter, not the slice, and GitHub ignores the header.
+    change: the legacy `WorkflowRuns.read_records` broke out of the page loop there.
+
+    This is a workaround for a CDK gap, not a GitHub quirk. `CursorPaginationStrategy` already
+    exposes the decoded page to `stop_condition`, but the paginator's interpolation context has no
+    `stream_slice` (only `config`, `response`, `headers`, `last_record`, `last_page_size`), so the
+    slice start cannot be compared against the page from YAML. Until that lands
+    (https://github.com/airbytehq/airbyte-python-cdk/issues/1166), the requester injects the slice
+    start as a request header GitHub ignores and this strategy reads it back from
+    `response.request`. Once `stream_slice` is available, delete this class and the header and use
+    a `stop_condition` on the built-in strategy instead.
     """
 
     window_header: str = "X-Airbyte-Window-Start"

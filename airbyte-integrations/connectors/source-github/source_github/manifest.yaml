@@ -9308,8 +9308,13 @@ definitions:
         fields:
           - path: ["repository"]
             value: "{{ stream_partition.repository }}"
-      - type: CustomTransformation
-        class_name: source_github.components.FlattenAuthorTransformation
+      - type: DpathFlattenFields
+        field_path: ["author"]
+        delete_origin_value: true
+      # `delete_origin_value` only fires when `author` is a dict; the API can return `author: null`.
+      - type: RemoveFields
+        field_pointers:
+          - ["author"]
     schema_loader:
       type: InlineSchemaLoader
       schema:
