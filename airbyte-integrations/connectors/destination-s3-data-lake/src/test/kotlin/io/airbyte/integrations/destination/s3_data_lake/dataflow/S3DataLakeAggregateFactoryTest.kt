@@ -27,6 +27,11 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
+import io.mockk.verifyOrder
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.runBlocking
 import org.apache.iceberg.AppendFiles
 import org.apache.iceberg.Schema
@@ -35,6 +40,7 @@ import org.apache.iceberg.data.Record
 import org.apache.iceberg.io.BaseTaskWriter
 import org.apache.iceberg.io.WriteResult
 import org.apache.iceberg.types.Types
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 internal class S3DataLakeAggregateFactoryTest {
@@ -88,6 +94,86 @@ internal class S3DataLakeAggregateFactoryTest {
         runBlocking { aggregate.flush() }
 
         verify { append.toBranch(stagingBranchName) }
+    }
+
+    @Test
+    fun positionalFlushesSerializeResolutionAndCommit() {
+        val stagingBranchName = "airbyte_staging_unique"
+        val stream = makeStream()
+        val schema =
+            Schema(
+                Types.NestedField.optional(1, "id", Types.LongType.get()),
+                Types.NestedField.optional(2, "name", Types.StringType.get()),
+            )
+        val table: Table = mockk()
+        every { table.refresh() } just runs
+        every { table.refs() } returns emptyMap()
+        val append: AppendFiles = mockk {
+            every { toBranch(stagingBranchName) } returns this
+            every { commit() } just runs
+        }
+        every { table.newAppend() } returns append
+        val result =
+            WriteResult.builder().addDataFiles(emptyList()).addDeleteFiles(emptyList()).build()
+        val firstEntered = CountDownLatch(1)
+        val releaseFirst = CountDownLatch(1)
+        val secondEntered = CountDownLatch(1)
+        val secondCompleteCalls = AtomicInteger()
+        val firstWriter: BaseTaskWriter<Record> = mockk {
+            every { complete() } answers
+                {
+                    firstEntered.countDown()
+                    releaseFirst.await(5, TimeUnit.SECONDS)
+                    result
+                }
+            every { close() } just runs
+        }
+        val secondWriter: BaseTaskWriter<Record> = mockk {
+            every { complete() } answers
+                {
+                    secondEntered.countDown()
+                    secondCompleteCalls.incrementAndGet()
+                    result
+                }
+            every { close() } just runs
+        }
+        val icebergUtil: IcebergUtil = mockk()
+        val first =
+            S3DataLakeAggregate(
+                stream,
+                table,
+                schema,
+                stagingBranchName,
+                firstWriter,
+                icebergUtil,
+                positionalDeletesEnabled = true,
+            )
+        val second =
+            S3DataLakeAggregate(
+                stream,
+                table,
+                schema,
+                stagingBranchName,
+                secondWriter,
+                icebergUtil,
+                positionalDeletesEnabled = true,
+            )
+
+        val firstFlush = CompletableFuture.runAsync { runBlocking { first.flush() } }
+        assertThat(firstEntered.await(5, TimeUnit.SECONDS)).isTrue()
+        val secondFlush = CompletableFuture.runAsync { runBlocking { second.flush() } }
+        assertThat(secondEntered.await(500, TimeUnit.MILLISECONDS)).isFalse()
+
+        releaseFirst.countDown()
+        firstFlush.get(5, TimeUnit.SECONDS)
+        secondFlush.get(5, TimeUnit.SECONDS)
+        assertThat(secondCompleteCalls.get()).isEqualTo(1)
+        verifyOrder {
+            table.refresh()
+            table.refs()
+            table.refresh()
+            table.refs()
+        }
     }
 
     private fun makeStream(): DestinationStream {
