@@ -55,7 +55,7 @@ def _mock_repository_resolution(requests_mock):
     )
 
 
-def _read(config, stream_name):
+def _read_messages(config, stream_name):
     catalog = _catalog(stream_name)
     source = SourceGithub(config=dict(config), catalog=catalog, state=[])
     messages, error = [], None
@@ -64,8 +64,23 @@ def _read(config, stream_name):
             messages.append(message)
     except Exception as exc:  # noqa: BLE001 - assertions inspect the failure
         error = exc
-    records = [message.record.data for message in messages if message.type == Type.RECORD]
-    return records, error
+    return messages, error
+
+
+def _read(config, stream_name):
+    messages, error = _read_messages(config, stream_name)
+    return _records(messages), error
+
+
+def _records(messages):
+    return [message.record.data for message in messages if message.type == Type.RECORD]
+
+
+def _trace_error_messages(messages):
+    """The user-facing failure text. Once the concurrent source aggregates stream failures only
+    the internal message survives into `str(error)`, so the message a user sees has to be read
+    from the emitted TRACE errors."""
+    return [message.trace.error.message or "" for message in messages if message.type == Type.TRACE and message.trace.error]
 
 
 def _graphql_requests(requests_mock):
@@ -340,16 +355,24 @@ def test_reduced_page_size_is_kept_for_the_following_page(rate_limit_mock_respon
 
 def test_persistent_gateway_timeout_fails_the_stream_instead_of_looping(rate_limit_mock_response, requests_mock):
     """`max_attempts: 5` with `minimum_page_size: 1` bounds the reduction. Without a bound a
-    permanently timing-out repository would request forever."""
+    permanently timing-out repository would request forever. The terminal message pairs the
+    CDK's statement of what happened with the connector's `failure_message`, which points at
+    the page-size setting the way the legacy `get_error_display_message` did."""
     _mock_repository_resolution(requests_mock)
     requests_mock.post(GRAPHQL_URL, status_code=504, json={"message": "Gateway Timeout"})
 
-    records, error = _read(_config(), "releases")
+    messages, error = _read_messages(_config(), "releases")
 
-    assert records == []
+    assert error is not None
+    assert _records(messages) == []
     sizes = [_variables(request)["first"] for request in _graphql_requests(requests_mock)]
     # 10 -> 5 -> 2 -> 1, then the floor is reached and the stream gives up.
     assert sizes == [10, 5, 2, 1]
+    assert _trace_error_messages(messages) == [
+        "The source keeps rejecting pages of stream releases at the smallest page size the connector is allowed to "
+        'request (1 records per page). Lower "Page size for large streams" (page_size_for_large_streams) in the '
+        "source configuration so that the page-size reduction starts from a smaller page."
+    ]
 
 
 def test_page_size_for_large_streams_config_is_still_honored(rate_limit_mock_response, requests_mock):

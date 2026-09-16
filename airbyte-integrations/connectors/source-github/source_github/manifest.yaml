@@ -8904,6 +8904,16 @@ definitions:
     minimum_page_size: 1
     max_attempts: 5
     reset_policy: NEVER
+    # Appended to the CDK's terminal message once the reductions run out. The CDK only knows
+    # that GitHub rejected every page size it asked for; the remediation is connector-specific.
+    # `page_size_for_large_streams` was dropped from the spec in 1.0.1 but is still honored, so
+    # the sentence names both the old form title and the config key an API user would set.
+    # Lowering it makes the reduction start from a smaller page, so the floor is reached
+    # within `max_attempts`. A more recent start date is deliberately not suggested: these
+    # streams filter client-side, so it would not make GitHub's per-page query any cheaper.
+    failure_message: >-
+      Lower "Page size for large streams" (page_size_for_large_streams) in the source
+      configuration so that the page-size reduction starts from a smaller page.
 
   graphql_paginator:
     type: DefaultPaginator
