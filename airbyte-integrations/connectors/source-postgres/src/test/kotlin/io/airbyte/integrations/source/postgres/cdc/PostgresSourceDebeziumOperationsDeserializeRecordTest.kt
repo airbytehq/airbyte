@@ -33,9 +33,9 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * `deserializeRecord` has to uphold for the socket/protobuf output path: every
- * field of the stream schema ends up in the payload, including the ones whose value is NULL, whose
- * key is missing from the Debezium image, or whose mapping failed.
+ * `deserializeRecord` has to uphold for the socket/protobuf output path: every field of the stream
+ * schema ends up in the payload, including the ones whose value is NULL, whose key is missing from
+ * the Debezium image, or whose mapping failed.
  *
  * The protobuf record consumer reuses one builder for the whole sync and only writes the slots of
  * the fields present in the payload, so a field left out of the payload keeps the previous record's
