@@ -25,6 +25,7 @@ def _get_manifest_path() -> Path:
 _SOURCE_FOLDER_PATH = _get_manifest_path()
 _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 sys.path.append(str(_SOURCE_FOLDER_PATH))
+# Mirror the CI layout at /airbyte/integration_code/source_declarative_manifest.
 source_declarative_manifest = types.ModuleType("source_declarative_manifest")
 source_declarative_manifest.__path__ = [str(_SOURCE_FOLDER_PATH)]
 sys.modules.setdefault("source_declarative_manifest", source_declarative_manifest)

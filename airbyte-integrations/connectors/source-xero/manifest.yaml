@@ -446,17 +446,6 @@ definitions:
     error_handler:
       type: CompositeErrorHandler
       error_handlers:
-        # Xero rejects unfiltered reads of very large streams (ErrorNumber 51)
-        - type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: FAIL
-              failure_type: config_error
-              predicate: "{{ response.get('Type') == 'HighVolumeException' }}"
-              error_message: >-
-                Xero rejected the request because this organisation has too many records to read without a
-                narrower filter ({{ response.get('Type') }}: {{ response.get('Message') }}). Set a more recent
-                start date in the connector configuration or deselect this stream from the connection.
         - type: DefaultErrorHandler
           backoff_strategies:
             - type: ConstantBackoffStrategy
@@ -484,7 +473,7 @@ definitions:
             - type: ExponentialBackoffStrategy
               factor: 2
           response_filters:
-            # CompositeErrorHandler continues past FAIL responses, so keep this terminal filter.
+            # Listed in the last handler: CompositeErrorHandler returns the last matching FAIL resolution
             - type: HttpResponseFilter
               action: FAIL
               failure_type: config_error
