@@ -39,7 +39,7 @@ Because each sync returns a fixed lookback window (30 days of messages and 12 mo
 ## Supported streams
 
 | Stream | Source endpoint | What it returns |
-|---|---|---|
+| --- | --- | --- |
 | `rcs_messages` | [`GET /rcs/v1/messages`](https://dev.smsmode.com/rcs/v1/#tag/Message) | RCS message logs from the last 30 days, including both directions. |
 | `consumptions_rcs` | [`GET /commons/v1/consumptions`](https://dev.smsmode.com/commons/v1/#tag/Consumption) | Monthly RCS consumption records for the last 12 months. |
 
@@ -72,7 +72,7 @@ This stream returns one record per month of RCS consumption, starting 365 days b
 ### Configuration
 
 | Input | Type | Description | Default Value |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `api_key` | `string` | API Key. Your smsmode API key, created with the [Credential API](https://dev.smsmode.com/commons/v1/#tag/Credential). |  |
 
 ## Changelog
@@ -80,8 +80,8 @@ This stream returns one record per month of RCS consumption, starting 365 days b
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date | Pull Request | Subject |
+| --- | --- | --- | --- |
 | 0.0.1 | 2026-09-16 | [79710](https://github.com/airbytehq/airbyte/pull/79710) | Initial release by [@CaladeTechnologies](https://github.com/CaladeTechnologies) via Connector Builder. Syncs a rolling 30-day window of `rcs_messages` across MT and MO directions, and monthly `consumptions_rcs`. |
 
 </details>
