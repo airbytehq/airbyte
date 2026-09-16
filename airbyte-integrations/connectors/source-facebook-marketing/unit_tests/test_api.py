@@ -325,9 +325,7 @@ class TestMyFacebookAdsApi:
         mock_super_call = mocker.patch.object(FacebookAdsApi, "call", side_effect=[quota_error, success_response])
         mocker.patch.object(source_facebook_marketing.api, "sleep")
 
-        response = source_facebook_marketing.api.MyFacebookAdsApi.call.__wrapped__(
-            fb_api, method="GET", path=("act_123", "ads"), params={}
-        )
+        response = source_facebook_marketing.api.MyFacebookAdsApi.call.__wrapped__(fb_api, method="GET", path=("act_123", "ads"), params={})
 
         assert response is success_response
         assert mock_super_call.call_count == 2
