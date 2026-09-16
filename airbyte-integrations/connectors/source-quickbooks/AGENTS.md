@@ -45,17 +45,21 @@ Hard deletes are **not** captured. Intuit exposes them only through the [change 
 
 ## Error handling
 
-All 28 streams share `definitions.error_handler`. Intuit returns errors as a `Fault` object carrying its own `errorCode` alongside the HTTP status, and the two disagree often enough that the filters check both. Filter order matters — the CDK returns the first match — so the `errorCode` filters must stay ahead of the status-code filters.
+All 28 streams share `definitions.error_handler`. Intuit returns errors as a `Fault` object carrying its own error code alongside the HTTP status, and the two disagree often enough that the filters check both. Filter order matters — the CDK returns the first match — so the fault-code filters must stay ahead of the status-code filters.
+
+The fault code is matched with a `predicate` rather than `error_message_contains`, because the latter is compared against `JsonErrorMessageParser.parse_response_error_message()`, which only walks lowercase keys (`message`, `error`, `detail`, …). Intuit's payload is `{"Fault": {"Error": [{"Message": …, "code": "3200"}]}}`, so the parser returns `None` and no substring can ever match. The predicate reads `Fault.Error[0].code`, tolerates either capitalization and the zero-padded form (`003200`), and is guarded with `response is mapping` so it cannot match a successful response — `HttpResponseFilter` evaluates predicates against every response, including HTTP 200s.
 
 | Response | Action | Failure type | Rationale |
 |---|---|---|---|
-| `errorCode=003200` (`ApplicationAuthenticationFailed`) | FAIL | `config_error` | The app credentials themselves are rejected: wrong `client_id`/`client_secret`, or development keys used against production. Retrying cannot help. |
-| `errorCode=003201` (`AuthorizationFailure`) | FAIL | `config_error` | The user has not authorized the app for this company, or authorization was revoked in Intuit's My Apps. |
+| Fault code `3200` (`ApplicationAuthenticationFailed`) | FAIL | `config_error` | The app credentials themselves are rejected: wrong `client_id`/`client_secret`, or development keys used against production. Retrying cannot help. |
+| Fault code `3201` (`AuthorizationFailure`) | FAIL | `config_error` | The user has not authorized the app for this company, or authorization was revoked in Intuit's My Apps. |
 | 401 | FAIL | `config_error` | The OAuth grant is expired or revoked. Intuit invalidates the refresh token after 100 days of disuse, and re-authentication is the only remedy — retrying with the same grant will not recover. |
 | 403 | FAIL | `config_error` | The grant lacks the `com.intuit.quickbooks.accounting` scope for this company. |
 | 404 | FAIL | `config_error` | Intuit does not recognize the configured `realm_id` (commonly a sandbox realm used against production, or vice versa). |
 | 429, 500, 502, 503, 504 | RETRY | `transient_error` | Intuit's documented throttling response and server errors; `max_retries: 5` with `ExponentialBackoffStrategy` at factor 5. |
 | Any other error response | FAIL (terminal) | `system_error` | CDK `DefaultErrorHandler` fallback. An explicit catch-all filter is deliberately omitted: `HttpResponseFilter` predicates are evaluated against every response, including HTTP 200s, so a literal catch-all would match successful responses. |
+
+The stream error handler only sees responses from the accounting API. A refresh token Intuit rejects at `https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer` never reaches it, so every `OAuthAuthenticator` sets `refresh_token_error_status_codes: [400, 401]`, `refresh_token_error_key: error` and `refresh_token_error_values: [invalid_grant, invalid_client]`. That makes the CDK raise a `config_error` telling the user to re-authenticate instead of a generic authentication failure. Intuit answers a rotated, expired or already-used refresh token with `400 {"error": "invalid_grant"}`, and rejected app credentials with `invalid_client`. The authenticator is duplicated per stream in this manifest, so all 57 occurrences (28 stream definitions, 28 top-level streams, and `definitions.base_requester`) carry the same three fields.
 
 401 is classified as terminal rather than `REFRESH_TOKEN_THEN_RETRY` on purpose. `OAuthAuthenticator` already refreshes proactively from `token_expiry_date`, so a 401 reaching the error handler means the refresh itself is not fixing the problem — retrying it burns the rotation window instead of surfacing an actionable message.
 

@@ -12,12 +12,20 @@ definitions:
     - type: HttpResponseFilter
       action: FAIL
       failure_type: config_error
-      error_message_contains: errorCode=003200
+      predicate: >-
+        {{ (response is mapping) and (((response.get('Fault') or
+        response.get('fault') or {}).get('Error') or (response.get('Fault') or
+        response.get('fault') or {}).get('error') or [{}])[0].get('code') or 0)
+        | int == 3200 }}
       error_message: QuickBooks rejected the app credentials backing this connection.
     - type: HttpResponseFilter
       action: FAIL
       failure_type: config_error
-      error_message_contains: errorCode=003201
+      predicate: >-
+        {{ (response is mapping) and (((response.get('Fault') or
+        response.get('fault') or {}).get('Error') or (response.get('Fault') or
+        response.get('fault') or {}).get('error') or [{}])[0].get('code') or 0)
+        | int == 3201 }}
       error_message: The QuickBooks user has not authorized this app for the configured company.
     - type: HttpResponseFilter
       action: FAIL
@@ -79,6 +87,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -255,6 +270,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -512,6 +534,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -864,6 +893,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -1070,6 +1106,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -1209,6 +1252,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -1600,6 +1650,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -1958,6 +2015,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -2097,6 +2161,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -2388,6 +2459,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -2593,6 +2671,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -3033,6 +3118,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -3589,6 +3681,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -3791,6 +3890,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -4113,6 +4219,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -4239,6 +4352,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -4537,6 +4657,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -4987,6 +5114,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -5383,6 +5517,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -5734,6 +5875,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -6173,6 +6321,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -6303,6 +6458,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -6481,6 +6643,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -6670,6 +6839,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -6820,6 +6996,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -7006,6 +7189,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -7172,6 +7362,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -7437,6 +7634,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -7696,6 +7900,13 @@ definitions:
         refresh_token_config_path:
         - refresh_token
       token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+      refresh_token_error_status_codes:
+      - 400
+      - 401
+      refresh_token_error_key: error
+      refresh_token_error_values:
+      - invalid_grant
+      - invalid_client
 streams:
 - type: DeclarativeStream
   name: accounts
@@ -7724,6 +7935,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -7900,6 +8118,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -8157,6 +8382,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -8509,6 +8741,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -8715,6 +8954,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -8854,6 +9100,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -9245,6 +9498,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -9603,6 +9863,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -9742,6 +10009,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -10033,6 +10307,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -10238,6 +10519,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -10678,6 +10966,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -11234,6 +11529,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -11436,6 +11738,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -11758,6 +12067,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -11884,6 +12200,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -12182,6 +12505,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -12632,6 +12962,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -13028,6 +13365,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -13379,6 +13723,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -13818,6 +14169,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -13948,6 +14306,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -14126,6 +14491,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -14315,6 +14687,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -14465,6 +14844,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -14651,6 +15037,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -14817,6 +15210,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -15082,6 +15482,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:

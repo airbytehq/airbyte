@@ -105,9 +105,9 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 
 | What you see | What it means | What to do |
 | :----------- | :------------ | :--------- |
-| `The QuickBooks OAuth grant is expired or revoked...` (HTTP 401) | Intuit invalidated the refresh token. Refresh tokens expire after 100 days of disuse, and are revoked if the app is disconnected in Intuit's **My Apps**. | Obtain a new refresh token and update the source. |
-| `QuickBooks rejected the app credentials...` (`errorCode=003200`) | Wrong **Client ID**/**Client Secret**, or development keys used against production (or the reverse). | Re-copy both keys from the matching environment on the app's **Keys** tab. |
-| `The QuickBooks user has not authorized this app for the configured company.` (`errorCode=003201`) | The company was never authorized for this app, or authorization was revoked. | Re-run the authorization flow for that company. |
+| `Refresh token was rejected by the OAuth provider...` or `The QuickBooks OAuth grant is expired or revoked...` | Intuit invalidated the refresh token. The first message comes from Intuit's token endpoint (`invalid_grant`), the second from an API call answered with HTTP 401. Refresh tokens expire after 100 days of disuse, and are revoked if the app is disconnected in Intuit's **My Apps**. | Obtain a new refresh token and update the source. |
+| `QuickBooks rejected the app credentials...` (fault code `3200`) | Wrong **Client ID**/**Client Secret**, or development keys used against production (or the reverse). | Re-copy both keys from the matching environment on the app's **Keys** tab. |
+| `The QuickBooks user has not authorized this app for the configured company.` (fault code `3201`) | The company was never authorized for this app, or authorization was revoked. | Re-run the authorization flow for that company. |
 | `The QuickBooks OAuth grant lacks the accounting scope...` (HTTP 403) | The grant is missing `com.intuit.quickbooks.accounting`. | Re-authorize with the accounting scope selected. |
 | `QuickBooks does not recognize the configured Realm ID.` (HTTP 404) | The **Realm ID** does not exist in the environment being called — most often a sandbox realm with **Sandbox** turned off. | Correct the **Realm ID**, or toggle **Sandbox** to match it. |
 | Sync retries then fails with a throttling error | Intuit throttles at 500 requests per minute per realm. | Reduce concurrent syncs against the same company; the connector already retries with exponential backoff. |
@@ -125,7 +125,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                            |
 |:------------|:-----------|:---------------------------------------------------------| :----------------------------------------------------------------- |
-| 4.2.0 | 2026-08-31 | [85216](https://github.com/airbytehq/airbyte/pull/85216) | Add actionable error handling for Intuit fault codes and HTTP statuses, drop unnecessary required spec fields, refresh the SDM base image, and unpin the registry overrides |
+| 4.2.0 | 2026-08-31 | [85216](https://github.com/airbytehq/airbyte/pull/85216) | Add actionable error handling for Intuit fault codes, HTTP statuses and rejected refresh tokens, drop unnecessary required spec fields, refresh the SDM base image, and roll the registry overrides out progressively |
 | 4.1.8 | 2025-05-24 | [60468](https://github.com/airbytehq/airbyte/pull/60468) | Update dependencies |
 | 4.1.7 | 2025-05-10 | [60170](https://github.com/airbytehq/airbyte/pull/60170) | Update dependencies |
 | 4.1.6 | 2025-05-03 | [59500](https://github.com/airbytehq/airbyte/pull/59500) | Update dependencies |
