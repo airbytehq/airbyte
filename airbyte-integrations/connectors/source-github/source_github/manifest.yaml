@@ -2695,6 +2695,7 @@ definitions:
       requester:
         $ref: "#/definitions/large_stream_repository_scoped_requester"
         path: "repos/{{ stream_partition.repository }}/pulls"
+        use_cache: true
         request_parameters:
           per_page:
             $ref: "#/definitions/large_stream_page_size"
@@ -7669,6 +7670,1176 @@ definitions:
                   - "null"
                   - integer
 
+  pull_request_commits_stream:
+    # API docs: https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-commits-on-a-pull-request
+    type: DeclarativeStream
+    name: pull_request_commits
+    primary_key: "sha"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/repository_scoped_requester"
+        path: "repos/{{ stream_slice.extra_fields['repository'] }}/pulls/{{ stream_partition.pull_number }}/commits"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/page_link_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/pull_requests_stream"
+            parent_key: "number"
+            partition_field: "pull_number"
+            extra_fields:
+              - ["repository"]
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["repository"]
+            value: "{{ stream_slice.extra_fields['repository'] }}"
+          - path: ["pull_number"]
+            value: "{{ stream_partition.pull_number }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          sha:
+            description: SHA of the commit.
+            type:
+              - "null"
+              - string
+          node_id:
+            description: Node ID of the commit.
+            type:
+              - "null"
+              - string
+          commit:
+            description: Details about the commit related to the pull request.
+            type: object
+            properties:
+              author:
+                description: Details about the author of the commit.
+                type: object
+                properties:
+                  name:
+                    description: Name of the author.
+                    type:
+                      - "null"
+                      - string
+                  email:
+                    description: Email address of the author.
+                    type:
+                      - "null"
+                      - string
+                  date:
+                    description: Date and time the commit was authored.
+                    type: string
+                    format: date-time
+              committer:
+                description: Details about the committer of the commit.
+                type: object
+                properties:
+                  name:
+                    description: Name of the committer.
+                    type:
+                      - "null"
+                      - string
+                  email:
+                    description: Email address of the committer.
+                    type:
+                      - "null"
+                      - string
+                  date:
+                    description: Date and time the commit was committed.
+                    type: string
+                    format: date-time
+              message:
+                description: Commit message.
+                type:
+                  - "null"
+                  - string
+              tree:
+                description: Information about the tree associated with the commit.
+                type: object
+                properties:
+                  sha:
+                    description: SHA of the tree.
+                    type:
+                      - "null"
+                      - string
+                  url:
+                    description: URL to retrieve more details about the tree.
+                    type:
+                      - "null"
+                      - string
+              url:
+                description: URL to access more details about the commit.
+                type:
+                  - "null"
+                  - string
+              comment_count:
+                description: Number of comments on the commit.
+                type:
+                  - "null"
+                  - integer
+              verification:
+                description: Verification status of the commit.
+                type: object
+                properties:
+                  verified:
+                    description: Indicates if the commit is verified.
+                    type:
+                      - "null"
+                      - boolean
+                  reason:
+                    description: Reason for verification status.
+                    type:
+                      - "null"
+                      - string
+                  signature:
+                    description: Signature of the commit for verification.
+                    type:
+                      - "null"
+                      - string
+                  payload:
+                    description: Payload data used for verification.
+                    type:
+                      - "null"
+                      - string
+          url:
+            description: URL to access more details about the commit.
+            type:
+              - "null"
+              - string
+          html_url:
+            description: URL to view the commit in a web browser.
+            type:
+              - "null"
+              - string
+          comments_url:
+            description: URL to retrieve comments related to the commit.
+            type:
+              - "null"
+              - string
+          author:
+            type:
+              - "null"
+              - object
+            properties:
+              login:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - integer
+              node_id:
+                type:
+                  - "null"
+                  - string
+              avatar_url:
+                type:
+                  - "null"
+                  - string
+              gravatar_id:
+                type:
+                  - "null"
+                  - string
+              url:
+                type:
+                  - "null"
+                  - string
+              html_url:
+                type:
+                  - "null"
+                  - string
+              followers_url:
+                type:
+                  - "null"
+                  - string
+              following_url:
+                type:
+                  - "null"
+                  - string
+              gists_url:
+                type:
+                  - "null"
+                  - string
+              starred_url:
+                type:
+                  - "null"
+                  - string
+              subscriptions_url:
+                type:
+                  - "null"
+                  - string
+              organizations_url:
+                type:
+                  - "null"
+                  - string
+              repos_url:
+                type:
+                  - "null"
+                  - string
+              events_url:
+                type:
+                  - "null"
+                  - string
+              received_events_url:
+                type:
+                  - "null"
+                  - string
+              type:
+                type:
+                  - "null"
+                  - string
+              site_admin:
+                type:
+                  - "null"
+                  - boolean
+          committer:
+            type:
+              - "null"
+              - object
+            properties:
+              login:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - integer
+              node_id:
+                type:
+                  - "null"
+                  - string
+              avatar_url:
+                type:
+                  - "null"
+                  - string
+              gravatar_id:
+                type:
+                  - "null"
+                  - string
+              url:
+                type:
+                  - "null"
+                  - string
+              html_url:
+                type:
+                  - "null"
+                  - string
+              followers_url:
+                type:
+                  - "null"
+                  - string
+              following_url:
+                type:
+                  - "null"
+                  - string
+              gists_url:
+                type:
+                  - "null"
+                  - string
+              starred_url:
+                type:
+                  - "null"
+                  - string
+              subscriptions_url:
+                type:
+                  - "null"
+                  - string
+              organizations_url:
+                type:
+                  - "null"
+                  - string
+              repos_url:
+                type:
+                  - "null"
+                  - string
+              events_url:
+                type:
+                  - "null"
+                  - string
+              received_events_url:
+                type:
+                  - "null"
+                  - string
+              type:
+                type:
+                  - "null"
+                  - string
+              site_admin:
+                type:
+                  - "null"
+                  - boolean
+          parents:
+            description: List of parent commits associated with the commit.
+            type: array
+            items:
+              type: object
+              properties:
+                sha:
+                  description: SHA of the parent commit.
+                  type:
+                    - "null"
+                    - string
+                url:
+                  description: URL to access more details about the parent commit.
+                  type:
+                    - "null"
+                    - string
+                html_url:
+                  description: URL to view the parent commit in a web browser.
+                  type:
+                    - "null"
+                    - string
+          repository:
+            description: Details about the repository where the commit was made.
+            type: string
+          pull_number:
+            description: Number associated with the pull request.
+            type: integer
+
+  project_columns_stream:
+    # API docs: https://docs.github.com/en/rest/projects/columns?apiVersion=2022-11-28#list-project-columns
+    type: DeclarativeStream
+    name: project_columns
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/repository_scoped_requester"
+        path: "projects/{{ stream_partition.project_id }}/columns"
+        use_cache: true
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/page_link_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/projects_stream"
+            parent_key: "id"
+            partition_field: "project_id"
+            extra_fields:
+              - ["repository"]
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["repository"]
+            value: "{{ stream_slice.extra_fields['repository'] }}"
+          - path: ["project_id"]
+            value: "{{ stream_partition.project_id }}"
+    incremental_sync:
+      $ref: "#/definitions/client_side_filtered_cursor"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_github.components.NestedLegacyToPerPartitionStateMigration
+        cursor_field: "updated_at"
+        partition_fields: ["project_id"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          url:
+            description: The API URL to fetch more details about this project column.
+            type:
+              - "null"
+              - string
+          project_url:
+            description: The URL to view the project associated with this column.
+            type:
+              - "null"
+              - string
+          cards_url:
+            description: The API URL to fetch the cards in this project column.
+            type:
+              - "null"
+              - string
+          id:
+            description: The unique identification number of this project column.
+            type:
+              - "null"
+              - integer
+          node_id:
+            description: The node ID of this project column used in the GraphQL API.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name given to this project column.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when this project column was created.
+            type: string
+            format: date-time
+          updated_at:
+            description: The date and time when this project column was last updated.
+            type: string
+            format: date-time
+          repository:
+            description: The repository to which this project column belongs.
+            type: string
+          project_id:
+            description: The ID of the project to which this column belongs.
+            type: integer
+
+  project_cards_stream:
+    # API docs: https://docs.github.com/en/rest/projects/cards?apiVersion=2022-11-28#list-project-cards
+    type: DeclarativeStream
+    name: project_cards
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/repository_scoped_requester"
+        path: "projects/columns/{{ stream_partition.column_id }}/cards"
+        request_parameters:
+          per_page: "100"
+          archived_state: "all"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/page_link_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/project_columns_stream"
+            parent_key: "id"
+            partition_field: "column_id"
+            extra_fields:
+              - ["repository"]
+              - ["project_id"]
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["repository"]
+            value: "{{ stream_slice.extra_fields['repository'] }}"
+          - path: ["project_id"]
+            value: "{{ stream_slice.extra_fields['project_id'] }}"
+          - path: ["column_id"]
+            value: "{{ stream_partition.column_id }}"
+    incremental_sync:
+      $ref: "#/definitions/client_side_filtered_cursor"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_github.components.NestedLegacyToPerPartitionStateMigration
+        cursor_field: "updated_at"
+        partition_fields: ["project_id", "column_id"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/schema#
+        type: object
+        properties:
+          url:
+            description: The URL to access the project card.
+            type:
+              - "null"
+              - string
+          project_url:
+            description: The URL to access the project that includes the project card.
+            type:
+              - "null"
+              - string
+          id:
+            description: The unique identifier of the project card.
+            type:
+              - "null"
+              - integer
+          node_id:
+            description: The unique Node ID of the project card.
+            type:
+              - "null"
+              - string
+          note:
+            description: Any notes associated with the project card.
+            type:
+              - "null"
+              - string
+          archived:
+            description: Indicates whether the project card is archived or not.
+            type:
+              - "null"
+              - boolean
+          creator:
+            type:
+              - "null"
+              - object
+            properties:
+              login:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - integer
+              node_id:
+                type:
+                  - "null"
+                  - string
+              avatar_url:
+                type:
+                  - "null"
+                  - string
+              gravatar_id:
+                type:
+                  - "null"
+                  - string
+              url:
+                type:
+                  - "null"
+                  - string
+              html_url:
+                type:
+                  - "null"
+                  - string
+              followers_url:
+                type:
+                  - "null"
+                  - string
+              following_url:
+                type:
+                  - "null"
+                  - string
+              gists_url:
+                type:
+                  - "null"
+                  - string
+              starred_url:
+                type:
+                  - "null"
+                  - string
+              subscriptions_url:
+                type:
+                  - "null"
+                  - string
+              organizations_url:
+                type:
+                  - "null"
+                  - string
+              repos_url:
+                type:
+                  - "null"
+                  - string
+              events_url:
+                type:
+                  - "null"
+                  - string
+              received_events_url:
+                type:
+                  - "null"
+                  - string
+              type:
+                type:
+                  - "null"
+                  - string
+              site_admin:
+                type:
+                  - "null"
+                  - boolean
+          created_at:
+            description: The date and time when the project card was created.
+            type: string
+            format: date-time
+          updated_at:
+            description: The date and time when the project card was last updated.
+            type: string
+            format: date-time
+          column_url:
+            description: The URL to access the project column associated with the project card.
+            type:
+              - "null"
+              - string
+          content_url:
+            description: The URL that provides direct access to the project card's content.
+            type:
+              - "null"
+              - string
+          repository:
+            description: The repository to which the project card is linked.
+            type: string
+          project_id:
+            description: The unique identifier of the project to which the project card belongs.
+            type: integer
+          column_id:
+            description: The unique identifier of the project column that the project card belongs to.
+            type: integer
+
+  team_members_stream:
+    # API docs: https://docs.github.com/en/rest/teams/members?apiVersion=2022-11-28#list-team-members
+    type: DeclarativeStream
+    name: team_members
+    primary_key:
+      - "id"
+      - "team_slug"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/organization_scoped_requester"
+        path: "orgs/{{ stream_slice.extra_fields['organization'] }}/teams/{{ stream_partition.team_slug }}/members"
+        use_cache: true
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/page_link_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/teams_stream"
+            parent_key: "slug"
+            partition_field: "team_slug"
+            extra_fields:
+              - ["organization"]
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["organization"]
+            value: "{{ stream_slice.extra_fields['organization'] }}"
+          - path: ["team_slug"]
+            value: "{{ stream_partition.team_slug }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          login:
+            description: Username of the user
+            type:
+              - "null"
+              - string
+          id:
+            description: Unique identifier of the user
+            type: integer
+          node_id:
+            description: Node ID associated with the user
+            type:
+              - "null"
+              - string
+          avatar_url:
+            description: URL of the user's avatar image
+            type:
+              - "null"
+              - string
+          gravatar_id:
+            description: Unique identifier of the user's Gravatar image
+            type:
+              - "null"
+              - string
+          url:
+            description: URL of the user's GitHub API endpoint
+            type:
+              - "null"
+              - string
+          html_url:
+            description: URL of the user's GitHub profile
+            type:
+              - "null"
+              - string
+          followers_url:
+            description: URL of the user's followers
+            type:
+              - "null"
+              - string
+          following_url:
+            description: URL of the users that the user is following
+            type:
+              - "null"
+              - string
+          gists_url:
+            description: URL of the user's gists
+            type:
+              - "null"
+              - string
+          starred_url:
+            description: URL of the repositories starred by the user
+            type:
+              - "null"
+              - string
+          subscriptions_url:
+            description: URL of the repositories the user is subscribed to
+            type:
+              - "null"
+              - string
+          organizations_url:
+            description: URL of the organizations the user belongs to
+            type:
+              - "null"
+              - string
+          repos_url:
+            description: URL of the user's repositories
+            type:
+              - "null"
+              - string
+          events_url:
+            description: URL of the events performed by the user
+            type:
+              - "null"
+              - string
+          received_events_url:
+            description: URL of the received events by the user
+            type:
+              - "null"
+              - string
+          type:
+            description: Type of user account (e.g., User or Organization)
+            type:
+              - "null"
+              - string
+          site_admin:
+            description: Boolean indicating if the user is a site administrator
+            type:
+              - "null"
+              - boolean
+          organization:
+            description: Name of the organization the user is a part of
+            type: string
+          team_slug:
+            description: Slug identifier of the user's team
+            type: string
+
+  team_memberships_stream:
+    # API docs: https://docs.github.com/en/rest/teams/members?apiVersion=2022-11-28#get-team-membership-for-a-user
+    type: DeclarativeStream
+    name: team_memberships
+    primary_key:
+      - "url"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/organization_scoped_requester"
+        path: "orgs/{{ stream_slice.extra_fields['organization'] }}/teams/{{ stream_slice.extra_fields['team_slug'] }}/memberships/{{ stream_partition.username }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/team_members_stream"
+            parent_key: "login"
+            partition_field: "username"
+            extra_fields:
+              - ["organization"]
+              - ["team_slug"]
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["organization"]
+            value: "{{ stream_slice.extra_fields['organization'] }}"
+          - path: ["team_slug"]
+            value: "{{ stream_slice.extra_fields['team_slug'] }}"
+          - path: ["username"]
+            value: "{{ stream_partition.username }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          state:
+            description: The current state of the team membership (active, pending, etc.).
+            type:
+              - "null"
+              - string
+          role:
+            description: The role or position of the user within the team.
+            type:
+              - "null"
+              - string
+          url:
+            description: The URL link to access more details about the team membership.
+            type: string
+          organization:
+            description: The name of the organization the team membership belongs to.
+            type: string
+          team_slug:
+            description: The unique identifier (slug) of the team the user belongs to.
+            type: string
+          username:
+            description: The username of the user associated with the team membership.
+            type: string
+
+  issue_timeline_events_stream:
+    # API docs: https://docs.github.com/en/rest/issues/timeline?apiVersion=2022-11-28#list-timeline-events-for-an-issue
+    type: DeclarativeStream
+    name: issue_timeline_events
+    primary_key:
+      - "repository"
+      - "issue_number"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/repository_scoped_requester"
+        path: "repos/{{ stream_slice.extra_fields['repository'] }}/issues/{{ stream_partition.number }}/timeline"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_github.components.IssueTimelineEventsExtractor
+      paginator:
+        $ref: "#/definitions/page_link_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/issues_stream"
+              # The legacy parent was built without `start_date`, so every issue is expanded and no
+              # `since` is sent (GitHub answers an empty list for `since=1970-01-01T00:00:00Z`).
+              incremental_sync:
+                type: DatetimeBasedCursor
+                cursor_field: "updated_at"
+                cursor_datetime_formats:
+                  - "%Y-%m-%dT%H:%M:%SZ"
+                datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+                start_datetime:
+                  type: MinMaxDatetime
+                  datetime: "1970-01-01T00:00:00Z"
+                  datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+            parent_key: "number"
+            partition_field: "number"
+            extra_fields:
+              - ["repository"]
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["repository"]
+            value: "{{ stream_slice.extra_fields['repository'] }}"
+          - path: ["issue_number"]
+            value: "{{ stream_partition.number }}"
+    schema_loader:
+      # Kept as a file: the shared `base_event` definition is referenced 23 times and inlines to
+      # almost 7,000 lines.
+      type: JsonFileSchemaLoader
+      file_path: "./source_github/schemas/issue_timeline_events.json"
+
+  commit_comment_reactions_stream:
+    # API docs: https://docs.github.com/en/rest/reactions/reactions?apiVersion=2022-11-28#list-reactions-for-a-commit-comment
+    type: DeclarativeStream
+    name: commit_comment_reactions
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/repository_scoped_requester"
+        path: "repos/{{ stream_slice.extra_fields['repository'] }}/comments/{{ stream_partition.comment_id }}/reactions"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/page_link_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/commit_comments_stream"
+            parent_key: "id"
+            partition_field: "comment_id"
+            extra_fields:
+              - ["repository"]
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["repository"]
+            value: "{{ stream_slice.extra_fields['repository'] }}"
+          - path: ["comment_id"]
+            value: "{{ stream_partition.comment_id }}"
+    incremental_sync:
+      $ref: "#/definitions/client_side_filtered_cursor"
+      cursor_field: "created_at"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_github.components.NestedLegacyToPerPartitionStateMigration
+        cursor_field: "created_at"
+        partition_fields: ["comment_id"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          node_id:
+            type:
+              - "null"
+              - string
+          content:
+            type:
+              - "null"
+              - string
+          created_at:
+            type: string
+            format: date-time
+          user:
+            type:
+              - "null"
+              - object
+            properties:
+              login:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - integer
+              node_id:
+                type:
+                  - "null"
+                  - string
+              avatar_url:
+                type:
+                  - "null"
+                  - string
+              gravatar_id:
+                type:
+                  - "null"
+                  - string
+              url:
+                type:
+                  - "null"
+                  - string
+              html_url:
+                type:
+                  - "null"
+                  - string
+              followers_url:
+                type:
+                  - "null"
+                  - string
+              following_url:
+                type:
+                  - "null"
+                  - string
+              gists_url:
+                type:
+                  - "null"
+                  - string
+              starred_url:
+                type:
+                  - "null"
+                  - string
+              subscriptions_url:
+                type:
+                  - "null"
+                  - string
+              organizations_url:
+                type:
+                  - "null"
+                  - string
+              repos_url:
+                type:
+                  - "null"
+                  - string
+              events_url:
+                type:
+                  - "null"
+                  - string
+              received_events_url:
+                type:
+                  - "null"
+                  - string
+              type:
+                type:
+                  - "null"
+                  - string
+              site_admin:
+                type:
+                  - "null"
+                  - boolean
+          repository:
+            type: string
+          comment_id:
+            type: integer
+
+  issue_comment_reactions_stream:
+    # API docs: https://docs.github.com/en/rest/reactions/reactions?apiVersion=2022-11-28#list-reactions-for-an-issue-comment
+    type: DeclarativeStream
+    name: issue_comment_reactions
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/repository_scoped_requester"
+        path: "repos/{{ stream_slice.extra_fields['repository'] }}/issues/comments/{{ stream_partition.comment_id }}/reactions"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/page_link_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/comments_stream"
+            parent_key: "id"
+            partition_field: "comment_id"
+            extra_fields:
+              - ["repository"]
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["repository"]
+            value: "{{ stream_slice.extra_fields['repository'] }}"
+          - path: ["comment_id"]
+            value: "{{ stream_partition.comment_id }}"
+    incremental_sync:
+      $ref: "#/definitions/client_side_filtered_cursor"
+      cursor_field: "created_at"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_github.components.NestedLegacyToPerPartitionStateMigration
+        cursor_field: "created_at"
+        partition_fields: ["comment_id"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          node_id:
+            type:
+              - "null"
+              - string
+          content:
+            type:
+              - "null"
+              - string
+          created_at:
+            type: string
+            format: date-time
+          user:
+            type:
+              - "null"
+              - object
+            properties:
+              login:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - integer
+              node_id:
+                type:
+                  - "null"
+                  - string
+              avatar_url:
+                type:
+                  - "null"
+                  - string
+              gravatar_id:
+                type:
+                  - "null"
+                  - string
+              url:
+                type:
+                  - "null"
+                  - string
+              html_url:
+                type:
+                  - "null"
+                  - string
+              followers_url:
+                type:
+                  - "null"
+                  - string
+              following_url:
+                type:
+                  - "null"
+                  - string
+              gists_url:
+                type:
+                  - "null"
+                  - string
+              starred_url:
+                type:
+                  - "null"
+                  - string
+              subscriptions_url:
+                type:
+                  - "null"
+                  - string
+              organizations_url:
+                type:
+                  - "null"
+                  - string
+              repos_url:
+                type:
+                  - "null"
+                  - string
+              events_url:
+                type:
+                  - "null"
+                  - string
+              received_events_url:
+                type:
+                  - "null"
+                  - string
+              type:
+                type:
+                  - "null"
+                  - string
+              site_admin:
+                type:
+                  - "null"
+                  - boolean
+          repository:
+            type: string
+          comment_id:
+            type: integer
+
 api_budget:
   type: HTTPAPIBudget
   policies:
@@ -7713,6 +8884,14 @@ streams:
   - $ref: "#/definitions/comments_stream"
   - $ref: "#/definitions/issues_stream"
   - $ref: "#/definitions/review_comments_stream"
+  - $ref: "#/definitions/pull_request_commits_stream"
+  - $ref: "#/definitions/project_columns_stream"
+  - $ref: "#/definitions/project_cards_stream"
+  - $ref: "#/definitions/team_members_stream"
+  - $ref: "#/definitions/team_memberships_stream"
+  - $ref: "#/definitions/issue_timeline_events_stream"
+  - $ref: "#/definitions/commit_comment_reactions_stream"
+  - $ref: "#/definitions/issue_comment_reactions_stream"
 
 check:
   type: CheckStream
