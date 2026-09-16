@@ -191,6 +191,12 @@ class ClickhouseAirbyteClient(
 
     override suspend fun countTable(tableName: TableName): Long? {
         try {
+            // The direct-load status gatherer probes generated temporary tables on every
+            // sync. Those tables are normally absent after a successful cleanup, so avoid
+            // issuing a failing COUNT query just to discover that expected state.
+            if (!tableExists(tableName)) {
+                return null
+            }
             val sql = sqlGenerator.countTable(tableName, "cnt")
             val response = query(sql)
             val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(response)

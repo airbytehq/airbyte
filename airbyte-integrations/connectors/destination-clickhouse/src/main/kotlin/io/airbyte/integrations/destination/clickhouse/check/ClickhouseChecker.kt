@@ -21,6 +21,13 @@ class ClickhouseChecker(
 ) : DestinationChecker {
     @VisibleForTesting val tableName = "_airbyte_check_table_${clock.millis()}"
 
+    private val onCluster: String =
+        if (config.resolvedClusterName.isNotBlank()) " ON CLUSTER `${config.resolvedClusterName}`"
+        else ""
+
+    private val engine: String =
+        if (config.resolvedUseReplicatedEngines) "ReplicatedMergeTree" else "MergeTree"
+
     override fun check() {
         require(!config.hostname.startsWith(Constants.PROTOCOL)) { Constants.PROTOCOL_ERR_MESSAGE }
 
@@ -28,7 +35,7 @@ class ClickhouseChecker(
 
         client
             .execute(
-                "CREATE TABLE IF NOT EXISTS $resolvedTableName (test UInt8) ENGINE = MergeTree ORDER BY ()"
+                "CREATE TABLE IF NOT EXISTS $resolvedTableName$onCluster (test UInt8) ENGINE = $engine ORDER BY ()"
             )
             .get(10, TimeUnit.SECONDS)
 
@@ -48,7 +55,7 @@ class ClickhouseChecker(
 
     override fun cleanup() {
         client
-            .execute("DROP TABLE IF EXISTS ${config.database}.$tableName")
+            .execute("DROP TABLE IF EXISTS ${config.database}.$tableName$onCluster")
             .get(10, TimeUnit.SECONDS)
     }
 

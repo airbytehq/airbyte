@@ -112,6 +112,50 @@ class JiraOAuthAuthenticator:
 
 
 @dataclass
+class JiraServiceAccountAuthenticator:
+    """Authenticator for Atlassian Service Account API tokens.
+
+    Resolves the Jira Cloud ID from the user-provided `domain` via the
+    unauthenticated `/_edge/tenant_info` endpoint so the connector can
+    route requests through the Atlassian Platform API Gateway.
+    """
+
+    config: Mapping[str, Any]
+    parameters: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        creds = self.config.get("credentials", {})
+        if creds.get("auth_type") != "Service Account":
+            return
+        self._resolve_cloud_id()
+
+    def _resolve_cloud_id(self) -> None:
+        domain = self.config["domain"]
+        url = f"https://{domain}/_edge/tenant_info"
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            tenant_info = json.load(resp)
+
+        cloud_id = tenant_info.get("cloudId")
+        if not cloud_id:
+            raise ValueError(f"Could not resolve Cloud ID from {url}. Verify the domain is a valid Jira Cloud site.")
+        self.config["credentials"]["cloud_id"] = cloud_id
+
+    def get_auth_header(self) -> Mapping[str, str]:
+        token = self.config["credentials"]["service_account_token"]
+        return {"Authorization": f"Bearer {token}"}
+
+    def get_request_params(self, **kwargs) -> Mapping[str, Any]:
+        return {}
+
+    def get_request_body_data(self, **kwargs) -> Mapping[str, Any]:
+        return {}
+
+    def get_request_body_json(self, **kwargs) -> Mapping[str, Any]:
+        return {}
+
+
+@dataclass
 class ValidateJiraDomain(ValidationStrategy):
     """Validate the `domain` config field for `source-jira`.
 

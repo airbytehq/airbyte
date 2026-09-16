@@ -45,7 +45,7 @@ In Airbyte, click **Sources** from the left navigation bar, search for `Postgres
 To fill out the required information:
 
 1. Enter the hostname, port number, and name for your Postgres database.
-2. You may optionally opt to list each of the schemas you want to sync. These are case-sensitive, and multiple schemas may be entered. By default, `public` is the only selected schema.
+2. Optionally list the names of the schemas you want to sync tables from. These are case-sensitive. When not provided, all available schemas are discovered.
 3. Enter the username and password you created in [Step 1](#step-1-create-a-dedicated-read-only-postgres-user).
 4. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database. See here to learn about other SSL modes and SSH tunneling.
 5. Select `Standard (xmin)` from available replication methods. This uses the [xmin system column](https://docs.airbyte.com/integrations/sources/postgres#xmin) to reliably replicate data from your database.
@@ -69,7 +69,7 @@ Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting t
 
 ## Advanced: Setup using CDC
 
-Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin:
+Airbyte uses [logical replication](https://www.postgresql.org/docs/current/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin:
 
 - See [here](https://docs.airbyte.com/understanding-airbyte/cdc) to learn more on how Airbyte implements CDC.
 - See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#cdc-requirements) to learn more about Postgres CDC requirements and limitations.
@@ -140,10 +140,10 @@ For each table you want to replicate with CDC, follow the steps below:
 2. Create the Postgres publication. You should include all tables you want to replicate as part of the publication:
 
 ```sql
-CREATE PUBLICATION airbyte_publication FOR TABLE tbl1, tbl2, tbl3;`
+CREATE PUBLICATION airbyte_publication FOR TABLE tbl1, tbl2, tbl3;
 ```
 
-The publication name is customizable. Refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
+The publication name is customizable. Refer to the [Postgres docs](https://www.postgresql.org/docs/current/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
 
 :::note
 The Airbyte UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not be replicated even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
