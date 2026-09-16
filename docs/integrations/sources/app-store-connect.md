@@ -112,10 +112,10 @@ for incremental state.
 
 | Stream | Sync mode | Apple report | Description |
 | --- | --- | --- | --- |
-| `sales_report` | Incremental | `SALES`, `SUMMARY`, version `1_1` | Daily sales summary. Syncs through yesterday. |
-| `subscriber_report` | Incremental | `SUBSCRIBER`, `DETAILED`, version `1_3` | Daily subscriber detail. Syncs through yesterday. |
-| `subscription_report` | Incremental | `SUBSCRIPTION`, `SUMMARY`, version `1_3` | Daily subscription summary. Syncs through yesterday. |
-| `subscription_event_report` | Incremental | `SUBSCRIPTION_EVENT`, `SUMMARY`, version `1_3` | Daily subscription event summary. Syncs through two days ago, because Apple finalizes event data later than other reports. |
+| `sales_report` | Incremental | `SALES`, `SUMMARY`, version `1_1` | Daily sales summary. The most recent report date requested is two days before the sync. |
+| `subscriber_report` | Incremental | `SUBSCRIBER`, `DETAILED`, version `1_3` | Daily subscriber detail. The most recent report date requested is two days before the sync. |
+| `subscription_report` | Incremental | `SUBSCRIPTION`, `SUMMARY`, version `1_3` | Daily subscription summary. The most recent report date requested is two days before the sync. |
+| `subscription_event_report` | Incremental | `SUBSCRIPTION_EVENT`, `SUMMARY`, version `1_3` | Daily subscription event summary. The most recent report date requested is three days before the sync, because Apple finalizes event data later than other reports. |
 
 ### Finance reports
 
@@ -139,13 +139,13 @@ analytics reports aren't supported.
 | `analytics_report_requests_ongoing` | Full refresh | `ONGOING` report requests for each app. |
 | `analytics_installations_reports` | Full refresh | The Installation and Deletion report for each ongoing request. |
 | `analytics_installations_instances` | Incremental | Daily instances of the Installation and Deletion report. Cursor: `processing_date`. |
-| `analytics_installations_segments` | Incremental | Segments for each instance, including the pre-signed download URL. Cursor: `processing_date`. |
-| `analytics_installations_segment_details` | Incremental | Segment metadata for each segment. Cursor: `processing_date`. |
+| `analytics_installations_segments` | Incremental | Segments for each instance. Cursor: `processing_date`. |
+| `analytics_installations_segment_details` | Full refresh | Metadata for each segment, including the pre-signed `download_url`. |
 | `app_store_installations_and_deletions` | Incremental | Rows from the downloaded Installation and Deletion report files. Cursor: `processing_date`. |
 | `analytics_app_download_reports` | Full refresh | The App Downloads report for each ongoing request. |
 | `analytics_app_download_instances` | Incremental | Daily instances of the App Downloads report. Cursor: `processing_date`. |
-| `analytics_app_download_segments` | Incremental | Segments for each instance, including the pre-signed download URL. Cursor: `processing_date`. |
-| `analytics_app_download_segment_details` | Incremental | Segment metadata for each segment. Cursor: `processing_date`. |
+| `analytics_app_download_segments` | Incremental | Segments for each instance. Cursor: `processing_date`. |
+| `analytics_app_download_segment_details` | Full refresh | Metadata for each segment, including the pre-signed `download_url`. |
 | `app_download` | Incremental | Rows from the downloaded App Downloads report files. Cursor: `processing_date`. |
 | `analytics_report_requests_historical` | Full refresh | `ONE_TIME_SNAPSHOT` report requests for each app. |
 | `analytics_installations_reports_historical` | Full refresh | The Installation and Deletion report for each snapshot request. |
@@ -160,7 +160,8 @@ analytics reports aren't supported.
 | `app_download_historical` | Full refresh | Rows from the downloaded historical App Downloads report files. |
 
 Incremental analytics streams read every processing date from
-`analytics_reports_start_date` (or the saved cursor) through yesterday. The
+`analytics_reports_start_date` (or the saved cursor) up to two days before the
+sync. The
 `app_download` and `app_store_installations_and_deletions` streams download
 each segment's gzip TSV file from Apple's short-lived pre-signed Amazon S3 URL
 and emit one record per row.
@@ -177,8 +178,9 @@ and emit one record per row.
   earlier data.
 - A report stream is empty, rather than failing, when the API key's role can't
   access that report, the app doesn't produce that report type, or Apple hasn't
-  published the requested period yet. The connector treats `400`, `403`, `404`,
-  and `410` responses from the report endpoints as "no data."
+  published the requested period yet. The Sales and Trends and finance streams
+  treat `400`, `404`, and `410` responses as "no data"; the analytics streams
+  also treat `403` that way.
 - The connector runs analytics download jobs one at a time.
 
 ### Rate limits
