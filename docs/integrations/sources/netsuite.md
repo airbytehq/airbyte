@@ -104,7 +104,7 @@ You have copied next parameters
 
 When **Object Types** is empty, the connector lists the account's whole metadata catalog and fetches a schema for every record type in it. Large accounts can expose hundreds of record types, and each one costs a schema request during discovery. Naming the record types you actually need keeps setup and schema refreshes short.
 
-Use the API name of the record type, in lowercase, as it appears in the [REST API browser](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/chapter_1540391670.html), not the label shown in the NetSuite UI. When you test the connection, the connector requests one record of each type you listed, so a name that doesn't exist in the account or that the role can't read fails setup with an HTTP error. Setup also fails with a `Duplicate record type` message if the same name appears twice in the list.
+Use the API name of the record type, in lowercase, as it appears in the [REST API browser](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/chapter_1540391670.html), not the label shown in the NetSuite UI. The connection test requests a single record of the first type you list, so a bad name there fails setup with an HTTP error. A bad name further down the list isn't tested: it produces a warning and no stream when schemas are fetched. Setup also fails with a `Duplicate record type` message if the same name appears twice in the list.
 
 ### Window in Days
 
