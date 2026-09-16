@@ -288,9 +288,7 @@ def test_given_more_reports_than_one_page_when_read_then_next_page_listed_and_do
     )
 
     _mock_document_chain(http_mocker, _DONE_REPORT_DOCUMENT_ID, _DONE_DOWNLOAD_URL)
-    second_document, second_download = _mock_document_chain(
-        http_mocker, _SECOND_DONE_REPORT_DOCUMENT_ID, _SECOND_DONE_DOWNLOAD_URL
-    )
+    second_document, second_download = _mock_document_chain(http_mocker, _SECOND_DONE_REPORT_DOCUMENT_ID, _SECOND_DONE_DOWNLOAD_URL)
 
     output = read_output(_config(), _STREAM_NAME, SyncMode.incremental)
 
