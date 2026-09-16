@@ -21,6 +21,7 @@ To generate the OAuth credentials, go to **Control Panel > Uptick API** in your 
 | `client_secret` | `string` | OAuth Client Secret generated from Control Panel > Uptick API. |  |
 | `username` | `string` | Email address for an Uptick user account with API access. |  |
 | `password` | `string` | Password for the Uptick user account. |  |
+| `num_workers` | `integer` | Number of concurrent requests. Higher values speed up syncs but increase the chance of Uptick rate limiting. Allowed range 1–10. | `3` |
 
 ## Streams
 

@@ -114,7 +114,7 @@ api_budget:
       matchers: []
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  default_concurrency: "{{ config['num_workers'] if config.get('num_workers') is not none else 3 }}"
   max_concurrency: 10
 spec:
   type: Spec
@@ -176,6 +176,7 @@ spec:
             field_pointers: [["end_date"], ["start_date"], ["oauth_access_token"], ["oauth_token_expiry_date"], ["client_refresh_token"]]
     transformations:
       - type: ConfigAddFields
+        condition: "{{ 'base_url' in config }}"
         fields:
           - type: AddedFieldDefinition
             path: ["base_url"]
