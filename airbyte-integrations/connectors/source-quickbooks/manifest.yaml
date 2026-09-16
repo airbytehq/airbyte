@@ -7,9 +7,10 @@ check:
 api_budget:
   type: HTTPAPIBudget
   policies:
-  - type: FixedWindowCallRatePolicy
-    period: PT1M
-    call_limit: 500
+  - type: MovingWindowCallRatePolicy
+    rates:
+    - limit: 500
+      interval: PT1M
     matchers: []
   status_codes_for_ratelimit_hit:
   - 429
