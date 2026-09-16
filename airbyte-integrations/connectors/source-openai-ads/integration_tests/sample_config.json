@@ -1,0 +1,6 @@
+{
+  "api_key": "<your api key>",
+  "start_date": "2026-02-01",
+  "lookback_window": 30,
+  "num_workers": 3
+}

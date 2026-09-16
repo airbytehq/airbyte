@@ -1,0 +1,2415 @@
+version: 6.48.15
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - ad_account
+
+definitions:
+  authenticator:
+    type: BearerAuthenticator
+    api_token: '{{ config["api_key"] }}'
+
+  requester:
+    type: HttpRequester
+    url_base: https://api.ads.openai.com/v1
+    http_method: GET
+    authenticator:
+      $ref: '#/definitions/authenticator'
+    request_headers:
+      Accept: application/json
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+          factor: 5
+      response_filters:
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 429
+            - 500
+            - 502
+            - 503
+            - 504
+
+  record_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - data
+
+  paginator:
+    type: DefaultPaginator
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: after
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 500
+      cursor_value: '{{ response.get("last_id") }}'
+      stop_condition: '{{ not response.get("has_more") }}'
+
+  insights_paginator:
+    $ref: '#/definitions/paginator'
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 2000
+      cursor_value: '{{ response.get("last_id") }}'
+      stop_condition: '{{ not response.get("has_more") }}'
+
+  incremental_sync_insights_datetime_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: readable_time
+    datetime_format: '%Y-%m-%d'
+    cursor_datetime_formats:
+      - '%Y-%m-%d'
+    cursor_granularity: P1D
+    step: P14D
+    lookback_window: 'P{{ config.get("lookback_window", 30) }}D'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ config.get("start_date") or "2026-02-01" }}'
+      datetime_format: '%Y-%m-%d'
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ config.get("end_date") or now_utc().strftime("%Y-%m-%d") }}'
+      datetime_format: '%Y-%m-%d'
+
+  ad_account_stream:
+    type: DeclarativeStream
+    name: ad_account
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: '#/definitions/requester'
+        path: /ad_account
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/ad_account'
+
+  campaigns_stream:
+    type: DeclarativeStream
+    name: campaigns
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: '#/definitions/requester'
+        path: /campaigns
+      record_selector:
+        $ref: '#/definitions/record_selector'
+      paginator:
+        $ref: '#/definitions/paginator'
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/campaigns'
+
+  ad_groups_stream:
+    type: DeclarativeStream
+    name: ad_groups
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: '#/definitions/requester'
+        path: /ad_groups
+      record_selector:
+        $ref: '#/definitions/record_selector'
+      paginator:
+        $ref: '#/definitions/paginator'
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: '#/definitions/campaigns_stream'
+            parent_key: id
+            partition_field: campaign_id
+            request_option:
+              type: RequestOption
+              inject_into: request_parameter
+              field_name: campaign_id
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - campaign_id
+            value: '{{ stream_slice["campaign_id"] }}'
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/ad_groups'
+
+  ads_stream:
+    type: DeclarativeStream
+    name: ads
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: '#/definitions/requester'
+        path: /ads
+      record_selector:
+        $ref: '#/definitions/record_selector'
+      paginator:
+        $ref: '#/definitions/paginator'
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: '#/definitions/ad_groups_stream'
+            parent_key: id
+            partition_field: ad_group_id
+            request_option:
+              type: RequestOption
+              inject_into: request_parameter
+              field_name: ad_group_id
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - ad_group_id
+            value: '{{ stream_slice["ad_group_id"] }}'
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/ads'
+
+  conversion_event_settings_stream:
+    type: DeclarativeStream
+    name: conversion_event_settings
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: '#/definitions/requester'
+        path: /conversions/event_settings
+      record_selector:
+        $ref: '#/definitions/record_selector'
+      paginator:
+        $ref: '#/definitions/paginator'
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/conversion_event_settings'
+
+  custom_audiences_stream:
+    type: DeclarativeStream
+    name: custom_audiences
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: '#/definitions/requester'
+        path: /custom_audiences
+      record_selector:
+        $ref: '#/definitions/record_selector'
+      paginator:
+        $ref: '#/definitions/paginator'
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/custom_audiences'
+
+  conversion_pixels_stream:
+    type: DeclarativeStream
+    name: conversion_pixels
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: '#/definitions/requester'
+        path: /conversions/pixels
+      record_selector:
+        $ref: '#/definitions/record_selector'
+      paginator:
+        $ref: '#/definitions/paginator'
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/conversion_pixels'
+
+  admin_only_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes:
+          - 403
+        error_message: Spend limits can only be read with an ad account admin API key. Stream skipped.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 429
+          - 500
+          - 502
+          - 503
+          - 504
+
+  spend_limit_windows_stream:
+    type: DeclarativeStream
+    name: spend_limit_windows
+    primary_key:
+      - window_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: '#/definitions/requester'
+        path: /ad_account/spend_limit_windows
+        error_handler:
+          $ref: '#/definitions/admin_only_error_handler'
+      record_selector:
+        $ref: '#/definitions/record_selector'
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/spend_limit_windows'
+
+  base_insights_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: '#/definitions/requester'
+        path: /ad_account/insights
+        request_parameters:
+          time_granularity: daily
+          aggregation_level: '{{ parameters["aggregation_level"] }}'
+          'segments[]': '{{ parameters.get("segments", []) }}'
+          'time_ranges[]': >-
+            {{ [ '{"type":"date_range","since":"' ~ stream_slice["start_time"] ~ '","until":"' ~ stream_slice["end_time"] ~ '"}' ] }}
+          'fields[]': '{{ parameters["fields"] }}'
+      record_selector:
+        $ref: '#/definitions/record_selector'
+      paginator:
+        $ref: '#/definitions/insights_paginator'
+    incremental_sync:
+      $ref: '#/definitions/incremental_sync_insights_datetime_cursor'
+
+  ad_account_insights_stream:
+    $ref: '#/definitions/base_insights_stream'
+    name: ad_account_insights
+    primary_key:
+      - ad_account_id
+      - readable_time
+    $parameters:
+      aggregation_level: ad_account
+      fields:
+        - metadata.readable_time
+        - metadata.timezone
+        - ad_account.id
+        - ad_account.name
+        - ad_account.url
+        - ad_account.budget.daily
+        - ad_account.budget.lifetime
+        - ad_account.impressions
+        - ad_account.clicks
+        - ad_account.spend
+        - ad_account.ctr
+        - ad_account.cpc
+        - ad_account.cpm
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/ad_account_insights'
+
+  campaign_insights_stream:
+    $ref: '#/definitions/base_insights_stream'
+    name: campaign_insights
+    primary_key:
+      - campaign_id
+      - readable_time
+    $parameters:
+      aggregation_level: campaign
+      fields:
+        - metadata.readable_time
+        - metadata.timezone
+        - ad_account.id
+        - ad_account.name
+        - ad_account.url
+        - ad_account.budget.daily
+        - ad_account.budget.lifetime
+        - campaign.id
+        - campaign.name
+        - campaign.description
+        - campaign.status
+        - campaign.start_time
+        - campaign.end_time
+        - campaign.budget.daily
+        - campaign.budget.lifetime
+        - campaign.impressions
+        - campaign.clicks
+        - campaign.spend
+        - campaign.ctr
+        - campaign.cpc
+        - campaign.cpm
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/campaign_insights'
+
+  ad_group_insights_stream:
+    $ref: '#/definitions/base_insights_stream'
+    name: ad_group_insights
+    primary_key:
+      - ad_group_id
+      - readable_time
+    $parameters:
+      aggregation_level: ad_group
+      fields:
+        - metadata.readable_time
+        - metadata.timezone
+        - ad_account.id
+        - ad_account.name
+        - ad_account.url
+        - ad_account.budget.daily
+        - ad_account.budget.lifetime
+        - campaign.id
+        - campaign.name
+        - campaign.description
+        - campaign.status
+        - campaign.start_time
+        - campaign.end_time
+        - campaign.budget.daily
+        - campaign.budget.lifetime
+        - ad_group.id
+        - ad_group.name
+        - ad_group.description
+        - ad_group.status
+        - ad_group.impressions
+        - ad_group.clicks
+        - ad_group.spend
+        - ad_group.ctr
+        - ad_group.cpc
+        - ad_group.cpm
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/ad_group_insights'
+
+  ad_insights_stream:
+    $ref: '#/definitions/base_insights_stream'
+    name: ad_insights
+    primary_key:
+      - ad_id
+      - readable_time
+    $parameters:
+      aggregation_level: ad
+      fields:
+        - metadata.readable_time
+        - metadata.timezone
+        - ad_account.id
+        - ad_account.name
+        - ad_account.url
+        - ad_account.budget.daily
+        - ad_account.budget.lifetime
+        - campaign.id
+        - campaign.name
+        - campaign.description
+        - campaign.status
+        - campaign.start_time
+        - campaign.end_time
+        - campaign.budget.daily
+        - campaign.budget.lifetime
+        - ad_group.id
+        - ad_group.name
+        - ad_group.description
+        - ad_group.status
+        - ad.id
+        - ad.name
+        - ad.title
+        - ad.copy
+        - ad.link
+        - ad.status
+        - ad.review_status
+        - ad.impressions
+        - ad.clicks
+        - ad.spend
+        - ad.ctr
+        - ad.cpc
+        - ad.cpm
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/ad_insights'
+
+  campaign_insights_by_country_stream:
+    $ref: '#/definitions/base_insights_stream'
+    name: campaign_insights_by_country
+    primary_key:
+      - campaign_id
+      - country_name
+      - readable_time
+    $parameters:
+      aggregation_level: campaign
+      segments:
+        - country
+      fields:
+        - metadata.readable_time
+        - metadata.timezone
+        - ad_account.id
+        - ad_account.name
+        - ad_account.url
+        - ad_account.budget.daily
+        - ad_account.budget.lifetime
+        - campaign.id
+        - campaign.name
+        - campaign.description
+        - campaign.status
+        - campaign.start_time
+        - campaign.end_time
+        - campaign.budget.daily
+        - campaign.budget.lifetime
+        - country.name
+        - country.impressions
+        - country.clicks
+        - country.spend
+        - country.ctr
+        - country.cpc
+        - country.cpm
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/campaign_insights_by_country'
+
+  campaign_insights_by_device_stream:
+    $ref: '#/definitions/base_insights_stream'
+    name: campaign_insights_by_device
+    primary_key:
+      - campaign_id
+      - device_type
+      - readable_time
+    $parameters:
+      aggregation_level: campaign
+      segments:
+        - device
+      fields:
+        - metadata.readable_time
+        - metadata.timezone
+        - ad_account.id
+        - ad_account.name
+        - ad_account.url
+        - ad_account.budget.daily
+        - ad_account.budget.lifetime
+        - campaign.id
+        - campaign.name
+        - campaign.description
+        - campaign.status
+        - campaign.start_time
+        - campaign.end_time
+        - campaign.budget.daily
+        - campaign.budget.lifetime
+        - device.type
+        - device.impressions
+        - device.clicks
+        - device.spend
+        - device.ctr
+        - device.cpc
+        - device.cpm
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/campaign_insights_by_device'
+
+  campaign_insights_by_platform_stream:
+    $ref: '#/definitions/base_insights_stream'
+    name: campaign_insights_by_platform
+    primary_key:
+      - campaign_id
+      - platform
+      - readable_time
+    $parameters:
+      aggregation_level: campaign
+      segments:
+        - platform
+      fields:
+        - metadata.readable_time
+        - metadata.timezone
+        - ad_account.id
+        - ad_account.name
+        - ad_account.url
+        - ad_account.budget.daily
+        - ad_account.budget.lifetime
+        - campaign.id
+        - campaign.name
+        - campaign.description
+        - campaign.status
+        - campaign.start_time
+        - campaign.end_time
+        - campaign.budget.daily
+        - campaign.budget.lifetime
+        - platform
+        - platform.impressions
+        - platform.clicks
+        - platform.spend
+        - platform.ctr
+        - platform.cpc
+        - platform.cpm
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/campaign_insights_by_platform'
+
+  campaign_insights_by_product_stream:
+    $ref: '#/definitions/base_insights_stream'
+    name: campaign_insights_by_product
+    primary_key:
+      - campaign_id
+      - product_feed_id
+      - product_item_id
+      - readable_time
+    $parameters:
+      aggregation_level: campaign
+      segments:
+        - product
+      fields:
+        - metadata.readable_time
+        - metadata.timezone
+        - ad_account.id
+        - ad_account.name
+        - ad_account.url
+        - ad_account.budget.daily
+        - ad_account.budget.lifetime
+        - campaign.id
+        - campaign.name
+        - campaign.description
+        - campaign.status
+        - campaign.start_time
+        - campaign.end_time
+        - campaign.budget.daily
+        - campaign.budget.lifetime
+        - product.feed_id
+        - product.item_id
+        - product.title
+        - product.description
+        - product.body
+        - product.brand
+        - product.seller_name
+        - product.price
+        - product.availability
+        - product.target_url
+        - product.image_url
+        - product.impressions
+        - product.clicks
+        - product.spend
+        - product.ctr
+        - product.cpc
+        - product.cpm
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/campaign_insights_by_product'
+
+  conversions_requester:
+    $ref: '#/definitions/requester'
+    path: /conversions/insights
+    http_method: POST
+    request_headers:
+      Accept: application/json
+      Content-Type: application/json
+    request_body_json:
+      aggregation_level: '{{ parameters["aggregation_level"] }}'
+      time_granularity: daily
+      entity_ids: '{{ [ stream_slice["entity_id"] ] }}'
+      time_ranges: >-
+        {{ [ '{"type":"date_range","since":"' ~ stream_slice["start_time"] ~ '","until":"' ~ stream_slice["end_time"] ~ '"}' ] }}
+
+  campaign_conversions_stream:
+    type: DeclarativeStream
+    name: campaign_conversions
+    primary_key:
+      - entity_id
+      - date
+    $parameters:
+      aggregation_level: campaign
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: '#/definitions/conversions_requester'
+      record_selector:
+        $ref: '#/definitions/record_selector'
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: '#/definitions/campaigns_stream'
+            parent_key: id
+            partition_field: entity_id
+    incremental_sync:
+      $ref: '#/definitions/incremental_sync_insights_datetime_cursor'
+      cursor_field: date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/campaign_conversions'
+
+  ad_group_conversions_stream:
+    type: DeclarativeStream
+    name: ad_group_conversions
+    primary_key:
+      - entity_id
+      - date
+    $parameters:
+      aggregation_level: ad_group
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: '#/definitions/conversions_requester'
+      record_selector:
+        $ref: '#/definitions/record_selector'
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: '#/definitions/ad_groups_stream'
+            parent_key: id
+            partition_field: entity_id
+    incremental_sync:
+      $ref: '#/definitions/incremental_sync_insights_datetime_cursor'
+      cursor_field: date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/ad_group_conversions'
+
+  ad_conversions_stream:
+    type: DeclarativeStream
+    name: ad_conversions
+    primary_key:
+      - entity_id
+      - date
+    $parameters:
+      aggregation_level: ad
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: '#/definitions/conversions_requester'
+      record_selector:
+        $ref: '#/definitions/record_selector'
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: '#/definitions/ads_stream'
+            parent_key: id
+            partition_field: entity_id
+    incremental_sync:
+      $ref: '#/definitions/incremental_sync_insights_datetime_cursor'
+      cursor_field: date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/ad_conversions'
+
+streams:
+  - $ref: '#/definitions/ad_account_stream'
+  - $ref: '#/definitions/campaigns_stream'
+  - $ref: '#/definitions/ad_groups_stream'
+  - $ref: '#/definitions/ads_stream'
+  - $ref: '#/definitions/conversion_event_settings_stream'
+  - $ref: '#/definitions/custom_audiences_stream'
+  - $ref: '#/definitions/conversion_pixels_stream'
+  - $ref: '#/definitions/spend_limit_windows_stream'
+  - $ref: '#/definitions/ad_account_insights_stream'
+  - $ref: '#/definitions/campaign_insights_stream'
+  - $ref: '#/definitions/ad_group_insights_stream'
+  - $ref: '#/definitions/ad_insights_stream'
+  - $ref: '#/definitions/campaign_insights_by_country_stream'
+  - $ref: '#/definitions/campaign_insights_by_device_stream'
+  - $ref: '#/definitions/campaign_insights_by_platform_stream'
+  - $ref: '#/definitions/campaign_insights_by_product_stream'
+  - $ref: '#/definitions/campaign_conversions_stream'
+  - $ref: '#/definitions/ad_group_conversions_stream'
+  - $ref: '#/definitions/ad_conversions_stream'
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/openai-ads
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: OpenAI Ads Spec
+    type: object
+    additionalProperties: true
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: The API key issued in the Settings page of OpenAI Ads Manager. Each key is scoped to one ad account. For more information, see <a href="https://developers.openai.com/ads/api-quickstart">OpenAI's documentation</a>.
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start Date
+        description: UTC date in the format YYYY-MM-DD. Any data before this date will not be replicated. Defaults to 2026-02-01, when ads in ChatGPT launched; there is no data before that.
+        default: '2026-02-01'
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        pattern_descriptor: YYYY-MM-DD
+        examples:
+          - '2026-02-01'
+        format: date
+        order: 1
+      end_date:
+        type: string
+        title: End Date
+        description: UTC date in the format YYYY-MM-DD. Any data after this date will not be replicated. (Default value of today is used if not set)
+        pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        pattern_descriptor: YYYY-MM-DD
+        examples:
+          - '2026-12-31'
+        format: date
+        order: 2
+      lookback_window:
+        type: integer
+        title: Lookback Window
+        description: Also known as attribution or conversion window. How far into the past to look for records (in days) on every sync, so conversions attributed after the click are picked up. Set it to the longest attribution_window_days among your conversion event settings; OpenAI's API docs prescribe 30 for that field, which is the default. Used only for insights streams in incremental sync mode.
+        minimum: 0
+        maximum: 90
+        default: 30
+        order: 3
+
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        description: The number of worker threads to use for the sync. Increase this to speed up syncs for accounts with many campaigns. The default should work for most use cases.
+        minimum: 1
+        maximum: 20
+        default: 3
+        order: 4
+
+metadata:
+  autoImportSchema:
+    ad_account: false
+    campaigns: false
+    ad_groups: false
+    ads: false
+    conversion_event_settings: false
+    custom_audiences: false
+    conversion_pixels: false
+    spend_limit_windows: false
+    ad_account_insights: false
+    campaign_insights: false
+    ad_group_insights: false
+    ad_insights: false
+    campaign_insights_by_country: false
+    campaign_insights_by_device: false
+    campaign_insights_by_platform: false
+    campaign_insights_by_product: false
+    campaign_conversions: false
+    ad_group_conversions: false
+    ad_conversions: false
+
+schemas:
+  ad_account:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - 'null'
+      url:
+        type:
+          - string
+          - 'null'
+      preview_url:
+        type:
+          - string
+          - 'null'
+      status:
+        type:
+          - string
+          - 'null'
+      timezone:
+        type:
+          - string
+          - 'null'
+      currency_code:
+        type:
+          - string
+          - 'null'
+      review:
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+        properties:
+          status:
+            type:
+              - string
+              - 'null'
+      account_integrity_review:
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+        properties:
+          details:
+            type:
+              - object
+              - 'null'
+            additionalProperties: true
+            properties:
+              decision:
+                type:
+                  - string
+                  - 'null'
+              status_updated_at:
+                type:
+                  - string
+                  - 'null'
+          review:
+            type:
+              - object
+              - 'null'
+            additionalProperties: true
+            properties:
+              status:
+                type:
+                  - string
+                  - 'null'
+  campaigns:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      created_at:
+        type:
+          - integer
+          - 'null'
+      updated_at:
+        type:
+          - integer
+          - 'null'
+      name:
+        type:
+          - string
+          - 'null'
+      description:
+        type:
+          - string
+          - 'null'
+      status:
+        type:
+          - string
+          - 'null'
+      start_time:
+        type:
+          - integer
+          - 'null'
+      end_time:
+        type:
+          - integer
+          - 'null'
+      bidding_type:
+        type:
+          - string
+          - 'null'
+      mode:
+        type:
+          - string
+          - 'null'
+      budget:
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+        properties:
+          lifetime_spend_limit_micros:
+            type:
+              - integer
+              - 'null'
+          daily_spend_limit_micros:
+            type:
+              - integer
+              - 'null'
+      conversion_event_setting_ids:
+        type:
+          - array
+          - 'null'
+        items:
+          type: string
+      targeting:
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+        properties:
+          locations:
+            type:
+              - object
+              - 'null'
+            additionalProperties: true
+            properties:
+              include:
+                type:
+                  - array
+                  - 'null'
+                items:
+                  type: object
+                  additionalProperties: true
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - 'null'
+                    type:
+                      type:
+                        - string
+                        - 'null'
+                    country_code:
+                      type:
+                        - string
+                        - 'null'
+                    name:
+                      type:
+                        - string
+                        - 'null'
+                    region_code:
+                      type:
+                        - string
+                        - 'null'
+          platforms:
+            type:
+              - object
+              - 'null'
+            additionalProperties: true
+            properties:
+              included:
+                type:
+                  - array
+                  - 'null'
+                items:
+                  type: string
+          custom_audiences:
+            type:
+              - object
+              - 'null'
+            additionalProperties: true
+            properties:
+              ids:
+                type:
+                  - array
+                  - 'null'
+                items:
+                  type: string
+          excluded_custom_audiences:
+            type:
+              - object
+              - 'null'
+            additionalProperties: true
+            properties:
+              ids:
+                type:
+                  - array
+                  - 'null'
+                items:
+                  type: string
+      objective:
+        type:
+          - string
+          - 'null'
+      billing_event_type:
+        type:
+          - string
+          - 'null'
+      enable_dynamic_creative:
+        type:
+          - boolean
+          - 'null'
+      product_feed_id:
+        type:
+          - string
+          - 'null'
+      business_agent_id:
+        type:
+          - string
+          - 'null'
+      user_external_id:
+        type:
+          - string
+          - 'null'
+      landing_page_configuration:
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+  ad_groups:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      campaign_id:
+        type:
+          - string
+          - 'null'
+      created_at:
+        type:
+          - integer
+          - 'null'
+      updated_at:
+        type:
+          - integer
+          - 'null'
+      name:
+        type:
+          - string
+          - 'null'
+      description:
+        type:
+          - string
+          - 'null'
+      status:
+        type:
+          - string
+          - 'null'
+      context_hints:
+        type:
+          - array
+          - 'null'
+        items:
+          type: string
+      bidding_config:
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+        properties:
+          billing_event_type:
+            type:
+              - string
+              - 'null'
+          max_bid_micros:
+            type:
+              - integer
+              - 'null'
+          custom_audience_bid_multipliers:
+            type:
+              - array
+              - 'null'
+            items:
+              type: object
+              additionalProperties: true
+          strategy:
+            type:
+              - string
+              - 'null'
+      product_set:
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+        properties:
+          product_feed_id:
+            type:
+              - string
+              - 'null'
+          filters:
+            type:
+              - array
+              - 'null'
+            items:
+              type: object
+              additionalProperties: true
+      landing_page_configuration:
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+      user_external_id:
+        type:
+          - string
+          - 'null'
+  ads:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      ad_group_id:
+        type:
+          - string
+          - 'null'
+      created_at:
+        type:
+          - integer
+          - 'null'
+      updated_at:
+        type:
+          - integer
+          - 'null'
+      name:
+        type:
+          - string
+          - 'null'
+      status:
+        type:
+          - string
+          - 'null'
+      review_status:
+        type:
+          - string
+          - 'null'
+      creative:
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+        properties:
+          type:
+            type:
+              - string
+              - 'null'
+          title:
+            type:
+              - string
+              - 'null'
+          body:
+            type:
+              - string
+              - 'null'
+          price:
+            type:
+              - string
+              - 'null'
+          target_url:
+            type:
+              - string
+              - 'null'
+          file_id:
+            type:
+              - string
+              - 'null'
+          image_url:
+            type:
+              - string
+              - 'null'
+          image_crop:
+            type:
+              - object
+              - 'null'
+            additionalProperties: true
+            properties:
+              x:
+                type:
+                  - number
+                  - 'null'
+              y:
+                type:
+                  - number
+                  - 'null'
+              width:
+                type:
+                  - number
+                  - 'null'
+              height:
+                type:
+                  - number
+                  - 'null'
+      review:
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+        properties:
+          status:
+            type:
+              - string
+              - 'null'
+      landing_page_configuration:
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+      user_external_id:
+        type:
+          - string
+          - 'null'
+  conversion_event_settings:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - 'null'
+      event_type:
+        type:
+          - string
+          - 'null'
+      custom_event_name:
+        type:
+          - string
+          - 'null'
+      attribution_window_days:
+        type:
+          - integer
+          - 'null'
+      ad_account_id:
+        type:
+          - string
+          - 'null'
+      source_ids:
+        type:
+          - array
+          - 'null'
+        items:
+          type: string
+      sources:
+        type:
+          - array
+          - 'null'
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - string
+                - 'null'
+            name:
+              type:
+                - string
+                - 'null'
+      campaigns:
+        type:
+          - array
+          - 'null'
+        items:
+          type: object
+          additionalProperties: true
+      archived:
+        type:
+          - boolean
+          - 'null'
+      version:
+        type:
+          - integer
+          - 'null'
+      is_shopify_managed:
+        type:
+          - boolean
+          - 'null'
+      view_through_attribution_window_days:
+        type:
+          - integer
+          - 'null'
+  spend_limit_windows:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - window_id
+    properties:
+      window_id:
+        type: string
+      name:
+        type:
+          - string
+          - 'null'
+      start_date:
+        type:
+          - string
+          - 'null'
+      end_date:
+        type:
+          - string
+          - 'null'
+      amount_micros:
+        type:
+          - integer
+          - 'null'
+      spent_micros:
+        type:
+          - integer
+          - 'null'
+      io_id:
+        type:
+          - string
+          - 'null'
+      status:
+        type:
+          - string
+          - 'null'
+      can_edit:
+        type:
+          - boolean
+          - 'null'
+      can_edit_start_date:
+        type:
+          - boolean
+          - 'null'
+      can_delete:
+        type:
+          - boolean
+          - 'null'
+  ad_account_insights:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - id
+      - readable_time
+    properties:
+      id:
+        type: string
+      start_time:
+        type:
+          - integer
+          - 'null'
+      end_time:
+        type:
+          - integer
+          - 'null'
+      readable_time:
+        type: string
+        format: date
+      timezone:
+        type:
+          - string
+          - 'null'
+      ad_account_id:
+        type:
+          - string
+          - 'null'
+      ad_account_name:
+        type:
+          - string
+          - 'null'
+      ad_account_url:
+        type:
+          - string
+          - 'null'
+      ad_account_budget_daily:
+        type:
+          - number
+          - 'null'
+      ad_account_budget_lifetime:
+        type:
+          - number
+          - 'null'
+      impressions:
+        type:
+          - integer
+          - 'null'
+      clicks:
+        type:
+          - integer
+          - 'null'
+      spend:
+        type:
+          - number
+          - 'null'
+      ctr:
+        type:
+          - number
+          - 'null'
+      cpc:
+        type:
+          - number
+          - 'null'
+      cpm:
+        type:
+          - number
+          - 'null'
+  campaign_insights:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - id
+      - readable_time
+    properties:
+      id:
+        type: string
+      start_time:
+        type:
+          - integer
+          - 'null'
+      end_time:
+        type:
+          - integer
+          - 'null'
+      readable_time:
+        type: string
+        format: date
+      timezone:
+        type:
+          - string
+          - 'null'
+      ad_account_id:
+        type:
+          - string
+          - 'null'
+      ad_account_name:
+        type:
+          - string
+          - 'null'
+      ad_account_url:
+        type:
+          - string
+          - 'null'
+      ad_account_budget_daily:
+        type:
+          - number
+          - 'null'
+      ad_account_budget_lifetime:
+        type:
+          - number
+          - 'null'
+      campaign_id:
+        type:
+          - string
+          - 'null'
+      campaign_name:
+        type:
+          - string
+          - 'null'
+      campaign_description:
+        type:
+          - string
+          - 'null'
+      campaign_status:
+        type:
+          - string
+          - 'null'
+      campaign_start_time:
+        type:
+          - string
+          - 'null'
+      campaign_end_time:
+        type:
+          - string
+          - 'null'
+      campaign_budget_daily:
+        type:
+          - number
+          - 'null'
+      campaign_budget_lifetime:
+        type:
+          - number
+          - 'null'
+      impressions:
+        type:
+          - integer
+          - 'null'
+      clicks:
+        type:
+          - integer
+          - 'null'
+      spend:
+        type:
+          - number
+          - 'null'
+      ctr:
+        type:
+          - number
+          - 'null'
+      cpc:
+        type:
+          - number
+          - 'null'
+      cpm:
+        type:
+          - number
+          - 'null'
+  ad_group_insights:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - id
+      - readable_time
+    properties:
+      id:
+        type: string
+      start_time:
+        type:
+          - integer
+          - 'null'
+      end_time:
+        type:
+          - integer
+          - 'null'
+      readable_time:
+        type: string
+        format: date
+      timezone:
+        type:
+          - string
+          - 'null'
+      ad_account_id:
+        type:
+          - string
+          - 'null'
+      ad_account_name:
+        type:
+          - string
+          - 'null'
+      ad_account_url:
+        type:
+          - string
+          - 'null'
+      ad_account_budget_daily:
+        type:
+          - number
+          - 'null'
+      ad_account_budget_lifetime:
+        type:
+          - number
+          - 'null'
+      campaign_id:
+        type:
+          - string
+          - 'null'
+      campaign_name:
+        type:
+          - string
+          - 'null'
+      campaign_description:
+        type:
+          - string
+          - 'null'
+      campaign_status:
+        type:
+          - string
+          - 'null'
+      campaign_start_time:
+        type:
+          - string
+          - 'null'
+      campaign_end_time:
+        type:
+          - string
+          - 'null'
+      campaign_budget_daily:
+        type:
+          - number
+          - 'null'
+      campaign_budget_lifetime:
+        type:
+          - number
+          - 'null'
+      ad_group_id:
+        type:
+          - string
+          - 'null'
+      ad_group_name:
+        type:
+          - string
+          - 'null'
+      ad_group_description:
+        type:
+          - string
+          - 'null'
+      ad_group_status:
+        type:
+          - string
+          - 'null'
+      impressions:
+        type:
+          - integer
+          - 'null'
+      clicks:
+        type:
+          - integer
+          - 'null'
+      spend:
+        type:
+          - number
+          - 'null'
+      ctr:
+        type:
+          - number
+          - 'null'
+      cpc:
+        type:
+          - number
+          - 'null'
+      cpm:
+        type:
+          - number
+          - 'null'
+  ad_insights:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - id
+      - readable_time
+    properties:
+      id:
+        type: string
+      start_time:
+        type:
+          - integer
+          - 'null'
+      end_time:
+        type:
+          - integer
+          - 'null'
+      readable_time:
+        type: string
+        format: date
+      timezone:
+        type:
+          - string
+          - 'null'
+      ad_account_id:
+        type:
+          - string
+          - 'null'
+      ad_account_name:
+        type:
+          - string
+          - 'null'
+      ad_account_url:
+        type:
+          - string
+          - 'null'
+      ad_account_budget_daily:
+        type:
+          - number
+          - 'null'
+      ad_account_budget_lifetime:
+        type:
+          - number
+          - 'null'
+      campaign_id:
+        type:
+          - string
+          - 'null'
+      campaign_name:
+        type:
+          - string
+          - 'null'
+      campaign_description:
+        type:
+          - string
+          - 'null'
+      campaign_status:
+        type:
+          - string
+          - 'null'
+      campaign_start_time:
+        type:
+          - string
+          - 'null'
+      campaign_end_time:
+        type:
+          - string
+          - 'null'
+      campaign_budget_daily:
+        type:
+          - number
+          - 'null'
+      campaign_budget_lifetime:
+        type:
+          - number
+          - 'null'
+      ad_group_id:
+        type:
+          - string
+          - 'null'
+      ad_group_name:
+        type:
+          - string
+          - 'null'
+      ad_group_description:
+        type:
+          - string
+          - 'null'
+      ad_group_status:
+        type:
+          - string
+          - 'null'
+      ad_id:
+        type:
+          - string
+          - 'null'
+      ad_name:
+        type:
+          - string
+          - 'null'
+      ad_title:
+        type:
+          - string
+          - 'null'
+      ad_copy:
+        type:
+          - string
+          - 'null'
+      ad_link:
+        type:
+          - string
+          - 'null'
+      ad_status:
+        type:
+          - string
+          - 'null'
+      ad_review_status:
+        type:
+          - string
+          - 'null'
+      impressions:
+        type:
+          - integer
+          - 'null'
+      clicks:
+        type:
+          - integer
+          - 'null'
+      spend:
+        type:
+          - number
+          - 'null'
+      ctr:
+        type:
+          - number
+          - 'null'
+      cpc:
+        type:
+          - number
+          - 'null'
+      cpm:
+        type:
+          - number
+          - 'null'
+  campaign_insights_by_country:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - id
+      - readable_time
+    properties:
+      id:
+        type: string
+      start_time:
+        type:
+          - integer
+          - 'null'
+      end_time:
+        type:
+          - integer
+          - 'null'
+      readable_time:
+        type: string
+        format: date
+      timezone:
+        type:
+          - string
+          - 'null'
+      ad_account_id:
+        type:
+          - string
+          - 'null'
+      ad_account_name:
+        type:
+          - string
+          - 'null'
+      ad_account_url:
+        type:
+          - string
+          - 'null'
+      ad_account_budget_daily:
+        type:
+          - number
+          - 'null'
+      ad_account_budget_lifetime:
+        type:
+          - number
+          - 'null'
+      campaign_id:
+        type:
+          - string
+          - 'null'
+      campaign_name:
+        type:
+          - string
+          - 'null'
+      campaign_description:
+        type:
+          - string
+          - 'null'
+      campaign_status:
+        type:
+          - string
+          - 'null'
+      campaign_start_time:
+        type:
+          - string
+          - 'null'
+      campaign_end_time:
+        type:
+          - string
+          - 'null'
+      campaign_budget_daily:
+        type:
+          - number
+          - 'null'
+      campaign_budget_lifetime:
+        type:
+          - number
+          - 'null'
+      country_name:
+        type:
+          - string
+          - 'null'
+      impressions:
+        type:
+          - integer
+          - 'null'
+      clicks:
+        type:
+          - integer
+          - 'null'
+      spend:
+        type:
+          - number
+          - 'null'
+      ctr:
+        type:
+          - number
+          - 'null'
+      cpc:
+        type:
+          - number
+          - 'null'
+      cpm:
+        type:
+          - number
+          - 'null'
+  campaign_insights_by_device:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - id
+      - readable_time
+    properties:
+      id:
+        type: string
+      start_time:
+        type:
+          - integer
+          - 'null'
+      end_time:
+        type:
+          - integer
+          - 'null'
+      readable_time:
+        type: string
+        format: date
+      timezone:
+        type:
+          - string
+          - 'null'
+      ad_account_id:
+        type:
+          - string
+          - 'null'
+      ad_account_name:
+        type:
+          - string
+          - 'null'
+      ad_account_url:
+        type:
+          - string
+          - 'null'
+      ad_account_budget_daily:
+        type:
+          - number
+          - 'null'
+      ad_account_budget_lifetime:
+        type:
+          - number
+          - 'null'
+      campaign_id:
+        type:
+          - string
+          - 'null'
+      campaign_name:
+        type:
+          - string
+          - 'null'
+      campaign_description:
+        type:
+          - string
+          - 'null'
+      campaign_status:
+        type:
+          - string
+          - 'null'
+      campaign_start_time:
+        type:
+          - string
+          - 'null'
+      campaign_end_time:
+        type:
+          - string
+          - 'null'
+      campaign_budget_daily:
+        type:
+          - number
+          - 'null'
+      campaign_budget_lifetime:
+        type:
+          - number
+          - 'null'
+      device_type:
+        type:
+          - string
+          - 'null'
+      impressions:
+        type:
+          - integer
+          - 'null'
+      clicks:
+        type:
+          - integer
+          - 'null'
+      spend:
+        type:
+          - number
+          - 'null'
+      ctr:
+        type:
+          - number
+          - 'null'
+      cpc:
+        type:
+          - number
+          - 'null'
+      cpm:
+        type:
+          - number
+          - 'null'
+  campaign_insights_by_platform:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - id
+      - readable_time
+    properties:
+      id:
+        type: string
+      start_time:
+        type:
+          - integer
+          - 'null'
+      end_time:
+        type:
+          - integer
+          - 'null'
+      readable_time:
+        type: string
+        format: date
+      timezone:
+        type:
+          - string
+          - 'null'
+      ad_account_id:
+        type:
+          - string
+          - 'null'
+      ad_account_name:
+        type:
+          - string
+          - 'null'
+      ad_account_url:
+        type:
+          - string
+          - 'null'
+      ad_account_budget_daily:
+        type:
+          - number
+          - 'null'
+      ad_account_budget_lifetime:
+        type:
+          - number
+          - 'null'
+      campaign_id:
+        type:
+          - string
+          - 'null'
+      campaign_name:
+        type:
+          - string
+          - 'null'
+      campaign_description:
+        type:
+          - string
+          - 'null'
+      campaign_status:
+        type:
+          - string
+          - 'null'
+      campaign_start_time:
+        type:
+          - string
+          - 'null'
+      campaign_end_time:
+        type:
+          - string
+          - 'null'
+      campaign_budget_daily:
+        type:
+          - number
+          - 'null'
+      campaign_budget_lifetime:
+        type:
+          - number
+          - 'null'
+      platform:
+        type:
+          - string
+          - 'null'
+      impressions:
+        type:
+          - integer
+          - 'null'
+      clicks:
+        type:
+          - integer
+          - 'null'
+      spend:
+        type:
+          - number
+          - 'null'
+      ctr:
+        type:
+          - number
+          - 'null'
+      cpc:
+        type:
+          - number
+          - 'null'
+      cpm:
+        type:
+          - number
+          - 'null'
+  campaign_insights_by_product:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - id
+      - readable_time
+    properties:
+      id:
+        type: string
+      start_time:
+        type:
+          - integer
+          - 'null'
+      end_time:
+        type:
+          - integer
+          - 'null'
+      readable_time:
+        type: string
+        format: date
+      timezone:
+        type:
+          - string
+          - 'null'
+      ad_account_id:
+        type:
+          - string
+          - 'null'
+      ad_account_name:
+        type:
+          - string
+          - 'null'
+      ad_account_url:
+        type:
+          - string
+          - 'null'
+      ad_account_budget_daily:
+        type:
+          - number
+          - 'null'
+      ad_account_budget_lifetime:
+        type:
+          - number
+          - 'null'
+      campaign_id:
+        type:
+          - string
+          - 'null'
+      campaign_name:
+        type:
+          - string
+          - 'null'
+      campaign_description:
+        type:
+          - string
+          - 'null'
+      campaign_status:
+        type:
+          - string
+          - 'null'
+      campaign_start_time:
+        type:
+          - string
+          - 'null'
+      campaign_end_time:
+        type:
+          - string
+          - 'null'
+      campaign_budget_daily:
+        type:
+          - number
+          - 'null'
+      campaign_budget_lifetime:
+        type:
+          - number
+          - 'null'
+      product_feed_id:
+        type:
+          - string
+          - 'null'
+      product_item_id:
+        type:
+          - string
+          - 'null'
+      product_title:
+        type:
+          - string
+          - 'null'
+      product_description:
+        type:
+          - string
+          - 'null'
+      product_body:
+        type:
+          - string
+          - 'null'
+      product_brand:
+        type:
+          - string
+          - 'null'
+      product_seller_name:
+        type:
+          - string
+          - 'null'
+      product_price:
+        type:
+          - string
+          - 'null'
+      product_availability:
+        type:
+          - string
+          - 'null'
+      product_target_url:
+        type:
+          - string
+          - 'null'
+      product_image_url:
+        type:
+          - string
+          - 'null'
+      impressions:
+        type:
+          - integer
+          - 'null'
+      clicks:
+        type:
+          - integer
+          - 'null'
+      spend:
+        type:
+          - number
+          - 'null'
+      ctr:
+        type:
+          - number
+          - 'null'
+      cpc:
+        type:
+          - number
+          - 'null'
+      cpm:
+        type:
+          - number
+          - 'null'
+  campaign_conversions:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - entity_id
+      - date
+    properties:
+      entity_id:
+        type: string
+      date:
+        type: string
+        format: date
+      conversions:
+        type:
+          - integer
+          - 'null'
+      click_through_conversions:
+        type:
+          - integer
+          - 'null'
+      view_through_conversions:
+        type:
+          - integer
+          - 'null'
+  custom_audiences:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - id
+    properties:
+      id:
+        type: string
+  conversion_pixels:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      client_type:
+        type:
+          - string
+          - 'null'
+      name:
+        type:
+          - string
+          - 'null'
+      pixel_id:
+        type:
+          - string
+          - 'null'
+  ad_group_conversions:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - entity_id
+      - date
+    properties:
+      entity_id:
+        type: string
+      date:
+        type: string
+        format: date
+      conversions:
+        type:
+          - integer
+          - 'null'
+      click_through_conversions:
+        type:
+          - integer
+          - 'null'
+      view_through_conversions:
+        type:
+          - integer
+          - 'null'
+  ad_conversions:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - entity_id
+      - date
+    properties:
+      entity_id:
+        type: string
+      date:
+        type: string
+        format: date
+      conversions:
+        type:
+          - integer
+          - 'null'
+      click_through_conversions:
+        type:
+          - integer
+          - 'null'
+      view_through_conversions:
+        type:
+          - integer
+          - 'null'
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 600
+          interval: PT1M
+      matchers: []
+  status_codes_for_ratelimit_hit:
+    - 429
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: '{{ config.get("num_workers", 3) }}'
+  max_concurrency: 20
