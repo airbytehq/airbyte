@@ -7,29 +7,13 @@ acceptance_tests:
       - spec_path: "manifest.yaml"
   connection:
     tests:
-      - config_path: "secrets/config.json"
-        status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
   discovery:
-    tests:
-      - config_path: "secrets/config.json"
+    bypass_reason: "No test credentials available. OpenAI Ads API keys are full-access keys tied to one ad account."
   basic_read:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams:
-          - name: custom_audiences
-            bypass_reason: "The test account has no custom audiences"
-          - name: campaign_insights_by_product
-            bypass_reason: "The test account has no product campaigns"
-          - name: spend_limit_windows
-            bypass_reason: "Requires an ad account admin API key"
+    bypass_reason: "No test credentials available. OpenAI Ads API keys are full-access keys tied to one ad account."
   incremental:
-    bypass_reason:
-      "Report cursors are calendar days re-read inside a configurable lookback window,
-      so the most recent days are emitted again on sequential reads by design"
+    bypass_reason: "No test credentials available. OpenAI Ads API keys are full-access keys tied to one ad account."
   full_refresh:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+    bypass_reason: "No test credentials available. OpenAI Ads API keys are full-access keys tied to one ad account."
