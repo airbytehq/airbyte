@@ -125,7 +125,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
-| 2.1.7 | 2026-09-16 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Check the connection with the `organisations` stream instead of `bank_transactions`, and surface Xero's `HighVolumeException` message as a configuration error |
+| 2.1.7 | 2026-09-16 | [86353](https://github.com/airbytehq/airbyte/pull/86353) | Check the connection with the `organisations` stream instead of `bank_transactions`, and surface Xero's `HighVolumeException` message as a configuration error |
 | 2.1.6 | 2026-06-30 | [79089](https://github.com/airbytehq/airbyte/pull/79089) | Update dependencies |
 | 2.1.5 | 2026-02-25 | [71340](https://github.com/airbytehq/airbyte/pull/71340) | Resolve the generator returned from JsonDecoder into dictionary |
 | 2.1.4 | 2025-03-01 | [55142](https://github.com/airbytehq/airbyte/pull/55142) | Update dependencies |
