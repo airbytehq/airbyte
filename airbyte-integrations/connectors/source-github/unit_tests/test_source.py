@@ -378,3 +378,32 @@ def test_read_with_manifest_only_catalog_skips_synchronous_read(rate_limit_mock_
     synchronous_read.assert_not_called()
     selected_concurrent_streams = concurrent_read.call_args.args[0]
     assert [stream.name for stream in selected_concurrent_streams] == ["workflow_runs"]
+
+
+def test_every_discovered_schema_is_fully_expanded(monkeypatch):
+    """No `$ref` may survive into a discovered schema.
+
+    The manifest cannot resolve a JSON-Schema `$ref`: a relative one (`user.json`) is left as a
+    literal string, and `#/definitions/...` is swallowed by the manifest's own `$ref` resolver.
+    Either way the platform receives `"user.json"` where an object belongs and DISCOVER fails.
+    The shared schemas are expanded at every use instead, so nothing here may look like a ref.
+    """
+    source = SourceGithub(config=_CONFIG)
+    monkeypatch.setattr(SourceGithub, "streams", MagicMock(return_value=[]))
+
+    catalog = source.discover(logging.getLogger("airbyte"), _CONFIG)
+
+    offenders = []
+    for stream in catalog.streams:
+        stack = [(stream.name, stream.json_schema)]
+        while stack:
+            path, node = stack.pop()
+            if isinstance(node, dict):
+                if "$ref" in node:
+                    offenders.append(f"{path}.$ref = {node['$ref']!r}")
+                stack.extend((f"{path}.{key}", value) for key, value in node.items())
+            elif isinstance(node, list):
+                stack.extend((f"{path}[{index}]", value) for index, value in enumerate(node))
+            elif isinstance(node, str) and node.endswith(".json"):
+                offenders.append(f"{path} = {node!r}")
+    assert offenders == []

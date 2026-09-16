@@ -4,7 +4,7 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Migration to manifest-only (complete)
 
-This connector is manifest-driven: `source_github/manifest.yaml` serves every stream, with the JSON schemas inline rather than under `source_github/schemas/`. The Python that is left is `source_github/source.py` (config validation, repository resolution, `check`, and the `read`/`discover` overrides) and `source_github/components.py` (the custom components the manifest names by `class_name`). See `AGENTS.md` for the details a change needs to respect.
+This connector is manifest-driven: `source_github/manifest.yaml` serves every stream, with every JSON schema inline (`source_github/schemas/` no longer exists). The Python that is left is `source_github/source.py` (config validation, repository resolution, `check`, and the `read`/`discover` overrides) and `source_github/components.py` (the custom components the manifest names by `class_name`). See `AGENTS.md` for the details a change needs to respect.
 
 ## Incremental Stream Considerations
 

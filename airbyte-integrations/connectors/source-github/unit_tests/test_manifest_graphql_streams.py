@@ -905,6 +905,39 @@ def test_pull_request_comment_reactions_omits_owner_and_name_on_drilldowns(rate_
     assert set(_variables(requests[1])) == {"after", "first"}
 
 
+def test_pull_request_comment_reactions_keeps_owner_and_name_on_the_listing_continuation(rate_limit_mock_response, requests_mock):
+    """The pull request listing paginates like any other connection, and its continuation still
+    runs the repository document, which declares `$owner`/`$name`. Dropping them there made
+    GitHub answer `200` with `data: null` and `errors: [Variable $owner ... invalid value]`,
+    which the extractor reads as an empty page, so only the first `page_size` pull requests of a
+    repository were ever scanned for reactions -- silent data loss on any repository with more.
+    """
+    _mock_repository_resolution(requests_mock)
+    first_page = _deep_listing(
+        [_pr_with_reviews("PR_1", [_pr_review("PRR_1", 11, [_pr_comment("PRRC_1", 21, [_reaction_node("REA_1", 301)])])])],
+        has_next_page=True,
+        end_cursor="LIST_CUR",
+    )
+    second_page = _deep_listing(
+        [_pr_with_reviews("PR_2", [_pr_review("PRR_2", 12, [_pr_comment("PRRC_2", 22, [_reaction_node("REA_2", 302)])])])]
+    )
+    requests_mock.post(GRAPHQL_URL, [{"json": first_page}, {"json": second_page}])
+
+    records, error = _read(_config(), "pull_request_comment_reactions")
+
+    assert error is None
+    assert sorted(record["id"] for record in records) == [301, 302]
+    requests = _graphql_requests(requests_mock)
+    assert len(requests) == 2
+    assert "pullRequests(" in json.loads(requests[1].body)["query"]
+    assert _variables(requests[1]) == {
+        "owner": REPOSITORY.split("/")[0],
+        "name": REPOSITORY.split("/")[1],
+        "after": "LIST_CUR",
+        "first": 10,
+    }
+
+
 def test_pull_request_comment_reactions_reduces_the_page_size_on_gateway_timeout(rate_limit_mock_response, requests_mock):
     _mock_repository_resolution(requests_mock)
     requests_mock.post(

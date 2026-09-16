@@ -13,16 +13,17 @@ What remains in Python is `source.py` (config validation, repository resolution,
 and the `read`/`discover` overrides) and `components.py` (the custom components the manifest
 names by `class_name`).
 
-- `source_github/manifest.yaml` — every stream. Their schemas are inline
-  (`InlineSchemaLoader`); there is no file under `source_github/schemas/` for them, with one
-  exception: `issue_timeline_events` keeps `schemas/issue_timeline_events.json` behind a
-  `JsonFileSchemaLoader`, because its shared `base_event` definition is referenced 23 times and
-  inlines to almost 7,000 lines. When a schema being inlined carries a `$ref` to
-  `schemas/shared/*.json`, expand it verbatim and drop any sibling keys (`description` next to a
-  `$ref`) — jsonref, which the legacy loader used, replaced the whole node, so the discovered
-  schema never had them. A `$ref` inside an inline schema is not resolved, and `#/definitions/...`
-  would be swallowed by the manifest's own `$ref` resolver. The safe recipe is to dump
-  `<PythonClass>().get_json_schema()` and compare before deleting the class.
+- `source_github/manifest.yaml` — every stream, with every schema inline
+  (`InlineSchemaLoader`). `source_github/schemas/` is gone; there is no `JsonFileSchemaLoader`
+  left, including for `issue_timeline_events`, whose shared `base_event` definition is expanded
+  at all 23 uses (~6,900 lines) because a manifest schema cannot express the reference.
+  **No `$ref` may appear inside an inline schema.** A relative one (`user.json`) is left as a
+  literal string and the platform gets `"user.json"` where an object belongs — DISCOVER then
+  fails — and `#/definitions/...` is swallowed by the manifest's own `$ref` resolver. Expand the
+  target verbatim and drop any sibling keys (`description` next to a `$ref`): jsonref, which the
+  legacy loader used, replaced the whole node, so the discovered schema never had them.
+  `test_every_discovered_schema_is_fully_expanded` in `unit_tests/test_source.py` enforces this.
+  When changing a schema, dump the discovered catalog before and after and diff it.
 
 Things worth knowing before touching either half:
 
