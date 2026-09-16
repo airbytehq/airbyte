@@ -1,0 +1,37 @@
+[
+  {
+    "name": "EVENTS",
+    "namespace": "PUBLIC",
+    "metadata": {
+      "columns": {
+        "ID": "io.airbyte.cdk.discover.StringFieldType",
+        "TS": "io.airbyte.cdk.discover.OffsetDateTimeFieldType",
+        "MSG": "io.airbyte.cdk.discover.StringFieldType"
+      },
+      "primaryKeys": [["ID"]]
+    }
+  },
+  {
+    "name": "NO_PK",
+    "namespace": "PUBLIC",
+    "metadata": {
+      "columns": {
+        "ID": "io.airbyte.cdk.discover.StringFieldType",
+        "TS": "io.airbyte.cdk.discover.OffsetDateTimeFieldType",
+        "MSG": "io.airbyte.cdk.discover.StringFieldType"
+      },
+      "primaryKeys": []
+    }
+  },
+  {
+    "name": "KV",
+    "namespace": "PUBLIC",
+    "metadata": {
+      "columns": {
+        "K": "io.airbyte.cdk.discover.IntFieldType",
+        "V": "io.airbyte.cdk.discover.StringFieldType"
+      },
+      "primaryKeys": [["K"]]
+    }
+  }
+]

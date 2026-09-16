@@ -8,16 +8,16 @@ In order to manage your payment and billing information, you need the **Organiza
 
 ## What are credits?
 
-Airbyte [credits](https://airbyte.com/pricing) are used to pay for Airbyte resources when you run a sync. Airbyte Cloud plans start at $10 per month, which includes 4 credits. Additional credits are available at $2.50 each.
+Airbyte credits are used to pay for Airbyte resources when you run a sync on the Standard and Plus plans. Each plan includes a number of credits per month, and you can buy additional credits. Pro and Enterprise Flex are capacity-based plans that use [data workers](manage-data-workers) instead. For plan and credit pricing, see [Airbyte's pricing page](https://airbyte.com/pricing).
 
-Airbyte uses credits to unify pricing across multiple types of sources. You can refer to the below table to understand how pricing differs across each source.
+Airbyte uses credits to unify usage across multiple types of sources. You can refer to the below table to estimate how many credits a sync consumes for each source type.
 
-| Source Type    | Billing Type | Price                | Credit Equivalent |
-| -------------- | ------------ | -------------------- | ----------------- |
-| APIs           | Rows         | $15 per million rows | 6 credits         |
-| Databases      | GB           | $10 per GB           | 4 credits         |
-| Files          | GB           | $10 per GB           | 4 credits         |
-| Custom sources | Rows         | $15 per million rows | 6 credits         |
+| Source Type    | Billing Type | Usage        | Credits   |
+| -------------- | ------------ | ------------ | --------- |
+| APIs           | Rows         | Million rows | 6 credits |
+| Databases      | GB           | 1 GB         | 4 credits |
+| Files          | GB           | 1 GB         | 4 credits |
+| Custom sources | Rows         | Million rows | 6 credits |
 
 For APIs and custom sources, most syncs happen incrementally, so the row amount is typically those rows added, edited, or deleted. For Full Refresh syncs, every row synced is charged.
 
@@ -33,9 +33,15 @@ All pricing is in USD.
 
 If you pass $10,000 (USD) in credit usage during a billing period, Airbyte automatically charges your saved payment method and issues an invoice.
 
-## Purchase credits
+## Choose or change your plan
 
-If you want to pre-purchase credits, [contact Sales](https://airbyte.com/company/talk-to-sales).
+Manage your plan from the Plan page. To open it, click **Organization settings** in the navigation bar, then click **Plan**.
+
+- **Standard** and **Plus** are self-serve. You can subscribe to either plan, switch between them, and choose how many credits your Plus plan includes each month.
+
+- **Pro** and **Enterprise Flex** are contracted, capacity-based plans. [Contact Sales](https://airbyte.com/company/talk-to-sales) to move to one of these plans or to change plans once you're on one.
+
+To compare plans and pricing, see [Airbyte's pricing page](https://airbyte.com/pricing).
 
 ## Start a trial
 
@@ -69,9 +75,7 @@ Airbyte automatically charges the credit card on file at the end of each month's
 
 ### Review your subscription
 
-The Subscription section shows the subscription plan you have enrolled in.
-
-If you're on Standard and eligible for self-serve Plus, you can upgrade from the Billing page. Plus includes everything in Standard and adds [15-minute sync schedules](/platform/using-airbyte/core-concepts/sync-schedules) and [mappings](/platform/using-airbyte/mappings). Airbyte applies Plus after checkout is complete.
+The Subscription section shows the plan you're enrolled in. To change plans or the number of credits in your Plus plan, use the [Plan page](#choose-or-change-your-plan).
 
 Reach out to [Sales](https://airbyte.com/company/talk-to-sales) to inquire about Pro, Enterprise Flex, new features, or custom discounts.
 

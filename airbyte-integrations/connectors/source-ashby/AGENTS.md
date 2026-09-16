@@ -11,6 +11,8 @@ The Ashby API uses `.list` endpoints with cursor-based pagination. The `applicat
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|
 | applications | large | top-level parent | none | created_at_only | deferred_no_api_support | Has `createdAfter` in body; mutable resource (status changes). Verify if `updatedAfter` is supported. |
+| application_history | large | substream of applications | none | none | full_refresh_only | No date filter or `syncToken`; one request per application; ~23 hours for ~108,100 applications at ~1.31 req/s. |
+| application_feedback | medium | top-level parent | none | created_at_and_sync_token | full_refresh_only | Has `createdAfter` and `syncToken` in body (`applicationFeedback.list`, added in Ashby API 2026-01-01). `syncToken` incremental is a follow-up; not expressible without persisting the opaque token. |
 | archive_reasons | small | top-level parent | none | none | deferred_no_api_support | Config-style lookup |
 | candidate_tags | small | top-level parent | none | none | deferred_no_api_support | Config-style lookup |
 | candidates | large | top-level parent | none | none | deferred_no_api_support | No documented date filter on `.list`. High volume. |
@@ -29,3 +31,4 @@ The Ashby API uses `.list` endpoints with cursor-based pagination. The `applicat
 
 - **No API date filter (12 streams):** `archive_reasons`, `candidate_tags`, `candidates`, `custom_fields`, `departments`, `feedback_form_definitions`, `job_postings`, `jobs`, `locations`, `offers`, `sources`, `users` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
 - **Created-at only (2 streams):** `applications`, `interview_schedules` — these endpoints support `created` filtering but the resources are mutable, making `created_at`-only filtering insufficient for true incremental sync. Verify whether `updatedAfter` is supported.
+- **syncToken available (1 stream):** `application_feedback` — `applicationFeedback.list` returns a `syncToken` that can be replayed for incremental sync; deferred to a follow-up.

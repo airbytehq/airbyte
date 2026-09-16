@@ -6,12 +6,21 @@ acceptance_tests:
     tests:
       - spec_path: "manifest.yaml"
   connection:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+    tests:
+      - config_path: "secrets/config.json"
   basic_read:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
   incremental:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+    bypass_reason: "Test workspace has a single day of activity data; enable once more test data is seeded"
   full_refresh:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

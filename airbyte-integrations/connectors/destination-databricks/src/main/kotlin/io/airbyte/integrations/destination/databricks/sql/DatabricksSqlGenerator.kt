@@ -112,6 +112,11 @@ class DatabricksSqlGenerator(
             throw IllegalArgumentException("Cannot perform upsert without primary key")
         }
 
+        val stagingColumns = buildList {
+            addAll(metaColumns.keys)
+            addAll(tableSchema.columnSchema.finalSchema.keys)
+        }
+
         // Primary key matching
         val pkEquivalent =
             pks.joinToString(" AND ") { columnName ->
@@ -144,13 +149,23 @@ class DatabricksSqlGenerator(
         val cdcSkipInsertClause =
             if (cdcHardDeleteEnabled) "AND staging.${CDC_DELETED_AT_COLUMN.quote()} IS NULL" else ""
 
+        // UPDATE SET: assign only staging columns; retained columns keep their values
+        val updateSetClause =
+            stagingColumns.joinToString(", ") { col ->
+                "final.${col.quote()} = staging.${col.quote()}"
+            }
+
+        // INSERT: list only staging columns; retained columns get NULL/default
+        val insertColumns = stagingColumns.joinToString(", ") { it.quote() }
+        val insertValues = stagingColumns.joinToString(", ") { "staging.${it.quote()}" }
+
         return """
             |MERGE INTO ${fullyQualifiedName(targetTableName)} AS final
             |USING ($selectSource) AS staging
             |ON $pkEquivalent
             |$cdcDeleteClause
-            |WHEN MATCHED AND $cursorComparison THEN UPDATE SET *
-            |WHEN NOT MATCHED $cdcSkipInsertClause THEN INSERT *
+            |WHEN MATCHED AND $cursorComparison THEN UPDATE SET $updateSetClause
+            |WHEN NOT MATCHED $cdcSkipInsertClause THEN INSERT ($insertColumns) VALUES ($insertValues)
         """.trimMargin()
     }
 
@@ -190,7 +205,7 @@ class DatabricksSqlGenerator(
             return listOf(recreateTableWithCast(tableName, changeset))
         }
 
-        // No type changes — use standard ADD / DROP COLUMN statements.
+        // No type changes — use standard ADD COLUMN statements.
         val fqn = fullyQualifiedName(tableName)
         val statements = mutableListOf<String>()
 
@@ -203,16 +218,6 @@ class DatabricksSqlGenerator(
 
         changeset.columnsToAdd.forEach { (name, columnType) ->
             statements.add("ALTER TABLE $fqn ADD COLUMN ${name.quote()} ${columnType.type}")
-        }
-
-        if (changeset.columnsToDrop.isNotEmpty()) {
-            // Enable Column Mapping to support DROP COLUMN on Delta tables.
-            statements.add(
-                "ALTER TABLE $fqn SET TBLPROPERTIES ('delta.columnMapping.mode' = 'name')",
-            )
-            changeset.columnsToDrop.forEach { (name, _) ->
-                statements.add("ALTER TABLE $fqn DROP COLUMN ${name.quote()}")
-            }
         }
 
         return statements
@@ -249,7 +254,8 @@ class DatabricksSqlGenerator(
                 add("CAST(NULL AS ${columnType.type}) AS ${name.quote()}")
             }
 
-            // Dropped columns — omitted from SELECT
+            // Previously-dropped columns — retained as-is
+            changeset.columnsToDrop.forEach { (name, _) -> add(name.quote()) }
         }
 
         return "CREATE OR REPLACE TABLE $fqn AS SELECT ${selectColumns.joinToString(", ")} FROM $fqn"

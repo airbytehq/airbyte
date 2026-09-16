@@ -8,6 +8,7 @@ from typing import Dict, List, Union
 import pytest
 import yaml
 
+from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.transformations.config_transformations.add_fields import ConfigAddFields
 
@@ -129,6 +130,23 @@ def test_no_custom_report_dimension_filter_config_transformation(components_modu
     assert "custom_reports_array" not in config
 
 
+def test_dynamic_stream_naming_preserves_nested_name(manifest_path):
+    manifest = yaml.safe_load(manifest_path.read_text())
+    manifest["definitions"]["streams"]["google_analytics_stream_template"]["retriever"]["requester"]["request_parameters"] = {
+        "name": "keep-me"
+    }
+    config = {"property_ids": ["111", "222"]}
+
+    source = ConcurrentDeclarativeSource(source_config=manifest, config=config)
+    resolved_streams = source._dynamic_stream_configs(source._source_config)
+
+    assert all(stream["retriever"]["requester"]["request_parameters"]["name"] == "keep-me" for stream in resolved_streams)
+    assert [stream["name"] for stream in resolved_streams[:2]] == [
+        "daily_active_users",
+        "daily_active_usersProperty222",
+    ]
+
+
 @pytest.mark.parametrize(
     "filter_type, expected_transformed_dimension_filter",
     [
@@ -246,6 +264,21 @@ def test_not_expression_dimension_filter_config_transformation(components_module
             id="service_account_creds_without_auth_type_infers_Service",
         ),
         pytest.param(
+            {"client_id": "cid", "credentials_json": '{"type":"service_account"}'},
+            "Client",
+            id="oauth_creds_take_precedence_over_service_account_creds",
+        ),
+        pytest.param(
+            {"client_id": "cid", "credentials_json": ""},
+            "Client",
+            id="oauth_creds_take_precedence_over_empty_service_account_creds",
+        ),
+        pytest.param(
+            {"client_id": "", "credentials_json": '{"type":"service_account"}'},
+            "Service",
+            id="service_account_creds_infer_when_oauth_client_id_is_empty",
+        ),
+        pytest.param(
             {"auth_type": "Client", "client_id": "cid", "client_secret": "cs", "refresh_token": "rt"},
             "Client",
             id="oauth_creds_with_auth_type_preserves_Client",
@@ -254,6 +287,11 @@ def test_not_expression_dimension_filter_config_transformation(components_module
             {"auth_type": "Service", "credentials_json": '{"type":"service_account"}'},
             "Service",
             id="service_account_creds_with_auth_type_preserves_Service",
+        ),
+        pytest.param(
+            {"auth_type": "Service", "client_id": "cid"},
+            "Service",
+            id="explicit_auth_type_is_never_overwritten",
         ),
     ],
 )
@@ -279,6 +317,38 @@ def test_config_normalization_infers_auth_type(credentials, expected_auth_type):
         transformation.transform(config)
 
     assert config["credentials"]["auth_type"] == expected_auth_type
+
+
+@pytest.mark.parametrize(
+    "credentials",
+    [
+        pytest.param({"client_id": ""}, id="empty_client_id"),
+        pytest.param({"client_id": None}, id="null_client_id"),
+        pytest.param({}, id="missing_credentials_keys"),
+        pytest.param({"credentials_json": ""}, id="empty_credentials_json"),
+        pytest.param({"credentials_json": None}, id="null_credentials_json"),
+        pytest.param({"client_id": "", "credentials_json": ""}, id="empty_client_and_service_credentials"),
+        pytest.param({"client_id": "", "client_secret": "", "refresh_token": ""}, id="empty_oauth_credentials"),
+    ],
+)
+def test_config_normalization_does_not_infer_auth_type_from_empty_credentials(credentials):
+    """Verify that config normalization does not infer auth_type from empty credentials."""
+    manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+    manifest = yaml.safe_load(manifest_path.read_text())
+
+    transformations = manifest["spec"]["config_normalization_rules"]["transformations"]
+    add_fields_defs = [t for t in transformations if t.get("type") == "ConfigAddFields"]
+
+    config = {"credentials": credentials, "property_ids": ["12345"]}
+
+    for add_field_def in add_fields_defs:
+        field_defs = [
+            AddedFieldDefinition(path=f["path"], value=f["value"], value_type=None, parameters={}) for f in add_field_def["fields"]
+        ]
+        transformation = ConfigAddFields(fields=field_defs, condition=add_field_def.get("condition", ""))
+        transformation.transform(config)
+
+    assert "auth_type" not in config["credentials"]
 
 
 def test_config_normalization_no_credentials_does_not_add_auth_type():
