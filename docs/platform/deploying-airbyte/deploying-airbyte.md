@@ -2,6 +2,8 @@
 products: oss-community
 ---
 
+import MinioImagePre23 from '@site/static/_minio_image_pre_2_3.md';
+
 # Deploying Airbyte
 
 The Airbyte platform is a sophisticated data integration platform that enables you to handle large amounts of data movement.
@@ -134,6 +136,8 @@ Then you can run:
       --values ./values.yaml \         # Custom configuration values
       --version 2.0.18                 # Helm chart version to use
     ```
+
+<MinioImagePre23 />
 
 After the installation has completed, you can configure your [Ingress](./integrations/ingress.md) by following the directions for your specific Ingress provider.
 

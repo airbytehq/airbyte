@@ -4,6 +4,7 @@ products: oss-*
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import MinioImagePre23 from '@site/static/_minio_image_pre_2_3.md';
 
 # Upgrading Airbyte
 
@@ -14,6 +15,8 @@ Upgrades require temporarily turning off Airbyte. During upgrades, Airbyte will 
    2. If you're using a connector, Airbyte does not upgrade it, to avoid disrupting your work. If you want to upgrade a specific connector, do so from the settings page.
 
 Refer to [Managing Connector Updates](/platform/managing-airbyte/connector-updates) for more details about keeping connectors updated.
+
+<MinioImagePre23 />
 
 ## Upgrading Airbyte deployed on Kubernetes with Helm
 

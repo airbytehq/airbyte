@@ -6,6 +6,7 @@ import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWindows } from "@fortawesome/free-brands-svg-icons";
+import MinioImagePre23 from "@site/static/_minio_image_pre_2_3.md";
 
 # abctl
 
@@ -206,6 +207,8 @@ abctl local install --chart-version 0.422.2 --values values.yaml --secret secret
 ```
 
 The `--chart-version` value is the Helm chart version, not the Airbyte platform version. To find available versions, see the [Airbyte Helm chart on ArtifactHub](https://artifacthub.io/packages/helm/airbyte-v2/airbyte).
+
+<MinioImagePre23 />
 
 #### Install from a local Helm chart
 
