@@ -171,7 +171,7 @@ spec:
         fields:
           - type: AddedFieldDefinition
             path: ["base_url"]
-            value: "{{ 'https://' ~ (config['base_url'] | replace('https://', '') | replace('http://', '') | trim('/')) }}"
+            value: "{{ 'https://' ~ ((config['base_url'] | string).split('://') | last | trim('/')) }}"
 streams:
   - type: DeclarativeStream
     name: tasks
