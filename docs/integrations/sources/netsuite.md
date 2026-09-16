@@ -1,21 +1,15 @@
-# Oracle Netsuite
+# Oracle NetSuite
 
-One unified business management suite, encompassing ERP/Financials, CRM and ecommerce for more than 31,000 customers.
+NetSuite is Oracle's cloud business management suite, covering ERP and financials, CRM, and ecommerce.
 
-This connector implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/chapter_1540391670.html) and uses REST API to fetch the customers data.
+This connector reads NetSuite record types through [SuiteTalk REST Web Services](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/chapter_1540391670.html). It discovers streams at runtime from the account's record metadata catalog, so the streams you see depend on the account rather than on a fixed list.
 
 ## Prerequisites
 
-- Oracle NetSuite [account](https://system.netsuite.com/pages/customerlogin.jsp?country=US)
-- Allowed access to all Account permissions options
+- An Oracle NetSuite [account](https://system.netsuite.com/pages/customerlogin.jsp?country=US) with administrator access, so you can enable features and create integrations, roles, and access tokens.
+- Token-based authentication credentials: realm (account ID), consumer key, consumer secret, token ID, and token secret.
 
-## Airbyte OSS and Airbyte Cloud
-
-- Realm (Account ID)
-- Consumer Key
-- Consumer Secret
-- Token ID
-- Token Secret
+The connector authenticates with [token-based authentication](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_4247337262.html) (OAuth 1.0a, HMAC-SHA256). It doesn't support OAuth 2.0. Oracle has announced that as of NetSuite 2027.1 you can't create new token-based authentication integrations, although existing integrations keep working. See [Preparing for Token-based Authentication (TBA) End of Support](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_0525020842.html).
 
 ## Setup guide
 
@@ -41,7 +35,7 @@ This connector implements the [SuiteTalk REST Web Services](https://docs.oracle.
 5. Scroll down to **Manage Authentication** section
 6. Enable checkbox `TOKEN-BASED AUTHENTICATION`
 7. Scroll down to **SuiteTalk (Web Services)**
-8. Enable checkbox `REST WEB SERVISES`
+8. Enable checkbox `REST WEB SERVICES`
 9. Save the changes
 
 #### Step 2.3: Create Integration (obtain Consumer Key and Consumer Secret)
@@ -58,13 +52,13 @@ This connector implements the [SuiteTalk REST Web Services](https://docs.oracle.
 1. Go to **Setup** » **Users/Roles** » **Manage Roles** » **New**
 2. Fill the **Name** field (we recommend to put `airbyte-integration-role` for a name)
 3. Scroll down to **Permissions** tab
-4. (REQUIRED) Click on `Transactions` and manually `add` all the dropdown entities with either `full` or `view` access level.
-5. (REQUIRED) Click on `Reports` and manually `add` all the dropdown entities with either `full` or `view` access level.
-6. (REQUIRED) Click on `Lists` and manually `add` all the dropdown entities with either `full` or `view` access level.
-7. (REQUIRED) Click on `Setup` and manually `add` all the dropdown entities with either `full` or `view` access level.
+4. Click on **Setup** and add both `REST Web Services` and `Log in using Access Tokens`. REST web services rejects every request from a role that lacks these two permissions, whatever else the role can read. See [Prerequisites and Setup for REST Web Services](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/article_5085602973.html).
+5. On the same **Setup** subtab, add the remaining dropdown entities with either `full` or `view` access level.
+6. Click on **Transactions** and add all the dropdown entities with either `full` or `view` access level.
+7. Click on **Reports** and add all the dropdown entities with either `full` or `view` access level.
+8. Click on **Lists** and add all the dropdown entities with either `full` or `view` access level.
 
-- Make sure you've done all `REQUIRED` steps correctly, to avoid sync issues in the future.
-- Please edit these params again when you `rename` or `customise` any `Object` in Netsuite for `airbyte-integration-role` to reflect such changes.
+The role decides which record types you can actually read, but it doesn't shape the stream list: a record type the role can't read still appears as a stream, and syncing it logs an `INSUFFICIENT_PERMISSION` error and returns no records. Revisit these permissions when you rename or customize a record type in NetSuite.
 
 #### Step 2.5: Setup User
 
@@ -98,29 +92,23 @@ You have copied next parameters
 
 ### Step 3: Set up the source connector in Airbyte
 
-### For Airbyte Cloud:
+1. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+2. On the source setup page, select **NetSuite** from the Source type dropdown and enter a name for this connector.
+3. Enter your **Realm (Account Id)**, **Consumer Key**, **Consumer Secret**, **Token Key (Token Id)**, and **Token Secret**.
+4. Enter a **Start Date** as `YYYY-MM-DDTHH:mm:ssZ`, for example `2017-01-25T00:00:00Z`. Incremental streams read from this point on their first sync.
+5. Optionally set **Object Types** to the API names of the record types you want, such as `customer` or `salesorder`. Leave it empty to expose every record type in the account's metadata catalog.
+6. Optionally set **Window in Days**. The default is 30.
+7. Click **Set up source**.
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **NetSuite** from the Source type dropdown and enter a name for this connector.
-4. Add **Realm**
-5. Add **Consumer Key**
-6. Add **Consumer Secret**
-7. Add **Token ID**
-8. Add **Token Secret**
-9. Click `Set up source`.
+### Object Types
 
-### For Airbyte OSS:
+When **Object Types** is empty, the connector lists the account's whole metadata catalog and fetches a schema for every record type in it. Large accounts can expose hundreds of record types, and each one costs a schema request during discovery. Naming the record types you actually need keeps setup and schema refreshes short.
 
-1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **NetSuite** from the Source type dropdown and enter a name for this connector.
-4. Add **Realm**
-5. Add **Consumer Key**
-6. Add **Consumer Secret**
-7. Add **Token ID**
-8. Add **Token Secret**
-9. Click `Set up source`
+Use the API name of the record type, in lowercase, as it appears in the [REST API browser](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/chapter_1540391670.html), not the label shown in the NetSuite UI. Setup fails with a `Duplicate record type` message if the same name appears twice in the list.
+
+### Window in Days
+
+**Window in Days** controls how many days of history each incremental request covers. The connector walks from the cursor date to today in windows of this size, so a smaller window means more requests, each returning fewer records. Lower it if a stream holds a lot of changes per day and requests time out or return too much data at once. NetSuite [times out any request that runs longer than 15 minutes](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/subsect_1559222360.html).
 
 ## Supported sync modes
 
@@ -129,13 +117,70 @@ The NetSuite source connector supports the following [sync modes](https://docs.a
 - Full Refresh
 - Incremental
 
-## Supported Streams
+## Supported streams
 
-- Streams are generated based on `ROLE` and `USER` access to them as well as `Account` settings, make sure you're using the correct role assigned in our case `airbyte-integration-role` or any other custom `ROLE` granted to the Access Token, having the access to the NetSuite objects for data sync, please refer to the **Setup guide** > **Step 2.4** and **Setup guide** > **Step 2.5**
+The connector generates one stream per record type, so the stream list depends on the account rather than on a fixed catalog. It comes from the account's metadata catalog, narrowed to the **Object Types** you listed if you set that field. The token's role doesn't narrow the list, only what each stream can actually return. See **Setup guide** » **Step 2.4** and **Step 2.5**.
+
+Schemas come from the account's metadata catalog, which means custom fields and customized record types are included. Every field is typed as nullable because NetSuite schemas don't declare nullability. Occasionally the catalog returns a record type with no fields at all; the connector refetches that schema a few times, then logs a warning and leaves the stream out of the catalog.
+
+Sync mode support is per stream and depends on the record type's own fields:
+
+| Record type has | Cursor field | Sync modes |
+| --------------- | ------------ | ---------- |
+| `lastModifiedDate` | `lastModifiedDate` | Full refresh, incremental |
+| `lastmodified` (typical of custom records) | `lastmodified` | Full refresh, incremental |
+| Neither field | None | Full refresh only |
+
+### How incremental syncs work
+
+NetSuite can't sort records in a response, so the connector filters each request to a date range instead of paging through an ordered result set. Two consequences are worth knowing before you plan downstream pipelines:
+
+- **Incremental syncs are accurate to the day, not to the second.** NetSuite's record query filter accepts bare dates only, and it resolves them in the account's own time zone. To avoid missing records on accounts behind UTC, the connector opens each sync's first window 12 hours before the stored cursor and then truncates to a date. Expect a sync to re-request records it has already read near the cursor. Records older than the cursor are dropped before they're emitted, so this overlap doesn't duplicate data.
+- **The connector detects your account's date format.** NetSuite expects date literals in the format the account prefers. The connector tries `MM/DD/YYYY`, `YYYY-MM-DD`, `DD/MM/YYYY`, and `DD.MM.YYYY` in that order, and reissues the same request under the next format when NetSuite rejects one. You don't need to configure this, but the accepted format isn't remembered between syncs, so every sync logs a warning for each format it has to discard.
 
 ## Performance considerations
 
-The connector is restricted by Netsuite [Concurrency Limit per Integration](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/bridgehead_156224824287.html).
+The connector reads each record individually: it lists record IDs for a date window, then requests each record with `expandSubResources=true` to get its sublists. A sync therefore costs roughly one API call per record, plus one call per page of IDs. Streams with many records are slow for that reason, not because of rate limiting.
+
+NetSuite governs REST concurrency at the account level, and that limit is shared with SOAP web services and RESTlets. Syncing several NetSuite streams or connections at once competes with your other integrations for the same threads. See [Web Services and RESTlet Concurrency Governance](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_1500275531.html).
+
+## Troubleshooting
+
+### A record type is missing from the stream list
+
+A record type is left out of the catalog only when the metadata catalog returns no fields for it. The discovery log says `schema is not available` for that record type; retry discovery later.
+
+If you set **Object Types**, only the record types you listed are considered, so remove the field or add the record type to it.
+
+### A stream syncs successfully but returns no records
+
+This is usually a permissions problem rather than an empty record type, because the stream list doesn't reflect what the role can read. Check the sync logs for the stream's name:
+
+- `INSUFFICIENT_PERMISSION`: the token's role lacks access to that record type. Add it under **Setup** » **Users/Roles** » **Manage Roles**.
+- `USER_ERROR`: NetSuite refused to load individual records. This usually means a workflow locks them; see [Records locked by a workflow are skipped](#records-locked-by-a-workflow-are-skipped).
+
+### Records locked by a workflow are skipped
+
+A NetSuite workflow can include a [Lock Record action](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N2743672.html). While a record sits in a workflow state with that action, NetSuite refuses to load it through web services and returns HTTP 400 with the error code `USER_ERROR`. The record still appears in the ID list, so the connector requests it and then has to skip it.
+
+Starting in version 0.1.29, the connector counts these skipped records per stream:
+
+- When a stream skips at least one record, the sync logs a warning like `Stream journalentry: 25 of 100 records skipped due to USER_ERROR (records locked by user-defined workflows)` and continues. The records that NetSuite did return are emitted normally.
+- When more than half of the records requested for a stream so far are skipped, the sync fails with `Stream journalentry has incomplete data`. Failing is deliberate: it stops a sync from reporting success while most of a stream's data is missing.
+
+Earlier versions dropped these records without any message, so a stream could appear complete while being mostly empty.
+
+To sync the locked records, change the workflow rather than the connector. Adjust the Lock Record action so it doesn't run for web services requests, for example by narrowing its execution context or condition, or move the records out of the locking state. After you change the workflow, run the sync again. If you can't change the workflow, remove the affected record type from **Object Types** so the sync doesn't fail on it.
+
+### Setup fails right after you enter credentials
+
+The connection check reads a single record. With **Object Types** set, it reads the first record type in your list; otherwise it reads `contact`. A failure here usually means the role is missing the `REST Web Services` or `Log in using Access Tokens` permission, the realm doesn't match the account, or the token belongs to a different user or role than the one you granted access to.
+
+Use the realm exactly as NetSuite shows it, for example `1234567` for production or `1234567_SB2` for a sandbox. Sandbox refreshes invalidate tokens, so create new ones after each refresh.
+
+### Incremental syncs re-read the same records
+
+This is expected. See [How incremental syncs work](#how-incremental-syncs-work).
 
 ## IP allow list
 
@@ -148,8 +193,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
-| 0.1.29 | 2026-09-15 | [79191](https://github.com/airbytehq/airbyte/pull/79191) | Emit warning and fail sync when >50% of records are silently skipped due to NetSuite workflow locks (USER_ERROR) |
-| 0.1.28 | 2026-08-17 | [79654](https://github.com/airbytehq/airbyte/pull/79654) | Fix incremental sync permanently dropping records modified between the sync time and account-local midnight; retry a rejected date format on the same slice instead of skipping it |
+| 0.1.29 | 2026-09-16 | [79191](https://github.com/airbytehq/airbyte/pull/79191) | Emit warning and fail sync when >50% of records are silently skipped due to NetSuite workflow locks (USER_ERROR) |
+| 0.1.28 | 2026-08-20 | [79654](https://github.com/airbytehq/airbyte/pull/79654) | Fix incremental sync permanently dropping records modified between the sync time and account-local midnight; retry a rejected date format on the same slice instead of skipping it |
 | 0.1.27 | 2025-10-14 | [67787](https://github.com/airbytehq/airbyte/pull/67787) | Update dependencies |
 | 0.1.26 | 2025-10-07 | [67429](https://github.com/airbytehq/airbyte/pull/67429) | Update dependencies |
 | 0.1.25 | 2025-09-30 | [66934](https://github.com/airbytehq/airbyte/pull/66934) | Update dependencies |
@@ -158,24 +203,24 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.1.22 | 2025-08-23 | [65215](https://github.com/airbytehq/airbyte/pull/65215) | Update dependencies |
 | 0.1.21 | 2025-08-16 | [61055](https://github.com/airbytehq/airbyte/pull/61055) | Update dependencies |
 | 0.1.20 | 2025-08-12 | [63698](https://github.com/airbytehq/airbyte/pull/63698) | Add support for german date format in NetSuite input |
-| 0.1.19 | 2025-05-24 | [60581](https://github.com/airbytehq/airbyte/pull/60581) | Update dependencies |
-| 0.1.18 | 2025-05-10 | [60086](https://github.com/airbytehq/airbyte/pull/60086) | Update dependencies |
-| 0.1.17 | 2025-05-03 | [59481](https://github.com/airbytehq/airbyte/pull/59481) | Update dependencies |
+| 0.1.19 | 2025-05-25 | [60581](https://github.com/airbytehq/airbyte/pull/60581) | Update dependencies |
+| 0.1.18 | 2025-05-11 | [60086](https://github.com/airbytehq/airbyte/pull/60086) | Update dependencies |
+| 0.1.17 | 2025-05-04 | [59481](https://github.com/airbytehq/airbyte/pull/59481) | Update dependencies |
 | 0.1.16 | 2025-04-27 | [59091](https://github.com/airbytehq/airbyte/pull/59091) | Update dependencies |
-| 0.1.15 | 2025-04-19 | [58531](https://github.com/airbytehq/airbyte/pull/58531) | Update dependencies |
-| 0.1.14 | 2025-04-12 | [57860](https://github.com/airbytehq/airbyte/pull/57860) | Update dependencies |
-| 0.1.13 | 2025-04-05 | [57301](https://github.com/airbytehq/airbyte/pull/57301) | Update dependencies |
+| 0.1.15 | 2025-04-20 | [58531](https://github.com/airbytehq/airbyte/pull/58531) | Update dependencies |
+| 0.1.14 | 2025-04-13 | [57860](https://github.com/airbytehq/airbyte/pull/57860) | Update dependencies |
+| 0.1.13 | 2025-04-06 | [57301](https://github.com/airbytehq/airbyte/pull/57301) | Update dependencies |
 | 0.1.12 | 2025-03-29 | [56692](https://github.com/airbytehq/airbyte/pull/56692) | Update dependencies |
 | 0.1.11 | 2025-03-22 | [56060](https://github.com/airbytehq/airbyte/pull/56060) | Update dependencies |
 | 0.1.10 | 2025-03-08 | [55455](https://github.com/airbytehq/airbyte/pull/55455) | Update dependencies |
-| 0.1.9 | 2025-03-05 | [55207](https://github.com/airbytehq/airbyte/pull/55207) | Add support for additional date format in Netsuite input |
+| 0.1.9 | 2025-03-06 | [55207](https://github.com/airbytehq/airbyte/pull/55207) | Add support for additional date format in Netsuite input |
 | 0.1.8 | 2025-03-01 | [54821](https://github.com/airbytehq/airbyte/pull/54821) | Update dependencies |
 | 0.1.7 | 2025-02-22 | [54363](https://github.com/airbytehq/airbyte/pull/54363) | Update dependencies |
-| 0.1.6 | 2025-02-15 | [53853](https://github.com/airbytehq/airbyte/pull/53853) | Update dependencies |
+| 0.1.6 | 2025-02-18 | [53853](https://github.com/airbytehq/airbyte/pull/53853) | Update dependencies |
 | 0.1.5 | 2025-02-08 | [53243](https://github.com/airbytehq/airbyte/pull/53243) | Update dependencies |
-| 0.1.4 | 2024-07-29 | [42857](https://github.com/airbytehq/airbyte/pull/42857) | Migrate connector to Poetry |
-| 0.1.3 | 2023-01-20 | [21645](https://github.com/airbytehq/airbyte/pull/21645) | Minor issues fix, Setup Guide corrections for public docs |
+| 0.1.4 | 2025-02-05 | [42857](https://github.com/airbytehq/airbyte/pull/42857) | Migrate connector to Poetry |
+| 0.1.3 | 2023-01-21 | [21645](https://github.com/airbytehq/airbyte/pull/21645) | Minor issues fix, Setup Guide corrections for public docs |
 | 0.1.1 | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state |
-| 0.1.0 | 2022-09-15 | [16093](https://github.com/airbytehq/airbyte/pull/16093) | Initial Alpha release |
+| 0.1.0 | 2022-09-21 | [16093](https://github.com/airbytehq/airbyte/pull/16093) | Initial Alpha release |
 
 </details>
