@@ -88,6 +88,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.26 | 2026-09-16 | [83336](https://github.com/airbytehq/airbyte/pull/83336) | Show a clearer error when Zendesk Chat rejects the access token |
 | 1.3.25 | 2026-09-15 | [86312](https://github.com/airbytehq/airbyte/pull/86312) | Update dependencies |
 | 1.3.24 | 2026-09-08 | [85714](https://github.com/airbytehq/airbyte/pull/85714) | Update dependencies |
 | 1.3.23 | 2026-08-18 | [84835](https://github.com/airbytehq/airbyte/pull/84835) | Update dependencies |
