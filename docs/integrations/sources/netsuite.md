@@ -95,7 +95,7 @@ You have copied next parameters
 1. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 2. On the source setup page, select **NetSuite** from the Source type dropdown and enter a name for this connector.
 3. Enter your **Realm (Account Id)**, **Consumer Key**, **Consumer Secret**, **Token Key (Token Id)**, and **Token Secret**.
-4. Enter a **Start Date** as `YYYY-MM-DDTHH:mm:ssZ`, for example `2017-01-25T00:00:00Z`. Incremental streams read from this point on their first sync.
+4. Enter a **Start Date** as `YYYY-MM-DDTHH:mm:ssZ`, for example `2017-01-25T00:00:00Z`. Incremental streams read from this point on their first sync, plus a lookback of up to a day. See [How incremental syncs work](#how-incremental-syncs-work).
 5. Optionally set **Object Types** to the API names of the record types you want, such as `customer` or `salesorder`. Leave it empty to expose every record type in the account's metadata catalog.
 6. Optionally set **Window in Days**. The default is 30.
 7. Click **Set up source**.
@@ -104,11 +104,11 @@ You have copied next parameters
 
 When **Object Types** is empty, the connector lists the account's whole metadata catalog and fetches a schema for every record type in it. Large accounts can expose hundreds of record types, and each one costs a schema request during discovery. Naming the record types you actually need keeps setup and schema refreshes short.
 
-Use the API name of the record type, in lowercase, as it appears in the [REST API browser](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/chapter_1540391670.html), not the label shown in the NetSuite UI. Setup fails with a `Duplicate record type` message if the same name appears twice in the list.
+Use the API name of the record type, in lowercase, as it appears in the [REST API browser](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/chapter_1540391670.html), not the label shown in the NetSuite UI. The connector takes the names you list as given, without checking them against the metadata catalog, so a name that doesn't exist in the account produces a warning and no stream rather than a setup error. Setup does fail with a `Duplicate record type` message if the same name appears twice in the list.
 
 ### Window in Days
 
-**Window in Days** controls how many days of history each incremental request covers. The connector walks from the cursor date to today in windows of this size, so a smaller window means more requests, each returning fewer records. Lower it if a stream holds a lot of changes per day and requests time out or return too much data at once. NetSuite [times out any request that runs longer than 15 minutes](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/subsect_1559222360.html).
+**Window in Days** controls how many days of history each incremental request covers. The connector walks from the cursor date to today in windows of this size, so a smaller window means more requests, each returning fewer records. Use a positive number: nothing validates the field, and a value of zero or less leaves the window unable to advance. Lower it if a stream holds a lot of changes per day and requests time out or return too much data at once. NetSuite [times out any request that runs longer than 15 minutes](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/subsect_1559222360.html).
 
 ## Supported sync modes
 
@@ -119,7 +119,7 @@ The NetSuite source connector supports the following [sync modes](https://docs.a
 
 ## Supported streams
 
-The connector generates one stream per record type, so the stream list depends on the account rather than on a fixed catalog. It comes from the account's metadata catalog, narrowed to the **Object Types** you listed if you set that field. The token's role doesn't narrow the list, only what each stream can actually return. See **Setup guide** » **Step 2.4** and **Step 2.5**.
+The connector generates one stream per record type, so the stream list depends on your configuration rather than on a fixed catalog. Set **Object Types** and you get exactly the record types you named; leave it empty and the connector reads the account's whole metadata catalog. The token's role doesn't narrow the list either way, only what each stream can actually return. See **Setup guide** » **Step 2.4** and **Step 2.5**.
 
 Schemas come from the account's metadata catalog, which means custom fields and customized record types are included. Every field is typed as nullable because NetSuite schemas don't declare nullability. Occasionally the catalog returns a record type with no fields at all; the connector refetches that schema a few times, then logs a warning and leaves the stream out of the catalog.
 
@@ -135,7 +135,7 @@ Sync mode support is per stream and depends on the record type's own fields:
 
 NetSuite can't sort records in a response, so the connector filters each request to a date range instead of paging through an ordered result set. Two consequences are worth knowing before you plan downstream pipelines:
 
-- **Incremental syncs are accurate to the day, not to the second.** NetSuite's record query filter accepts bare dates only, and it resolves them in the account's own time zone. To avoid missing records on accounts behind UTC, the connector opens each sync's first window 12 hours before the stored cursor and then truncates to a date. Expect a sync to re-request records it has already read near the cursor. Records older than the cursor are dropped before they're emitted, so this overlap doesn't duplicate data.
+- **Requests are day-granular, even though records aren't.** NetSuite's record query filter accepts bare dates only, and it resolves them in the account's own time zone. To avoid missing records on accounts behind UTC, the connector opens each sync's first window 12 hours before the stored cursor and then truncates to a date. Expect a sync to re-request records it has already read near the cursor. Records older than the stored cursor timestamp are dropped before they're emitted, so the overlap doesn't duplicate data. The first sync of a stream has no cursor to compare against, so it emits everything the widened first window returns — which can include records changed up to a day before your **Start Date**.
 - **The connector detects your account's date format.** NetSuite expects date literals in the format the account prefers. The connector tries `MM/DD/YYYY`, `YYYY-MM-DD`, `DD/MM/YYYY`, and `DD.MM.YYYY` in that order, and reissues the same request under the next format when NetSuite rejects one. You don't need to configure this, but the accepted format isn't remembered between syncs, so every sync logs a warning for each format it has to discard.
 
 ## Performance considerations
@@ -165,12 +165,12 @@ A NetSuite workflow can include a [Lock Record action](https://docs.oracle.com/e
 
 Starting in version 0.1.29, the connector counts these skipped records per stream:
 
-- When a stream skips at least one record, the sync logs a warning like `Stream journalentry: 25 of 100 records skipped due to USER_ERROR (records locked by user-defined workflows)` and continues. The records that NetSuite did return are emitted normally.
+- When a stream skips at least one record, the sync logs a warning like `Stream journalentry: 25 of 100 records skipped due to USER_ERROR (records locked by user-defined workflows)` and continues, as long as no more than half of the records requested so far were skipped. The records that NetSuite did return are emitted normally.
 - When more than half of the records requested for a stream so far are skipped, the sync fails with `Stream journalentry has incomplete data`. Failing is deliberate: it stops a sync from reporting success while most of a stream's data is missing.
 
 Earlier versions dropped these records without any message, so a stream could appear complete while being mostly empty.
 
-To sync the locked records, change the workflow rather than the connector. Adjust the Lock Record action so it doesn't run for web services requests, for example by narrowing its execution context or condition, or move the records out of the locking state. After you change the workflow, run the sync again. If you can't change the workflow, remove the affected record type from **Object Types** so the sync doesn't fail on it.
+To sync the locked records, change the workflow rather than the connector. Adjust the Lock Record action so it doesn't run for web services requests, for example by narrowing its execution context or condition, or move the records out of the locking state. After you change the workflow, run the sync again. If you can't change the workflow, set **Object Types** to an explicit list of the record types you want, leaving out the affected one. Don't just clear the field: an empty **Object Types** means every record type in the account, which brings the locked one back.
 
 ### Setup fails right after you enter credentials
 
