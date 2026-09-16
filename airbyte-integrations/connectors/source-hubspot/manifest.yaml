@@ -2230,9 +2230,8 @@ definitions:
         http_codes:
           - 403
         error_message: >-
-          Access denied (403). The authenticated user does not have permissions to read the objects in 'from_object' or 'to_object'.
-          Ensure the 'crm.objects.custom.read' scope and the read scope for any standard object involved
-          (for example 'crm.objects.deals.read') are granted for your OAuth or Private App credentials.
+          Access denied (403). Credentials lack the read scope for the object in 'from_object' or 'to_object'
+          ('crm.objects.custom.read' for custom objects, or the standard object's read scope such as 'crm.objects.deals.read').
 
   # Custom object association stream - extends base_association_stream with error handling for invalid custom object names
   base_custom_object_association_stream:
