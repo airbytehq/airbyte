@@ -10,7 +10,6 @@ import pytest
 import requests
 from freezegun import freeze_time
 from source_github import SourceGithub
-from source_github.utils import read_full_refresh
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth.rate_limited_multiple_token import (
@@ -20,7 +19,7 @@ from airbyte_cdk.sources.declarative.concurrent_declarative_source import Concur
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
-from .utils import ProbeStream
+from .utils import ProbeStream, read_full_refresh
 
 
 def _source_and_authenticator(tokens: str, **config_overrides):

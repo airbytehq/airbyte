@@ -7,7 +7,7 @@
 These streams replaced `streams.GitHubGraphQLStream` and its subclasses. Two things are
 asserted throughout: the records keep the REST-compatible shape the Python classes produced
 (destinations already have those columns), and the page-size reduction that used to live in
-`errors_handlers.GitHubGraphQLErrorHandler` now actually reaches GitHub.
+the legacy `GitHubGraphQLErrorHandler` now actually reaches GitHub.
 """
 
 import json

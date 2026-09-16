@@ -508,6 +508,9 @@ def test_deep_extractor_sets_the_user_type_when_present():
     ("node_id", "expected"),
     [
         ("RA_kwDOAbcDEf4AAAAB", 1),
+        # Real release-asset node ids from a live read.
+        ("RA_kwDODKw3uc4Vg-A4", 360964152),
+        ("RA_kwDODKw3uc4Vg-A6", 360964154),
         ("", None),
         (None, None),
         # No `_`, so there is no type prefix to strip and nothing to decode.
@@ -518,6 +521,22 @@ def test_deep_extractor_sets_the_user_type_when_present():
 )
 def test_extract_database_id_from_node_id(node_id, expected):
     assert _extract_database_id_from_node_id(node_id) == expected
+
+
+def test_extract_database_id_only_swallows_decode_errors():
+    """Only `ValueError`, `struct.error` and `binascii.Error` are caught. Anything else — a
+    `TypeError` from an object that is not a string, say — must propagate rather than turn into
+    a silent `None`."""
+
+    class BadNodeId:
+        def __contains__(self, item):
+            return True
+
+        def split(self, *args, **kwargs):
+            raise TypeError("split not supported")
+
+    with pytest.raises(TypeError):
+        _extract_database_id_from_node_id(BadNodeId())
 
 
 def test_extract_database_id_is_lenient_about_malformed_node_ids():
