@@ -113,6 +113,10 @@ Airbyte uses logical replication of the [MySQL binlog](https://dev.mysql.com/doc
 - Scalable replication to large tables (1 TB and more).
 - A reliable cursor not reliant on the nature of your data. For example, if your table has a primary key but doesn't have a reasonable cursor field for incremental syncing \(i.e. `updated_at`\), CDC allows you to sync your table incrementally.
 
+:::note
+The CDC checkpoint Airbyte saves is tied to the identity of your MySQL server. Operations that replace the server, such as an Amazon RDS Blue/Green deployment, restoring a snapshot into a new instance, or promoting a replica, invalidate that checkpoint and require you to clear and re-sync the connection. See [CDC syncs fail or return no data after a database failover, Blue/Green cutover, or restore](/integrations/sources/mysql/mysql-troubleshooting#cdc-syncs-fail-or-return-no-data-after-a-database-failover-bluegreen-cutover-or-restore) before you plan such an operation.
+:::
+
 <FieldAnchor field="replication_method[STANDARD]">
 
 ### Standard
