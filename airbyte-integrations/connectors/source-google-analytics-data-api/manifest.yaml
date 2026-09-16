@@ -3274,13 +3274,13 @@ spec:
           - type: AddedFieldDefinition
             path: ["credentials", "auth_type"]
             value: "Client"
-        condition: "{{ config.get('credentials', {}).get('client_id') is not none and config.get('credentials', {}).get('auth_type') is none }}"
+        condition: "{{ ((config.get('credentials') or {}).get('client_id') or '') != '' and (config.get('credentials') or {}).get('auth_type') is none }}"
       - type: ConfigAddFields
         fields:
           - type: AddedFieldDefinition
             path: ["credentials", "auth_type"]
             value: "Service"
-        condition: "{{ config.get('credentials', {}).get('credentials_json') is not none and config.get('credentials', {}).get('auth_type') is none }}"
+        condition: "{{ ((config.get('credentials') or {}).get('credentials_json') or '') != '' and (config.get('credentials') or {}).get('auth_type') is none }}"
       - type: CustomConfigTransformation
         class_name: source_declarative_manifest.components.DimensionFilterConfigTransformation
 
