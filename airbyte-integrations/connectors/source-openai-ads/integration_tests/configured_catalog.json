@@ -7,104 +7,60 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "id"
-          ],
+          "required": ["id"],
           "properties": {
             "id": {
               "type": "string"
             },
             "name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "url": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "preview_url": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "status": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "timezone": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "currency_code": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "review": {
-              "type": [
-                "object",
-                "null"
-              ],
+              "type": ["object", "null"],
               "additionalProperties": true,
               "properties": {
                 "status": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": ["string", "null"]
                 }
               }
             },
             "account_integrity_review": {
-              "type": [
-                "object",
-                "null"
-              ],
+              "type": ["object", "null"],
               "additionalProperties": true,
               "properties": {
                 "details": {
-                  "type": [
-                    "object",
-                    "null"
-                  ],
+                  "type": ["object", "null"],
                   "additionalProperties": true,
                   "properties": {
                     "decision": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
+                      "type": ["string", "null"]
                     },
                     "status_updated_at": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
+                      "type": ["string", "null"]
                     }
                   }
                 },
                 "review": {
-                  "type": [
-                    "object",
-                    "null"
-                  ],
+                  "type": ["object", "null"],
                   "additionalProperties": true,
                   "properties": {
                     "status": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
+                      "type": ["string", "null"]
                     }
                   }
                 }
@@ -112,22 +68,12 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -136,149 +82,84 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "id"
-          ],
+          "required": ["id"],
           "properties": {
             "id": {
               "type": "string"
             },
             "created_at": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "updated_at": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "description": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "status": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "start_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "end_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "bidding_type": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "mode": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "budget": {
-              "type": [
-                "object",
-                "null"
-              ],
+              "type": ["object", "null"],
               "additionalProperties": true,
               "properties": {
                 "lifetime_spend_limit_micros": {
-                  "type": [
-                    "integer",
-                    "null"
-                  ]
+                  "type": ["integer", "null"]
                 },
                 "daily_spend_limit_micros": {
-                  "type": [
-                    "integer",
-                    "null"
-                  ]
+                  "type": ["integer", "null"]
                 }
               }
             },
             "conversion_event_setting_ids": {
-              "type": [
-                "array",
-                "null"
-              ],
+              "type": ["array", "null"],
               "items": {
                 "type": "string"
               }
             },
             "targeting": {
-              "type": [
-                "object",
-                "null"
-              ],
+              "type": ["object", "null"],
               "additionalProperties": true,
               "properties": {
                 "locations": {
-                  "type": [
-                    "object",
-                    "null"
-                  ],
+                  "type": ["object", "null"],
                   "additionalProperties": true,
                   "properties": {
                     "include": {
-                      "type": [
-                        "array",
-                        "null"
-                      ],
+                      "type": ["array", "null"],
                       "items": {
                         "type": "object",
                         "additionalProperties": true,
                         "properties": {
                           "id": {
-                            "type": [
-                              "string",
-                              "null"
-                            ]
+                            "type": ["string", "null"]
                           },
                           "type": {
-                            "type": [
-                              "string",
-                              "null"
-                            ]
+                            "type": ["string", "null"]
                           },
                           "country_code": {
-                            "type": [
-                              "string",
-                              "null"
-                            ]
+                            "type": ["string", "null"]
                           },
                           "name": {
-                            "type": [
-                              "string",
-                              "null"
-                            ]
+                            "type": ["string", "null"]
                           },
                           "region_code": {
-                            "type": [
-                              "string",
-                              "null"
-                            ]
+                            "type": ["string", "null"]
                           }
                         }
                       }
@@ -286,17 +167,11 @@
                   }
                 },
                 "platforms": {
-                  "type": [
-                    "object",
-                    "null"
-                  ],
+                  "type": ["object", "null"],
                   "additionalProperties": true,
                   "properties": {
                     "included": {
-                      "type": [
-                        "array",
-                        "null"
-                      ],
+                      "type": ["array", "null"],
                       "items": {
                         "type": "string"
                       }
@@ -304,17 +179,11 @@
                   }
                 },
                 "custom_audiences": {
-                  "type": [
-                    "object",
-                    "null"
-                  ],
+                  "type": ["object", "null"],
                   "additionalProperties": true,
                   "properties": {
                     "ids": {
-                      "type": [
-                        "array",
-                        "null"
-                      ],
+                      "type": ["array", "null"],
                       "items": {
                         "type": "string"
                       }
@@ -322,17 +191,11 @@
                   }
                 },
                 "excluded_custom_audiences": {
-                  "type": [
-                    "object",
-                    "null"
-                  ],
+                  "type": ["object", "null"],
                   "additionalProperties": true,
                   "properties": {
                     "ids": {
-                      "type": [
-                        "array",
-                        "null"
-                      ],
+                      "type": ["array", "null"],
                       "items": {
                         "type": "string"
                       }
@@ -342,66 +205,35 @@
               }
             },
             "objective": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "billing_event_type": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "enable_dynamic_creative": {
-              "type": [
-                "boolean",
-                "null"
-              ]
+              "type": ["boolean", "null"]
             },
             "product_feed_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "business_agent_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "user_external_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "landing_page_configuration": {
-              "type": [
-                "object",
-                "null"
-              ],
+              "type": ["object", "null"],
               "additionalProperties": true
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -410,113 +242,66 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "id"
-          ],
+          "required": ["id"],
           "properties": {
             "id": {
               "type": "string"
             },
             "campaign_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "created_at": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "updated_at": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "description": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "status": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "context_hints": {
-              "type": [
-                "array",
-                "null"
-              ],
+              "type": ["array", "null"],
               "items": {
                 "type": "string"
               }
             },
             "bidding_config": {
-              "type": [
-                "object",
-                "null"
-              ],
+              "type": ["object", "null"],
               "additionalProperties": true,
               "properties": {
                 "billing_event_type": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": ["string", "null"]
                 },
                 "max_bid_micros": {
-                  "type": [
-                    "integer",
-                    "null"
-                  ]
+                  "type": ["integer", "null"]
                 },
                 "custom_audience_bid_multipliers": {
-                  "type": [
-                    "array",
-                    "null"
-                  ],
+                  "type": ["array", "null"],
                   "items": {
                     "type": "object",
                     "additionalProperties": true
                   }
                 },
                 "strategy": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": ["string", "null"]
                 }
               }
             },
             "product_set": {
-              "type": [
-                "object",
-                "null"
-              ],
+              "type": ["object", "null"],
               "additionalProperties": true,
               "properties": {
                 "product_feed_id": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": ["string", "null"]
                 },
                 "filters": {
-                  "type": [
-                    "array",
-                    "null"
-                  ],
+                  "type": ["array", "null"],
                   "items": {
                     "type": "object",
                     "additionalProperties": true
@@ -525,36 +310,20 @@
               }
             },
             "landing_page_configuration": {
-              "type": [
-                "object",
-                "null"
-              ],
+              "type": ["object", "null"],
               "additionalProperties": true
             },
             "user_external_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -563,179 +332,98 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "id"
-          ],
+          "required": ["id"],
           "properties": {
             "id": {
               "type": "string"
             },
             "ad_group_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "created_at": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "updated_at": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "status": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "review_status": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "creative": {
-              "type": [
-                "object",
-                "null"
-              ],
+              "type": ["object", "null"],
               "additionalProperties": true,
               "properties": {
                 "type": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": ["string", "null"]
                 },
                 "title": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": ["string", "null"]
                 },
                 "body": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": ["string", "null"]
                 },
                 "price": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": ["string", "null"]
                 },
                 "target_url": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": ["string", "null"]
                 },
                 "file_id": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": ["string", "null"]
                 },
                 "image_url": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": ["string", "null"]
                 },
                 "image_crop": {
-                  "type": [
-                    "object",
-                    "null"
-                  ],
+                  "type": ["object", "null"],
                   "additionalProperties": true,
                   "properties": {
                     "x": {
-                      "type": [
-                        "number",
-                        "null"
-                      ]
+                      "type": ["number", "null"]
                     },
                     "y": {
-                      "type": [
-                        "number",
-                        "null"
-                      ]
+                      "type": ["number", "null"]
                     },
                     "width": {
-                      "type": [
-                        "number",
-                        "null"
-                      ]
+                      "type": ["number", "null"]
                     },
                     "height": {
-                      "type": [
-                        "number",
-                        "null"
-                      ]
+                      "type": ["number", "null"]
                     }
                   }
                 }
               }
             },
             "review": {
-              "type": [
-                "object",
-                "null"
-              ],
+              "type": ["object", "null"],
               "additionalProperties": true,
               "properties": {
                 "status": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": ["string", "null"]
                 }
               }
             },
             "landing_page_configuration": {
-              "type": [
-                "object",
-                "null"
-              ],
+              "type": ["object", "null"],
               "additionalProperties": true
             },
             "user_external_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -744,128 +432,74 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "id"
-          ],
+          "required": ["id"],
           "properties": {
             "id": {
               "type": "string"
             },
             "name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "event_type": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "custom_event_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "attribution_window_days": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "ad_account_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "source_ids": {
-              "type": [
-                "array",
-                "null"
-              ],
+              "type": ["array", "null"],
               "items": {
                 "type": "string"
               }
             },
             "sources": {
-              "type": [
-                "array",
-                "null"
-              ],
+              "type": ["array", "null"],
               "items": {
                 "type": "object",
                 "additionalProperties": true,
                 "properties": {
                   "id": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
+                    "type": ["string", "null"]
                   },
                   "name": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
+                    "type": ["string", "null"]
                   }
                 }
               }
             },
             "campaigns": {
-              "type": [
-                "array",
-                "null"
-              ],
+              "type": ["array", "null"],
               "items": {
                 "type": "object",
                 "additionalProperties": true
               }
             },
             "archived": {
-              "type": [
-                "boolean",
-                "null"
-              ]
+              "type": ["boolean", "null"]
             },
             "version": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "is_shopify_managed": {
-              "type": [
-                "boolean",
-                "null"
-              ]
+              "type": ["boolean", "null"]
             },
             "view_through_attribution_window_days": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -874,31 +508,19 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "id"
-          ],
+          "required": ["id"],
           "properties": {
             "id": {
               "type": "string"
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -907,49 +529,28 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "id"
-          ],
+          "required": ["id"],
           "properties": {
             "id": {
               "type": "string"
             },
             "client_type": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "pixel_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -958,91 +559,49 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "window_id"
-          ],
+          "required": ["window_id"],
           "properties": {
             "window_id": {
               "type": "string"
             },
             "name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "start_date": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "end_date": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "amount_micros": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "spent_micros": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "io_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "status": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "can_edit": {
-              "type": [
-                "boolean",
-                "null"
-              ]
+              "type": ["boolean", "null"]
             },
             "can_edit_start_date": {
-              "type": [
-                "boolean",
-                "null"
-              ]
+              "type": ["boolean", "null"]
             },
             "can_delete": {
-              "type": [
-                "boolean",
-                "null"
-              ]
+              "type": ["boolean", "null"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "window_id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["window_id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [
-        [
-          "window_id"
-        ]
-      ]
+      "primary_key": [["window_id"]]
     },
     {
       "stream": {
@@ -1051,134 +610,68 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "id",
-            "readable_time"
-          ],
+          "required": ["id", "readable_time"],
           "properties": {
             "id": {
               "type": "string"
             },
             "start_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "end_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "readable_time": {
               "type": "string",
               "format": "date"
             },
             "timezone": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_url": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_budget_daily": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "ad_account_budget_lifetime": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "impressions": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "clicks": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "spend": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "ctr": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "cpc": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "cpm": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "readable_time"
-        ],
-        "source_defined_primary_key": [
-          [
-            "ad_account_id"
-          ],
-          [
-            "readable_time"
-          ]
-        ]
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [["ad_account_id"], ["readable_time"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup",
-      "cursor_field": [
-        "readable_time"
-      ],
-      "primary_key": [
-        [
-          "ad_account_id"
-        ],
-        [
-          "readable_time"
-        ]
-      ]
+      "cursor_field": ["readable_time"],
+      "primary_key": [["ad_account_id"], ["readable_time"]]
     },
     {
       "stream": {
@@ -1187,182 +680,92 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "id",
-            "readable_time"
-          ],
+          "required": ["id", "readable_time"],
           "properties": {
             "id": {
               "type": "string"
             },
             "start_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "end_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "readable_time": {
               "type": "string",
               "format": "date"
             },
             "timezone": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_url": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_budget_daily": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "ad_account_budget_lifetime": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "campaign_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_description": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_status": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_start_time": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_end_time": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_budget_daily": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "campaign_budget_lifetime": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "impressions": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "clicks": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "spend": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "ctr": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "cpc": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "cpm": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "readable_time"
-        ],
-        "source_defined_primary_key": [
-          [
-            "campaign_id"
-          ],
-          [
-            "readable_time"
-          ]
-        ]
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [["campaign_id"], ["readable_time"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup",
-      "cursor_field": [
-        "readable_time"
-      ],
-      "primary_key": [
-        [
-          "campaign_id"
-        ],
-        [
-          "readable_time"
-        ]
-      ]
+      "cursor_field": ["readable_time"],
+      "primary_key": [["campaign_id"], ["readable_time"]]
     },
     {
       "stream": {
@@ -1371,206 +774,104 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "id",
-            "readable_time"
-          ],
+          "required": ["id", "readable_time"],
           "properties": {
             "id": {
               "type": "string"
             },
             "start_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "end_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "readable_time": {
               "type": "string",
               "format": "date"
             },
             "timezone": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_url": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_budget_daily": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "ad_account_budget_lifetime": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "campaign_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_description": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_status": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_start_time": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_end_time": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_budget_daily": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "campaign_budget_lifetime": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "ad_group_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_group_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_group_description": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_group_status": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "impressions": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "clicks": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "spend": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "ctr": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "cpc": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "cpm": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "readable_time"
-        ],
-        "source_defined_primary_key": [
-          [
-            "ad_group_id"
-          ],
-          [
-            "readable_time"
-          ]
-        ]
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [["ad_group_id"], ["readable_time"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup",
-      "cursor_field": [
-        "readable_time"
-      ],
-      "primary_key": [
-        [
-          "ad_group_id"
-        ],
-        [
-          "readable_time"
-        ]
-      ]
+      "cursor_field": ["readable_time"],
+      "primary_key": [["ad_group_id"], ["readable_time"]]
     },
     {
       "stream": {
@@ -1579,248 +880,125 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "id",
-            "readable_time"
-          ],
+          "required": ["id", "readable_time"],
           "properties": {
             "id": {
               "type": "string"
             },
             "start_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "end_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "readable_time": {
               "type": "string",
               "format": "date"
             },
             "timezone": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_url": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_budget_daily": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "ad_account_budget_lifetime": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "campaign_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_description": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_status": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_start_time": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_end_time": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_budget_daily": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "campaign_budget_lifetime": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "ad_group_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_group_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_group_description": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_group_status": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_title": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_copy": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_link": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_status": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_review_status": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "impressions": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "clicks": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "spend": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "ctr": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "cpc": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "cpm": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "readable_time"
-        ],
-        "source_defined_primary_key": [
-          [
-            "ad_id"
-          ],
-          [
-            "readable_time"
-          ]
-        ]
+        "default_cursor_field": ["readable_time"],
+        "source_defined_primary_key": [["ad_id"], ["readable_time"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup",
-      "cursor_field": [
-        "readable_time"
-      ],
-      "primary_key": [
-        [
-          "ad_id"
-        ],
-        [
-          "readable_time"
-        ]
-      ]
+      "cursor_field": ["readable_time"],
+      "primary_key": [["ad_id"], ["readable_time"]]
     },
     {
       "stream": {
@@ -1829,194 +1007,99 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "id",
-            "readable_time"
-          ],
+          "required": ["id", "readable_time"],
           "properties": {
             "id": {
               "type": "string"
             },
             "start_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "end_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "readable_time": {
               "type": "string",
               "format": "date"
             },
             "timezone": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_url": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_budget_daily": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "ad_account_budget_lifetime": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "campaign_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_description": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_status": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_start_time": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_end_time": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_budget_daily": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "campaign_budget_lifetime": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "country_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "impressions": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "clicks": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "spend": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "ctr": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "cpc": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "cpm": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "readable_time"
-        ],
+        "default_cursor_field": ["readable_time"],
         "source_defined_primary_key": [
-          [
-            "campaign_id"
-          ],
-          [
-            "country_name"
-          ],
-          [
-            "readable_time"
-          ]
+          ["campaign_id"],
+          ["country_name"],
+          ["readable_time"]
         ]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup",
-      "cursor_field": [
-        "readable_time"
-      ],
-      "primary_key": [
-        [
-          "campaign_id"
-        ],
-        [
-          "country_name"
-        ],
-        [
-          "readable_time"
-        ]
-      ]
+      "cursor_field": ["readable_time"],
+      "primary_key": [["campaign_id"], ["country_name"], ["readable_time"]]
     },
     {
       "stream": {
@@ -2025,194 +1108,99 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "id",
-            "readable_time"
-          ],
+          "required": ["id", "readable_time"],
           "properties": {
             "id": {
               "type": "string"
             },
             "start_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "end_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "readable_time": {
               "type": "string",
               "format": "date"
             },
             "timezone": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_url": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_budget_daily": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "ad_account_budget_lifetime": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "campaign_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_description": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_status": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_start_time": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_end_time": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_budget_daily": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "campaign_budget_lifetime": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "device_type": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "impressions": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "clicks": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "spend": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "ctr": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "cpc": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "cpm": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "readable_time"
-        ],
+        "default_cursor_field": ["readable_time"],
         "source_defined_primary_key": [
-          [
-            "campaign_id"
-          ],
-          [
-            "device_type"
-          ],
-          [
-            "readable_time"
-          ]
+          ["campaign_id"],
+          ["device_type"],
+          ["readable_time"]
         ]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup",
-      "cursor_field": [
-        "readable_time"
-      ],
-      "primary_key": [
-        [
-          "campaign_id"
-        ],
-        [
-          "device_type"
-        ],
-        [
-          "readable_time"
-        ]
-      ]
+      "cursor_field": ["readable_time"],
+      "primary_key": [["campaign_id"], ["device_type"], ["readable_time"]]
     },
     {
       "stream": {
@@ -2221,194 +1209,99 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "id",
-            "readable_time"
-          ],
+          "required": ["id", "readable_time"],
           "properties": {
             "id": {
               "type": "string"
             },
             "start_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "end_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "readable_time": {
               "type": "string",
               "format": "date"
             },
             "timezone": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_url": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_budget_daily": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "ad_account_budget_lifetime": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "campaign_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_description": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_status": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_start_time": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_end_time": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_budget_daily": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "campaign_budget_lifetime": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "platform": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "impressions": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "clicks": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "spend": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "ctr": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "cpc": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "cpm": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "readable_time"
-        ],
+        "default_cursor_field": ["readable_time"],
         "source_defined_primary_key": [
-          [
-            "campaign_id"
-          ],
-          [
-            "platform"
-          ],
-          [
-            "readable_time"
-          ]
+          ["campaign_id"],
+          ["platform"],
+          ["readable_time"]
         ]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup",
-      "cursor_field": [
-        "readable_time"
-      ],
-      "primary_key": [
-        [
-          "campaign_id"
-        ],
-        [
-          "platform"
-        ],
-        [
-          "readable_time"
-        ]
-      ]
+      "cursor_field": ["readable_time"],
+      "primary_key": [["campaign_id"], ["platform"], ["readable_time"]]
     },
     {
       "stream": {
@@ -2417,259 +1310,134 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "id",
-            "readable_time"
-          ],
+          "required": ["id", "readable_time"],
           "properties": {
             "id": {
               "type": "string"
             },
             "start_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "end_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "readable_time": {
               "type": "string",
               "format": "date"
             },
             "timezone": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_url": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ad_account_budget_daily": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "ad_account_budget_lifetime": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "campaign_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_description": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_status": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_start_time": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_end_time": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "campaign_budget_daily": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "campaign_budget_lifetime": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "product_feed_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "product_item_id": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "product_title": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "product_description": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "product_body": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "product_brand": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "product_seller_name": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "product_price": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "product_availability": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "product_target_url": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "product_image_url": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "impressions": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "clicks": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "spend": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "ctr": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "cpc": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "cpm": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "readable_time"
-        ],
+        "default_cursor_field": ["readable_time"],
         "source_defined_primary_key": [
-          [
-            "campaign_id"
-          ],
-          [
-            "product_feed_id"
-          ],
-          [
-            "product_item_id"
-          ],
-          [
-            "readable_time"
-          ]
+          ["campaign_id"],
+          ["product_feed_id"],
+          ["product_item_id"],
+          ["readable_time"]
         ]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup",
-      "cursor_field": [
-        "readable_time"
-      ],
+      "cursor_field": ["readable_time"],
       "primary_key": [
-        [
-          "campaign_id"
-        ],
-        [
-          "product_feed_id"
-        ],
-        [
-          "product_item_id"
-        ],
-        [
-          "readable_time"
-        ]
+        ["campaign_id"],
+        ["product_feed_id"],
+        ["product_item_id"],
+        ["readable_time"]
       ]
     },
     {
@@ -2679,10 +1447,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "entity_id",
-            "date"
-          ],
+          "required": ["entity_id", "date"],
           "properties": {
             "entity_id": {
               "type": "string"
@@ -2692,55 +1457,25 @@
               "format": "date"
             },
             "conversions": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "click_through_conversions": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "view_through_conversions": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date"
-        ],
-        "source_defined_primary_key": [
-          [
-            "entity_id"
-          ],
-          [
-            "date"
-          ]
-        ]
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["entity_id"], ["date"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup",
-      "cursor_field": [
-        "date"
-      ],
-      "primary_key": [
-        [
-          "entity_id"
-        ],
-        [
-          "date"
-        ]
-      ]
+      "cursor_field": ["date"],
+      "primary_key": [["entity_id"], ["date"]]
     },
     {
       "stream": {
@@ -2749,10 +1484,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "entity_id",
-            "date"
-          ],
+          "required": ["entity_id", "date"],
           "properties": {
             "entity_id": {
               "type": "string"
@@ -2762,55 +1494,25 @@
               "format": "date"
             },
             "conversions": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "click_through_conversions": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "view_through_conversions": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date"
-        ],
-        "source_defined_primary_key": [
-          [
-            "entity_id"
-          ],
-          [
-            "date"
-          ]
-        ]
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["entity_id"], ["date"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup",
-      "cursor_field": [
-        "date"
-      ],
-      "primary_key": [
-        [
-          "entity_id"
-        ],
-        [
-          "date"
-        ]
-      ]
+      "cursor_field": ["date"],
+      "primary_key": [["entity_id"], ["date"]]
     },
     {
       "stream": {
@@ -2819,10 +1521,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": true,
-          "required": [
-            "entity_id",
-            "date"
-          ],
+          "required": ["entity_id", "date"],
           "properties": {
             "entity_id": {
               "type": "string"
@@ -2832,55 +1531,25 @@
               "format": "date"
             },
             "conversions": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "click_through_conversions": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "view_through_conversions": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date"
-        ],
-        "source_defined_primary_key": [
-          [
-            "entity_id"
-          ],
-          [
-            "date"
-          ]
-        ]
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["entity_id"], ["date"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup",
-      "cursor_field": [
-        "date"
-      ],
-      "primary_key": [
-        [
-          "entity_id"
-        ],
-        [
-          "date"
-        ]
-      ]
+      "cursor_field": ["date"],
+      "primary_key": [["entity_id"], ["date"]]
     }
   ]
 }

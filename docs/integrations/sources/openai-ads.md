@@ -61,34 +61,34 @@ The OpenAI Ads source connector supports the following [sync modes](https://docs
 
 ### Main Tables
 
-| Stream | Primary key | Sync modes | Notes |
-| :--- | :--- | :--- | :--- |
-| [ad_account](https://developers.openai.com/ads/api-reference/ad-account) | id | Full Refresh | The ad account the key belongs to |
-| [campaigns](https://developers.openai.com/ads/api-reference/campaigns) | id | Full Refresh | |
-| [ad_groups](https://developers.openai.com/ads/api-reference/ad-groups) | id | Full Refresh | Listed per campaign, `campaign_id` added to each record |
-| [ads](https://developers.openai.com/ads/api-reference/ads) | id | Full Refresh | Listed per ad group, `ad_group_id` added to each record |
-| [conversion_event_settings](https://developers.openai.com/ads/api-reference/conversion-setup) | id | Full Refresh | Conversion definitions of the account |
-| [conversion_pixels](https://developers.openai.com/ads/api-reference/conversion-setup) | id | Full Refresh | Conversion data sources referenced by conversion_event_settings |
-| custom_audiences | id | Full Refresh | Custom audiences of the account |
-| [spend_limit_windows](https://developers.openai.com/ads/api-reference/ad-account) | window_id | Full Refresh | Date range spend limits. Admin key required |
+| Stream                                                                                        | Primary key | Sync modes   | Notes                                                           |
+| :-------------------------------------------------------------------------------------------- | :---------- | :----------- | :-------------------------------------------------------------- |
+| [ad_account](https://developers.openai.com/ads/api-reference/ad-account)                      | id          | Full Refresh | The ad account the key belongs to                               |
+| [campaigns](https://developers.openai.com/ads/api-reference/campaigns)                        | id          | Full Refresh |                                                                 |
+| [ad_groups](https://developers.openai.com/ads/api-reference/ad-groups)                        | id          | Full Refresh | Listed per campaign, `campaign_id` added to each record         |
+| [ads](https://developers.openai.com/ads/api-reference/ads)                                    | id          | Full Refresh | Listed per ad group, `ad_group_id` added to each record         |
+| [conversion_event_settings](https://developers.openai.com/ads/api-reference/conversion-setup) | id          | Full Refresh | Conversion definitions of the account                           |
+| [conversion_pixels](https://developers.openai.com/ads/api-reference/conversion-setup)         | id          | Full Refresh | Conversion data sources referenced by conversion_event_settings |
+| custom_audiences                                                                              | id          | Full Refresh | Custom audiences of the account                                 |
+| [spend_limit_windows](https://developers.openai.com/ads/api-reference/ad-account)             | window_id   | Full Refresh | Date range spend limits. Admin key required                     |
 
 ### Report Tables
 
 All report tables are built on the [insights](https://developers.openai.com/ads/api-reference/insights) endpoint with daily granularity in the account timezone. Each row is one entity and one day. Field names follow the API's response keys.
 
-| Stream | Primary key | Sync modes | Level and breakdown |
-| :--- | :--- | :--- | :--- |
-| ad_account_insights | ad_account_id, readable_time | Full Refresh, Incremental | Ad account |
-| campaign_insights | campaign_id, readable_time | Full Refresh, Incremental | Campaign |
-| ad_group_insights | ad_group_id, readable_time | Full Refresh, Incremental | Ad group |
-| ad_insights | ad_id, readable_time | Full Refresh, Incremental | Ad |
-| campaign_insights_by_country | campaign_id, country_name, readable_time | Full Refresh, Incremental | Campaign by country |
-| campaign_insights_by_device | campaign_id, device_type, readable_time | Full Refresh, Incremental | Campaign by device type |
-| campaign_insights_by_platform | campaign_id, platform, readable_time | Full Refresh, Incremental | Campaign by platform |
-| campaign_insights_by_product | campaign_id, product_feed_id, product_item_id, readable_time | Full Refresh, Incremental | Campaign by product feed item |
-| campaign_conversions | entity_id, date | Full Refresh, Incremental | Attributed conversions per campaign and day |
-| ad_group_conversions | entity_id, date | Full Refresh, Incremental | Attributed conversions per ad group and day |
-| ad_conversions | entity_id, date | Full Refresh, Incremental | Attributed conversions per ad and day |
+| Stream                        | Primary key                                                  | Sync modes                | Level and breakdown                         |
+| :---------------------------- | :----------------------------------------------------------- | :------------------------ | :------------------------------------------ |
+| ad_account_insights           | ad_account_id, readable_time                                 | Full Refresh, Incremental | Ad account                                  |
+| campaign_insights             | campaign_id, readable_time                                   | Full Refresh, Incremental | Campaign                                    |
+| ad_group_insights             | ad_group_id, readable_time                                   | Full Refresh, Incremental | Ad group                                    |
+| ad_insights                   | ad_id, readable_time                                         | Full Refresh, Incremental | Ad                                          |
+| campaign_insights_by_country  | campaign_id, country_name, readable_time                     | Full Refresh, Incremental | Campaign by country                         |
+| campaign_insights_by_device   | campaign_id, device_type, readable_time                      | Full Refresh, Incremental | Campaign by device type                     |
+| campaign_insights_by_platform | campaign_id, platform, readable_time                         | Full Refresh, Incremental | Campaign by platform                        |
+| campaign_insights_by_product  | campaign_id, product_feed_id, product_item_id, readable_time | Full Refresh, Incremental | Campaign by product feed item               |
+| campaign_conversions          | entity_id, date                                              | Full Refresh, Incremental | Attributed conversions per campaign and day |
+| ad_group_conversions          | entity_id, date                                              | Full Refresh, Incremental | Attributed conversions per ad group and day |
+| ad_conversions                | entity_id, date                                              | Full Refresh, Incremental | Attributed conversions per ad and day       |
 
 Every insights stream requests all attribute fields the API allows at its level, for its own entity and every level above it: account id, name, url and budgets; campaign id, name, description, status, start and end time and budgets; ad group id, name, description and status; ad id, name, title, copy, link, status and review status. Attributes that are unset for an entity are omitted from the row. The metrics are `impressions`, `clicks`, `spend`, `ctr`, `cpc`, `cpm`, with the same names at every level and for every segment. Days on which an entity had no impressions are not returned, so missing days mean zero delivery. The API's own row `id` is kept on the record but is not the primary key, because it embeds a query plan token that changes with the requested fields.
 
@@ -115,8 +115,8 @@ Amounts on insights rows (`spend`, `cpc`, `cpm`, and the budget columns such as 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date | Pull Request | Subject |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------- |
-| 0.1.0 | 2026-09-16 | [86351](https://github.com/airbytehq/airbyte/pull/86351) | Initial release by [@alexgreen496](https://github.com/alexgreen496) |
+| Version | Date       | Pull Request                                             | Subject                                                             |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------ |
+| 0.1.0   | 2026-09-16 | [86351](https://github.com/airbytehq/airbyte/pull/86351) | Initial release by [@alexgreen496](https://github.com/alexgreen496) |
 
 </details>
