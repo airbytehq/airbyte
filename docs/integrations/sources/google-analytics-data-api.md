@@ -43,7 +43,7 @@ When authenticating with a **service account** (Airbyte Open Source), you must a
 
 Before you can use the service account to access Google Analytics data, you need to enable the required APIs in the Google Cloud project that owns the service account:
 
-1. Go to the [Google Analytics Data API dashboard](https://console.developers.google.com/apis/api/analyticsdata.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API. All report streams use this API. You can also set quotas and check usage here.
+1. Go to the [Google Analytics Data API dashboard](https://console.developers.google.com/apis/api/analyticsdata.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API. All report streams use this API. You can also check quota usage here. Data API quotas can't be raised from the console; see [Google's quota documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/quotas) for the limits and how to request more.
 2. (Optional) Go to the [Google Analytics Admin API dashboard](https://console.developers.google.com/apis/api/analyticsadmin.googleapis.com/overview) and enable the API. Only the `property_metadata` stream uses it. If you skip this step, that stream fails with a `403 SERVICE_DISABLED` error while report streams continue to work.
 
 <!-- /env:oss -->
@@ -313,7 +313,7 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 ### Large reports and row ordering
 
-The connector requests report rows in pages of 25,000 and keeps requesting pages until the report is exhausted, so a report with more than 100,000 rows in a single date range is synced in full. Each page is a separate `runReport` request that counts against your Data API quota, so high-cardinality reports (for example, reports with a `pagePath` or `city` dimension across a long **Data Request Interval**) use more quota than the number of streams alone suggests.
+For standard (non-pivot) reports, the connector requests rows in pages of 25,000 and keeps requesting pages until the report is exhausted, so a report with more than 100,000 rows in a single date range is synced in full. Each page is a separate `runReport` request that counts against your Data API quota, so high-cardinality reports (for example, reports with a `pagePath` or `city` dimension across a long **Data Request Interval**) use more quota than the number of streams alone suggests.
 
 To keep page boundaries stable between requests, the connector sorts every report by each of its dimensions, in the order the dimensions are defined. As a result, rows arrive sorted by dimension rather than in the API's default order. Custom reports that use `pivots` are requested in a single `runPivotReport` call and are not paginated or sorted this way. Reports with no dimensions are paginated but not sorted.
 
