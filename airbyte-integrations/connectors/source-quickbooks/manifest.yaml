@@ -15246,6 +15246,7 @@ spec:
         description: Determines whether to use the sandbox or production environment.
     additionalProperties: true
   config_normalization_rules:
+    type: ConfigNormalizationRules
     config_migrations:
     - type: ConfigMigration
       description: |

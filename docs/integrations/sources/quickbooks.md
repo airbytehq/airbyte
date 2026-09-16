@@ -116,7 +116,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                            |
 |:------------|:-----------|:---------------------------------------------------------| :----------------------------------------------------------------- |
-| 4.1.9 | 2026-09-16 | [86362](https://github.com/airbytehq/airbyte/pull/86362) | Migrate pre-4.0.0 nested `credentials` configs to the flat OAuth fields |
+| 4.1.9 | 2026-09-16 | [86362](https://github.com/airbytehq/airbyte/pull/86362) | Migrate pre-4.0.0 nested `credentials` configs to the flat OAuth fields, and upgrade the CDK to 7.28.4 |
 | 4.1.8 | 2025-05-24 | [60468](https://github.com/airbytehq/airbyte/pull/60468) | Update dependencies |
 | 4.1.7 | 2025-05-10 | [60170](https://github.com/airbytehq/airbyte/pull/60170) | Update dependencies |
 | 4.1.6 | 2025-05-03 | [59500](https://github.com/airbytehq/airbyte/pull/59500) | Update dependencies |
