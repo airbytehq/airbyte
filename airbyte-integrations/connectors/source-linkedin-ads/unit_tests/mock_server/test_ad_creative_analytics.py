@@ -40,9 +40,8 @@ def _create_creative_record(
     account_id: int,
     name: str = "Test Creative",
     status: str = "ACTIVE",
-    last_modified: str = "2024-06-01T00:00:00.000Z",
+    last_modified: str = "2024-06-01T00:00:00+0000",
 ) -> dict:
-    # The id must be a string URN format because the manifest uses .split(':')[-1] to extract the numeric ID
     return {
         "id": f"urn:li:sponsoredCreative:{creative_id}",
         "account": f"urn:li:sponsoredAccount:{account_id}",
@@ -51,7 +50,7 @@ def _create_creative_record(
         "type": "TEXT_AD",
         "campaign": f"urn:li:sponsoredCampaign:{creative_id}",
         "created": "2024-01-01T00:00:00.000Z",
-        "lastModified": last_modified,
+        "lastModifiedAt": last_modified,
         "version": {"versionTag": "1"},
     }
 
@@ -77,7 +76,7 @@ def _create_analytics_record(
     }
 
 
-@freezegun.freeze_time("2024-06-15T00:00:00Z")
+@freezegun.freeze_time("2024-06-02T00:00:00Z")
 class TestAdCreativeAnalyticsStream(TestCase):
     """
     Tests for the LinkedIn Ads 'ad_creative_analytics' stream.
@@ -86,7 +85,7 @@ class TestAdCreativeAnalyticsStream(TestCase):
     - NoPagination (analytics endpoints don't paginate)
     - DatetimeBasedCursor with 30-day steps
     - Transformations that add 'sponsoredCreative' and 'pivot' fields
-    - SubstreamPartitionRouter to iterate over parent creatives
+    - Batched partitions of up to 50 parent creatives
     """
 
     @HttpMocker()
@@ -162,6 +161,46 @@ class TestAdCreativeAnalyticsStream(TestCase):
         assert record_data["pivot"] == "CREATIVE"
 
     @HttpMocker()
+    def test_batched_records_preserve_values_by_primary_key(self, http_mocker: HttpMocker):
+        config = ConfigBuilder().with_start_date("2024-06-01").build()
+
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page(
+                [
+                    _create_creative_record(2001, 111111111, "Creative 1"),
+                    _create_creative_record(2002, 111111111, "Creative 2"),
+                ]
+            ),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.ad_analytics_endpoint().with_any_query_params().build(),
+            LinkedInAdsAnalyticsResponseBuilder()
+            .with_records(
+                [
+                    _create_analytics_record(2001, "2024-06-01", 1000, 50),
+                    _create_analytics_record(2002, "2024-06-01", 2000, 75),
+                ]
+            )
+            .build(),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+        records_by_primary_key = {
+            (record.record.data["string_of_pivot_values"], record.record.data["end_date"]): record.record.data for record in output.records
+        }
+
+        assert len(records_by_primary_key) == 2
+        assert records_by_primary_key[("urn:li:sponsoredCreative:2001", "2024-06-01")]["impressions"] == 1000
+        assert records_by_primary_key[("urn:li:sponsoredCreative:2002", "2024-06-01")]["clicks"] == 75
+
+    @HttpMocker()
     def test_incremental_sync_initial(self, http_mocker: HttpMocker):
         """
         Test incremental sync without prior state (first sync).
@@ -193,6 +232,9 @@ class TestAdCreativeAnalyticsStream(TestCase):
 
         assert len(output.records) == 1
         assert len(output.state_messages) > 0
+        state = output.state_messages[-1].state.stream.stream_state.__dict__
+        assert state["use_global_cursor"] is True
+        assert "states" not in state
 
     @HttpMocker()
     def test_empty_parent_stream(self, http_mocker: HttpMocker):

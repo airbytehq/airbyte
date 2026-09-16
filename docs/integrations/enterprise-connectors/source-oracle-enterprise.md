@@ -224,6 +224,16 @@ Finally, LogMiner does not support all datatypes.
 See table below for details.
 If a type is not listed in the table, for instance any user-defined type such as a VARRAY, then it is not supported for CDC.
 
+### Heartbeat timeout
+
+When using CDC, the connector uses a heartbeat mechanism to detect idle databases. If no change events are observed within a configurable window, the sync is aborted to avoid waiting indefinitely. This is controlled by the **Initial Waiting Time in Seconds (Advanced)** option in the CDC replication method settings.
+
+- Default: 1200 seconds (20 minutes)
+- Valid range: 120–3600 seconds
+- Config key: `initial_waiting_seconds`
+
+Increase this value if your database has long periods of inactivity between changes and you want to avoid premature sync termination. Decrease it if you want the connector to fail faster when no data is available.
+
 ## Data type mapping
 
 Oracle data types are mapped to the following data types when synchronizing data.
@@ -291,12 +301,9 @@ We are happy to take feedback on preferred mappings.
 
 The connector is still incubating, this section only exists to satisfy Airbyte's QA checks.
 
-- 0.0.1
-- 0.0.2
-- 0.0.3
-- 0.0.4
-- 0.0.5
-- 0.0.6
-- 0.0.7
+| Version | Date       | Pull Request                                                   | Subject                                               |
+|:--------|:-----------|:---------------------------------------------------------------|:------------------------------------------------------|
+| 0.1.4   | 2026-06-16 | [443](https://github.com/airbytehq/airbyte-enterprise/pull/443) | Make CDC heartbeat timeout configurable via `initial_waiting_seconds` |
+| 0.1.3   | -          | -                                                              | Previous changes                                      |
 
 </details>

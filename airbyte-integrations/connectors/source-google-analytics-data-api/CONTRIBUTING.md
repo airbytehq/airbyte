@@ -75,3 +75,15 @@ Most Google APIs allow quota increases through the [API & Services dashboard on 
 If rate-limited requests increase and a higher quota is needed, you must reach out to the DoIT contact (via Ralph or Davin) to request a quota increase on our behalf.
 
 **Why this matters:** Unlike most Google connectors where rate limit issues can be resolved by bumping quotas in the GCP console, GA4 rate limit issues require an external escalation through DoIT. This means rate limit problems cannot be quickly self-resolved and require coordination with external parties.
+
+## Incremental Stream Considerations
+
+The Google Analytics Data API v1 uses `runReport` and `runRealtimeReport` methods that accept date ranges. The connector dynamically generates report streams based on user configuration. The `google_analytics_stream_template` in the manifest defines the base template for these report streams. Report generation inherently uses date ranges and the connector handles incremental via date windowing.
+
+| Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
+|---|---|---|---|---|---|---|
+| google_analytics_stream_template | medium | top-level parent | none | none | deferred_no_api_support | Template definition for dynamic report streams; not a standalone data endpoint |
+
+### Future incremental stream candidates
+
+- **No API date filter (1 streams):** `google_analytics_stream_template` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.

@@ -9,7 +9,7 @@ This page contains the setup guide and reference information for the [LinkedIn A
 ## Prerequisites
 
 - A LinkedIn Ads account with permission to access data from accounts you want to sync.
-- Start Date - a date programmatically in the format YYYY-MM-DD. Any data before this date will not be replicated.
+- A start date in the format YYYY-MM-DD. The connector doesn't replicate data from before this date.
 
 ## Setup guide
 
@@ -73,7 +73,7 @@ You can follow the steps laid out below to create the application and obtain the
    - `r_marketing_leadgen_automation` - Read lead gen form data
    - `r_ads_leadgen_automation` - Read lead gen automation data
 
-   Not all scopes may be available depending on your LinkedIn API program access level. At a minimum, you need `r_ads` and `r_ads_reporting` to sync ad account data and analytics.
+   Not all scopes may be available depending on your LinkedIn API program access level. At a minimum, you need `r_ads` and `r_ads_reporting` to sync ad account data and analytics. The **Videos** stream also needs `r_organization_social`; see [Videos](#videos).
 5. Click **Request access token**. You will be redirected to an authorization page. Use your LinkedIn credentials to log in and authorize your app and obtain your **Access Token** and **Refresh Token**.
 
 :::caution
@@ -118,18 +118,25 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 
 6. For **Start Date**, use the provided datepicker or enter a date programmatically in the format YYYY-MM-DD. Any data before this date will not be replicated.
 7. (Optional) For **Account IDs**, you may optionally provide a space separated list of Account IDs to pull data from. If you do not specify any account IDs, the connector will replicate data from all accounts accessible using your credentials.
-8. (Optional) For **Lookback Window**, enter the number of days to look back when syncing ad analytics data. This allows the connector to re-fetch data from a previous period to capture late-arriving conversions or attribution updates. Leave blank to use the default behavior.
+8. (Optional) For **Lookback Window**, enter the number of days before the last saved cursor that each incremental sync re-fetches. The window applies to every incremental stream, so it captures late-arriving analytics values (such as conversions or attribution updates) as well as entities whose `lastModified` timestamp changed after the previous sync. The default is 0, which re-fetches nothing.
 9. (Optional) For **Number of Workers**, enter the number of concurrent workers for syncing ad analytics streams. The default is 3. Increasing this value may improve sync speed but could also increase the risk of hitting API rate limits.
 10. (Optional) For **Custom Ad Analytics Reports**, you may optionally provide one or more custom reports to query the LinkedIn Ads API for. By defining custom reports, you can better align the data pulled from LinkedIn Ads with your particular needs. To add a custom report:
    1. Click on **Add**.
-   2. Enter a **Report Name**. This will be used as the stream name during replication.
+   2. Enter a **Report Name**. This will be used as the stream name during replication and will be preceded by `custom_`.
    3. Select a **Pivot Category** from the dropdown. This defines the main dimension by which the report data will be grouped or segmented.
    4. Select a **Time Granularity** to group the data in your report by time. The options are:
       - `ALL`: Data is not grouped by time, providing a cumulative view.
       - `DAILY`: Returns data grouped by day. Useful for closely monitoring short-term changes and effects.
       - `MONTHLY`: Returns data grouped by month. Ideal for evaluating monthly goals or observing seasonal patterns.
       - `YEARLY`: Returns data grouped by year. Ideal for high-level analysis of long-term trends and year-over-year comparisons.
-11. Click **Set up source** and wait for the tests to complete.
+11. (Optional) For **Custom Ad Statistics Reports**, you may optionally provide one or more reports that use LinkedIn's **Statistics Finder**, which groups results by up to three pivot categories at once. To add a statistics report:
+   1. Click on **Add**.
+   2. Enter a **Report Name**. This will be used as the stream name during replication and will be preceded by `custom_statistics_`.
+   3. Select up to three **Pivot Categories**. Airbyte sends these to LinkedIn's Statistics Finder (`q=statistics`) request format.
+   4. Select a **Time Granularity** (same options as above).
+
+   **Note:** Analytics reports become streams named `custom_<Report Name>`; statistics reports become streams named `custom_statistics_<Report Name>`. Report names must be unique within each list. Also avoid naming an analytics report `statistics_<something>`, since that would collide with a statistics report named `<something>`.
+12. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
 ## Supported sync modes
@@ -144,6 +151,7 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 ## Supported Streams
 
 - [Accounts](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-accounts?tabs=http&view=li-lms-2023-05#search-for-accounts)
+- [Organizations](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/organization-access-control-by-role)
 - [Account Users](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http&view=li-lms-2023-05#find-ad-account-users-by-accounts)
 - [Campaign Groups](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaign-groups?tabs=http&view=li-lms-2023-05#search-for-campaign-groups)
 - [Campaigns](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaigns?tabs=http&view=li-lms-2023-05#search-for-campaigns)
@@ -151,6 +159,7 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 - [Conversions](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversion-tracking?view=li-lms-2023-05&tabs=curl#find-conversions-by-ad-account)
 - [Lead forms](https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2024-06&tabs=http#lead-forms-1)
 - [Lead form responses](https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2024-06&tabs=http#get-lead-form-responses)
+- [Videos](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/videos-api#get-a-video)
 - [Ad Analytics by Campaign](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Creative](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Impression Device](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
@@ -162,6 +171,12 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 - [Ad Analytics by Member Seniority](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Region](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Company](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
+
+:::info
+
+The `Organizations` stream returns the organization access control (ACL) records of the authenticated member - one row per organization and role, with the organization URN, the role, and its state. All role states (`APPROVED`, `REQUESTED`, `REJECTED`, `REVOKED`) are returned; filter on the `state` field if you only need approved roles. This stream requires the `r_organization_admin` (or `rw_organization_admin`) OAuth scope - without it, LinkedIn returns a 403 for this stream only.
+
+:::
 
 :::info
 
@@ -211,6 +226,23 @@ The LinkedIn Ads API does not return records that have no values for any of the 
 
 The **Lead forms** and **Lead form responses** streams support Full Refresh sync mode only. Incremental sync is not available for these streams due to limitations in how the LinkedIn API handles time-range filtering for lead data.
 
+### Videos
+
+The **Videos** stream returns the videos referenced by each sponsored account's ad creatives, including the video `duration` (in milliseconds). For every creative, the connector resolves the sponsored-content post the creative references and then fetches the video that post embeds, so the stream covers the videos actually used in ads and can be joined with the **Creatives** stream through the creative's `content.reference`. It supports Full Refresh sync mode only, as the LinkedIn API does not expose a modification timestamp usable for filtering.
+
+Keep in mind the following limitations:
+
+- A video used by several creatives or posts is emitted once per reference; deduplicate on the primary key `id` if you need one row per video.
+- Legacy media assets uploaded through the deprecated Assets API (`urn:li:digitalmediaAsset:` URNs) cannot be retrieved through the Videos API and are skipped.
+- Posts or videos that were deleted, or that the authenticated user is not allowed to read, are skipped with a log message rather than failing the sync.
+- Resolving a creative's post requires the `r_organization_social` scope ([Posts API permissions](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/posts-api#permissions)). The connector's OAuth flow requests it; if you authenticate with a raw access token that lacks this scope, the stream completes with zero records because every post lookup is skipped.
+- Message Ads (Sponsored InMail) creatives reference InMail content rather than a post; they cannot carry videos retrievable through the Videos API and are skipped.
+- The stream intentionally does not use the Videos API `associatedAccount` finder (the account's whole media library): LinkedIn gates that finder at the application level, and applications holding only the `r_ads` scope receive `403 ACCESS_DENIED` from it. Fetching each video by URN works with the standard scopes this connector already requests.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -218,14 +250,23 @@ The **Lead forms** and **Lead form responses** streams support Full Refresh sync
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.6.7 | 2026-04-06 | [76040](https://github.com/airbytehq/airbyte/pull/76040) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
-| 5.6.6 | 2026-04-06 | [75583](https://github.com/airbytehq/airbyte/pull/75583) | Add `oauth_connector_input_specification` with granular scopes |
+| 6.2.1 | 2026-09-15 | [84019](https://github.com/airbytehq/airbyte/pull/84019) | Update dependencies |
+| 6.2.0 | 2026-09-14 | [76087](https://github.com/airbytehq/airbyte/pull/76087) | Add `organizations` stream via the `organizationAcls` endpoint |
+| 6.1.0 | 2026-09-14 | [81509](https://github.com/airbytehq/airbyte/pull/81509) | Add `videos` stream |
+| 6.0.2 | 2026-07-31 | [83268](https://github.com/airbytehq/airbyte/pull/83268) | Fix `pivot` in custom analytics report streams to contain the configured pivot category. |
+| 6.0.1 | 2026-07-31 | [83269](https://github.com/airbytehq/airbyte/pull/83269) | Fix invalid `error_handlers` manifest key so the custom error handler and exponential backoff are actually applied |
+| 6.0.0 | 2026-07-30 | [74334](https://github.com/airbytehq/airbyte/pull/74334) | Batch analytics requests for `ad_campaign_analytics`, `ad_creative_analytics`, and `ad_impression_device_analytics` in groups of up to 50, reducing sync time by approximately 98% for large accounts. Breaking change for `ad_impression_device_analytics` only: its primary key now includes `sponsoredCampaign`, preventing records from different campaigns from being collapsed in deduplication mode. Refresh the source schema after upgrading; deduplication users should refresh this stream to rebuild destination data. |
+| 5.7.0 | 2026-07-30 | [78505](https://github.com/airbytehq/airbyte/pull/78505) | Add custom_statistics_report stream and ad_statistics_reports config for LinkedIn Statistics Finder reports (up to three pivots). |
+| 5.6.13 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 5.6.12 | 2026-07-28 | [83183](https://github.com/airbytehq/airbyte/pull/83183) | Roll Cloud back to 5.6.10 — 5.6.11 is built on SDM 7.23.7, which breaks bundled custom components |
+| 5.6.11 | 2026-07-28 | [83018](https://github.com/airbytehq/airbyte/pull/83018) | Update dependencies |
+| 5.6.10 | 2026-07-21 | [77286](https://github.com/airbytehq/airbyte/pull/77286) | Update dependencies |
 | 5.6.9 | 2026-04-21 | [73947](https://github.com/airbytehq/airbyte/pull/73947) | Update dependencies |
 | 5.6.8 | 2026-04-07 | [76120](https://github.com/airbytehq/airbyte/pull/76120) | Fix dynamic stream name field_path to avoid parent stream name collision |
-| 5.6.7 | 2026-04-02 | [76040](https://github.com/airbytehq/airbyte/pull/76040) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
-| 5.6.6 | 2026-04-01 | [75583](https://github.com/airbytehq/airbyte/pull/75583) | Add `oauth_connector_input_specification` with granular scopes |
+| 5.6.7 | 2026-04-06 | [76040](https://github.com/airbytehq/airbyte/pull/76040) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
+| 5.6.6 | 2026-04-06 | [75583](https://github.com/airbytehq/airbyte/pull/75583) | Add `oauth_connector_input_specification` with granular scopes |
 | 5.6.5 | 2026-03-30 | [75597](https://github.com/airbytehq/airbyte/pull/75597) | Map HTTP 429 responses to RATE_LIMITED instead of RETRY for proper indefinite backoff on rate-limited requests |
-| 5.6.4 | 2026-02-10 | [72831](https://github.com/airbytehq/airbyte/pull/72831) | Upgrade LinkedIn API version from 202502 to 202601 |
+| 5.6.4 | 2026-02-11 | [72831](https://github.com/airbytehq/airbyte/pull/72831) | Upgrade LinkedIn API version from 202502 to 202601 |
 | 5.6.3 | 2026-02-10 | [72768](https://github.com/airbytehq/airbyte/pull/72768) | Update dependencies |
 | 5.6.2 | 2026-01-20 | [72028](https://github.com/airbytehq/airbyte/pull/72028) | Update dependencies |
 | 5.6.1 | 2026-01-14 | [68982](https://github.com/airbytehq/airbyte/pull/68982) | Update dependencies |

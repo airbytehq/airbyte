@@ -29,6 +29,7 @@ import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.cdk.load.table.TypingDedupingUtil
+import io.airbyte.integrations.destination.snowflake.spec.NumberDataType
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDataType
 import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
@@ -77,7 +78,11 @@ class SnowflakeTableSchemaMapper(
                 // Simple types
                 BooleanType -> SnowflakeDataType.BOOLEAN.typeName
                 IntegerType -> SnowflakeDataType.NUMBER.typeName
-                NumberType -> SnowflakeDataType.FLOAT.typeName
+                NumberType ->
+                    when (config.numberDataTypeConversion) {
+                        NumberDataType.FLOAT -> SnowflakeDataType.FLOAT.typeName
+                        NumberDataType.NUMBER_38_9 -> SnowflakeDataType.NUMERIC_38_9.typeName
+                    }
                 StringType -> SnowflakeDataType.VARCHAR.typeName
 
                 // Temporal types
