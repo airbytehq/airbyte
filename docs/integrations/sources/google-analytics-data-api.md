@@ -41,11 +41,10 @@ When authenticating with a **service account** (Airbyte Open Source), you must a
 
 #### Enable the Google Analytics APIs
 
-Before you can use the service account to access Google Analytics data, you need to enable the required APIs:
+Before you can use the service account to access Google Analytics data, you need to enable the required APIs in the Google Cloud project that owns the service account:
 
-1. Go to the [Google Analytics Reporting API dashboard](https://console.developers.google.com/apis/api/analyticsreporting.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API. You can also set quotas and check usage.
-2. Go to the [Google Analytics API dashboard](https://console.developers.google.com/apis/api/analytics.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API.
-3. Go to the [Google Analytics Data API dashboard](https://console.developers.google.com/apis/api/analyticsdata.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API.
+1. Go to the [Google Analytics Data API dashboard](https://console.developers.google.com/apis/api/analyticsdata.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API. All report streams use this API. You can also set quotas and check usage here.
+2. (Optional) Go to the [Google Analytics Admin API dashboard](https://console.developers.google.com/apis/api/analyticsadmin.googleapis.com/overview) and enable the API. Only the `property_metadata` stream uses it. If you skip this step, that stream fails with a `403 SERVICE_DISABLED` error while report streams continue to work.
 
 <!-- /env:oss -->
 
@@ -312,6 +311,12 @@ Refer to the [Google Analytics documentation](https://support.google.com/analyti
 
 The Google Analytics connector is subject to Google Analytics Data API quotas. Please refer to [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/quotas) for specific breakdowns on these quotas.
 
+### Large reports and row ordering
+
+The connector requests report rows in pages of 25,000 and keeps requesting pages until the report is exhausted, so a report with more than 100,000 rows in a single date range is synced in full. Each page is a separate `runReport` request that counts against your Data API quota, so high-cardinality reports (for example, reports with a `pagePath` or `city` dimension across a long **Data Request Interval**) use more quota than the number of streams alone suggests.
+
+To keep page boundaries stable between requests, the connector sorts every report by each of its dimensions, in the order the dimensions are defined. As a result, rows arrive sorted by dimension rather than in the API's default order. Custom reports that use `pivots` are requested in a single `runPivotReport` call and are not paginated or sorted this way. Reports with no dimensions are paginated but not sorted.
+
 ## Data type map
 
 | Integration Type | Airbyte Type |
@@ -332,14 +337,14 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.11.3-rc.1 | 2026-09-15 | [83188](https://github.com/airbytehq/airbyte/pull/83188) | Reports with more than 100,000 rows per slice are now fully paginated instead of being silently truncated. Report rows are now returned in a deterministic order (sorted by every configured dimension), so pages cannot overlap or skip rows while paginating. |
+| 2.11.3-rc.1 | 2026-09-16 | [83188](https://github.com/airbytehq/airbyte/pull/83188) | Reports with more than 100,000 rows per slice are now fully paginated instead of being silently truncated. Report rows are now returned in a deterministic order (sorted by every configured dimension), so pages cannot overlap or skip rows while paginating. |
 | 2.11.2 | 2026-09-15 | [84599](https://github.com/airbytehq/airbyte/pull/84599) | Update dependencies |
-| 2.11.1 | 2026-09-09 | [85797](https://github.com/airbytehq/airbyte/pull/85797) | Stop inferring the credentials `auth_type` from empty `client_id` / `credentials_json` values |
+| 2.11.1 | 2026-09-10 | [85797](https://github.com/airbytehq/airbyte/pull/85797) | Stop inferring the credentials `auth_type` from empty `client_id` / `credentials_json` values |
 | 2.11.0 | 2026-09-09 | [85761](https://github.com/airbytehq/airbyte/pull/85761) | Promoted release candidate to GA |
-| 2.11.0-rc.1 | 2026-08-11 | [83783](https://github.com/airbytehq/airbyte/pull/83783) | Add an opt-in **One Stream per Report** mode that combines all configured property IDs into one stream per report named `<report_name>Consolidated`, with schemas merged across properties. Off by default; existing connections are unchanged |
-| 2.10.2 | 2026-08-11 | [83343](https://github.com/airbytehq/airbyte/pull/83343) | Preserve nested `name` fields when resolving dynamic streams |
+| 2.11.0-rc.1 | 2026-08-17 | [83783](https://github.com/airbytehq/airbyte/pull/83783) | Add an opt-in **One Stream per Report** mode that combines all configured property IDs into one stream per report named `<report_name>Consolidated`, with schemas merged across properties. Off by default; existing connections are unchanged |
+| 2.10.2 | 2026-08-12 | [83343](https://github.com/airbytehq/airbyte/pull/83343) | Preserve nested `name` fields when resolving dynamic streams |
 | 2.10.1 | 2026-08-11 | [83952](https://github.com/airbytehq/airbyte/pull/83952) | Update dependencies |
-| 2.10.0 | 2026-07-30 | [83273](https://github.com/airbytehq/airbyte/pull/83273) | Add the `property_metadata` stream with GA4 property metadata from the Admin API |
+| 2.10.0 | 2026-08-10 | [83273](https://github.com/airbytehq/airbyte/pull/83273) | Add the `property_metadata` stream with GA4 property metadata from the Admin API |
 | 2.9.45 | 2026-07-28 | [82938](https://github.com/airbytehq/airbyte/pull/82938) | Update dependencies |
 | 2.9.44 | 2026-07-21 | [82436](https://github.com/airbytehq/airbyte/pull/82436) | Update dependencies |
 | 2.9.43 | 2026-07-14 | [81845](https://github.com/airbytehq/airbyte/pull/81845) | Update dependencies |
@@ -349,17 +354,15 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 2.9.39 | 2026-06-09 | [79340](https://github.com/airbytehq/airbyte/pull/79340) | Update dependencies |
 | 2.9.38 | 2026-06-02 | [77618](https://github.com/airbytehq/airbyte/pull/77618) | Infer `auth_type` from credentials when missing to fix OAuth connection failures |
 | 2.9.37 | 2026-06-02 | [77243](https://github.com/airbytehq/airbyte/pull/77243) | Update dependencies |
-| 2.9.36 | 2026-05-27 | [77877](https://github.com/airbytehq/airbyte/pull/77877) | Update the connector runtime to the latest CDK version and reduce intermittent stream read hangs |
+| 2.9.36 | 2026-06-01 | [77877](https://github.com/airbytehq/airbyte/pull/77877) | Update the connector runtime to the latest CDK version and reduce intermittent stream read hangs |
 | 2.9.35 | 2026-05-19 | [PR-pending](https://github.com/airbytehq/airbyte/pull/PR-pending) | Restore `default_concurrency` to 4 after c=6 rollout showed heartbeat timeout outliers |
 | 2.9.34 | 2026-05-18 | [78161](https://github.com/airbytehq/airbyte/pull/78161) | Promoted release candidate to GA |
 | 2.9.34-rc.2 | 2026-05-01 | [PR-pending](https://github.com/airbytehq/airbyte/pull/PR-pending) | Phase 1 step 3: bump `default_concurrency` 5 to 6 (tier-aware `api_budget` stays live) |
-| 2.9.34-rc.1 | 2026-04-29 | [77550](https://github.com/airbytehq/airbyte/pull/77550) | Phase 1 step 2: bump `default_concurrency` 4 to 5 and activate the tier-aware `api_budget` (Standard 10 req/s, Analytics 360 50 req/s on opt-in via `subscription_tier`) |
-| 2.9.33-rc.1 | 2026-04-23 | [76956](https://github.com/airbytehq/airbyte/pull/76956) | Add `concurrency_level` (default 4, max 16) and `subscription_tier` spec field (Standard or Analytics 360) for the Path B concurrency tuning rollout (RC); existing and tier-aware `api_budget` kept commented during tuning |
+| 2.9.34-rc.1 | 2026-04-28 | [77550](https://github.com/airbytehq/airbyte/pull/77550) | Phase 1 step 2: bump `default_concurrency` 4 to 5 and activate the tier-aware `api_budget` (Standard 10 req/s, Analytics 360 50 req/s on opt-in via `subscription_tier`) |
+| 2.9.33-rc.1 | 2026-04-27 | [76956](https://github.com/airbytehq/airbyte/pull/76956) | Add `concurrency_level` (default 4, max 16) and `subscription_tier` spec field (Standard or Analytics 360) for the Path B concurrency tuning rollout (RC); existing and tier-aware `api_budget` kept commented during tuning |
+| 2.9.32 | 2026-04-21 | [76600](https://github.com/airbytehq/airbyte/pull/76600) | Update dependencies |
 | 2.9.31 | 2026-04-20 | [76185](https://github.com/airbytehq/airbyte/pull/76185) | Surface the GA4 API error message on 400 and 403 responses, and stop retrying permission errors |
 | 2.9.30 | 2026-04-14 | [76190](https://github.com/airbytehq/airbyte/pull/76190) | Add access_token to extract_output and complete_oauth_output_specification to fix OAuth secretId 422 regression |
-| 2.9.32 | 2026-04-21 | [76600](https://github.com/airbytehq/airbyte/pull/76600) | Update dependencies |
-| 2.9.31 | 2026-04-09 | [76185](https://github.com/airbytehq/airbyte/pull/76185) | Improve error messages for HTTP 400/403 responses; use predicate-based 403 handling to distinguish permission errors (config_error) from other 403s (retry) |
-| 2.9.30 | 2026-04-09 | [76190](https://github.com/airbytehq/airbyte/pull/76190) | Add access_token to extract_output and complete_oauth_output_specification to fix OAuth secretId 422 regression |
 | 2.9.29 | 2026-04-01 | [75580](https://github.com/airbytehq/airbyte/pull/75580) | Add `oauth_connector_input_specification` with granular scopes |
 | 2.9.28 | 2026-03-31 | [75678](https://github.com/airbytehq/airbyte/pull/75678) | Update dependencies |
 | 2.9.27 | 2026-03-24 | [74568](https://github.com/airbytehq/airbyte/pull/74568) | Update dependencies |
