@@ -26,6 +26,8 @@ from source_netsuite.streams import CustomIncrementalNetsuiteStream, Incremental
 
 
 class SourceNetsuite(AbstractSource):
+    DEFAULT_MAX_CONCURRENT_DETAIL_REQUESTS = 8
+
     logger: logging.Logger = logging.getLogger("airbyte")
 
     def auth(self, config: Mapping[str, Any]) -> OAuth1:
@@ -129,6 +131,7 @@ class SourceNetsuite(AbstractSource):
         base_url: str,
         start_datetime: str,
         window_in_days: int,
+        max_concurrent_detail_requests: int = DEFAULT_MAX_CONCURRENT_DETAIL_REQUESTS,
         max_retry: int = 3,
     ) -> Union[NetsuiteStream, IncrementalNetsuiteStream, CustomIncrementalNetsuiteStream]:
         input_args = {
@@ -137,6 +140,7 @@ class SourceNetsuite(AbstractSource):
             "base_url": base_url,
             "start_datetime": start_datetime,
             "window_in_days": window_in_days,
+            "max_concurrent_detail_requests": max_concurrent_detail_requests,
             "schemas": schemas,
         }
 
@@ -189,6 +193,9 @@ class SourceNetsuite(AbstractSource):
                 "base_url": base_url,
                 "start_datetime": config["start_datetime"],
                 "window_in_days": config["window_in_days"],
+                "max_concurrent_detail_requests": config.get(
+                    "max_concurrent_detail_requests", self.DEFAULT_MAX_CONCURRENT_DETAIL_REQUESTS
+                ),
                 "schemas": schemas,
             }
         )
