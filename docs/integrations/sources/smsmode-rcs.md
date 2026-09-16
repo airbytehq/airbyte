@@ -73,7 +73,7 @@ This stream returns one record per month of RCS consumption, starting 365 days b
 
 | Input | Type | Description | Default Value |
 | --- | --- | --- | --- |
-| `api_key` | `string` | API Key. Your smsmode API key, created with the [Credential API](https://dev.smsmode.com/commons/v1/#tag/Credential). |  |
+| `api_key` | `string` | API Key. Your smsmode API key, created with the [Credential API](https://dev.smsmode.com/commons/v1/#tag/Credential). | |
 
 ## Changelog
 
