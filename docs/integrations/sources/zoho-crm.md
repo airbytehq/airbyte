@@ -163,7 +163,7 @@ There are two ways to authenticate, depending on where you run Airbyte. In both 
 
 The flow stores only the refresh token in your source. The client ID and secret belong to Airbyte's Zoho app.
 
-### Airbyte Open Source, or your own Zoho app
+### Airbyte Open Source
 
 Create a Zoho API client and generate a refresh token yourself, then enter the **Client ID**, **Client Secret** and **Refresh Token** in the source.
 
