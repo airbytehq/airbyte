@@ -84,7 +84,8 @@ Some database operations replace the server with a new one that has a different 
 - Amazon RDS [Blue/Green deployments](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/blue-green-deployments.html), including using them to perform a major version upgrade (for example, MySQL 8.0 to 8.4)
 - Restoring a snapshot or backup into a new instance or cluster and pointing Airbyte at it
 - Promoting a read replica to be the new primary
-- Running `RESET MASTER` (or `RESET BINARY LOGS AND GTIDS` on MySQL 8.4) on the server
+
+Running `RESET MASTER` (or `RESET BINARY LOGS AND GTIDS` on MySQL 8.4) has a similar effect even though the server itself is unchanged: it discards the binlog and GTID history and restarts binlog numbering, so the saved checkpoint no longer matches.
 
 In-place minor or major version upgrades of the same instance generally keep the server identity and binlog history, so they don't usually trigger this problem.
 
@@ -106,7 +107,7 @@ Depending on how the server changed, you may see one of the following:
 
 #### Resolution
 
-The supported way to recover is to [clear the connection's data and re-sync](/platform/operator-guides/clear) so Airbyte takes a fresh snapshot and creates a new checkpoint on the new server. Setting **Invalid CDC Position Behavior** to **Re-sync data** in the source settings doesn't help with the first symptom, because the failure happens before that setting is evaluated.
+The supported way to recover is to [clear the connection's data and re-sync](/platform/operator-guides/clear) so Airbyte takes a fresh snapshot and creates a new checkpoint on the new server. In connector versions affected by [airbytehq/airbyte#85782](https://github.com/airbytehq/airbyte/issues/85782), setting **Invalid CDC Position Behavior** to **Re-sync data** in the source settings doesn't help with the first symptom, because the failure happens before that setting is evaluated.
 
 Editing the saved connection state by hand to point at the new server is possible but unsupported. If you choose to do it, be aware that a mistake can silently skip changes.
 
@@ -115,7 +116,7 @@ Editing the saved connection state by hand to point at the new server is possibl
 If you plan an operation that will replace the server:
 
 1. Pause the connection in Airbyte before starting the cutover, so no sync runs against a half-migrated database.
-2. Perform the cutover, and make sure binary logging, GTID mode, and an adequate `binlog retention hours` (Amazon RDS) or `binlog_expire_logs_seconds` value are configured on the new server.
+2. Perform the cutover, and make sure binary logging and an adequate `binlog retention hours` (Amazon RDS) or `binlog_expire_logs_seconds` value are configured on the new server. If your connection uses GTIDs, keep GTID mode enabled on the new server as well.
 3. Update the source's host name if it changed.
 4. Clear the connection's data and run a sync so Airbyte takes a new snapshot from the new server, then resume the normal schedule.
 
