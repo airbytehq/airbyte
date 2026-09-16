@@ -36,6 +36,7 @@
 # SOURCE CONNECTORS
 # -----------------------------------------------------------------------------
 /airbyte-integrations/connectors/source-*/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-pipedrive/ @airbytehq/dev-apis
 
 # -----------------------------------------------------------------------------
 # DESTINATION CONNECTORS (certified + JDK-based only)
@@ -59,11 +60,6 @@
 
 # Destination documentation
 /docs/integrations/destinations/ @airbytehq/destinations
-
-# -----------------------------------------------------------------------------
-# OAUTH
-# -----------------------------------------------------------------------------
-/oss/airbyte-oauth/src/main/kotlin/io/airbyte/oauth/ @airbytehq/dev-api-sources
 
 # -----------------------------------------------------------------------------
 # NO OWNERSHIP - Markdown files

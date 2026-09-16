@@ -501,6 +501,7 @@ class SellerFeedbackReportsTypeTransformer(TypeTransformer):
         A2NODRKZP88ZB9="%Y-%m-%d",  # SE
         A33AVAJ2PDY3EV="%d/%m/%y",  # TR
         A1F83G8C2ARO7P="%d/%m/%y",  # UK
+        A28R8C7NBKEWEA="%d/%m/%y",  # IE
         AMEN7PMS3EDWL="%d/%m/%y",  # BE
         # fe
         A39IBJ37TRP1C6="%d/%m/%y",  # AU

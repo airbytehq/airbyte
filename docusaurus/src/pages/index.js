@@ -233,38 +233,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Section 2: Agents */}
-        <section className={styles.aeSection}>
-          <div className={styles.sectionInner}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.aeSectionTitle}>Agents</h2>
-              <p className={styles.aeSectionSubtitle}>
-                Airbyte Agents is a data and context layer for AI agents. It gives your agents real-time access to business data through open-source, type-safe connectors, managed credentials, and low-latency search. Use it as a cloud platform or import connectors directly into your own agents.
-              </p>
-            </div>
-
-            <div className={styles.aeNavGrid}>
-              {aeNavLinks.map((item, index) => {
-                const IconComponent = item.icon;
-                return (
-                  <a
-                    key={index}
-                    href={item.link}
-                    className={styles.aeNavCard}
-                  >
-                    <div className={styles.aeNavIcon}>
-                      <IconComponent />
-                    </div>
-                    <h3 className={styles.aeNavTitle}>{item.title}</h3>
-                    <p className={styles.aeNavDescription}>{item.description}</p>
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* Section 3: Data Replication */}
+        {/* Section 2: Data Replication */}
         <section className={styles.drSection}>
           <div className={styles.sectionInner}>
             <div className={styles.sectionHeader}>
@@ -360,6 +329,36 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Section 3: Agents */}
+        <section className={styles.aeSection}>
+          <div className={styles.sectionInner}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.aeSectionTitle}>Agents</h2>
+              <p className={styles.aeSectionSubtitle}>
+                Airbyte Agents is a data and context layer for AI agents. It gives your agents real-time access to business data through open-source, type-safe connectors, managed credentials, and low-latency search. Use it as a cloud platform or import connectors directly into your own agents.
+              </p>
+            </div>
+
+            <div className={styles.aeNavGrid}>
+              {aeNavLinks.map((item, index) => {
+                const IconComponent = item.icon;
+                return (
+                  <a
+                    key={index}
+                    href={item.link}
+                    className={styles.aeNavCard}
+                  >
+                    <div className={styles.aeNavIcon}>
+                      <IconComponent />
+                    </div>
+                    <h3 className={styles.aeNavTitle}>{item.title}</h3>
+                    <p className={styles.aeNavDescription}>{item.description}</p>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        </section>
 
         {/* GitHub Badges */}
         <section className={styles.badgesSection}>
