@@ -10,7 +10,7 @@ CONTROL="${2:-1.1.0}"
 BASE_FIXTURE="$SKILL_DIR/fixtures/sql/00-cursor-canary-base.sql"
 BOUNDARY_FIXTURE="$SKILL_DIR/fixtures/sql/01-cursor-canary-boundary-row.sql"
 EXTRACT_STATE="$SKILL_DIR/../../../../../db-harness-lib/scripts/extract-state.py"
-CANARY_CONFIG_TEMPLATE="${CANARY_CONFIG_TEMPLATE:-$SKILL_DIR/fixtures/configs/base.template.json}"
+CANARY_CONFIG_TEMPLATE="${CANARY_CONFIG_TEMPLATE:-$SKILL_DIR/fixtures/configs/utc-session.template.json}"
 
 if "$SKILL_DIR/scripts/run.sh" \
   --command=read \

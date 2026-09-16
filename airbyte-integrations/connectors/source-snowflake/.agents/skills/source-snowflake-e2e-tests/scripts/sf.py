@@ -23,8 +23,7 @@ SCHEMA_PATTERN = re.compile(r"^PROVEFIX_[A-Z0-9_]+$")
 
 def config() -> dict:
     path = Path(os.environ["SNOWFLAKE_CONFIG_FILE"])
-    with path.open() as config_file:
-        return json.load(config_file)
+    return json.loads(path.read_text())
 
 
 def validate_schema(name: str) -> str:
@@ -123,16 +122,7 @@ def execute_file(path: Path, schema: str) -> None:
     validate_schema(schema)
     connection = connect(schema)
     try:
-        cursor = connection.cursor()
-        try:
-            sql = path.read_text()
-            execute_string = getattr(cursor, "execute_string", None)
-            if execute_string is None:
-                connection.execute_string(sql)
-            else:
-                execute_string(sql)
-        finally:
-            cursor.close()
+        connection.execute_string(path.read_text())
     finally:
         connection.close()
 

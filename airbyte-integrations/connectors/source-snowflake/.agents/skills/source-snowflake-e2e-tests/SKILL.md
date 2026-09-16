@@ -26,7 +26,6 @@ source-snowflake-e2e-tests/
 │   ├── fetch-config.sh, render-config.sh
 │   ├── start-backend.sh, reset-databases.sh, stop-backend.sh
 │   ├── apply-sql.sh, sweep-orphans.sh
-│   └── ...
 ├── fixtures/configs/base.template.json, utc-session.template.json
 ├── fixtures/sql/00-cursor-canary-base.sql
 ├── fixtures/sql/01-cursor-canary-boundary-row.sql
