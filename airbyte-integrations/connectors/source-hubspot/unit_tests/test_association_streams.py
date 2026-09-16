@@ -218,9 +218,10 @@ class TestCustomObjectAssociationStreamRefResolution:
         custom_requester = resolved_manifest["definitions"]["base_custom_object_association_stream"]["retriever"]["requester"]
         assert "error_handler" in custom_requester
 
-        # The custom error handler should be a DefaultErrorHandler (not the base's CustomErrorHandler)
+        # The custom error handler must keep HubspotErrorHandler so 401 handling stays credential-type aware
         custom_error_handler = custom_requester["error_handler"]
-        assert custom_error_handler["type"] == "DefaultErrorHandler"
+        assert custom_error_handler["type"] == "CustomErrorHandler"
+        assert custom_error_handler["class_name"].endswith("HubspotErrorHandler")
 
         # Verify it has the custom-object-specific 400 filter with a message about custom object names
         filter_400 = next((f for f in custom_error_handler["response_filters"] if 400 in f.get("http_codes", [])), None)
@@ -256,12 +257,22 @@ class TestCustomObjectAssociationStreamErrorHandler:
         assert filter_403["action"] == "FAIL"
         assert "permission" in filter_403["error_message"].lower() or "access denied" in filter_403["error_message"].lower()
 
-    def test_429_response_retries(self, resolved_manifest):
-        """HTTP 429 (rate limit) should be mapped to RETRY action."""
+    def test_429_response_is_rate_limited(self, resolved_manifest):
+        """HTTP 429 (rate limit) should be mapped to RATE_LIMITED action, matching the base error handler."""
         error_handler = self._get_error_handler(resolved_manifest)
         filter_429 = next((f for f in error_handler["response_filters"] if 429 in f.get("http_codes", [])), None)
         assert filter_429 is not None, "Expected a response filter for HTTP 429"
-        assert filter_429["action"] == "RETRY"
+        assert filter_429["action"] == "RATE_LIMITED"
+
+    def test_auth_filters_match_base_error_handler(self, resolved_manifest):
+        """401 and 530 must be handled the same way as the base error handler so auth behavior is preserved."""
+        error_handler = self._get_error_handler(resolved_manifest)
+        base_handler = resolved_manifest["definitions"]["base_error_handler"]
+        for code in (401, 530):
+            custom_filter = next((f for f in error_handler["response_filters"] if code in f.get("http_codes", [])), None)
+            base_filter = next((f for f in base_handler["response_filters"] if code in f.get("http_codes", [])), None)
+            assert custom_filter is not None, f"Expected a response filter for HTTP {code}"
+            assert custom_filter["action"] == base_filter["action"]
 
     def test_5xx_response_retries(self, resolved_manifest):
         """HTTP 502/503 should be mapped to RETRY action."""

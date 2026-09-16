@@ -2182,15 +2182,17 @@ definitions:
   # Error handler shared by every request made on behalf of a custom object association stream: the association
   # batch read as well as the parent `/crm/v3/objects/{from_object}/search` request. Both return 400 when the
   # configured object identifier is not a fullyQualifiedName (`p_...`) or objectTypeId (`2-...`).
+  # Same as base_error_handler except for the custom-object-specific 400 and 403 messages.
   custom_object_association_error_handler:
-    type: DefaultErrorHandler
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.HubspotErrorHandler
     backoff_strategies:
       - type: WaitTimeFromHeader
         header: Retry-After
       - type: ExponentialBackoffStrategy
     response_filters:
       - type: HttpResponseFilter
-        action: RETRY
+        action: RATE_LIMITED
         http_codes:
           - 429
         error_message: >-
@@ -2202,6 +2204,18 @@ definitions:
           - 503
         error_message: >-
           HubSpot server error (5xx). Retrying with exponential backoff...
+      - type: HttpResponseFilter
+        action: REFRESH_TOKEN_THEN_RETRY
+        http_codes:
+          - 401
+        error_message: >-
+          Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot."
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 530
+        error_message: >-
+          The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
       - type: HttpResponseFilter
         action: FAIL
         failure_type: config_error
@@ -2238,7 +2252,7 @@ definitions:
                 $parameters:
                   entity: from_object_name
                   cursor_filter_property_field: hs_lastmodifieddate
-                  name: stream_name
+                name: stream_name
                 retriever:
                   $ref: "#/definitions/base_crm_search_incremental_parent_stream/retriever"
                   requester:
