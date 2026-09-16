@@ -156,9 +156,9 @@ def _response(records: list[dict[str, Any]], next_url: str | None = None) -> Htt
     )
 
 
-def _read(stream: str):
+def _read(stream: str, sync_mode: SyncMode):
     config = ConfigBuilder().build()
-    catalog = CatalogBuilder().with_stream(stream, SyncMode.incremental).build()
+    catalog = CatalogBuilder().with_stream(stream, sync_mode).build()
     return read(
         get_source(config=config),
         config=config,
@@ -180,7 +180,8 @@ def _mock_token(http_mocker: HttpMocker) -> None:
 
 
 @pytest.mark.parametrize("stream", EMPTY_STREAMS)
-def test_empty_streams_read_two_pages(stream: str) -> None:
+@pytest.mark.parametrize("sync_mode", [SyncMode.incremental, SyncMode.full_refresh])
+def test_empty_streams_read_two_pages(stream: str, sync_mode: SyncMode) -> None:
     with HttpMocker() as http_mocker:
         _mock_token(http_mocker)
         first_page = UptickRequestBuilder.collection(stream)
@@ -194,7 +195,7 @@ def test_empty_streams_read_two_pages(stream: str) -> None:
         )
         http_mocker.get(second_page, _response([_record(stream, 3)]))
 
-        output = _read(stream)
+        output = _read(stream, sync_mode)
 
         assert output.errors == []
         assert [message.record.data["id"] for message in output.records] == [1, 2, 3]
@@ -204,13 +205,14 @@ def test_empty_streams_read_two_pages(stream: str) -> None:
 
 
 @pytest.mark.parametrize("stream", EMPTY_STREAMS)
-def test_empty_streams_complete_without_records(stream: str) -> None:
+@pytest.mark.parametrize("sync_mode", [SyncMode.incremental, SyncMode.full_refresh])
+def test_empty_streams_complete_without_records(stream: str, sync_mode: SyncMode) -> None:
     with HttpMocker() as http_mocker:
         _mock_token(http_mocker)
         first_page = UptickRequestBuilder.collection(stream)
         http_mocker.get(first_page, _response([]))
 
-        output = _read(stream)
+        output = _read(stream, sync_mode)
 
         assert output.errors == []
         assert output.records == []
