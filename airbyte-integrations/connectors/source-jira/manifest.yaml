@@ -14695,19 +14695,19 @@ spec:
               - type: AddedFieldDefinition
                 path: ["credentials", "auth_type"]
                 value: "API Token"
-            condition: "{{ not config.get('credentials') and config.get('api_token') }}"
+            condition: "{{ not config.get('credentials') and config.get('api_token', '') != '' }}"
           - type: ConfigAddFields
             fields:
               - type: AddedFieldDefinition
                 path: ["credentials", "api_token"]
                 value: "{{ config['api_token'] }}"
-            condition: "{{ not config.get('credentials', {}).get('api_token') and config.get('api_token') }}"
+            condition: "{{ not config.get('credentials', {}).get('api_token') and config.get('api_token', '') != '' }}"
           - type: ConfigAddFields
             fields:
               - type: AddedFieldDefinition
                 path: ["credentials", "email"]
                 value: "{{ config['email'] }}"
-            condition: "{{ not config.get('credentials', {}).get('email') and config.get('email') }}"
+            condition: "{{ not config.get('credentials', {}).get('email') and config.get('email', '') != '' }}"
       - type: ConfigMigration
         description: Normalize domain by stripping protocol prefix and trailing slashes
         transformations:
@@ -14716,7 +14716,7 @@ spec:
               - type: AddedFieldDefinition
                 path: ["domain"]
                 value: "{{ config.get('domain', '').split('://', 1)[-1].rstrip('/') }}"
-            condition: "{{ config.get('domain') and ('://' in config.get('domain', '') or config.get('domain', '').endswith('/')) }}"
+            condition: "{{ config.get('domain', '') != '' and ('://' in config.get('domain', '') or config.get('domain', '').endswith('/')) }}"
     validations:
       - type: DpathValidator
         field_path: ["domain"]

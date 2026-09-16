@@ -159,6 +159,12 @@ directly.
   a row to the changelog when you touch any of them.
 - **`config.cdc.json` uses `ssl_method: unencrypted`.** Fine for a local
   throwaway container, never for a real source.
+- **`Incumbent CDC state is invalid ... Saved offset no longer present`
+  with a fresh backend** (single-version or comparison mode). The derived
+  catalog was `full_refresh`, so no CDC streams were configured. Pass
+  `--sync-mode=incremental --cursor-field=_ab_cdc_cursor --streams=users`
+  or `--catalog=PATH`; see the
+  [db-harness-lib README](../../db-harness-lib/README.md#cdc-config-templates-need-an-incremental-catalog).
 
 ## Comparison-mode regression testing
 
@@ -181,9 +187,17 @@ poe e2e-local --test-version=dev --control-version=5.0.0 \
 # CDC. Two single-version sweeps with a fixture reset between them, so
 # the target does not read against the control's warm capture instance.
 poe e2e-local --test-version=dev --control-version=5.0.0 --reset=fixture \
+  --config-template=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/configs/cdc.template.json \
+  --sync-mode=incremental --cursor-field=_ab_cdc_cursor --streams=users \
   --fixture=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/00-init-cdc.sql \
   --fixture=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/<per-bug>.sql
 ```
+
+For CDC the catalog must be incremental — see
+[CDC config templates need an incremental catalog](../../db-harness-lib/README.md#cdc-config-templates-need-an-incremental-catalog).
+MSSQL specifics: the cursor is `_ab_cdc_cursor`, and `--streams` must
+exclude `dbo.systranschemas`, a CDC system table `discover` lists
+that has no capture instance.
 
 Both runs must observe equivalent backend state. Under
 `--reset=none` (the default) the two images share the backend, which is
