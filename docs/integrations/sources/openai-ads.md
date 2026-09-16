@@ -117,6 +117,6 @@ Amounts on insights rows (`spend`, `cpc`, `cpm`, and the budget columns such as 
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------- |
-| 0.1.0 | 2026-09-16 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Initial release by [@alexgreen496](https://github.com/alexgreen496) |
+| 0.1.0 | 2026-09-16 | [86351](https://github.com/airbytehq/airbyte/pull/86351) | Initial release by [@alexgreen496](https://github.com/alexgreen496) |
 
 </details>
