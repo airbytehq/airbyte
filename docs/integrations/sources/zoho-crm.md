@@ -144,29 +144,41 @@ The Zoho Developer environment API is inconsistent with production environment A
 
 ## Setup guide
 
-To configure the connector, you need:
+There are two ways to authenticate, depending on where you run Airbyte.
 
 | Field                | Required | Notes                                                                                                   |
 | :------------------- | :------- | :------------------------------------------------------------------------------------------------------ |
-| Client ID            | Yes      | OAuth 2.0 client ID from the Zoho API console                                                           |
-| Client Secret        | Yes      | OAuth 2.0 client secret from the Zoho API console                                                       |
-| Refresh Token        | Yes      | OAuth 2.0 refresh token you generate from a grant token                                                 |
 | Data Center Location | Yes      | The region that hosts your Zoho CRM account: `US`, `AU`, `EU`, `IN`, `CN`, or `JP`                      |
 | Environment          | Yes      | `Production`, `Developer`, or `Sandbox`                                                                 |
 | Zoho CRM Edition     | Yes      | Sets the connector's request concurrency. See [Performance considerations](#performance-considerations) |
 | Start Date           | No       | See [Start date](#start-date)                                                                           |
+| Client ID            | Yes      | Filled in by the OAuth flow on Airbyte Cloud; from the Zoho API console otherwise                       |
+| Client Secret        | Yes      | Filled in by the OAuth flow on Airbyte Cloud; from the Zoho API console otherwise                       |
+| Refresh Token        | Yes      | Filled in by the OAuth flow on Airbyte Cloud; generated from a grant token otherwise                    |
 
-The connector doesn't support the Airbyte OAuth button, so you generate the refresh token yourself using the steps below.
+### Airbyte Cloud: sign in with Zoho
 
-### Get Client ID, Client Secret, and Grant Token
+1. Select your **Data Center Location** first. Zoho runs a separate accounts server per data center, and the sign-in flow uses the one for the region you pick.
+2. Select **Authenticate your Zoho CRM account** and sign in. Airbyte requests these read-only scopes:
+   - `ZohoCRM.settings.modules.READ` and `ZohoCRM.settings.fields.READ`, to list your modules and their fields
+   - `ZohoCRM.modules.READ` and `ZohoCRM.modules.custom.READ`, to read records from standard and custom modules
+3. Fill in the remaining fields and select **Set up source**.
+
+The flow stores only the refresh token in your source. The client ID and secret belong to Airbyte's Zoho app.
+
+### Airbyte Open Source, or your own Zoho app
+
+Create a Zoho API client and generate a refresh token yourself, then paste the three credentials into the source.
+
+#### Get Client ID, Client Secret, and Grant Token
 
 1. Log into https://api-console.zoho.com/
 2. Choose client
-3. Enter the scopes the refresh and access tokens cover. The connector reads module and field metadata, then reads records from each module, so grant `ZohoCRM.settings.modules.READ`, `ZohoCRM.settings.fields.READ`, and read access to the record data, such as `ZohoCRM.modules.ALL`. **Make sure the scope covers every module you want to sync.** If the token lacks metadata access for a module, that module doesn't appear as a stream; if it lacks record access, the stream appears but the sync fails when it tries to read data.
+3. Enter the scopes the refresh and access tokens cover. The connector reads module and field metadata, then reads records from each module, so grant `ZohoCRM.settings.modules.READ`, `ZohoCRM.settings.fields.READ`, `ZohoCRM.modules.READ`, and `ZohoCRM.modules.custom.READ` (or `ZohoCRM.modules.ALL` if you prefer a single module scope). **Make sure the scope covers every module you want to sync.** If the token lacks metadata access for a module, that module doesn't appear as a stream; if it lacks record access, the stream appears but the sync fails when it tries to read data.
 4. Enter grant token's lifetime and description, click "Create".
 5. Copy Grant token, close the popup and copy Client ID and Client Secret on the "Client Secret" tab.
 
-### Create Refresh Token
+#### Create Refresh Token
 
 For generating the refresh token, please refer to [this page](https://www.zoho.com/crm/developer/docs/api/v2/access-refresh.html).
 Make sure to complete the auth flow quickly, as the initial token granted by Zoho CRM is only live for a few minutes before it can no longer be used to generate a refresh token.
@@ -182,7 +194,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.2.0 | 2026-09-11 | [85833](https://github.com/airbytehq/airbyte/pull/85833) | Add `advanced_auth` with declarative OAuth (data-center-aware consent and token URLs) |
+| 0.2.0 | 2026-09-11 | [85833](https://github.com/airbytehq/airbyte/pull/85833) | Add `advanced_auth` with declarative OAuth (data-center-aware consent and token URLs) requesting Zoho's documented read scopes; document the OAuth and manual setup paths |
 | 0.1.6 | 2026-09-15 | [86301](https://github.com/airbytehq/airbyte/pull/86301) | Update dependencies |
 | 0.1.5 | 2026-08-25 | [79062](https://github.com/airbytehq/airbyte/pull/79062) | Update dependencies |
 | 0.1.4 | 2026-08-24 | [80278](https://github.com/airbytehq/airbyte/pull/80278) | Fix incremental sync: tolerate `Z`-suffixed (UTC) cursor values and resolve cursor field per module instead of hardcoding `Modified_Time` |

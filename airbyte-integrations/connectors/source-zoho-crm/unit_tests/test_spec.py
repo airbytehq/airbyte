@@ -59,9 +59,16 @@ def test_consent_url_requests_offline_access():
 
 
 def test_scopes_cover_connector_endpoints_and_join_with_comma():
-    """The connector reads settings (modules/fields) and module records; Zoho separates scopes with commas."""
+    """The connector calls `/settings/modules`, `/settings/fields` and the record endpoint of every module,
+    including custom ones. Zoho documents a read scope per settings sub-resource and per module group and
+    has no bare `ZohoCRM.settings.READ`; scopes are separated with commas."""
     scopes = {entry["scope"] for entry in CONNECTOR_INPUT["scopes"]}
-    assert scopes == {"ZohoCRM.settings.READ", "ZohoCRM.modules.READ"}
+    assert scopes == {
+        "ZohoCRM.settings.modules.READ",
+        "ZohoCRM.settings.fields.READ",
+        "ZohoCRM.modules.READ",
+        "ZohoCRM.modules.custom.READ",
+    }
     assert CONNECTOR_INPUT["scopes_join_strategy"] == "comma"
 
 
