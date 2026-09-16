@@ -1,57 +1,42 @@
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 # Chift Migration Guide
 
 ## Upgrading to 0.1.0
 
-This release adds the `executions` stream and, alongside it, stops two objects from silently
-losing data on schematizing destinations (S3 and GCS in Avro or Parquet format). That second
-part is breaking for anyone reading those objects as nested columns.
+:::note
+This change only alters the data you receive if your destination is S3 or GCS in **Avro or Parquet** format and you read fields inside `connections.data` or `syncs.mappings[].sub_mappings[].target_field.display_condition`. Destinations that store objects as JSON, VARIANT, or JSONB columns (BigQuery, Snowflake, Postgres, Iceberg-based destinations such as S3 Data Lake) keep the same column contents. For them, refreshing the source schema is the only step.
+:::
+
+This release adds the `executions` stream and changes how two objects in the `connections` and `syncs` streams are declared. That second part is breaking for anyone reading those objects as nested columns.
+
+If you don't upgrade by 2026-10-31, Airbyte disables connections that still use 0.0.x until you upgrade them manually.
 
 ### What changed
 
-Two objects carried keys defined by the integration rather than by Chift's API contract, yet the
-schema enumerated a fixed subset of them:
+Two objects carry keys defined by the third-party integration rather than by Chift's API contract, but the schema enumerated a fixed subset of them:
 
 | Object | Was declared as | Is now |
 |---|---|---|
 | `connections.data` | an object with a single `folder_id` property | a schemaless object |
 | `syncs.mappings[].sub_mappings[].target_field.display_condition` | an object enumerating the `!` and `in` operators and one nesting shape | a schemaless object |
 
-Chift's own OpenAPI contract declares both objects free-form (`additionalProperties: true`, no
-fixed properties), so enumerating a key subset misrepresented the contract. On destinations that
-materialize declared nested shapes - S3 and GCS in Avro or Parquet format - the object column was
-built strictly from the enumerated keys: every other key was dropped silently, and the loss was
-not recorded in `_airbyte_meta.changes[]`. `display_condition` is a condition expression tree
-whose operator set is open-ended by nature, so it could never be enumerated correctly.
+Chift's OpenAPI contract declares both objects free-form (`additionalProperties: true`, no fixed properties). On destinations that build typed records from the declared schema (S3 and GCS in Avro or Parquet format), the object column contained only the enumerated keys. Every other key was dropped silently, and the loss wasn't recorded in `_airbyte_meta.changes[]`. `display_condition` is a condition expression tree whose operator set is open-ended, so it could never be enumerated correctly.
 
-A schemaless object is serialised to a JSON string instead, which preserves every key.
-Destinations that already store whole objects as JSON or VARIANT columns (BigQuery, Snowflake,
-Iceberg-based) keep the same column contents as before; for them this release only changes the
-declared catalog shape.
+A schemaless object is serialized to a JSON string on those destinations, which preserves every key. No data is lost: the full object is kept. On Avro and Parquet, the nested `data.folder_id` record field is replaced by the `data` string. Streams other than `connections` and `syncs` are unaffected.
 
 ### What you need to do
 
-1. **Refresh the source schema** for the connection.
-2. **Reset the `connections` and `syncs` streams** so the new column shape is applied.
-3. **Update any query** that reads `data.folder_id` or the `display_condition` sub-fields as
-   columns: they are now keys inside a JSON string.
+Which steps apply depends on your destination.
 
-Streams other than `connections` and `syncs` are unaffected, and no field is lost — the two
-objects now carry strictly more than before.
+**S3 or GCS in Avro or Parquet format.** The `connections.data` and `syncs.mappings[].sub_mappings[].target_field.display_condition` columns change from a record with a fixed set of fields to a string containing the full JSON object.
 
-### Extracting the values afterwards
+1. Refresh the source schema for the connection.
+2. Clear the `connections` and `syncs` streams so files written after the upgrade use the new column type. Both streams are full refresh, so the next sync re-supplies every record.
+3. Update any reader that accessed `data.folder_id` or the `display_condition` sub-fields as nested record fields to parse the JSON string instead. For example, in Athena or Trino, `json_extract_scalar(data, '$.folder_id')`; in Spark, `get_json_object(data, '$.folder_id')`. For `display_condition`, use the JSON path of the operator you care about, such as `$."in"` or `$."!"`.
 
-Replace a direct column reference such as `data.folder_id` with a JSON extraction:
+**BigQuery, Snowflake, Postgres, and Iceberg-based destinations (including S3 Data Lake).** These destinations already store the whole object in a JSON, VARIANT, or JSONB column, so the column contents don't change. Refresh the source schema so the connection's catalog matches the new declared shape. You don't need to clear the streams or change your queries; JSON extraction such as `JSON_VALUE(data, '$.folder_id')` (BigQuery), `data:folder_id::string` (Snowflake), or `data ->> 'folder_id'` (Postgres) keeps working as before.
 
-```sql
--- BigQuery
-SELECT JSON_VALUE(data, '$.folder_id') AS folder_id FROM connections;
+## Connector upgrade guide
 
--- Snowflake
-SELECT PARSE_JSON(data):folder_id::string AS folder_id FROM connections;
-
--- Postgres
-SELECT data::json ->> 'folder_id' AS folder_id FROM connections;
-```
-
-The same pattern applies to `display_condition`, whose contents are now reachable with the JSON
-path of the operator you care about, for example `$."in"` or `$."!"`.
+<MigrationGuide />
