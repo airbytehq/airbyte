@@ -24,6 +24,7 @@ from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
 
+
 # Every whole-hour UTC offset a NetSuite account can be configured to, from Eniwetok to
 # Kiritimati. The dead-zone guarantee has to hold across all of them.
 NETSUITE_ACCOUNT_UTC_OFFSETS = list(range(-12, 15))
