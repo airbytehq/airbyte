@@ -21,11 +21,32 @@ definitions:
           username: '{{ config["username"] }}'
           password: '{{ config["password"] }}'
       error_handler:
-        type: DefaultErrorHandler
-        max_retries: 5
-        backoff_strategies:
-          - type: WaitTimeFromHeader
-            header: Retry-After
+        type: CompositeErrorHandler
+        error_handlers:
+          - type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+              - type: ExponentialBackoffStrategy
+                factor: 5
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes: [401]
+                action: FAIL
+                failure_type: config_error
+                error_message: "Uptick rejected the client credentials or user login."
+              - type: HttpResponseFilter
+                http_codes: [403]
+                action: FAIL
+                failure_type: config_error
+                error_message: "Uptick user lacks permission for the requested endpoint."
+              - type: HttpResponseFilter
+                http_codes: [429]
+                action: RATE_LIMITED
+              - type: HttpResponseFilter
+                http_codes: [500, 502, 503, 504]
+                action: RETRY
       request_headers:
         User-Agent: Airbyte (Connector Version 1.1.0)
     SimpleRetriever:
@@ -81,6 +102,20 @@ definitions:
           field_path:
             - data
         schema_normalization: Default
+api_budget:
+  type: HTTPAPIBudget
+  ratelimit_reset_header: Retry-After
+  status_codes_for_ratelimit_hit: [429]
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 60
+          interval: PT1M
+      matchers: []
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 10
 spec:
   type: Spec
   connection_specification:
@@ -95,29 +130,56 @@ spec:
     properties:
       base_url:
         type: string
-        description: eg. https://demo-fire.onuptick.com (no trailing slash)
+        description: Root URL of the Uptick workspace, for example https://demo-fire.onuptick.com. Only the host is used; the scheme and trailing slash are normalized.
+        pattern: "^https://[^/]+$"
         order: 0
         title: Base Url
       client_id:
         type: string
+        description: Client ID of the OAuth application created in Uptick under Control Panel > Uptick API > Create Application.
         order: 1
         title: OAuth Client ID
         airbyte_secret: true
       client_secret:
         type: string
+        description: Client secret of that Uptick OAuth application.
         order: 2
         title: OAuth Client Secret
         airbyte_secret: true
       username:
         type: string
+        description: Email address of the Uptick user the connector signs in as. Synced data is limited to what this user can see in Uptick.
         order: 3
         title: Uptick API Account Email
       password:
         type: string
+        description: Password of that Uptick user.
         order: 4
         title: Uptick API Account Password
         airbyte_secret: true
+      num_workers:
+        type: integer
+        title: Number of Concurrent Threads
+        description: Number of concurrent requests. Higher values speed up syncs but increase the chance of Uptick rate limiting.
+        default: 3
+        minimum: 1
+        maximum: 10
+        order: 5
     additionalProperties: true
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Drop fields removed from the spec in 0.4.0 (start_date, end_date) and the OAuth-token fields replaced by password-grant fields.
+        transformations:
+          - type: ConfigRemoveFields
+            field_pointers: [["end_date"], ["start_date"], ["oauth_access_token"], ["oauth_token_expiry_date"], ["client_refresh_token"]]
+    transformations:
+      - type: ConfigAddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["base_url"]
+            value: "{{ 'https://' ~ (config['base_url'] | replace('https://', '') | replace('http://', '') | trim('/')) }}"
 streams:
   - type: DeclarativeStream
     name: tasks
