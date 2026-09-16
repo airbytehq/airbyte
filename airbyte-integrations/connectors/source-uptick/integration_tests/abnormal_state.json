@@ -438,5 +438,170 @@
         "name": "contractors"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "appointments"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "billingcontracts"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "billingcontractlineitems"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "defectquotelineitems"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "servicequotefixedlineitems"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "servicequotedoandchargelineitems"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "servicequoteproductlineitems"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "remarkevents"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "servicetasks"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "routineservices"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "routineservicelevels"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "routineservicetypes"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "routineserviceleveltypes"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "subtasks"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "task_profitability"
+      }
+    }
   }
 ]

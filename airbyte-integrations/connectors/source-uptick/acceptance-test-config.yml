@@ -16,7 +16,23 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
+        empty_streams:
+          - name: creditnotelineitems
+            bypass_reason: "Endpoint is GET-only in the Uptick API; credit-note line items cannot be created in the sandbox tenant"
+          - name: defectquotelineitems
+            bypass_reason: "Endpoint is GET-only in the Uptick API; defect-quote line items cannot be created in the sandbox tenant"
+          - name: remarkevents
+            bypass_reason: "Endpoint is GET-only; creating/updating remarks in the sandbox tenant does not emit remark events"
+          - name: majorservices
+            bypass_reason: "Endpoint is GET-only in the Uptick API; no write path exists to seed major services in the sandbox tenant"
+          - name: promptquestions
+            bypass_reason: "Endpoint is GET-only in the Uptick API; prompt questions cannot be created in the sandbox tenant"
+          - name: promptanswers
+            bypass_reason: "Endpoint is GET-only in the Uptick API; prompt answers cannot be created in the sandbox tenant"
+          - name: servicequotefixedlineitems
+            bypass_reason: "POST returns 201 in the sandbox tenant but records never appear in the collection endpoint, so the stream cannot be seeded"
+          - name: servicequotedoandchargelineitems
+            bypass_reason: "POST returns 201 in the sandbox tenant but records never appear in the collection endpoint, so the stream cannot be seeded"
   incremental:
     tests:
       - config_path: secrets/config.json
