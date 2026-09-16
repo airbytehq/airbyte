@@ -8,7 +8,10 @@ import pytest
 import yaml
 from requests import Response
 
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
+
+from .conftest import read_from_stream
 
 
 @pytest.fixture
@@ -495,3 +498,32 @@ class TestCustomObjectAssociationExtractor:
         assert records[0]["from_id"] == "789"
         assert records[0]["to_id"] == "101"
         assert records[0]["label"] == "Related"
+
+
+def test_custom_association_parent_search_400_reports_invalid_custom_object_config_error(requests_mock):
+    """A 400 from the parent `/crm/v3/objects/{from_object}/search` request (e.g. HubSpot cannot infer the object type
+    from a bare custom object name) must surface as a config_error naming the custom object identifier fields, not as
+    the generic credentials error."""
+    config = {
+        "start_date": "2021-01-10T00:00:00Z",
+        "credentials": {"credentials_title": "Private App Credentials", "access_token": "test_access_token"},
+        "custom_object_association_streams": [{"from_object": "my_custom_object", "to_object": "deals"}],
+    }
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    search = requests_mock.post(
+        "https://api.hubapi.com/crm/v3/objects/my_custom_object/search",
+        json={"status": "error", "message": "Unable to infer object type from: my_custom_object"},
+        status_code=400,
+    )
+    associations = requests_mock.post("https://api.hubapi.com/crm/v4/associations/my_custom_object/deals/batch/read", json={"results": []})
+
+    output = read_from_stream(config, "associations_my_custom_object_deals", SyncMode.incremental, expecting_exception=True)
+
+    assert search.called
+    assert not associations.called
+    assert output.errors
+    error = output.errors[0].trace.error
+    assert error.failure_type == FailureType.config_error
+    assert "custom object" in error.message.lower()
+    assert "'from_object'" in error.message
+    assert "credentials" not in error.message.lower()
