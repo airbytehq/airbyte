@@ -132,6 +132,8 @@ def list_schemas(pattern: str, older_than_hours: float | None) -> None:
     if older_than_hours is not None:
         cutoff = datetime.now(timezone.utc).timestamp() - older_than_hours * 3600
     for row in rows:
+        if not SCHEMA_PATTERN.fullmatch(row["name"]):
+            continue
         created_on = row["created_on"]
         if cutoff is not None:
             if created_on.tzinfo is None:

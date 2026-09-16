@@ -2,7 +2,11 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OLDER_THAN_HOURS=2
+export REPRO_OUT="${REPRO_OUT:-/tmp/source-snowflake-repro}"
+export GSM_PROJECT="${GSM_PROJECT:-dataline-integration-testing}"
+export SNOWFLAKE_SECRET_NAME="${SNOWFLAKE_SECRET_NAME:-SECRET_SOURCE-SNOWFLAKE_KEY_PAIR__CREDS}"
+export SNOWFLAKE_CONFIG_FILE="${SNOWFLAKE_CONFIG_FILE:-$REPRO_OUT/.snowflake-config.json}"
+OLDER_THAN_HOURS=4
 DRY_RUN=false
 for arg in "$@"; do
   case "$arg" in
@@ -12,15 +16,24 @@ for arg in "$@"; do
   esac
 done
 
+if [[ ! "$OLDER_THAN_HOURS" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+  echo "older-than-hours must be a non-negative number" >&2
+  exit 2
+fi
+
 temporary_config=false
 if [[ ! -f "$SNOWFLAKE_CONFIG_FILE" ]]; then
   "$SCRIPT_DIR/fetch-config.sh"
   temporary_config=true
 fi
-trap 'if [[ "$temporary_config" == true ]]; then rm -f "$SNOWFLAKE_CONFIG_FILE"; fi' EXIT
+trap 'if [[ "$temporary_config" == true ]]; then rm -f "$SNOWFLAKE_CONFIG_FILE" "$SNOWFLAKE_CONFIG_FILE.fetched"; fi' EXIT
 
-mapfile -t schemas < <("$SCRIPT_DIR/sf.py" list-schemas \
-  --like 'PROVEFIX_%' --older-than-hours "$OLDER_THAN_HOURS")
+if ! listing=$("$SCRIPT_DIR/sf.py" list-schemas \
+  --like 'PROVEFIX_%' --older-than-hours "$OLDER_THAN_HOURS"); then
+  echo "[sweep-orphans] listing failed" >&2
+  exit 1
+fi
+mapfile -t schemas <<< "$listing"
 count=0
 for schema in "${schemas[@]}"; do
   [[ -n "$schema" ]] || continue

@@ -41,13 +41,15 @@ source-snowflake-e2e-tests/
 - Control and target use the same schema with `--reset=fixture`; remote
   `--reset=backend` is rejected.
 - Teardown drops the schema in the run's exit trap.
-- `scripts/sweep-orphans.sh` lists or drops old `PROVEFIX_*` schemas.
+- `scripts/sweep-orphans.sh` lists or drops old `PROVEFIX_*` schemas, defaulting
+  to four hours.
 
 The schema is owned by the scripts, while `sf.py` is the only code that talks
 to Snowflake. The default config comes from GSM secret
 `SECRET_SOURCE-SNOWFLAKE_KEY_PAIR__CREDS` in project
-`dataline-integration-testing`; set `SNOWFLAKE_CONFIG_FILE` to reuse a fetched
-config.
+`dataline-integration-testing`; fetched configs are marked with a sidecar and
+only those configs are removed during teardown, so caller-supplied configs
+survive. Set `SNOWFLAKE_CONFIG_FILE` to reuse a caller-supplied config.
 
 ## Cursor upper-bound canary
 

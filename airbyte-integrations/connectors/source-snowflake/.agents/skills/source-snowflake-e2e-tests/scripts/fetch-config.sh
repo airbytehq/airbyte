@@ -17,4 +17,6 @@ gcloud secrets versions access latest \
   --secret="$SNOWFLAKE_SECRET_NAME" \
   --project="$GSM_PROJECT" > "$temporary_file"
 mv "$temporary_file" "$SNOWFLAKE_CONFIG_FILE"
+touch "$SNOWFLAKE_CONFIG_FILE.fetched"
+chmod 600 "$SNOWFLAKE_CONFIG_FILE.fetched"
 trap - EXIT

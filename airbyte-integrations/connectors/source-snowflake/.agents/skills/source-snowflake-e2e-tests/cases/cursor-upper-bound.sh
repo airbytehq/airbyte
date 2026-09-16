@@ -5,6 +5,7 @@ SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export REPRO_OUT="${REPRO_OUT:-/tmp/source-snowflake-repro}"
 export PROVEFIX_RUN_ID="${PROVEFIX_RUN_ID:-$(date +%Y%m%d%H%M%S)_$$}"
 export PROVEFIX_SCHEMA="PROVEFIX_${PROVEFIX_RUN_ID}"
+export SNOWFLAKE_CONFIG_FILE="${SNOWFLAKE_CONFIG_FILE:-$REPRO_OUT/.snowflake-config.json}"
 TARGET="${1:-1.1.1}"
 CONTROL="${2:-1.1.0}"
 BASE_FIXTURE="$SKILL_DIR/fixtures/sql/00-cursor-canary-base.sql"
@@ -12,6 +13,16 @@ BOUNDARY_FIXTURE="$SKILL_DIR/fixtures/sql/01-cursor-canary-boundary-row.sql"
 EXTRACT_STATE="$SKILL_DIR/../../../../../db-harness-lib/scripts/extract-state.py"
 CANARY_CONFIG_TEMPLATE="${CANARY_CONFIG_TEMPLATE:-$SKILL_DIR/fixtures/configs/utc-session.template.json}"
 
+cleanup_initial_failure() {
+  rc=$?
+  trap - EXIT
+  if ! "$SKILL_DIR/scripts/stop-backend.sh"; then
+    echo "[cursor-upper-bound] failed to clean up the initial schema" >&2
+  fi
+  exit "$rc"
+}
+
+trap cleanup_initial_failure EXIT
 if "$SKILL_DIR/scripts/run.sh" \
   --command=read \
   --test-version="$CONTROL" \
@@ -34,6 +45,7 @@ fi
 
 python3 "$EXTRACT_STATE" "$REPRO_OUT/canary-initial/read/stdout.txt" \
   > "$REPRO_OUT/canary-state.json"
+trap - EXIT
 
 if "$SKILL_DIR/scripts/run.sh" \
   --command=read \
@@ -48,6 +60,7 @@ if "$SKILL_DIR/scripts/run.sh" \
   --streams=CURSOR_CANARY \
   --config-template="$CANARY_CONFIG_TEMPLATE" \
   --step-name=canary-incremental \
+  --expect-control=pass \
   --expect-match='stdout:"NAME":\s*"boundary"'; then
   :
 else
@@ -81,11 +94,14 @@ if [[ "$target_boundary" -lt 1 ]]; then
   exit 1
 fi
 
-VERIFY_CONFIG="$REPRO_OUT/.verify-config-$$.json"
-trap 'rm -f "$VERIFY_CONFIG"' EXIT
-SNOWFLAKE_CONFIG_FILE="$VERIFY_CONFIG" \
-  REPRO_OUT="$REPRO_OUT" \
-  "$SKILL_DIR/scripts/fetch-config.sh"
+VERIFY_CONFIG="$SNOWFLAKE_CONFIG_FILE"
+if [[ ! -f "$VERIFY_CONFIG" ]]; then
+  VERIFY_CONFIG="$REPRO_OUT/.verify-config-$$.json"
+  SNOWFLAKE_CONFIG_FILE="$VERIFY_CONFIG" \
+    REPRO_OUT="$REPRO_OUT" \
+    "$SKILL_DIR/scripts/fetch-config.sh"
+  trap 'rm -f "$VERIFY_CONFIG" "$VERIFY_CONFIG.fetched"' EXIT
+fi
 if [[ "$(SNOWFLAKE_CONFIG_FILE="$VERIFY_CONFIG" "$SKILL_DIR/scripts/sf.py" schema-exists "$PROVEFIX_SCHEMA")" != false ]]; then
   echo "[cursor-upper-bound] $PROVEFIX_SCHEMA still exists after harness teardown" >&2
   exit 1
