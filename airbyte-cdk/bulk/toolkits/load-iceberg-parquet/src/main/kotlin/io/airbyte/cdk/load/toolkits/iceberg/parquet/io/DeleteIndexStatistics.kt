@@ -254,7 +254,7 @@ object DeleteIndexStatistics {
         try {
             val live =
                 table.newScan().useSnapshot(snapshotId).planFiles().use { tasks ->
-                    tasks.map { it.file().location().toString() }.toSet()
+                    tasks.map { it.file().location() }.toSet()
                 }
             carried.filterKeys { it in live }
         } catch (e: Exception) {

@@ -1,0 +1,37 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "sales_report" },
+      "stream_state": { "_sync_cursor": "2026-09-01" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "finance_report" },
+      "stream_state": { "_sync_cursor": "2026-08-01" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "customer_reviews_per_app" },
+      "stream_state": { "createdDate": "2026-09-01T00:00:00Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "app_store_installations_and_deletions" },
+      "stream_state": { "processing_date": "2026-09-01" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "app_download" },
+      "stream_state": { "processing_date": "2026-09-01" }
+    }
+  }
+]

@@ -45,6 +45,7 @@ data class S3DataLakeConfiguration(
     val icebergDeleteFileType: IcebergDeleteFileType = IcebergDeleteFileType.AUTOMATIC,
     val optimizePriorIcebergDeleteFiles: Boolean = true,
     val useExperimentalDeleteVectorFiles: Boolean = false,
+    val normalizeColumnNames: Boolean = false,
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -94,6 +95,7 @@ class S3DataLakeConfigurationFactory :
             icebergDeleteFileType = pojo.icebergDeleteFileType ?: IcebergDeleteFileType.AUTOMATIC,
             optimizePriorIcebergDeleteFiles = pojo.optimizePriorIcebergDeleteFiles ?: true,
             useExperimentalDeleteVectorFiles = pojo.useExperimentalDeleteVectorFiles ?: false,
+            normalizeColumnNames = pojo.normalizeColumnNames ?: false,
         )
     }
 }

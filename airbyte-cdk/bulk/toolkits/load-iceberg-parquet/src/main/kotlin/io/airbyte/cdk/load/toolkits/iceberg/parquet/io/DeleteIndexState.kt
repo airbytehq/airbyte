@@ -96,7 +96,7 @@ class DeleteIndexState(val enabled: Boolean = false) {
                     .filter { it.referencedDataFile() != null }
                     .groupBy { it.referencedDataFile()!! }
             val newDataFileRecordCounts =
-                writeResult.dataFiles().associate { it.location().toString() to it.recordCount() }
+                writeResult.dataFiles().associate { it.location() to it.recordCount() }
             val entries =
                 observed
                     .filterKeys { it !in removedDataFileLocations }
@@ -167,6 +167,6 @@ class DeleteIndexState(val enabled: Boolean = false) {
 
         /** Locations of the data files a commit removes, whose index entries must be dropped. */
         fun removedLocations(dataFiles: Set<DataFile>): Set<String> =
-            dataFiles.map { it.location().toString() }.toSet()
+            dataFiles.map { it.location() }.toSet()
     }
 }

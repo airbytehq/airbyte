@@ -110,25 +110,25 @@ object IcebergTableCommitter {
         snapshotId: Long,
         dataFiles: Set<DataFile>,
     ): Set<DeleteFile> {
-        val dataFileLocations = dataFiles.map { it.location().toString() }.toSet()
+        val dataFileLocations = dataFiles.map { it.location() }.toSet()
         return table.newScan().useSnapshot(snapshotId).planFiles().use { tasks ->
             val plannedTasks = tasks.toList()
             val deleteReferences =
                 plannedTasks
                     .flatMap { task ->
                         task.deletes().map { deleteFile ->
-                            deleteFile.location().toString() to task.file().location().toString()
+                            deleteFile.location() to task.file().location()
                         }
                     }
                     .groupBy({ it.first }, { it.second })
             plannedTasks
-                .filter { task -> dataFileLocations.contains(task.file().location().toString()) }
+                .filter { task -> dataFileLocations.contains(task.file().location()) }
                 .flatMap { task ->
                     task.deletes().filter { deleteFile ->
                         deleteFile.content() == FileContent.POSITION_DELETES &&
                             deleteFile.referencedDataFile() != null &&
                             dataFileLocations.contains(deleteFile.referencedDataFile()) &&
-                            deleteReferences[deleteFile.location().toString()]?.toSet()?.size == 1
+                            deleteReferences[deleteFile.location()]?.toSet()?.size == 1
                     }
                 }
                 .toSet()

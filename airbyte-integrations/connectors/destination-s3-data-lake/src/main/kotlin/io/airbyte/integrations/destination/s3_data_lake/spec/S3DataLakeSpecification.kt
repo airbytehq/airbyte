@@ -85,6 +85,19 @@ class S3DataLakeSpecification :
     )
     val flushBatchSizeMb: Long? = null
 
+    @get:JsonSchemaTitle("Normalize Column Names")
+    @get:JsonPropertyDescription(
+        "Lowercases column names and replaces non-alphanumeric characters with underscores " +
+            "before writing to Iceberg (e.g. \"Foo.Bar\" -> \"foo_bar\"). " +
+            "Enable this when downstream query engines cannot handle mixed-case or " +
+            "special-character column names. " +
+            "IMPORTANT: toggling this on existing synced streams requires clearing the " +
+            "stream data and running a full refresh."
+    )
+    @get:JsonProperty("normalize_column_names", required = false)
+    @get:JsonSchemaInject(json = """{"default": false, "order": 9}""")
+    val normalizeColumnNames: Boolean? = null
+
     @get:JsonSchemaTitle("Iceberg Delete File Type")
     @get:JsonPropertyDescription(
         "The delete-file encoding used by Dedupe streams. AUTOMATIC currently uses equality deletes " +
@@ -94,7 +107,7 @@ class S3DataLakeSpecification :
     @get:JsonProperty("iceberg_delete_file_type", required = false)
     @get:JsonSchemaInject(
         json =
-            """{"default":"AUTOMATIC","examples":["AUTOMATIC","EQUALITY","POSITIONAL"],"order":9}"""
+            """{"default":"AUTOMATIC","examples":["AUTOMATIC","EQUALITY","POSITIONAL"],"order":10}"""
     )
     val icebergDeleteFileType: IcebergDeleteFileType? = null
 
@@ -106,7 +119,7 @@ class S3DataLakeSpecification :
             "prior delete files at the cost of a larger delete-file population."
     )
     @get:JsonProperty("optimize_prior_iceberg_delete_files", required = false)
-    @get:JsonSchemaInject(json = """{"default":true,"order":10,"airbyte_hidden":true}""")
+    @get:JsonSchemaInject(json = """{"default":true,"order":11,"airbyte_hidden":true}""")
     val optimizePriorIcebergDeleteFiles: Boolean? = null
 
     @get:JsonSchemaTitle("Use Experimental Delete Vector Files")
@@ -118,7 +131,7 @@ class S3DataLakeSpecification :
             "delete files remain the source of truth and readers are unaffected."
     )
     @get:JsonProperty("use_experimental_delete_vector_files", required = false)
-    @get:JsonSchemaInject(json = """{"default":false,"order":11,"airbyte_hidden":true}""")
+    @get:JsonSchemaInject(json = """{"default":false,"order":12,"airbyte_hidden":true}""")
     val useExperimentalDeleteVectorFiles: Boolean? = null
 
     @get:JsonSchemaTitle("Max Records Per Flush")
@@ -131,7 +144,7 @@ class S3DataLakeSpecification :
             "reject flushes containing more than 1,000,000 distinct primary keys."
     )
     @get:JsonProperty("max_records_per_flush", required = false)
-    @get:JsonSchemaInject(json = """{"default":10000000000,"order":12,"airbyte_hidden":true}""")
+    @get:JsonSchemaInject(json = """{"default":10000000000,"order":13,"airbyte_hidden":true}""")
     val maxRecordsPerFlush: Long? = null
 }
 
