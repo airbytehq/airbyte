@@ -11,7 +11,7 @@ class UptickRequestBuilder:
     BASE_URL = "https://test-tenant.onuptick.com"
     ACCESS_TOKEN = "tok"
     START_DATE = "2000-01-01T00:00:00.000000+0000"
-    _FIELDS = {
+    FIELDS = {
         "creditnotelineitems": (
             "CreditNoteLineItem",
             "id,created,updated,deleted,account_code,description,unit_price,quantity,subtotal,tax,total,taxcode,taxrate,creditnote,product",
@@ -52,7 +52,7 @@ class UptickRequestBuilder:
 
     @classmethod
     def collection(cls, stream: str, page: int = 1) -> HttpRequest:
-        model, fields = cls._FIELDS[stream]
+        model, fields = cls.FIELDS[stream]
         query_params: dict[str, Any] = {
             "ordering": "-updated",
             "show_deleted": "true",

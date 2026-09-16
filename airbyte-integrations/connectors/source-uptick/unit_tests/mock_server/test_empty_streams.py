@@ -4,12 +4,12 @@ import json
 from typing import Any
 
 import pytest
-from conftest import get_source
+from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 from mock_server.config import ConfigBuilder
 from mock_server.request_builder import UptickRequestBuilder
@@ -34,7 +34,7 @@ _TOKEN_RESPONSE = {
 }
 _CREATED = "2026-01-01T00:00:00Z"
 _UPDATED = "2026-01-02T00:00:00Z"
-_MODELS = {stream: fields[0] for stream, fields in UptickRequestBuilder._FIELDS.items()}
+_MODELS = {stream: fields[0] for stream, fields in UptickRequestBuilder.FIELDS.items()}
 
 
 def _relationship(resource_id: int | None = 1) -> dict[str, Any]:
@@ -168,10 +168,14 @@ def _read(stream: str):
 
 
 def _mock_token(http_mocker: HttpMocker) -> None:
-    http_mocker._mocker.post(
-        UptickRequestBuilder.token_endpoint(),
-        text=json.dumps(_TOKEN_RESPONSE),
-        status_code=200,
+    http_mocker.post(
+        HttpRequest(
+            url=UptickRequestBuilder.token_endpoint(),
+            body=(
+                "grant_type=password&client_id=test-client-id&client_secret=test-client-secret" "&username=test-user&password=test-password"
+            ),
+        ),
+        HttpResponse(body=json.dumps(_TOKEN_RESPONSE), status_code=200),
     )
 
 
