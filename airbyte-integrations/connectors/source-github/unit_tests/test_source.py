@@ -301,11 +301,11 @@ def test_streams_page_size(rate_limit_mock_response, requests_mock):
                 "repository": "airbyte/test",
             },
             # `SourceGithub.streams()` returns the Python streams only; the manifest streams
-            # come from `super().streams()`. Dropped from 30 to 24 in Step 9, when all six
+            # come from `super().streams()`. Dropped from 10 to 4 in Step 9, when all six
             # GraphQL streams moved to the manifest.
-            24,
+            4,
         ),
-        ({"access_token": "test_token", "repository": "airbyte/test"}, 24),
+        ({"access_token": "test_token", "repository": "airbyte/test"}, 4),
     ),
 )
 def test_streams_config_start_date(config, expected, rate_limit_mock_response, requests_mock):
@@ -424,11 +424,11 @@ def test_read_routes_manifest_streams_to_concurrent_and_python_streams_to_synchr
 
 
 def test_read_with_empty_manifest_skips_concurrent_read(rate_limit_mock_response, requests_mock):
-    """A catalog holding only Python streams must not start the concurrent source. `teams` moved
-    to the manifest in Step 4, so this uses `issues`, which is still a Python stream."""
+    """A catalog holding only Python streams must not start the concurrent source. `issues` moved
+    to the manifest in Step 6 and `pull_request_stats` in Step 9, so this uses `workflow_runs`."""
     requests_mock.get("https://api.github.com/repos/airbyte/test", json={"full_name": "airbyte/test"})
     source = SourceGithub(config=_CONFIG)
-    catalog = CatalogBuilder().with_stream(name="issues", sync_mode=SyncMode.full_refresh).build()
+    catalog = CatalogBuilder().with_stream(name="workflow_runs", sync_mode=SyncMode.full_refresh).build()
 
     with (
         patch.object(ConcurrentSource, "read", return_value=iter([])) as concurrent_read,
@@ -439,4 +439,4 @@ def test_read_with_empty_manifest_skips_concurrent_read(rate_limit_mock_response
     concurrent_read.assert_not_called()
     synchronous_read.assert_called_once()
     synchronous_catalog = synchronous_read.call_args.args[3]
-    assert [s.stream.name for s in synchronous_catalog.streams] == ["issues"]
+    assert [s.stream.name for s in synchronous_catalog.streams] == ["workflow_runs"]

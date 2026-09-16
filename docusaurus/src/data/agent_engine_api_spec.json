@@ -4494,7 +4494,7 @@
         "type": "object",
         "required": ["entity", "action"],
         "title": "ConnectorExecuteRequest",
-        "description": "Request body for connector execution.\n\nAll actions use the same unified format:\n    - entity: resource type or stream name\n    - action: operation type (list, get, create, download, search, api_search)\n    - params: operation-specific parameters\n\nFor SEARCH action, params should contain:\n    - query: Query object with filter/sort conditions\n    - limit: maximum number of results (default 10)\n    - cursor: pagination cursor for next page\n    - fields: list of field paths to include in results"
+        "description": "Request body for connector execution.\n\nAll actions use the same unified format:\n    - entity: resource type or stream name\n    - action: operation type (list, get, create, download, search, context_store_search)\n    - params: operation-specific parameters\n\nFor SEARCH action, params should contain:\n    - query: Query object with filter/sort conditions\n    - limit: maximum number of results (default 10)\n    - cursor: pagination cursor for next page\n    - fields: list of field paths to include in results"
       },
       "ConnectorExecuteResponse": {
         "properties": {
@@ -4716,10 +4716,17 @@
             "description": "Connector source definition name, when available."
           },
           "source_config_template_id": {
-            "type": "string",
-            "format": "uuid",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Source Config Template Id",
-            "description": "Source config template ID used by this connector."
+            "description": "Source config template ID used by this connector, or null for connectors managed directly in Airbyte Cloud."
           },
           "docs_skill_id": {
             "type": "string",
@@ -4753,7 +4760,6 @@
           "workspace_id",
           "organization_id",
           "source_definition_id",
-          "source_config_template_id",
           "docs_skill_id"
         ],
         "title": "ConnectorInspectResponse"
