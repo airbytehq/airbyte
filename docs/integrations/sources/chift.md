@@ -70,7 +70,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.0 | 2026-09-15 | [77576](https://github.com/airbytehq/airbyte/pull/77576) | Add `executions` stream, incremental on `start` and paginated on `page`/`size`. Declare `connections.data` and `target_field.display_condition` schemaless, matching Chift's contract, so schematizing destinations (S3/GCS Avro/Parquet) stop dropping their integration-defined keys - see the [migration guide](https://docs.airbyte.com/integrations/sources/chift-migrations) |
+| 0.1.0 | 2026-09-16 | [77576](https://github.com/airbytehq/airbyte/pull/77576) | Add `executions` stream, incremental on `start` and paginated on `page`/`size`. Declare `connections.data` and `target_field.display_condition` schemaless, matching Chift's contract, so schematizing destinations (S3/GCS Avro/Parquet) stop dropping their integration-defined keys - see the [migration guide](https://docs.airbyte.com/integrations/sources/chift-migrations) |
 | 0.0.26 | 2026-09-15 | [85978](https://github.com/airbytehq/airbyte/pull/85978) | Update dependencies |
 | 0.0.25 | 2026-09-08 | [85452](https://github.com/airbytehq/airbyte/pull/85452) | Update dependencies |
 | 0.0.24 | 2026-08-18 | [84529](https://github.com/airbytehq/airbyte/pull/84529) | Update dependencies |

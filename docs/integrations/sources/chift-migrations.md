@@ -17,7 +17,7 @@ If you don't upgrade by 2026-10-31, Airbyte disables connections that still use 
 Two objects carry keys defined by the third-party integration rather than by Chift's API contract, but the schema enumerated a fixed subset of them:
 
 | Object | Was declared as | Is now |
-|---|---|---|
+| --- | --- | --- |
 | `connections.data` | an object with a single `folder_id` property | a schemaless object |
 | `syncs.mappings[].sub_mappings[].target_field.display_condition` | an object enumerating the `!` and `in` operators and one nesting shape | a schemaless object |
 
@@ -32,7 +32,7 @@ Which steps apply depends on your destination.
 **S3 or GCS in Avro or Parquet format.** The `connections.data` and `syncs.mappings[].sub_mappings[].target_field.display_condition` columns change from a record with a fixed set of fields to a string containing the full JSON object.
 
 1. Refresh the source schema for the connection.
-2. Clear the `connections` and `syncs` streams so files written after the upgrade use the new column type. Both streams are full refresh, so the next sync re-supplies every record.
+2. If the connection replicates `connections` or `syncs` in **Full refresh | Append** mode, clear both streams so the prefix does not mix record-typed and string-typed files. Both streams are full refresh, so the next sync re-supplies every record. **Full refresh | Overwrite** connections are rebuilt on the next sync and need no clear.
 3. Update any reader that accessed `data.folder_id` or the `display_condition` sub-fields as nested record fields to parse the JSON string instead. For example, in Athena or Trino, `json_extract_scalar(data, '$.folder_id')`; in Spark, `get_json_object(data, '$.folder_id')`. For `display_condition`, use the JSON path of the operator you care about, such as `$."in"` or `$."!"`.
 
 **BigQuery, Snowflake, Postgres, and Iceberg-based destinations (including S3 Data Lake).** These destinations already store the whole object in a JSON, VARIANT, or JSONB column, so the column contents don't change. Refresh the source schema so the connection's catalog matches the new declared shape. You don't need to clear the streams or change your queries; JSON extraction such as `JSON_VALUE(data, '$.folder_id')` (BigQuery), `data:folder_id::string` (Snowflake), or `data ->> 'folder_id'` (Postgres) keeps working as before.
