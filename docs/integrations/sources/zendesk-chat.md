@@ -68,6 +68,19 @@ The Zendesk Chat source connector supports the following [sync modes](https://do
 
 The Zendesk Chat API enforces a rate limit of [200 requests per minute](https://developer.zendesk.com/api-reference/live-chat/introduction/) per endpoint. The connector handles rate limiting automatically by respecting the `Retry-After` header when a 429 response is returned.
 
+## Troubleshooting
+
+### Zendesk Chat access token is invalid, expired, or missing the required read and chat scopes
+
+Zendesk Chat returned a `401 Unauthorized` response, so the connector stops the sync and reports a configuration error. To resolve it:
+
+- **Airbyte Cloud**: Edit the source and click **Authenticate your Zendesk Chat account** to re-authorize the connection.
+- **Airbyte Open Source**: Generate a new [access token](https://developer.zendesk.com/documentation/live-chat/getting-started/auth/) with the `read` scope and update the **Access Token** field.
+
+### Deleted records return 404
+
+When Zendesk Chat returns a `404 Not Found` response for a record, the connector skips the record and continues the sync instead of failing.
+
 ## Data type map
 
 | Integration Type | Airbyte Type |
@@ -114,7 +127,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 1.3.3 | 2026-02-17 | [73534](https://github.com/airbytehq/airbyte/pull/73534) | Update dependencies |
 | 1.3.2 | 2026-02-10 | [73151](https://github.com/airbytehq/airbyte/pull/73151) | Update dependencies |
 | 1.3.1 | 2026-02-03 | [72611](https://github.com/airbytehq/airbyte/pull/72611) | Update dependencies |
-| 1.3.0 | 2026-01-17 | [71829](https://github.com/airbytehq/airbyte/pull/71829) | Add OAuth2.0 support for Airbyte Cloud |
+| 1.3.0 | 2026-01-28 | [71829](https://github.com/airbytehq/airbyte/pull/71829) | Add OAuth2.0 support for Airbyte Cloud |
 | 1.2.31 | 2026-01-20 | [72091](https://github.com/airbytehq/airbyte/pull/72091) | Update dependencies |
 | 1.2.30 | 2026-01-14 | [71701](https://github.com/airbytehq/airbyte/pull/71701) | Update dependencies |
 | 1.2.29 | 2025-12-18 | [70681](https://github.com/airbytehq/airbyte/pull/70681) | Update dependencies |
