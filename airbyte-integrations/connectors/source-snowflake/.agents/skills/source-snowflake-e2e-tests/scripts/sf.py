@@ -1,4 +1,6 @@
 #!/usr/bin/env -S uv run --script
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
@@ -10,12 +12,11 @@ import argparse
 import json
 import os
 import re
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from cryptography.hazmat.primitives import serialization
 import snowflake.connector
+from cryptography.hazmat.primitives import serialization
 
 
 SCHEMA_PATTERN = re.compile(r"^PROVEFIX_[A-Z0-9_]+$")
@@ -28,9 +29,7 @@ def config() -> dict:
 
 def validate_schema(name: str) -> str:
     if not SCHEMA_PATTERN.fullmatch(name):
-        raise SystemExit(
-            f"schema must match {SCHEMA_PATTERN.pattern} (got {name!r})"
-        )
+        raise SystemExit(f"schema must match {SCHEMA_PATTERN.pattern} (got {name!r})")
     return name
 
 
@@ -45,9 +44,7 @@ def quoted_literal(value: str) -> str:
 def connect(schema: str | None = None):
     settings = config()
     credentials = settings["credentials"]
-    private_key = serialization.load_pem_private_key(
-        credentials["private_key"].encode(), password=None
-    )
+    private_key = serialization.load_pem_private_key(credentials["private_key"].encode(), password=None)
     private_key_der = private_key.private_bytes(
         serialization.Encoding.DER,
         serialization.PrivateFormat.PKCS8,
@@ -72,9 +69,7 @@ def schema_rows(connection, pattern: str) -> list[dict]:
     database = quoted_identifier(config()["database"])
     cursor = connection.cursor()
     try:
-        cursor.execute(
-            f"SHOW SCHEMAS LIKE {quoted_literal(pattern)} IN DATABASE {database}"
-        )
+        cursor.execute(f"SHOW SCHEMAS LIKE {quoted_literal(pattern)} IN DATABASE {database}")
         columns = [column[0].lower() for column in cursor.description]
         return [dict(zip(columns, row)) for row in cursor.fetchall()]
     finally:
@@ -85,9 +80,7 @@ def schema_exists(name: str) -> bool:
     validate_schema(name)
     connection = connect()
     try:
-        return any(
-            row["name"].upper() == name.upper() for row in schema_rows(connection, name)
-        )
+        return any(row["name"].upper() == name.upper() for row in schema_rows(connection, name))
     finally:
         connection.close()
 
