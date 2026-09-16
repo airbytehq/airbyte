@@ -8,12 +8,15 @@ created before it fail spec validation on the missing root fields. These tests p
 a legacy nested config is flattened, and an already-flat config is left untouched.
 """
 
+import json
 from pathlib import Path
 
 import jsonschema
 import pytest
 import yaml
+
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
+
 
 MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 
@@ -43,9 +46,7 @@ def manifest():
 
 
 def migrate(manifest, config):
-    return ConcurrentDeclarativeSource(
-        source_config=manifest, config=config, catalog=None, state=None
-    )._config
+    return ConcurrentDeclarativeSource(source_config=manifest, config=config, catalog=None, state=None)._config
 
 
 def flat_config():
@@ -86,6 +87,29 @@ def test_migrated_config_satisfies_the_spec(manifest, config_factory):
     migrated = migrate(manifest, config_factory())
 
     jsonschema.validate(migrated, manifest["spec"]["connection_specification"])
+
+
+def test_migrated_config_is_persisted(manifest, tmp_path, capsys):
+    """The flattened config must be written back and announced, or it reverts on the next sync."""
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps(nested_config()))
+
+    ConcurrentDeclarativeSource(
+        source_config=manifest,
+        config=nested_config(),
+        catalog=None,
+        state=None,
+        config_path=str(config_path),
+    )
+
+    assert json.loads(config_path.read_text()) == flat_config()
+
+    control_messages = [
+        json.loads(line)
+        for line in capsys.readouterr().out.splitlines()
+        if line.startswith("{") and json.loads(line).get("type") == "CONTROL"
+    ]
+    assert [message["control"]["connectorConfig"]["config"] for message in control_messages] == [flat_config()]
 
 
 @pytest.mark.parametrize("field", OAUTH_FIELDS)
