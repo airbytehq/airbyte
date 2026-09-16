@@ -11,7 +11,6 @@ import pytest
 import responses
 from source_github import constants
 from source_github.source import SourceGithub
-from source_github.streams import Branches
 
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteStream, Status, SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -21,7 +20,7 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-from .utils import command_check
+from .utils import ProbeStream, command_check
 
 
 def check_source(repo_line: str) -> AirbyteConnectionStatus:
@@ -97,9 +96,9 @@ def test_api_url_slash_normalization_keeps_python_and_manifest_urls_consistent(a
     config = source._validate_and_transform_config(config)
     assert config["api_url"] == "https://github.example.com/api/v3/"
 
-    stream = Branches(repositories=["org/repo"], page_size_for_large_streams=10, api_url=config["api_url"])
+    stream = ProbeStream(repositories=["org/repo"], page_size_for_large_streams=10, api_url=config["api_url"])
     joined = urljoin(stream.url_base, stream.path(stream_slice={"repository": "org/repo"}))
-    assert joined == "https://github.example.com/api/v3/repos/org/repo/branches"
+    assert joined == "https://github.example.com/api/v3/repos/org/repo/probe_stream"
 
     manifest_url_base = SourceGithub(config=config).resolved_manifest["definitions"]["requester_base"]["url_base"]
     interpolated = InterpolatedString.create(manifest_url_base, parameters={}).eval(config)
@@ -266,67 +265,6 @@ def test_streams_no_streams_available_error(monkeypatch, rate_limit_mock_respons
     )
 
 
-def test_streams_page_size(rate_limit_mock_response, requests_mock):
-    requests_mock.get("https://api.github.com/repos/airbytehq/airbyte", json={"full_name": "airbytehq/airbyte", "default_branch": "master"})
-    requests_mock.get(
-        "https://api.github.com/repos/airbytehq/airbyte/branches", json=[{"repository": "airbytehq/airbyte", "name": "master"}]
-    )
-
-    config = {
-        "credentials": {"access_token": "access_token"},
-        "repository": "airbytehq/airbyte",
-        "start_date": "1900-07-12T00:00:00Z",
-    }
-
-    source = SourceGithub()
-    streams = source.streams(config)
-    assert constants.DEFAULT_PAGE_SIZE != constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
-
-    for stream in streams:
-        if not hasattr(stream, "page_size"):
-            continue
-        if stream.large_stream:
-            assert stream.page_size == constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
-        else:
-            assert stream.page_size == constants.DEFAULT_PAGE_SIZE
-
-
-@pytest.mark.parametrize(
-    "config, expected",
-    (
-        (
-            {
-                "start_date": "2021-08-27T00:00:46Z",
-                "access_token": "test_token",
-                "repository": "airbyte/test",
-            },
-            # `SourceGithub.streams()` returns the Python streams only; the manifest streams
-            # come from `super().streams()`. Dropped from 10 to 4 in Step 9, when all six
-            # GraphQL streams moved to the manifest.
-            4,
-        ),
-        ({"access_token": "test_token", "repository": "airbyte/test"}, 4),
-    ),
-)
-def test_streams_config_start_date(config, expected, rate_limit_mock_response, requests_mock):
-    requests_mock.get("https://api.github.com/repos/airbyte/test", json={"full_name": "airbyte/test", "default_branch": "default_branch"})
-    requests_mock.get(
-        "https://api.github.com/repos/airbyte/test/branches",
-        json=[{"repository": "airbyte/test", "name": "name"}],
-    )
-    source = SourceGithub()
-    streams = source.streams(config=config)
-    # Find a Python stream that accepts start_date to verify config propagation
-    python_streams_with_start_date = [s for s in streams if hasattr(s, "_start_date")]
-    assert len(streams) == expected
-    assert len(python_streams_with_start_date) > 0
-    sample_stream = python_streams_with_start_date[0]
-    if config.get("start_date"):
-        assert sample_stream._start_date == "2021-08-27T00:00:46Z"
-    else:
-        assert not sample_stream._start_date
-
-
 @pytest.mark.parametrize(
     "error_message, expected_user_friendly_message",
     [
@@ -423,9 +361,10 @@ def test_read_routes_manifest_streams_to_concurrent_and_python_streams_to_synchr
     assert [s.stream.name for s in synchronous_catalog.streams] == ["teams"]
 
 
-def test_read_with_empty_manifest_skips_concurrent_read(rate_limit_mock_response, requests_mock):
-    """A catalog holding only Python streams must not start the concurrent source. `issues` moved
-    to the manifest in Step 6 and `pull_request_stats` in Step 9, so this uses `workflow_runs`."""
+def test_read_with_manifest_only_catalog_skips_synchronous_read(rate_limit_mock_response, requests_mock):
+    """Step 9 empties the Python stream list, so every catalog is manifest-only and the
+    synchronous path must never be entered. The routing itself is still covered by
+    `test_read_routes_manifest_streams_to_concurrent_and_python_streams_to_synchronous`."""
     requests_mock.get("https://api.github.com/repos/airbyte/test", json={"full_name": "airbyte/test"})
     source = SourceGithub(config=_CONFIG)
     catalog = CatalogBuilder().with_stream(name="workflow_runs", sync_mode=SyncMode.full_refresh).build()
@@ -436,7 +375,6 @@ def test_read_with_empty_manifest_skips_concurrent_read(rate_limit_mock_response
     ):
         list(source.read(logging.getLogger("airbyte"), _CONFIG, catalog))
 
-    concurrent_read.assert_not_called()
-    synchronous_read.assert_called_once()
-    synchronous_catalog = synchronous_read.call_args.args[3]
-    assert [s.stream.name for s in synchronous_catalog.streams] == ["workflow_runs"]
+    synchronous_read.assert_not_called()
+    selected_concurrent_streams = concurrent_read.call_args.args[0]
+    assert [stream.name for stream in selected_concurrent_streams] == ["workflow_runs"]

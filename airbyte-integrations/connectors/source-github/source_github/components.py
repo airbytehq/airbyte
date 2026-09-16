@@ -15,6 +15,8 @@ import binascii
 import logging
 import struct
 from dataclasses import InitVar, dataclass
+from datetime import timedelta
+from itertools import groupby
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
@@ -22,11 +24,14 @@ import requests
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import (
     PaginationStrategy,
 )
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 
 LOGGER = logging.getLogger("airbyte")
@@ -584,6 +589,8 @@ class NestedLegacyToPerPartitionStateMigration(StateMigration):
     parameters: Mapping[str, Any]
     cursor_field: str
     partition_fields: List[str]
+    # GitHub ids were stored as strings and the routers carry them as integers; branch names stay strings.
+    integer_ids: bool = True
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         if not stream_state or "states" in stream_state or "state" in stream_state:
@@ -611,6 +618,104 @@ class NestedLegacyToPerPartitionStateMigration(StateMigration):
             child_partition = {self.partition_fields[depth]: self._to_id(key), "parent_slice": partition}
             self._collect(child, child_partition, depth + 1, states)
 
-    @staticmethod
-    def _to_id(key: str) -> Any:
-        return int(key) if isinstance(key, str) and key.isdigit() else key
+    def _to_id(self, key: str) -> Any:
+        return int(key) if self.integer_ids and isinstance(key, str) and key.isdigit() else key
+
+
+@dataclass
+class WorkflowJobsLegacyStateMigration(StateMigration):
+    """Migrate the legacy `{repository: {completed_at: value}}` state of `workflow_jobs`.
+
+    The declarative stream keeps one global `completed_at` cursor and lets its parent
+    (`workflow_runs`) resume per repository, which is what the Python class did by handing its own
+    cursor to the parent as `updated_at`. The lowest repository cursor becomes the global one so no
+    repository skips jobs; the parent state keeps the per-repository values.
+    """
+
+    config: Config
+    parameters: Mapping[str, Any]
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if not stream_state or "state" in stream_state or "states" in stream_state or "parent_state" in stream_state:
+            return False
+        return all(isinstance(value, Mapping) and set(value) == {"completed_at"} for value in stream_state.values())
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        cursors = {repository: value["completed_at"] for repository, value in stream_state.items()}
+        return {
+            "use_global_cursor": True,
+            "state": {"completed_at": min(cursors.values(), key=ab_datetime_parse)},
+            "parent_state": {"workflow_runs": {repository: {"updated_at": cursor} for repository, cursor in cursors.items()}},
+        }
+
+
+@dataclass
+class CommitsBranchPartitionRouter(SubstreamPartitionRouter):
+    """One partition per branch to pull commits from, resolved the way `Commits.stream_slices` did.
+
+    The parent lists every branch of every repository. For a repository, the configured `branches`
+    entries (`owner/repo/branch`) that exist are used; when none is configured, or none of the
+    configured ones exists, the repository's default branch is used instead.
+    """
+
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        configured = set(self.config.get("branches") or [])
+        # groupby groups only adjacent items. Branch slices arrive repo-by-repo because
+        # SubstreamPartitionRouter iterates parent partitions outer / parent records inner, and
+        # repository_partition_router emits each repository once -- UnionPartitionRouter dedupes
+        # partition values (union_partition_router.py:55-70), so a repository matched by both an
+        # explicit entry and a wildcard is not visited twice. Without that, each duplicate group
+        # would re-emit the same branch partitions.
+        for repository, branch_slices in groupby(super().stream_slices(), key=lambda s: s.partition["parent_slice"]["repository"]):
+            branch_slices = list(branch_slices)
+            wanted = [s for s in branch_slices if f"{repository}/{s.partition['branch']}" in configured]
+            if not wanted:
+                default_branch = next((s.extra_fields.get("default_branch") for s in branch_slices), None)
+                wanted = [s for s in branch_slices if s.partition["branch"] == default_branch]
+                if not wanted and default_branch:
+                    wanted = [
+                        StreamSlice(partition={"branch": default_branch, "parent_slice": {"repository": repository}}, cursor_slice={})
+                    ]
+            yield from wanted
+
+
+@dataclass
+class WorkflowRunsPaginationStrategy(CursorPaginationStrategy):
+    """Stop paging once the page's oldest run was created more than 32 days before the slice start.
+
+    Runs are listed newest-created first and can be re-run for 32 days, so nothing older can still
+    change: the legacy `WorkflowRuns.read_records` broke out of the page loop there.
+
+    This is a workaround for a CDK gap, not a GitHub quirk. `CursorPaginationStrategy` already
+    exposes the decoded page to `stop_condition`, but the paginator's interpolation context has no
+    `stream_slice` (only `config`, `response`, `headers`, `last_record`, `last_page_size`), so the
+    slice start cannot be compared against the page from YAML. Until that lands
+    (https://github.com/airbytehq/airbyte-python-cdk/issues/1166), the requester injects the slice
+    start as a request header GitHub ignores and this strategy reads it back from
+    `response.request`. Once `stream_slice` is available, delete this class and the header and use
+    a `stop_condition` on the built-in strategy instead.
+    """
+
+    window_header: str = "X-Airbyte-Window-Start"
+    re_run_period_days: int = 32
+
+    def next_page_token(
+        self,
+        response: requests.Response,
+        last_page_size: int,
+        last_record: Optional[Record],
+        last_page_token_value: Optional[Any] = None,
+    ) -> Optional[Any]:
+        window_start = response.request.headers.get(self.window_header) if response.request else None
+        try:
+            runs = (response.json() or {}).get("workflow_runs") or []
+        except ValueError:
+            runs = []
+        oldest = runs[-1].get("created_at") if runs and isinstance(runs[-1], Mapping) else None
+        if (
+            window_start
+            and oldest
+            and ab_datetime_parse(oldest) < ab_datetime_parse(window_start) - timedelta(days=self.re_run_period_days)
+        ):
+            return None
+        return super().next_page_token(response, last_page_size, last_record, last_page_token_value)
