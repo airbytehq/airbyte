@@ -10,7 +10,6 @@ import pytest
 import requests
 from freezegun import freeze_time
 from source_github import SourceGithub
-from source_github.streams import Deployments, TeamMembers, Teams
 from source_github.utils import read_full_refresh
 
 from airbyte_cdk.models import FailureType
@@ -20,6 +19,8 @@ from airbyte_cdk.sources.declarative.auth.rate_limited_multiple_token import (
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
+
+from .utils import ProbeStream
 
 
 def _source_and_authenticator(tokens: str, **config_overrides):
@@ -116,16 +117,13 @@ def test_quota_is_charged_once_across_repository_resolution_and_python_streams(r
     config = {"access_token": "token1", "repositories": ["org/repo"], "api_url": "https://api.github.com"}
     source = SourceGithub(catalog=None, config=config, state=None)
     requests_mock.get("https://api.github.com/repos/org/repo", json={"full_name": "org/repo", "organization": {"login": "org"}})
-    requests_mock.get("https://api.github.com/orgs/org/teams", json=[{"id": 1, "slug": "core"}])
+    requests_mock.get("https://api.github.com/repos/org/repo/probe_stream", json=[{"id": 1}])
 
-    python_streams = source.streams(config)
+    source.streams(config)
     authenticator = source._get_authenticator(config)
     after_resolution = _remaining(authenticator, "token1")
 
-    # `Teams` is the org-scoped Python stream that outlives Step 4 as `TeamMembers`' parent; it
-    # is not in `python_streams` any more, so take it from the child that holds it.
-    teams = next(stream for stream in python_streams if isinstance(stream, TeamMembers)).parent
-    list(read_full_refresh(teams))
+    list(read_full_refresh(ProbeStream(authenticator=authenticator, repositories=["org/repo"], page_size_for_large_streams=10)))
 
     assert after_resolution < 5000, "repository resolution should have charged the shared counter"
     assert _remaining(authenticator, "token1") == after_resolution - 1
@@ -135,9 +133,9 @@ def test_authenticator_counter(rate_limit_mock_response, requests_mock):
     """The rate limiter reads the available limits from the GitHub API and counts requests."""
     _, authenticator = _source_and_authenticator("token1,token2,token3")
 
-    stream = Teams(organizations=["org1", "org2"], authenticator=authenticator)
-    requests_mock.get("https://api.github.com/orgs/org1/teams", json=[{"id": 1, "slug": "a"}])
-    requests_mock.get("https://api.github.com/orgs/org2/teams", json=[{"id": 2, "slug": "b"}])
+    stream = ProbeStream(repositories=["org1/repo", "org2/repo"], page_size_for_large_streams=10, authenticator=authenticator)
+    requests_mock.get("https://api.github.com/repos/org1/repo/probe_stream", json=[{"id": 1}])
+    requests_mock.get("https://api.github.com/repos/org2/repo/probe_stream", json=[{"id": 2}])
     list(read_full_refresh(stream))
 
     assert [(_remaining(authenticator, t), _remaining(authenticator, t, "graphql")) for t in authenticator._tokens] == [
@@ -148,7 +146,7 @@ def test_authenticator_counter(rate_limit_mock_response, requests_mock):
 
 
 def test_quota_is_seeded_lazily_and_only_once_per_token(requests_mock):
-    requests_mock.get("https://api.github.com/repos/org1/repo/deployments", json=[{"id": 1, "updated_at": "2021-01-01T00:00:00Z"}])
+    requests_mock.get("https://api.github.com/repos/org1/repo/probe_stream", json=[{"id": 1, "updated_at": "2021-01-01T00:00:00Z"}])
     rate_limit_mock = requests_mock.get(
         "https://api.github.com/rate_limit",
         json={
@@ -162,7 +160,7 @@ def test_quota_is_seeded_lazily_and_only_once_per_token(requests_mock):
     _, authenticator = _source_and_authenticator("token1,token2")
     assert rate_limit_mock.call_count == 0, "counters should be seeded on first use, not at construction"
 
-    stream = Deployments(authenticator=authenticator, repositories=["org1/repo"], page_size_for_large_streams=10)
+    stream = ProbeStream(authenticator=authenticator, repositories=["org1/repo"], page_size_for_large_streams=10)
     list(read_full_refresh(stream))
     assert rate_limit_mock.call_count == 2  # one per token, not one per authenticator per token
 
@@ -190,7 +188,7 @@ def test_all_tokens_exhausted_raises_transient_error(sleep_mock, requests_mock):
         },
     )
     _, authenticator = _source_and_authenticator("token1,token2,token3")
-    stream = Deployments(authenticator=authenticator, repositories=["org1/repo"], page_size_for_large_streams=10)
+    stream = ProbeStream(authenticator=authenticator, repositories=["org1/repo"], page_size_for_large_streams=10)
 
     counter_orgs = 0
 
@@ -201,14 +199,14 @@ def test_all_tokens_exhausted_raises_transient_error(sleep_mock, requests_mock):
         if counter_orgs < 1_501:
             counter_orgs += 1
             context.headers = {
-                "Link": '<https://api.github.com/repos/org1/repo/deployments?page=2>; rel="next"',
+                "Link": '<https://api.github.com/repos/org1/repo/probe_stream?page=2>; rel="next"',
                 "Content-Type": "application/json",
             }
             context.status_code = 200
             return json.dumps([{"id": 1, "updated_at": "2021-01-01T00:00:00Z"}])
         raise AssertionError("the authenticator should have failed before the quota allowed this many requests")
 
-    requests_mock.get("https://api.github.com/repos/org1/repo/deployments", text=request_callback_orgs)
+    requests_mock.get("https://api.github.com/repos/org1/repo/probe_stream", text=request_callback_orgs)
 
     with pytest.raises(AirbyteTracedException) as e:
         list(read_full_refresh(stream))
@@ -236,7 +234,7 @@ def test_exhaustion_waits_for_reset_then_refreshes_counters(sleep_mock, requests
         },
     )
     _, authenticator = _source_and_authenticator("token1,token2,token3")
-    stream = Deployments(authenticator=authenticator, repositories=["org1/repo"], page_size_for_large_streams=10)
+    stream = ProbeStream(authenticator=authenticator, repositories=["org1/repo"], page_size_for_large_streams=10)
 
     counter_orgs = 0
 
@@ -246,14 +244,14 @@ def test_exhaustion_waits_for_reset_then_refreshes_counters(sleep_mock, requests
         while counter_orgs < 1_501:
             counter_orgs += 1
             context.headers = {
-                "Link": '<https://api.github.com/repos/org1/repo/deployments?page=2>; rel="next"',
+                "Link": '<https://api.github.com/repos/org1/repo/probe_stream?page=2>; rel="next"',
                 "Content-Type": "application/json",
             }
             return json.dumps([{"id": 1, "updated_at": "2021-01-01T00:00:00Z"}])
         context.headers = {"Content-Type": "application/json"}
         return json.dumps([{"id": 2, "updated_at": "2021-01-01T00:00:00Z"}])
 
-    requests_mock.get("https://api.github.com/repos/org1/repo/deployments", text=request_callback_orgs)
+    requests_mock.get("https://api.github.com/repos/org1/repo/probe_stream", text=request_callback_orgs)
 
     list(read_full_refresh(stream))
 
@@ -303,8 +301,8 @@ def test_api_budget_throttles_when_tokens_run_low(sleep_mock, requests_mock):
     )
     _, authenticator = _source_and_authenticator("token1")
 
-    requests_mock.get("https://api.github.com/repos/org1/repo/deployments", json=[{"id": 1, "updated_at": "2021-01-01T00:00:00Z"}])
-    stream = Deployments(authenticator=authenticator, repositories=["org1/repo"], page_size_for_large_streams=10)
+    requests_mock.get("https://api.github.com/repos/org1/repo/probe_stream", json=[{"id": 1, "updated_at": "2021-01-01T00:00:00Z"}])
+    stream = ProbeStream(authenticator=authenticator, repositories=["org1/repo"], page_size_for_large_streams=10)
     list(read_full_refresh(stream))
 
     assert _remaining(authenticator, "token1") == low_remaining - 1
@@ -329,8 +327,8 @@ def test_api_budget_does_not_throttle_with_headroom(sleep_mock, requests_mock):
     )
     _, authenticator = _source_and_authenticator("token1")
 
-    requests_mock.get("https://api.github.com/repos/org1/repo/deployments", json=[{"id": 1, "updated_at": "2021-01-01T00:00:00Z"}])
-    stream = Deployments(authenticator=authenticator, repositories=["org1/repo"], page_size_for_large_streams=10)
+    requests_mock.get("https://api.github.com/repos/org1/repo/probe_stream", json=[{"id": 1, "updated_at": "2021-01-01T00:00:00Z"}])
+    stream = ProbeStream(authenticator=authenticator, repositories=["org1/repo"], page_size_for_large_streams=10)
     list(read_full_refresh(stream))
 
     sleep_mock.assert_not_called()
@@ -359,8 +357,8 @@ def test_api_budget_no_throttle_when_some_tokens_have_headroom(sleep_mock, reque
     requests_mock.get("https://api.github.com/rate_limit", text=rate_limit_callback)
     _, authenticator = _source_and_authenticator("token_low,token_high")
 
-    requests_mock.get("https://api.github.com/repos/org1/repo/deployments", json=[{"id": 1, "updated_at": "2021-01-01T00:00:00Z"}])
-    stream = Deployments(authenticator=authenticator, repositories=["org1/repo"], page_size_for_large_streams=10)
+    requests_mock.get("https://api.github.com/repos/org1/repo/probe_stream", json=[{"id": 1, "updated_at": "2021-01-01T00:00:00Z"}])
+    stream = ProbeStream(authenticator=authenticator, repositories=["org1/repo"], page_size_for_large_streams=10)
     list(read_full_refresh(stream))
 
     sleep_mock.assert_not_called()
