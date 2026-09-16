@@ -128,6 +128,8 @@ Then you can run:
     airbyte/airbyte-data-plane   2.0.0           2.0.0           A Helm chart for installing an Airbyte Data Plane.
     ```
 
+<MinioImagePre23 />
+
 2. Install Airbyte into your namespace. In this example, you install Airbyte version 2.0.
 
     ```bash
@@ -136,8 +138,6 @@ Then you can run:
       --values ./values.yaml \         # Custom configuration values
       --version 2.0.18                 # Helm chart version to use
     ```
-
-<MinioImagePre23 />
 
 After the installation has completed, you can configure your [Ingress](./integrations/ingress.md) by following the directions for your specific Ingress provider.
 

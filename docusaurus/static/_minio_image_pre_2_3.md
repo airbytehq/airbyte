@@ -13,7 +13,7 @@ New installs:
     --set minio.image.repository=airbyte/minio
   ```
 
-- abctl: add the override to your `values.yaml` file and pass it with `abctl local install --values ./values.yaml`.
+- abctl: add the override to your `values.yaml` file and pass it with `abctl local install --chart-version <chart-version> --values ./values.yaml`, where `<chart-version>` is the pre-2.3 chart version you want to install.
 
   ```yaml
   minio:
@@ -24,6 +24,8 @@ New installs:
 Existing installs:
 
 Run these steps in order. Don't run `helm upgrade` first. It fails while MinIO is down.
+
+These commands assume your namespace and Helm release are both named `airbyte`. If yours differ, substitute your own names.
 
 1. Point the MinIO StatefulSet at the new image.
 
@@ -39,11 +41,12 @@ Run these steps in order. Don't run `helm upgrade` first. It fails while MinIO i
    kubectl -n airbyte delete pod airbyte-minio-create-bucket --ignore-not-found
    ```
 
-3. Upgrade the Helm release so the override persists. Replace `<repo>` with the name of your Helm repository, for example `airbyte-v2`.
+3. Upgrade the Helm release so the override persists. Replace `<repo>` with the name of your Helm repository, for example `airbyte-v2`. Replace `<chart-version>` with the chart version you currently run (`helm list -n airbyte` shows it) so the upgrade doesn't move you to a newer chart.
 
    ```bash
    helm upgrade airbyte <repo>/airbyte \
      --namespace airbyte --reuse-values \
+     --version <chart-version> \
      --set minio.image.repository=airbyte/minio
    ```
 

@@ -186,6 +186,8 @@ This section shows you how to use abctl. It's not a step-by-step guide to deploy
 
 To install or update Airbyte, run:
 
+<MinioImagePre23 />
+
 ```bash
 abctl local install
 ```
@@ -207,8 +209,6 @@ abctl local install --chart-version 0.422.2 --values values.yaml --secret secret
 ```
 
 The `--chart-version` value is the Helm chart version, not the Airbyte platform version. To find available versions, see the [Airbyte Helm chart on ArtifactHub](https://artifacthub.io/packages/helm/airbyte-v2/airbyte).
-
-<MinioImagePre23 />
 
 #### Install from a local Helm chart
 
