@@ -30,23 +30,10 @@
       },
       "loading_method" : {
         "oneOf" : [ {
-          "title" : "Batched Standard Inserts",
+          "title" : "GCS Staging (Recommended)",
           "type" : "object",
           "additionalProperties" : true,
-          "description" : "Direct loading using batched SQL INSERT statements. This method uses the BigQuery driver to convert large INSERT statements into file uploads automatically.",
-          "properties" : {
-            "method" : {
-              "type" : "string",
-              "enum" : [ "Standard" ],
-              "default" : "Standard"
-            }
-          },
-          "required" : [ "method" ]
-        }, {
-          "title" : "GCS Staging",
-          "type" : "object",
-          "additionalProperties" : true,
-          "description" : "Writes large batches of records to a file, uploads the file to GCS, then uses COPY INTO to load your data into BigQuery.",
+          "description" : "Recommended for production workloads. Uploads data to a GCS bucket, then loads it into BigQuery using a COPY job. Provides better performance for large data volumes.",
           "properties" : {
             "method" : {
               "type" : "string",
@@ -112,6 +99,19 @@
             }
           },
           "required" : [ "method", "credential", "gcs_bucket_name", "gcs_bucket_path" ]
+        }, {
+          "title" : "Batched Standard Inserts",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Simpler setup with no external staging required. Uses the BigQuery SDK to stream data directly. Suitable for smaller data volumes or quick testing.",
+          "properties" : {
+            "method" : {
+              "type" : "string",
+              "enum" : [ "Standard" ],
+              "default" : "Standard"
+            }
+          },
+          "required" : [ "method" ]
         } ],
         "description" : "The way data will be uploaded to BigQuery.",
         "title" : "Loading Method",
@@ -128,6 +128,13 @@
         "order" : 4,
         "airbyte_secret" : true,
         "always_show" : true
+      },
+      "job_project_id" : {
+        "type" : "string",
+        "description" : "Optional. The GCP project ID where BigQuery jobs will be executed. When set, query jobs run against this project's quota instead of the dataset project's quota. This is useful for isolating BigQuery concurrent query quota between different workloads (e.g. data ingestion vs. analytics). The service account must have BigQuery Job User role on this project. If not set, jobs run in the dataset project (Project ID above).",
+        "title" : "Job Execution Project ID",
+        "group" : "advanced",
+        "order" : 4
       },
       "cdc_deletion_mode" : {
         "type" : "string",

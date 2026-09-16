@@ -484,11 +484,6 @@ spec:
               - type: AddedFieldDefinition
                 path:
                   - credentials
-                  - auth_type
-                value: "Client"
-              - type: AddedFieldDefinition
-                path:
-                  - credentials
                   - client_id
                 value: "{{ config['client_id'] }}"
               - type: AddedFieldDefinition
@@ -501,7 +496,12 @@ spec:
                   - credentials
                   - client_refresh_token
                 value: "{{ config['client_refresh_token'] }}"
-            condition: "{{ config.get('client_id') is not none }}"
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - auth_type
+                value: "Client"
+            condition: "{{ (config.get('client_id') or False) and (config.get('client_secret') or False) and (config.get('client_refresh_token') or False) and not (config.get('credentials') or {}).get('auth_type') }}"
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
