@@ -2,6 +2,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import codecs
 import io
 import json
 import logging
@@ -1198,9 +1199,15 @@ class GoogleAdsStreamingDecoder(Decoder):
         results_state = ResultsArrayState()
         record_state = RecordParseState()
         top_level_state = TopLevelObjectState()
+        decoder = codecs.getincrementaldecoder(encoding)(errors="replace")
 
-        for chunk in byte_iter:
-            for char in chunk.decode(encoding, errors="replace"):
+        def decoded_chunks() -> Iterable[str]:
+            for chunk in byte_iter:
+                yield decoder.decode(chunk)
+            yield decoder.decode(b"", final=True)
+
+        for decoded_chunk in decoded_chunks():
+            for char in decoded_chunk:
                 self._append_to_current_record_if_any(char, record_state)
 
                 if self._update_string_state(char, string_state):

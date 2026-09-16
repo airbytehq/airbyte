@@ -185,6 +185,38 @@ definitions:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.TwilioStateMigration
 
+  base_pricing_country_stream:
+    $ref: "#/definitions/base_stream"
+    primary_key:
+      - iso_country
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        url: "{{ parameters['pricing_url'] }}/{{ stream_partition['iso_country'] }}"
+      paginator:
+        type: NoPagination
+      record_selector:
+        $ref: "#/definitions/base_stream/retriever/record_selector"
+        extractor:
+          type: DpathExtractor
+          field_path: []
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('iso_country') is not none }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/base_stream"
+              $parameters:
+                url: "{{ parameters['pricing_url'] }}"
+                name: "{{ parameters['name'] }}_parent"
+                data_field: countries
+            parent_key: iso_country
+            partition_field: iso_country
+
   accounts_stream:
     $ref: "#/definitions/base_stream"
     schema_loader:
@@ -342,8 +374,25 @@ definitions:
           - type: ParentStreamConfig
             stream:
               $ref: "#/definitions/conferences_stream"
+              # Only fetch active (init and in-progress) conferences because the Twilio
+              # Participants API does not return data for completed conferences
+              # (participants are only available while the conference is active).
+              # The child partitions are keyed by `subresource_uris`, so the parent-side
+              # ListPartitionRouter does not change the child partition key and no state
+              # migration is needed.
               retriever:
                 $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever"
+                partition_router:
+                  - type: ListPartitionRouter
+                    values:
+                      - "init"
+                      - "in-progress"
+                    cursor_field: conference_status
+                    request_option:
+                      type: RequestOption
+                      field_name: Status
+                      inject_into: request_parameter
+                  - $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever/partition_router"
                 record_selector:
                   $ref: "#/definitions/base_stream/retriever/record_selector"
                   record_filter:
@@ -361,6 +410,25 @@ definitions:
 
   conferences_stream:
     $ref: "#/definitions/base_nested_incremental_from_accounts_stream"
+    retriever:
+      $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever"
+      partition_router:
+        - type: ListPartitionRouter
+          values:
+            - "init"
+            - "in-progress"
+            - "completed"
+          cursor_field: conference_status
+          request_option:
+            type: RequestOption
+            field_name: Status
+            inject_into: request_parameter
+        - $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever/partition_router"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioStateMigration
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioConferencesStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -802,6 +870,36 @@ definitions:
       name: verify_services
       data_field: services
 
+  voice_pricing_countries_stream:
+    $ref: "#/definitions/base_pricing_country_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/voice_pricing_countries"
+    $parameters:
+      name: voice_pricing_countries
+      pricing_url: https://pricing.twilio.com/v2/Voice/Countries
+
+  messaging_pricing_countries_stream:
+    $ref: "#/definitions/base_pricing_country_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/messaging_pricing_countries"
+    $parameters:
+      name: messaging_pricing_countries
+      pricing_url: https://pricing.twilio.com/v1/Messaging/Countries
+
+  phone_number_pricing_countries_stream:
+    $ref: "#/definitions/base_pricing_country_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/phone_number_pricing_countries"
+    $parameters:
+      name: phone_number_pricing_countries
+      pricing_url: https://pricing.twilio.com/v1/PhoneNumbers/Countries
+
 streams:
   - $ref: "#/definitions/accounts_stream"
   - $ref: "#/definitions/addresses_stream"
@@ -837,6 +935,9 @@ streams:
   - $ref: "#/definitions/user_conversations_stream"
   - $ref: "#/definitions/users_stream"
   - $ref: "#/definitions/verify_services_stream"
+  - $ref: "#/definitions/voice_pricing_countries_stream"
+  - $ref: "#/definitions/messaging_pricing_countries_stream"
+  - $ref: "#/definitions/phone_number_pricing_countries_stream"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -4245,3 +4346,237 @@ schemas:
             type:
               - "null"
               - string
+  voice_pricing_countries:
+    type: object
+    additionalProperties: true
+    properties:
+      country:
+        description: The country name.
+        type:
+          - "null"
+          - string
+      iso_country:
+        description: The ISO 3166-1 alpha-2 country code.
+        type:
+          - "null"
+          - string
+      url:
+        description: The URL for the country's pricing details.
+        type:
+          - "null"
+          - string
+      price_unit:
+        description: The currency unit for the prices.
+        type:
+          - "null"
+          - string
+      inbound_call_prices:
+        description: Inbound voice call prices by number type.
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            base_price:
+              description: The base price.
+              type:
+                - "null"
+                - string
+            current_price:
+              description: The current price.
+              type:
+                - "null"
+                - string
+            number_type:
+              description: The phone number type.
+              type:
+                - "null"
+                - string
+      outbound_prefix_prices:
+        description: Outbound voice prices by destination and origination prefix.
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            base_price:
+              description: The base price.
+              type:
+                - "null"
+                - string
+            current_price:
+              description: The current price.
+              type:
+                - "null"
+                - string
+            destination_prefixes:
+              description: Destination dialing prefixes.
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - string
+            origination_prefixes:
+              description: Origination dialing prefixes.
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - string
+            friendly_name:
+              description: A description of the pricing destination.
+              type:
+                - "null"
+                - string
+  messaging_pricing_countries:
+    type: object
+    additionalProperties: true
+    properties:
+      country:
+        description: The country name.
+        type:
+          - "null"
+          - string
+      iso_country:
+        description: The ISO 3166-1 alpha-2 country code.
+        type:
+          - "null"
+          - string
+      url:
+        description: The URL for the country's pricing details.
+        type:
+          - "null"
+          - string
+      price_unit:
+        description: The currency unit for the prices.
+        type:
+          - "null"
+          - string
+      inbound_sms_prices:
+        description: Inbound SMS prices by number type.
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            base_price:
+              description: The base price.
+              type:
+                - "null"
+                - string
+            current_price:
+              description: The current price.
+              type:
+                - "null"
+                - string
+            number_type:
+              description: The phone number type.
+              type:
+                - "null"
+                - string
+      outbound_sms_prices:
+        description: Outbound SMS prices by carrier.
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            carrier:
+              description: The carrier name.
+              type:
+                - "null"
+                - string
+            mcc:
+              description: The mobile country code.
+              type:
+                - "null"
+                - string
+            mnc:
+              description: The mobile network code.
+              type:
+                - "null"
+                - string
+            prices:
+              description: Outbound SMS prices for the carrier.
+              type:
+                - "null"
+                - array
+              items:
+                type: object
+                additionalProperties: true
+                properties:
+                  base_price:
+                    description: The base price.
+                    type:
+                      - "null"
+                      - string
+                  current_price:
+                    description: The current price.
+                    type:
+                      - "null"
+                      - string
+                  number_type:
+                    description: The phone number type.
+                    type:
+                      - "null"
+                      - string
+  phone_number_pricing_countries:
+    type: object
+    additionalProperties: true
+    properties:
+      country:
+        description: The country name.
+        type:
+          - "null"
+          - string
+      iso_country:
+        description: The ISO 3166-1 alpha-2 country code.
+        type:
+          - "null"
+          - string
+      url:
+        description: The URL for the country's pricing details.
+        type:
+          - "null"
+          - string
+      price_unit:
+        description: The currency unit for the prices.
+        type:
+          - "null"
+          - string
+      phone_number_prices:
+        description: Phone number prices by number type.
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            base_price:
+              description: The base price.
+              type:
+                - "null"
+                - string
+            current_price:
+              description: The current price.
+              type:
+                - "null"
+                - string
+            number_type:
+              description: The phone number type.
+              type:
+                - "null"
+                - string
