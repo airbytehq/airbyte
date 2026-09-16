@@ -200,7 +200,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 1.2.0 | 2026-09-15 | [86356](https://github.com/airbytehq/airbyte/pull/86356) | Add error classification, request budget, concurrency, config migrations, HTTPS normalization, and certification metadata |
+| 1.2.0 | 2026-09-15 | [86356](https://github.com/airbytehq/airbyte/pull/86356) | Add error classification, request budget, concurrency, HTTPS normalization, and certification metadata |
 | 1.1.3 | 2026-09-15 | [86280](https://github.com/airbytehq/airbyte/pull/86280) | Update dependencies |
 | 1.1.2 | 2026-09-08 | [85702](https://github.com/airbytehq/airbyte/pull/85702) | Update dependencies |
 | 1.1.1 | 2026-08-18 | [84790](https://github.com/airbytehq/airbyte/pull/84790) | Update dependencies |
