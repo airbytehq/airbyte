@@ -107,11 +107,11 @@ The connector should not run into rate limit issues under normal usage. [Create 
 
 ## Troubleshooting and limitations
 
-### Contacts, Conversations, and Tickets use client-side timestamp filtering
+### Contacts, Conversations, and Tickets query widened UTC-day windows
 
 The Contacts, Conversations, and Tickets streams use Intercom's Search API with `updated_at` filters. Intercom indexes Search API timestamp fields as dates, not datetimes, so timestamp filters are evaluated at UTC-day granularity even though returned records include full Unix timestamps.
 
-To avoid missing same-day updates, the connector queries a wider UTC-day window from Intercom, then filters records locally with the full second-precision `updated_at` cursor. This can re-read records near cursor boundaries during incremental syncs, but only records newer than the stream checkpoint are emitted.
+To avoid missing same-day updates, the connector queries a wider UTC-day window from Intercom. For Contacts and Conversations, it then filters the returned records locally using the full second-precision `updated_at` cursor, emitting only records that fall within the current sync window (including any configured lookback window). The Tickets stream does not apply this local filter, so incremental Tickets syncs can re-emit records updated earlier in the same UTC day as the cursor.
 
 ### Companies and Company Segments use client-side incremental sync
 
@@ -123,7 +123,7 @@ This means that even if you only need one day of new data, the connector must re
 
 The Intercom API allows only one company scroll to be open per app at a time. If a second scroll request is made while one is already active, the API returns a `400` error. The connector logs this as `Intercom allows only one active company scroll per app.` and retries the request automatically with a one-minute backoff, since scrolls expire after one minute of inactivity.
 
-To prevent conflicts inside a sync, the connector blocks simultaneous reads from the Companies endpoint. This protection does not coordinate separate Airbyte connections or manual syncs that use the same Intercom app. If you run overlapping syncs that include Companies or Company Segments from the same Intercom workspace, one sync might still receive the Intercom scroll conflict and retry until the existing scroll expires.
+To prevent conflicts inside a sync, the connector blocks simultaneous reads from the Companies endpoint. This protection does not coordinate separate Airbyte connections or manual syncs that use the same Intercom app. If you run overlapping syncs that include Companies or Company Segments using the same Intercom app, one sync might still receive the Intercom scroll conflict and retry until the existing scroll expires.
 
 ### Recommendation for reducing sync times
 
