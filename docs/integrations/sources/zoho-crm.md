@@ -144,7 +144,7 @@ The Zoho Developer environment API is inconsistent with production environment A
 
 ## Setup guide
 
-There are two ways to authenticate, depending on where you run Airbyte.
+There are two ways to authenticate, depending on where you run Airbyte. In both cases you also fill in these fields:
 
 | Field                | Required | Notes                                                                                                   |
 | :------------------- | :------- | :------------------------------------------------------------------------------------------------------ |
@@ -152,9 +152,6 @@ There are two ways to authenticate, depending on where you run Airbyte.
 | Environment          | Yes      | `Production`, `Developer`, or `Sandbox`                                                                 |
 | Zoho CRM Edition     | Yes      | Sets the connector's request concurrency. See [Performance considerations](#performance-considerations) |
 | Start Date           | No       | See [Start date](#start-date)                                                                           |
-| Client ID            | Yes      | Filled in by the OAuth flow on Airbyte Cloud; from the Zoho API console otherwise                       |
-| Client Secret        | Yes      | Filled in by the OAuth flow on Airbyte Cloud; from the Zoho API console otherwise                       |
-| Refresh Token        | Yes      | Filled in by the OAuth flow on Airbyte Cloud; generated from a grant token otherwise                    |
 
 ### Airbyte Cloud: sign in with Zoho
 
@@ -168,7 +165,7 @@ The flow stores only the refresh token in your source. The client ID and secret 
 
 ### Airbyte Open Source, or your own Zoho app
 
-Create a Zoho API client and generate a refresh token yourself, then paste the three credentials into the source.
+Create a Zoho API client and generate a refresh token yourself, then enter the **Client ID**, **Client Secret** and **Refresh Token** in the source.
 
 #### Get Client ID, Client Secret, and Grant Token
 
