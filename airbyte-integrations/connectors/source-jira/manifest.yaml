@@ -12452,10 +12452,10 @@ definitions:
       fields:
       - path: ["projectId"]
         value_type: string
-        value: "{{ record.fields.project.id }}"
+        value: "{{ (record.get('fields', {}).get('project') or {}).get('id', '') }}"
       - path: ["projectKey"]
         value_type: string
-        value: "{{ record.fields.project.key }}"
+        value: "{{ (record.get('fields', {}).get('project') or {}).get('key', '') }}"
       - path: ["created"]
         value_type: string
         value: "{{ record.fields.created }}"
