@@ -77,17 +77,6 @@ If the token is missing a scope, the corresponding stream returns an HTTP 403 er
 
 Airbyte tests the connection by reading the configured project's details, so setup fails without `project:read` on that project, even if you plan to sync only organization-level streams.
 
-### Organization or project not found
-
-If setup or a sync fails with the error `Sentry organization or project is missing or invalid`, Sentry returned HTTP 404 for a request. Check the following:
-
-- **Organization** and **Project** contain the slugs, not display names. Slugs are lowercase and use hyphens instead of spaces.
-- The project belongs to the configured organization.
-- **Host Name** matches the region or self-hosted server where the organization lives. For example, an organization on `de.sentry.io` returns 404 when you query `us.sentry.io`.
-- The token was issued for that organization. An internal integration token only works for the organization that owns the integration.
-
-Airbyte rejects empty or whitespace-only values for **Organization** and **Project** before contacting Sentry.
-
 ## Limitations and troubleshooting
 
 ### Event retention
@@ -105,6 +94,17 @@ Sentry applies request and concurrency limits per caller and endpoint. The limit
 ### Deprecated endpoints
 
 Sentry marks the project-scoped issues endpoint that the `issues` stream uses as deprecated, and recommends the organization-level issues endpoint instead. The endpoint still returns data, and Sentry's [API deprecation policy](https://develop.sentry.dev/backend/api/deprecation-policy/) requires advance notice before removal. Version 1.0.0 made the equivalent switch for the `projects` stream after Sentry deprecated the legacy projects endpoint.
+
+### Organization or project not found
+
+If setup or a sync fails with the error `Sentry organization or project is missing or invalid.`, Sentry returned HTTP 404 for a request. Check the following:
+
+- **Organization** and **Project** contain the slugs, not display names. Slugs are lowercase and use hyphens instead of spaces.
+- The project belongs to the configured organization.
+- **Host Name** matches the region or self-hosted server where the organization lives. For example, an organization on `de.sentry.io` returns 404 when you query `us.sentry.io`.
+- The token was issued for that organization. An internal integration token only works for the organization that owns the integration.
+
+Airbyte rejects empty or whitespace-only values for **Organization** and **Project** before contacting Sentry.
 
 ## IP allow list
 
