@@ -2208,10 +2208,8 @@ definitions:
         http_codes:
           - 400
         error_message: >-
-          Bad request (400). The custom object name provided in the configuration is invalid.
-          Please verify that 'from_object' and 'to_object' values are correct custom object
-          identifiers (e.g., the fullyQualifiedName like 'p_my_custom_object' or the objectTypeId like '2-12345').
-          You can find your custom object identifiers in HubSpot Settings or via the /crm/v3/schemas API.
+          Custom object identifier in 'from_object' or 'to_object' is not a valid HubSpot
+          fullyQualifiedName (for example 'p_my_custom_object') or objectTypeId (for example '2-12345').
       - type: HttpResponseFilter
         action: FAIL
         failure_type: config_error
