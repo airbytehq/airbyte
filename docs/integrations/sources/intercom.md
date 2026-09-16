@@ -134,6 +134,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:-------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.13.25 | 2026-09-16 | [78017](https://github.com/airbytehq/airbyte/pull/78017) | Improve the Companies stream error message for Intercom scroll concurrency failures. |
 | 0.13.24 | 2026-05-21 | | Fix sub-daily incremental syncs for `contacts`, `conversations`, and `tickets` |
 | 0.13.23 | 2026-05-19 | [78171](https://github.com/airbytehq/airbyte/pull/78171) | Promoted release candidate to GA |
 | 0.13.23-rc.1 | 2026-05-12 | [78023](https://github.com/airbytehq/airbyte/pull/78023) | Bump CDK to 7.18.1.post8.dev25490693965 for block_simultaneous_read regression validation |
