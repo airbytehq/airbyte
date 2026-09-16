@@ -70,6 +70,7 @@ Classes
     * airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[TrafficSourcesSearchData]
     * airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[WebsiteOverviewSearchData]
     * airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[WeeklyActiveUsersSearchData]
+    * airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -506,7 +507,7 @@ Classes
     :   The type of the None singleton.
 
     `name: str | None`
-    :   The type of the None singleton.
+    :   GA4 API dimension name (e.g., date, country, deviceCategory)
 
 <a id="DailyActiveUsersRequestMetricsItem"></a>
 
@@ -530,7 +531,7 @@ Classes
     :   The type of the None singleton.
 
     `name: str | None`
-    :   The type of the None singleton.
+    :   GA4 API metric name (e.g., totalUsers, sessions, bounceRate)
 
 <a id="DailyActiveUsersSearchData"></a>
 
@@ -680,7 +681,7 @@ Classes
     :   The type of the None singleton.
 
     `name: str | None`
-    :   The type of the None singleton.
+    :   GA4 API dimension name (e.g., date, country, deviceCategory)
 
 <a id="DevicesRequestMetricsItem"></a>
 
@@ -704,7 +705,7 @@ Classes
     :   The type of the None singleton.
 
     `name: str | None`
-    :   The type of the None singleton.
+    :   GA4 API metric name (e.g., totalUsers, sessions, bounceRate)
 
 <a id="DevicesSearchData"></a>
 
@@ -932,7 +933,7 @@ Classes
     :   The type of the None singleton.
 
     `name: str | None`
-    :   The type of the None singleton.
+    :   GA4 API dimension name (e.g., date, country, deviceCategory)
 
 <a id="FourWeeklyActiveUsersRequestMetricsItem"></a>
 
@@ -956,7 +957,7 @@ Classes
     :   The type of the None singleton.
 
     `name: str | None`
-    :   The type of the None singleton.
+    :   GA4 API metric name (e.g., totalUsers, sessions, bounceRate)
 
 <a id="FourWeeklyActiveUsersSearchData"></a>
 
@@ -993,36 +994,6 @@ Classes
 
     `start_date: str | None`
     :   Start date of the reporting period
-
-<a id="GoogleAnalyticsDataApiAuthConfig"></a>
-
-`GoogleAnalyticsDataApiAuthConfig(**data: Any)`
-:   OAuth 2.0 Authentication
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `client_id: str`
-    :   OAuth 2.0 Client ID from Google Cloud Console
-
-    `client_secret: str`
-    :   OAuth 2.0 Client Secret from Google Cloud Console
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `refresh_token: str`
-    :   OAuth 2.0 Refresh Token for obtaining new access tokens
 
 <a id="GoogleAnalyticsDataApiCheckResult"></a>
 
@@ -1486,6 +1457,36 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="GoogleAnalyticsDataApiOauth20AuthenticationAuthConfig"></a>
+
+`GoogleAnalyticsDataApiOauth20AuthenticationAuthConfig(**data: Any)`
+:   OAuth 2.0 Authentication
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `client_id: str`
+    :   OAuth 2.0 Client ID from Google Cloud Console
+
+    `client_secret: str`
+    :   OAuth 2.0 Client Secret from Google Cloud Console
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `refresh_token: str`
+    :   OAuth 2.0 Refresh Token for obtaining new access tokens
+
 <a id="GoogleAnalyticsDataApiReplicationConfig"></a>
 
 `GoogleAnalyticsDataApiReplicationConfig(**data: Any)`
@@ -1509,6 +1510,30 @@ Classes
 
     `property_ids: str`
     :   A list of GA4 Property IDs to replicate data from.
+
+<a id="GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig"></a>
+
+`GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig(**data: Any)`
+:   Service Account Key Authentication
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `credentials_json: str`
+    :   The JSON key linked to the service account used for authorization. For steps on obtaining this key, refer to https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide
+
+    `model_config`
+    :   The type of the None singleton.
 
 <a id="LocationsListResultMeta"></a>
 
@@ -1622,7 +1647,7 @@ Classes
     :   The type of the None singleton.
 
     `name: str | None`
-    :   The type of the None singleton.
+    :   GA4 API dimension name (e.g., date, country, deviceCategory)
 
 <a id="LocationsRequestMetricsItem"></a>
 
@@ -1646,7 +1671,7 @@ Classes
     :   The type of the None singleton.
 
     `name: str | None`
-    :   The type of the None singleton.
+    :   GA4 API metric name (e.g., totalUsers, sessions, bounceRate)
 
 <a id="LocationsSearchData"></a>
 
@@ -1877,7 +1902,7 @@ Classes
     :   The type of the None singleton.
 
     `name: str | None`
-    :   The type of the None singleton.
+    :   GA4 API dimension name (e.g., date, country, deviceCategory)
 
 <a id="PagesRequestMetricsItem"></a>
 
@@ -1901,7 +1926,7 @@ Classes
     :   The type of the None singleton.
 
     `name: str | None`
-    :   The type of the None singleton.
+    :   GA4 API metric name (e.g., totalUsers, sessions, bounceRate)
 
 <a id="PagesSearchData"></a>
 
@@ -2357,7 +2382,7 @@ Classes
     :   The type of the None singleton.
 
     `name: str | None`
-    :   The type of the None singleton.
+    :   GA4 API dimension name (e.g., date, country, deviceCategory)
 
 <a id="TrafficSourcesRequestMetricsItem"></a>
 
@@ -2381,7 +2406,7 @@ Classes
     :   The type of the None singleton.
 
     `name: str | None`
-    :   The type of the None singleton.
+    :   GA4 API metric name (e.g., totalUsers, sessions, bounceRate)
 
 <a id="TrafficSourcesSearchData"></a>
 
@@ -2558,7 +2583,7 @@ Classes
     :   The type of the None singleton.
 
     `name: str | None`
-    :   The type of the None singleton.
+    :   GA4 API dimension name (e.g., date, country, deviceCategory)
 
 <a id="WebsiteOverviewRequestMetricsItem"></a>
 
@@ -2582,7 +2607,7 @@ Classes
     :   The type of the None singleton.
 
     `name: str | None`
-    :   The type of the None singleton.
+    :   GA4 API metric name (e.g., totalUsers, sessions, bounceRate)
 
 <a id="WebsiteOverviewSearchData"></a>
 
@@ -2753,7 +2778,7 @@ Classes
     :   The type of the None singleton.
 
     `name: str | None`
-    :   The type of the None singleton.
+    :   GA4 API dimension name (e.g., date, country, deviceCategory)
 
 <a id="WeeklyActiveUsersRequestMetricsItem"></a>
 
@@ -2777,7 +2802,7 @@ Classes
     :   The type of the None singleton.
 
     `name: str | None`
-    :   The type of the None singleton.
+    :   GA4 API metric name (e.g., totalUsers, sessions, bounceRate)
 
 <a id="WeeklyActiveUsersSearchData"></a>
 

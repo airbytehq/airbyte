@@ -73,6 +73,7 @@ Classes
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[PaymentSourceSearchData]
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[SubscriptionSearchData]
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[TransactionSearchData]
+    * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
