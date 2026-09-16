@@ -19,7 +19,7 @@ Classes
         GET, CREATE, UPDATE, DELETE, LIST
     
     Special actions:
-        API_SEARCH - Search via API endpoint
+        SEARCH - Search via API endpoint
         DOWNLOAD - Download file content
         AUTHORIZE - OAuth authorization flow
 
@@ -29,9 +29,6 @@ Classes
     * enum.Enum
 
     ### Class variables
-
-    `API_SEARCH`
-    :   The type of the None singleton.
 
     `AUTHORIZE`
     :   The type of the None singleton.
@@ -49,6 +46,9 @@ Classes
     :   The type of the None singleton.
 
     `LIST`
+    :   The type of the None singleton.
+
+    `SEARCH`
     :   The type of the None singleton.
 
     `UPDATE`
@@ -288,6 +288,9 @@ Classes
     `context_store: airbyte_agent_sdk.schema.extensions.CacheConfig | None`
     :   The type of the None singleton.
 
+    `enrichment_configs: dict[str, list[airbyte_agent_sdk.schema.extensions.EnrichmentConfig]]`
+    :   The type of the None singleton.
+
     `entities: list[airbyte_agent_sdk.types.EntityDefinition]`
     :   The type of the None singleton.
 
@@ -378,6 +381,9 @@ Classes
     `body_fields: list[str]`
     :   The type of the None singleton.
 
+    `body_is_array: bool`
+    :   The type of the None singleton.
+
     `content_type: airbyte_agent_sdk.types.ContentType`
     :   The type of the None singleton.
 
@@ -457,6 +463,9 @@ Classes
     :   The type of the None singleton.
 
     `untested: bool`
+    :   The type of the None singleton.
+
+    `untested_reason: str | None`
     :   The type of the None singleton.
 
     `upload_file_param: str | None`

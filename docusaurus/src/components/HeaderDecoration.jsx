@@ -218,9 +218,13 @@ const MetricIcon = ({ iconComponent, level }) => {
 
   if (!Object.keys(iconComponent).includes(level.toLowerCase())) return null;
 
+  const displayLabel =
+    level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
+
   return (
     <div className={styles.metricIcon} title={level}>
       {iconComponent[level?.toLowerCase()]}
+      <span className={styles.metricLabel}>{displayLabel}</span>
     </div>
   );
 };
@@ -278,14 +282,6 @@ const ConnectorMetadataCallout = ({
             }
           >
             <EnabledIcon isEnabled={isEnterprise || isCloud} /> Enterprise Flex
-          </Chip>
-          <Chip
-            className={
-              isEnterprise || isOss ? styles.available : styles.unavailable
-            }
-          >
-            <EnabledIcon isEnabled={isEnterprise || isOss} /> Self-Managed
-            Enterprise
           </Chip>
           <Chip className={isOss ? styles.available : styles.unavailable}>
             <EnabledIcon isEnabled={isOss} /> PyAirbyte
