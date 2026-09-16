@@ -333,6 +333,26 @@ class TestMyFacebookAdsApi:
         assert mock_super_call.call_count == 2
         source_facebook_marketing.api.sleep.assert_called_once_with(timedelta(minutes=2).total_seconds())
 
+    def test_call_gives_up_on_quota_block_after_max_wait(self, mocker, fb_api):
+        """A quota block that never clears must not loop forever: once cumulative quota-wait time
+        reaches MAX_QUOTA_BLOCK_WAIT, `call()` falls through to the same handling (and re-raise)
+        as any other failed call, instead of retrying indefinitely."""
+        quota_error = self._make_error(17, 2446079, headers={})
+
+        mocker.patch.object(fb_api, "MAX_QUOTA_BLOCK_WAIT", timedelta(minutes=5))
+        mock_handle_quota_block = mocker.patch.object(fb_api, "_handle_quota_block_error", return_value=timedelta(minutes=6))
+        mock_handle_failed = mocker.patch.object(fb_api, "_handle_failed_call_rate_limit")
+        mock_super_call = mocker.patch.object(FacebookAdsApi, "call", side_effect=quota_error)
+
+        with pytest.raises(FacebookRequestError):
+            source_facebook_marketing.api.MyFacebookAdsApi.call.__wrapped__(fb_api, method="GET", path=("act_123", "ads"), params={})
+
+        # 1st failure: 0 min elapsed < 5 min cap -> retries, accrues 6 min.
+        # 2nd failure: 6 min elapsed >= 5 min cap -> gives up instead of retrying again.
+        assert mock_super_call.call_count == 2
+        assert mock_handle_quota_block.call_count == 1
+        mock_handle_failed.assert_called_once_with(quota_error)
+
     def test_call_reraises_non_quota_error_unchanged(self, mocker, fb_api):
         """A non-quota FacebookRequestError must still propagate out of `call()` so
         @backoff_policy's original expo ladder (unchanged) is the one that retries it."""
