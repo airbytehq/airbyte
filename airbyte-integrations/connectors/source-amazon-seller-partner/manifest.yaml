@@ -3662,7 +3662,9 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           page_size: 100
-          cursor_value: "{{ response.NextToken }}"
+          # getReports returns `nextToken` (lower camel case); `NextToken` is the Orders/Finances v0
+          # convention and silently resolves to an empty string here, stopping pagination after page 1.
+          cursor_value: "{{ response.get('nextToken') }}"
     # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
     transformations:
       - type: AddFields

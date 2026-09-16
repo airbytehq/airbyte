@@ -40,6 +40,8 @@ _SECOND_DONE_DOWNLOAD_URL = "https://tortuga-prod-na.s3.amazonaws.com/second-rep
 
 _IN_PROGRESS_REPORT_ID = "3333333333"
 
+_NEXT_TOKEN = "next-page-token"
+
 # Amazon rejects `createdSince` older than 90 days, so the manifest clamps the window to the last 89 days.
 # Keep the configured window inside that range so the helper stream produces a slice.
 _START_DATE = NOW.subtract(days=30)
@@ -244,3 +246,57 @@ def test_given_only_non_done_settlement_reports_when_read_then_no_document_reque
 
     assert len(output.records) == 0
     assert len(output.errors) == 0
+
+
+@freezegun.freeze_time(NOW.isoformat())
+@HttpMocker()
+def test_given_more_reports_than_one_page_when_read_then_next_page_listed_and_downloaded(http_mocker: HttpMocker) -> None:
+    """
+    `getReports` returns the pagination token as `nextToken` (lower camel case) per Amazon's Reports
+    2021-06-30 model; the Orders/Finances v0 `NextToken` spelling resolves to an empty string and stops
+    pagination after the first page, silently truncating the listing at `pageSize` reports.
+    """
+    mock_auth(http_mocker)
+
+    first_page = _list_reports_request()
+    http_mocker.get(
+        first_page,
+        build_response(
+            {
+                "reports": [_report(_DONE_REPORT_ID, "DONE", _DONE_REPORT_DOCUMENT_ID)],
+                "nextToken": _NEXT_TOKEN,
+            },
+            status_code=HTTPStatus.OK,
+        ),
+    )
+    second_page = (
+        RequestBuilder.get_reports_endpoint()
+        .with_query_params(
+            {
+                "reportTypes": _STREAM_NAME,
+                "pageSize": "100",
+                "nextToken": _NEXT_TOKEN,
+                "createdSince": _START_DATE.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "createdUntil": _END_DATE.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            }
+        )
+        .build()
+    )
+    http_mocker.get(
+        second_page,
+        _list_reports_response([_report(_SECOND_DONE_REPORT_ID, "DONE", _SECOND_DONE_REPORT_DOCUMENT_ID)]),
+    )
+
+    _mock_document_chain(http_mocker, _DONE_REPORT_DOCUMENT_ID, _DONE_DOWNLOAD_URL)
+    second_document, second_download = _mock_document_chain(
+        http_mocker, _SECOND_DONE_REPORT_DOCUMENT_ID, _SECOND_DONE_DOWNLOAD_URL
+    )
+
+    output = read_output(_config(), _STREAM_NAME, SyncMode.incremental)
+
+    assert len(output.errors) == 0
+    # Without following `nextToken` only the first page's report is downloaded.
+    http_mocker.assert_number_of_calls(second_page, 1)
+    http_mocker.assert_number_of_calls(second_document, 1)
+    http_mocker.assert_number_of_calls(second_download, 1)
+    assert len(output.records) == 2 * _RECORDS_PER_DOCUMENT
