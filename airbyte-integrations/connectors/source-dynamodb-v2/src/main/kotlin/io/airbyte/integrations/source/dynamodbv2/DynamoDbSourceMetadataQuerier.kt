@@ -146,20 +146,18 @@ class DynamoDbSourceMetadataQuerier(
     }
 
     /**
-     * Reads up to [DynamoDbSourceConfiguration.DISCOVER_SAMPLE_SIZE] items, one page of that size
-     * at a time; a page is never cut short, so slightly more items may be returned when a page is
-     * smaller than 1 MB but the previous ones were not (same behavior as the legacy connector).
+     * Reads up to `discover_sample_size` items, one page of that size at a time; a page is never
+     * cut short, so slightly more items may be returned when a page is smaller than 1 MB but the
+     * previous ones were not (same behavior as the legacy connector, which always sampled 1000).
      */
     private fun sampleItems(tableName: String): List<Map<String, AttributeValue>> {
+        val sampleSize: Int = configuration.discoverSampleSize
         val request: ScanRequest =
-            ScanRequest.builder()
-                .tableName(tableName)
-                .limit(DynamoDbSourceConfiguration.DISCOVER_SAMPLE_SIZE)
-                .build()
+            ScanRequest.builder().tableName(tableName).limit(sampleSize).build()
         val items = ArrayList<Map<String, AttributeValue>>()
         var scanned = 0
         for (page: ScanResponse in client.scanPaginator(request)) {
-            if (scanned >= DynamoDbSourceConfiguration.DISCOVER_SAMPLE_SIZE) {
+            if (scanned >= sampleSize) {
                 break
             }
             scanned += page.count()

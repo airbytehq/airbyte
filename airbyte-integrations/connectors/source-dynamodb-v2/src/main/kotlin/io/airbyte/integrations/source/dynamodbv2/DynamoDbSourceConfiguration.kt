@@ -38,6 +38,8 @@ data class DynamoDbSourceConfiguration(
     val externalId: String?,
     val reservedAttributeNames: List<String>,
     val ignoreMissingReadPermissionsTables: Boolean,
+    /** Maximum number of items scanned per table during DISCOVER to infer its attributes. */
+    val discoverSampleSize: Int,
     override val maxConcurrency: Int,
     override val realHost: String,
     override val realPort: Int,
@@ -61,6 +63,7 @@ data class DynamoDbSourceConfiguration(
             "secretAccessKey=*****, sessionToken=${sessionToken?.let { "*****" }}, roleArn=$roleArn, " +
             "externalId=${externalId?.let { "*****" }}, reservedAttributeNames=$reservedAttributeNames, " +
             "ignoreMissingReadPermissionsTables=$ignoreMissingReadPermissionsTables, " +
+            "discoverSampleSize=$discoverSampleSize, " +
             "maxConcurrency=$maxConcurrency, checkpointTargetInterval=$checkpointTargetInterval)"
 
     /** Required to inject [DynamoDbSourceConfiguration] directly. */
@@ -79,8 +82,6 @@ data class DynamoDbSourceConfiguration(
         val DEFAULT_CHECKPOINT_TARGET_INTERVAL: Duration = Duration.ofMinutes(15)
         const val HTTPS_PORT = 443
         const val HTTP_PORT = 80
-        /** Number of items the legacy connector sampled per table to infer its schema. */
-        const val DISCOVER_SAMPLE_SIZE = 1000
     }
 }
 
@@ -172,6 +173,22 @@ constructor(
                 ?.filter(String::isNotEmpty)
                 ?: emptyList()
 
+        val discoverSampleSize: Int =
+            pojo.discoverSampleSize
+                ?: DynamoDbSourceConfigurationSpecification.DEFAULT_DISCOVER_SAMPLE_SIZE
+        if (
+            discoverSampleSize !in
+                DynamoDbSourceConfigurationSpecification
+                    .MIN_DISCOVER_SAMPLE_SIZE..DynamoDbSourceConfigurationSpecification
+                        .MAX_DISCOVER_SAMPLE_SIZE
+        ) {
+            throw ConfigErrorException(
+                "'discover_sample_size' must be between " +
+                    "${DynamoDbSourceConfigurationSpecification.MIN_DISCOVER_SAMPLE_SIZE} and " +
+                    "${DynamoDbSourceConfigurationSpecification.MAX_DISCOVER_SAMPLE_SIZE}, got $discoverSampleSize.",
+            )
+        }
+
         val maxConcurrency: Int =
             when (DataChannelMedium.valueOf(dataChannelMedium)) {
                 STDIO -> 1
@@ -191,6 +208,7 @@ constructor(
             externalId = externalId,
             reservedAttributeNames = reservedAttributeNames,
             ignoreMissingReadPermissionsTables = pojo.ignoreMissingReadPermissionsTables ?: false,
+            discoverSampleSize = discoverSampleSize,
             maxConcurrency = maxConcurrency,
             realHost = realHost,
             realPort = realPort,

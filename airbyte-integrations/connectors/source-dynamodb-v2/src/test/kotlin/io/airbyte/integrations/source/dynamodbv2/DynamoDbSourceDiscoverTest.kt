@@ -36,6 +36,37 @@ class DynamoDbSourceDiscoverTest {
         )
     }
 
+    /**
+     * With a sample of one item only the attributes of the first scanned item are discovered. On
+     * DynamoDB Local the `all_types` items are scanned in the order 1, 3, 2 (partition key hash
+     * order, see the parity harness), so item 1's attributes win and item 2's are missing.
+     */
+    @Test
+    fun testDiscoverSampleSizeLimitsTheSample() {
+        val catalogs: List<AirbyteCatalog> =
+            CliRunner.source(
+                    "discover",
+                    container.config(extra = mapOf("discover_sample_size" to 1))
+                )
+                .run()
+                .catalogs()
+        val allTypes: JsonNode =
+            Jsons.valueToTree<JsonNode>(catalogs.single()).get("streams").first {
+                it["name"].asText() == "all_types"
+            }
+        val properties: JsonNode = allTypes["json_schema"]["properties"]
+        Assertions.assertTrue(properties.has("str"), properties.toString())
+        Assertions.assertFalse(properties.has("only_in_2"), properties.toString())
+        Assertions.assertFalse(properties.has("only_in_2_num"), properties.toString())
+        // Item 1 holds `flexible` as a string; with the full sample item 2's number wins.
+        Assertions.assertEquals(
+            Jsons.readTree("""["null","string"]"""),
+            properties["flexible"]["type"],
+        )
+        // The full sample (default 1000) still yields the legacy catalog.
+        assertCatalogMatchesLegacy(container.config(extra = mapOf("discover_sample_size" to 1000)))
+    }
+
     private fun assertCatalogMatchesLegacy(config: DynamoDbSourceConfigurationSpecification) {
         val expected: JsonNode =
             normalize(Jsons.readTree(ResourceUtils.readResource(EXPECTED_CATALOG_RESOURCE)))

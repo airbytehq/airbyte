@@ -75,6 +75,7 @@ differs from the legacy one (decision of 2026-09-17: credentials must come from 
 | `region` | optional (`""` allowed), SDK region chain | required, list of the regions known to the pinned AWS SDK (`testRegionEnumMatchesAwsSdk`) |
 | `endpoint` | any string | optional, must be an http(s) URL |
 | `reserved_attribute_names` | marked `airbyte_secret` | plain string |
+| Discovery sample | hard-coded 1000 items per table | `discover_sample_size` (default 1000, 1..100000), like MongoDB's `discover_sample_size` |
 
 AWS has no username/password API authentication; access keys (long-lived or temporary) and role
 assumption are the only credential shapes that can travel inside a configuration.

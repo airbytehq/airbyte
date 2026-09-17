@@ -127,6 +127,16 @@
         "title" : "Ignore missing read permissions tables",
         "order" : 4,
         "default" : false
+      },
+      "discover_sample_size" : {
+        "type" : "integer",
+        "description" : "The maximum number of items to scan per table when discovering its attributes and their types. A larger sample finds rarer attributes but consumes more read capacity. Defaults to 1000.",
+        "title" : "Discovery sample size (Advanced)",
+        "order" : 5,
+        "default" : 1000,
+        "minimum" : 1,
+        "maximum" : 100000,
+        "examples" : [ 1000, 10000 ]
       }
     },
     "required" : [ "credentials", "region" ]

@@ -33,6 +33,7 @@ import jakarta.inject.Singleton
             "endpoint",
             "reserved_attribute_names",
             "ignore_missing_read_permissions_tables",
+            "discover_sample_size",
         ],
 )
 @Singleton
@@ -87,6 +88,24 @@ class DynamoDbSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaDescription("Ignore tables with missing scan/read permissions")
     @JsonSchemaInject(json = """{"order":4,"default":false}""")
     var ignoreMissingReadPermissionsTables: Boolean? = null
+
+    @JsonProperty("discover_sample_size")
+    @JsonSchemaTitle("Discovery sample size (Advanced)")
+    @JsonSchemaDescription(
+        "The maximum number of items to scan per table when discovering its attributes and their types. A larger sample finds rarer attributes but consumes more read capacity. Defaults to 1000.",
+    )
+    @JsonSchemaInject(
+        json =
+            """{"order":5,"default":1000,"minimum":1,"maximum":100000,"examples":[1000, 10000]}""",
+    )
+    var discoverSampleSize: Int? = null
+
+    companion object {
+        /** What the legacy connector always sampled. */
+        const val DEFAULT_DISCOVER_SAMPLE_SIZE = 1000
+        const val MIN_DISCOVER_SAMPLE_SIZE = 1
+        const val MAX_DISCOVER_SAMPLE_SIZE = 100_000
+    }
 }
 
 /**

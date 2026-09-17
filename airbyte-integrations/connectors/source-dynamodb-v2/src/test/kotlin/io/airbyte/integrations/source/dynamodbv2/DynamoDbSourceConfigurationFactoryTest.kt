@@ -38,10 +38,12 @@ class DynamoDbSourceConfigurationFactoryTest {
   "endpoint": "http://localhost:8000",
   "region": "eu-west-1",
   "reserved_attribute_names": "name, field.name ,field-name,",
-  "ignore_missing_read_permissions_tables": true
+  "ignore_missing_read_permissions_tables": true,
+  "discover_sample_size": 250
 }
 """,
             )
+        Assertions.assertEquals(250, config.discoverSampleSize)
         Assertions.assertEquals("AKIA123", config.accessKeyId)
         Assertions.assertEquals("s3cr3t", config.secretAccessKey)
         Assertions.assertEquals("tok", config.sessionToken)
@@ -104,6 +106,22 @@ class DynamoDbSourceConfigurationFactoryTest {
         Assertions.assertEquals(Region.US_GOV_WEST_1, config.region)
         Assertions.assertEquals(emptyList<String>(), config.reservedAttributeNames)
         Assertions.assertFalse(config.ignoreMissingReadPermissionsTables)
+        Assertions.assertEquals(
+            DynamoDbSourceConfigurationSpecification.DEFAULT_DISCOVER_SAMPLE_SIZE,
+            config.discoverSampleSize,
+        )
+    }
+
+    @Test
+    fun testDiscoverSampleSizeOutOfRange() {
+        val credentials =
+            """{"auth_type": "User", "access_key_id": "k", "secret_access_key": "s"}"""
+        for (size in listOf(0, -5, 100_001)) {
+            assertConfigError(
+                """{"credentials": $credentials, "region": "us-east-1", "discover_sample_size": $size}""",
+                "'discover_sample_size' must be between 1 and 100000",
+            )
+        }
     }
 
     @Test

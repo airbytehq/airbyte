@@ -71,7 +71,11 @@ class DynamoDbSourceSpecTest {
         val actual: JsonNode = Jsons.readTree(ResourceUtils.readResource(EXPECTED_SPEC_RESOURCE))
         val actualProperties: Set<String> =
             actual["connectionSpecification"]["properties"].fieldNames().asSequence().toSet()
-        Assertions.assertEquals(legacyProperties, actualProperties)
+        // Every legacy property still exists (new optional ones may be added).
+        Assertions.assertTrue(
+            actualProperties.containsAll(legacyProperties),
+            "missing legacy properties: ${legacyProperties - actualProperties}",
+        )
 
         val config: DynamoDbSourceConfiguration =
             DynamoDbSourceConfigurationFactory()
