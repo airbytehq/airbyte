@@ -15,17 +15,22 @@ import jakarta.inject.Singleton
 /**
  * The object which is mapped to the DynamoDB source configuration JSON.
  *
- * Property names, titles, descriptions, defaults and ordering deliberately mirror the legacy
- * `source-dynamodb` `spec.json`, so that saved configurations keep deserializing and the `spec`
- * output stays identical. Use [DynamoDbSourceConfiguration] instead wherever possible.
+ * Property names are those of the legacy `source-dynamodb` connector (`credentials` with
+ * `auth_type: "User"`, `access_key_id`, `secret_access_key`, `endpoint`, `region`,
+ * `reserved_attribute_names`, `ignore_missing_read_permissions_tables`), so a legacy access-key
+ * configuration still loads. Unlike the legacy spec, credentials can only come from this
+ * configuration: the connector runs in a container with no AWS profile, instance role or
+ * environment credentials, so the legacy "Role Based Authentication" option (SDK default
+ * credentials chain) is gone, `region` is required, and temporary credentials / IAM role assumption
+ * are supported. Use [DynamoDbSourceConfiguration] instead wherever possible.
  */
-@JsonSchemaTitle("Dynamodb Source Spec")
+@JsonSchemaTitle("DynamoDB Source Spec")
 @JsonPropertyOrder(
     value =
         [
             "credentials",
-            "endpoint",
             "region",
+            "endpoint",
             "reserved_attribute_names",
             "ignore_missing_read_permissions_tables",
         ],
@@ -34,94 +39,188 @@ import jakarta.inject.Singleton
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class DynamoDbSourceConfigurationSpecification : ConfigurationSpecification() {
 
-    /**
-     * Nullable so that it is not part of the schema's `required` list (the legacy spec declares no
-     * required property); [DynamoDbSourceConfigurationFactory] rejects a configuration without it.
-     */
     @JsonProperty("credentials")
     @JsonSchemaTitle("Credentials")
-    @JsonSchemaDescription("Credentials for the service")
-    @JsonSchemaInject(json = """{"order":0}""")
-    var credentials: CredentialsSpecification? = null
+    @JsonSchemaDescription(
+        "How the connector authenticates with AWS. Credentials are read from this configuration only; the connector cannot use AWS profiles, instance roles or environment variables.",
+    )
+    @JsonSchemaInject(json = """{"order":0,"display_type":"dropdown"}""")
+    lateinit var credentials: CredentialsSpecification
 
-    @JsonProperty("endpoint")
-    @JsonSchemaTitle("Dynamodb Endpoint")
-    @JsonSchemaDescription("the URL of the Dynamodb database")
-    @JsonSchemaInject(json = """{"default":"","examples":["https://{aws_dynamo_db_url}.com"]}""")
-    var endpoint: String? = null
+    /** Null when the (required) `credentials` property is absent from the config JSON. */
+    fun credentialsOrNull(): CredentialsSpecification? =
+        if (this::credentials.isInitialized) credentials else null
 
     @JsonProperty("region")
-    @JsonSchemaTitle("Dynamodb Region")
-    @JsonSchemaDescription("The region of the Dynamodb database")
+    @JsonSchemaTitle("AWS Region")
+    @JsonSchemaDescription("The AWS region of the DynamoDB tables.")
     @JsonSchemaInject(
         json =
-            """{"default":"","enum":["","af-south-1","ap-east-1","ap-northeast-1","ap-northeast-2","ap-northeast-3","ap-south-1","ap-south-2","ap-southeast-1","ap-southeast-2","ap-southeast-3","ap-southeast-4","ca-central-1","ca-west-1","cn-north-1","cn-northwest-1","eu-central-1","eu-central-2","eu-north-1","eu-south-1","eu-south-2","eu-west-1","eu-west-2","eu-west-3","il-central-1","me-central-1","me-south-1","sa-east-1","us-east-1","us-east-2","us-gov-east-1","us-gov-west-1","us-west-1","us-west-2"]}""",
+            """{"order":1,"examples":["us-east-1"],"enum":["af-south-1","ap-east-1","ap-east-2","ap-northeast-1","ap-northeast-2","ap-northeast-3","ap-south-1","ap-south-2","ap-southeast-1","ap-southeast-2","ap-southeast-3","ap-southeast-4","ap-southeast-5","ap-southeast-6","ap-southeast-7","ca-central-1","ca-west-1","cn-north-1","cn-northwest-1","eu-central-1","eu-central-2","eu-north-1","eu-south-1","eu-south-2","eu-west-1","eu-west-2","eu-west-3","eusc-de-east-1","il-central-1","me-central-1","me-south-1","mx-central-1","sa-east-1","us-east-1","us-east-2","us-gov-east-1","us-gov-west-1","us-west-1","us-west-2"]}""",
     )
-    var region: String? = null
+    lateinit var region: String
 
-    /** `airbyte_secret` is a legacy quirk, kept for spec parity. */
+    /** Null when the (required) `region` property is absent from the config JSON. */
+    fun regionOrNull(): String? = if (this::region.isInitialized) region else null
+
+    @JsonProperty("endpoint")
+    @JsonSchemaTitle("DynamoDB Endpoint")
+    @JsonSchemaDescription(
+        "Optional endpoint override, for example a VPC endpoint, a FIPS endpoint or a DynamoDB Local instance. Leave empty to use the public endpoint of the region.",
+    )
+    @JsonSchemaInject(
+        json =
+            """{"order":2,"examples":["https://dynamodb-fips.us-east-1.amazonaws.com","http://localhost:8000"]}""",
+    )
+    var endpoint: String? = null
+
     @JsonProperty("reserved_attribute_names")
     @JsonSchemaTitle("Reserved attribute names")
-    @JsonSchemaDescription("Comma separated reserved attribute names present in your tables")
-    @JsonSchemaInject(
-        json = """{"airbyte_secret":true,"examples":["name, field_name, field-name"]}""",
+    @JsonSchemaDescription(
+        "Comma separated names of attributes that are DynamoDB reserved words or contain special characters; they are aliased in scan expressions.",
     )
+    @JsonSchemaInject(json = """{"order":3,"examples":["name, field_name, field-name"]}""")
     var reservedAttributeNames: String? = null
 
     @JsonProperty("ignore_missing_read_permissions_tables")
     @JsonSchemaTitle("Ignore missing read permissions tables")
     @JsonSchemaDescription("Ignore tables with missing scan/read permissions")
-    @JsonSchemaInject(json = """{"default":false}""")
+    @JsonSchemaInject(json = """{"order":4,"default":false}""")
     var ignoreMissingReadPermissionsTables: Boolean? = null
 }
 
 /**
- * The `credentials` oneOf. The `auth_type` discriminator is synthesized by Jackson;
- * [DynamoDbSpecificationExtender] renders it as `const` like the legacy spec does.
+ * The `credentials` oneOf. `auth_type: "User"` is the legacy discriminator value for access keys
+ * and is kept so that legacy configurations load unchanged.
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = CredentialsSpecification.AUTH_TYPE)
-@JsonSubTypes(
-    JsonSubTypes.Type(value = UserCredentialsSpecification::class, name = "User"),
-    JsonSubTypes.Type(value = RoleCredentialsSpecification::class, name = "Role"),
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    property = CredentialsSpecification.AUTH_TYPE,
+    // Any other `auth_type`, notably the legacy "Role", deserializes to this marker so that the
+    // configuration factory can reject it with a clear message. Not part of the generated spec.
+    defaultImpl = UnsupportedCredentialsSpecification::class,
 )
-// No title/description here: the generator would copy them onto every variant, which the legacy
-// spec does not have. They are set on the `credentials` property instead.
+@JsonSubTypes(
+    JsonSubTypes.Type(value = AccessKeyCredentialsSpecification::class, name = "User"),
+    JsonSubTypes.Type(value = AssumeRoleCredentialsSpecification::class, name = "AssumeRole"),
+)
 sealed interface CredentialsSpecification {
+    val accessKeyId: String
+    val secretAccessKey: String
+    val sessionToken: String?
+
     companion object {
         const val AUTH_TYPE = "auth_type"
     }
 }
 
-/** Static access key authentication. */
-@JsonSchemaTitle("Authenticate via Access Keys")
-// The legacy spec declares this variant as `"type": ["null", "object"]`; kept for parity.
-@JsonSchemaInject(json = """{"type":["null","object"]}""")
-@JsonPropertyOrder(value = ["access_key_id", "secret_access_key"])
+/** An IAM user's access key, or temporary credentials (access key + session token) from STS. */
+@JsonSchemaTitle("Access Key")
+@JsonSchemaDescription(
+    "Authenticate with the access key of an IAM user, or with temporary credentials (access key, secret access key and session token) issued by AWS STS.",
+)
+@JsonPropertyOrder(value = ["access_key_id", "secret_access_key", "session_token"])
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-class UserCredentialsSpecification : CredentialsSpecification {
+class AccessKeyCredentialsSpecification : CredentialsSpecification {
     @JsonProperty("access_key_id")
-    @JsonSchemaTitle("Dynamodb Key Id")
+    @JsonSchemaTitle("Access Key ID")
     @JsonSchemaDescription(
-        "The access key id to access Dynamodb. Airbyte requires read permissions to the database",
+        "The access key ID. Airbyte needs the dynamodb:ListTables, dynamodb:DescribeTable and dynamodb:Scan permissions on the tables to replicate.",
     )
     @JsonSchemaInject(
         json = """{"order":1,"airbyte_secret":true,"examples":["A012345678910EXAMPLE"]}""",
     )
-    lateinit var accessKeyId: String
+    override lateinit var accessKeyId: String
 
     @JsonProperty("secret_access_key")
-    @JsonSchemaTitle("Dynamodb Access Key")
-    @JsonSchemaDescription("The corresponding secret to the access key id.")
+    @JsonSchemaTitle("Secret Access Key")
+    @JsonSchemaDescription("The secret access key that corresponds to the access key ID.")
     @JsonSchemaInject(
         json =
             """{"order":2,"airbyte_secret":true,"examples":["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"]}""",
     )
-    lateinit var secretAccessKey: String
+    override lateinit var secretAccessKey: String
+
+    @JsonProperty("session_token")
+    @JsonSchemaTitle("Session Token")
+    @JsonSchemaDescription(
+        "The session token of temporary credentials issued by AWS STS. Leave empty when using the long-lived access key of an IAM user.",
+    )
+    @JsonSchemaInject(json = """{"order":3,"airbyte_secret":true}""")
+    override var sessionToken: String? = null
 }
 
 /**
- * Role-based authentication: credentials come from the AWS SDK default provider chain (environment
- * variables, web identity token / IRSA, ECS or EC2 instance profile, ...).
+ * An access key that is allowed to call `sts:AssumeRole` on an IAM role; DynamoDB is then read with
+ * the role's temporary credentials (cross-account access, least-privilege roles).
  */
-@JsonSchemaTitle("Role Based Authentication")
-class RoleCredentialsSpecification : CredentialsSpecification
+@JsonSchemaTitle("Access Key and IAM Role")
+@JsonSchemaDescription(
+    "Authenticate with an access key that may assume an IAM role (sts:AssumeRole), then read DynamoDB with the role's temporary credentials. Use this for cross-account access.",
+)
+@JsonPropertyOrder(
+    value = ["access_key_id", "secret_access_key", "session_token", "role_arn", "external_id"]
+)
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
+class AssumeRoleCredentialsSpecification : CredentialsSpecification {
+    @JsonProperty("access_key_id")
+    @JsonSchemaTitle("Access Key ID")
+    @JsonSchemaDescription(
+        "The access key ID of the IAM identity that is allowed to assume the role (sts:AssumeRole).",
+    )
+    @JsonSchemaInject(
+        json = """{"order":1,"airbyte_secret":true,"examples":["A012345678910EXAMPLE"]}""",
+    )
+    override lateinit var accessKeyId: String
+
+    @JsonProperty("secret_access_key")
+    @JsonSchemaTitle("Secret Access Key")
+    @JsonSchemaDescription("The secret access key that corresponds to the access key ID.")
+    @JsonSchemaInject(
+        json =
+            """{"order":2,"airbyte_secret":true,"examples":["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"]}""",
+    )
+    override lateinit var secretAccessKey: String
+
+    @JsonProperty("session_token")
+    @JsonSchemaTitle("Session Token")
+    @JsonSchemaDescription(
+        "The session token, only when the access key above is itself a temporary credential issued by AWS STS.",
+    )
+    @JsonSchemaInject(json = """{"order":3,"airbyte_secret":true}""")
+    override var sessionToken: String? = null
+
+    @JsonProperty("role_arn")
+    @JsonSchemaTitle("Role ARN")
+    @JsonSchemaDescription(
+        "The ARN of the IAM role to assume. The role needs the dynamodb:ListTables, dynamodb:DescribeTable and dynamodb:Scan permissions on the tables to replicate, and its trust policy must allow the access key's identity to assume it.",
+    )
+    @JsonSchemaInject(
+        json =
+            """{"order":4,"examples":["arn:aws:iam::123456789012:role/airbyte-dynamodb-reader"]}""",
+    )
+    lateinit var roleArn: String
+
+    @JsonProperty("external_id")
+    @JsonSchemaTitle("External ID")
+    @JsonSchemaDescription(
+        "The external ID that the role's trust policy requires (sts:ExternalId condition), if any.",
+    )
+    @JsonSchemaInject(json = """{"order":5}""")
+    var externalId: String? = null
+}
+
+/**
+ * Marker for an `auth_type` this connector does not support, for example the legacy `Role` (SDK
+ * default credentials chain). Never advertised in the spec; rejected by the configuration factory.
+ */
+class UnsupportedCredentialsSpecification : CredentialsSpecification {
+    override val accessKeyId: String
+        get() = ""
+
+    override val secretAccessKey: String
+        get() = ""
+
+    override val sessionToken: String?
+        get() = null
+}

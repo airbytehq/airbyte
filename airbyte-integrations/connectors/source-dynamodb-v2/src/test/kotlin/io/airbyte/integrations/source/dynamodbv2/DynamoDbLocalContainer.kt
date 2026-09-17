@@ -46,37 +46,32 @@ class DynamoDbLocalContainer :
             )
             .build()
 
-    /** Connector configuration JSON pointing at this container, with access key credentials. */
+    /** Connector configuration pointing at this container, with (dummy) access key credentials. */
     fun config(
-        accessKeyId: String? = ACCESS_KEY_ID,
-        secretAccessKey: String? = SECRET_ACCESS_KEY,
+        accessKeyId: String = ACCESS_KEY_ID,
+        secretAccessKey: String = SECRET_ACCESS_KEY,
         extra: Map<String, Any?> = emptyMap(),
-    ): DynamoDbSourceConfigurationSpecification {
-        val credentials: Map<String, Any?> =
-            if (accessKeyId == null && secretAccessKey == null) {
-                mapOf("auth_type" to "Role")
-            } else {
-                mapOf(
-                    "auth_type" to "User",
-                    "access_key_id" to accessKeyId,
-                    "secret_access_key" to secretAccessKey,
-                )
-            }
-        return parseConfig(
+    ): DynamoDbSourceConfigurationSpecification =
+        parseConfig(
             mapOf(
-                "credentials" to credentials,
+                "credentials" to
+                    mapOf(
+                        "auth_type" to "User",
+                        "access_key_id" to accessKeyId,
+                        "secret_access_key" to secretAccessKey,
+                    ),
                 "endpoint" to endpoint.toString(),
                 "region" to REGION,
             ) + extra,
         )
-    }
 
     companion object {
         const val IMAGE = "amazon/dynamodb-local:3.3.1"
         const val PORT = 8000
         const val REGION = "us-east-1"
-        const val ACCESS_KEY_ID = "local"
-        const val SECRET_ACCESS_KEY = "local"
+        /** DynamoDB Local accepts any access key; these are the AWS documentation examples. */
+        const val ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE"
+        const val SECRET_ACCESS_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 
         fun parseConfig(config: Map<String, Any?>): DynamoDbSourceConfigurationSpecification =
             Jsons.readValue(

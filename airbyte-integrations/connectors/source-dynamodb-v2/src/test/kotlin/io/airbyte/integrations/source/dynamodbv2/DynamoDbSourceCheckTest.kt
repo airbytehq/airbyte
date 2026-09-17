@@ -3,9 +3,7 @@ package io.airbyte.integrations.source.dynamodbv2
 
 import io.airbyte.cdk.command.SyncsTestFixture
 import io.airbyte.integrations.source.dynamodbv2.DynamoDbLocalContainer.Companion.createTableWithItems
-import java.io.File
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
@@ -20,32 +18,23 @@ class DynamoDbSourceCheckTest {
         SyncsTestFixture.testCheck(seeded.config())
     }
 
-    /**
-     * Role-based access picks credentials up from the SDK default chain, here system properties.
-     */
+    /** DynamoDB Local ignores the session token, but the SDK still signs with it. */
     @Test
-    fun testCheckSucceedsWithRoleBasedAccess() {
-        withSystemProperties(
-            mapOf(
-                "aws.accessKeyId" to DynamoDbLocalContainer.ACCESS_KEY_ID,
-                "aws.secretAccessKey" to DynamoDbLocalContainer.SECRET_ACCESS_KEY,
+    fun testCheckSucceedsWithTemporaryCredentials() {
+        SyncsTestFixture.testCheck(
+            seeded.config(
+                extra =
+                    mapOf(
+                        "credentials" to
+                            mapOf(
+                                "auth_type" to "User",
+                                "access_key_id" to DynamoDbLocalContainer.ACCESS_KEY_ID,
+                                "secret_access_key" to DynamoDbLocalContainer.SECRET_ACCESS_KEY,
+                                "session_token" to "FwoGZXIvYXdzEBYaDEXAMPLESESSIONTOKEN",
+                            ),
+                    ),
             ),
-        ) {
-            SyncsTestFixture.testCheck(seeded.config(accessKeyId = null, secretAccessKey = null))
-        }
-    }
-
-    /** Legacy behavior: blank keys fall back to the default chain, like role-based access. */
-    @Test
-    fun testCheckSucceedsWithBlankAccessKeys() {
-        withSystemProperties(
-            mapOf(
-                "aws.accessKeyId" to DynamoDbLocalContainer.ACCESS_KEY_ID,
-                "aws.secretAccessKey" to DynamoDbLocalContainer.SECRET_ACCESS_KEY,
-            ),
-        ) {
-            SyncsTestFixture.testCheck(seeded.config(accessKeyId = "", secretAccessKey = ""))
-        }
+        )
     }
 
     @Test
@@ -69,43 +58,24 @@ class DynamoDbSourceCheckTest {
     @Test
     fun testCheckFailsWhenUnreachable() {
         SyncsTestFixture.testCheck(
-            DynamoDbLocalContainer.parseConfig(
-                mapOf(
-                    "credentials" to
-                        mapOf(
-                            "auth_type" to "User",
-                            "access_key_id" to "local",
-                            "secret_access_key" to "local",
-                        ),
-                    "endpoint" to "http://localhost:1",
-                    "region" to DynamoDbLocalContainer.REGION,
-                ),
-            ),
+            seeded.config(extra = mapOf("endpoint" to "http://localhost:1")),
             expectedFailure = "Could not reach the DynamoDB endpoint",
         )
     }
 
     @Test
-    fun testCheckFailsWithoutCredentialsProperty() {
+    fun testCheckFailsWithBlankAccessKey() {
         SyncsTestFixture.testCheck(
-            DynamoDbLocalContainer.parseConfig(
-                mapOf("endpoint" to seeded.endpoint.toString(), "region" to "us-east-1"),
-            ),
-            expectedFailure = "Missing required 'credentials' property",
+            seeded.config(accessKeyId = ""),
+            expectedFailure = "'access_key_id' property must not be blank",
         )
     }
 
-    /** Only meaningful on a machine without ambient AWS credentials. */
     @Test
-    fun testCheckFailsWithRoleBasedAccessWithoutAmbientCredentials() {
-        Assumptions.assumeTrue(
-            System.getenv().keys.none { it.startsWith("AWS_") } &&
-                !File(System.getProperty("user.home"), ".aws/credentials").exists(),
-            "ambient AWS credentials present",
-        )
+    fun testCheckFailsWithoutRegion() {
         SyncsTestFixture.testCheck(
-            seeded.config(accessKeyId = null, secretAccessKey = null),
-            expectedFailure = "No AWS credentials found",
+            seeded.config(extra = mapOf("region" to "")),
+            expectedFailure = "'region' property is required",
         )
     }
 
@@ -137,19 +107,6 @@ class DynamoDbSourceCheckTest {
         fun stopContainers() {
             seeded.stop()
             empty.stop()
-        }
-
-        fun withSystemProperties(properties: Map<String, String>, block: () -> Unit) {
-            val previous: Map<String, String?> =
-                properties.keys.associateWith { System.getProperty(it) }
-            properties.forEach { (k, v) -> System.setProperty(k, v) }
-            try {
-                block()
-            } finally {
-                previous.forEach { (k, v) ->
-                    if (v == null) System.clearProperty(k) else System.setProperty(k, v)
-                }
-            }
         }
     }
 }

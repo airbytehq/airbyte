@@ -23,4 +23,6 @@ dependencies {
     // amazon/dynamodb-local has no Testcontainers module; a GenericContainer is enough.
     testFixturesImplementation 'org.testcontainers:testcontainers:1.21.4'
     testImplementation 'org.testcontainers:testcontainers:1.21.4'
+    // LocalStack emulates STS, which exercises the assume-role credentials path.
+    testImplementation 'org.testcontainers:localstack:1.21.4'
 }

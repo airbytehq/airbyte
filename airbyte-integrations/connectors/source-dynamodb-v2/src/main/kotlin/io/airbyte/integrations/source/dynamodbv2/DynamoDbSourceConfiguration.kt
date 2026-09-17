@@ -22,15 +22,20 @@ import software.amazon.awssdk.regions.Region
 
 /** DynamoDB-specific implementation of [SourceConfiguration]. */
 data class DynamoDbSourceConfiguration(
+    val region: Region,
     /**
      * Endpoint override (DynamoDB Local, VPC endpoint, ...); null for the regional AWS endpoint.
      */
     val endpoint: URI?,
-    /** Null lets the AWS SDK resolve the region from its default provider chain. */
-    val region: Region?,
-    /** Both null when credentials come from the AWS SDK default provider chain. */
-    val accessKeyId: String?,
-    val secretAccessKey: String?,
+    val accessKeyId: String,
+    val secretAccessKey: String,
+    /** Set when the access key is a temporary credential issued by STS. */
+    val sessionToken: String?,
+    /**
+     * IAM role to assume with the access key before reading DynamoDB; null to use the key as is.
+     */
+    val roleArn: String?,
+    val externalId: String?,
     val reservedAttributeNames: List<String>,
     val ignoreMissingReadPermissionsTables: Boolean,
     override val maxConcurrency: Int,
@@ -47,15 +52,14 @@ data class DynamoDbSourceConfiguration(
         SshConnectionOptions.fromAdditionalProperties(emptyMap()),
 ) : SourceConfiguration {
 
-    /** True when an access key id and secret were configured (and are not blank). */
-    val hasStaticCredentials: Boolean
-        get() = accessKeyId != null && secretAccessKey != null
+    val assumesRole: Boolean
+        get() = roleArn != null
 
-    /** Keeps the secret out of logs. */
+    /** Keeps the secrets out of logs. */
     override fun toString(): String =
-        "DynamoDbSourceConfiguration(endpoint=$endpoint, region=$region, " +
-            "accessKeyId=${accessKeyId?.let { "*****" }}, secretAccessKey=${secretAccessKey?.let { "*****" }}, " +
-            "reservedAttributeNames=$reservedAttributeNames, " +
+        "DynamoDbSourceConfiguration(region=$region, endpoint=$endpoint, accessKeyId=*****, " +
+            "secretAccessKey=*****, sessionToken=${sessionToken?.let { "*****" }}, roleArn=$roleArn, " +
+            "externalId=${externalId?.let { "*****" }}, reservedAttributeNames=$reservedAttributeNames, " +
             "ignoreMissingReadPermissionsTables=$ignoreMissingReadPermissionsTables, " +
             "maxConcurrency=$maxConcurrency, checkpointTargetInterval=$checkpointTargetInterval)"
 
@@ -111,43 +115,55 @@ constructor(
         pojo: DynamoDbSourceConfigurationSpecification,
     ): DynamoDbSourceConfiguration {
         val credentials: CredentialsSpecification =
-            pojo.credentials
+            pojo.credentialsOrNull()
                 ?: throw ConfigErrorException(
-                    "Missing required 'credentials' property: choose 'Authenticate via Access Keys' " +
-                        "or 'Role Based Authentication'.",
+                    "Missing required 'credentials' property: choose 'Access Key' or " +
+                        "'Access Key and IAM Role'.",
                 )
-        // Like the legacy connector, blank access keys fall back to the SDK default provider chain
-        // (role-based access), whatever the selected `auth_type`.
-        val (accessKeyId: String?, secretAccessKey: String?) =
+        if (credentials is UnsupportedCredentialsSpecification) {
+            throw ConfigErrorException(
+                "Unsupported credentials type. Role based authentication (credentials from the " +
+                    "environment the connector runs in) is not available; configure an access key, " +
+                    "optionally with an IAM role to assume.",
+            )
+        }
+        val accessKeyId: String =
+            credentials.accessKeyId.trim().ifBlank {
+                throw ConfigErrorException("The 'access_key_id' property must not be blank.")
+            }
+        val secretAccessKey: String =
+            credentials.secretAccessKey.trim().ifBlank {
+                throw ConfigErrorException("The 'secret_access_key' property must not be blank.")
+            }
+        val sessionToken: String? = credentials.sessionToken?.trim()?.ifBlank { null }
+        val (roleArn: String?, externalId: String?) =
             when (credentials) {
-                is UserCredentialsSpecification -> {
-                    val key: String? = credentials.accessKeyId.trim().ifBlank { null }
-                    val secret: String? = credentials.secretAccessKey.trim().ifBlank { null }
-                    if (key == null || secret == null) {
-                        log.warn {
-                            "Access key id or secret access key is blank; " +
-                                "using the AWS default credentials provider chain instead."
+                is AccessKeyCredentialsSpecification,
+                is UnsupportedCredentialsSpecification -> null to null
+                is AssumeRoleCredentialsSpecification -> {
+                    val arn: String =
+                        credentials.roleArn.trim().ifBlank {
+                            throw ConfigErrorException("The 'role_arn' property must not be blank.")
                         }
-                        null to null
-                    } else {
-                        key to secret
+                    if (!ROLE_ARN.matches(arn)) {
+                        throw ConfigErrorException(
+                            "'$arn' is not an IAM role ARN; expected " +
+                                "arn:aws:iam::<account id>:role/<role name>.",
+                        )
                     }
+                    arn to credentials.externalId?.trim()?.ifBlank { null }
                 }
-                is RoleCredentialsSpecification -> null to null
             }
 
-        val endpoint: URI? =
-            pojo.endpoint
-                ?.trim()
-                ?.ifBlank { null }
-                ?.let { raw: String ->
-                    try {
-                        URI.create(raw)
-                    } catch (e: IllegalArgumentException) {
-                        throw ConfigErrorException("Invalid endpoint '$raw': ${e.message}", e)
-                    }
-                }
-        val region: Region? = pojo.region?.trim()?.ifBlank { null }?.let(Region::of)
+        val regionId: String =
+            pojo.regionOrNull()?.trim()?.ifBlank { null }
+                ?: throw ConfigErrorException("The 'region' property is required.")
+        val region: Region = Region.of(regionId)
+        if (region !in Region.regions()) {
+            log.warn { "Region '$regionId' is not known to the AWS SDK; using it as configured." }
+        }
+
+        val endpoint: URI? = pojo.endpoint?.trim()?.ifBlank { null }?.let(::parseEndpoint)
 
         val reservedAttributeNames: List<String> =
             pojo.reservedAttributeNames
@@ -166,10 +182,13 @@ constructor(
         val (realHost: String, realPort: Int) = hostAndPort(endpoint, region)
 
         return DynamoDbSourceConfiguration(
-            endpoint = endpoint,
             region = region,
+            endpoint = endpoint,
             accessKeyId = accessKeyId,
             secretAccessKey = secretAccessKey,
+            sessionToken = sessionToken,
+            roleArn = roleArn,
+            externalId = externalId,
             reservedAttributeNames = reservedAttributeNames,
             ignoreMissingReadPermissionsTables = pojo.ignoreMissingReadPermissionsTables ?: false,
             maxConcurrency = maxConcurrency,
@@ -182,13 +201,32 @@ constructor(
         /** Same separator as the legacy connector. */
         val RESERVED_ATTRIBUTE_NAMES_SEPARATOR = Regex("\\s*,\\s*")
 
+        /** `arn:<partition>:iam::<12-digit account>:role/<path/name>` */
+        val ROLE_ARN = Regex("""arn:aws[a-z-]*:iam::\d{12}:role/.+""")
+
+        /** An absolute http(s) URL with a host; anything else is a user error. */
+        fun parseEndpoint(raw: String): URI {
+            val uri: URI =
+                try {
+                    URI(raw)
+                } catch (e: java.net.URISyntaxException) {
+                    throw ConfigErrorException("Invalid endpoint '$raw': ${e.reason}", e)
+                }
+            val scheme: String? = uri.scheme?.lowercase()
+            if ((scheme != "http" && scheme != "https") || uri.host == null) {
+                throw ConfigErrorException(
+                    "Invalid endpoint '$raw': expected a URL such as https://dynamodb.us-east-1.amazonaws.com.",
+                )
+            }
+            return uri
+        }
+
         /**
          * Host and port the connector talks to; only informational for this connector (the CDK uses
          * them for SSH tunnels, which the DynamoDB spec does not offer).
          */
-        fun hostAndPort(endpoint: URI?, region: Region?): Pair<String, Int> {
+        fun hostAndPort(endpoint: URI?, region: Region): Pair<String, Int> {
             if (endpoint != null) {
-                val host: String = endpoint.host ?: endpoint.toString()
                 val port: Int =
                     when {
                         endpoint.port > 0 -> endpoint.port
@@ -196,12 +234,9 @@ constructor(
                             DynamoDbSourceConfiguration.HTTP_PORT
                         else -> DynamoDbSourceConfiguration.HTTPS_PORT
                     }
-                return host to port
+                return endpoint.host to port
             }
-            val host: String =
-                if (region != null) "dynamodb.${region.id()}.amazonaws.com"
-                else "dynamodb.amazonaws.com"
-            return host to DynamoDbSourceConfiguration.HTTPS_PORT
+            return "dynamodb.${region.id()}.amazonaws.com" to DynamoDbSourceConfiguration.HTTPS_PORT
         }
     }
 }

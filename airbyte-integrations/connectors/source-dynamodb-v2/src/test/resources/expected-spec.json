@@ -1,139 +1,137 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/dynamodb",
-  "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Dynamodb Source Spec",
-    "type": "object",
-    "additionalProperties": false,
-    "properties": {
-      "credentials": {
-        "order": 0,
-        "type": "object",
-        "title": "Credentials",
-        "description": "Credentials for the service",
-        "oneOf": [
-          {
-            "title": "Authenticate via Access Keys",
-            "type": [
-              "null",
-              "object"
-            ],
-            "required": [
-              "access_key_id",
-              "secret_access_key"
-            ],
-            "additionalProperties": true,
-            "properties": {
-              "auth_type": {
-                "type": "string",
-                "const": "User",
-                "order": 0
-              },
-              "access_key_id": {
-                "order": 1,
-                "title": "Dynamodb Key Id",
-                "type": "string",
-                "description": "The access key id to access Dynamodb. Airbyte requires read permissions to the database",
-                "airbyte_secret": true,
-                "examples": [
-                  "A012345678910EXAMPLE"
-                ]
-              },
-              "secret_access_key": {
-                "order": 2,
-                "title": "Dynamodb Access Key",
-                "type": "string",
-                "description": "The corresponding secret to the access key id.",
-                "airbyte_secret": true,
-                "examples": [
-                  "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
-                ]
-              }
+  "documentationUrl" : "https://docs.airbyte.com/integrations/sources/dynamodb",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "DynamoDB Source Spec",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "credentials" : {
+        "oneOf" : [ {
+          "title" : "Access Key",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Authenticate with the access key of an IAM user, or with temporary credentials (access key, secret access key and session token) issued by AWS STS.",
+          "properties" : {
+            "auth_type" : {
+              "type" : "string",
+              "enum" : [ "User" ],
+              "default" : "User"
+            },
+            "access_key_id" : {
+              "type" : "string",
+              "description" : "The access key ID. Airbyte needs the dynamodb:ListTables, dynamodb:DescribeTable and dynamodb:Scan permissions on the tables to replicate.",
+              "title" : "Access Key ID",
+              "order" : 1,
+              "airbyte_secret" : true,
+              "examples" : [ "A012345678910EXAMPLE" ]
+            },
+            "secret_access_key" : {
+              "type" : "string",
+              "description" : "The secret access key that corresponds to the access key ID.",
+              "title" : "Secret Access Key",
+              "order" : 2,
+              "airbyte_secret" : true,
+              "examples" : [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ]
+            },
+            "session_token" : {
+              "type" : "string",
+              "description" : "The session token of temporary credentials issued by AWS STS. Leave empty when using the long-lived access key of an IAM user.",
+              "title" : "Session Token",
+              "order" : 3,
+              "airbyte_secret" : true
             }
           },
-          {
-            "type": "object",
-            "title": "Role Based Authentication",
-            "additionalProperties": true,
-            "properties": {
-              "auth_type": {
-                "type": "string",
-                "const": "Role",
-                "order": 0
-              }
+          "required" : [ "auth_type", "access_key_id", "secret_access_key" ]
+        }, {
+          "title" : "Access Key and IAM Role",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Authenticate with an access key that may assume an IAM role (sts:AssumeRole), then read DynamoDB with the role's temporary credentials. Use this for cross-account access.",
+          "properties" : {
+            "auth_type" : {
+              "type" : "string",
+              "enum" : [ "AssumeRole" ],
+              "default" : "AssumeRole"
+            },
+            "access_key_id" : {
+              "type" : "string",
+              "description" : "The access key ID of the IAM identity that is allowed to assume the role (sts:AssumeRole).",
+              "title" : "Access Key ID",
+              "order" : 1,
+              "airbyte_secret" : true,
+              "examples" : [ "A012345678910EXAMPLE" ]
+            },
+            "secret_access_key" : {
+              "type" : "string",
+              "description" : "The secret access key that corresponds to the access key ID.",
+              "title" : "Secret Access Key",
+              "order" : 2,
+              "airbyte_secret" : true,
+              "examples" : [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ]
+            },
+            "session_token" : {
+              "type" : "string",
+              "description" : "The session token, only when the access key above is itself a temporary credential issued by AWS STS.",
+              "title" : "Session Token",
+              "order" : 3,
+              "airbyte_secret" : true
+            },
+            "role_arn" : {
+              "type" : "string",
+              "description" : "The ARN of the IAM role to assume. The role needs the dynamodb:ListTables, dynamodb:DescribeTable and dynamodb:Scan permissions on the tables to replicate, and its trust policy must allow the access key's identity to assume it.",
+              "title" : "Role ARN",
+              "order" : 4,
+              "examples" : [ "arn:aws:iam::123456789012:role/airbyte-dynamodb-reader" ]
+            },
+            "external_id" : {
+              "type" : "string",
+              "description" : "The external ID that the role's trust policy requires (sts:ExternalId condition), if any.",
+              "title" : "External ID",
+              "order" : 5
             }
-          }
-        ]
+          },
+          "required" : [ "auth_type", "access_key_id", "secret_access_key", "role_arn" ]
+        } ],
+        "description" : "How the connector authenticates with AWS. Credentials are read from this configuration only; the connector cannot use AWS profiles, instance roles or environment variables.",
+        "title" : "Credentials",
+        "order" : 0,
+        "display_type" : "dropdown",
+        "type" : "object"
       },
-      "endpoint": {
-        "title": "Dynamodb Endpoint",
-        "type": "string",
-        "default": "",
-        "description": "the URL of the Dynamodb database",
-        "examples": [
-          "https://{aws_dynamo_db_url}.com"
-        ]
+      "region" : {
+        "type" : "string",
+        "description" : "The AWS region of the DynamoDB tables.",
+        "title" : "AWS Region",
+        "order" : 1,
+        "examples" : [ "us-east-1" ],
+        "enum" : [ "af-south-1", "ap-east-1", "ap-east-2", "ap-northeast-1", "ap-northeast-2", "ap-northeast-3", "ap-south-1", "ap-south-2", "ap-southeast-1", "ap-southeast-2", "ap-southeast-3", "ap-southeast-4", "ap-southeast-5", "ap-southeast-6", "ap-southeast-7", "ca-central-1", "ca-west-1", "cn-north-1", "cn-northwest-1", "eu-central-1", "eu-central-2", "eu-north-1", "eu-south-1", "eu-south-2", "eu-west-1", "eu-west-2", "eu-west-3", "eusc-de-east-1", "il-central-1", "me-central-1", "me-south-1", "mx-central-1", "sa-east-1", "us-east-1", "us-east-2", "us-gov-east-1", "us-gov-west-1", "us-west-1", "us-west-2" ]
       },
-      "region": {
-        "title": "Dynamodb Region",
-        "type": "string",
-        "default": "",
-        "description": "The region of the Dynamodb database",
-        "enum": [
-          "",
-          "af-south-1",
-          "ap-east-1",
-          "ap-northeast-1",
-          "ap-northeast-2",
-          "ap-northeast-3",
-          "ap-south-1",
-          "ap-south-2",
-          "ap-southeast-1",
-          "ap-southeast-2",
-          "ap-southeast-3",
-          "ap-southeast-4",
-          "ca-central-1",
-          "ca-west-1",
-          "cn-north-1",
-          "cn-northwest-1",
-          "eu-central-1",
-          "eu-central-2",
-          "eu-north-1",
-          "eu-south-1",
-          "eu-south-2",
-          "eu-west-1",
-          "eu-west-2",
-          "eu-west-3",
-          "il-central-1",
-          "me-central-1",
-          "me-south-1",
-          "sa-east-1",
-          "us-east-1",
-          "us-east-2",
-          "us-gov-east-1",
-          "us-gov-west-1",
-          "us-west-1",
-          "us-west-2"
-        ]
+      "endpoint" : {
+        "type" : "string",
+        "description" : "Optional endpoint override, for example a VPC endpoint, a FIPS endpoint or a DynamoDB Local instance. Leave empty to use the public endpoint of the region.",
+        "title" : "DynamoDB Endpoint",
+        "order" : 2,
+        "examples" : [ "https://dynamodb-fips.us-east-1.amazonaws.com", "http://localhost:8000" ]
       },
-      "reserved_attribute_names": {
-        "title": "Reserved attribute names",
-        "type": "string",
-        "description": "Comma separated reserved attribute names present in your tables",
-        "airbyte_secret": true,
-        "examples": [
-          "name, field_name, field-name"
-        ]
+      "reserved_attribute_names" : {
+        "type" : "string",
+        "description" : "Comma separated names of attributes that are DynamoDB reserved words or contain special characters; they are aliased in scan expressions.",
+        "title" : "Reserved attribute names",
+        "order" : 3,
+        "examples" : [ "name, field_name, field-name" ]
       },
-      "ignore_missing_read_permissions_tables": {
-        "title": "Ignore missing read permissions tables",
-        "type": "boolean",
-        "description": "Ignore tables with missing scan/read permissions",
-        "default": false
+      "ignore_missing_read_permissions_tables" : {
+        "type" : "boolean",
+        "description" : "Ignore tables with missing scan/read permissions",
+        "title" : "Ignore missing read permissions tables",
+        "order" : 4,
+        "default" : false
       }
-    }
+    },
+    "required" : [ "credentials", "region" ]
   },
-  "supportsNormalization": false,
-  "supportsDBT": false,
-  "supported_destination_sync_modes": []
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ ]
 }

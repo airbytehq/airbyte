@@ -34,6 +34,14 @@ airbyte:
               software.amazon.awssdk.services.dynamodb.model.DynamoDbException: The security token included in the
               request is expired (Service: DynamoDb, Status Code: 400, Request ID: ABC)
             error: config
+            output: "The temporary credentials (session token) have expired. Please configure new credentials."
+
+          - pattern: "(?i).*is not authorized to perform: sts:AssumeRole.*"
+            input-example: >-
+              software.amazon.awssdk.services.sts.model.StsException: User: arn:aws:iam::123456789012:user/airbyte is
+              not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::123456789012:role/reader
+              (Service: Sts, Status Code: 403, Request ID: ABC)
+            error: config
 
           - pattern: "(?i).*is not authorized to perform: dynamodb:.*"
             input-example: >-
@@ -42,22 +50,6 @@ airbyte:
               arn:aws:dynamodb:us-east-1:123456789012:table/* because no identity-based policy allows the
               dynamodb:ListTables action (Service: DynamoDb, Status Code: 400, Request ID: ABC)
             error: config
-
-          - pattern: "(?i).*Unable to load credentials from any of the providers in the chain.*"
-            input-example: >-
-              software.amazon.awssdk.core.exception.SdkClientException: Unable to load credentials from any of the
-              providers in the chain AwsCredentialsProviderChain(...)
-            error: config
-            output: >-
-              No AWS credentials found. Configure an access key id and secret access key, or run the connector with
-              a role (environment variables, instance profile or web identity token).
-
-          - pattern: "(?i).*Unable to load region from any of the providers in the chain.*"
-            input-example: >-
-              software.amazon.awssdk.core.exception.SdkClientException: Unable to load region from any of the
-              providers in the chain software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain@1
-            error: config
-            output: "No AWS region found. Please set the region in the source configuration."
 
           - pattern: "(?i).*Unable to execute HTTP request.*"
             input-example: >-

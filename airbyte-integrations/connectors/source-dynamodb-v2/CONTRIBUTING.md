@@ -25,17 +25,32 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-dynamodb-v2:dev check --
 docker run --rm -v $PWD/secrets:/secrets airbyte/source-dynamodb-v2:dev discover --config /secrets/config.json
 ```
 
-`secrets/config.json` is git-ignored. Example with an access key:
+`secrets/` is git-ignored. Credentials only ever come from the configuration: the connector has no
+access to AWS profiles, instance roles or environment variables. Two authentication methods:
 
 ```json
 {
   "credentials": {
     "auth_type": "User",
     "access_key_id": "AKIA...",
-    "secret_access_key": "..."
+    "secret_access_key": "...",
+    "session_token": "only for temporary credentials issued by STS"
   },
   "region": "us-east-1",
   "endpoint": ""
+}
+```
+
+```json
+{
+  "credentials": {
+    "auth_type": "AssumeRole",
+    "access_key_id": "AKIA...",
+    "secret_access_key": "...",
+    "role_arn": "arn:aws:iam::123456789012:role/airbyte-dynamodb-reader",
+    "external_id": "optional, when the role's trust policy requires one"
+  },
+  "region": "us-east-1"
 }
 ```
 
@@ -43,21 +58,38 @@ Against a local `amazon/dynamodb-local` container, set `"endpoint": "http://loca
 non-empty access key id / secret (start the container with `-sharedDb` so the tables are visible
 regardless of the access key).
 
-## Parity with source-dynamodb
+## Relationship with source-dynamodb
 
-- `src/test/resources/expected-spec.json` is the `spec` output of the published
-  `airbyte/source-dynamodb` image; `DynamoDbSourceSpecTest` fails if the generated spec drifts.
-- `DynamoDbSpecificationExtender` post-processes the generated JSON schema so that it renders exactly
-  like the hand-written legacy `spec.json` (`const` discriminators, no `type: object` on `oneOf`
-  variants, root `additionalProperties: false`). Remove it once byte-for-byte parity is no longer
-  required.
+`source-dynamodb-v2` keeps the legacy property names (`credentials` with `auth_type: "User"`,
+`access_key_id`, `secret_access_key`, `endpoint`, `region`, `reserved_attribute_names`,
+`ignore_missing_read_permissions_tables`), so a legacy access-key configuration loads unchanged
+(`DynamoDbSourceSpecTest.testLegacyAccessKeyConfigurationStillLoads`). The spec itself deliberately
+differs from the legacy one (decision of 2026-09-17: credentials must come from the configuration):
+
+| | source-dynamodb (legacy) | source-dynamodb-v2 |
+|---|---|---|
+| Role Based Authentication (SDK default credentials chain: env vars, profile, instance role) | yes | removed, no ambient credentials exist in the connector container |
+| Access key | `access_key_id`, `secret_access_key` | plus optional `session_token` for temporary STS credentials |
+| Access key + `sts:AssumeRole` | no | new `auth_type: "AssumeRole"` with `role_arn` and optional `external_id` (cross-account access) |
+| Blank access keys | silently fell back to the default chain | configuration error |
+| `region` | optional (`""` allowed), SDK region chain | required, list of the regions known to the pinned AWS SDK (`testRegionEnumMatchesAwsSdk`) |
+| `endpoint` | any string | optional, must be an http(s) URL |
+| `reserved_attribute_names` | marked `airbyte_secret` | plain string |
+
+AWS has no username/password API authentication; access keys (long-lived or temporary) and role
+assumption are the only credential shapes that can travel inside a configuration.
+
+`src/test/resources/legacy-spec.json` is the `spec` output of the published `airbyte/source-dynamodb`
+image, kept for reference; `expected-spec.json` is this connector's own snapshot (the strict spec test
+writes the current spec to `build/actual-spec.json` to refresh it).
+
+### check and discover parity (verified 2026-09-17 on DynamoDB Local 3.3.1 vs 0.3.11)
+
 - `src/test/resources/expected-catalog.json` is the `CATALOG` object the legacy image produced for the
   seed data in `src/test/resources/parity-seed.json`; `DynamoDbSourceDiscoverTest` seeds a DynamoDB
   Local container with the same data and asserts JSON equality after sorting streams by name.
 - Scripts to run both Docker images against one DynamoDB Local container live in the
   `new-database-source-connector` skill (`databases/dynamodb/parity/`).
-
-### Known deviations from source-dynamodb (verified 2026-09-17 on DynamoDB Local 3.3.1 vs 0.3.11)
 
 | Case | Legacy | source-dynamodb-v2 |
 |---|---|---|
@@ -66,7 +98,7 @@ regardless of the access key).
 | `check` without the `credentials` property | NPE message | "Missing required 'credentials' property ..." |
 | `discover` of an empty table | stream with `"properties": {}` | stream dropped (`DiscoverOperation` skips streams without fields) |
 
-Everything else in `spec`, `check` and `discover` is identical, legacy quirks included: `N` values are
+Everything else in `check` and `discover` is identical, legacy quirks included: `N` values are
 `integer` only when they parse as a Java `long`, lists get one `anyOf` entry per element, the last
 scanned item wins when an attribute has several types, only the partition (HASH) key is reported as
 primary key, and only the first ~1000 scanned items are sampled.
