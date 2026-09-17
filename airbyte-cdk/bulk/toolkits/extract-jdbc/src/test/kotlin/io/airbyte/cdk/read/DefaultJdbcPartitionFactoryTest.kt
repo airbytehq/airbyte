@@ -22,6 +22,7 @@ import io.airbyte.cdk.read.TestFixtures.record
 import io.airbyte.cdk.read.TestFixtures.sharedState
 import io.airbyte.cdk.read.TestFixtures.stream
 import io.airbyte.cdk.read.TestFixtures.ts
+import io.airbyte.cdk.util.Jsons
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -236,6 +237,62 @@ class DefaultJdbcPartitionFactoryTest {
         Assertions.assertIterableEquals(listOf(IntCodec.encode(44)), splits[1].upperBound)
         Assertions.assertIterableEquals(listOf(IntCodec.encode(44)), splits[2].lowerBound)
         Assertions.assertNull(splits[2].upperBound)
+    }
+
+    @Test
+    fun testEmptyStateUnsplittableSnapshot() {
+        val stream = stream(withPK = false, withCursor = false)
+        val factory = sharedState().factory()
+        val result = factory.create(stream.bootstrap(Jsons.objectNode()))
+        factory.assertFailures()
+        Assertions.assertTrue(result is DefaultJdbcUnsplittableSnapshotPartition)
+        val partition = result as DefaultJdbcUnsplittableSnapshotPartition
+        // Check partition properties
+        sanityCheck(stream, factory, partition)
+    }
+
+    @Test
+    fun testEmptyStateSplittableSnapshot() {
+        val stream = stream(withCursor = false)
+        val factory = sharedState().factory()
+        val result = factory.create(stream.bootstrap(Jsons.objectNode()))
+        factory.assertFailures()
+        Assertions.assertTrue(result is DefaultJdbcSplittableSnapshotPartition)
+        val partition = result as DefaultJdbcSplittableSnapshotPartition
+        // Check partition properties
+        sanityCheck(stream, factory, partition)
+        Assertions.assertEquals(listOf(id), partition.checkpointColumns)
+        Assertions.assertNull(partition.lowerBound)
+        Assertions.assertNull(partition.upperBound)
+    }
+
+    @Test
+    fun testEmptyStateSplittableSnapshotWithCursor() {
+        val stream = stream()
+        val factory = sharedState().factory()
+        val result = factory.create(stream.bootstrap(Jsons.objectNode()))
+        factory.assertFailures()
+        Assertions.assertTrue(result is DefaultJdbcSplittableSnapshotWithCursorPartition)
+        val partition = result as DefaultJdbcSplittableSnapshotWithCursorPartition
+        // Check partition properties
+        sanityCheck(stream, factory, partition)
+        Assertions.assertEquals(listOf(id), partition.checkpointColumns)
+        Assertions.assertEquals(ts, partition.cursor)
+        Assertions.assertNull(partition.lowerBound)
+        Assertions.assertNull(partition.upperBound)
+    }
+
+    @Test
+    fun testCompletedSnapshotStateYieldsNoPartition() {
+        val stream = stream(withCursor = false)
+        val factory = sharedState().factory()
+        val result = factory.create(stream.bootstrap(opaqueStateValue()))
+        factory.assertFailures()
+        Assertions.assertNull(result)
+        // The isNull sentinel for completed empty-table streams still yields no partition.
+        val nullResult = factory.create(stream.bootstrap(Jsons.nullNode()))
+        factory.assertFailures()
+        Assertions.assertNull(nullResult)
     }
 
     @Test
