@@ -280,6 +280,8 @@ For custom objects, use either:
 - The custom object's `fullyQualifiedName`, such as `p_my_custom_object`.
 - The custom object's `objectTypeId`, such as `2-12345`.
 
+Don't use the custom object's display name or the bare name without the `p_` prefix. HubSpot can't resolve those, and the sync fails with a configuration error that names the `from_object` or `to_object` field. To find both identifiers, call HubSpot's [`GET /crm/v3/schemas`](https://developers.hubspot.com/docs/api-reference/crm-schemas-v3/core/get-crm-v3-schemas) endpoint, which returns `objectTypeId` and `fullyQualifiedName` for every custom object in your account.
+
 You can use standard object names, such as `contacts`, `companies`, or `deals`, for the standard-object side of the relationship.
 
 Custom object association streams emit the same fields as standard association streams: `from_id`, `to_id`, `association_type_id`, `category`, and `label`. They also sync incrementally, the same way as standard association streams.
@@ -523,7 +525,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.9.2 | 2026-09-16 | [86350](https://github.com/airbytehq/airbyte/pull/86350) | Report an invalid `from_object`/`to_object` identifier in `custom_object_association_streams` as a configuration error instead of a generic credentials error |
+| 6.9.2 | 2026-09-17 | [86350](https://github.com/airbytehq/airbyte/pull/86350) | Report an invalid `from_object`/`to_object` identifier in `custom_object_association_streams` as a configuration error instead of a generic credentials error |
 | 6.9.1 | 2026-09-15 | [86075](https://github.com/airbytehq/airbyte/pull/86075) | Update dependencies |
 | 6.9.0 | 2026-09-14 | [82769](https://github.com/airbytehq/airbyte/pull/82769) | Declare `marketing_emails` `testing.isAbVariation` and `teams[].primary` on `owners` and `owners_archived`, returned by the API but missing from the schemas |
 | 6.8.3 | 2026-09-08 | [85528](https://github.com/airbytehq/airbyte/pull/85528) | Update dependencies |
