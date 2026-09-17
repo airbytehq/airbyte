@@ -1,0 +1,300 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "SyncFinancialTransactionLines",
+  "additionalProperties": true,
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": ["null", "integer"]
+    },
+    "Account": {
+      "description": "Reference to account",
+      "type": ["null", "string"]
+    },
+    "AccountCode": {
+      "description": "Code of the Account",
+      "type": ["null", "string"]
+    },
+    "AccountName": {
+      "description": "Name of the Account",
+      "type": ["null", "string"]
+    },
+    "AmountDC": {
+      "description": "Amount in the default currency of the company",
+      "type": ["null", "number"]
+    },
+    "AmountFC": {
+      "description": "Amount in the currency of the transaction",
+      "type": ["null", "number"]
+    },
+    "AmountVATBaseFC": {
+      "description": "Vat base amount in the currency of the transaction",
+      "type": ["null", "number"]
+    },
+    "AmountVATFC": {
+      "description": "Vat amount in the currency of the transaction",
+      "type": ["null", "number"]
+    },
+    "Asset": {
+      "description": "Reference to asset",
+      "type": ["null", "string"]
+    },
+    "AssetCode": {
+      "description": "Code of Asset",
+      "type": ["null", "string"]
+    },
+    "AssetDescription": {
+      "description": "Description of Asset",
+      "type": ["null", "string"]
+    },
+    "CostCenter": {
+      "description": "Reference to cost center",
+      "type": ["null", "string"]
+    },
+    "CostCenterDescription": {
+      "description": "Description of CostCenter",
+      "type": ["null", "string"]
+    },
+    "CostUnit": {
+      "description": "Reference to cost unit",
+      "type": ["null", "string"]
+    },
+    "CostUnitDescription": {
+      "description": "Description of CostUnit",
+      "type": ["null", "string"]
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": ["null", "string"]
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": ["null", "string"]
+    },
+    "Currency": {
+      "description": "Currency",
+      "type": ["null", "string"]
+    },
+    "CustomField": {
+      "description": "Custom field endpoint",
+      "type": ["null", "string"]
+    },
+    "Date": {
+      "description": "Entry date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Description": {
+      "description": "Description",
+      "type": ["null", "string"]
+    },
+    "Division": {
+      "description": "Division code",
+      "type": ["null", "integer"]
+    },
+    "Document": {
+      "description": "Reference to document",
+      "type": ["null", "string"]
+    },
+    "DocumentNumber": {
+      "description": "Number of the document",
+      "type": ["null", "integer"]
+    },
+    "DocumentSubject": {
+      "description": "Subject of the document",
+      "type": ["null", "string"]
+    },
+    "DueDate": {
+      "description": "Date that payment should be done",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "EntryID": {
+      "description": "The transaction lines that make up a financial entry share the same EntryID",
+      "type": ["null", "string"]
+    },
+    "EntryNumber": {
+      "description": "Entry number of the header",
+      "type": ["null", "integer"]
+    },
+    "ExchangeRate": {
+      "description": "Exchange rate",
+      "type": ["null", "number"]
+    },
+    "ExternalLinkDescription": {
+      "description": "Description of ExternalLink",
+      "type": ["null", "string"]
+    },
+    "ExternalLinkReference": {
+      "description": "External link",
+      "type": ["null", "string"]
+    },
+    "ExtraDutyAmountFC": {
+      "description": "Extra duty amount",
+      "type": ["null", "number"]
+    },
+    "ExtraDutyPercentage": {
+      "description": "Extra duty percentage",
+      "type": ["null", "number"]
+    },
+    "FinancialPeriod": {
+      "description": "Financial period",
+      "type": ["null", "integer"]
+    },
+    "FinancialYear": {
+      "description": "Financial year",
+      "type": ["null", "integer"]
+    },
+    "GLAccount": {
+      "description": "General ledger account",
+      "type": ["null", "string"]
+    },
+    "GLAccountCode": {
+      "description": "Code of GLAccount",
+      "type": ["null", "string"]
+    },
+    "GLAccountDescription": {
+      "description": "Description of GLAccount",
+      "type": ["null", "string"]
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": ["null", "string"]
+    },
+    "InvoiceNumber": {
+      "description": "Invoice number",
+      "type": ["null", "integer"]
+    },
+    "Item": {
+      "description": "Reference to item",
+      "type": ["null", "string"]
+    },
+    "ItemCode": {
+      "description": "Code of Item",
+      "type": ["null", "string"]
+    },
+    "ItemDescription": {
+      "description": "Description of Item",
+      "type": ["null", "string"]
+    },
+    "JournalCode": {
+      "description": "The journal code",
+      "type": ["null", "string"]
+    },
+    "JournalDescription": {
+      "description": "The journal description",
+      "type": ["null", "string"]
+    },
+    "LineNumber": {
+      "description": "Line number",
+      "type": ["null", "integer"]
+    },
+    "LineType": {
+      "description": "Line type",
+      "type": ["null", "integer"]
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": ["null", "string"]
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": ["null", "string"]
+    },
+    "Notes": {
+      "description": "Extra remarks",
+      "type": ["null", "string"]
+    },
+    "OffsetID": {
+      "description": "OffsetID",
+      "type": ["null", "string"]
+    },
+    "OrderNumber": {
+      "description": "Order number",
+      "type": ["null", "integer"]
+    },
+    "PaymentDiscountAmount": {
+      "description": "Discount amount when paid in time",
+      "type": ["null", "number"]
+    },
+    "PaymentReference": {
+      "description": "Payment reference",
+      "type": ["null", "string"]
+    },
+    "Project": {
+      "description": "Reference to project",
+      "type": ["null", "string"]
+    },
+    "ProjectCode": {
+      "description": "Code of Project",
+      "type": ["null", "string"]
+    },
+    "ProjectDescription": {
+      "description": "Description of Project",
+      "type": ["null", "string"]
+    },
+    "Quantity": {
+      "description": "Quantity",
+      "type": ["null", "number"]
+    },
+    "SerialNumber": {
+      "description": "Obsolete",
+      "type": ["null", "string"]
+    },
+    "Status": {
+      "description": "20 = Open, 50 = Processed",
+      "type": ["null", "integer"]
+    },
+    "Subscription": {
+      "description": "Reference to subscription line",
+      "type": ["null", "string"]
+    },
+    "SubscriptionDescription": {
+      "description": "Description of subscription line",
+      "type": ["null", "string"]
+    },
+    "TrackingNumber": {
+      "description": "Tracking number of item",
+      "type": ["null", "string"]
+    },
+    "TrackingNumberDescription": {
+      "description": "Tracking number description",
+      "type": ["null", "string"]
+    },
+    "Type": {
+      "description": "The transaction type.",
+      "type": ["null", "integer"]
+    },
+    "VATCode": {
+      "description": "Vat code",
+      "type": ["null", "string"]
+    },
+    "VATCodeDescription": {
+      "description": "Description of VATCode",
+      "type": ["null", "string"]
+    },
+    "VATPercentage": {
+      "description": "Vat percentage",
+      "type": ["null", "number"]
+    },
+    "VATType": {
+      "description": "Vat type",
+      "type": ["null", "string"]
+    },
+    "YourRef": {
+      "description": "Your reference (of customer)",
+      "type": ["null", "string"]
+    }
+  }
+}

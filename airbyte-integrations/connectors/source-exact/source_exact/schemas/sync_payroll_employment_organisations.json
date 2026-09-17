@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "SyncPayrollEmploymentsOrganisations",
+  "additionalProperties": true,
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": ["null", "integer"]
+    },
+    "CostCenter": {
+      "description": "Cost center code",
+      "type": ["null", "string"]
+    },
+    "CostCenterDescription": {
+      "description": "Description of center code",
+      "type": ["null", "string"]
+    },
+    "CostUnit": {
+      "description": "Cost unit code",
+      "type": ["null", "string"]
+    },
+    "CostUnitDescription": {
+      "description": "Description of cost unit",
+      "type": ["null", "string"]
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator.",
+      "type": ["null", "string"]
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": ["null", "string"]
+    },
+    "Department": {
+      "description": "ID of department",
+      "type": ["null", "string"]
+    },
+    "DepartmentCode": {
+      "description": "Department code",
+      "type": ["null", "string"]
+    },
+    "DepartmentDescription": {
+      "description": "Department description for organization",
+      "type": ["null", "string"]
+    },
+    "Division": {
+      "description": "Division code",
+      "type": ["null", "integer"]
+    },
+    "Employee": {
+      "description": "ID of employee",
+      "type": ["null", "string"]
+    },
+    "EmployeeFullName": {
+      "description": "Name of employee",
+      "type": ["null", "string"]
+    },
+    "EmployeeHID": {
+      "description": "Numeric ID of employee",
+      "type": ["null", "integer"]
+    },
+    "Employment": {
+      "description": "Employment ID",
+      "type": ["null", "string"]
+    },
+    "EmploymentNumber": {
+      "description": "Employment number",
+      "type": ["null", "integer"]
+    },
+    "EndDate": {
+      "description": "Organization end date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": ["null", "string"]
+    },
+    "JobTitle": {
+      "description": "ID of job title",
+      "type": ["null", "string"]
+    },
+    "JobTitleCode": {
+      "description": "Job title code",
+      "type": ["null", "string"]
+    },
+    "JobTitleDescription": {
+      "description": "Job title description",
+      "type": ["null", "string"]
+    },
+    "Modified": {
+      "description": "Last modified date.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": ["null", "string"]
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": ["null", "string"]
+    },
+    "StartDate": {
+      "description": "Organisation Start date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}
