@@ -22,7 +22,11 @@ from source_github.components import (
     NestedGraphQLRecordExtractor,
     ReleasesRecordTransformation,
     _extract_database_id_from_node_id,
+    _resolve_page_size,
 )
+
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 def _response(payload):
@@ -559,3 +563,39 @@ def test_releases_transformation_uses_the_configured_api_url():
 
     assert record["url"] == "https://github.example.com/api/v3/repos/org/repo/releases/5"
     assert record["tarball_url"] == "https://github.example.com/api/v3/repos/org/repo/tarball/v1"
+
+
+# --- _resolve_page_size -------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("page_size", "expected"),
+    [
+        pytest.param(None, None, id="unset"),
+        pytest.param(25, 25, id="integer"),
+        pytest.param("{{ config['page_size_for_large_streams'] }}", 40, id="interpolated"),
+    ],
+)
+def test_resolve_page_size_returns_a_whole_number(page_size, expected):
+    assert _resolve_page_size(page_size, {"page_size_for_large_streams": 40}) == expected
+
+
+@pytest.mark.parametrize(
+    "page_size",
+    [
+        pytest.param("abc", id="not_a_number"),
+        pytest.param("10.5", id="not_whole"),
+        pytest.param(10.5, id="float_not_whole"),
+        pytest.param(0, id="zero"),
+        pytest.param(-1, id="negative"),
+    ],
+)
+def test_resolve_page_size_reports_a_bad_value_as_a_config_error(page_size):
+    """`page_size_for_large_streams` left the spec in 1.0.1 but is still honored, so nothing
+    validates it before it gets here. A bare `int()` would surface as a `ValueError` from the
+    middle of a sync instead of naming the option the user has to fix."""
+    with pytest.raises(AirbyteTracedException) as exception:
+        _resolve_page_size(page_size, {})
+
+    assert exception.value.failure_type == FailureType.config_error
+    assert "page_size_for_large_streams" in exception.value.message

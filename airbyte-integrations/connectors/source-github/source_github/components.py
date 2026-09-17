@@ -21,6 +21,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
@@ -32,6 +33,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 LOGGER = logging.getLogger("airbyte")
@@ -79,12 +81,33 @@ def _resolve_page_size(page_size: Any, config: Config) -> Optional[int]:
     `"{{ config['page_size_for_large_streams'] }}"` arrives as that literal string. The CDK
     reduces the page size arithmetically, so it has to be an int by the time it is returned
     from `get_page_size`.
+
+    `page_size_for_large_streams` left the spec in 1.0.1 but is still honored, so a value that
+    is not a whole number can still arrive from the API, Terraform or an embedded config
+    without a form to validate it. Coercing it with a bare `int()` would surface as a
+    `ValueError` from the middle of a sync, so it is reported as the configuration error it is.
     """
     if page_size is None:
         return None
     if isinstance(page_size, str):
         page_size = InterpolatedString.create(page_size, parameters={}).eval(config)
-    return int(page_size)
+    try:
+        if isinstance(page_size, bool) or (isinstance(page_size, float) and not page_size.is_integer()):
+            raise ValueError(page_size)
+        resolved = int(page_size)
+    except (TypeError, ValueError):
+        raise AirbyteTracedException(
+            internal_message=f"page_size_for_large_streams resolved to {page_size!r}, which is not a whole number",
+            message=f'"Page size for large streams" (page_size_for_large_streams) must be a whole number. ' f"Got {page_size!r}.",
+            failure_type=FailureType.config_error,
+        )
+    if resolved < 1:
+        raise AirbyteTracedException(
+            internal_message=f"page_size_for_large_streams resolved to {resolved}, which is not strictly positive",
+            message=f'"Page size for large streams" (page_size_for_large_streams) must be at least 1. ' f"Got {resolved}.",
+            failure_type=FailureType.config_error,
+        )
+    return resolved
 
 
 @dataclass

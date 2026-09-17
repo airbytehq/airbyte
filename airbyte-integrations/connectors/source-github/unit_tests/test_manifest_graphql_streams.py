@@ -48,6 +48,40 @@ def _catalog(stream_name):
     )
 
 
+# GitHub reports a query it could not finish in time both ways: sometimes with an empty body,
+# sometimes with the explanation in `errors` - on a 502/504 as well as on a 200. The reduction
+# tests are parametrised over both, because a body-bearing 502 is the shape the ordering of the
+# error handler's filters gets wrong if `graphql_reduce_page_size_filter` is not on top of the
+# generic body filter.
+_TIMEOUT_BODIES = [
+    pytest.param({"message": "Gateway Timeout"}, id="empty_body"),
+    pytest.param(
+        {"errors": [{"message": "Something went wrong while executing your query. This may be the result of a timeout."}]},
+        id="errors_in_body",
+    ),
+]
+
+
+@pytest.fixture
+def page_size_reduction_waits(monkeypatch):
+    """Record the waits the page-size reducer takes instead of sleeping them away.
+
+    `graphql_page_size_reduction` asks for a 10s base backoff, so a run down to the floor waits
+    two minutes. Every reduction test would pay that.
+    """
+    waits: list = []
+    monkeypatch.setattr(
+        "airbyte_cdk.sources.declarative.retrievers.page_size_reducer.time.sleep",
+        waits.append,
+    )
+    return waits
+
+
+@pytest.fixture(autouse=True)
+def _no_page_size_reduction_waits(page_size_reduction_waits):
+    return page_size_reduction_waits
+
+
 def _mock_repository_resolution(requests_mock):
     requests_mock.get(
         f"https://api.github.com/repos/{REPOSITORY}",
@@ -271,7 +305,8 @@ def test_releases_without_reaction_groups_reports_null_reactions(rate_limit_mock
 # --- Page-size reduction ------------------------------------------------------------------
 
 
-def test_gateway_timeout_refetches_the_same_page_with_a_halved_page_size(rate_limit_mock_response, requests_mock):
+@pytest.mark.parametrize("timeout_body", _TIMEOUT_BODIES)
+def test_gateway_timeout_refetches_the_same_page_with_a_halved_page_size(timeout_body, rate_limit_mock_response, requests_mock):
     """The behavior Step 9 depends on. The legacy handler halved `stream.page_size` and
     returned RETRY, but HttpClient replays the same PreparedRequest, so the reduced size never
     reached GitHub for the failing page. Here the request is rebuilt."""
@@ -279,7 +314,7 @@ def test_gateway_timeout_refetches_the_same_page_with_a_halved_page_size(rate_li
     requests_mock.post(
         GRAPHQL_URL,
         [
-            {"status_code": 504, "json": {"message": "Gateway Timeout"}},
+            {"status_code": 504, "json": timeout_body},
             {"json": _repository_envelope("releases", [_release_node()])},
         ],
     )
@@ -298,12 +333,17 @@ def test_gateway_timeout_refetches_the_same_page_with_a_halved_page_size(rate_li
 
 
 @pytest.mark.parametrize("status_code", [502, 504])
-def test_both_gateway_statuses_trigger_reduction(status_code, rate_limit_mock_response, requests_mock):
+@pytest.mark.parametrize("timeout_body", _TIMEOUT_BODIES)
+def test_both_gateway_statuses_trigger_reduction(status_code, timeout_body, rate_limit_mock_response, requests_mock):
+    """The body shape matters as much as the status. A 502/504 whose body carries `errors` is
+    the shape GitHub uses for a query timeout, and it is also what `graphql_body_error_filter`
+    matches, so the two filters compete for it: the reduce filter has to win or the page is
+    re-sent at the same size."""
     _mock_repository_resolution(requests_mock)
     requests_mock.post(
         GRAPHQL_URL,
         [
-            {"status_code": status_code, "json": {"message": "error"}},
+            {"status_code": status_code, "json": timeout_body},
             {"json": _repository_envelope("releases", [_release_node()])},
         ],
     )
@@ -353,11 +393,11 @@ def test_reduced_page_size_is_kept_for_the_following_page(rate_limit_mock_respon
     assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [10, 5, 5]
 
 
-def test_persistent_gateway_timeout_fails_the_stream_instead_of_looping(rate_limit_mock_response, requests_mock):
-    """`max_attempts: 5` with `minimum_page_size: 1` bounds the reduction. Without a bound a
-    permanently timing-out repository would request forever. The terminal message pairs the
-    CDK's statement of what happened with the connector's `failure_message`, which points at
-    the page-size setting the way the legacy `get_error_display_message` did."""
+def test_persistent_gateway_timeout_fails_the_stream_instead_of_looping(page_size_reduction_waits, rate_limit_mock_response, requests_mock):
+    """`minimum_page_size: 1` plus `retries_at_minimum_page_size: 3` bounds the reduction.
+    Without a bound a permanently timing-out repository would request forever. The terminal
+    message pairs the CDK's statement of what happened with the connector's `failure_message`,
+    which points at the page-size setting the way the legacy `get_error_display_message` did."""
     _mock_repository_resolution(requests_mock)
     requests_mock.post(GRAPHQL_URL, status_code=504, json={"message": "Gateway Timeout"})
 
@@ -366,13 +406,43 @@ def test_persistent_gateway_timeout_fails_the_stream_instead_of_looping(rate_lim
     assert error is not None
     assert _records(messages) == []
     sizes = [_variables(request)["first"] for request in _graphql_requests(requests_mock)]
-    # 10 -> 5 -> 2 -> 1, then the floor is reached and the stream gives up.
-    assert sizes == [10, 5, 2, 1]
+    # 10 -> 5 -> 2 -> 1, then three more attempts at the floor, where waiting is all that is
+    # left to try: a 502/504 is also how GitHub reports a problem that has nothing to do with
+    # how expensive the page is.
+    assert sizes == [10, 5, 2, 1, 1, 1, 1]
+    # `backoff_seconds: 10`, multiplied by the attempt number, and restarted for the floor
+    # retries because they are a budget of their own.
+    assert page_size_reduction_waits == [10, 20, 30, 10, 20, 30]
     assert _trace_error_messages(messages) == [
         "The source keeps rejecting pages of stream releases at the smallest page size the connector is allowed to "
-        'request (1 records per page). Lower "Page size for large streams" (page_size_for_large_streams) in the '
-        "source configuration so that the page-size reduction starts from a smaller page."
+        'request (1 records per page). The page size the connector starts from is "Page size for large streams" '
+        "(page_size_for_large_streams) in the source configuration; a lower value makes each GraphQL query cheaper, "
+        "if it is not already at its minimum of 1."
     ]
+
+
+def test_a_source_configured_with_a_page_size_of_one_still_retries_a_gateway_timeout(
+    page_size_reduction_waits, rate_limit_mock_response, requests_mock
+):
+    """There is nothing to halve at a page size of 1, so `retries_at_minimum_page_size` is the
+    whole budget. Without it such a source failed on the first 502 - fewer attempts than every
+    other stream of this connector gets, and these are exactly the users the legacy timeout
+    message pushed toward a page size of 1."""
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(
+        GRAPHQL_URL,
+        [
+            {"status_code": 502, "json": {"message": "Bad Gateway"}},
+            {"json": _repository_envelope("releases", [_release_node()])},
+        ],
+    )
+
+    records, error = _read(_config(page_size_for_large_streams=1), "releases")
+
+    assert error is None
+    assert len(records) == 1
+    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [1, 1]
+    assert page_size_reduction_waits == [10]
 
 
 def test_graphql_body_errors_are_retried_instead_of_ending_the_partition(rate_limit_mock_response, requests_mock):
@@ -536,15 +606,49 @@ def test_pull_request_stats_leaves_merged_by_null_when_not_merged(rate_limit_moc
     [("releases", "releases"), ("projects_v2", "projectsV2"), ("pull_request_stats", "pullRequests")],
 )
 def test_inaccessible_repository_ends_the_partition_without_raising(stream_name, connection, rate_limit_mock_response, requests_mock):
-    """GitHub answers 200 with `data.repository: null` when the token cannot see the repo. The
-    null-guarded pagination expressions must end the partition rather than raise."""
+    """GitHub answers 200 with `data.repository: null` *and* an `errors` entry explaining why
+    when the token cannot see the repo. Two things have to hold: the repository is skipped the
+    way every REST stream of this connector skips a 404, rather than retried until the stream
+    fails, and the null-guarded pagination expressions end the partition rather than raise."""
     _mock_repository_resolution(requests_mock)
-    requests_mock.post(GRAPHQL_URL, json={"data": {"repository": None}})
+    requests_mock.post(
+        GRAPHQL_URL,
+        json={
+            "data": {"repository": None},
+            "errors": [
+                {
+                    "type": "NOT_FOUND",
+                    "path": ["repository"],
+                    "message": f"Could not resolve to a Repository with the name '{REPOSITORY}'.",
+                }
+            ],
+        },
+    )
 
     records, error = _read(_config(), stream_name)
 
     assert error is None
     assert records == []
+    assert len(_graphql_requests(requests_mock)) == 1, "a skipped repository must not be retried"
+
+
+@pytest.mark.parametrize("error_type", ["NOT_FOUND", "FORBIDDEN"])
+def test_repository_the_token_cannot_read_is_skipped_rather_than_retried(error_type, rate_limit_mock_response, requests_mock):
+    """`not_found_skip_filter` and `forbidden_skip_filter` match on status alone, and GraphQL
+    reports both of these with a 200, so the body filter is the only thing that can skip them.
+    Without it the generic body filter retries the same unreadable repository until the
+    attempts run out and then fails the whole stream."""
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(
+        GRAPHQL_URL,
+        json={"data": {"repository": None}, "errors": [{"type": error_type, "message": "nope"}]},
+    )
+
+    messages, error = _read_messages(_config(), "releases")
+
+    assert error is None
+    assert _records(messages) == []
+    assert len(_graphql_requests(requests_mock)) == 1
 
 
 @pytest.mark.parametrize("stream_name", ["releases", "projects_v2", "pull_request_stats"])

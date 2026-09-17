@@ -17605,6 +17605,27 @@ definitions:
       GitHub could not resolve the GraphQL query within its deadline. Retrying the same page
       with a smaller page size.
 
+  # A repository the token cannot read is answered with HTTP 200, `data.repository: null` and
+  # an `errors` entry whose `type` is NOT_FOUND (the repository does not exist, was renamed, or
+  # the token's scopes/SSO hide it) or FORBIDDEN. `not_found_skip_filter` and
+  # `forbidden_skip_filter` match on status alone, so neither ever sees it, and the generic body
+  # filter below would retry the same unreadable repository until the attempts run out and then
+  # fail the stream. Every other stream in this connector skips such a repository and syncs the
+  # rest, so these two GraphQL error types get the same treatment as the REST 404/403.
+  # The `selectattr('type', 'defined')` guard is needed for the same reason as below: `errors`
+  # is not always a list of objects.
+  graphql_body_not_found_skip_filter:
+    type: HttpResponseFilter
+    predicate: >-
+      {{ response is mapping
+         and ((response.get('errors') or []) | selectattr('type', 'defined')
+              | selectattr('type', 'in', ['NOT_FOUND', 'FORBIDDEN']) | list | length) > 0 }}
+    action: IGNORE
+    error_message: >-
+      GitHub could not resolve this repository or denied access to it (GraphQL NOT_FOUND or
+      FORBIDDEN). The repository may have been deleted or renamed, or the token may be missing
+      the `repo` scope or SAML SSO authorization for it. Skipping it.
+
   # GitHub's GraphQL API reports most failures as HTTP 200 with an `errors` array in the body:
   # rate limiting (`errors[].type == "RATE_LIMITED"`), query timeouts ("Something went wrong
   # while executing your query") and node-limit breaches. `success_filter` matches on status
@@ -17640,20 +17661,34 @@ definitions:
     backoff_strategies:
       $ref: "#/definitions/rate_limit_backoff_strategies"
     response_filters:
-      # Both body filters precede `success_filter`, which would otherwise classify every 200 as
-      # a success and stop the chain. They cannot replace it: `success_filter` exists to keep a
-      # 200 carrying `Retry-After` from being read as a rate limit, so it still has to run for
-      # every 200 whose body has no `errors`.
+      # `DefaultErrorHandler` stops at the first filter that matches, so the order here is the
+      # whole contract. Three groups, in this order:
+      #
+      # 1. The body-only predicates that must outrank a status match. A GraphQL failure carries
+      #    its reason in the body whatever the status is: a query timeout is reported as `errors`
+      #    on a 200 *and* on a 502/504, so `graphql_reduce_page_size_filter` has to sit above the
+      #    generic body filter or a timed-out page is retried at the same size instead of being
+      #    halved - the feature this stream group exists for. The rate-limit body filter stays on
+      #    top of it: a page size reduction is the wrong answer to a spent quota.
+      # 2. `success_filter`, which the body filters must precede: it classifies every 200 as a
+      #    success and would stop the chain. It cannot be dropped either - it is what keeps a 200
+      #    carrying `Retry-After` from being read as a rate limit, so it still has to run for
+      #    every 200 whose body has no `errors`.
+      # 3. The status-only filters. They are last because a 502/504 reaching one of them first
+      #    would be retried unchanged or skipped outright.
+      #
+      # The one thing this order gives up: a 502/504 that also carries rate-limit headers is
+      # reduced rather than waited out. GitHub answers rate limits with 403/429, not 502, so that
+      # combination is not a shape it sends.
       - $ref: "#/definitions/graphql_body_rate_limited_filter"
+      - $ref: "#/definitions/graphql_reduce_page_size_filter"
+      - $ref: "#/definitions/graphql_body_not_found_skip_filter"
       - $ref: "#/definitions/graphql_body_error_filter"
       - $ref: "#/definitions/success_filter"
       - $ref: "#/definitions/retry_after_rate_limit_filter"
       - $ref: "#/definitions/primary_rate_limit_filter"
       - $ref: "#/definitions/secondary_rate_limit_filter"
       - $ref: "#/definitions/exhausted_quota_filter"
-      # Must precede the skip/fail filters below: those match on status alone, and a 502/504
-      # that reached one of them first would be retried unchanged or skipped outright.
-      - $ref: "#/definitions/graphql_reduce_page_size_filter"
       - $ref: "#/definitions/not_found_skip_filter"
       - $ref: "#/definitions/forbidden_skip_filter"
       - $ref: "#/definitions/gone_fail_filter"
@@ -17667,8 +17702,8 @@ definitions:
 
   # Halving on every 502/504, floored at 1. At the default page size of 10 the floor is what
   # ends the loop, not `max_attempts`: the sequence is 10 -> 5 -> 2 -> 1, three reductions, and
-  # the fourth 502 fails on "already at the minimum". `max_attempts` only binds from a
-  # configured page size of 32 up, and is kept as the bound for those.
+  # then the floor retries below. `max_attempts` only binds from a configured page size of 32
+  # up, and is kept as the bound for those.
   # `reset_policy: NEVER` keeps the reduced size for the rest of the partition:
   # restoring it after each good page re-triggers the timeout on the next page, which is the
   # ineffective behavior the legacy handler had. The size is local to one `_read_pages` call,
@@ -17679,16 +17714,33 @@ definitions:
     minimum_page_size: 1
     max_attempts: 5
     reset_policy: NEVER
-    # Appended to the CDK's terminal message once the reductions run out. The CDK only knows
-    # that GitHub rejected every page size it asked for; the remediation is connector-specific.
-    # `page_size_for_large_streams` was dropped from the spec in 1.0.1 but is still honored, so
-    # the sentence names both the old form title and the config key an API user would set.
-    # Lowering it makes the reduction start from a smaller page, so the floor is reached
-    # within `max_attempts`. A more recent start date is deliberately not suggested: these
-    # streams filter client-side, so it would not make GitHub's per-page query any cheaper.
+    # A `REDUCE_PAGE_SIZE` response never reaches the error handler's retry budget or its
+    # backoff strategies, so these two settings are the whole retry contract for a 502/504 on
+    # the GraphQL endpoint, and they exist to keep it comparable to the one every other stream
+    # has. GitHub answers 502/504 both to a query it could not finish in time and to a passing
+    # problem of its own, and the response looks the same either way.
+    #
+    # `backoff_seconds` is multiplied by the attempt number, and `retries_at_minimum_page_size`
+    # re-issues the page unchanged once there is nothing left to halve, where waiting is the
+    # only thing left to try. From the default page size of 10 that gives 10 -> 5 -> 2 -> 1 and
+    # then three attempts at 1, seven requests over about two minutes; a source configured with
+    # a page size of 1, which has no reduction to make at all, still gets four requests over a
+    # minute instead of failing on the first 502.
+    backoff_seconds: 10
+    retries_at_minimum_page_size: 3
+    # Appended to the CDK's terminal message once the reductions and the retries at the floor
+    # run out. The CDK only knows that GitHub rejected every page size it asked for; the
+    # remediation is connector-specific. `page_size_for_large_streams` was dropped from the spec
+    # in 1.0.1 but is still honored, so the sentence names both the old form title and the
+    # config key an API user would set. It states what the setting does rather than telling the
+    # user to lower it, because a source already configured with a page size of 1 or 2 reaches
+    # this message with nothing left to lower. A more recent start date is deliberately not
+    # suggested: these streams filter client-side, so it would not make GitHub's per-page query
+    # any cheaper.
     failure_message: >-
-      Lower "Page size for large streams" (page_size_for_large_streams) in the source
-      configuration so that the page-size reduction starts from a smaller page.
+      The page size the connector starts from is "Page size for large streams"
+      (page_size_for_large_streams) in the source configuration; a lower value makes each
+      GraphQL query cheaper, if it is not already at its minimum of 1.
 
   graphql_paginator:
     type: DefaultPaginator

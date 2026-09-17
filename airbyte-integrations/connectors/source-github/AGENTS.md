@@ -251,4 +251,17 @@ The GitHub REST and GraphQL APIs support `since` parameter on many list endpoint
 - **The three streams migrated in Step 6** (`comments`, `issues`, `review_comments`) are the connector's only REST streams that filter server-side: their endpoints accept `since` and the declarative `DatetimeBasedCursor` injects it via `start_time_option`. Any further stream whose endpoint accepts `since` belongs in that group rather than the client-side-filtered one.
 - **The eight streams migrated in Step 7** (`pull_request_commits`, `project_columns`, `project_cards`, `team_members`, `team_memberships`, `issue_timeline_events`, `commit_comment_reactions`, `issue_comment_reactions`) are substreams. `project_columns`, `project_cards` and the two reaction streams are client-side incremental with a cursor per parent record; the other four have no cursor and stay full refresh.
 - **The four streams migrated in Step 8** (`commits`, `contributor_activity`, `workflow_runs`, `workflow_jobs`): `commits` filters server-side with `since` per branch, `workflow_runs` and `workflow_jobs` are client-side incremental with the 32-day `created` window described above, `contributor_activity` has no cursor and stays full refresh.
+- The GraphQL error contract is carried by the *order* of `graphql_error_handler.response_filters`,
+  not by the filters alone. GitHub reports GraphQL failures in the body — on a 200 and on a
+  502/504 alike — so the body predicates and the status matchers compete for the same responses
+  and `DefaultErrorHandler` stops at the first one that matches. Three rules hold:
+  `graphql_reduce_page_size_filter` (502/504) must sit **above** `graphql_body_error_filter`, or a
+  query timeout reported with an `errors` body is retried at the same page size and the reduction
+  never happens; `graphql_body_not_found_skip_filter` must sit above it too, or an unreadable
+  repository is retried until the attempts run out instead of being skipped like a REST 404; and
+  all of the body filters must precede `success_filter`, which classifies every 200 as a success.
+  Assert a new GraphQL error behavior with both body shapes — `{"message": ...}` and
+  `{"errors": [...]}` — on the status you care about; a fixture with an empty body passes whatever
+  the order is.
+
 - **The six streams migrated in Step 9** (`releases`, `projects_v2`, `pull_request_stats`, `reviews`, `issue_reactions`, `pull_request_comment_reactions`) are the GraphQL streams. GraphQL exposes no `since` filter, so the cursor window is applied to the records the query returns. Five of them are client-side incremental; `pull_request_stats` alone reads `pullRequests(orderBy: {field: UPDATED_AT, direction: DESC})` with `is_data_feed: true` and stops at the first already-synced pull request. `reviews` reads the same connection `ASC` and is client-side incremental, because its traversal order is not its cursor order, so it has no early exit to take.
