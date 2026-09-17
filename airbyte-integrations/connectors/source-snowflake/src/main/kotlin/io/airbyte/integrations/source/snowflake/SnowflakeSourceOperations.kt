@@ -149,7 +149,12 @@ class SnowflakeSourceOperations() :
                 is SelectColumnMaxValue -> "MAX(${column.sql()})"
             }
 
-    fun DataField.sql(): String = "\"$id\""
+    fun DataField.sql(): String =
+        when (this) {
+            // An expression standing in for a column: already rendered SQL, not an identifier.
+            is SnowflakeSqlExpression -> id
+            else -> "\"$id\""
+        }
 
     fun FromNode.sql(): String =
         when (this) {
