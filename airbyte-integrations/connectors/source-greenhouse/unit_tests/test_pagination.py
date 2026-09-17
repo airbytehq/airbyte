@@ -235,6 +235,11 @@ def test_shared_error_handler_surfaces_403_as_config_error(requests_mock, get_so
 
     assert output.errors
     assert all(trace.trace.error.failure_type == FailureType.config_error for trace in output.errors)
+    assert any(
+        "Greenhouse denied access to a Harvest API endpoint (HTTP 403)" in trace.trace.error.message
+        and "Re-authenticate this source as a Greenhouse Site Admin" in trace.trace.error.message
+        for trace in output.errors
+    )
 
 
 def test_custom_field_options_stream_is_unfiltered_by_key_and_paginated(requests_mock, get_source):
