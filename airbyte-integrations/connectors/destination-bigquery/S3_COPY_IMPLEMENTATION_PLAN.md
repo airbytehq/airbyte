@@ -39,12 +39,13 @@ changing paths, payload bytes, or the completion contract.
 For an enabled write, every record covered by an emitted destination checkpoint must have its
 existing BigQuery load representation durably archived in S3: gzip CSV for GCS staging, or
 uncompressed NDJSON for batched standard inserts. Before ingestion,
-the run must also have a durable schema descriptor and any requested generation cutoff.
+the run must also have a durable schema descriptor. Successful stream finalization publishes
+a completion marker carrying the platform job ID and any requested generation cutoff.
 
 This is an at-least-once archive of load inputs. It is not a transaction across BigQuery and S3,
 nor evidence of final table publication. BigQuery may load data before S3 fails. Replays can
 create duplicate rows/objects. Final merge, swap, or truncation can still fail after batch work.
-Retain successful archive objects and cutoff events across errors, retries, refreshes, and CDC
+Retain successful archive objects and completion markers across errors, retries, refreshes, and CDC
 deletes. Do not parse CDC rows into S3 deletions or delete a failed run's prefix.
 
 Do not change customer BigQuery configuration, ingestion thresholds, formatter semantics, the
@@ -63,14 +64,14 @@ fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<so
   connections/<connection_uuid>/destinations/<destination_uuid>/syncs/runs/<epoch_seconds>/<run_uuid>/
     streams/<escaped_stream_name>/
       schema.json
-      generation-cutoff.json
       batches/<batch_uuid>.csv.gz  # GCS staging
       batches/<batch_uuid>.jsonl   # batched standard inserts
+      batches/stream_complete.json
 ```
 
 The prefix defaults to `fusion` and is forced to that value in this preview. Five optional advanced
 connector config fields (`organization_id`, `workspace_id`, `source_id`, `connection_id`, and
-`destination_id`) override the corresponding `AIRBYTE_S3_COPY_*_ID` environment values. Each
+`destination_id`) override the corresponding standard `AIRBYTE_*_ID` environment values. Each
 missing value defaults to `00000000-0000-0000-0000-000000000000` for temporary preview testing.
 Values must be canonical UUIDs; uppercase input is normalized. A process captures one Unix epoch
 in seconds and generates one run UUID, shared across all streams;
@@ -89,13 +90,25 @@ and reject duplicate names across namespaces rather than allowing two streams to
 same run descriptor. This preserves the selected layout without relying on an unchecked catalog
 assumption.
 
-Write `schema.json` first and any cutoff second, once per stream/run, before setup returns.
-Consumers of either batch format resolve `schema.json` in the parent stream folder.
-Validate every full batch key, including the escaped stream name and longest batch suffix, against
-S3's 1024 UTF-8 byte limit before writing run metadata. Filter data
-notifications to batch objects. Cutoff consumers handle `generation-cutoff.json` separately.
-Do not rely on notification delivery order: the writes are ordered, but listeners must tolerate
-duplicate and reordered events. Completed objects do not imply a successful overall sync.
+Write `schema.json` once per stream/run before setup returns. After the stream's final batch
+archive is durable and successful destination finalization returns, write
+`batches/stream_complete.json`, including for empty streams:
+
+```json
+{"job_id": 12345, "min_generation_id": 42}
+```
+
+The catalog stream's `syncId` is populated from the platform job ID. It is distinct from the random
+run UUID and job attempt ID. Omit `min_generation_id` entirely when the minimum generation is zero;
+include it only for a positive refresh cutoff. No `generation-cutoff.json` or `truncate_refresh.json`
+is written. Failed/incomplete streams and failed destination finalization produce no completion
+marker. Failed marker uploads fail stream close; retries keep the same key and content.
+
+Consumers resolve `schema.json` in the parent of `batches/`. Data and completion markers use the
+same notification path. The marker does not prove the whole job succeeded: consumers wait for
+that platform job to succeed, and for replacement batches to finish indexing, before generation
+cleanup. Notifications can be duplicated or reordered. Validate full keys against S3's 1024-byte
+limit before metadata writes, including the escaped stream name and longest batch suffix.
 
 GCS data objects use `application/gzip` without a `Content-Encoding` header. Standard-insert data
 objects use `application/x-ndjson` with no compression. Control JSON uses `application/json`. Data metadata includes `format-version`, `organization-id`, `workspace-id`, `source-id`,
@@ -116,11 +129,11 @@ never count CSV lines, since quoted records can contain newlines.
 | `AIRBYTE_S3_COPY_BUCKET` | Required archive bucket |
 | `AIRBYTE_S3_COPY_REGION` | Required S3/STS region |
 | `AIRBYTE_S3_COPY_ROLE_ARN` | Required target role |
-| `AIRBYTE_S3_COPY_ORGANIZATION_ID` | Optional canonical UUID; config `organization_id` overrides |
-| `AIRBYTE_S3_COPY_WORKSPACE_ID` | Optional canonical UUID; config `workspace_id` overrides |
-| `AIRBYTE_S3_COPY_SOURCE_ID` | Optional canonical UUID; config `source_id` overrides |
-| `AIRBYTE_S3_COPY_CONNECTION_ID` | Optional canonical UUID; config `connection_id` overrides |
-| `AIRBYTE_S3_COPY_DESTINATION_ID` | Optional canonical UUID; config `destination_id` overrides |
+| `AIRBYTE_ORGANIZATION_ID` | Optional canonical UUID; config `organization_id` overrides |
+| `AIRBYTE_WORKSPACE_ID` | Optional canonical UUID; config `workspace_id` overrides |
+| `AIRBYTE_SOURCE_ID` | Optional canonical UUID; config `source_id` overrides |
+| `AIRBYTE_CONNECTION_ID` | Optional canonical UUID; config `connection_id` overrides |
+| `AIRBYTE_DESTINATION_ID` | Optional canonical UUID; config `destination_id` overrides |
 | `AIRBYTE_S3_COPY_PREFIX` | Default `fusion`; trim surrounding slashes; reject empty |
 | `AIRBYTE_S3_COPY_EXTERNAL_ID` | Optional STS external ID |
 
@@ -180,20 +193,18 @@ BigQuery writer to patch. Wrap the chosen writer with one connector-local delega
    for the whole catalog. Disabled implementation does nothing.
 2. Call the existing writer's `setup()`.
 3. Derive contexts from the catalog and `TableCatalog`/column mapping without waiting for stream
-   execution state. Upload all descriptors and cutoffs, with bounded or sequential metadata writes.
-4. Publish immutable contexts and return from setup. Delegate `createStreamLoader()` unchanged.
+   execution state. Upload all descriptors, with bounded or sequential metadata writes.
+4. Publish immutable contexts and return from setup. Wrap `createStreamLoader()` with `BigqueryCopyStreamLoader`: after successful delegated close,
+   await the completion marker before the legacy close task reports success.
 5. Delegate teardown, closing the archive service in `finally`. The legacy writer signature is
    `teardown(destinationFailure: DestinationFailure?)`, not Snowflake's newer boolean signature.
 
 The BigQuery checker calls a write operation internally; operation gating must still make archive
 preparation a no-op for `check`. Test this wiring explicitly.
 
-The current legacy CDK rejects empty catalogs before connector setup. For zero-row catalog streams,
-upload schema and cutoff as usual. No event requires seeing a record.
-Validate minimum generation zero or equal to current generation, preserving the direct/raw
-loaders' unsupported-hybrid behavior. A cutoff event records `generation_cutoff_requested`, a
-unique event ID, identities, run/sync/current/minimum generation IDs, and a strictly-less-than
-discard instruction. It records a request even if final BigQuery refresh subsequently fails.
+The current legacy CDK rejects empty catalogs before connector setup. Zero-row streams still
+receive schema during setup and a completion marker after successful close. Keep minimum generation
+zero or equal to current generation, preserving the direct/raw loaders' unsupported-hybrid behavior.
 
 ### Completed object load
 
@@ -338,12 +349,12 @@ its failure-completion signal. A client constructed concurrently with close is c
 
 | Failure point | Outcome |
 | --- | --- |
-| Descriptor/cutoff write | Setup fails, including zero-row refreshes; keep metadata already written |
+| Descriptor write | Setup fails, including zero-row refreshes; keep metadata already written |
 | GCS upload or BigQuery load | Existing failure; no successful archive load result required |
 | GCS GET / spool / S3 upload after BigQuery success | Fail batch, retain GCS source, keep any completed S3 object, no complete checkpoint counts |
 | GCS DELETE after both successes | Preserve existing failure semantics; archive remains |
 | Process death after archive success, before state | Normal replay can duplicate records and objects |
-| Final table refresh/merge failure | Existing retry semantics; keep archives and requested cutoff |
+| Final table refresh/merge failure | Existing retry semantics; keep archives and completed markers; consumers check job outcome |
 
 Do not issue archive deletes. Earlier independent checkpoints whose work completed may still be
 emitted. Do not log an S3 failure as a customer BigQuery credential error.
@@ -361,13 +372,13 @@ Deterministic connector tests must cover:
    including multipart completion and cleanup, and verify no connector-issued duplicate load job.
 3. Request identity: SDK retries keep key/metadata/file; distinct objects/runs have distinct UUIDs.
    A failed download leaves no partial file eligible for upload. Assert the spool byte cap.
-4. Setup: schema before batches, cutoff strictly below minimum, minimum zero emits none, metadata
+4. Setup: schema before batches, completion after close, minimum zero omits cutoff, metadata
    failure blocks ingestion, duplicate stream-name routing rejected, unsupported hybrids preserve
    existing behavior, and zero-row refreshes still get metadata.
 5. Descriptors: real header ordinals versus mapped fields, raw CSV versus final raw schema,
    source/target primary key and cursor mapping, null namespace, escaped names, schema hash
    stability across runs, and layout changes changing the hash.
-6. Disabled/spec/check: no AWS construction, no extra GCS GET/spool, unchanged public specs.
+6. Disabled/spec/check: no AWS construction, no extra GCS GET/spool, optional preview config ID fields.
    Include checker-internal write operations and both enabled load strategies.
 7. Lifetime and pressure: four copies max across socket partitions, metadata concurrency bounded,
    cancellation before/while reading, a cancelled future with an active reader, drained readers
@@ -375,7 +386,7 @@ Deterministic connector tests must cover:
 8. Actual legacy pipeline checkpoint tests: feed records and states under STDIO and socket paths,
    hold the archive response, and assert no covering state until load completes. Include EOF
    partial batches, multiple streams/partitions, global states, archive failure, BigQuery failure,
-   and zero-row cutoff failure. Assert object-upload `LOADED` is not final `COMPLETE`.
+   and zero-row schema failure and completion upload failure. Assert object-upload `LOADED` is not final `COMPLETE`.
 
 Real-service pre-rollout validation: GCS HMAC read access, exact compressed download without
 transcoding, BigQuery append/dedup/refresh/schema-evolution/raw results, both GCS KEEP/DELETE,
@@ -391,10 +402,9 @@ Commands from the repository root:
 ./gradlew :airbyte-integrations:connectors:destination-bigquery:dependencies --configuration runtimeClasspath
 ```
 
-Service integration checks need configured test accounts/resources. Compare both spec snapshots
-unchanged. Verify strict compilation using local CI-equivalent configuration before publishing.
+Service integration checks need configured test accounts/resources. Check both spec snapshots against the updated field descriptions. Verify strict compilation using local CI-equivalent configuration before publishing.
 
-Validation performed during implementation: deterministic unit/pipeline tests, SDK multipart tests
+Historical validation before the September 16 completion-contract revision: deterministic unit/pipeline tests, SDK multipart tests
 against a local HTTP fixture, and live GCS-to-BigQuery-to-S3 writes for direct JSON/STDIO, direct
 protobuf/socket, and raw JSON/STDIO. S3 inspection verified gzip/header/row-count metadata and
 recomputed each schema hash. A live empty truncate refresh produced a durable schema/cutoff with no
@@ -407,7 +417,7 @@ pre-rollout checks; a small successful smoke test does not establish them.
 
 1. Add gated archive configuration, isolated AWS dependencies/client owner, paths, serializers,
    and tests. Inspect dependency resolution; retain the CDK/toolkit selections.
-2. Add the delegating writer and durable run schema/cutoff preparation. Share layout derivation
+2. Add the delegating writer and durable run schema preparation and stream completion. Share layout derivation
    between descriptors and existing loader factories without rewriting record formatting.
 3. Add the common completed-GCS-object archive hook, spool/transfer limits, deferred GCS cleanup,
    and deterministic load/checkpoint tests. Then add standard inserts under the contract in section 10.

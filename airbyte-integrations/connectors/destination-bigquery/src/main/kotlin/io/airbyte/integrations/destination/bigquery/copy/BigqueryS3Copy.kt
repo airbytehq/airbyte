@@ -43,6 +43,8 @@ interface BigqueryS3Copy : AutoCloseable {
 
     suspend fun prepare(catalog: DestinationCatalog)
 
+    suspend fun complete(stream: DestinationStream)
+
     /** False means setup failed/closed; a failed sync must discard any zero-row checkpoints. */
     suspend fun metadataReady(): Boolean
 
@@ -62,6 +64,8 @@ object DisabledBigqueryS3Copy : BigqueryS3Copy {
     override fun validate(catalog: DestinationCatalog) = Unit
 
     override suspend fun prepare(catalog: DestinationCatalog) = Unit
+
+    override suspend fun complete(stream: DestinationStream) = Unit
 
     override suspend fun metadataReady(): Boolean = true
 
@@ -123,6 +127,8 @@ class EnabledBigqueryS3Copy(
 
     private val slots = Semaphore(4)
     private val preparation = Mutex()
+    private val completion = Mutex()
+    private val completedStreams = mutableSetOf<DestinationStream.Descriptor>()
     private val closed = AtomicBoolean(false)
     private val poisoned = AtomicBoolean(false)
     private val copiedObjects = AtomicLong()
@@ -184,9 +190,6 @@ class EnabledBigqueryS3Copy(
                             val descriptor = metadata.descriptor(stream)
                             val runPath = runPaths.getValue(stream)
                             putJson("$runPath/schema.json", descriptor)
-                            if (stream.minimumGenerationId > 0) {
-                                putJson("$runPath/generation-cutoff.json", metadata.cutoff(stream))
-                            }
                             stream.mappedDescriptor to
                                 BigqueryCopyContext(
                                     metadata.streamKey(stream),
@@ -209,6 +212,29 @@ class EnabledBigqueryS3Copy(
                 poisoned.set(true)
                 ready.complete(false)
                 throw archiveFailure("Fusion S3 run metadata preparation failed", t)
+            }
+        }
+    }
+
+    override suspend fun complete(stream: DestinationStream) {
+        completion.withLock {
+            val context = context(stream)
+            if (stream.mappedDescriptor in completedStreams) return
+            val key = "${context.runPath}/batches/stream_complete.json"
+            try {
+                withTimeout(operationTimeoutMillis) {
+                    putJson(key, metadata.streamComplete(stream))
+                }
+                checkHealthy()
+                completedStreams.add(stream.mappedDescriptor)
+                log.info {
+                    "Fusion S3 stream complete: run=$runId job_id=${stream.syncId} key=$key"
+                }
+            } catch (t: Throwable) {
+                throw archiveFailure(
+                    "Fusion S3 stream completion failed for run=$runId key=$key",
+                    t
+                )
             }
         }
     }

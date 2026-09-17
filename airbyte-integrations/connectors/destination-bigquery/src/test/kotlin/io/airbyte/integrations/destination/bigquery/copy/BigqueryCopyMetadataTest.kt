@@ -802,33 +802,23 @@ class BigqueryCopyMetadataTest {
     }
 
     @Test
-    fun `cutoffs explicitly request strictly older generations with independent event ids`() {
+    fun `completion contains platform job ID and optional generation cutoff`() {
         val stream = stream().copy(minimumGenerationId = 9)
         val metadata = metadata(stream)
-        val cutoff = tree(metadata.cutoff(stream))
-        assertEquals("generation_cutoff_requested", cutoff["event_type"].asText())
-        assertEquals("strictly_less_than", cutoff["discard"]["comparison"].asText())
-        assertEquals("_airbyte_generation_id", cutoff["discard"]["field"].asText())
-        assertEquals(9, cutoff["discard"]["value"].asInt())
-        assertEquals(9, cutoff["generation_id"].asInt())
-        assertEquals(9, cutoff["minimum_generation_id"].asInt())
-        assertEquals(42, cutoff["sync_id"].asInt())
-        assertEquals(runId.toString(), cutoff["run_id"].asText())
-        assertEquals(epochSeconds, cutoff["epoch_seconds"].asLong())
-        assertEquals(config.organizationId.toString(), cutoff["organization_id"].asText())
-        assertEquals(config.destinationId.toString(), cutoff["destination_id"].asText())
-        assertEquals(metadata.streamKey(stream), cutoff["stream_key"].asText())
-        assertDoesNotThrow { UUID.fromString(cutoff["event_id"].asText()) }
-        assertNotEquals(cutoff["event_id"].asText(), metadata.cutoff(stream)["event_id"])
-        assertThrows(IllegalArgumentException::class.java) {
-            metadata.cutoff(stream.copy(minimumGenerationId = 0))
-        }
+        assertEquals(
+            mapOf("job_id" to 42L, "min_generation_id" to 9L),
+            metadata.streamComplete(stream)
+        )
+        assertEquals(
+            mapOf("job_id" to 42L),
+            metadata.streamComplete(stream.copy(minimumGenerationId = 0))
+        )
         listOf(-1L, 1L, 10L).forEach { minimum ->
             assertThrows(IllegalArgumentException::class.java) {
-                metadata.descriptor(stream.copy(minimumGenerationId = minimum))
+                metadata.streamComplete(stream.copy(minimumGenerationId = minimum))
             }
             assertThrows(IllegalArgumentException::class.java) {
-                metadata.cutoff(stream.copy(minimumGenerationId = minimum))
+                metadata.descriptor(stream.copy(minimumGenerationId = minimum))
             }
         }
     }
