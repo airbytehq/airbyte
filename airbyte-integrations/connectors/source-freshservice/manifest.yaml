@@ -5749,6 +5749,121 @@ streams:
               - "null"
               - integer
             description: The ID of the workspace in which the purchase order was created
+  - type: DeclarativeStream
+    name: audit_logs
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{config['domain_name']}}/api/v2
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['api_key'] }}"
+        path: /audit_logs
+        http_method: GET
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 403
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - audit_logs
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 30
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_at
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: updated_since
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type: integer
+            description: Unique identifier for the audit log entry
+          actor:
+            type: object
+            additionalProperties: true
+            description: Details of the user who performed the action
+            properties:
+              id:
+                type:
+                  - "null"
+                  - integer
+                description: ID of the actor
+              name:
+                type:
+                  - "null"
+                  - string
+                description: Name of the actor
+              type:
+                type:
+                  - "null"
+                  - string
+                description: Type of actor (agent, requester, system)
+          action:
+            type:
+              - "null"
+              - string
+            description: The action performed (create, update, delete)
+          resource_type:
+            type:
+              - "null"
+              - string
+            description: Type of resource affected (ticket, change, asset, etc.)
+          resource_id:
+            type:
+              - "null"
+              - integer
+            description: ID of the affected resource
+          changes:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            description: Object containing the before/after values of modified fields
+          ip_address:
+            type:
+              - "null"
+              - string
+            description: IP address from which the action was performed
+          created_at:
+            type:
+              - "null"
+              - string
+            description: Timestamp when the audit log entry was created
 spec:
   type: Spec
   connection_specification:
