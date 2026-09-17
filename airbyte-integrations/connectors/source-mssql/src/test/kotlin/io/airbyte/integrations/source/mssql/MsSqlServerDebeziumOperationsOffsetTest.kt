@@ -107,7 +107,10 @@ class MsSqlServerDebeziumOperationsOffsetTest {
                 )
             )
 
-        assertSame(snapshotOffset, operations.normalizeHeartbeatChangeLsn(snapshotOffset))
+        assertSame(
+            snapshotOffset.wrapped,
+            operations.normalizeHeartbeatChangeLsn(snapshotOffset).wrapped
+        )
     }
 
     @Test
@@ -119,7 +122,10 @@ class MsSqlServerDebeziumOperationsOffsetTest {
         val multiKeyOffset =
             DebeziumOffset(mapOf(offsetKey to firstValue, secondKey to secondValue))
 
-        assertSame(multiKeyOffset, operations.normalizeHeartbeatChangeLsn(multiKeyOffset))
+        assertSame(
+            multiKeyOffset.wrapped,
+            operations.normalizeHeartbeatChangeLsn(multiKeyOffset).wrapped
+        )
     }
 
     private fun operations(): MsSqlServerDebeziumOperations {
@@ -179,6 +185,6 @@ class MsSqlServerDebeziumOperationsOffsetTest {
             .java
             .getDeclaredField("lastLoadedOffset")
             .apply { isAccessible = true }
-            .set(operations, offset)
+            .set(operations, offset.wrapped)
     }
 }
