@@ -11,50 +11,74 @@ group of streams at a time (tracking issue: airbytehq/airbyte-internal-issues#16
 therefore a **hybrid** connector right now, and a change usually has to be made in exactly
 one of the two halves:
 
-- `source_github/manifest.yaml` — the migrated streams. Currently: `repositories`,
-  `assignees`, `branches`, `collaborators`, `issue_labels`, `tags`, `organizations`, `teams`,
-  `users`, `events`, `pull_requests`, `commit_comments`, `issue_milestones`, `stargazers`,
-  `projects`, `issue_events`, `deployments`, `workflows`, `comments`, `issues`, `review_comments`.
-  Their schemas are inline
-  (`InlineSchemaLoader`); there is no file under `source_github/schemas/` for them. When a
-  schema being inlined carries a `$ref` to `schemas/shared/*.json`, expand it verbatim and drop
-  any sibling keys (`description` next to a `$ref`) — jsonref, which the legacy loader used,
-  replaced the whole node, so the discovered schema never had them. Compare the result against
-  `<PythonClass>().get_json_schema()` before deleting the class; Step 5 did that for all nine. A `$ref`
-  inside an inline schema is not resolved, and `#/definitions/...` would be swallowed by the
-  manifest's own `$ref` resolver, so expand those too.
-- `source_github/streams.py` — everything not yet migrated. These still extend
-  `GithubStream`/`GithubStreamABC` and read their schema from `source_github/schemas/`.
+- `source_github/manifest.yaml` — every REST stream. Their schemas are inline
+  (`InlineSchemaLoader`); there is no file under `source_github/schemas/` for them, with one
+  exception: `issue_timeline_events` keeps `schemas/issue_timeline_events.json` behind a
+  `JsonFileSchemaLoader`, because its shared `base_event` definition is referenced 23 times and
+  inlines to almost 7,000 lines. When a schema being inlined carries a `$ref` to
+  `schemas/shared/*.json`, expand it verbatim and drop any sibling keys (`description` next to a
+  `$ref`) — jsonref, which the legacy loader used, replaced the whole node, so the discovered
+  schema never had them. A `$ref` inside an inline schema is not resolved, and `#/definitions/...`
+  would be swallowed by the manifest's own `$ref` resolver. The safe recipe is to dump
+  `<PythonClass>().get_json_schema()` and compare before deleting the class.
+- `source_github/streams.py` — the six GraphQL streams (`releases`, `pull_request_stats`, `reviews`,
+  `projects_v2`, `issue_reactions`, `pull_request_comment_reactions`), left for Step 9. They still
+  extend `GithubStream`/`GithubStreamABC` and read their schema from `source_github/schemas/`.
 
 Things worth knowing before touching either half:
 
 - `SourceGithub.streams()` returns **only** the Python streams. `read()` and `discover()`
   merge them with the manifest streams, so migrating a stream means deleting it from
   `streams.py`, dropping it from the `streams()` list, and adding it to `manifest.yaml`.
-- A few Python classes are _technical_ streams that are deliberately not in the catalog:
-  `RepositoryStats`, `Branches` (how `Commits` discovers branches), `Teams` (parent of
-  `TeamMembers`, itself the parent of `TeamMemberships`), `PullRequests` (parent of
-  `PullRequestCommits`), `Projects` (parent of `ProjectColumns`, itself the parent of
-  `ProjectCards`), `CommitComments` (built internally by `CommitCommentReactions` through
-  `ReactionStream.parent_entity`), `Comments` (parent of `IssueCommentReactions`) and `Issues`
-  (parent of `IssueTimelineEvents`). Do not delete them even though the user-facing `branches`,
-  `teams`, `pull_requests`, `projects`, `commit_comments`, `comments` and `issues` streams are
-  declarative now. `Branches`, `Teams`, `Comments` and `Issues` have no file under
-  `source_github/schemas/` any more and override `get_json_schema()` with just the fields their
-  children read. `PullRequests`, `Projects` and
-  `CommitComments` keep their `schemas/*.json` files instead (a second copy of the inline
-  manifest schema, but the parent reads never validate against it); both forms are fine for a
-  technical stream, pick whichever is less code. `Teams`, `Projects`, `CommitComments`, `Comments` and `Issues` keep
-  `use_cache = True`, matched by `use_cache: true` on their manifest requesters, so the parent
-  read shares `teams.sqlite`/`projects.sqlite`/`commit_comments.sqlite`/`comments.sqlite`/
-  `issues.sqlite` with the declarative stream instead of paying for the listing twice — that only works while both sides send the
-  same URL, which is why `pull_requests` does not bother (its parent read lists ascending, the
-  manifest stream descending).
+- No Python _technical_ stream is left. `Branches` and `RepositoryStats` went with Step 8: the
+  manifest's `repository_partition_router` now carries the repository's `default_branch` as an
+  `extra_fields` entry on every repository partition, and `repository_branches_resolver` (an
+  internal stream, not in the catalog) lists branches for `commits`.
+- Parent-child streams (Step 7) are `SubstreamPartitionRouter`s over the manifest parent
+  definition (`$ref: "#/definitions/<parent>_stream"`). Parent fields the child needs in its path
+  or record come through `extra_fields` on the `ParentStreamConfig` and are read as
+  `stream_slice.extra_fields['<field>']`; the partition value itself is `stream_partition.<field>`.
+  The parent is read with a fresh state manager (no `incremental_dependency`), i.e. from
+  `start_date`, which is what the Python parents did. Set `use_cache: true` on a parent's
+  requester so the parent read is served from the pages the parent stream itself fetched.
+- The Python parent-child streams nested their state under the repository and each parent id
+  (`{repo: {project_id: {column_id: {updated_at}}}}`). `LegacyToPerPartitionStateMigration` only
+  handles one level, so those four streams use
+  `components.NestedLegacyToPerPartitionStateMigration`, which rebuilds the exact partition the
+  router emits (`{"column_id": 50, "parent_slice": {"project_id": 5, "parent_slice": {"repository": ...}}}`,
+  ids as integers). `issue_timeline_events` collapses a page of events into one record with
+  `components.IssueTimelineEventsExtractor`; nothing declarative groups records per page.
+- Step 8 patterns worth knowing before touching those four streams:
+  - `workflow_runs` cannot use `is_data_feed`: runs are listed by `created_at` while the cursor is
+    `updated_at`, and a re-run of an old run appears deep in the list. Legacy stopped at the first
+    run created more than 32 days before the cursor; `components.WorkflowRunsPaginationStrategy`
+    does the same from the raw page, reading the slice start from the `X-Airbyte-Window-Start`
+    request header (the paginator only sees records that survived the client-side filter, and
+    GitHub ignores the header). Do not replace this with GitHub's `created` filter: it caps the
+    result set at 1,000 runs, so a busy repository would silently lose runs. `lookback_window`
+    would not do either: it moves the request window but `ConcurrentCursor.should_be_synced` still
+    compares against the un-shifted start.
+  - `workflow_jobs` is a substream of `workflow_runs` with `incremental_dependency: true` and
+    `global_substream_cursor: true`: one `completed_at` cursor for the stream, and the parent
+    resumes per repository from `parent_state`, which is what the Python class did by handing its
+    cursor to the parent. `components.WorkflowJobsLegacyStateMigration` turns the legacy
+    `{repo: {completed_at}}` into that shape; the parent's own legacy migration then converts
+    `parent_state`. A record filter needs `is not none`, not a bare value: Jinja renders `None`
+    as "None", which the CDK's boolean does not treat as false.
+  - `contributor_activity` retries 202 with a 90s constant backoff. `WaitUntilTimeFromHeader` must
+    not sit in front of it in `backoff_strategies`, because it answers `min_wait` whenever its
+    header is absent and would turn every 202 into a 60s wait.
+  - `commits` slices per branch through `components.CommitsBranchPartitionRouter`, a
+    `SubstreamPartitionRouter` over `repository_branches_resolver` that keeps the configured
+    branches that exist and falls back to the default branch otherwise, exactly like
+    `Commits._validate_branches_to_pull`. The nested legacy state is migrated with
+    `integer_ids: false` so a digit-only branch name stays a string.
 - Tests that need a plain repo-scoped Python `HttpStream` — the `GithubStreamABC.read_records`
   error-path tests and the authenticator quota tests — use `unit_tests/utils.py::ProbeStream`.
-  They used `Deployments` until Step 5 migrated it, and every remaining Python stream is either
-  parent-driven, GraphQL, or cached (`use_cache` replays pages and stops a request counter from
-  advancing). Do not move them onto another real stream that the next step will migrate again.
+  They used `Deployments` until Step 5 migrated it, the org-scoped tests used `Teams` until
+  Step 7, and the error-handler tests used `RepositoryStats` until Step 8; every remaining Python
+  stream is GraphQL. Do not move them onto another real stream that the next step will migrate
+  again.
 - Repository/organization resolution lives in the manifest (`repositories_resolver` and
   `repository_stats`, unioned by `repository_partition_router` /
   `organization_resolution_partition_router`). The Python streams get their lists by enumerating
@@ -240,3 +264,5 @@ The GitHub REST and GraphQL APIs support `since` parameter on many list endpoint
 - **The five streams migrated in Step 3** (`assignees`, `branches`, `collaborators`, `issue_labels`, `tags`) have no usable cursor: none of their endpoints returns an `updated_at`/`created_at` field or accepts `since`, so they stay full refresh.
 - **The nine streams migrated in Step 5** (`events`, `pull_requests`, `commit_comments`, `issue_milestones`, `stargazers`, `projects`, `issue_events`, `deployments`, `workflows`) have a cursor field but no server-side filter, so they are client-side incremental; `pull_requests` and `issue_milestones` additionally sort newest-first and use the data-feed stop condition. See the semi-incremental bullet above before adding another.
 - **The three streams migrated in Step 6** (`comments`, `issues`, `review_comments`) are the connector's only REST streams that filter server-side: their endpoints accept `since` and the declarative `DatetimeBasedCursor` injects it via `start_time_option`. Any further stream whose endpoint accepts `since` belongs in that group rather than the client-side-filtered one.
+- **The eight streams migrated in Step 7** (`pull_request_commits`, `project_columns`, `project_cards`, `team_members`, `team_memberships`, `issue_timeline_events`, `commit_comment_reactions`, `issue_comment_reactions`) are substreams. `project_columns`, `project_cards` and the two reaction streams are client-side incremental with a cursor per parent record; the other four have no cursor and stay full refresh.
+- **The four streams migrated in Step 8** (`commits`, `contributor_activity`, `workflow_runs`, `workflow_jobs`): `commits` filters server-side with `since` per branch, `workflow_runs` and `workflow_jobs` are client-side incremental with the 32-day `created` window described above, `contributor_activity` has no cursor and stays full refresh.

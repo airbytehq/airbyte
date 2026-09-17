@@ -50,12 +50,3 @@ class GithubStreamABCBackoffStrategy(BackoffStrategy):
                 return None
             return wait_time
         return None
-
-
-class ContributorActivityBackoffStrategy(BackoffStrategy):
-    def backoff_time(
-        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
-    ) -> Optional[float]:
-        if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == requests.codes.ACCEPTED:
-            return 90
-        return None
