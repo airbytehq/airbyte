@@ -48,10 +48,6 @@ class UptickRequestBuilder:
             "AccreditationType",
             "id,created,updated,name,type,property_specific,extra_fields",
         ),
-        "costcentres": (
-            "CostCentre",
-            "id,created,updated,name,income_account_code,expense_account_code,is_active,is_default,tracking_categories,branch,taskcategory",
-        ),
     }
 
     @classmethod

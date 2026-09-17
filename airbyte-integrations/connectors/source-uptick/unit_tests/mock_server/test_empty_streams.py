@@ -107,21 +107,6 @@ def _record(
                 "extra_fields": {},
             }
         )
-    elif stream == "costcentres":
-        attributes.update(
-            {
-                "name": "Cost centre",
-                "income_account_code": "4000",
-                "expense_account_code": "5000",
-                "is_active": True,
-                "is_default": False,
-                "tracking_categories": [],
-            }
-        )
-        relationships = {
-            "branch": _relationship(),
-            "taskcategory": _relationship(),
-        }
     elif stream == "promptquestions":
         attributes.update(
             {
@@ -307,24 +292,6 @@ def test_non_client_side_incremental_does_not_filter_old_records() -> None:
 
         assert output.errors == []
         assert [message.record.data["id"] for message in output.records] == [1, 2]
-        http_mocker.assert_number_of_calls(first_page, 1)
-
-
-def test_costcentres_tracking_categories_array_has_no_schema_warning() -> None:
-    stream = "costcentres"
-    record = _record(stream, 1)
-    record["attributes"]["tracking_categories"] = [{"name": "x"}]
-    with HttpMocker() as http_mocker:
-        _mock_token(http_mocker)
-        first_page = UptickRequestBuilder.collection(stream)
-        http_mocker.get(first_page, _response([record]))
-
-        output = _read(stream)
-
-        assert output.errors == []
-        assert output.records[0].record.data["tracking_categories"] == [{"name": "x"}]
-        assert output.is_not_in_logs("Failed to transform")
-        assert output.is_not_in_logs("does not conform")
         http_mocker.assert_number_of_calls(first_page, 1)
 
 

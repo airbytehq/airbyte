@@ -2416,10 +2416,7 @@ streams:
               - "null"
           tracking_categories:
             type:
-              - array
-              - "null"
-            items:
-              type: object
+              - object
           branch_id:
             type:
               - integer
@@ -4031,10 +4028,7 @@ streams:
               - "null"
           tracking_categories:
             type:
-              - array
-              - "null"
-            items:
-              type: object
+              - object
           extra_fields:
             type:
               - object
