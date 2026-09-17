@@ -84,9 +84,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                   |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 0.4.1-rc.1 | 2026-09-17 | [PR_NUMBER_PLACEHOLDER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER_PLACEHOLDER) | Upgrade ClickHouse JDBC driver to 0.9.9 to fix discover failing with "Magic is not correct" (LZ4) on ClickHouse 25.10+ / ClickHouse Cloud; remove legacy `sslmode=none` parameter |
 | 0.4.0   | 2026-07-10 | [81633](https://github.com/airbytehq/airbyte/pull/81633)   | **Breaking**: Declare temporal column typing as breaking. Connections with schema evolution errors must follow the [migration guide](/integrations/sources/clickhouse-migrations)    |
 | 0.3.1   | 2026-06-29 | [72484](https://github.com/airbytehq/airbyte/pull/72484)   | Add JSON Schema format hints for temporal types (DateTime, Date) and fix documentation URL                |
 | 0.3.0   | 2026-01-27 | [75298](https://github.com/airbytehq/airbyte/pull/75298)   | Fold source-clickhouse-strict-encrypt into source-clickhouse                                              |
+| 0.3.0-rc.3 | 2026-03-20 | [75260](https://github.com/airbytehq/airbyte/pull/75260) | Remove legacy `sslmode=none` JDBC parameter incompatible with 0.9.7+ driver |
+| 0.3.0-rc.2 | 2026-03-19 | [75226](https://github.com/airbytehq/airbyte/pull/75226) | Upgrade ClickHouse JDBC driver from 0.9.5 to 0.9.8 |
+| 0.3.0-rc.1 | 2026-02-03 | [72395](https://github.com/airbytehq/airbyte/pull/72395) | Upgrade ClickHouse JDBC driver to 0.9.5 with custom type mapping |
 | 0.2.6   | 2025-11-03 | [66714](https://github.com/airbytehq/airbyte/pull/66714)   | Revert JDBC driver upgrade                                                                                |
 | 0.2.5   | 2025-09-25 | [66482](https://github.com/airbytehq/airbyte/pull/66482)   | Upgrade ClickHouse JDBC driver from 0.3.2-patch10 to 0.9.0                                                |
 | 0.2.4   | 2025-07-10 | [62912](https://github.com/airbytehq/airbyte/pull/62912)   | Convert to new gradle build flow                                                                          |

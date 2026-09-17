@@ -25,7 +25,6 @@ import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,13 +36,11 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
 
   /**
    * The default implementation relies on {@link java.sql.DatabaseMetaData#getPrimaryKeys} method to
-   * get it but the ClickHouse JDBC driver returns an empty result set from the method
-   * {@link ru.yandex.clickhouse.ClickHouseDatabaseMetadata#getPrimaryKeys}. That's why we have to
+   * get it but the ClickHouse JDBC driver returns an empty result set from its metadata method. That's why we have to
    * query the system table mentioned here
    * https://clickhouse.tech/docs/en/operations/system-tables/columns/ to fetch the primary keys.
    */
 
-  public static final String SSL_MODE = "sslmode=none";
   public static final String HTTPS_PROTOCOL = "https";
   public static final String HTTP_PROTOCOL = "http";
 
@@ -82,8 +79,8 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
   /**
    * The reason we use NoOpStreamingQueryConfig(not setting auto commit to false and not setting fetch
    * size to 1000) for ClickHouse is cause method
-   * {@link ru.yandex.clickhouse.ClickHouseConnectionImpl#setAutoCommit} is empty and method
-   * {@link ru.yandex.clickhouse.ClickHouseStatementImpl#setFetchSize} is empty
+   * {@code com.clickhouse.jdbc.ClickHouseConnection#setAutoCommit} is empty and
+   * {@code com.clickhouse.jdbc.ClickHouseStatement#setFetchSize} is empty
    */
   public ClickHouseSource() {
     this(new EnvVariableFeatureFlags());
@@ -124,18 +121,9 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
 
     final boolean isAdditionalParamsExists =
         config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty();
-    final List<String> params = new ArrayList<>();
-    // assume ssl if not explicitly mentioned.
-    if (isSsl) {
-      params.add(SSL_MODE);
-    }
     if (isAdditionalParamsExists) {
-      params.add(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
-    }
-
-    if (isSsl || isAdditionalParamsExists) {
       jdbcUrl.append("?");
-      jdbcUrl.append(String.join("&", params));
+      jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
