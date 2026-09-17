@@ -83,7 +83,14 @@ assumption are the only credential shapes that can travel inside a configuration
 image, kept for reference; `expected-spec.json` is this connector's own snapshot (the strict spec test
 writes the current spec to `build/actual-spec.json` to refresh it).
 
-### check and discover parity (verified 2026-09-17 on DynamoDB Local 3.3.1 vs 0.3.11)
+### check and discover parity (verified 2026-09-17 on DynamoDB Local 3.3.1 and on a real AWS account vs 0.3.11)
+
+Against a real account (us-east-2, an IAM user's access key, 4 tables) both images return `SUCCEEDED`
+for `check` and byte-identical catalogs for `discover`. With deliberately wrong credentials the new
+connector reports: wrong secret -> "The secret access key is invalid ..."; unknown access key id or
+bogus session token -> "The access key id or the session token is invalid ..." (AWS uses the same
+message for both); a role the key may not assume -> the STS `AccessDenied` message naming the caller
+and the role. Legacy returned `FAILED` without a message in all three cases.
 
 - `src/test/resources/expected-catalog.json` is the `CATALOG` object the legacy image produced for the
   seed data in `src/test/resources/parity-seed.json`; `DynamoDbSourceDiscoverTest` seeds a DynamoDB

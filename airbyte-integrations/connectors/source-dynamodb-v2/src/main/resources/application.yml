@@ -14,18 +14,23 @@ airbyte:
         # The AWS SDK reports service errors as DynamoDbException subclasses whose message is
         # "<service message> (Service: DynamoDb, Status Code: 400, Request ID: ...)".
         rules:
+          # Captured from the real service on 2026-09-17: an unknown access key id and a bogus session
+          # token both produce this message (the latter without the trailing period).
           - pattern: "(?i).*The security token included in the request is invalid.*"
             input-example: >-
               software.amazon.awssdk.services.dynamodb.model.DynamoDbException: The security token included in the
-              request is invalid. (Service: DynamoDb, Status Code: 400, Request ID: ABC)
+              request is invalid. (Service: DynamoDb, Status Code: 400, Request ID: UCMPMFPGROCDVT7GHVR3V6OTSBVV4KQNSO5AEMVJF66Q9ASUAAJG)
+              (SDK Attempt Count: 1)
             error: config
-            output: "The access key id is invalid. Please check the source's configured credentials."
+            output: "The access key id or the session token is invalid. Please check the source's configured credentials."
 
+          # Captured from the real service on 2026-09-17 with a wrong secret access key.
           - pattern: "(?i).*The request signature we calculated does not match the signature you provided.*"
             input-example: >-
               software.amazon.awssdk.services.dynamodb.model.DynamoDbException: The request signature we calculated
               does not match the signature you provided. Check your AWS Secret Access Key and signing method.
-              (Service: DynamoDb, Status Code: 400, Request ID: ABC)
+              Consult the service documentation for details. (Service: DynamoDb, Status Code: 400, Request ID:
+              1PHQ765RCJ5IF9VTVIAD5518NRVV4KQNSO5AEMVJF66Q9ASUAAJG) (SDK Attempt Count: 1)
             error: config
             output: "The secret access key is invalid. Please check the source's configured credentials."
 
@@ -36,11 +41,13 @@ airbyte:
             error: config
             output: "The temporary credentials (session token) have expired. Please configure new credentials."
 
+          # Captured from the real service on 2026-09-17 (role ARN the access key may not assume). The
+          # service message names the caller and the role, so it is passed through unchanged.
           - pattern: "(?i).*is not authorized to perform: sts:AssumeRole.*"
             input-example: >-
               software.amazon.awssdk.services.sts.model.StsException: User: arn:aws:iam::123456789012:user/airbyte is
-              not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::123456789012:role/reader
-              (Service: Sts, Status Code: 403, Request ID: ABC)
+              not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::000000000000:role/does-not-exist
+              (Service: Sts, Status Code: 403, Request ID: 614ec3a4-1962-4bd4-bcf5-695c55d1e368) (SDK Attempt Count: 1)
             error: config
 
           - pattern: "(?i).*is not authorized to perform: dynamodb:.*"
