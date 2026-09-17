@@ -91,12 +91,13 @@ jobs:
           )"
           poe test-sandbox
       - name: Sanitize test report
+        id: sanitize
         if: always()
         run: >-
           python sandbox-plugin/scripts/stripe_demo/sanitize_report.py
           airbyte-integrations/connectors/source-stripe/build/test-results/standard-tests-junit.xml
       - name: Upload test report
-        if: always()
+        if: always() && steps.sanitize.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: stripe-sandbox-junit
