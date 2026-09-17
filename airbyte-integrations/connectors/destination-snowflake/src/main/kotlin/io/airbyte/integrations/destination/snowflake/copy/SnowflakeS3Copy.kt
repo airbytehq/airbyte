@@ -4,12 +4,14 @@
 
 package io.airbyte.integrations.destination.snowflake.copy
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.security.MessageDigest
 import java.time.Instant
@@ -17,6 +19,8 @@ import java.util.UUID
 import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 data class CsvCopyContext(
@@ -32,12 +36,14 @@ data class CsvCopyContext(
 
 interface SnowflakeS3Copy : AutoCloseable {
     suspend fun prepare(catalog: DestinationCatalog)
+    suspend fun complete(stream: DestinationStream)
     fun context(stream: DestinationStream): CsvCopyContext?
     suspend fun upload(path: Path, context: CsvCopyContext, recordCount: Int, batchId: UUID)
 }
 
 object DisabledSnowflakeS3Copy : SnowflakeS3Copy {
     override suspend fun prepare(catalog: DestinationCatalog) = Unit
+    override suspend fun complete(stream: DestinationStream) = Unit
     override fun context(stream: DestinationStream): CsvCopyContext? = null
     override suspend fun upload(
         path: Path,
@@ -48,15 +54,22 @@ object DisabledSnowflakeS3Copy : SnowflakeS3Copy {
     override fun close() = Unit
 }
 
+@SuppressFBWarnings(
+    value = ["NP_NONNULL_PARAM_VIOLATION"],
+    justification = "Kotlin coroutine resume stubs pass null placeholders for saved arguments",
+)
 class EnabledSnowflakeS3Copy(
     private val config: S3CopyConfiguration,
     private val columnManager: SnowflakeColumnManager,
     private val snowflakeConfiguration: SnowflakeConfiguration,
+    private val uploader: SnowflakeCopyUploader = S3CsvUploader(config),
 ) : SnowflakeS3Copy {
     private val epochSeconds = Instant.now().epochSecond
     private val runId = UUID.randomUUID()
     private val metadata = S3CopyMetadata(config, runId, epochSeconds)
-    private val uploader = S3CsvUploader(config)
+    private val log = KotlinLogging.logger {}
+    private val completion = Mutex()
+    private val completedStreams = mutableSetOf<DestinationStream>()
     private val slots = Semaphore(4)
     private val closed = AtomicBoolean(false)
     private val shutdownHook = Thread { close() }
@@ -87,9 +100,6 @@ class EnabledSnowflakeS3Copy(
             val key = streamKey(stream)
             val runPath = runPaths.getValue(stream)
             putJson("${runPath}schema.json", metadata.schema(stream, schema, schemaId))
-            if (stream.minimumGenerationId > 0) {
-                putJson("${runPath}generation-cutoff.json", metadata.cutoff(stream, key))
-            }
             contexts[stream] =
                 CsvCopyContext(
                     key,
@@ -101,6 +111,19 @@ class EnabledSnowflakeS3Copy(
                     runPath,
                     epochSeconds
                 )
+        }
+    }
+
+    override suspend fun complete(stream: DestinationStream) {
+        completion.withLock {
+            check(!closed.get()) { "Fusion archive is closed" }
+            val context =
+                checkNotNull(contexts[stream]) { "Fusion stream metadata is not prepared" }
+            if (stream in completedStreams) return
+            val key = "${context.runPath}batches/stream_complete.json"
+            withContext(Dispatchers.IO) { putJson(key, metadata.streamComplete(stream)) }
+            completedStreams.add(stream)
+            log.info { "Fusion S3 stream complete: run=$runId job_id=${stream.syncId} key=$key" }
         }
     }
 

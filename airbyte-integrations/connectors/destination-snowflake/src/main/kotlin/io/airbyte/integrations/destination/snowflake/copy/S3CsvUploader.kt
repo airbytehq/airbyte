@@ -19,7 +19,12 @@ import software.amazon.awssdk.services.sts.StsClient
 import software.amazon.awssdk.services.sts.auth.StsAssumeRoleCredentialsProvider
 import software.amazon.awssdk.services.sts.model.AssumeRoleRequest
 
-internal class S3CsvUploader(private val config: S3CopyConfiguration) : AutoCloseable {
+interface SnowflakeCopyUploader : AutoCloseable {
+    fun upload(path: Path, key: String, metadata: Map<String, String>): CompletableFuture<*>
+    fun uploadJson(bytes: ByteArray, key: String): CompletableFuture<*>
+}
+
+internal class S3CsvUploader(private val config: S3CopyConfiguration) : SnowflakeCopyUploader {
     private val bootstrap = DefaultCredentialsProvider.builder().build()
     private val sts =
         StsClient.builder().region(Region.of(config.region)).credentialsProvider(bootstrap).build()
@@ -53,7 +58,11 @@ internal class S3CsvUploader(private val config: S3CopyConfiguration) : AutoClos
             )
             .build()
 
-    fun upload(path: Path, key: String, metadata: Map<String, String>): CompletableFuture<*> {
+    override fun upload(
+        path: Path,
+        key: String,
+        metadata: Map<String, String>
+    ): CompletableFuture<*> {
         val request =
             PutObjectRequest.builder()
                 .bucket(config.bucket)
@@ -64,7 +73,7 @@ internal class S3CsvUploader(private val config: S3CopyConfiguration) : AutoClos
         return s3.putObject(request, AsyncRequestBody.fromFile(path))
     }
 
-    fun uploadJson(bytes: ByteArray, key: String): CompletableFuture<*> =
+    override fun uploadJson(bytes: ByteArray, key: String): CompletableFuture<*> =
         s3.putObject(
             PutObjectRequest.builder()
                 .bucket(config.bucket)

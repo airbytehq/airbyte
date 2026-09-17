@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test
 
 class S3CopyMetadataTest {
     @Test
-    fun `schemas cutoffs and batch headers carry the same full run identity`() {
+    fun `schemas and batch headers carry the same full run identity`() {
         val config =
             S3CopyConfiguration(
                 "role",
@@ -56,7 +56,7 @@ class S3CopyMetadataTest {
             )
         val schema =
             metadata.schema(stream, mapOf("columns" to emptyMap<String, Any>()), "schema-hash")
-        val cutoff = metadata.cutoff(stream, context.streamKey)
+        val complete = metadata.streamComplete(stream)
         val batchId = UUID(0, 7)
         val headers = metadata.batch(context, 19, batchId)
         val expected =
@@ -71,15 +71,11 @@ class S3CopyMetadataTest {
             )
         expected.forEach { (key, value) ->
             assertEquals(value, schema[key])
-            assertEquals(value, cutoff[key])
             assertEquals(value.toString(), headers[key.replace('_', '-')])
         }
-        assertEquals(42L, cutoff["minimum_generation_id"])
-        assertEquals(
-            "discard_records_with_generation_id_less_than_minimum",
-            cutoff["requested_effect"]
-        )
-        assertEquals("generation_cutoff_requested", cutoff["event_type"])
+        assertEquals(mapOf("job_id" to 12345L, "min_generation_id" to 42L), complete)
+        every { stream.minimumGenerationId } returns 0L
+        assertEquals(mapOf("job_id" to 12345L), metadata.streamComplete(stream))
         assertEquals(42L, schema["generation_id"])
         assertEquals(12345L, schema["sync_id"])
         assertEquals("schema-hash", schema["schema_id"])

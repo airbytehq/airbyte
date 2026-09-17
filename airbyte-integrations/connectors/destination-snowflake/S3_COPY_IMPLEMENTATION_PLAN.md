@@ -5,15 +5,15 @@ Status: Fusion preview implementation. The exact run layout and temporary routin
 The selected layout is:
 
 ```text
-s3://airbyte-fusion-context-store/fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/connections/<connection_uuid>/destinations/<destination_uuid>/syncs/runs/<epoch_seconds>/<run_uuid>/streams/<escaped_original_stream_name>/
+s3://airbyte-fusion-context-store/fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/connections/<connection_uuid>/destination/<destination_uuid>/syncs/streams/<escaped_original_stream_name>/runs/<epoch_seconds>/<run_uuid>/
   schema.json
-  generation-cutoff.json  # only when a cutoff is requested
   batches/<batch_uuid>.csv.gz
+  batches/stream_complete.json
 ```
 
-Preview writes force enabled `true`, bucket `airbyte-fusion-context-store`, region `us-west-2`, role `arn:aws:iam::506572016262:role/fusion-snowflake-sync-copy`, and prefix `fusion`. The five optional, TEMPORARY top-level advanced config fields are `organization_id`, `workspace_id`, `source_id`, `connection_id`, and `destination_id`. Each nullable string has UUID format: config overrides its matching `AIRBYTE_S3_COPY_<NAME>_ID` environment variable, then defaults to `00000000-0000-0000-0000-000000000000`. Supplied values must have the canonical UUID shape; uppercase is normalized, and blank or shortened UUIDs are rejected.
+Preview writes force enabled `true`, bucket `airbyte-fusion-context-store`, region `us-west-2`, role `arn:aws:iam::506572016262:role/fusion-snowflake-sync-copy`, and prefix `fusion`. The five optional, TEMPORARY top-level advanced config fields are `organization_id`, `workspace_id`, `source_id`, `connection_id`, and `destination_id`. Each nullable string has UUID format: config overrides its matching `AIRBYTE_<NAME>_ID` environment variable, then defaults to `00000000-0000-0000-0000-000000000000`. Supplied values must have the canonical UUID shape; uppercase is normalized, and blank or shortened UUIDs are rejected.
 
-`epoch_seconds` is captured once when the write service/run is created using `Instant.now().epochSecond`, alongside a new run UUID, and passed explicitly to the path helper. All streams and batches in that run reuse it. Stream names preserve original case and use percent-encoded UTF-8 path components. The helper returns the trailing slash; schema, cutoff, and batch suffixes are appended without another slash. Before uploading sidecars, setup validates every stream path against S3's 1024-byte key limit, including the longest `batches/<batch_uuid>.csv.gz` suffix. Setup writes the run's schema and any cutoff before ingestion; generation IDs remain in metadata rather than directory names. All five IDs, the run UUID, and epoch appear in both sidecars and batch metadata (`epoch_seconds` in JSON, `epoch-seconds` in S3 headers). Consumers resolve `schema.json` in the parent of the batch's `batches` directory.
+`epoch_seconds` is captured once when the write service/run is created using `Instant.now().epochSecond`, alongside a new run UUID, and passed explicitly to the path helper. All streams and batches in that run reuse it. Stream names preserve original case and use percent-encoded UTF-8 path components. The helper returns the trailing slash; schema, completion, and batch suffixes are appended without another slash. Before uploading sidecars, setup validates every stream path against S3's 1024-byte key limit, including the longest `batches/<batch_uuid>.csv.gz` suffix. Setup writes the run's schema before ingestion; generation IDs remain in metadata rather than directory names. All five IDs, the run UUID, and epoch appear in schema and batch metadata (`epoch_seconds` in JSON, `epoch-seconds` in S3 headers). Consumers resolve `schema.json` in the parent of the batch's `batches` directory.
 
 Repository baseline: `aa28ceeac4e`, reviewed September 9, 2026. Snowflake uses bulk CDK `core = "load"`, `load-csv`, and CDK version `1.0.25`; the checked-in load CDK has the same version.
 
@@ -23,7 +23,7 @@ Implement this entirely in the Snowflake connector. Upload the existing, closed 
 
 The contract is:
 
-> For an opted-in write, every record processed by that write and covered by an emitted destination checkpoint has its existing Snowflake CSV representation durably stored in S3. Any generation-cutoff directive supplied for that stream has also been recorded in S3.
+> For an opted-in write, every record processed by that write and covered by an emitted destination checkpoint has its existing Snowflake CSV representation durably stored in S3. After successful stream finalization, a durable `batches/stream_complete.json` identifies the platform job and any requested generation cutoff.
 
 This is an at-least-once archive of load inputs. Completed S3 objects can include records from failed attempts, duplicate records, CDC delete records, and generations that downstream consumers will eventually discard. They are retained. A file's presence does not establish that the sync succeeded or that its records remain in Snowflake's final table.
 
@@ -32,7 +32,7 @@ Make the following choices for v1:
 - Force the temporary Fusion preview route in the write-only factory; latch the IDs, epoch, and run UUID for the process lifetime.
 - Copy the exact compressed file bytes, with no additional row serialization, recompression, or local spool file.
 - Gate existing batch completion on Snowflake and S3. Use the existing CDK checkpoint mechanism.
-- Store generation information on each data object and write separate JSON generation-cutoff events.
+- Store generation information on each data object and write a stream completion marker with an optional generation cutoff.
 - Write one small, versioned schema descriptor per distinct stream layout so the headerless CSV is interpretable.
 - Keep completed objects across failures and refreshes. Downstream owns deduplication and deletion semantics.
 - Support both Snowflake schema mode and legacy raw-table mode, and both STDIO and socket input paths.
@@ -68,7 +68,7 @@ Also, [PipelineRunner](../../../airbyte-cdk/bulk/core/load/src/main/kotlin/io/ai
 | `AIRBYTE_S3_COPY_ROLE_ARN` | Forced `arn:aws:iam::506572016262:role/fusion-snowflake-sync-copy`. |
 | `AIRBYTE_S3_COPY_PREFIX` | Forced `fusion`; the pure parser normalizes surrounding slashes and rejects an empty prefix. |
 | `organization_id`, `workspace_id`, `source_id`, `connection_id`, `destination_id` | Optional TEMPORARY nullable UUID strings in the top-level advanced group of both cloud and OSS specs. |
-| `AIRBYTE_S3_COPY_ORGANIZATION_ID`, `AIRBYTE_S3_COPY_WORKSPACE_ID`, `AIRBYTE_S3_COPY_SOURCE_ID`, `AIRBYTE_S3_COPY_CONNECTION_ID`, `AIRBYTE_S3_COPY_DESTINATION_ID` | Fallbacks for absent/null config fields, then zero UUID. |
+| `AIRBYTE_ORGANIZATION_ID`, `AIRBYTE_WORKSPACE_ID`, `AIRBYTE_SOURCE_ID`, `AIRBYTE_CONNECTION_ID`, `AIRBYTE_DESTINATION_ID` | Fallbacks for absent/null config fields, then zero UUID. |
 | `AIRBYTE_S3_COPY_EXTERNAL_ID` | Optional STS external ID, preserved by the preview overlay. |
 
 Malformed supplied IDs fail enabled writes before ingestion; a valid config value overrides even a malformed environment fallback. No AWS access keys or secret credentials are hardcoded or added to the specification. Existing ambient workload credentials bootstrap AssumeRole. Non-write commands require no archive AWS setup. The temporary fields and forced routing must be revisited before general rollout; the environment enable flag cannot disable this preview factory.
@@ -106,10 +106,10 @@ Resource cleanup needs an explicit owner. The current [DestinationLifecycle](../
 Use original stream identity for archive routing. The buffer's execution table may be temporary and must not become the archive's stream identity.
 
 ```text
-s3://airbyte-fusion-context-store/fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/connections/<connection_uuid>/destinations/<destination_uuid>/syncs/runs/<epoch_seconds>/<run_uuid>/streams/<escaped_original_stream_name>/
+s3://airbyte-fusion-context-store/fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/connections/<connection_uuid>/destination/<destination_uuid>/syncs/streams/<escaped_original_stream_name>/runs/<epoch_seconds>/<run_uuid>/
   schema.json
-  generation-cutoff.json
   batches/<batch_uuid>.csv.gz
+  batches/stream_complete.json
 ```
 
 - `stream_key`: SHA-256 of a canonical JSON object containing the unmapped namespace and name. Preserve the distinction between a null and empty namespace. Store the readable original and mapped identities in the schema/event JSON.
@@ -167,39 +167,27 @@ Keep the explicit COPY options and descriptor in agreement through a focused tes
 
 The CSV already reflects Airbyte's mapping, coercion, and formatting. Null/missing values and empty fields follow the current formatter; nested values are serialized by that formatter. This archive cannot recover source fields already discarded before the buffer or distinctions already lost in CSV formatting. CDC fields that reach the CSV are copied as ordinary fields.
 
-### Generation-cutoff events
+### Stream completion
 
-For a supported stream with `minimumGenerationId > 0`, write one event per run before the data pipeline starts. Example:
+After the final batch archive is durable and the stream's successful Snowflake teardown returns,
+write `batches/stream_complete.json` once, including for empty streams:
 
 ```json
-{
-  "format_version": 1,
-  "event_type": "generation_cutoff_requested",
-  "event_id": "<uuid>",
-  "organization_id": "00000000-0000-0000-0000-000000000001",
-  "workspace_id": "00000000-0000-0000-0000-000000000002",
-  "source_id": "00000000-0000-0000-0000-000000000003",
-  "connection_id": "00000000-0000-0000-0000-000000000004",
-  "destination_id": "00000000-0000-0000-0000-000000000005",
-  "epoch_seconds": 1789400000,
-  "stream_key": "<sha256>",
-  "stream": {"namespace": "public", "name": "orders"},
-  "mapped_stream": {"namespace": "analytics", "name": "orders"},
-  "generation_id": 42,
-  "minimum_generation_id": 42,
-  "sync_id": 12345,
-  "run_id": "<uuid>",
-  "requested_effect": "discard_records_with_generation_id_less_than_minimum"
-}
+{"job_id": 12345, "min_generation_id": 42}
 ```
 
-Generate the event once and reuse its bytes on request retries. Duplicate events across process attempts are allowed. The cutoff is strictly `< minimum_generation_id`.
+`job_id` is the platform job ID supplied as the configured catalog stream's `syncId`, not the
+random run UUID or attempt ID. Omit `min_generation_id` entirely when `minimumGenerationId` is
+zero. The numeric cutoff is included only when positive. Keep the existing hybrid refresh
+validation (minimum zero or equal to current generation).
 
-Emit from the catalog's directive, not from seeing a new generation number. A new generation with minimum zero does not request discarding older generations. Validate the same generation combinations Snowflake currently supports: minimum zero or minimum equal to current generation. Preserve the existing failure for unsupported hybrid refreshes; do not independently invent broader refresh support.
-
-Name the event `requested` deliberately: writer setup precedes Snowflake's eventual truncate/swap. The event records the instruction even if the sync later fails. Downstream must not interpret it as proof that the final Snowflake table was refreshed successfully. This satisfies the requirement to retain the fact of a delete directive. A future consumer requiring successful-refresh evidence would need an additional completion contract.
-
-Write the event for zero-row streams too. Its upload failure fails setup, preventing even an empty-stream checkpoint from passing before the directive is durable. Do not issue S3 deletes, rewrite previous data files, or emit record-level tombstones by parsing the CSV.
+Schema is written during setup; no `generation-cutoff.json` or `truncate_refresh.json` is emitted.
+Failed/incomplete streams and failed destination finalization do not emit completion. Marker
+upload failure propagates as a sync failure, and retries use the same key and payload. Successful
+markers are retained if another stream or the overall job later fails. The marker signals a
+completed stream, not a successful platform job: consumers wait for that job to succeed and for
+replacement batches to finish indexing before applying generation cleanup. The `batches/`
+location ensures the marker is delivered to the same event listeners as data objects.
 
 ## 6. Implementation structure and execution
 
@@ -218,11 +206,11 @@ These are responsibilities, not a requirement to create one file per row. Keep t
 ### Startup
 
 1. On enabled writes, validate internal configuration and supported generation combinations for the whole catalog.
-2. Run existing Snowflake setup. Before `setup()` returns, call `SnowflakeS3Copy.prepare(catalog)` and await all required descriptor and cutoff writes. Cap metadata request concurrency as well as data uploads.
+2. Run existing Snowflake setup. Before `setup()` returns, call `SnowflakeS3Copy.prepare(catalog)` and await all required descriptor writes. Cap metadata request concurrency as well as data uploads.
 3. Build an immutable context for every stream. Schema descriptors come from the same catalog column schema that the aggregate factory will pass into the buffer.
 4. Begin the existing stream initialization and ingestion lifecycle. There is no per-row archive work.
 
-No separate bucket-listing or write-and-delete access probe is needed: the required metadata writes exercise actual access. If the catalog is empty, resolve the assumed-role credentials but create no synthetic data object; there is no stream data or cutoff to protect.
+No separate bucket-listing or write-and-delete access probe is needed: the required metadata writes exercise actual access. If the catalog is empty, resolve the assumed-role credentials but create no synthetic data object; there is no stream data or completion to publish.
 
 ### Batch flush
 
@@ -268,13 +256,13 @@ Enabled overhead is an additional read of the compressed file, S3 network traffi
 
 | Outcome | State/checkpoint behavior | S3 disposition |
 | --- | --- | --- |
-| Descriptor or cutoff write fails during setup | Fail before ingesting records. | Retain any metadata already written. |
+| Descriptor write fails during setup | Fail before ingesting records. | Retain any metadata already written. |
 | Snowflake succeeds; S3 succeeds | Batch becomes eligible for existing CDK state reconciliation. | Retain the complete object. |
 | Snowflake succeeds; S3 fails | Fail the batch; do not advance state through its records. | Retain any complete object if the response was ambiguous; abort incomplete upload where possible. |
 | S3 succeeds; Snowflake fails | Fail the batch; do not advance state through its records. | Retain the complete object. |
 | Both succeed; process dies before checkpoint emission | Normal replay may repeat the records. | Retain all complete objects from both attempts. |
 | Process dies during upload | No success from that flush. | Incomplete multipart lifecycle handles abandoned parts. |
-| Final Snowflake merge/swap fails after earlier checkpoints | Existing CDK retry semantics apply. | Keep all completed copies; cutoff event remains a requested directive. |
+| Final Snowflake merge/swap fails after earlier checkpoints | Existing CDK retry semantics apply. | Keep all completed copies; completed stream markers remain tied to the platform job outcome. |
 | Refresh or CDC delete arrives | Existing Snowflake behavior applies. | Record the directive/event or existing CSV row; perform no archive deletion. |
 
 Earlier independent checkpoints can still be emitted if all their records satisfy the contract. The guarantee is that a failing or unfinished copy never contributes flushed counts for its batch, not that every checkpoint in every stream stops immediately on the first error.
@@ -330,7 +318,7 @@ Deliverable: an independently testable service that uploads an existing file und
 
 Add versioned descriptors, stable keys, generation events, and immutable stream contexts. Wire preparation into `SnowflakeWriter.setup()` and normal resource close into teardown. Refactor the existing generation validation into a small shared helper if needed so startup and stream-loader selection cannot disagree. Pass context from `SnowflakeAggregateFactory`.
 
-Deliverable: every enabled stream has durable interpretation metadata and any cutoff event before ingestion starts, including empty streams.
+Deliverable: every enabled stream has durable interpretation metadata and a completion marker after successful finalization, including empty streams.
 
 ### Change 3: paired flush and checkpoint proof
 
@@ -352,7 +340,7 @@ The implementation is complete when:
 
 - The exact existing `.csv.gz` bytes are archived for all checkpointed batches in enabled writes, in both input paths and Snowflake output modes.
 - No batch contributes flushed state until both Snowflake and S3 succeed, including the final partial batch.
-- Descriptors and requested generation cutoffs are durable before relevant state can be emitted, including streams with no rows.
+- Descriptors are durable before ingestion. Stream completion markers are durable before successful stream teardown returns, including streams with no rows.
 - Failures propagate, retries remain at least once, and completed S3 data survives failed attempts and refreshes.
 - Long-running writes refresh credentials; cancellation and timeouts do not delete files still in use or leak unbounded transfers.
 - The pure parser supports disabled writes without AWS setup. Non-write commands do not initialize archive AWS clients; the public specification exposes only the five optional temporary routing fields.

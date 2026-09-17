@@ -46,7 +46,7 @@ data class S3CopyConfiguration(
                 env[name]?.takeIf { it.isNotBlank() }
                     ?: error("$name is required when AIRBYTE_S3_COPY_ENABLED=true")
             fun id(name: String, override: String?): UUID {
-                val envName = "AIRBYTE_S3_COPY_${name.uppercase()}_ID"
+                val envName = "AIRBYTE_${name.uppercase()}_ID"
                 val value = override ?: env[envName] ?: return UUID(0, 0)
                 val parsed = runCatching { UUID.fromString(value) }.getOrNull()
                 require(parsed != null && parsed.toString().equals(value, ignoreCase = true)) {

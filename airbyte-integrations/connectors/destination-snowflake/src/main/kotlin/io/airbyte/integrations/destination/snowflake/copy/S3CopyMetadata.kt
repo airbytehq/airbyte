@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.snowflake.copy
 import io.airbyte.cdk.load.command.DestinationStream
 import java.util.UUID
 
-/** Shared run identity for the schema, refresh directive, and S3 batch headers. */
+/** Shared run identity for the schema, completion marker, and S3 batch headers. */
 internal class S3CopyMetadata(config: S3CopyConfiguration, runId: UUID, epochSeconds: Long) {
     private val identity =
         mapOf(
@@ -33,25 +33,12 @@ internal class S3CopyMetadata(config: S3CopyConfiguration, runId: UUID, epochSec
                 "sync_id" to stream.syncId,
             )
 
-    fun cutoff(stream: DestinationStream, key: String): Map<String, Any> =
-        identity +
-            mapOf(
-                "format_version" to 1,
-                "event_type" to "generation_cutoff_requested",
-                "event_id" to UUID.randomUUID(),
-                "stream_key" to key,
-                "stream" to
-                    mapOf("namespace" to stream.unmappedNamespace, "name" to stream.unmappedName),
-                "mapped_stream" to
-                    mapOf(
-                        "namespace" to stream.mappedDescriptor.namespace,
-                        "name" to stream.mappedDescriptor.name
-                    ),
-                "generation_id" to stream.generationId,
-                "minimum_generation_id" to stream.minimumGenerationId,
-                "sync_id" to stream.syncId,
-                "requested_effect" to "discard_records_with_generation_id_less_than_minimum",
-            )
+    /** The catalog sync ID is populated from the platform job ID. */
+    fun streamComplete(stream: DestinationStream): Map<String, Any> =
+        mapOf<String, Any>("job_id" to stream.syncId) +
+            if (stream.minimumGenerationId > 0)
+                mapOf("min_generation_id" to stream.minimumGenerationId)
+            else emptyMap()
 
     fun batch(context: CsvCopyContext, recordCount: Int, batchId: UUID): Map<String, String> =
         identity.map { (key, value) -> key.replace('_', '-') to value.toString() }.toMap() +
