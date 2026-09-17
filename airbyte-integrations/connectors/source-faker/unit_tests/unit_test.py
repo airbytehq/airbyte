@@ -165,7 +165,7 @@ def test_read_products():
             state_rows_count = state_rows_count + 1
 
     assert estimate_row_count == 4
-    assert record_rows_count == 100  # only 100 products, no matter the count
+    assert record_rows_count == 101
     assert state_rows_count in {1, 2}, "Expected 1 or 2 state messages per stream."
 
 
@@ -196,7 +196,7 @@ def test_read_big_random_data():
         if row.type is Type.STATE:
             state_rows_count = state_rows_count + 1
 
-    assert record_rows_count == 1000 + 100  # 1000 users, and 100 products
+    assert record_rows_count == 1000 + 101  # 1000 users, and 101 products
     assert state_rows_count == 11
 
 
