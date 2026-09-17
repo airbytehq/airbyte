@@ -169,6 +169,48 @@ class BigQuerySourceReadTest {
         )
     }
 
+    /**
+     * `max_db_connections` above 1 lets the toolkit read partitions concurrently, and a
+     * `job_project_id` (the emulator's only project) exercises the fully qualified table
+     * references; the output must not change.
+     */
+    @Test
+    fun testFullRefreshWithConcurrentQueriesAndJobProject() {
+        val concurrent: BigQuerySourceConfigurationSpecification =
+            BigQueryEmulatorTestFixture.config(
+                datasetId = BigQueryEmulatorTestFixture.DATASET,
+                jobProjectId = BigQueryEmulatorTestFixture.PROJECT_ID,
+                maxDbConnections = 3,
+            )
+        val catalog: AirbyteCatalog = discover()
+        val configured =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        configured(catalog.stream("all_types"), SyncMode.FULL_REFRESH),
+                        configured(catalog.stream("with_pk"), SyncMode.FULL_REFRESH),
+                        configured(catalog.stream("all_types_view"), SyncMode.FULL_REFRESH),
+                    )
+                )
+        val output: BufferingOutputConsumer = CliRunner.source("read", concurrent, configured).run()
+
+        Assertions.assertEquals(
+            mapOf("all_types" to 2, "with_pk" to 3, "all_types_view" to 2),
+            output.recordsByStream().mapValues { it.value.size },
+            output.dump(),
+        )
+        for (stream in listOf("all_types", "with_pk", "all_types_view")) {
+            Assertions.assertEquals(
+                listOf(
+                    AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED,
+                    AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE,
+                ),
+                output.statuses(stream),
+                "statuses of $stream\n" + output.dump(),
+            )
+        }
+    }
+
     @Test
     fun testIncrementalThenResume() {
         val catalog: AirbyteCatalog = discover()

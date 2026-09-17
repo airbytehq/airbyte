@@ -20,6 +20,31 @@ class BigQuerySourceCheckTest {
         SyncsTestFixture.testCheck(BigQueryEmulatorTestFixture.config())
     }
 
+    /**
+     * The optional properties: the emulator hosts a single project, so it is also the job project.
+     */
+    @Test
+    fun testCheckSucceedsWithJobProjectAndConcurrency() {
+        SyncsTestFixture.testCheck(
+            BigQueryEmulatorTestFixture.config(
+                datasetId = BigQueryEmulatorTestFixture.DATASET,
+                jobProjectId = BigQueryEmulatorTestFixture.PROJECT_ID,
+                maxDbConnections = 4,
+            )
+        )
+    }
+
+    @Test
+    fun testCheckFailsWithInvalidConcurrency() {
+        SyncsTestFixture.testCheck(
+            BigQueryEmulatorTestFixture.config(
+                datasetId = BigQueryEmulatorTestFixture.DATASET,
+                maxDbConnections = 0
+            ),
+            expectedFailure = "'max_db_connections' must be a positive integer",
+        )
+    }
+
     @Test
     fun testCheckFailsWithUnknownDataset() {
         SyncsTestFixture.testCheck(

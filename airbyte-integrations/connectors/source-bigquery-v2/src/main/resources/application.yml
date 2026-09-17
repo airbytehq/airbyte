@@ -54,6 +54,17 @@ airbyte:
               com.google.cloud.bigquery.BigQueryException: Project my-project is not found. Make sure it references
               valid GCP project that hasn't been deleted.; Project id: my-project
             error: config
+          - pattern: "(?i).*Cannot parse .* as CloudRegion.*"
+            # Google's JDBC driver 1.4.0 fails like this when the project it runs the jobs in (its
+            # ProjectId: 'job_project_id', or 'project_id' when unset) does not exist or is not
+            # accessible with the service account. Captured from the real service on 2026-09-17.
+            input-example: >-
+              com.google.cloud.bigquery.exception.BigQueryJdbcRuntimeException: BigQueryException during runQuery
+              Cannot parse  as CloudRegion.
+            output: >-
+              The project that runs the query jobs ('job_project_id', or 'project_id' when it is not set)
+              was not found, or the service account cannot access it.
+            error: config
           - pattern: "(?i).*No valid credentials provided.*"
             # The JDBC driver's message when the private key cannot be parsed (captured 2026-09-14).
             input-example: >-

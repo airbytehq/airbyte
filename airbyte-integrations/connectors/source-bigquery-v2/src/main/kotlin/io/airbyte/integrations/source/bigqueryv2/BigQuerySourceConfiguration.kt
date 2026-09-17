@@ -38,6 +38,12 @@ data class BigQuerySourceConfiguration(
     /** Configured `dataset_id`, or null to discover every dataset of the project. */
     val datasetId: String?,
     /**
+     * The project in which the query jobs run and are billed: the configured `job_project_id`, or
+     * [projectId] when unset. Tables are always referenced as `project.dataset.table`, so the data
+     * project and the job project may differ.
+     */
+    val jobProjectId: String,
+    /**
      * Base URL of a BigQuery API emulator (e.g. `http://localhost:9050`), or null to use the real
      * service. Test-only, see [BigQueryEmulator].
      */
@@ -72,7 +78,7 @@ data class BigQuerySourceConfiguration(
     /** Keeps the credentials out of logs. */
     override fun toString(): String =
         "BigQuerySourceConfiguration(projectId=$projectId, datasetId=$datasetId, " +
-            "emulatorHost=$emulatorHost, jdbcUrlFmt=$jdbcUrlFmt, " +
+            "jobProjectId=$jobProjectId, emulatorHost=$emulatorHost, jdbcUrlFmt=$jdbcUrlFmt, " +
             "jdbcProperties=${jdbcProperties.keys}, maxConcurrency=$maxConcurrency, " +
             "checkpointTargetInterval=$checkpointTargetInterval)"
 
@@ -119,19 +125,34 @@ constructor(
             pojo.credentialsJsonOrNull()?.trim()?.takeIf { it.isNotEmpty() }
                 ?: throw ConfigErrorException("Missing required 'credentials_json' property.")
         val datasetId: String? = pojo.datasetId?.trim()?.takeIf { it.isNotEmpty() }
+        val jobProjectId: String =
+            pojo.jobProjectId?.trim()?.takeIf { it.isNotEmpty() } ?: projectId
         val emulatorHost: String? = BigQueryEmulator.hostOrNull()
         val serviceAccountKey: ServiceAccountKey? =
             if (emulatorHost == null) parseServiceAccountKey(credentialsJson) else null
 
+        val maxDbConnections: Int? = pojo.maxDbConnections
+        if (maxDbConnections != null && maxDbConnections <= 0) {
+            throw ConfigErrorException(
+                "'max_db_connections' must be a positive integer, got $maxDbConnections."
+            )
+        }
+        // 'max_db_connections' always wins. Otherwise one query at a time on STDIO, and one query
+        // per socket in speed mode, like the other Bulk CDK sources.
         val maxConcurrency: Int =
             when (DataChannelMedium.valueOf(dataChannelMedium)) {
-                STDIO -> 1
-                SOCKET -> socketPaths.size.coerceAtLeast(1)
+                STDIO -> maxDbConnections ?: 1
+                SOCKET -> maxDbConnections ?: socketPaths.size.coerceAtLeast(1)
             }
-        log.info { "Effective concurrency: $maxConcurrency" }
+        log.info {
+            "Effective concurrency: $maxConcurrency (max_db_connections: $maxDbConnections, " +
+                "data channel: $dataChannelMedium, sockets: ${socketPaths.size})"
+        }
 
-        // The URL is logged by the CDK; secrets go into the JDBC properties instead.
-        val jdbcProperties: MutableMap<String, String> = mutableMapOf("ProjectId" to projectId)
+        // The URL is logged by the CDK; secrets go into the JDBC properties instead. The driver's
+        // ProjectId is the project that runs (and is billed for) the query jobs; the data project
+        // only appears in the fully qualified table references of the generated SQL.
+        val jdbcProperties: MutableMap<String, String> = mutableMapOf("ProjectId" to jobProjectId)
         val jdbcUrlFmt: String
         val realHost: String
         if (serviceAccountKey != null) {
@@ -141,14 +162,14 @@ constructor(
             // (verified against driver 1.4.0).
             jdbcUrlFmt =
                 "jdbc:bigquery://${BigQuerySourceConfiguration.BIGQUERY_API_URL};" +
-                    "ProjectId=$projectId;OAuthType=0"
+                    "ProjectId=$jobProjectId;OAuthType=0"
             jdbcProperties[JDBC_SERVICE_ACCOUNT_EMAIL] = serviceAccountKey.clientEmail
             jdbcProperties[JDBC_PRIVATE_KEY] = serviceAccountKey.privateKey
             realHost = BigQuerySourceConfiguration.BIGQUERY_API_HOST
         } else {
             // OAuthType 2: pre-generated token; the emulator does not authenticate requests.
             log.warn { "Connecting to the BigQuery emulator at $emulatorHost." }
-            jdbcUrlFmt = "jdbc:bigquery://$emulatorHost;ProjectId=$projectId;OAuthType=2"
+            jdbcUrlFmt = "jdbc:bigquery://$emulatorHost;ProjectId=$jobProjectId;OAuthType=2"
             jdbcProperties["OAuthAccessToken"] = BigQueryEmulator.DUMMY_ACCESS_TOKEN
             jdbcProperties["EndpointOverrides"] = "BIGQUERY=$emulatorHost"
             realHost = BigQuerySourceConfiguration.BIGQUERY_API_HOST
@@ -157,6 +178,7 @@ constructor(
             projectId = projectId,
             credentialsJson = credentialsJson,
             datasetId = datasetId,
+            jobProjectId = jobProjectId,
             emulatorHost = emulatorHost,
             jdbcUrlFmt = jdbcUrlFmt.replace("%", "%%"),
             jdbcProperties = jdbcProperties,

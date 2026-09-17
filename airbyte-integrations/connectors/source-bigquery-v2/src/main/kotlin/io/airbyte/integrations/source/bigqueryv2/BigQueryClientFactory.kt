@@ -14,6 +14,9 @@ import java.io.IOException
  * JDBC connection. The JDBC driver's `DatabaseMetaData` flattens STRUCT and ARRAY columns to a
  * single `STRUCT`/`ARRAY` type name; the native `tables.get` response carries the nested fields and
  * the primary key constraints.
+ *
+ * The client's default project is the job project (any job the client runs is billed there); the
+ * metadata calls always name the data project explicitly.
  */
 object BigQueryClientFactory {
     const val USER_AGENT = "airbyte/source-bigquery-v2 (GPN: Airbyte)"
@@ -21,7 +24,7 @@ object BigQueryClientFactory {
     fun create(config: BigQuerySourceConfiguration): BigQuery {
         val builder: BigQueryOptions.Builder =
             BigQueryOptions.newBuilder()
-                .setProjectId(config.projectId)
+                .setProjectId(config.jobProjectId)
                 .setHeaderProvider(FixedHeaderProvider.create("user-agent", USER_AGENT))
         if (config.emulatorHost != null) {
             builder.setHost(config.emulatorHost).setCredentials(NoCredentials.getInstance())

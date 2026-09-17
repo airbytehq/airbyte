@@ -3,6 +3,7 @@ package io.airbyte.integrations.source.bigqueryv2
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.command.SourceConfiguration
@@ -49,6 +50,7 @@ import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Inject
+import jakarta.inject.Provider
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
 
@@ -56,21 +58,42 @@ import java.time.OffsetDateTime
  * BigQuery flavour of the `extract-jdbc` toolkit hooks:
  * - [JdbcMetadataQuerier.FieldTypeMapper] for column metadata coming from the JDBC driver (the
  * discovery path uses [BigQueryFieldTypes.fromField] on the native table schema instead);
- * - [SelectQueryGenerator] rendering GoogleSQL: backtick-quoted identifiers, `dataset.table`
- * references relative to the connection's project, literal `LIMIT`, `TABLESAMPLE SYSTEM`;
+ * - [SelectQueryGenerator] rendering GoogleSQL: backtick-quoted identifiers, fully qualified
+ * `project.dataset.table` references (the connection's project is the job project, which may differ
+ * from the data project), literal `LIMIT`, `TABLESAMPLE SYSTEM`;
  * - [JdbcAirbyteStreamFactory], which additionally renders the nested JSON schema of `STRUCT` and
  * `ARRAY` columns.
  */
 @Singleton
 @Primary
 class BigQuerySourceOperations
-@Inject
-constructor(
+private constructor(
     private val tableTypes: BigQueryTableTypes,
+    /**
+     * The project owning the datasets, from [BigQuerySourceConfiguration.projectId]. Resolved
+     * lazily: this bean is wired into the CHECK and DISCOVER operations before the configuration is
+     * validated, and an invalid configuration must fail inside the operation, not at wiring time.
+     */
+    private val dataProjectId: () -> String,
 ) : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator, JdbcAirbyteStreamFactory {
 
-    /** For tests: every stream is assumed to be a table. */
-    constructor() : this(BigQueryTableTypes())
+    @Inject
+    constructor(
+        tableTypes: BigQueryTableTypes,
+        configProvider: Provider<SourceConfiguration>,
+    ) : this(
+        tableTypes,
+        {
+            (configProvider.get() as? BigQuerySourceConfiguration)?.projectId
+                ?: throw ConfigErrorException("Missing required 'project_id' property.")
+        },
+    )
+
+    /** For tests: every stream is assumed to be a table of [dataProjectId]. */
+    constructor(
+        dataProjectId: String,
+        tableTypes: BigQueryTableTypes = BigQueryTableTypes(),
+    ) : this(tableTypes, { dataProjectId })
 
     override val globalCursor: MetaField? = null
 
@@ -234,11 +257,15 @@ constructor(
         return
     }
 
-    companion object {
-        /** `dataset.table`, relative to the connection's project. */
-        fun tableReference(name: String, namespace: String?): String =
-            if (namespace == null) name.quoted() else "${namespace.quoted()}.${name.quoted()}"
+    /**
+     * `project.dataset.table`: the data project is always spelled out because the connection's
+     * `ProjectId` is the job project, in which unqualified names would be resolved.
+     */
+    fun tableReference(name: String, namespace: String?): String =
+        if (namespace == null) name.quoted()
+        else "${dataProjectId().quoted()}.${namespace.quoted()}.${name.quoted()}"
 
+    companion object {
         /** Backtick quoting; a backtick inside an identifier is escaped with a backslash. */
         fun String.quoted(): String = "`" + replace("\\", "\\\\").replace("`", "\\`") + "`"
     }

@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test
 
 class BigQuerySelectQueryGeneratorTest {
 
-    private val generator = BigQuerySourceOperations()
+    private val generator = BigQuerySourceOperations(dataProjectId = "my-project")
     private val id = EmittedField("id", LongFieldType)
     private val name = EmittedField("name", StringFieldType)
     private val updatedAt = EmittedField("updated_at", OffsetDateTimeFieldType)
@@ -46,7 +46,7 @@ class BigQuerySelectQueryGeneratorTest {
             )
         Assertions.assertEquals(
             "SELECT `id`, CAST(`day` AS STRING) AS `day`, CAST(`local_ts` AS STRING) AS `local_ts`, " +
-                "CAST(`tod` AS STRING) AS `tod`, `updated_at` FROM `sales`.`orders` " +
+                "CAST(`tod` AS STRING) AS `tod`, `updated_at` FROM `my-project`.`sales`.`orders` " +
                 "WHERE `day` > ? ORDER BY `day`",
             query.sql,
         )
@@ -54,7 +54,10 @@ class BigQuerySelectQueryGeneratorTest {
             generator.generate(
                 SelectQuerySpec(SelectColumnMaxValue(tod), From("orders", "sales")).optimize()
             )
-        Assertions.assertEquals("SELECT CAST(MAX(`tod`) AS STRING) FROM `sales`.`orders`", max.sql)
+        Assertions.assertEquals(
+            "SELECT CAST(MAX(`tod`) AS STRING) FROM `my-project`.`sales`.`orders`",
+            max.sql
+        )
     }
 
     @Test
@@ -71,7 +74,7 @@ class BigQuerySelectQueryGeneratorTest {
                     .optimize()
             )
         Assertions.assertEquals(
-            "SELECT `id`, TO_JSON_STRING(`address`) AS `address`, TO_JSON_STRING(`tags`) AS `tags` FROM `sales`.`orders`",
+            "SELECT `id`, TO_JSON_STRING(`address`) AS `address`, TO_JSON_STRING(`tags`) AS `tags` FROM `my-project`.`sales`.`orders`",
             query.sql,
         )
     }
@@ -83,7 +86,10 @@ class BigQuerySelectQueryGeneratorTest {
                 SelectQuerySpec(SelectColumns(id, name), From("orders", "sales"), limit = Limit(0))
                     .optimize()
             )
-        Assertions.assertEquals("SELECT `id`, `name` FROM `sales`.`orders` LIMIT 0", query.sql)
+        Assertions.assertEquals(
+            "SELECT `id`, `name` FROM `my-project`.`sales`.`orders` LIMIT 0",
+            query.sql
+        )
         Assertions.assertEquals(emptyList<SelectQuery.Binding>(), query.bindings)
         Assertions.assertEquals(listOf(id, name), query.columns)
     }
@@ -100,7 +106,7 @@ class BigQuerySelectQueryGeneratorTest {
                 )
             )
         Assertions.assertEquals(
-            "SELECT `id` FROM `sales`.`orders` ORDER BY `id` LIMIT 1000",
+            "SELECT `id` FROM `my-project`.`sales`.`orders` ORDER BY `id` LIMIT 1000",
             query.sql,
         )
         Assertions.assertEquals(emptyList<SelectQuery.Binding>(), query.bindings)
@@ -124,7 +130,7 @@ class BigQuerySelectQueryGeneratorTest {
                 )
             )
         Assertions.assertEquals(
-            "SELECT `id`, `updated_at` FROM `sales`.`orders` WHERE (`id` > ?) AND (`updated_at` <= ?) ORDER BY `id` LIMIT 10",
+            "SELECT `id`, `updated_at` FROM `my-project`.`sales`.`orders` WHERE (`id` > ?) AND (`updated_at` <= ?) ORDER BY `id` LIMIT 10",
             query.sql,
         )
         Assertions.assertEquals(
@@ -145,7 +151,10 @@ class BigQuerySelectQueryGeneratorTest {
             generator.generate(
                 SelectQuerySpec(SelectColumnMaxValue(updatedAt), From("orders", "sales"))
             )
-        Assertions.assertEquals("SELECT MAX(`updated_at`) FROM `sales`.`orders`", query.sql)
+        Assertions.assertEquals(
+            "SELECT MAX(`updated_at`) FROM `my-project`.`sales`.`orders`",
+            query.sql
+        )
     }
 
     @Test
@@ -158,7 +167,7 @@ class BigQuerySelectQueryGeneratorTest {
                 )
             )
         Assertions.assertEquals(
-            "SELECT `id`, `name` FROM (SELECT * FROM `sales`.`orders` TABLESAMPLE SYSTEM (0.39062500 PERCENT) LIMIT 1024)",
+            "SELECT `id`, `name` FROM (SELECT * FROM `my-project`.`sales`.`orders` TABLESAMPLE SYSTEM (0.39062500 PERCENT) LIMIT 1024)",
             query.sql,
         )
         val unsampled: SelectQuery =
@@ -175,7 +184,7 @@ class BigQuerySelectQueryGeneratorTest {
                 )
             )
         Assertions.assertEquals(
-            "SELECT `id` FROM (SELECT * FROM `sales`.`orders` WHERE `id` > ? LIMIT 1024)",
+            "SELECT `id` FROM (SELECT * FROM `my-project`.`sales`.`orders` WHERE `id` > ? LIMIT 1024)",
             unsampled.sql,
         )
         Assertions.assertEquals(1, unsampled.bindings.size)
@@ -186,6 +195,11 @@ class BigQuerySelectQueryGeneratorTest {
         val weird = EmittedField("we`ird", StringFieldType)
         val query: SelectQuery =
             generator.generate(SelectQuerySpec(SelectColumns(weird), From("t-1", "my dataset")))
-        Assertions.assertEquals("SELECT `we\\`ird` FROM `my dataset`.`t-1`", query.sql)
+        Assertions.assertEquals("SELECT `we\\`ird` FROM `my-project`.`my dataset`.`t-1`", query.sql)
+        val otherProject = BigQuerySourceOperations(dataProjectId = "data`project")
+        Assertions.assertEquals(
+            "SELECT `id` FROM `data\\`project`.`sales`.`orders`",
+            otherProject.generate(SelectQuerySpec(SelectColumns(id), From("orders", "sales"))).sql,
+        )
     }
 }

@@ -4,8 +4,12 @@
 `cdkVersion=1.1.11`) rewrite of the legacy `source-bigquery` connector (0.4.5, old Java CDK, native
 `google-cloud-bigquery` client). It connects through Google's Apache-2.0 JDBC driver
 (`com.google.cloud:google-cloud-bigquery-jdbc:1.4.0`) and discovers schemas through the native
-`google-cloud-bigquery` 2.67.0 client built from the same credentials. The legacy connector is the
-parity oracle for `spec`, `check` and `discover`; saved configurations must keep working unchanged.
+`google-cloud-bigquery` 2.71.0 client built from the same credentials. The legacy connector is the
+parity oracle for `check` and `discover`. Its `spec` properties (`project_id`, `dataset_id`,
+`credentials_json`) and `required` list are kept so that saved configurations keep working, but the
+spec is laid out like `destination-bigquery`'s (`connection`/`advanced` groups, ordered properties,
+titles and descriptions with links) and adds two optional advanced properties: `job_project_id` and
+the standard `max_db_connections`.
 
 Stages 1 (`spec` + `check`), 2 (`discover`), 3 (first `read`, stream statuses) and 4 (`read`:
 full refresh, cursor-based incremental with resume, legacy state translation, speed mode over Unix
@@ -43,17 +47,29 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-bigquery-v2:dev check   
 docker run --rm -v $PWD/secrets:/secrets airbyte/source-bigquery-v2:dev discover --config /secrets/config.json
 ```
 
-`secrets/config.json` is git-ignored. The properties are the legacy ones; `credentials_json` is the
-**contents** of a service account key file as a JSON string (escaped), and `dataset_id` is optional
-(omit it to discover every dataset of the project):
+`secrets/config.json` is git-ignored. `credentials_json` is the **contents** of a service account
+key file as a JSON string (escaped); `dataset_id` is optional (omit it to discover every dataset of
+the project), and so are the two advanced properties:
 
 ```json
 {
   "project_id": "my-gcp-project",
   "dataset_id": "my_dataset",
-  "credentials_json": "{\"type\":\"service_account\",\"project_id\":\"my-gcp-project\",\"private_key_id\":\"...\",\"private_key\":\"-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n\",\"client_email\":\"airbyte@my-gcp-project.iam.gserviceaccount.com\",\"client_id\":\"...\",\"token_uri\":\"https://oauth2.googleapis.com/token\"}"
+  "credentials_json": "{\"type\":\"service_account\",\"project_id\":\"my-gcp-project\",\"private_key_id\":\"...\",\"private_key\":\"-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n\",\"client_email\":\"airbyte@my-gcp-project.iam.gserviceaccount.com\",\"client_id\":\"...\",\"token_uri\":\"https://oauth2.googleapis.com/token\"}",
+  "job_project_id": "my-billing-project",
+  "max_db_connections": 4
 }
 ```
+
+- `job_project_id` ("Job Execution Project ID"): the project that runs, and is billed for, the query
+  jobs; defaults to `project_id`. It becomes the JDBC driver's `ProjectId` and the native client's
+  default project, while every generated query references tables as
+  `` `project_id`.`dataset`.`table` `` and every metadata call names `project_id` explicitly. The
+  service account needs the BigQuery Job User role on the job project and data access on the data
+  project.
+- `max_db_connections` ("Max Concurrent Queries to Database"): caps the number of BigQuery query
+  jobs running at the same time (`maxConcurrency` of the Bulk CDK, one job per partition reader).
+  When unset the connector runs one query at a time on STDIO and one per socket in speed mode.
 
 The key must be a service account key (`"type": "service_account"` with `client_email` and a
 PEM-encoded PKCS#8 `private_key`); anything else fails fast in `BigQuerySourceConfigurationFactory`
@@ -93,9 +109,9 @@ connected to a socket.
 
 What is connector-specific:
 
-- **Concurrency**: `BigQuerySourceConfigurationFactory` sets `maxConcurrency` to 1 on `STDIO` and
-  to the number of socket paths on `SOCKET` (the spec has no concurrency property, for parity with
-  the legacy `spec.json`), so every socket is fed by one BigQuery query at a time.
+- **Concurrency**: `BigQuerySourceConfigurationFactory` sets `maxConcurrency` to `max_db_connections`
+  when the user set it, otherwise to 1 on `STDIO` and to the number of socket paths on `SOCKET`, so
+  that by default every socket is fed by one BigQuery query at a time.
 - **Protobuf values**: the CDK encodes each native column value by the field's Airbyte type. The
   `extract-jdbc` scalar types and the text-parsed `BigQueryDateFieldType`/`BigQueryDateTimeFieldType`/
   `BigQueryTimeFieldType` (`LocalDate`/`LocalDateTime`/`LocalTime`, so dates before 1582 and

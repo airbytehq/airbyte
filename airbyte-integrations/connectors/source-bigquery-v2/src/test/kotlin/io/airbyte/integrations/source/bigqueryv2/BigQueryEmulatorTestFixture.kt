@@ -77,10 +77,14 @@ object BigQueryEmulatorTestFixture {
         projectId: String = PROJECT_ID,
         datasetId: String? = null,
         credentialsJson: String? = DUMMY_CREDENTIALS_JSON,
+        jobProjectId: String? = null,
+        maxDbConnections: Int? = null,
     ): BigQuerySourceConfigurationSpecification {
         val node = Jsons.objectNode().put("project_id", projectId)
         datasetId?.let { node.put("dataset_id", it) }
         credentialsJson?.let { node.put("credentials_json", it) }
+        jobProjectId?.let { node.put("job_project_id", it) }
+        maxDbConnections?.let { node.put("max_db_connections", it) }
         return Jsons.readValue(
             Jsons.writeValueAsString(node),
             BigQuerySourceConfigurationSpecification::class.java,

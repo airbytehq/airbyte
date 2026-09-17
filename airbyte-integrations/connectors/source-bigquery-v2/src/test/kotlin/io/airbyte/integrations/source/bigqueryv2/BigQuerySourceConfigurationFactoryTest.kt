@@ -26,11 +26,15 @@ class BigQuerySourceConfigurationFactoryTest {
         projectId: String? = "my-project",
         datasetId: String? = null,
         credentialsJson: String? = SERVICE_ACCOUNT_KEY,
+        jobProjectId: String? = null,
+        maxDbConnections: Int? = null,
     ): String {
         val node = Jsons.objectNode()
         projectId?.let { node.put("project_id", it) }
         datasetId?.let { node.put("dataset_id", it) }
         credentialsJson?.let { node.put("credentials_json", it) }
+        jobProjectId?.let { node.put("job_project_id", it) }
+        maxDbConnections?.let { node.put("max_db_connections", it) }
         return Jsons.writeValueAsString(node)
     }
 
@@ -40,6 +44,8 @@ class BigQuerySourceConfigurationFactoryTest {
         Assertions.assertEquals("my-project", config.projectId)
         Assertions.assertNull(config.datasetId)
         Assertions.assertEquals(emptySet<String>(), config.namespaces)
+        // Jobs run in the data project unless 'job_project_id' says otherwise.
+        Assertions.assertEquals("my-project", config.jobProjectId)
         Assertions.assertNull(config.emulatorHost)
         Assertions.assertEquals(SERVICE_ACCOUNT_KEY, config.credentialsJson)
         Assertions.assertEquals(
@@ -84,6 +90,73 @@ class BigQuerySourceConfigurationFactoryTest {
                 socketPaths = emptyList()
             )
         Assertions.assertEquals(1, noSockets.makeWithoutExceptionHandling(spec).maxConcurrency)
+    }
+
+    @Test
+    fun testMaxDbConnectionsOverridesTheDefaultConcurrency() {
+        val stdio =
+            BigQuerySourceConfigurationFactory(
+                dataChannelMedium = "STDIO",
+                socketPaths = emptyList()
+            )
+        Assertions.assertEquals(
+            4,
+            stdio
+                .makeWithoutExceptionHandling(parse(configJson(maxDbConnections = 4)))
+                .maxConcurrency,
+        )
+        val sockets =
+            BigQuerySourceConfigurationFactory(
+                dataChannelMedium = "SOCKET",
+                socketPaths = listOf("/tmp/s1.sock", "/tmp/s2.sock", "/tmp/s3.sock"),
+            )
+        Assertions.assertEquals(
+            2,
+            sockets
+                .makeWithoutExceptionHandling(parse(configJson(maxDbConnections = 2)))
+                .maxConcurrency,
+        )
+        Assertions.assertEquals(
+            5,
+            sockets
+                .makeWithoutExceptionHandling(parse(configJson(maxDbConnections = 5)))
+                .maxConcurrency,
+        )
+    }
+
+    @Test
+    fun testMaxDbConnectionsMustBePositive() {
+        for (bad in listOf(0, -1)) {
+            val e =
+                Assertions.assertThrows(ConfigErrorException::class.java) {
+                    make(configJson(maxDbConnections = bad))
+                }
+            Assertions.assertEquals(
+                "'max_db_connections' must be a positive integer, got $bad.",
+                e.message
+            )
+        }
+    }
+
+    @Test
+    fun testJobProjectRunsTheJobsWhileTheDataProjectOwnsTheTables() {
+        val config: BigQuerySourceConfiguration =
+            make(configJson(jobProjectId = " billing-project "))
+        Assertions.assertEquals("my-project", config.projectId)
+        Assertions.assertEquals("billing-project", config.jobProjectId)
+        Assertions.assertEquals(
+            "jdbc:bigquery://https://www.googleapis.com/bigquery/v2:443;ProjectId=billing-project;OAuthType=0",
+            String.format(config.jdbcUrlFmt, config.realHost, config.realPort),
+        )
+        Assertions.assertEquals("billing-project", config.jdbcProperties["ProjectId"])
+        Assertions.assertTrue(config.toString().contains("jobProjectId=billing-project"))
+    }
+
+    @Test
+    fun testBlankJobProjectMeansTheDataProject() {
+        val config: BigQuerySourceConfiguration = make(configJson(jobProjectId = "  "))
+        Assertions.assertEquals("my-project", config.jobProjectId)
+        Assertions.assertEquals("my-project", config.jdbcProperties["ProjectId"])
     }
 
     @Test
