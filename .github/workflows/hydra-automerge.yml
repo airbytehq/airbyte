@@ -468,7 +468,7 @@ jobs:
               fi
             done
             if [[ "$scope_matched" == "false" ]]; then
-              echo ":x: **Not auto-mergeable: this PR changes connector behavior.** Auto-merge only covers docs-only, comment-only, dependency-bump, metadata-only, or net-new-stream changes, so a human needs to review and merge this one."
+              echo ":x: **Not auto-mergeable:** this PR changes connector behavior, which is beyond the low-risk changes eligible for auto-merge. A human needs to review and merge it."
             fi
             if [[ -n "$footer_note" ]]; then
               echo ""
