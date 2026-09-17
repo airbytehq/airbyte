@@ -143,7 +143,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesArrayContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ChannelMessagesAnyCondition"></a>
@@ -242,10 +242,24 @@ Classes
     `username: Any`
     :   Display name stamped on the message by incoming webhooks and legacy bot posts; absent on ordinary user messages and on most modern app messages, which carry bot_profile instead.
 
+<a id="ChannelMessagesArrayContainsCondition"></a>
+
+`ChannelMessagesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ChannelMessagesContainsCondition"></a>
 
 `ChannelMessagesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -526,7 +540,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesArrayContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ChannelMessagesOrCondition"></a>
@@ -548,7 +562,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesArrayContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ChannelMessagesSearchFilter"></a>
@@ -636,7 +650,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesArrayContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.slack.types.ChannelMessagesSortFilter]`
@@ -857,7 +871,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.slack.types.ChannelsEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.slack.types.ChannelsEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsArrayContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ChannelsAnyCondition"></a>
@@ -986,10 +1000,24 @@ Classes
     `updated: Any`
     :   The timestamp when the channel was last updated.
 
+<a id="ChannelsArrayContainsCondition"></a>
+
+`ChannelsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.slack.types.ChannelsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ChannelsContainsCondition"></a>
 
 `ChannelsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1325,7 +1353,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.slack.types.ChannelsEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.slack.types.ChannelsEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsArrayContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ChannelsOrCondition"></a>
@@ -1347,7 +1375,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.slack.types.ChannelsEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.slack.types.ChannelsEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsArrayContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ChannelsSearchFilter"></a>
@@ -1465,7 +1493,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.slack.types.ChannelsEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.slack.types.ChannelsEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsArrayContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.slack.types.ChannelsSortFilter]`
@@ -1928,7 +1956,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.slack.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsInCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.slack.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsInCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsArrayContainsCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ThreadsAnyCondition"></a>
@@ -2018,10 +2046,24 @@ Classes
     `user: Any`
     :   User ID who sent the message.
 
+<a id="ThreadsArrayContainsCondition"></a>
+
+`ThreadsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.slack.types.ThreadsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ThreadsContainsCondition"></a>
 
 `ThreadsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2296,7 +2338,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.slack.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsInCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.slack.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsInCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsArrayContainsCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ThreadsOrCondition"></a>
@@ -2318,7 +2360,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.slack.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsInCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.slack.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsInCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsArrayContainsCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ThreadsSearchFilter"></a>
@@ -2397,7 +2439,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.slack.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsInCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.slack.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsInCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsStartswithCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsEndswithCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsArrayContainsCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.slack.types.ThreadsSortFilter]`
@@ -2566,7 +2608,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.slack.types.UsersEqCondition | airbyte_agent_sdk.connectors.slack.types.UsersNeqCondition | airbyte_agent_sdk.connectors.slack.types.UsersGtCondition | airbyte_agent_sdk.connectors.slack.types.UsersGteCondition | airbyte_agent_sdk.connectors.slack.types.UsersLtCondition | airbyte_agent_sdk.connectors.slack.types.UsersLteCondition | airbyte_agent_sdk.connectors.slack.types.UsersInCondition | airbyte_agent_sdk.connectors.slack.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.slack.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.slack.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.slack.types.UsersContainsCondition | airbyte_agent_sdk.connectors.slack.types.UsersNotCondition | airbyte_agent_sdk.connectors.slack.types.UsersAndCondition | airbyte_agent_sdk.connectors.slack.types.UsersOrCondition | airbyte_agent_sdk.connectors.slack.types.UsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.slack.types.UsersEqCondition | airbyte_agent_sdk.connectors.slack.types.UsersNeqCondition | airbyte_agent_sdk.connectors.slack.types.UsersGtCondition | airbyte_agent_sdk.connectors.slack.types.UsersGteCondition | airbyte_agent_sdk.connectors.slack.types.UsersLtCondition | airbyte_agent_sdk.connectors.slack.types.UsersLteCondition | airbyte_agent_sdk.connectors.slack.types.UsersInCondition | airbyte_agent_sdk.connectors.slack.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.slack.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.slack.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.slack.types.UsersContainsCondition | airbyte_agent_sdk.connectors.slack.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.slack.types.UsersNotCondition | airbyte_agent_sdk.connectors.slack.types.UsersAndCondition | airbyte_agent_sdk.connectors.slack.types.UsersOrCondition | airbyte_agent_sdk.connectors.slack.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersAnyCondition"></a>
@@ -2671,10 +2713,24 @@ Classes
     `who_can_share_contact_card: Any`
     :   Specifies who can share the user's contact card.
 
+<a id="UsersArrayContainsCondition"></a>
+
+`UsersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.slack.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="UsersContainsCondition"></a>
 
 `UsersContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2963,7 +3019,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.slack.types.UsersEqCondition | airbyte_agent_sdk.connectors.slack.types.UsersNeqCondition | airbyte_agent_sdk.connectors.slack.types.UsersGtCondition | airbyte_agent_sdk.connectors.slack.types.UsersGteCondition | airbyte_agent_sdk.connectors.slack.types.UsersLtCondition | airbyte_agent_sdk.connectors.slack.types.UsersLteCondition | airbyte_agent_sdk.connectors.slack.types.UsersInCondition | airbyte_agent_sdk.connectors.slack.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.slack.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.slack.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.slack.types.UsersContainsCondition | airbyte_agent_sdk.connectors.slack.types.UsersNotCondition | airbyte_agent_sdk.connectors.slack.types.UsersAndCondition | airbyte_agent_sdk.connectors.slack.types.UsersOrCondition | airbyte_agent_sdk.connectors.slack.types.UsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.slack.types.UsersEqCondition | airbyte_agent_sdk.connectors.slack.types.UsersNeqCondition | airbyte_agent_sdk.connectors.slack.types.UsersGtCondition | airbyte_agent_sdk.connectors.slack.types.UsersGteCondition | airbyte_agent_sdk.connectors.slack.types.UsersLtCondition | airbyte_agent_sdk.connectors.slack.types.UsersLteCondition | airbyte_agent_sdk.connectors.slack.types.UsersInCondition | airbyte_agent_sdk.connectors.slack.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.slack.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.slack.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.slack.types.UsersContainsCondition | airbyte_agent_sdk.connectors.slack.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.slack.types.UsersNotCondition | airbyte_agent_sdk.connectors.slack.types.UsersAndCondition | airbyte_agent_sdk.connectors.slack.types.UsersOrCondition | airbyte_agent_sdk.connectors.slack.types.UsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="UsersOrCondition"></a>
@@ -2985,7 +3041,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.slack.types.UsersEqCondition | airbyte_agent_sdk.connectors.slack.types.UsersNeqCondition | airbyte_agent_sdk.connectors.slack.types.UsersGtCondition | airbyte_agent_sdk.connectors.slack.types.UsersGteCondition | airbyte_agent_sdk.connectors.slack.types.UsersLtCondition | airbyte_agent_sdk.connectors.slack.types.UsersLteCondition | airbyte_agent_sdk.connectors.slack.types.UsersInCondition | airbyte_agent_sdk.connectors.slack.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.slack.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.slack.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.slack.types.UsersContainsCondition | airbyte_agent_sdk.connectors.slack.types.UsersNotCondition | airbyte_agent_sdk.connectors.slack.types.UsersAndCondition | airbyte_agent_sdk.connectors.slack.types.UsersOrCondition | airbyte_agent_sdk.connectors.slack.types.UsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.slack.types.UsersEqCondition | airbyte_agent_sdk.connectors.slack.types.UsersNeqCondition | airbyte_agent_sdk.connectors.slack.types.UsersGtCondition | airbyte_agent_sdk.connectors.slack.types.UsersGteCondition | airbyte_agent_sdk.connectors.slack.types.UsersLtCondition | airbyte_agent_sdk.connectors.slack.types.UsersLteCondition | airbyte_agent_sdk.connectors.slack.types.UsersInCondition | airbyte_agent_sdk.connectors.slack.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.slack.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.slack.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.slack.types.UsersContainsCondition | airbyte_agent_sdk.connectors.slack.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.slack.types.UsersNotCondition | airbyte_agent_sdk.connectors.slack.types.UsersAndCondition | airbyte_agent_sdk.connectors.slack.types.UsersOrCondition | airbyte_agent_sdk.connectors.slack.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersSearchFilter"></a>
@@ -3079,7 +3135,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.slack.types.UsersEqCondition | airbyte_agent_sdk.connectors.slack.types.UsersNeqCondition | airbyte_agent_sdk.connectors.slack.types.UsersGtCondition | airbyte_agent_sdk.connectors.slack.types.UsersGteCondition | airbyte_agent_sdk.connectors.slack.types.UsersLtCondition | airbyte_agent_sdk.connectors.slack.types.UsersLteCondition | airbyte_agent_sdk.connectors.slack.types.UsersInCondition | airbyte_agent_sdk.connectors.slack.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.slack.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.slack.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.slack.types.UsersContainsCondition | airbyte_agent_sdk.connectors.slack.types.UsersNotCondition | airbyte_agent_sdk.connectors.slack.types.UsersAndCondition | airbyte_agent_sdk.connectors.slack.types.UsersOrCondition | airbyte_agent_sdk.connectors.slack.types.UsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.slack.types.UsersEqCondition | airbyte_agent_sdk.connectors.slack.types.UsersNeqCondition | airbyte_agent_sdk.connectors.slack.types.UsersGtCondition | airbyte_agent_sdk.connectors.slack.types.UsersGteCondition | airbyte_agent_sdk.connectors.slack.types.UsersLtCondition | airbyte_agent_sdk.connectors.slack.types.UsersLteCondition | airbyte_agent_sdk.connectors.slack.types.UsersInCondition | airbyte_agent_sdk.connectors.slack.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.slack.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.slack.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.slack.types.UsersContainsCondition | airbyte_agent_sdk.connectors.slack.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.slack.types.UsersNotCondition | airbyte_agent_sdk.connectors.slack.types.UsersAndCondition | airbyte_agent_sdk.connectors.slack.types.UsersOrCondition | airbyte_agent_sdk.connectors.slack.types.UsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.slack.types.UsersSortFilter]`

@@ -433,6 +433,29 @@ class BulkStreamTest(TestCase):
 
         assert output.get_stream_statuses(_STREAM_NAME)[-1] == AirbyteStreamStatus.INCOMPLETE
 
+    @freezegun.freeze_time(_NOW.isoformat())
+    def test_given_invalid_field_on_job_creation_when_read_then_include_stream_name_in_error(self):
+        given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
+        self._http_mocker.post(
+            _make_full_job_request([_A_FIELD_NAME]),
+            HttpResponse(
+                json.dumps(
+                    [
+                        {
+                            "errorCode": "INVALID_FIELD",
+                            "message": f"No such column '{_A_FIELD_NAME}' on entity '{_STREAM_NAME}'.",
+                        }
+                    ]
+                ),
+                400,
+            ),
+        )
+
+        output = read(_STREAM_NAME, SyncMode.full_refresh, self._config)
+
+        assert output.get_stream_statuses(_STREAM_NAME)[-1] == AirbyteStreamStatus.INCOMPLETE
+        assert output.errors[-1].trace.error.message.find(_STREAM_NAME) >= 0
+
     def test_given_job_times_out_when_read_then_abort_job(self):
         BulkSalesforceStream.DEFAULT_WAIT_TIMEOUT = timedelta(microseconds=1)
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))

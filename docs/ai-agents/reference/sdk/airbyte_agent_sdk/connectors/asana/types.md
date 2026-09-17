@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.asana.types.AttachmentsEqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNeqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsInCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsContainsCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNotCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAndCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsOrCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.asana.types.AttachmentsEqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNeqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsInCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsContainsCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNotCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAndCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsOrCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AttachmentsAnyCondition"></a>
@@ -124,10 +124,24 @@ Classes
     `view_url: Any`
     :   The type of the None singleton.
 
+<a id="AttachmentsArrayContainsCondition"></a>
+
+`AttachmentsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.asana.types.AttachmentsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AttachmentsContainsCondition"></a>
 
 `AttachmentsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -403,7 +417,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.asana.types.AttachmentsEqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNeqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsInCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsContainsCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNotCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAndCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsOrCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.asana.types.AttachmentsEqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNeqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsInCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsContainsCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNotCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAndCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsOrCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AttachmentsOrCondition"></a>
@@ -425,7 +439,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.asana.types.AttachmentsEqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNeqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsInCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsContainsCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNotCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAndCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsOrCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.asana.types.AttachmentsEqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNeqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsInCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsContainsCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNotCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAndCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsOrCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AttachmentsSearchFilter"></a>
@@ -486,7 +500,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.asana.types.AttachmentsEqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNeqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsInCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsContainsCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNotCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAndCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsOrCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.asana.types.AttachmentsEqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNeqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsInCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsContainsCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNotCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAndCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsOrCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.asana.types.AttachmentsSortFilter]`
@@ -699,7 +713,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.asana.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsInCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.asana.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsInCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProjectsAnyCondition"></a>
@@ -810,10 +824,24 @@ Classes
     `workspace: Any`
     :   The type of the None singleton.
 
+<a id="ProjectsArrayContainsCondition"></a>
+
+`ProjectsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.asana.types.ProjectsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ProjectsContainsCondition"></a>
 
 `ProjectsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1189,7 +1217,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.asana.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsInCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.asana.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsInCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProjectsOrCondition"></a>
@@ -1211,7 +1239,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.asana.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsInCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.asana.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsInCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProjectsSearchFilter"></a>
@@ -1311,7 +1339,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.asana.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsInCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.asana.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsInCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.asana.types.ProjectsSortFilter]`
@@ -1634,7 +1662,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.asana.types.SectionsEqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNeqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsInCondition | airbyte_agent_sdk.connectors.asana.types.SectionsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.SectionsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.SectionsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.SectionsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.SectionsContainsCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNotCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAndCondition | airbyte_agent_sdk.connectors.asana.types.SectionsOrCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.asana.types.SectionsEqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNeqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsInCondition | airbyte_agent_sdk.connectors.asana.types.SectionsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.SectionsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.SectionsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.SectionsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.SectionsContainsCondition | airbyte_agent_sdk.connectors.asana.types.SectionsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNotCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAndCondition | airbyte_agent_sdk.connectors.asana.types.SectionsOrCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SectionsAnyCondition"></a>
@@ -1685,10 +1713,24 @@ Classes
     `resource_type: Any`
     :   The type of the None singleton.
 
+<a id="SectionsArrayContainsCondition"></a>
+
+`SectionsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.asana.types.SectionsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="SectionsContainsCondition"></a>
 
 `SectionsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1920,7 +1962,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.asana.types.SectionsEqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNeqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsInCondition | airbyte_agent_sdk.connectors.asana.types.SectionsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.SectionsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.SectionsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.SectionsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.SectionsContainsCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNotCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAndCondition | airbyte_agent_sdk.connectors.asana.types.SectionsOrCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.asana.types.SectionsEqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNeqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsInCondition | airbyte_agent_sdk.connectors.asana.types.SectionsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.SectionsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.SectionsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.SectionsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.SectionsContainsCondition | airbyte_agent_sdk.connectors.asana.types.SectionsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNotCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAndCondition | airbyte_agent_sdk.connectors.asana.types.SectionsOrCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAnyCondition`
     :   The type of the None singleton.
 
 <a id="SectionsOrCondition"></a>
@@ -1942,7 +1984,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.asana.types.SectionsEqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNeqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsInCondition | airbyte_agent_sdk.connectors.asana.types.SectionsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.SectionsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.SectionsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.SectionsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.SectionsContainsCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNotCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAndCondition | airbyte_agent_sdk.connectors.asana.types.SectionsOrCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.asana.types.SectionsEqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNeqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsInCondition | airbyte_agent_sdk.connectors.asana.types.SectionsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.SectionsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.SectionsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.SectionsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.SectionsContainsCondition | airbyte_agent_sdk.connectors.asana.types.SectionsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNotCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAndCondition | airbyte_agent_sdk.connectors.asana.types.SectionsOrCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SectionsSearchFilter"></a>
@@ -1982,7 +2024,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.asana.types.SectionsEqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNeqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsInCondition | airbyte_agent_sdk.connectors.asana.types.SectionsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.SectionsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.SectionsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.SectionsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.SectionsContainsCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNotCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAndCondition | airbyte_agent_sdk.connectors.asana.types.SectionsOrCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.asana.types.SectionsEqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNeqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsInCondition | airbyte_agent_sdk.connectors.asana.types.SectionsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.SectionsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.SectionsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.SectionsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.SectionsContainsCondition | airbyte_agent_sdk.connectors.asana.types.SectionsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNotCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAndCondition | airbyte_agent_sdk.connectors.asana.types.SectionsOrCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.asana.types.SectionsSortFilter]`
@@ -2124,7 +2166,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.asana.types.TagsEqCondition | airbyte_agent_sdk.connectors.asana.types.TagsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TagsGtCondition | airbyte_agent_sdk.connectors.asana.types.TagsGteCondition | airbyte_agent_sdk.connectors.asana.types.TagsLtCondition | airbyte_agent_sdk.connectors.asana.types.TagsLteCondition | airbyte_agent_sdk.connectors.asana.types.TagsInCondition | airbyte_agent_sdk.connectors.asana.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TagsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TagsNotCondition | airbyte_agent_sdk.connectors.asana.types.TagsAndCondition | airbyte_agent_sdk.connectors.asana.types.TagsOrCondition | airbyte_agent_sdk.connectors.asana.types.TagsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.asana.types.TagsEqCondition | airbyte_agent_sdk.connectors.asana.types.TagsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TagsGtCondition | airbyte_agent_sdk.connectors.asana.types.TagsGteCondition | airbyte_agent_sdk.connectors.asana.types.TagsLtCondition | airbyte_agent_sdk.connectors.asana.types.TagsLteCondition | airbyte_agent_sdk.connectors.asana.types.TagsInCondition | airbyte_agent_sdk.connectors.asana.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TagsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.TagsNotCondition | airbyte_agent_sdk.connectors.asana.types.TagsAndCondition | airbyte_agent_sdk.connectors.asana.types.TagsOrCondition | airbyte_agent_sdk.connectors.asana.types.TagsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TagsAnyCondition"></a>
@@ -2181,10 +2223,24 @@ Classes
     `workspace: Any`
     :   The type of the None singleton.
 
+<a id="TagsArrayContainsCondition"></a>
+
+`TagsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.asana.types.TagsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TagsContainsCondition"></a>
 
 `TagsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2422,7 +2478,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.asana.types.TagsEqCondition | airbyte_agent_sdk.connectors.asana.types.TagsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TagsGtCondition | airbyte_agent_sdk.connectors.asana.types.TagsGteCondition | airbyte_agent_sdk.connectors.asana.types.TagsLtCondition | airbyte_agent_sdk.connectors.asana.types.TagsLteCondition | airbyte_agent_sdk.connectors.asana.types.TagsInCondition | airbyte_agent_sdk.connectors.asana.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TagsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TagsNotCondition | airbyte_agent_sdk.connectors.asana.types.TagsAndCondition | airbyte_agent_sdk.connectors.asana.types.TagsOrCondition | airbyte_agent_sdk.connectors.asana.types.TagsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.asana.types.TagsEqCondition | airbyte_agent_sdk.connectors.asana.types.TagsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TagsGtCondition | airbyte_agent_sdk.connectors.asana.types.TagsGteCondition | airbyte_agent_sdk.connectors.asana.types.TagsLtCondition | airbyte_agent_sdk.connectors.asana.types.TagsLteCondition | airbyte_agent_sdk.connectors.asana.types.TagsInCondition | airbyte_agent_sdk.connectors.asana.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TagsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.TagsNotCondition | airbyte_agent_sdk.connectors.asana.types.TagsAndCondition | airbyte_agent_sdk.connectors.asana.types.TagsOrCondition | airbyte_agent_sdk.connectors.asana.types.TagsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TagsOrCondition"></a>
@@ -2444,7 +2500,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.asana.types.TagsEqCondition | airbyte_agent_sdk.connectors.asana.types.TagsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TagsGtCondition | airbyte_agent_sdk.connectors.asana.types.TagsGteCondition | airbyte_agent_sdk.connectors.asana.types.TagsLtCondition | airbyte_agent_sdk.connectors.asana.types.TagsLteCondition | airbyte_agent_sdk.connectors.asana.types.TagsInCondition | airbyte_agent_sdk.connectors.asana.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TagsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TagsNotCondition | airbyte_agent_sdk.connectors.asana.types.TagsAndCondition | airbyte_agent_sdk.connectors.asana.types.TagsOrCondition | airbyte_agent_sdk.connectors.asana.types.TagsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.asana.types.TagsEqCondition | airbyte_agent_sdk.connectors.asana.types.TagsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TagsGtCondition | airbyte_agent_sdk.connectors.asana.types.TagsGteCondition | airbyte_agent_sdk.connectors.asana.types.TagsLtCondition | airbyte_agent_sdk.connectors.asana.types.TagsLteCondition | airbyte_agent_sdk.connectors.asana.types.TagsInCondition | airbyte_agent_sdk.connectors.asana.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TagsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.TagsNotCondition | airbyte_agent_sdk.connectors.asana.types.TagsAndCondition | airbyte_agent_sdk.connectors.asana.types.TagsOrCondition | airbyte_agent_sdk.connectors.asana.types.TagsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TagsSearchFilter"></a>
@@ -2490,7 +2546,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.asana.types.TagsEqCondition | airbyte_agent_sdk.connectors.asana.types.TagsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TagsGtCondition | airbyte_agent_sdk.connectors.asana.types.TagsGteCondition | airbyte_agent_sdk.connectors.asana.types.TagsLtCondition | airbyte_agent_sdk.connectors.asana.types.TagsLteCondition | airbyte_agent_sdk.connectors.asana.types.TagsInCondition | airbyte_agent_sdk.connectors.asana.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TagsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TagsNotCondition | airbyte_agent_sdk.connectors.asana.types.TagsAndCondition | airbyte_agent_sdk.connectors.asana.types.TagsOrCondition | airbyte_agent_sdk.connectors.asana.types.TagsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.asana.types.TagsEqCondition | airbyte_agent_sdk.connectors.asana.types.TagsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TagsGtCondition | airbyte_agent_sdk.connectors.asana.types.TagsGteCondition | airbyte_agent_sdk.connectors.asana.types.TagsLtCondition | airbyte_agent_sdk.connectors.asana.types.TagsLteCondition | airbyte_agent_sdk.connectors.asana.types.TagsInCondition | airbyte_agent_sdk.connectors.asana.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TagsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.TagsNotCondition | airbyte_agent_sdk.connectors.asana.types.TagsAndCondition | airbyte_agent_sdk.connectors.asana.types.TagsOrCondition | airbyte_agent_sdk.connectors.asana.types.TagsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.asana.types.TagsSortFilter]`
@@ -2809,7 +2865,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.asana.types.TasksEqCondition | airbyte_agent_sdk.connectors.asana.types.TasksNeqCondition | airbyte_agent_sdk.connectors.asana.types.TasksGtCondition | airbyte_agent_sdk.connectors.asana.types.TasksGteCondition | airbyte_agent_sdk.connectors.asana.types.TasksLtCondition | airbyte_agent_sdk.connectors.asana.types.TasksLteCondition | airbyte_agent_sdk.connectors.asana.types.TasksInCondition | airbyte_agent_sdk.connectors.asana.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TasksContainsCondition | airbyte_agent_sdk.connectors.asana.types.TasksNotCondition | airbyte_agent_sdk.connectors.asana.types.TasksAndCondition | airbyte_agent_sdk.connectors.asana.types.TasksOrCondition | airbyte_agent_sdk.connectors.asana.types.TasksAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.asana.types.TasksEqCondition | airbyte_agent_sdk.connectors.asana.types.TasksNeqCondition | airbyte_agent_sdk.connectors.asana.types.TasksGtCondition | airbyte_agent_sdk.connectors.asana.types.TasksGteCondition | airbyte_agent_sdk.connectors.asana.types.TasksLtCondition | airbyte_agent_sdk.connectors.asana.types.TasksLteCondition | airbyte_agent_sdk.connectors.asana.types.TasksInCondition | airbyte_agent_sdk.connectors.asana.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TasksContainsCondition | airbyte_agent_sdk.connectors.asana.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.TasksNotCondition | airbyte_agent_sdk.connectors.asana.types.TasksAndCondition | airbyte_agent_sdk.connectors.asana.types.TasksOrCondition | airbyte_agent_sdk.connectors.asana.types.TasksAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TasksAnyCondition"></a>
@@ -2953,10 +3009,24 @@ Classes
     `workspace: Any`
     :   The type of the None singleton.
 
+<a id="TasksArrayContainsCondition"></a>
+
+`TasksArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.asana.types.TasksAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TasksContainsCondition"></a>
 
 `TasksContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3383,7 +3453,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.asana.types.TasksEqCondition | airbyte_agent_sdk.connectors.asana.types.TasksNeqCondition | airbyte_agent_sdk.connectors.asana.types.TasksGtCondition | airbyte_agent_sdk.connectors.asana.types.TasksGteCondition | airbyte_agent_sdk.connectors.asana.types.TasksLtCondition | airbyte_agent_sdk.connectors.asana.types.TasksLteCondition | airbyte_agent_sdk.connectors.asana.types.TasksInCondition | airbyte_agent_sdk.connectors.asana.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TasksContainsCondition | airbyte_agent_sdk.connectors.asana.types.TasksNotCondition | airbyte_agent_sdk.connectors.asana.types.TasksAndCondition | airbyte_agent_sdk.connectors.asana.types.TasksOrCondition | airbyte_agent_sdk.connectors.asana.types.TasksAnyCondition`
+    `not: airbyte_agent_sdk.connectors.asana.types.TasksEqCondition | airbyte_agent_sdk.connectors.asana.types.TasksNeqCondition | airbyte_agent_sdk.connectors.asana.types.TasksGtCondition | airbyte_agent_sdk.connectors.asana.types.TasksGteCondition | airbyte_agent_sdk.connectors.asana.types.TasksLtCondition | airbyte_agent_sdk.connectors.asana.types.TasksLteCondition | airbyte_agent_sdk.connectors.asana.types.TasksInCondition | airbyte_agent_sdk.connectors.asana.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TasksContainsCondition | airbyte_agent_sdk.connectors.asana.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.TasksNotCondition | airbyte_agent_sdk.connectors.asana.types.TasksAndCondition | airbyte_agent_sdk.connectors.asana.types.TasksOrCondition | airbyte_agent_sdk.connectors.asana.types.TasksAnyCondition`
     :   The type of the None singleton.
 
 <a id="TasksOrCondition"></a>
@@ -3405,7 +3475,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.asana.types.TasksEqCondition | airbyte_agent_sdk.connectors.asana.types.TasksNeqCondition | airbyte_agent_sdk.connectors.asana.types.TasksGtCondition | airbyte_agent_sdk.connectors.asana.types.TasksGteCondition | airbyte_agent_sdk.connectors.asana.types.TasksLtCondition | airbyte_agent_sdk.connectors.asana.types.TasksLteCondition | airbyte_agent_sdk.connectors.asana.types.TasksInCondition | airbyte_agent_sdk.connectors.asana.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TasksContainsCondition | airbyte_agent_sdk.connectors.asana.types.TasksNotCondition | airbyte_agent_sdk.connectors.asana.types.TasksAndCondition | airbyte_agent_sdk.connectors.asana.types.TasksOrCondition | airbyte_agent_sdk.connectors.asana.types.TasksAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.asana.types.TasksEqCondition | airbyte_agent_sdk.connectors.asana.types.TasksNeqCondition | airbyte_agent_sdk.connectors.asana.types.TasksGtCondition | airbyte_agent_sdk.connectors.asana.types.TasksGteCondition | airbyte_agent_sdk.connectors.asana.types.TasksLtCondition | airbyte_agent_sdk.connectors.asana.types.TasksLteCondition | airbyte_agent_sdk.connectors.asana.types.TasksInCondition | airbyte_agent_sdk.connectors.asana.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TasksContainsCondition | airbyte_agent_sdk.connectors.asana.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.TasksNotCondition | airbyte_agent_sdk.connectors.asana.types.TasksAndCondition | airbyte_agent_sdk.connectors.asana.types.TasksOrCondition | airbyte_agent_sdk.connectors.asana.types.TasksAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TasksSearchFilter"></a>
@@ -3538,7 +3608,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.asana.types.TasksEqCondition | airbyte_agent_sdk.connectors.asana.types.TasksNeqCondition | airbyte_agent_sdk.connectors.asana.types.TasksGtCondition | airbyte_agent_sdk.connectors.asana.types.TasksGteCondition | airbyte_agent_sdk.connectors.asana.types.TasksLtCondition | airbyte_agent_sdk.connectors.asana.types.TasksLteCondition | airbyte_agent_sdk.connectors.asana.types.TasksInCondition | airbyte_agent_sdk.connectors.asana.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TasksContainsCondition | airbyte_agent_sdk.connectors.asana.types.TasksNotCondition | airbyte_agent_sdk.connectors.asana.types.TasksAndCondition | airbyte_agent_sdk.connectors.asana.types.TasksOrCondition | airbyte_agent_sdk.connectors.asana.types.TasksAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.asana.types.TasksEqCondition | airbyte_agent_sdk.connectors.asana.types.TasksNeqCondition | airbyte_agent_sdk.connectors.asana.types.TasksGtCondition | airbyte_agent_sdk.connectors.asana.types.TasksGteCondition | airbyte_agent_sdk.connectors.asana.types.TasksLtCondition | airbyte_agent_sdk.connectors.asana.types.TasksLteCondition | airbyte_agent_sdk.connectors.asana.types.TasksInCondition | airbyte_agent_sdk.connectors.asana.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TasksContainsCondition | airbyte_agent_sdk.connectors.asana.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.TasksNotCondition | airbyte_agent_sdk.connectors.asana.types.TasksAndCondition | airbyte_agent_sdk.connectors.asana.types.TasksOrCondition | airbyte_agent_sdk.connectors.asana.types.TasksAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.asana.types.TasksSortFilter]`
@@ -3910,7 +3980,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.asana.types.TeamsEqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsInCondition | airbyte_agent_sdk.connectors.asana.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNotCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAndCondition | airbyte_agent_sdk.connectors.asana.types.TeamsOrCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.asana.types.TeamsEqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsInCondition | airbyte_agent_sdk.connectors.asana.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TeamsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNotCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAndCondition | airbyte_agent_sdk.connectors.asana.types.TeamsOrCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TeamsAnyCondition"></a>
@@ -3967,10 +4037,24 @@ Classes
     `resource_type: Any`
     :   The type of the None singleton.
 
+<a id="TeamsArrayContainsCondition"></a>
+
+`TeamsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.asana.types.TeamsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TeamsContainsCondition"></a>
 
 `TeamsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4194,7 +4278,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.asana.types.TeamsEqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsInCondition | airbyte_agent_sdk.connectors.asana.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNotCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAndCondition | airbyte_agent_sdk.connectors.asana.types.TeamsOrCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.asana.types.TeamsEqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsInCondition | airbyte_agent_sdk.connectors.asana.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TeamsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNotCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAndCondition | airbyte_agent_sdk.connectors.asana.types.TeamsOrCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TeamsOrCondition"></a>
@@ -4216,7 +4300,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.asana.types.TeamsEqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsInCondition | airbyte_agent_sdk.connectors.asana.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNotCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAndCondition | airbyte_agent_sdk.connectors.asana.types.TeamsOrCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.asana.types.TeamsEqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsInCondition | airbyte_agent_sdk.connectors.asana.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TeamsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNotCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAndCondition | airbyte_agent_sdk.connectors.asana.types.TeamsOrCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TeamsSearchFilter"></a>
@@ -4262,7 +4346,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.asana.types.TeamsEqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsInCondition | airbyte_agent_sdk.connectors.asana.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNotCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAndCondition | airbyte_agent_sdk.connectors.asana.types.TeamsOrCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.asana.types.TeamsEqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsInCondition | airbyte_agent_sdk.connectors.asana.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.asana.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.asana.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TeamsArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNotCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAndCondition | airbyte_agent_sdk.connectors.asana.types.TeamsOrCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.asana.types.TeamsSortFilter]`
@@ -4388,7 +4472,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.asana.types.UsersEqCondition | airbyte_agent_sdk.connectors.asana.types.UsersNeqCondition | airbyte_agent_sdk.connectors.asana.types.UsersGtCondition | airbyte_agent_sdk.connectors.asana.types.UsersGteCondition | airbyte_agent_sdk.connectors.asana.types.UsersLtCondition | airbyte_agent_sdk.connectors.asana.types.UsersLteCondition | airbyte_agent_sdk.connectors.asana.types.UsersInCondition | airbyte_agent_sdk.connectors.asana.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.asana.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.asana.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.asana.types.UsersContainsCondition | airbyte_agent_sdk.connectors.asana.types.UsersNotCondition | airbyte_agent_sdk.connectors.asana.types.UsersAndCondition | airbyte_agent_sdk.connectors.asana.types.UsersOrCondition | airbyte_agent_sdk.connectors.asana.types.UsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.asana.types.UsersEqCondition | airbyte_agent_sdk.connectors.asana.types.UsersNeqCondition | airbyte_agent_sdk.connectors.asana.types.UsersGtCondition | airbyte_agent_sdk.connectors.asana.types.UsersGteCondition | airbyte_agent_sdk.connectors.asana.types.UsersLtCondition | airbyte_agent_sdk.connectors.asana.types.UsersLteCondition | airbyte_agent_sdk.connectors.asana.types.UsersInCondition | airbyte_agent_sdk.connectors.asana.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.asana.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.asana.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.asana.types.UsersContainsCondition | airbyte_agent_sdk.connectors.asana.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.UsersNotCondition | airbyte_agent_sdk.connectors.asana.types.UsersAndCondition | airbyte_agent_sdk.connectors.asana.types.UsersOrCondition | airbyte_agent_sdk.connectors.asana.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersAnyCondition"></a>
@@ -4442,10 +4526,24 @@ Classes
     `workspaces: Any`
     :   The type of the None singleton.
 
+<a id="UsersArrayContainsCondition"></a>
+
+`UsersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.asana.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="UsersContainsCondition"></a>
 
 `UsersContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4689,7 +4787,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.asana.types.UsersEqCondition | airbyte_agent_sdk.connectors.asana.types.UsersNeqCondition | airbyte_agent_sdk.connectors.asana.types.UsersGtCondition | airbyte_agent_sdk.connectors.asana.types.UsersGteCondition | airbyte_agent_sdk.connectors.asana.types.UsersLtCondition | airbyte_agent_sdk.connectors.asana.types.UsersLteCondition | airbyte_agent_sdk.connectors.asana.types.UsersInCondition | airbyte_agent_sdk.connectors.asana.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.asana.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.asana.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.asana.types.UsersContainsCondition | airbyte_agent_sdk.connectors.asana.types.UsersNotCondition | airbyte_agent_sdk.connectors.asana.types.UsersAndCondition | airbyte_agent_sdk.connectors.asana.types.UsersOrCondition | airbyte_agent_sdk.connectors.asana.types.UsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.asana.types.UsersEqCondition | airbyte_agent_sdk.connectors.asana.types.UsersNeqCondition | airbyte_agent_sdk.connectors.asana.types.UsersGtCondition | airbyte_agent_sdk.connectors.asana.types.UsersGteCondition | airbyte_agent_sdk.connectors.asana.types.UsersLtCondition | airbyte_agent_sdk.connectors.asana.types.UsersLteCondition | airbyte_agent_sdk.connectors.asana.types.UsersInCondition | airbyte_agent_sdk.connectors.asana.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.asana.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.asana.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.asana.types.UsersContainsCondition | airbyte_agent_sdk.connectors.asana.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.UsersNotCondition | airbyte_agent_sdk.connectors.asana.types.UsersAndCondition | airbyte_agent_sdk.connectors.asana.types.UsersOrCondition | airbyte_agent_sdk.connectors.asana.types.UsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="UsersOrCondition"></a>
@@ -4711,7 +4809,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.asana.types.UsersEqCondition | airbyte_agent_sdk.connectors.asana.types.UsersNeqCondition | airbyte_agent_sdk.connectors.asana.types.UsersGtCondition | airbyte_agent_sdk.connectors.asana.types.UsersGteCondition | airbyte_agent_sdk.connectors.asana.types.UsersLtCondition | airbyte_agent_sdk.connectors.asana.types.UsersLteCondition | airbyte_agent_sdk.connectors.asana.types.UsersInCondition | airbyte_agent_sdk.connectors.asana.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.asana.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.asana.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.asana.types.UsersContainsCondition | airbyte_agent_sdk.connectors.asana.types.UsersNotCondition | airbyte_agent_sdk.connectors.asana.types.UsersAndCondition | airbyte_agent_sdk.connectors.asana.types.UsersOrCondition | airbyte_agent_sdk.connectors.asana.types.UsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.asana.types.UsersEqCondition | airbyte_agent_sdk.connectors.asana.types.UsersNeqCondition | airbyte_agent_sdk.connectors.asana.types.UsersGtCondition | airbyte_agent_sdk.connectors.asana.types.UsersGteCondition | airbyte_agent_sdk.connectors.asana.types.UsersLtCondition | airbyte_agent_sdk.connectors.asana.types.UsersLteCondition | airbyte_agent_sdk.connectors.asana.types.UsersInCondition | airbyte_agent_sdk.connectors.asana.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.asana.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.asana.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.asana.types.UsersContainsCondition | airbyte_agent_sdk.connectors.asana.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.UsersNotCondition | airbyte_agent_sdk.connectors.asana.types.UsersAndCondition | airbyte_agent_sdk.connectors.asana.types.UsersOrCondition | airbyte_agent_sdk.connectors.asana.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersSearchFilter"></a>
@@ -4754,7 +4852,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.asana.types.UsersEqCondition | airbyte_agent_sdk.connectors.asana.types.UsersNeqCondition | airbyte_agent_sdk.connectors.asana.types.UsersGtCondition | airbyte_agent_sdk.connectors.asana.types.UsersGteCondition | airbyte_agent_sdk.connectors.asana.types.UsersLtCondition | airbyte_agent_sdk.connectors.asana.types.UsersLteCondition | airbyte_agent_sdk.connectors.asana.types.UsersInCondition | airbyte_agent_sdk.connectors.asana.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.asana.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.asana.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.asana.types.UsersContainsCondition | airbyte_agent_sdk.connectors.asana.types.UsersNotCondition | airbyte_agent_sdk.connectors.asana.types.UsersAndCondition | airbyte_agent_sdk.connectors.asana.types.UsersOrCondition | airbyte_agent_sdk.connectors.asana.types.UsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.asana.types.UsersEqCondition | airbyte_agent_sdk.connectors.asana.types.UsersNeqCondition | airbyte_agent_sdk.connectors.asana.types.UsersGtCondition | airbyte_agent_sdk.connectors.asana.types.UsersGteCondition | airbyte_agent_sdk.connectors.asana.types.UsersLtCondition | airbyte_agent_sdk.connectors.asana.types.UsersLteCondition | airbyte_agent_sdk.connectors.asana.types.UsersInCondition | airbyte_agent_sdk.connectors.asana.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.asana.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.asana.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.asana.types.UsersContainsCondition | airbyte_agent_sdk.connectors.asana.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.UsersNotCondition | airbyte_agent_sdk.connectors.asana.types.UsersAndCondition | airbyte_agent_sdk.connectors.asana.types.UsersOrCondition | airbyte_agent_sdk.connectors.asana.types.UsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.asana.types.UsersSortFilter]`
@@ -5070,7 +5168,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.asana.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesStartswithCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesEndswithCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.asana.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesStartswithCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesEndswithCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="WorkspacesAnyCondition"></a>
@@ -5121,10 +5219,24 @@ Classes
     `resource_type: Any`
     :   The type of the None singleton.
 
+<a id="WorkspacesArrayContainsCondition"></a>
+
+`WorkspacesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.asana.types.WorkspacesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="WorkspacesContainsCondition"></a>
 
 `WorkspacesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5359,7 +5471,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.asana.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesStartswithCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesEndswithCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.asana.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesStartswithCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesEndswithCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAnyCondition`
     :   The type of the None singleton.
 
 <a id="WorkspacesOrCondition"></a>
@@ -5381,7 +5493,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.asana.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesStartswithCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesEndswithCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.asana.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesStartswithCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesEndswithCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="WorkspacesSearchFilter"></a>
@@ -5421,7 +5533,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.asana.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesStartswithCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesEndswithCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.asana.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesStartswithCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesEndswithCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesArrayContainsCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.asana.types.WorkspacesSortFilter]`
