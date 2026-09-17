@@ -30,16 +30,12 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from . import constants
 from .streams import (
-    Commits,
-    ContributorActivity,
     IssueReactions,
     ProjectsV2,
     PullRequestCommentReactions,
     PullRequestStats,
     Releases,
     Reviews,
-    WorkflowJobs,
-    WorkflowRuns,
 )
 
 
@@ -354,21 +350,15 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         }
         repository_args_with_start_date = {**repository_args, "start_date": start_date}
 
-        workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
-
         self._sync_manifest_config(config)
 
         python_streams = [
-            Commits(**repository_args_with_start_date, branches_to_pull=config.get("branches", [])),
-            ContributorActivity(**repository_args),
             IssueReactions(**repository_args_with_start_date),
             PullRequestCommentReactions(**repository_args_with_start_date),
             PullRequestStats(**repository_args_with_start_date),
             ProjectsV2(**repository_args_with_start_date),
             Releases(**repository_args_with_start_date),
             Reviews(**repository_args_with_start_date),
-            workflow_runs_stream,
-            WorkflowJobs(parent=workflow_runs_stream, **repository_args_with_start_date),
         ]
 
         return python_streams
