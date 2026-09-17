@@ -106,7 +106,10 @@ class BigqueryCopyMetadata(
                 "input_format" to dataChannelFormat.name,
                 "csv" to csvDescriptor(),
                 "columns" to columns,
-                "source_schema" to AirbyteTypeToJsonSchema().convert(stream.schema),
+                // Keep annotations and constraints from the original input catalog.
+                "source_schema" to
+                    (configured.stream.jsonSchema
+                        ?: AirbyteTypeToJsonSchema().convert(stream.schema)),
                 "import_type" to configured.destinationSyncMode.name,
                 "primary_key" to primaryKey,
                 "primary_key_mapping" to primaryKey.map(::pathMapping),
