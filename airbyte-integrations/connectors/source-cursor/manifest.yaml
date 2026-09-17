@@ -560,4 +560,4 @@ metadata:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 1
+  default_concurrency: 2
