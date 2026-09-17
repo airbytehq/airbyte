@@ -17,6 +17,8 @@ The consent flow requests these scopes; approve all of them:
 - `harvest:applications:list`
 - `harvest:applied_candidate_tags:list`
 - `harvest:approval_flows:list`
+- `harvest:approver_groups:list`
+- `harvest:approvers:list`
 - `harvest:attachments:list`
 - `harvest:candidate_educations:list`
 - `harvest:candidate_employments:list`
@@ -36,8 +38,11 @@ The consent flow requests these scopes; approve all of them:
 - `harvest:interviewer_tags:list`
 - `harvest:interviewers:list`
 - `harvest:interviews:list`
+- `harvest:job_hiring_managers:list`
 - `harvest:job_interview_stages:list`
 - `harvest:job_interviews:list`
+- `harvest:job_notes:list`
+- `harvest:job_owners:list`
 - `harvest:job_posts:list`
 - `harvest:jobs:list`
 - `harvest:notes:list`
@@ -45,6 +50,7 @@ The consent flow requests these scopes; approve all of them:
 - `harvest:offices:list`
 - `harvest:openings:list`
 - `harvest:prospect_details:list`
+- `harvest:prospect_pool_stages:list`
 - `harvest:prospect_pools:list`
 - `harvest:referrers:list`
 - `harvest:rejection_details:list`
@@ -53,6 +59,7 @@ The consent flow requests these scopes; approve all of them:
 - `harvest:scorecard_questions:list`
 - `harvest:scorecards:list`
 - `harvest:sources:list`
+- `harvest:user_emails:list`
 - `harvest:user_job_permissions:list`
 - `harvest:user_roles:list`
 - `harvest:users:list`
@@ -96,6 +103,8 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | [`applications`](https://harvestdocs.greenhouse.io/reference/get_v3-applications) | Incremental (`updated_at`) | |
 | [`applied_candidate_tags`](https://harvestdocs.greenhouse.io/reference/get_v3-applied-candidate-tags) | Incremental (`updated_at`) | Candidate-to-tag assignments; `tags` on its own is only the dictionary |
 | [`approvals`](https://harvestdocs.greenhouse.io/reference/get_v3-approval-flows) | Incremental (`updated_at`) | |
+| [`approver_groups`](https://harvestdocs.greenhouse.io/reference/get_v3-approver-groups) | Incremental (`updated_at`) | The steps of an approval chain, per approval flow |
+| [`approvers`](https://harvestdocs.greenhouse.io/reference/get_v3-approvers) | Incremental (`updated_at`) | Individual approvers and their status within a group |
 | [`attachments`](https://harvestdocs.greenhouse.io/reference/get_v3-attachments) | Incremental (`updated_at`) | One file per application. `url` is a download link Greenhouse expires after seven days |
 | [`candidate_educations`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-educations) | Incremental (`updated_at`) | School, degree and discipline history per candidate |
 | [`candidate_employments`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-employments) | Incremental (`updated_at`) | Employer and title history per candidate |
@@ -118,7 +127,10 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | [`interviewer_tags`](https://harvestdocs.greenhouse.io/reference/get_v3-interviewer-tags) | Incremental (`updated_at`) | The interviewer tag dictionary |
 | [`interviewers`](https://harvestdocs.greenhouse.io/reference/get_v3-interviewers) | Incremental (`updated_at`) | One row per panel member on a scheduled interview |
 | [`interviews`](https://harvestdocs.greenhouse.io/reference/get_v3-interviews) | Incremental (`updated_at`) | |
+| [`job_hiring_managers`](https://harvestdocs.greenhouse.io/reference/get_v3-job-hiring-managers) | Incremental (`updated_at`) | One row per hiring manager on a job |
 | [`job_interviews`](https://harvestdocs.greenhouse.io/reference/get_v3-job-interviews) | Incremental (`updated_at`) | The interview plan for each job stage |
+| [`job_notes`](https://harvestdocs.greenhouse.io/reference/get_v3-job-notes) | Incremental (`updated_at`) | Free-text notes on jobs |
+| [`job_owners`](https://harvestdocs.greenhouse.io/reference/get_v3-job-owners) | Incremental (`updated_at`) | Recruiter, sourcer and coordinator per job, with a `responsible` flag |
 | [`job_posts`](https://harvestdocs.greenhouse.io/reference/get_v3-job-posts) | Incremental (`updated_at`) | Includes deleted posts |
 | [`job_stages`](https://harvestdocs.greenhouse.io/reference/get_v3-job-interview-stages) | Incremental (`updated_at`) | |
 | [`jobs`](https://harvestdocs.greenhouse.io/reference/get_v3-jobs) | Incremental (`updated_at`) | |
@@ -126,6 +138,7 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | [`offers`](https://harvestdocs.greenhouse.io/reference/get_v3-offers) | Incremental (`updated_at`) | |
 | [`offices`](https://harvestdocs.greenhouse.io/reference/get_v3-offices) | Incremental (`updated_at`) | |
 | [`prospect_details`](https://harvestdocs.greenhouse.io/reference/get_v3-prospect-details) | Incremental (`updated_at`) | Pool, stage and owner per prospect application |
+| [`prospect_pool_stages`](https://harvestdocs.greenhouse.io/reference/get_v3-prospect-pool-stages) | Incremental (`updated_at`) | The stage dictionary for each prospect pool |
 | [`prospect_pools`](https://harvestdocs.greenhouse.io/reference/get_v3-prospect-pools) | Incremental (`updated_at`) | |
 | [`referrers`](https://harvestdocs.greenhouse.io/reference/get_v3-referrers) | Incremental (`updated_at`) | Referral attribution per candidate |
 | [`rejection_details`](https://harvestdocs.greenhouse.io/reference/get_v3-rejection-details) | Incremental (`updated_at`) | Reason, rejecter and note per rejected application |
@@ -136,6 +149,7 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | [`scorecards`](https://harvestdocs.greenhouse.io/reference/get_v3-scorecards) | Incremental (`updated_at`) | |
 | [`sources`](https://harvestdocs.greenhouse.io/reference/get_v3-sources) | Incremental (`updated_at`) | |
 | [`tags`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-tags) | Incremental (`updated_at`) | Candidate tags |
+| [`user_emails`](https://harvestdocs.greenhouse.io/reference/get_v3-user-emails) | Incremental (`updated_at`) | Every email address per user; `users.primary_email` is only one of them |
 | [`user_permissions`](https://harvestdocs.greenhouse.io/reference/get_v3-user-job-permissions) | Incremental (`updated_at`) | Job permissions across all users |
 | [`user_roles`](https://harvestdocs.greenhouse.io/reference/get_v3-user-roles) | Incremental (`updated_at`) | |
 | [`users`](https://harvestdocs.greenhouse.io/reference/get_v3-users) | Incremental (`updated_at`) | Includes integration service users |
@@ -169,6 +183,8 @@ The connector requests 500 records per page, the Harvest v3 maximum, and then fo
 - **`interviewers`** has one row per panel member per interview, so an interview appears once for each attendee. `user_id` is empty for external attendees who match no Greenhouse user; their address is in `email` instead.
 - **`scorecard_candidate_attributes`** has one row per rated attribute per scorecard, roughly five to fifteen times the row count of `scorecards`.
 - **`interview_kits.exercises`** carries the live Interview Prep content and may contain HTML. The `summary` and `instructions` fields on `job_interviews` are snapshots taken when the slot was first added and do not track later edits; use `exercises` for the current text.
+- **`user_emails`** lists every address on a user, while `users.primary_email` carries one. Integration service users have no address at all, so they have no rows here.
+- **`approvers.send_auto_reminder_at`** is a date (`YYYY-MM-DD`), not a timestamp, despite the `_at` suffix every other Harvest v3 field uses for timestamps.
 - **The 18 streams that became incremental in 1.1.0** now honor **Start date**, where before they always read full history. See [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110).
 
 ## Troubleshooting
@@ -205,6 +221,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.4.0 | 2026-09-17 | [PRNUMBER](https://github.com/airbytehq/airbyte/pull/PRNUMBER) | Add the `approver_groups`, `approvers`, `job_hiring_managers`, `job_notes`, `job_owners`, `prospect_pool_stages`, and `user_emails` streams, restoring the hiring team, approval chain, prospect pool stage, and user email detail that Harvest v1 embedded on `jobs`, `approvals`, `prospect_pools`, and `users`. Requests seven new Harvest v3 scopes during consent |
 | 1.3.0 | 2026-09-17 | [86429](https://github.com/airbytehq/airbyte/pull/86429) | Add the `interview_kits`, `interviewer_tags`, `interviewers`, `job_interviews`, `scorecard_candidate_attributes`, and `scorecard_questions` streams, restoring the interview and scorecard detail that Harvest v1 embedded on `interviews`, `job_stages`, and `scorecards`. Requests six new Harvest v3 scopes during consent |
 | 1.2.0 | 2026-09-17 | [86428](https://github.com/airbytehq/airbyte/pull/86428) | Add the `application_stages`, `applied_candidate_tags`, `attachments`, `candidate_educations`, `candidate_employments`, `prospect_details`, `referrers`, and `rejection_details` streams, restoring the candidate and application detail that Harvest v1 embedded on `candidates` and `applications`. Requests eight new Harvest v3 scopes during consent; existing connections keep syncing unchanged, but enabling a new stream requires re-running the consent flow |
 | 1.1.0 | 2026-09-17 | [85841](https://github.com/airbytehq/airbyte/pull/85841) | Sync 18 previously full-refresh streams incrementally on `updated_at`. Not breaking, but **Start date** now applies to those 18 streams in every sync mode, including full refresh, where before they always read full history - see [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110). Also read `activity_feed`, `jobs_openings`, and `user_permissions` directly instead of once per 50 parents, and suggest 10 streams for new connections |
