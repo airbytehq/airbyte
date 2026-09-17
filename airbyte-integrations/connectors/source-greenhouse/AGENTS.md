@@ -64,10 +64,10 @@ That is, `updated_at=gte|{datetime}|lte|{datetime}`, with `|` separating operato
 | job_posts | top-level | updated_at | updated_at, active | incremental |
 | job_stages | top-level | updated_at | updated_at | incremental |
 | offers | top-level | updated_at | updated_at | incremental |
-| rejection_reasons | top-level | updated_at | updated_at | incremental |
+| rejection_reasons | top-level | updated_at | updated_at, include_defaults=true | incremental |
 | scorecards | top-level | updated_at | updated_at | incremental |
 | sources | top-level | updated_at | updated_at | incremental |
-| users | top-level | updated_at | updated_at | incremental |
+| users | top-level | updated_at | updated_at, show_service_accounts=true | incremental |
 | activity_feed | top-level | updated_at | updated_at | incremental |
 | approvals | top-level | updated_at | updated_at | incremental |
 | disciplines | top-level | updated_at | updated_at, custom_field_key=discipline | incremental |

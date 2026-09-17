@@ -306,5 +306,16 @@
         "updated_at": "2222-01-21T00:00:00.000Z"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "email_templates"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
   }
 ]
