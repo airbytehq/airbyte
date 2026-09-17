@@ -8,17 +8,20 @@ import org.testcontainers.containers.GenericContainer
 import org.testcontainers.utility.DockerImageName
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
-import software.amazon.awssdk.core.SdkBytes
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import software.amazon.awssdk.services.dynamodb.model.BatchWriteItemRequest
+import software.amazon.awssdk.services.dynamodb.model.BatchWriteItemResponse
 import software.amazon.awssdk.services.dynamodb.model.BillingMode
 import software.amazon.awssdk.services.dynamodb.model.CreateTableRequest
 import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement
 import software.amazon.awssdk.services.dynamodb.model.KeyType
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest
+import software.amazon.awssdk.services.dynamodb.model.PutRequest
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
+import software.amazon.awssdk.services.dynamodb.model.WriteRequest
 
 /**
  * The official `amazon/dynamodb-local` image (no Testcontainers module exists for it). It accepts
@@ -113,28 +116,38 @@ class DynamoDbLocalContainer :
         }
 
         /** Parses an attribute value in DynamoDB JSON (`{"S": "x"}`, `{"N": "1"}`, ...). */
-        fun attributeValue(node: JsonNode): AttributeValue {
-            val (type: String, value: JsonNode) = node.fields().next().let { it.key to it.value }
-            val builder: AttributeValue.Builder = AttributeValue.builder()
-            when (type) {
-                "S" -> builder.s(value.asText())
-                "N" -> builder.n(value.asText())
-                "B" -> builder.b(SdkBytes.fromByteArray(value.binaryValue()))
-                "SS" -> builder.ss(value.map { it.asText() })
-                "NS" -> builder.ns(value.map { it.asText() })
-                "BS" -> builder.bs(value.map { SdkBytes.fromByteArray(it.binaryValue()) })
-                "M" -> builder.m(item(value))
-                "L" -> builder.l(value.map(::attributeValue))
-                "BOOL" -> builder.bool(value.asBoolean())
-                "NULL" -> builder.nul(true)
-                else -> throw IllegalArgumentException("Unknown DynamoDB JSON type '$type'")
-            }
-            return builder.build()
-        }
+        fun attributeValue(node: JsonNode): AttributeValue = DynamoDbJson.fromDynamoDbJson(node)
 
         /** Parses an item in DynamoDB JSON: attribute name to typed value. */
         fun item(node: JsonNode): Map<String, AttributeValue> =
-            node.fields().asSequence().associate { (name, value) -> name to attributeValue(value) }
+            DynamoDbJson.itemFromDynamoDbJson(node)
+
+        /** Writes items 25 at a time (the `BatchWriteItem` maximum). */
+        fun DynamoDbClient.batchPutItems(
+            tableName: String,
+            items: List<Map<String, AttributeValue>>,
+        ) {
+            for (chunk: List<Map<String, AttributeValue>> in items.chunked(25)) {
+                var pending: Map<String, List<WriteRequest>> =
+                    mapOf(
+                        tableName to
+                            chunk.map {
+                                WriteRequest.builder()
+                                    .putRequest(PutRequest.builder().item(it).build())
+                                    .build()
+                            },
+                    )
+                while (pending.isNotEmpty()) {
+                    val response: BatchWriteItemResponse =
+                        batchWriteItem(
+                            BatchWriteItemRequest.builder().requestItems(pending).build()
+                        )
+                    pending =
+                        if (response.hasUnprocessedItems()) response.unprocessedItems()
+                        else emptyMap()
+                }
+            }
+        }
     }
 }
 

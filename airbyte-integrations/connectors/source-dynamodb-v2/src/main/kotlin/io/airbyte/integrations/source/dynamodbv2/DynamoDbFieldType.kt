@@ -5,10 +5,12 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.data.AirbyteSchemaType
-import io.airbyte.cdk.data.AnyEncoder
+import io.airbyte.cdk.data.JsonDecoder
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.FieldType
+import io.airbyte.cdk.discover.LosslessFieldType
+import io.airbyte.cdk.output.sockets.ProtobufAwareCustomConnectorJsonCodec
 import io.airbyte.cdk.util.Jsons
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 
@@ -29,12 +31,18 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue
  */
 data class DynamoDbFieldType(
     private val jsonSchemaTemplate: ObjectNode,
-) : FieldType {
+) : LosslessFieldType {
 
     override val airbyteSchemaType: AirbyteSchemaType = airbyteSchemaTypeOf(jsonSchemaTemplate)
 
-    /** Values are encoded according to their DynamoDB type rather than the discovered schema. */
-    override val jsonEncoder: JsonEncoder<*> = AnyEncoder
+    /**
+     * Values are converted to JSON according to their DynamoDB type when they are read (
+     * [DynamoDbJson.toRecordValue]), not according to the discovered schema; the codec passes the
+     * JSON through.
+     */
+    override val jsonEncoder: JsonEncoder<JsonNode> = DynamoDbJsonNodeCodec
+
+    override val jsonDecoder: JsonDecoder<JsonNode> = DynamoDbJsonNodeCodec
 
     /** JSON schema of the attribute, as emitted in the catalog. Returns a fresh copy. */
     fun jsonSchema(): ObjectNode = jsonSchemaTemplate.deepCopy()
@@ -113,4 +121,16 @@ data class DynamoDbFieldType(
             }
         }
     }
+}
+
+/**
+ * Identity codec for record values that are already JSON. On the protobuf data channel a value is
+ * sent as the text of its JSON, which is what the CDK's encoder expects for a JSONB field.
+ */
+data object DynamoDbJsonNodeCodec : ProtobufAwareCustomConnectorJsonCodec<JsonNode> {
+    override fun encode(decoded: JsonNode): JsonNode = decoded
+
+    override fun decode(encoded: JsonNode): JsonNode = encoded
+
+    override fun valueForProtobufEncoding(v: JsonNode): Any = v.toString()
 }

@@ -78,7 +78,7 @@ class DynamoDbSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("reserved_attribute_names")
     @JsonSchemaTitle("Reserved attribute names")
     @JsonSchemaDescription(
-        "Comma separated names of attributes that are DynamoDB reserved words or contain special characters; they are aliased in scan expressions.",
+        "Comma separated names of attributes that are DynamoDB reserved words or contain special characters. No longer needed: every attribute is now aliased in scan expressions; kept for backward compatibility.",
     )
     @JsonSchemaInject(json = """{"order":3,"examples":["name, field_name, field-name"]}""")
     var reservedAttributeNames: String? = null
@@ -100,11 +100,24 @@ class DynamoDbSourceConfigurationSpecification : ConfigurationSpecification() {
     )
     var discoverSampleSize: Int? = null
 
+    @JsonProperty("checkpoint_target_interval_seconds")
+    @JsonSchemaTitle("Checkpoint Target Time Interval (Advanced)")
+    @JsonSchemaDescription(
+        "How often (in seconds) a stream should checkpoint its progress, when possible. A table is scanned in rounds of about this duration and its state is saved after each round, so that an interrupted sync resumes where it stopped. Defaults to 300.",
+    )
+    @JsonSchemaInject(
+        json = """{"order":6,"default":300,"minimum":1,"examples":[300, 900]}""",
+    )
+    var checkpointTargetIntervalSeconds: Int? = null
+
     companion object {
         /** What the legacy connector always sampled. */
         const val DEFAULT_DISCOVER_SAMPLE_SIZE = 1000
         const val MIN_DISCOVER_SAMPLE_SIZE = 1
         const val MAX_DISCOVER_SAMPLE_SIZE = 100_000
+
+        /** Same default as the Bulk CDK JDBC sources. */
+        const val DEFAULT_CHECKPOINT_TARGET_INTERVAL_SECONDS = 300
     }
 }
 

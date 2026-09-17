@@ -116,7 +116,7 @@
       },
       "reserved_attribute_names" : {
         "type" : "string",
-        "description" : "Comma separated names of attributes that are DynamoDB reserved words or contain special characters; they are aliased in scan expressions.",
+        "description" : "Comma separated names of attributes that are DynamoDB reserved words or contain special characters. No longer needed: every attribute is now aliased in scan expressions; kept for backward compatibility.",
         "title" : "Reserved attribute names",
         "order" : 3,
         "examples" : [ "name, field_name, field-name" ]
@@ -137,6 +137,15 @@
         "minimum" : 1,
         "maximum" : 100000,
         "examples" : [ 1000, 10000 ]
+      },
+      "checkpoint_target_interval_seconds" : {
+        "type" : "integer",
+        "description" : "How often (in seconds) a stream should checkpoint its progress, when possible. A table is scanned in rounds of about this duration and its state is saved after each round, so that an interrupted sync resumes where it stopped. Defaults to 300.",
+        "title" : "Checkpoint Target Time Interval (Advanced)",
+        "order" : 6,
+        "default" : 300,
+        "minimum" : 1,
+        "examples" : [ 300, 900 ]
       }
     },
     "required" : [ "credentials", "region" ]

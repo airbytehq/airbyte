@@ -46,7 +46,8 @@ data class DynamoDbSourceConfiguration(
     /** DynamoDB syncs use per-stream state (no CDC / Global feed). */
     override val global: Boolean = false,
     override val maxSnapshotReadDuration: Duration? = null,
-    override val checkpointTargetInterval: Duration = DEFAULT_CHECKPOINT_TARGET_INTERVAL,
+    /** How long a partition reader runs before the CDK asks it for a checkpoint. */
+    override val checkpointTargetInterval: Duration,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     /** SSH tunnels are not part of the DynamoDB spec. */
     override val sshTunnel: SshTunnelMethodConfiguration? = null,
@@ -79,7 +80,6 @@ data class DynamoDbSourceConfiguration(
     }
 
     companion object {
-        val DEFAULT_CHECKPOINT_TARGET_INTERVAL: Duration = Duration.ofMinutes(15)
         const val HTTPS_PORT = 443
         const val HTTP_PORT = 80
     }
@@ -189,6 +189,16 @@ constructor(
             )
         }
 
+        val checkpointTargetIntervalSeconds: Int =
+            pojo.checkpointTargetIntervalSeconds
+                ?: DynamoDbSourceConfigurationSpecification
+                    .DEFAULT_CHECKPOINT_TARGET_INTERVAL_SECONDS
+        if (checkpointTargetIntervalSeconds < 1) {
+            throw ConfigErrorException(
+                "'checkpoint_target_interval_seconds' must be at least 1, got $checkpointTargetIntervalSeconds.",
+            )
+        }
+
         val maxConcurrency: Int =
             when (DataChannelMedium.valueOf(dataChannelMedium)) {
                 STDIO -> 1
@@ -209,6 +219,7 @@ constructor(
             reservedAttributeNames = reservedAttributeNames,
             ignoreMissingReadPermissionsTables = pojo.ignoreMissingReadPermissionsTables ?: false,
             discoverSampleSize = discoverSampleSize,
+            checkpointTargetInterval = Duration.ofSeconds(checkpointTargetIntervalSeconds.toLong()),
             maxConcurrency = maxConcurrency,
             realHost = realHost,
             realPort = realPort,

@@ -1,10 +1,15 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.dynamodbv2
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.MetadataQuerier
+import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
@@ -46,6 +51,13 @@ class DynamoDbSourceMetadataQuerier(
      * probe that a stream is queryable; the legacy connector's `check` was a bare `ListTables`.
      */
     private val skipFieldDiscovery: Boolean = false,
+    /**
+     * Fields to serve from [fields] instead of sampling, keyed by stream. READ validates the
+     * configured catalog against [fields] at start-up (`StateManagerFactory`): sampling again would
+     * drop a stream whenever a configured attribute happens to be missing from the new sample, so
+     * during READ the fields are the configured stream's own properties.
+     */
+    private val configuredFields: Map<StreamIdentifier, List<EmittedField>> = emptyMap(),
 ) : MetadataQuerier {
 
     private val tableNames: List<String> by lazy { listTables() }
@@ -93,6 +105,9 @@ class DynamoDbSourceMetadataQuerier(
     override fun fields(streamID: StreamIdentifier): List<EmittedField> {
         if (skipFieldDiscovery) {
             return emptyList()
+        }
+        configuredFields[streamID]?.let {
+            return it
         }
         if (prefetched.compareAndSet(false, true)) {
             for (otherStreamID in streamNames(null)) {
@@ -201,6 +216,8 @@ class DynamoDbSourceMetadataQuerier(
     @Inject
     constructor(
         @Value("\${${Operation.PROPERTY}:discover}") private val operation: String = "discover",
+        /** Empty for every operation but READ. */
+        private val configuredCatalog: ConfiguredAirbyteCatalog = ConfiguredAirbyteCatalog(),
     ) : MetadataQuerier.Factory<DynamoDbSourceConfiguration> {
         /**
          * The [DynamoDbSourceConfiguration] is deliberately not injected in order to support tests.
@@ -210,11 +227,37 @@ class DynamoDbSourceMetadataQuerier(
                 config,
                 DynamoDbClientFactory.create(config),
                 skipFieldDiscovery = operation == CHECK_OPERATION,
+                configuredFields =
+                    if (operation == READ_OPERATION) fieldsFromConfiguredCatalog(configuredCatalog)
+                    else emptyMap(),
             )
     }
 
     companion object {
         private const val CHECK_OPERATION = "check"
+        private const val READ_OPERATION = "read"
+
+        /**
+         * The fields of each configured stream, taken from its JSON schema: one [DynamoDbFieldType]
+         * per property, carrying the property's own schema.
+         */
+        fun fieldsFromConfiguredCatalog(
+            configuredCatalog: ConfiguredAirbyteCatalog,
+        ): Map<StreamIdentifier, List<EmittedField>> =
+            configuredCatalog.streams.associate { configuredStream: ConfiguredAirbyteStream ->
+                val properties: JsonNode? = configuredStream.stream.jsonSchema?.get("properties")
+                val fields: List<EmittedField> =
+                    properties?.properties()?.map { (name: String, schema: JsonNode) ->
+                        EmittedField(
+                            name,
+                            DynamoDbFieldType.fromJsonSchema(
+                                schema as? ObjectNode ?: Jsons.objectNode()
+                            ),
+                        )
+                    }
+                        ?: emptyList()
+                StreamIdentifier.from(configuredStream.stream) to fields
+            }
         /**
          * Fragment of the service's AccessDeniedException message, as matched by the legacy
          * connector.
