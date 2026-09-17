@@ -1,23 +1,23 @@
 ---
-products: cloud-plus
+products: cloud-teams
 ---
 
 # Monitor data worker usage
 
 If you are on a capacity-based plan, you can monitor your data worker usage across your organization and understand how capacity enforcement affects your syncs. When all committed data workers are in use, newly triggered sync jobs are queued until capacity becomes available. To view data worker usage, you need the **organization admin** role.
 
-## How data workers map to syncs
+## How data workers map to syncs {#data-worker-consumption-by-source-type}
 
 Each running sync consumes a fraction of one data worker. The exact amount is derived from the job's resolved CPU requirements and divided by a platform-defined factor. Different source types have different resource profiles, so the capacity consumed per sync varies. The capacity per sync may also differ if your organization has custom resource overrides.
 
 The following table shows approximate data worker consumption based on current default resource profiles. These values are not contractual and may change as resource profiles are updated. Use the [usage chart](#open-the-usage-chart) as the authoritative view of your actual capacity consumption.
 
 | Source type | Default data workers per sync |
-| ---------- | ----------------------------- |
-| Database   | ~0.5                          |
-| File       | ~0.5                          |
-| API        | ~0.2                          |
-| Custom     | ~0.2                          |
+| ----------- | ----------------------------- |
+| Database    | ~0.5                          |
+| File        | ~0.2                          |
+| API         | ~0.2                          |
+| Custom      | ~0.2                          |
 
 ## Open the usage chart
 
@@ -73,11 +73,11 @@ If you can, it's preferable to optimize Airbyte by rescheduling connections outs
 
 - **If your usage looks consistently high**, examine your scheduling patterns within a day. If a large number of connections start at the same time, data worker usage spikes.
 
-    - Stagger start times over a longer period to allow some connections to finish before others begin.
+  - Stagger start times over a longer period to allow some connections to finish before others begin.
 
-    - Avoid starting all your syncs at the top of the hour. Starting them at :15, :30, and :45 can more evenly distribute work.
+  - Avoid starting all your syncs at the top of the hour. Starting them at :15, :30, and :45 can more evenly distribute work.
 
-    - If a large number of connections run overnight, data workers might look fully utilized, but sit unused during daylight hours.
+  - If a large number of connections run overnight, data workers might look fully utilized, but sit unused during daylight hours.
 
 - **If sandbox/staging workspaces consume too much capacity**, consider reducing the frequency of syncs in less critical workspaces.
 
@@ -99,7 +99,9 @@ Once your organization administrator enables on-demand capacity at the organizat
 
 3. Toggle **Use on-demand capacity**. The toggle description reads: "Enable on demand capacity for this connection. Syncs for this connection will never be queued. Syncs that run when committed data worker is exhausted will be charged a premium rate." You must have the organization admin or workspace admin role to change this toggle.
 
-You can also enable on-demand capacity when first creating a connection. The toggle appears in the connection configuration during setup.
+When you turn on **Use on-demand capacity**, Airbyte asks you to authorize the additional paid service before enabling it. Click **Authorize & Enable** to confirm that on-demand capacity is an additional paid service that can incur charges, you're authorized to approve the expense on behalf of your organization, and your organization agrees to pay the associated fees under Airbyte's billing terms. Click **Cancel** to leave on-demand capacity off. Turning off on-demand capacity doesn't require confirmation.
+
+You can also enable on-demand capacity when first creating a connection. The toggle appears in the connection configuration during setup and uses the same authorization confirmation.
 
 When you enable on-demand capacity on a connection, Airbyte automatically applies a "Burst" tag with an orange gradient background and a star icon. You can filter connections by the Burst tag to see all on-demand connections at a glance. If you disable on-demand capacity, Airbyte removes the Burst tag automatically. For more information about tags, see [Tagging connections](/platform/using-airbyte/tagging).
 

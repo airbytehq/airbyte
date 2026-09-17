@@ -11,7 +11,7 @@ This page contains the setup guide and reference information for the [Google Ads
 - A [Google Ads Account](https://support.google.com/google-ads/answer/6366720) [linked](https://support.google.com/google-ads/answer/7459601) to a Google Ads Manager account
 <!-- env:oss -->
 - (For Airbyte Open Source):
-  - A Developer Token
+  - Google Ads API access (Basic or Standard) granted to the Google Cloud project that owns your OAuth client (see Step 1)
   - OAuth credentials to authenticate your Google account
   <!-- /env:oss -->
 
@@ -21,22 +21,16 @@ This page contains the setup guide and reference information for the [Google Ads
 
 <!-- env:oss -->
 
-#### Step 1: (For Airbyte Open Source) Apply for a developer token
+#### Step 1: (For Airbyte Open Source) Get Google Ads API access for your Google Cloud project
 
-To set up the Google Ads source connector with Airbyte Open Source, you will need to obtain a developer token. This token allows you to access your data from the Google Ads API. Please note that Google is selective about which software and use cases are issued this token. The Airbyte team has worked with the Google Ads team to allowlist Airbyte and ensure you can get a developer token (see [issue 1981](https://github.com/airbytehq/airbyte/issues/1981) for more information on this topic).
+Google Ads API access levels are granted to the Google Cloud project that owns your OAuth client, not to a developer token. Google sunset developer tokens on September 9, 2026: existing tokens still work and can still be entered in Airbyte, but Google ignores them and no longer issues new ones from the Google Ads manager account API Center. See Google's [developer token sunset guide](https://developers.google.com/google-ads/api/docs/api-policy/developer-token).
 
-1. To proceed with obtaining a developer token, you will first need to create a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/). Standard Google Ads accounts cannot generate a developer token.
-
-2. To apply for the developer token, please follow [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token).
-
-3. When you apply for the token, make sure to include the following:
-   - Why you need the token (example: Want to run some internal analytics)
-   - That you will be using the Airbyte Open Source project
-   - That you have full access to the code base (because we're open source)
-   - That you have full access to the server running the code (because you're self-hosting Airbyte)
+1. Create or choose the [Google Cloud project](https://console.cloud.google.com/) that will own the OAuth client you use in Step 2.
+2. Open the **Google Ads API Overview** page for that project in the Google Cloud Console and apply for API access. New Basic and Standard access applications require [brand verification](https://developers.google.com/google-ads/api/docs/api-policy/developer-token) of the project; Basic access is approved automatically within minutes after verification.
+3. Confirm the project shows at least **Basic** access. Projects with only Test access can't read production Google Ads accounts and fail with `ACTION_NOT_PERMITTED` (or `CLOUD_PROJECT_NOT_APPROVED_FOR_PRODUCTION` on newer API versions).
 
 :::note
-You will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token; it has to be at least a basic developer token. The approval process typically takes around 24 hours.
+If you already had an approved developer token, Google transferred its access level to every Google Cloud project that used it in the 90 days before September 9, 2026. If your OAuth client's project did not inherit the access level, apply for access from that project's Google Ads API Overview page. Airbyte still requires a value in the **Developer Token** field; enter your existing token, or any non-empty placeholder string (for example, `placeholder`) if you never had one. Google rejects an empty value with `DEVELOPER_TOKEN_PARAMETER_MISSING`.
 :::
 
 #### Step 2: (For Airbyte Open Source) Obtain your OAuth credentials
@@ -53,7 +47,7 @@ A single access token can grant varying degrees of access to multiple APIs. A va
 
 The scope for the Google Ads API is: https://www.googleapis.com/auth/adwords
 
-Each Google Ads API developer token is assigned an access level and "permissible use". The access level determines whether you can affect production accounts and the number of operations and requests that you can execute daily. Permissible use determines the specific Google Ads API features that the developer token is allowed to use. Read more about it and apply for higher access [here](https://developers.google.com/google-ads/api/docs/access-levels#access_levels_2).
+Each Google Cloud project's OAuth client is assigned an access level and "permissible use". The access level determines whether you can affect production accounts and the number of operations and requests that you can execute daily. Permissible use determines the specific Google Ads API features that the project is allowed to use. Read more in [Google's access levels documentation](https://developers.google.com/google-ads/api/docs/productionize/access-levels), where you can also apply for higher access.
 
 ### Step 3: Set up the Google Ads connector in Airbyte
 
@@ -71,13 +65,15 @@ Each Google Ads API developer token is assigned an access level and "permissible
 
 ##### Optional: use your own Google OAuth app in Airbyte Cloud
 
-Airbyte Cloud normally uses Airbyte-managed OAuth client credentials for the Google Ads source. If you need to use your own Google OAuth app and Google Ads developer token, create OAuth override credentials.
+Airbyte Cloud normally uses Airbyte-managed OAuth client credentials for the Google Ads source. If you need to use your own Google OAuth app, create OAuth override credentials.
 
 Create the override first, then click **Sign in with Google**.
 
 Use the Airbyte API to create OAuth override credentials for the workspace or organization. For the workspace endpoint, see [Create OAuth override credentials for a workspace and source type](https://reference.airbyte.com/reference/workspaceoauthcredentials). For the organization endpoint, see [Create OAuth override credentials for an organization and source type](https://reference.airbyte.com/reference/createorupdateorganizationoauthcredentials).
 
 For Google Ads, set `actorType` to `source`, set `name` to `google-ads`, and include your Google OAuth app credentials and Google Ads developer token in `configuration.credentials`.
+
+Google ignores the `developer_token` value since September 9, 2026 (see the [developer token sunset guide](https://developers.google.com/google-ads/api/docs/api-policy/developer-token)); the field is still required by the connector, so pass your existing token or any non-empty placeholder string (an empty string is rejected by Google). API access is granted to the Google Cloud project that owns your OAuth app, so make sure that project has at least Basic access on its Google Ads API Overview page.
 
 ```json
 {
@@ -132,7 +128,7 @@ If you are accessing your account through a Google Ads Manager account, you must
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Ads** from the list of available sources.
 4. Enter a **Source name** of your choosing.
-5. Enter the **Developer Token** you obtained from Google.
+5. Enter a **Developer Token**. Google ignores this value since September 9, 2026; use your existing token or any non-empty placeholder string.
 6. To authenticate your Google account, enter your Google application's **Client ID**, **Client Secret**, **Refresh Token**, and optionally, the **Access Token**.
 7. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field blank will replicate data from all connected accounts.
 8. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v23/CustomerStatusEnum.CustomerStatus) for more info.
@@ -199,6 +195,10 @@ Represents labels that can be attached to different entities such as campaigns o
 
 Different attributes of ads from ad groups segmented by date.
 
+- [ad_performance](https://developers.google.com/google-ads/api/fields/v23/ad_group_ad)
+
+Ad-level performance report built on the `ad_group_ad` resource. Includes ad identity dimensions plus performance metrics (clicks, impressions, cost, conversions, video and active-view metrics) segmented by date, ad network, and device. Available for non-manager accounts only.
+
 - [ad_group_ad_label](https://developers.google.com/google-ads/api/fields/v23/ad_group_ad_label)
 - [ad_group](https://developers.google.com/google-ads/api/fields/v23/ad_group)
 
@@ -254,6 +254,10 @@ Geographic View provides dimension fields aggregated at the country level, such 
 
 An enhanced version of `geographic_view` that includes performance metrics (clicks, impressions, cost, conversions, CTR, etc.) alongside dimension fields. Use this stream when you need geographic performance data.
 
+- [geo_performance](https://developers.google.com/google-ads/api/fields/v23/geographic_view)
+
+Geographic performance report built on the `geographic_view` resource. Adds finer geo-target breakdown segments (region, metro, city, most specific location) along with device and ad network segments and performance metrics. Available for non-manager accounts only. Resolve the `segments.geo_target_*` resource names against the `geo_target_constant` resource to get human-readable location names.
+
 - [user_location_view](https://developers.google.com/google-ads/api/fields/v23/user_location_view)
 
 User Location View includes all metrics aggregated at the country level. It reports metrics at the actual physical location of the user by targeted or not targeted location.
@@ -292,7 +296,9 @@ More [info](https://github.com/airbytehq/airbyte/issues/11062) and [Google Discu
 Streams that include metric fields (e.g., clicks, impressions, cost, conversions) may return fewer rows than dimension-only streams for the same resource. This is because the [Google Ads API omits rows where all metrics are zero](https://developers.google.com/google-ads/api/docs/reporting/zero-impressions) when metrics are included in the query. The omitted rows represent entity/segment combinations with no recorded activity.
 :::
 
-For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v23/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
+For incremental streams, data is synced up to the previous day using your Google Ads account time zone, because Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v23/ad_group_ad#segments.date) without time. Some reports also can't load data in real time due to [Google Ads limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
+
+Starting in connector version 6.0.0, report streams and custom queries that use `segments.date` are limited to the 37-month granular data retention window enforced by the [Google Ads Data Retention Policy](https://support.google.com/google-ads/answer/15188209). The connector skips data older than 37 months. If your configured `start_date` is more than 37 months ago, the connector uses 37 months ago as the effective start. If both `start_date` and `end_date` fall outside the 37-month window, the connector emits no records for that historical range. If you're upgrading from version 5.x or earlier, see the [migration guide](/integrations/sources/google-ads-migrations) for guidance on preserving historical destination data.
 
 ### Primary Key Selection Method
 
@@ -317,7 +323,7 @@ SELECT
 FROM ad_group
 ```
 
-Note that `segments.date` is automatically added to the `WHERE` clause if it is included in the `SELECT` clause. Custom reports including `segments.date` in the `SELECT` clause will be synced by day.
+Note that `segments.date` is automatically added to the `WHERE` clause if it's included in the `SELECT` clause. Custom queries that include `segments.date` are synced one day at a time. Starting in connector version 6.0.0, these custom queries are limited to the same 37-month granular data retention window as built-in report streams; older report slices are skipped. See the [migration guide](/integrations/sources/google-ads-migrations) for upgrade guidance.
 
 Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains metrics fields in the select clause, it will not be executed against manager accounts.
 
@@ -364,16 +370,20 @@ In essence, the conversion window is a tool for measuring the effectiveness of a
 
 In the case of configuring the Google Ads source connector, each time a sync is run the connector will retrieve all conversions that were active within the specified conversion window. For example, if you set a conversion window of 30 days, each time a sync is run, the connector will pull all conversions that were active within the past 30 days. Due to this mechanism, it may seem like the same campaigns, ad groups, or ads have different conversion numbers. However, in reality, each data record accurately reflects the number of conversions for that particular resource at the time of extracting the data from the Google Ads API.
 
+</HideInUI>
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+<HideInUI>
+
 ## Performance considerations
 
 This source is constrained by the [Google Ads API limits](https://developers.google.com/google-ads/api/docs/best-practices/quotas)
 
 Due to a limitation in the Google Ads API which does not allow getting performance data at a granularity level smaller than a day, the Google Ads connector usually pulls data up until the previous day. For example, if the sync runs on Wednesday at 5 PM, then data up until Tuesday midnight is pulled. Data for Wednesday is exported only if a sync runs after Wednesday (for example, 12:01 AM on Thursday) and so on. This avoids syncing partial performance data, only to have to resync it again once the full day's data has been recorded by Google. For example, without this functionality, a sync which runs on Wednesday at 5 PM would get ads performance data for Wednesday between 12:01 AM - 5 PM on Wednesday, then it would need to run again at the end of the day to get all of Wednesday's data.
 </HideInUI>
-
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -382,6 +392,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.1 | 2026-08-25 | [85023](https://github.com/airbytehq/airbyte/pull/85023) | Fixed multi-byte UTF-8 characters being corrupted at chunk boundaries in large streamed responses. |
+| 6.1.0 | 2026-07-06 | [80952](https://github.com/airbytehq/airbyte/pull/80952) | Add `ad_performance` and `geo_performance` streams. |
+| 6.0.0 | 2026-05-29 | [78504](https://github.com/airbytehq/airbyte/pull/78504) | Clamp incremental report dates to Google Ads' 37-month granular data retention window. |
+| 5.0.2 | 2026-05-29 | [78514](https://github.com/airbytehq/airbyte/pull/78514) | Remove the Google Ads 400 response filter predicate to avoid buffering large streaming responses. |
 | 5.0.1 | 2026-05-26 | [78419](https://github.com/airbytehq/airbyte/pull/78419) | Classify unrecognized fields in custom GAQL queries as configuration errors. |
 | 5.0.0 | 2026-04-20 | [73722](https://github.com/airbytehq/airbyte/pull/73722) | Upgrade Google Ads API from v20 to v23 (field renames, removals, Performance Max ad network type support) and remove nullable `bidding_strategy.id` from primary keys of `campaign_bidding_strategy` and `ad_group_bidding_strategy` streams |
 | 4.2.6 | 2026-05-13 | [78065](https://github.com/airbytehq/airbyte/pull/78065) | Promoted release candidate to GA |

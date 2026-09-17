@@ -9,7 +9,7 @@ The Customer-Io connector supports the following entities and actions.
 | Entity | Actions |
 |--------|---------|
 | Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Context Store Search](#campaigns-context-store-search) |
-| Campaign Actions | [List](#campaign-actions-list), [Get](#campaign-actions-get), [Context Store Search](#campaign-actions-context-store-search) |
+| Campaign Actions | [List](#campaign-actions-list), [Get](#campaign-actions-get), [Context Store Search](#campaign-actions-context-store-search), [Semantic Search](#campaign-actions-semantic-search) |
 | Newsletters | [List](#newsletters-list), [Get](#newsletters-get), [Context Store Search](#newsletters-context-store-search) |
 | Segments | [List](#segments-list), [Create](#segments-create), [Get](#segments-get) |
 | Messages | [List](#messages-list), [Get](#messages-get) |
@@ -32,6 +32,17 @@ The Customer-Io connector supports the following entities and actions.
 ### Campaigns List
 
 Returns a list of all campaigns in the workspace.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "campaigns",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -93,6 +104,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Campaigns Get
 
 Returns a single campaign by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "campaigns",
+  "action": "get",
+  "params": {
+    "campaign_id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -166,6 +191,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "campaigns",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "actions": []
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -193,7 +238,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -265,6 +310,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Campaign Actions List
 
 Returns a paginated list of actions for a campaign.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "campaign_actions",
+  "action": "list",
+  "params": {
+    "campaign_id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -347,6 +406,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a single campaign action by ID.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "campaign_actions",
+  "action": "get",
+  "params": {
+    "campaign_id": 0,
+    "action_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -424,6 +498,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter campaign actions records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "campaign_actions",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "bcc": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -451,7 +545,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -530,11 +624,112 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Campaign Actions Semantic Search
+
+Search campaign actions records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "campaign_actions",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "body", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `campaign_actions.context_store_search` helper only accepts `query`.
+
+```python
+await customer_io.execute(
+    "campaign_actions",
+    "context_store_search",
+    {"semantic": {"field": "body", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "campaign_actions",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "body", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `body` | 2048 | Action body content (HTML for emails) |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.updated` | `string` | Source record field |
+| `data[].entity.campaign_id` | `string` | Source record field |
+| `data[].entity.name` | `string` | Source record field |
+| `data[].entity.subject` | `string` | Source record field |
+| `data[].entity.type` | `string` | Source record field |
+| `data[].entity.sending_state` | `string` | Source record field |
+| `data[].entity.parent_action_id` | `string` | Source record field |
+| `data[].entity.created` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Newsletters
 
 ### Newsletters List
 
 Returns a paginated list of newsletters.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "newsletters",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -596,6 +791,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a single newsletter by ID.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "newsletters",
+  "action": "get",
+  "params": {
+    "newsletter_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -653,6 +862,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter newsletters records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "newsletters",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "content_ids": []
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -680,7 +909,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -729,6 +958,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns all segments in the workspace.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "segments",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -775,6 +1015,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Creates a new empty manual segment. People can be added to it separately.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "segments",
+  "action": "create",
+  "params": {
+    "segment": {
+      "name": "<str>"
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -815,6 +1071,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Segments Get
 
 Returns a single segment by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "segments",
+  "action": "get",
+  "params": {
+    "segment_id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -874,6 +1144,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Messages List
 
 Returns a paginated list of message deliveries.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "messages",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -947,6 +1228,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Returns a single message delivery by ID. Untested because the test workspace has no message deliveries to retrieve.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "messages",
+  "action": "get",
+  "params": {
+    "message_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1014,6 +1309,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of activities in the workspace.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "activities",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1074,6 +1380,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of sender identities.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "sender_identities",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1131,6 +1448,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a single sender identity by ID.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "sender_identities",
+  "action": "get",
+  "params": {
+    "sender_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1187,6 +1518,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns all snippets in the workspace.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "snippets",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1225,6 +1567,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Creates a new reusable content snippet. Returns 422 if a snippet with the same name already exists.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "snippets",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "value": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1262,6 +1619,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Snippets Update
 
 Updates an existing snippet by name, or creates it if it does not exist (upsert behavior).
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "snippets",
+  "action": "update",
+  "params": {
+    "name": "<str>",
+    "value": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1302,6 +1674,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Collections List
 
 Returns all collections in the workspace.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "collections",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1345,6 +1728,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Creates a new data collection with inline data or a URL source.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "collections",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "data": [],
+    "url": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1385,6 +1784,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Collections Get
 
 Returns a single collection by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "collections",
+  "action": "get",
+  "params": {
+    "collection_id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1439,6 +1852,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Updates an existing collection's name, data, or URL source.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "collections",
+  "action": "update",
+  "params": {
+    "name": "<str>",
+    "data": [],
+    "url": "<str>",
+    "collection_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1485,6 +1915,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns all reporting webhooks in the workspace.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "reporting_webhooks",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1526,6 +1967,25 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Reporting Webhooks Create
 
 Creates a new reporting webhook to receive event notifications at the specified endpoint.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "reporting_webhooks",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "endpoint": "<str>",
+    "events": [],
+    "disabled": true,
+    "full_resolution": true,
+    "with_content": true
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1596,6 +2056,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a single reporting webhook by ID.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "reporting_webhooks",
+  "action": "get",
+  "params": {
+    "webhook_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1648,6 +2122,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Reporting Webhooks Update
 
 Updates an existing reporting webhook's configuration.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "reporting_webhooks",
+  "action": "update",
+  "params": {
+    "name": "<str>",
+    "endpoint": "<str>",
+    "events": [],
+    "disabled": true,
+    "full_resolution": true,
+    "with_content": true,
+    "webhook_id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1722,6 +2216,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns all exports in the workspace.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "exports",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1769,6 +2274,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Triggers a new export of customer data. Use filters to select which customers to export.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "exports",
+  "action": "create",
+  "params": {
+    "filters": {}
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1804,6 +2323,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Exports Get
 
 Returns a single export by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "exports",
+  "action": "get",
+  "params": {
+    "export_id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1865,6 +2398,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all transactional message templates in the workspace.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "transactional_messages",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1910,6 +2454,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Transactional Messages Get
 
 Returns a single transactional message template by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "transactional_messages",
+  "action": "get",
+  "params": {
+    "transactional_id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1969,6 +2527,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Transactional Message Contents List
 
 Returns all content variants (including language translations) for a transactional message template.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "transactional_message_contents",
+  "action": "list",
+  "params": {
+    "transactional_id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2034,6 +2606,29 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Transactional Message Contents Update
 
 Updates the content of a specific variant of a transactional message template by content ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "transactional_message_contents",
+  "action": "update",
+  "params": {
+    "body": "<str>",
+    "from_id": 0,
+    "reply_to_id": 0,
+    "recipient": "<str>",
+    "subject": "<str>",
+    "preheader_text": "<str>",
+    "body_amp": "<str>",
+    "headers": [],
+    "transactional_id": 0,
+    "content_id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2131,6 +2726,37 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Sends a transactional email to a single recipient. Can use a pre-built template (via transactional_message_id) or provide inline content (subject, body, from). Creates the recipient profile if it does not already exist.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "transactional_email",
+  "action": "create",
+  "params": {
+    "transactional_message_id": 0,
+    "to": "<str>",
+    "identifiers": {},
+    "message_data": {},
+    "from": "<str>",
+    "subject": "<str>",
+    "body": "<str>",
+    "body_plain": "<str>",
+    "reply_to": "<str>",
+    "bcc": "<str>",
+    "headers": {},
+    "preheader_text": "<str>",
+    "attachments": {},
+    "disable_message_retention": true,
+    "send_to_unsubscribed": true,
+    "tracked": true,
+    "queue_draft": true,
+    "send_at": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2234,6 +2860,28 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Sends a transactional SMS to a single recipient. Always requires a pre-built template (transactional_message_id). Requires Twilio integration to be configured in the workspace.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "transactional_sms",
+  "action": "create",
+  "params": {
+    "transactional_message_id": 0,
+    "to": "<str>",
+    "identifiers": {},
+    "message_data": {},
+    "from": "<str>",
+    "send_to_unsubscribed": true,
+    "tracked": true,
+    "queue_draft": true,
+    "disable_message_retention": true
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2308,6 +2956,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Sends a transactional push notification to a single recipient. Can use a template or provide inline title and message. Requires push notifications to be configured in the workspace.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "transactional_push",
+  "action": "create",
+  "params": {
+    "transactional_message_id": 0,
+    "to": "<str>",
+    "identifiers": {},
+    "message_data": {},
+    "title": "<str>",
+    "message": "<str>",
+    "link": "<str>",
+    "image_url": "<str>",
+    "custom_data": {},
+    "custom_payload": {},
+    "sound": "<str>",
+    "send_to_unsubscribed": true,
+    "queue_draft": true,
+    "disable_message_retention": true,
+    "send_at": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2402,6 +3078,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Sends a transactional in-app inbox message to a single recipient. Always requires a pre-built Inbox-type transactional message template (transactional_message_id). Messages appear in the recipient's notification inbox via the Customer.io SDK.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "transactional_inbox_message",
+  "action": "create",
+  "params": {
+    "transactional_message_id": 0,
+    "identifiers": {},
+    "message_data": {}
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2458,6 +3150,29 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Triggers an API-triggered broadcast campaign. The broadcast must be configured as API-triggered in the Customer.io UI. Cannot be triggered more than once every 10 seconds, with a maximum of 5 queued broadcasts per campaign. Recipients must already exist in the workspace.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "broadcast_trigger",
+  "action": "create",
+  "params": {
+    "data": {},
+    "recipients": {},
+    "ids": [],
+    "emails": [],
+    "per_user_data": [],
+    "data_file_url": "<str>",
+    "id_ignore_missing": true,
+    "email_ignore_missing": true,
+    "email_add_duplicates": true,
+    "campaign_id": 0
+  }
+}'
+```
 
 #### Python SDK
 

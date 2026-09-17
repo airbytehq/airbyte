@@ -21,6 +21,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import java.sql.Connection
+import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Statement
 import java.time.Duration
@@ -151,11 +152,16 @@ class MsSqlServerDebeziumOperationsTest {
     ): JdbcConnectionFactory {
         val connection = mockk<Connection>()
         val statement = mockk<Statement>()
+        val preparedStatement = mockk<PreparedStatement>()
         every { connection.createStatement() } returns statement
+        every { connection.prepareStatement(any()) } returns preparedStatement
         every { connection.close() } just runs
         every { statement.close() } just runs
         every { statement.executeQuery(any()) } returnsMany
-            (listOf(validLsnResultSet()) + cdcResultSets)
+            (listOf(captureInstancesResultSet("dbo" to "users")) + cdcResultSets)
+        every { preparedStatement.setString(any(), any()) } just runs
+        every { preparedStatement.close() } just runs
+        every { preparedStatement.executeQuery() } returns validLsnResultSet()
 
         return object : JdbcConnectionFactory(configuration) {
             override fun get(): Connection = connection
@@ -167,6 +173,17 @@ class MsSqlServerDebeziumOperationsTest {
         every { resultSet.next() } returns true
         every { resultSet.getBytes("min_lsn") } returns Lsn.valueOf(LSN).getBinary()
         every { resultSet.getBytes("max_lsn") } returns Lsn.valueOf(LSN).getBinary()
+        every { resultSet.close() } just runs
+        return resultSet
+    }
+
+    private fun captureInstancesResultSet(vararg tables: Pair<String, String>): ResultSet {
+        val resultSet = mockk<ResultSet>()
+        every { resultSet.next() } returnsMany (tables.map { true } + false)
+        every { resultSet.getString("source_schema") } returnsMany tables.map { it.first }
+        every { resultSet.getString("source_table") } returnsMany tables.map { it.second }
+        every { resultSet.getString("capture_instance") } returnsMany
+            tables.map { "${it.first}_${it.second}" }
         every { resultSet.close() } just runs
         return resultSet
     }

@@ -4,33 +4,27 @@
 
 import base64
 import binascii
-import re
 import struct
-from abc import ABC, abstractmethod
-from datetime import timedelta, timezone
+from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
 import requests
-from dateutil.parser import parse as date_parse
 
 from airbyte_cdk import BackoffStrategy, StreamSlice
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, Level, SyncMode
-from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.checkpoint.substream_resumable_full_refresh_cursor import SubstreamResumableFullRefreshCursor
-from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream
+from airbyte_cdk.sources.streams.core import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_parse
 
 from . import constants
-from .backoff_strategies import ContributorActivityBackoffStrategy, GithubStreamABCBackoffStrategy
+from .backoff_strategies import GithubStreamABCBackoffStrategy
 from .errors_handlers import (
     GITHUB_DEFAULT_ERROR_MAPPING,
-    ContributorActivityErrorHandler,
     GitHubGraphQLErrorHandler,
     GithubStreamABCErrorHandler,
     is_conflict_with_empty_repository,
@@ -45,7 +39,7 @@ from .graphql import (
     get_query_releases,
     get_query_reviews,
 )
-from .utils import GitHubAPILimitException, getter
+from .utils import getter
 
 
 class GithubStreamABC(HttpStream, ABC):
@@ -56,9 +50,14 @@ class GithubStreamABC(HttpStream, ABC):
     max_retries: int = 5
     stream_base_params = {}
 
-    def __init__(self, api_url: str = "https://api.github.com", access_token_type: str = "", **kwargs):
-        if kwargs.get("authenticator"):
-            kwargs["authenticator"].max_time = kwargs.pop("max_waiting_time", self.max_time)
+    def __init__(
+        self,
+        api_url: str = "https://api.github.com",
+        access_token_type: str = "",
+        max_wait_time_seconds: float = 120 * 60,
+        **kwargs,
+    ):
+        self.max_wait_time_seconds = max_wait_time_seconds
         super().__init__(**kwargs)
 
         self.access_token_type = access_token_type
@@ -116,7 +115,7 @@ class GithubStreamABC(HttpStream, ABC):
         )
 
     def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
-        return GithubStreamABCBackoffStrategy(stream=self)
+        return GithubStreamABCBackoffStrategy(stream=self, max_wait_time_seconds=self.max_wait_time_seconds)
 
     @staticmethod
     def check_graphql_rate_limited(response_json: dict) -> bool:
@@ -128,8 +127,6 @@ class GithubStreamABC(HttpStream, ABC):
         return False
 
     def read_records(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        # get out the stream_slice parts for later use.
-        organisation = stream_slice.get("organization", "")
         repository = stream_slice.get("repository", "")
         # Reading records while handling the errors
         try:
@@ -146,40 +143,19 @@ class GithubStreamABC(HttpStream, ABC):
             if not hasattr(e, "_exception") or getattr(e._exception, "response", None) is None:
                 raise e
             if e._exception.response.status_code == requests.codes.NOT_FOUND:
-                # A lot of streams are not available for repositories owned by a user instead of an organization.
-                if isinstance(self, Organizations):
-                    error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for organization `{organisation}`."
-                elif isinstance(self, TeamMemberships):
-                    error_msg = f"Syncing `{self.__class__.__name__}` stream for organization `{organisation}`, team `{stream_slice.get('team_slug')}` and user `{stream_slice.get('username')}` isn't available: User has no team membership. Skipping..."
-                else:
-                    error_msg = (
-                        f"Skipping `{self.__class__.__name__}` for repository `{repository}`: "
-                        f"GitHub returned 404 Not Found. The repository may not exist, may have been deleted, "
-                        f"or the configured token may lack access to it."
-                    )
+                error_msg = (
+                    f"Skipping `{self.__class__.__name__}` for repository `{repository}`: "
+                    f"GitHub returned 404 Not Found. The repository may not exist, may have been deleted, "
+                    f"or the configured token may lack access to it."
+                )
             elif e._exception.response.status_code == requests.codes.FORBIDDEN:
                 api_message = (e._exception.response.json() or {}).get("message", "")
-                # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
-                if isinstance(self, Repositories):
-                    raise e
-                # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
-                # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
-                # For all `Organisation` based streams
-                elif isinstance(self, (Organizations, Teams, Users)):
-                    error_msg = (
-                        f"Skipping `{self.name}` for organization `{organisation}`: "
-                        f"GitHub denied access (HTTP 403). Your token may be missing the `read:org` scope, "
-                        f"or this organization may require SAML SSO authorization. "
-                        f"GitHub message: {api_message!r}"
-                    )
-                # For all other `Repository` base streams
-                else:
-                    error_msg = (
-                        f"Skipping `{self.name}` for repository `{repository}`: "
-                        f"GitHub denied access (HTTP 403). Your token may be missing required scopes, "
-                        f"or this organization may require SAML SSO authorization. "
-                        f"GitHub message: {api_message!r}"
-                    )
+                error_msg = (
+                    f"Skipping `{self.name}` for repository `{repository}`: "
+                    f"GitHub denied access (HTTP 403). Your token may be missing required scopes, "
+                    f"or this organization may require SAML SSO authorization. "
+                    f"GitHub message: {api_message!r}"
+                )
             elif e._exception.response.status_code == requests.codes.UNAUTHORIZED:
                 api_message = (e._exception.response.json() or {}).get("message", "")
                 if self.access_token_type == constants.PERSONAL_ACCESS_TOKEN_TITLE:
@@ -194,8 +170,6 @@ class GithubStreamABC(HttpStream, ABC):
                     f"Skipping `{self.name}` for repository `{stream_slice['repository']}`: "
                     f"GitHub returned 409 Conflict. The repository is likely empty (no commits)."
                 )
-            elif e._exception.response.status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
-                error_msg = f"Syncing `{self.name}` stream isn't available for repository `{stream_slice['repository']}`."
             elif e._exception.response.status_code == requests.codes.BAD_GATEWAY:
                 error_msg = (
                     f"GitHub returned HTTP 502 Bad Gateway for stream `{self.name}` after exhausting retries. "
@@ -212,12 +186,33 @@ class GithubStreamABC(HttpStream, ABC):
                 raise e
 
             self.logger.warning(error_msg)
-        except GitHubAPILimitException as e:
-            internal_message = f"Stream: `{self.name}`, slice: `{stream_slice}`. {e}"
-            message = "Rate limit exceeded for all configured GitHub API tokens."
-            raise AirbyteTracedException(
-                internal_message=internal_message, message=message, failure_type=FailureType.transient_error
-            ) from e
+            self._close_slice_after_swallowed_error(stream_slice)
+        # Exhausting every token no longer raises a connector-specific exception here: the
+        # shared authenticator raises AirbyteTracedException(transient_error) itself, which the
+        # `except AirbyteTracedException` branch above re-raises untouched (it carries no
+        # response to classify).
+
+    def _close_slice_after_swallowed_error(self, stream_slice: Optional[Mapping[str, Any]]) -> None:
+        """Mark the slice complete when `read_records` skipped it instead of raising.
+
+        `HttpStream._read_pages` closes a resumable-full-refresh slice only after the last
+        page, so an error swallowed mid-slice leaves the partition's cursor state empty and
+        `CursorBasedCheckpointReader._find_next_slice` hands the same partition back forever
+        — no record, no STATE, and the platform kills the attempt on the source heartbeat.
+        Closing the slice makes a swallowed error terminal, as the warning above implies.
+        """
+        cursor = self.get_cursor()
+        if not isinstance(cursor, SubstreamResumableFullRefreshCursor):
+            return
+        # Only close a partition the slice actually names. Several substreams read their parent
+        # by calling its `read_records` straight from `stream_slices()` with a bare mapping that
+        # has no `partition` key (`TeamMembers`, `IssueTimelineEvents`, `utils.read_full_refresh`,
+        # ...), and those parents are shared instances that emit their own STATE later — closing
+        # `_extract_slice_fields`' `{}` fallback would put a meaningless entry in it.
+        partition = (stream_slice or {}).get("partition")
+        if not partition:
+            return
+        cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition))
 
 
 class GithubStream(GithubStreamABC):
@@ -261,39 +256,6 @@ class GithubStream(GithubStreamABC):
 
         return record
 
-    def _safe_json_list(self, response: requests.Response, key: Optional[str] = None) -> Optional[list]:
-        """Parse JSON from `response` and return a list, or ``None`` on failure.
-
-        When `key` is provided the body is expected to be a dict and the list is
-        extracted via ``body[key]``.  When `key` is ``None`` the body itself must
-        be a list.  On any parse/validation failure a warning is logged and
-        ``None`` is returned so callers can short-circuit gracefully.
-        """
-        try:
-            body = response.json()
-        except ValueError:
-            self.logger.warning(
-                "`%s` received non-JSON response (HTTP %s, first 50 chars: %r).",
-                self.name,
-                response.status_code,
-                response.text[:50],
-            )
-            return None
-        if key is not None:
-            items = (body or {}).get(key)
-        else:
-            items = body
-        if not isinstance(items, list):
-            self.logger.warning(
-                "`%s` response has unexpected structure (HTTP %s, key=%r, got %s).",
-                self.name,
-                response.status_code,
-                key,
-                type(items).__name__,
-            )
-            return None
-        return items
-
     def parse_response(
         self,
         response: requests.Response,
@@ -327,8 +289,8 @@ class SemiIncrementalMixin(CheckpointMixin):
     # we should break processing records if possible. If `sort` is set to `updated` and `direction` is set to `desc`
     # this means that latest records will be at the beginning of the response and after we processed those latest
     # records we can just stop and not process other record. This will increase speed of each incremental stream
-    # which supports those 2 request parameters. Currently only `IssueMilestones` and `PullRequests` streams are
-    # supporting this.
+    # which supports those 2 request parameters. Of the remaining Python streams only `PullRequests` (a technical
+    # parent, see below) still uses it; the declarative equivalent is `is_data_feed: true` in `manifest.yaml`.
     is_sorted = False
 
     def __init__(self, start_date: str = "", **kwargs):
@@ -412,422 +374,13 @@ class SemiIncrementalMixin(CheckpointMixin):
         yield from super().stream_slices(**kwargs)
 
 
-class IncrementalMixin(SemiIncrementalMixin):
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        since_params = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
-        if since_params:
-            params["since"] = since_params
-        return params
-
-
 # Below are full refresh streams
-
-
-class RepositoryStats(GithubStream):
-    """
-    This stream is technical and not intended for the user, we use it for checking connection with the repository.
-    API docs: https://docs.github.com/en/rest/reference/repos#get-a-repository
-    """
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}"
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        yield response.json()
-
-
-class Assignees(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/issues/assignees?apiVersion=2022-11-28#list-assignees
-    """
-
-
-class Branches(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/branches/branches?apiVersion=2022-11-28#list-branches
-    """
-
-    primary_key = ["repository", "name"]
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/branches"
-
-
-class Collaborators(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/collaborators/collaborators?apiVersion=2022-11-28#list-repository-collaborators
-    """
-
-
-class IssueLabels(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/issues/labels?apiVersion=2022-11-28#list-labels-for-a-repository
-    """
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/labels"
-
-
-class Organizations(GithubStreamABC):
-    """
-    API docs: https://docs.github.com/en/rest/orgs/orgs?apiVersion=2022-11-28#list-organizations
-    """
-
-    # GitHub pagination could be from 1 to 100.
-    page_size = 100
-
-    def __init__(self, organizations: List[str], access_token_type: str = "", **kwargs):
-        super().__init__(**kwargs)
-        self.organizations = organizations
-        self.access_token_type = access_token_type
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        for organization in self.organizations:
-            yield {"organization": organization}
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield response.json()
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record["organization"] = stream_slice["organization"]
-        return record
-
-
-class Repositories(SemiIncrementalMixin, Organizations):
-    """
-    API docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-organization-repositories
-    """
-
-    is_sorted = "desc"
-    stream_base_params = {
-        "sort": "updated",
-        "direction": "desc",
-    }
-
-    def __init__(self, *args, pattern: Optional[str] = None, **kwargs):
-        self._pattern = re.compile(pattern) if pattern else pattern
-        super().__init__(*args, **kwargs)
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}/repos"
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        for record in response.json():  # GitHub puts records in an array.
-            record = self.transform(record=record, stream_slice=stream_slice)
-            if not self._pattern or self._pattern.match(record["full_name"]):
-                yield record
-
-
-class Tags(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
-    """
-
-    primary_key = ["repository", "name"]
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/tags"
-
-
-class Teams(Organizations):
-    """
-    API docs: https://docs.github.com/en/rest/teams/teams?apiVersion=2022-11-28#list-teams
-    """
-
-    use_cache = True
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}/teams"
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        for record in response.json():
-            yield self.transform(record=record, stream_slice=stream_slice)
-
-
-class Users(Organizations):
-    """
-    API docs: https://docs.github.com/en/rest/orgs/members?apiVersion=2022-11-28#list-organization-members
-    """
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}/members"
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        for record in response.json():
-            yield self.transform(record=record, stream_slice=stream_slice)
 
 
 # Below are semi incremental streams
 
 
-class Events(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/activity/events?apiVersion=2022-11-28#list-repository-events
-    """
-
-    cursor_field = "created_at"
-
-
-class PullRequests(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests
-    """
-
-    use_cache = True
-    large_stream = True
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._first_read = True
-
-    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        """
-        Decide if this a first read or not by the presence of the state object
-        """
-        self._first_read = not bool(stream_state)
-        yield from super().read_records(stream_state=stream_state, **kwargs)
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/pulls"
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record = super().transform(record=record, stream_slice=stream_slice)
-
-        for nested in ("head", "base"):
-            entry = record.get(nested, {})
-            entry["repo_id"] = (record.get("head", {}).pop("repo", {}) or {}).get("id")
-
-        return record
-
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        base_params = super().request_params(**kwargs)
-        # The very first time we read this stream we want to read ascending so we can save state in case of
-        # a halfway failure. But if there is state, we read descending to allow incremental behavior.
-        params = {"state": "all", "sort": "updated", "direction": self.is_sorted}
-
-        return {**base_params, **params}
-
-    @property
-    def is_sorted(self) -> str:
-        """
-        Depending if there any state we read stream in ascending or descending order.
-        """
-        if self._first_read:
-            return "asc"
-        return "desc"
-
-
-class CommitComments(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/commits/comments?apiVersion=2022-11-28#list-commit-comments-for-a-repository
-    """
-
-    use_cache = True
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/comments"
-
-
-class IssueMilestones(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/issues/milestones?apiVersion=2022-11-28#list-milestones
-    """
-
-    is_sorted = "desc"
-    stream_base_params = {
-        "state": "all",
-        "sort": "updated",
-        "direction": "desc",
-    }
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/milestones"
-
-
-class Stargazers(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-stargazers
-    """
-
-    primary_key = "user_id"
-    cursor_field = "starred_at"
-
-    def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        base_headers = super().request_headers(**kwargs)
-        # We need to send below header if we want to get `starred_at` field. See docs (Alternative response with
-        # star creation timestamps) - https://docs.github.com/en/rest/reference/activity#list-stargazers.
-        headers = {"Accept": "application/vnd.github.v3.star+json"}
-
-        return {**base_headers, **headers}
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        """
-        We need to provide the "user_id" for the primary_key attribute
-        and don't remove the whole "user" block from the record.
-        """
-        record = super().transform(record=record, stream_slice=stream_slice)
-        record["user_id"] = record.get("user").get("id")
-        return record
-
-
-class Projects(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/projects/projects?apiVersion=2022-11-28#list-repository-projects
-    """
-
-    use_cache = True
-    stream_base_params = {
-        "state": "all",
-    }
-
-    def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        base_headers = super().request_headers(**kwargs)
-        # Projects stream requires sending following `Accept` header. If we won't sent it
-        # we'll get `415 Client Error: Unsupported Media Type` error.
-        headers = {"Accept": "application/vnd.github.inertia-preview+json"}
-
-        return {**base_headers, **headers}
-
-
-class IssueEvents(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/issues/events?apiVersion=2022-11-28#list-issue-events-for-a-repository
-    """
-
-    cursor_field = "created_at"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/issues/events"
-
-
 # Below are incremental streams
-
-
-class Comments(IncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/issues/comments?apiVersion=2022-11-28#list-issue-comments-for-a-repository
-    """
-
-    use_cache = True
-    large_stream = True
-    max_retries = 7
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/issues/comments"
-
-
-class Commits(IncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#list-commits
-
-    Pull commits from each branch of each repository, tracking state for each branch
-    """
-
-    primary_key = "sha"
-    cursor_field = "created_at"
-    slice_keys = ["repository", "branch"]
-
-    def __init__(self, branches_to_pull: List[str], **kwargs):
-        super().__init__(**kwargs)
-        kwargs.pop("start_date")
-        self.branches_to_repos = {}
-        self.branches_to_pull = set(branches_to_pull)
-        self.branches_stream = Branches(**kwargs)
-        self.repositories_stream = RepositoryStats(**kwargs)
-
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super(IncrementalMixin, self).request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-        since = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
-        if since:
-            params["since"] = since
-        params["sha"] = stream_slice["branch"]
-        return params
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        self._validate_branches_to_pull()
-        for stream_slice in super().stream_slices(**kwargs):
-            repository = stream_slice["repository"]
-            for branch in self.branches_to_repos.get(repository, []):
-                yield {"branch": branch, "repository": repository}
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record = super().transform(record=record, stream_slice=stream_slice)
-
-        # Record of the `commits` stream doesn't have an updated_at/created_at field at the top level (so we could
-        # just write `record["updated_at"]` or `record["created_at"]`). Instead each record has such value in
-        # `commit.author.date`. So the easiest way is to just enrich the record returned from API with top level
-        # field `created_at` and use it as cursor_field.
-        # Include the branch in the record
-        record["created_at"] = record["commit"]["author"]["date"]
-        record["branch"] = stream_slice["branch"]
-
-        return record
-
-    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        repository = latest_record["repository"]
-        branch = latest_record["branch"]
-        updated_state = latest_record[self.cursor_field]
-        stream_state_value = current_stream_state.get(repository, {}).get(branch, {}).get(self.cursor_field)
-        if stream_state_value:
-            updated_state = max(updated_state, stream_state_value)
-        current_stream_state.setdefault(repository, {}).setdefault(branch, {})[self.cursor_field] = updated_state
-        return current_stream_state
-
-    def _validate_branches_to_pull(self):
-        # Get the default branch for each repository
-        default_branches = {}
-        for stream_slice in self.repositories_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-            for repo_stats in self.repositories_stream.read_records(stream_slice=stream_slice, sync_mode=SyncMode.full_refresh):
-                default_branches[repo_stats["full_name"]] = repo_stats["default_branch"]
-
-        all_branches = []
-        for stream_slice in self.branches_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-            for branch in self.branches_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                all_branches.append(f"{branch['repository']}/{branch['name']}")
-
-        # Create mapping of repository to list of branches to pull commits for
-        # If no branches are specified for a repo, use its default branch
-        for repo in self.repositories:
-            repo_branches = []
-            for branch in self.branches_to_pull:
-                branch_parts = branch.split("/", 2)
-                if "/".join(branch_parts[:2]) == repo and branch in all_branches:
-                    repo_branches.append(branch_parts[-1])
-            if not repo_branches:
-                repo_branches = [default_branches[repo]]
-            self.branches_to_repos[repo] = repo_branches
-
-
-class Issues(IncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
-    """
-
-    use_cache = True
-    large_stream = True
-    is_sorted = "asc"
-
-    stream_base_params = {
-        "state": "all",
-        "sort": "updated",
-        "direction": "asc",
-    }
-
-
-class ReviewComments(IncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28#list-review-comments-in-a-repository
-    """
-
-    use_cache = True
-    large_stream = True
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/pulls/comments"
 
 
 class GitHubGraphQLStream(GithubStream, ABC):
@@ -1134,39 +687,6 @@ class Reviews(SemiIncrementalMixin, GitHubGraphQLStream):
         return {"query": query}
 
 
-class PullRequestCommits(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-commits-on-a-pull-request
-    """
-
-    primary_key = "sha"
-
-    def __init__(self, parent: HttpStream, **kwargs):
-        super().__init__(**kwargs)
-        self.parent = parent
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_number']}/commits"
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
-        )
-        for stream_slice in parent_stream_slices:
-            parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
-            for record in parent_records:
-                yield {"repository": record["repository"], "pull_number": record["number"]}
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record = super().transform(record=record, stream_slice=stream_slice)
-        record["pull_number"] = stream_slice["pull_number"]
-        return record
-
-
 class ProjectsV2(SemiIncrementalMixin, GitHubGraphQLStream):
     """
     API docs: https://docs.github.com/en/graphql/reference/objects#projectv2
@@ -1206,99 +726,6 @@ class ProjectsV2(SemiIncrementalMixin, GitHubGraphQLStream):
 
 
 # Reactions streams
-
-
-class ReactionStream(GithubStream, CheckpointMixin, ABC):
-    parent_key = "id"
-    copy_parent_key = "comment_id"
-    cursor_field = "created_at"
-
-    def __init__(self, start_date: str = "", **kwargs):
-        super().__init__(**kwargs)
-        kwargs["start_date"] = start_date
-        self._parent_stream = self.parent_entity(**kwargs)
-        self._start_date = start_date
-
-    @property
-    @abstractmethod
-    def parent_entity(self):
-        """
-        Specify the class of the parent stream for which receive reactions
-        """
-
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        return self._state
-
-    @state.setter
-    def state(self, value: MutableMapping[str, Any]):
-        self._state = value
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        parent_path = self._parent_stream.path(stream_slice=stream_slice, **kwargs)
-        return f"{parent_path}/{stream_slice[self.copy_parent_key]}/reactions"
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        for stream_slice in super().stream_slices(**kwargs):
-            for parent_record in self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                yield {self.copy_parent_key: parent_record[self.parent_key], "repository": stream_slice["repository"]}
-
-    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        repository = latest_record["repository"]
-        parent_id = str(latest_record[self.copy_parent_key])
-        updated_state = latest_record[self.cursor_field]
-        stream_state_value = current_stream_state.get(repository, {}).get(parent_id, {}).get(self.cursor_field)
-        if stream_state_value:
-            updated_state = max(updated_state, stream_state_value)
-        current_stream_state.setdefault(repository, {}).setdefault(parent_id, {})[self.cursor_field] = updated_state
-        return current_stream_state
-
-    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
-        if stream_state:
-            repository = stream_slice["repository"]
-            parent_id = str(stream_slice[self.copy_parent_key])
-            stream_state_value = stream_state.get(repository, {}).get(parent_id, {}).get(self.cursor_field)
-            if stream_state_value:
-                if self._start_date:
-                    return max(self._start_date, stream_state_value)
-                return stream_state_value
-        return self._start_date
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        starting_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
-        for record in super().read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-        ):
-            if not starting_point or record[self.cursor_field] > starting_point:
-                yield record
-                self.state = self._get_updated_state(self.state, record)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record = super().transform(record, stream_slice)
-        record[self.copy_parent_key] = stream_slice[self.copy_parent_key]
-        return record
-
-
-class CommitCommentReactions(ReactionStream):
-    """
-    API docs: https://docs.github.com/en/rest/reference/reactions?apiVersion=2022-11-28#list-reactions-for-a-commit-comment
-    """
-
-    parent_entity = CommitComments
-
-
-class IssueCommentReactions(ReactionStream):
-    """
-    API docs: https://docs.github.com/en/rest/reactions/reactions?apiVersion=2022-11-28#list-reactions-for-an-issue-comment
-    """
-
-    parent_entity = Comments
 
 
 class IssueReactions(SemiIncrementalMixin, GitHubGraphQLStream):
@@ -1480,476 +907,3 @@ class PullRequestCommentReactions(SemiIncrementalMixin, GitHubGraphQLStream):
             query = self.query_reactions.get_query_root_repository(owner=organization, name=name, first=self.page_size)
 
         return {"query": query}
-
-
-class Deployments(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/deployments/deployments?apiVersion=2022-11-28#list-deployments
-    """
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/deployments"
-
-
-class ProjectColumns(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/projects/columns?apiVersion=2022-11-28#list-project-columns
-    """
-
-    use_cache = True
-    cursor_field = "updated_at"
-
-    def __init__(self, parent: HttpStream, start_date: str, **kwargs):
-        super().__init__(**kwargs)
-        self.parent = parent
-        self._start_date = start_date
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"projects/{stream_slice['project_id']}/columns"
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
-        )
-        for stream_slice in parent_stream_slices:
-            parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
-            for record in parent_records:
-                yield {"repository": record["repository"], "project_id": record["id"]}
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        starting_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
-        for record in super().read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-        ):
-            if not starting_point or record[self.cursor_field] > starting_point:
-                yield record
-                self.state = self._get_updated_state(self.state, record)
-
-    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
-        if stream_state:
-            repository = stream_slice["repository"]
-            project_id = str(stream_slice["project_id"])
-            stream_state_value = stream_state.get(repository, {}).get(project_id, {}).get(self.cursor_field)
-            if stream_state_value:
-                if self._start_date:
-                    return max(self._start_date, stream_state_value)
-                return stream_state_value
-        return self._start_date
-
-    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        repository = latest_record["repository"]
-        project_id = str(latest_record["project_id"])
-        updated_state = latest_record[self.cursor_field]
-        stream_state_value = current_stream_state.get(repository, {}).get(project_id, {}).get(self.cursor_field)
-        if stream_state_value:
-            updated_state = max(updated_state, stream_state_value)
-        current_stream_state.setdefault(repository, {}).setdefault(project_id, {})[self.cursor_field] = updated_state
-        return current_stream_state
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record = super().transform(record=record, stream_slice=stream_slice)
-        record["project_id"] = stream_slice["project_id"]
-        return record
-
-
-class ProjectCards(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/projects/cards?apiVersion=2022-11-28#list-project-cards
-    """
-
-    cursor_field = "updated_at"
-    stream_base_params = {"archived_state": "all"}
-
-    def __init__(self, parent: HttpStream, start_date: str, **kwargs):
-        super().__init__(**kwargs)
-        self.parent = parent
-        self._start_date = start_date
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"projects/columns/{stream_slice['column_id']}/cards"
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
-        )
-        for stream_slice in parent_stream_slices:
-            parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
-            for record in parent_records:
-                yield {"repository": record["repository"], "project_id": record["project_id"], "column_id": record["id"]}
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        starting_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
-        for record in super().read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-        ):
-            if not starting_point or record[self.cursor_field] > starting_point:
-                yield record
-                self.state = self._get_updated_state(self.state, record)
-
-    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
-        if stream_state:
-            repository = stream_slice["repository"]
-            project_id = str(stream_slice["project_id"])
-            column_id = str(stream_slice["column_id"])
-            stream_state_value = stream_state.get(repository, {}).get(project_id, {}).get(column_id, {}).get(self.cursor_field)
-            if stream_state_value:
-                if self._start_date:
-                    return max(self._start_date, stream_state_value)
-                return stream_state_value
-        return self._start_date
-
-    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        repository = latest_record["repository"]
-        project_id = str(latest_record["project_id"])
-        column_id = str(latest_record["column_id"])
-        updated_state = latest_record[self.cursor_field]
-        stream_state_value = current_stream_state.get(repository, {}).get(project_id, {}).get(column_id, {}).get(self.cursor_field)
-        if stream_state_value:
-            updated_state = max(updated_state, stream_state_value)
-        current_stream_state.setdefault(repository, {}).setdefault(project_id, {}).setdefault(column_id, {})[self.cursor_field] = (
-            updated_state
-        )
-        return current_stream_state
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record = super().transform(record=record, stream_slice=stream_slice)
-        record["project_id"] = stream_slice["project_id"]
-        record["column_id"] = stream_slice["column_id"]
-        return record
-
-
-class Workflows(SemiIncrementalMixin, GithubStream):
-    """
-    Get all workflows of a GitHub repository
-    API documentation: https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows
-    """
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/actions/workflows"
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        items = self._safe_json_list(response, key="workflows")
-        if items is None:
-            return
-        for record in items:
-            yield self.transform(record=record, stream_slice=stream_slice)
-
-    def convert_cursor_value(self, value):
-        parsed_value = date_parse(value).astimezone(timezone.utc)
-        return ab_datetime_format(parsed_value, "%Y-%m-%dT%H:%M:%SZ")
-
-
-class WorkflowRuns(SemiIncrementalMixin, GithubStream):
-    """
-    Get all workflow runs for a GitHub repository
-    API documentation: https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository
-    """
-
-    # key for accessing slice value from record
-    record_slice_key = ["repository", "full_name"]
-
-    # https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs
-    re_run_period = 32  # days
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/actions/runs"
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        items = self._safe_json_list(response, key="workflow_runs")
-        if items is None:
-            return
-        for record in items:
-            yield record
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        # Records in the workflows_runs stream are naturally descending sorted by `created_at` field.
-        # On first sight this is not big deal because cursor_field is `updated_at`.
-        # But we still can use `created_at` as a breakpoint because after 30 days period
-        # https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs
-        # workflows_runs records cannot be updated. It means if we initially fully synced stream on subsequent incremental sync we need
-        # only to look behind on 30 days to find all records which were updated.
-        start_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
-        break_point = None
-        # the state is updated only in the end of the sync as records are sorted in reverse order
-        new_state = self.state
-        if start_point:
-            break_point = (ab_datetime_parse(start_point) - timedelta(days=self.re_run_period)).isoformat()
-        for record in super(SemiIncrementalMixin, self).read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-        ):
-            cursor_value = record[self.cursor_field]
-            created_at = record["created_at"]
-            if not start_point or cursor_value > start_point:
-                yield record
-                new_state = self._get_updated_state(new_state, record)
-            if break_point and created_at < break_point:
-                break
-        self.state = new_state
-
-
-class WorkflowJobs(SemiIncrementalMixin, GithubStream):
-    """
-    Get all workflow jobs for a workflow run
-    API documentation: https://docs.github.com/pt/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run
-    """
-
-    cursor_field = "completed_at"
-
-    def __init__(self, parent: WorkflowRuns, **kwargs):
-        super().__init__(**kwargs)
-        self.parent = parent
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/actions/runs/{stream_slice['run_id']}/jobs"
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        parent_stream_state = None
-        if stream_state is not None:
-            parent_stream_state = {repository: {self.parent.cursor_field: v[self.cursor_field]} for repository, v in stream_state.items()}
-        parent_stream_slices = self.parent.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=parent_stream_state)
-        for stream_slice in parent_stream_slices:
-            parent_records = self.parent.read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=parent_stream_state
-            )
-            for record in parent_records:
-                stream_slice["run_id"] = record["id"]
-                yield from super().read_records(
-                    sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-                )
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        items = self._safe_json_list(response, key="jobs")
-        if items is None:
-            return
-        for record in items:
-            if record.get(self.cursor_field):
-                yield self.transform(record=record, stream_slice=stream_slice)
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params["filter"] = "all"
-        return params
-
-
-class TeamMembers(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/teams/members?apiVersion=2022-11-28#list-team-members
-    """
-
-    use_cache = True
-    primary_key = ["id", "team_slug"]
-
-    def __init__(self, parent: Teams, **kwargs):
-        super().__init__(**kwargs)
-        self.parent = parent
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}/teams/{stream_slice['team_slug']}/members"
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
-        )
-        for stream_slice in parent_stream_slices:
-            parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
-            for record in parent_records:
-                yield {"organization": record["organization"], "team_slug": record["slug"]}
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record["organization"] = stream_slice["organization"]
-        record["team_slug"] = stream_slice["team_slug"]
-        return record
-
-
-class TeamMemberships(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/teams/members?apiVersion=2022-11-28#get-team-membership-for-a-user
-    """
-
-    primary_key = ["url"]
-
-    def __init__(self, parent: TeamMembers, **kwargs):
-        super().__init__(**kwargs)
-        self.parent = parent
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}/teams/{stream_slice['team_slug']}/memberships/{stream_slice['username']}"
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
-        )
-        for stream_slice in parent_stream_slices:
-            parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
-            for record in parent_records:
-                yield {"organization": record["organization"], "team_slug": record["team_slug"], "username": record["login"]}
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        yield self.transform(response.json(), stream_slice=stream_slice)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record["organization"] = stream_slice["organization"]
-        record["team_slug"] = stream_slice["team_slug"]
-        record["username"] = stream_slice["username"]
-        return record
-
-
-class ContributorActivity(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/metrics/statistics?apiVersion=2022-11-28#get-all-contributor-commit-activity
-    """
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/stats/contributors"
-
-    def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        params = super().request_headers(**kwargs)
-        params.update({"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"})
-        return params
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record["repository"] = stream_slice["repository"]
-        author = record.pop("author", None)
-        # It's been found that the author field can be None, so we check for it
-        if author:
-            record.update(author)
-        return record
-
-    def get_error_handler(self) -> Optional[ErrorHandler]:
-        return ContributorActivityErrorHandler(stream=self, logger=self.logger, max_retries=5, error_mapping=GITHUB_DEFAULT_ERROR_MAPPING)
-
-    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
-        return ContributorActivityBackoffStrategy()
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        if response.status_code == requests.codes.NO_CONTENT:
-            self.logger.warning(f"Empty response received for {self.name} stats in repository {stream_slice.get('repository')}")
-        else:
-            yield from super().parse_response(
-                response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-            )
-
-    def read_records(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        repository = stream_slice.get("repository", "")
-        try:
-            yield from super().read_records(stream_slice=stream_slice, **kwargs)
-        # HTTP Client wraps BackoffException into AirbyteTracedException
-        except AirbyteTracedException as e:
-            if hasattr(e, "_exception") and hasattr(e._exception, "response"):
-                if e._exception.response.status_code == requests.codes.ACCEPTED:
-                    yield AirbyteMessage(
-                        type=MessageType.LOG,
-                        log=AirbyteLogMessage(
-                            level=Level.INFO,
-                            message=f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`.",
-                        ),
-                    )
-
-                    # In order to retain the existing stream behavior before we added RFR to this stream, we need to close out the
-                    # partition after we give up the maximum number of retries on the 202 response. This does lead to the question
-                    # of if we should prematurely exit in the first place, but for now we're going to aim for feature parity
-                    partition_obj = stream_slice.get("partition")
-                    if self.cursor and partition_obj:
-                        self.cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition_obj))
-                else:
-                    raise e
-            else:
-                raise e
-
-
-class IssueTimelineEvents(GithubStream):
-    """
-    API docs https://docs.github.com/en/rest/issues/timeline?apiVersion=2022-11-28#list-timeline-events-for-an-issue
-    """
-
-    primary_key = ["repository", "issue_number"]
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.parent = Issues(**kwargs)
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/issues/{stream_slice['number']}/timeline"
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
-        )
-        for stream_slice in parent_stream_slices:
-            parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
-            for record in parent_records:
-                yield {"repository": record["repository"], "number": record["number"]}
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        record = {"repository": stream_slice["repository"], "issue_number": stream_slice["number"]}
-        events_list = self._safe_json_list(response)
-        if events_list is None:
-            yield record
-            return
-        for event in events_list:
-            record[event["event"]] = event
-        yield record

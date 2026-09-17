@@ -28,9 +28,8 @@ All Chargebee sites created after May 5, 2021 use [Product Catalog 2.0](https://
 6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. Only data created or updated on or after this date is replicated.
 7. For **API Key**, enter your [Chargebee API key](https://apidocs.chargebee.com/docs/api/auth).
 8. For **Product Catalog**, select your Chargebee [Product Catalog version](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2). The connector defaults to Product Catalog 2.0.
-9. For **Chargebee Subscription Plan**, select your Chargebee plan. The connector uses this to apply the correct local API request budget. If your plan has a custom limit, select the closest lower plan and tune **Number of concurrent threads** if needed.
-10. Optionally, adjust the **Number of concurrent threads** to control how many worker threads the connector uses during syncs. The default is 3. Higher values can increase throughput, but they also consume more of your [Chargebee API rate limit](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits).
-11. Click **Set up source**.
+9. Optionally, adjust the **Number of concurrent threads** to control how many worker threads the connector uses during syncs. The default is 5. Higher values can increase throughput, but they also consume more of your [Chargebee API rate limit](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits).
+10. Click **Set up source**.
 
 <HideInUI>
 
@@ -87,7 +86,7 @@ When using incremental sync mode, the `Attached Items` stream behaves differentl
 
 The Chargebee connector should not run into [Chargebee API](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_rate_limits) limitations under normal usage. The connector automatically retries rate-limited requests using the `Retry-After` header provided by the Chargebee API. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
-Chargebee API rate limits vary by plan. The connector uses the configured **Chargebee Subscription Plan** to budget requests locally at 150 requests per minute for Starter, 1000 requests per minute for Performance, or 3500 requests per minute for Enterprise. Chargebee limits test sites to 150 requests per minute regardless of plan. See [Chargebee's API limits documentation](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits) for details.
+Chargebee API rate limits vary by plan. Chargebee limits test sites to 150 requests per minute regardless of plan. See [Chargebee's API limits documentation](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits) for details.
 
 ### Deleted resources
 
@@ -112,6 +111,19 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.47 | 2026-09-15 | [85980](https://github.com/airbytehq/airbyte/pull/85980) | Update dependencies |
+| 0.10.46 | 2026-09-08 | [85441](https://github.com/airbytehq/airbyte/pull/85441) | Update dependencies |
+| 0.10.45 | 2026-08-18 | [84510](https://github.com/airbytehq/airbyte/pull/84510) | Update dependencies |
+| 0.10.44 | 2026-08-11 | [83885](https://github.com/airbytehq/airbyte/pull/83885) | Update dependencies |
+| 0.10.43 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 0.10.42 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 0.10.40 — 0.10.41 is built on SDM 7.23.7, which breaks bundled custom components |
+| 0.10.41 | 2026-07-28 | [82863](https://github.com/airbytehq/airbyte/pull/82863) | Update dependencies |
+| 0.10.40 | 2026-07-21 | [81761](https://github.com/airbytehq/airbyte/pull/81761) | Update dependencies |
+| 0.10.39 | 2026-06-30 | [81013](https://github.com/airbytehq/airbyte/pull/81013) | Update dependencies |
+| 0.10.38 | 2026-06-23 | [80404](https://github.com/airbytehq/airbyte/pull/80404) | Update dependencies |
+| 0.10.37 | 2026-06-16 | [78619](https://github.com/airbytehq/airbyte/pull/78619) | Update dependencies |
+| 0.10.36 | 2026-06-09 | [79604](https://github.com/airbytehq/airbyte/pull/79604) | Clean up cancelled RC; revert source to previous stable |
+| 0.10.36-rc.5 | 2026-05-27 | [78469](https://github.com/airbytehq/airbyte/pull/78469) | Remove the local API budget limiter while keeping the default worker count at 5. |
 | 0.10.36-rc.4 | 2026-05-26 | [78435](https://github.com/airbytehq/airbyte/pull/78435) | Reduce default concurrent threads to 3 after rollout duration regressions at 5. |
 | 0.10.36-rc.3 | 2026-05-22 | [78366](https://github.com/airbytehq/airbyte/pull/78366) | Revert `default_concurrency` to 5, activate tier-aware `HTTPAPIBudget`, and document `subscription_tier` for GA rollout |
 | 0.10.36-rc.2 | 2026-05-20 | [78300](https://github.com/airbytehq/airbyte/pull/78300) | Raise `default_concurrency` to 6 after Phase 1 monitoring of 0.10.36-rc.1 showed no rate-limit signal and faster high-volume sync averages excluding a stable-precedent multi-attempt outlier |
