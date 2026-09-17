@@ -371,6 +371,7 @@ def test_flattens_jsonapi_record(stream: str) -> None:
                 else:
                     assert record[field_name] == 1
             if "deleted" in records[record_number - 1]["attributes"]:
+                # deleted is ["string","null"]; the protocol serializer drops top-level None values
                 assert "deleted" not in record
         if stream == "creditnotelineitems":
             record = output.records[0].record.data
@@ -378,3 +379,41 @@ def test_flattens_jsonapi_record(stream: str) -> None:
             assert record["description"] == "Credit note line"
             assert record["taxcode"] == "GST"
         assert output.is_not_in_logs("does not conform")
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "Manifest AddFields renders attributes through Jinja, which literal_evals decimal strings "
+        "('10.00' -> 10.0) and null strings to the text 'None'; tracked as a follow-up connector fix"
+    ),
+)
+def test_creditnotelineitems_record_values_round_trip() -> None:
+    stream = "creditnotelineitems"
+    record = _record(stream, 1)
+    record["attributes"]["description"] = None
+    with HttpMocker() as http_mocker:
+        _mock_token(http_mocker)
+        first_page = UptickRequestBuilder.collection(stream)
+        http_mocker.get(first_page, _response([record]))
+
+        output = _read(stream)
+
+        assert output.errors == []
+        emitted = {k: v for k, v in output.records[0].record.data.items() if k not in ("attributes", "relationships")}
+        assert emitted == {
+            "type": "CreditNoteLineItem",
+            "id": 1,
+            "created": _CREATED,
+            "updated": _UPDATED,
+            "account_code": "4000",
+            "unit_price": "10.00",
+            "quantity": "1.00",
+            "subtotal": "10.00",
+            "tax": "1.00",
+            "total": "11.00",
+            "taxcode": "GST",
+            "taxrate": "10.00",
+            "creditnote_id": 1,
+            "product_id": 1,
+        }

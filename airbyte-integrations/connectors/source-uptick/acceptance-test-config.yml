@@ -18,17 +18,17 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
           - name: creditnotelineitems
-            bypass_reason: "Endpoint is GET-only in the Uptick API; credit-note line items cannot be created in the sandbox tenant"
+            bypass_reason: "Endpoint only allows GET in the sandbox tenant (observed via OPTIONS/POST probing); credit-note line items cannot be created in the sandbox tenant"
           - name: defectquotelineitems
-            bypass_reason: "Endpoint is GET-only in the Uptick API; defect-quote line items cannot be created in the sandbox tenant"
+            bypass_reason: "Not seedable in the certification sandbox tenant: the endpoint rejects writes (Uptick deprecated DefectQuoteLineItem CRUD in API v2.16; the connector pins v2.15)"
           - name: remarkevents
-            bypass_reason: "Endpoint is GET-only; creating/updating remarks in the sandbox tenant does not emit remark events"
+            bypass_reason: "Endpoint only allows GET in the sandbox tenant (observed via OPTIONS/POST probing); creating/updating remarks in the sandbox tenant does not emit remark events"
           - name: majorservices
-            bypass_reason: "Endpoint is GET-only in the Uptick API; no write path exists to seed major services in the sandbox tenant"
+            bypass_reason: "Endpoint only allows GET in the sandbox tenant (observed via OPTIONS/POST probing); no write path exists to seed major services in the sandbox tenant"
           - name: promptquestions
-            bypass_reason: "Endpoint is GET-only in the Uptick API; prompt questions cannot be created in the sandbox tenant"
+            bypass_reason: "Endpoint only allows GET in the sandbox tenant (observed via OPTIONS/POST probing); prompt questions cannot be created in the sandbox tenant"
           - name: promptanswers
-            bypass_reason: "Endpoint is GET-only in the Uptick API; prompt answers cannot be created in the sandbox tenant"
+            bypass_reason: "Endpoint only allows GET in the sandbox tenant (observed via OPTIONS/POST probing); prompt answers cannot be created in the sandbox tenant"
           - name: servicequotefixedlineitems
             bypass_reason: "POST returns 201 in the sandbox tenant but records never appear in the collection endpoint, so the stream cannot be seeded"
           - name: servicequotedoandchargelineitems
