@@ -595,9 +595,9 @@ def test_workflow_jobs_legacy_state_is_migrated(rate_limit_mock_response, reques
 
     assert error is None
     assert sorted(record["id"] for record in records) == [4, 5]
-    assert _requested(requests_mock, "/jobs") == ["/repos/org/repo/actions/runs/1/jobs?per_page=100&filter=all"], (
-        "run 2 predates the migrated parent cursor"
-    )
+    assert _requested(requests_mock, "/jobs") == [
+        "/repos/org/repo/actions/runs/1/jobs?per_page=100&filter=all"
+    ], "run 2 predates the migrated parent cursor"
     assert [request for request in requests_mock.request_history if request.path.endswith("/actions/runs")][-1].headers[
         "X-Airbyte-Window-Start"
     ] == "2022-09-02T09:10:00Z"
