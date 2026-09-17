@@ -375,7 +375,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: airbytehq/saas-sandbox
-          ref: 1e9a80fa506f9d624d23b34954fea126e95f9181
+          ref: accb9dbf5538c7a9524b9bcf1536ba14ccf11401
           token: ${{ secrets.SASS_SOURCE_READ_TOKEN }}
           path: sandbox-tool
           persist-credentials: false
