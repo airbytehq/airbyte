@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.security.MessageDigest
@@ -63,6 +64,7 @@ class EnabledSnowflakeS3Copy(
     private val columnManager: SnowflakeColumnManager,
     private val snowflakeConfiguration: SnowflakeConfiguration,
     private val uploader: SnowflakeCopyUploader = S3CsvUploader(config),
+    private val configuredCatalog: ConfiguredAirbyteCatalog? = null,
 ) : SnowflakeS3Copy {
     private val epochSeconds = Instant.now().epochSecond
     private val runId = UUID.randomUUID()
@@ -163,7 +165,18 @@ class EnabledSnowflakeS3Copy(
         stream.tableSchema.columnSchema.finalSchema.forEach { (n, t) ->
             columns[n] = mapOf("type" to t.type, "nullable" to t.nullable)
         }
+        // DestinationStream drops configured keys/cursors for append streams; read the input
+        // catalog.
+        val configured =
+            configuredCatalog?.streams?.singleOrNull {
+                it.stream.namespace == stream.unmappedNamespace &&
+                    it.stream.name == stream.unmappedName
+            }
+        val primaryKey = configured?.primaryKey.orEmpty()
+        val cursor = configured?.cursorField.orEmpty()
         return mapOf(
+            "primary_key" to primaryKey,
+            "cursor" to cursor,
             "contract_version" to 1,
             "connector" to "destination-snowflake",
             "format" to "snowflake-load-csv-gzip-v1",

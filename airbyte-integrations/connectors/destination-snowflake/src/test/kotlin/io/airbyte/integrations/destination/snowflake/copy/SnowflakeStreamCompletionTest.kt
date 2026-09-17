@@ -11,6 +11,9 @@ import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.mockk.every
 import io.mockk.mockk
 import java.nio.file.Path
@@ -66,7 +69,34 @@ class SnowflakeStreamCompletionTest {
         }
     }
 
-    private class Fixture(minimum: Long) {
+    @Test
+    fun `schema retains original configured primary key and cursor for append streams`() =
+        runBlocking {
+            val configured =
+                ConfiguredAirbyteStream()
+                    .withStream(AirbyteStream().withName("Orders/日本").withNamespace("public"))
+                    .withPrimaryKey(listOf(listOf("id"), listOf("nested", "key")))
+                    .withCursorField(listOf("updated_at"))
+            val fixture = Fixture(0, ConfiguredAirbyteCatalog().withStreams(listOf(configured)))
+            fixture.copy.use { copy ->
+                copy.prepare(DestinationCatalog(listOf(fixture.stream)))
+                val schema = Jsons.readTree(fixture.uploader.json.values.single())
+                assertEquals(
+                    listOf(listOf("id"), listOf("nested", "key")),
+                    schema["primary_key"].map { it.map { field -> field.asText() } }
+                )
+                assertEquals(listOf("updated_at"), schema["cursor"].map { it.asText() })
+            }
+            val unconfigured = Fixture(0)
+            unconfigured.copy.use { copy ->
+                copy.prepare(DestinationCatalog(listOf(unconfigured.stream)))
+                val schema = Jsons.readTree(unconfigured.uploader.json.values.single())
+                assertTrue(schema["primary_key"].isArray && schema["primary_key"].isEmpty)
+                assertTrue(schema["cursor"].isArray && schema["cursor"].isEmpty)
+            }
+        }
+
+    private class Fixture(minimum: Long, configuredCatalog: ConfiguredAirbyteCatalog? = null) {
         val stream =
             mockk<DestinationStream> {
                 every { unmappedName } returns "Orders/日本"
@@ -98,6 +128,7 @@ class SnowflakeStreamCompletionTest {
                 mockk(relaxed = true),
                 mockk(relaxed = true),
                 uploader,
+                configuredCatalog,
             )
     }
     private class FakeUploader : SnowflakeCopyUploader {
