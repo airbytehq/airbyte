@@ -69,9 +69,11 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
+**Start date** filters the Greenhouse request, not the sync. Every stream the table below marks as incremental sends `updated_at=gte|<start date>` on each sync, including a sync you configure as Full refresh, so a full refresh of those streams returns only records updated on or after your start date. Leave **Start date** empty to replicate all history.
+
 ## Supported Streams
 
-The table lists the stream names as they appear in Airbyte, with the Harvest v3 endpoint each one reads. **Start date** applies only to the incremental streams. Only the four demographics question and answer-option streams are full refresh, because Harvest v3 exposes no date filter on `/v3/demographic_questions` or `/v3/demographic_answer_options`; they always read everything the endpoint returns, and the two child streams among them pull parent IDs over your full Greenhouse history, so their coverage doesn't depend on **Start date** either.
+The table lists the stream names as they appear in Airbyte, with the Harvest v3 endpoint each one reads. **Start date** applies to every stream marked incremental here, in whichever sync mode you select it, and to no others. Only the four demographics question and answer-option streams are full refresh, because Harvest v3 exposes no date filter on `/v3/demographic_questions` or `/v3/demographic_answer_options`; they always read everything the endpoint returns, and the two child streams among them pull parent IDs over your full Greenhouse history, so their coverage doesn't depend on **Start date** either.
 
 | Stream | Sync mode | Notes |
 | :--- | :--- | :--- |
@@ -123,6 +125,7 @@ The connector requests 500 records per page, the Harvest v3 maximum, and then fo
 - **`custom_field_options`** reads every custom field option in your account, which makes it a superset of `degrees`, `disciplines`, and `schools`. Those three streams read the same Greenhouse endpoint filtered to one field key and share the same primary keys, so enabling all four writes the same option rows to four destination tables. Enable only the ones you need.
 - **`users`** includes integration service users, which Greenhouse hides by default. Service accounts have no email address, so `primary_email` is empty for those records.
 - **`rejection_reasons`** includes the default reasons Greenhouse ships with, not only the ones your organization added.
+- **Upgrading to 1.1.0 with a start date set** narrows what 18 streams return, including on full refresh. Before 1.1.0 those streams sent no date filter and read your whole history whatever **Start date** said; they are now incremental on `updated_at` and honor it in every sync mode. The streams are `activity_feed`, `approvals`, `close_reasons`, `custom_field_options`, `custom_fields`, `degrees`, `demographics_question_sets`, `departments`, `disciplines`, `jobs_openings`, `offices`, `prospect_pools`, `rejection_reasons`, `schools`, `sources`, `tags`, `user_permissions`, and `user_roles`. Clear **Start date** to keep reading full history.
 
 ## Troubleshooting
 
@@ -136,6 +139,12 @@ The connector can't renew its access token because Greenhouse rejected the refre
 ### Sync fails with a `403` configuration error on a stream
 
 The authorizing user isn't a Site Admin, or the consent flow didn't include the scope for that stream. Compare the scopes in [Prerequisites](#prerequisites) with the ones you approved, then re-run the consent flow as a Site Admin.
+
+### A stream returns fewer records after upgrading to 1.1.0
+
+1.1.0 made 18 streams incremental on `updated_at`, and **Start date** is applied as a Greenhouse query filter on those streams in every sync mode. If you have a start date set, records last updated before it are no longer returned - on incremental and full refresh alike. Earlier versions sent no date filter on these streams and ignored **Start date** for them entirely. See [Limitations](#limitations) for the stream list.
+
+To read full history again, clear **Start date** in your source settings, then [refresh](https://docs.airbyte.com/operator-guides/refreshes) the affected streams so the older records are written again.
 
 ## Migration from Harvest v1 before the v1/v2 sunset
 
@@ -152,7 +161,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.1.0 | 2026-09-11 | [85841](https://github.com/airbytehq/airbyte/pull/85841) | Sync 18 more streams incrementally on `updated_at`, read `activity_feed`, `jobs_openings`, and `user_permissions` directly instead of once per 50 parents, and suggest 10 streams for new connections |
+| 1.1.0 | 2026-09-11 | [85841](https://github.com/airbytehq/airbyte/pull/85841) | Sync 18 more streams incrementally on `updated_at`, so **Start date** now filters those streams in every sync mode, including full refresh; read `activity_feed`, `jobs_openings`, and `user_permissions` directly instead of once per 50 parents; and suggest 10 streams for new connections |
 | 1.0.3 | 2026-09-15 | [85507](https://github.com/airbytehq/airbyte/pull/85507) | Update dependencies |
 | 1.0.2 | 2026-09-02 | [85306](https://github.com/airbytehq/airbyte/pull/85306) | Clarify in the spec that OAuth credentials come from Airbyte's Greenhouse partner application and must not be requested from Greenhouse |
 | 1.0.1 | 2026-09-02 | [85300](https://github.com/airbytehq/airbyte/pull/85300) | Surface expired or rotated refresh tokens (`invalid_grant`) as a re-authenticate config error instead of a system error |
