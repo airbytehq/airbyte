@@ -4,7 +4,7 @@ This document guides you through setting up the Recharge source connector in Air
 
 **Key Features:**
 *   **Sync Modes:** Supports `Full Refresh` and `Incremental` syncs for core streams.
-*   **API Version:** Uses the `2021-11` API version for most streams. The `Orders` stream uses the deprecated `2021-01` API by default, with an option to switch to `2021-11`. The `Shop` stream always uses `2021-01`.
+*   **API Version:** Uses the `2021-11` API version for most streams. The `Orders` stream uses the deprecated `2021-01` API when **Use `Orders` Deprecated API** is on (the default in the setup form), and `2021-11` when it's off. The `Shop` stream always uses `2021-01`.
 *   **Lookback Window:** Supports a configurable lookback window for incremental streams to re-fetch recent data. The `events` stream is the exception, because the Recharge API only returns events from the last 7 days.
 
 ## Prerequisites
@@ -35,7 +35,7 @@ Before setting up the Recharge source, ensure you have the following:
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Recharge** from the Source type dropdown and enter a name for this connector.
-4. Enter the **Start Date** in the format `YYYY-MM-DDT00:00:00Z`. Data before this date isn't replicated. The `events` stream ignores this value if it's older than 7 days. See [Events stream](#events-stream).
+4. Enter the **Start Date** in the format `YYYY-MM-DDT00:00:00Z`. Incremental streams don't replicate records updated before this date; full refresh streams return all available data regardless. The `events` stream ignores this value if it's older than 7 days. See [Events stream](#events-stream).
 5. Enter your **Access Token** from Step 1.
 6. (Optional) Turn off **Use `Orders` Deprecated API** to sync the `Orders` stream with the `2021-11` API instead of the deprecated `2021-01` API.
 7. (Optional) Set a **Lookback Window (in days)** to re-fetch records updated within that many days before the saved sync position on each incremental sync. The default is `0`.
@@ -49,7 +49,7 @@ Before setting up the Recharge source, ensure you have the following:
 1. Navigate to your local Airbyte instance.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Recharge** from the Source type dropdown and enter a name for this connector.
-4. Enter the **Start Date** in the format `YYYY-MM-DDT00:00:00Z`. Data before this date isn't replicated. The `events` stream ignores this value if it's older than 7 days. See [Events stream](#events-stream).
+4. Enter the **Start Date** in the format `YYYY-MM-DDT00:00:00Z`. Incremental streams don't replicate records updated before this date; full refresh streams return all available data regardless. The `events` stream ignores this value if it's older than 7 days. See [Events stream](#events-stream).
 5. Enter your **Access Token** from Step 1.
 6. (Optional) Turn off **Use `Orders` Deprecated API** to sync the `Orders` stream with the `2021-11` API instead of the deprecated `2021-01` API.
 7. (Optional) Set a **Lookback Window (in days)** to re-fetch records updated within that many days before the saved sync position on each incremental sync. The default is `0`.
@@ -86,7 +86,7 @@ The Recharge source connector supports the following sync modes:
 | Subscriptions      | [2021-11](https://developer.rechargepayments.com/2021-11/subscriptions)                                                                          | id          | ✅                    | ✅                   | ✅ Standard Plan             |
 
 **Notes on Streams:**
-*   **Orders Stream:** By default, the connector uses the deprecated `2021-01` API for the `Orders` stream because the **Use `Orders` Deprecated API** option is turned on. Turn it off to use the `2021-11` API instead.
+*   **Orders Stream:** The **Use `Orders` Deprecated API** option is on by default in the setup form, so the connector uses the deprecated `2021-01` API for the `Orders` stream. Turn it off to use the `2021-11` API instead. If you create the source programmatically and omit this field, the connector uses `2021-11`.
 *   **Shop Stream:** The `Shop` stream uses the deprecated `2021-01` API version. An updated stream (`Store`) using a newer API version has not yet been implemented in this connector.
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
@@ -96,7 +96,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 The Recharge [`events` endpoint](https://developer.rechargepayments.com/2021-11/events/events_list) only returns events that occurred in the last 7 days, and it rejects requests for older events. To avoid failing the sync, the connector never requests events older than 7 days:
 
 *   If your **Start Date** is more than 7 days in the past, the first sync of the `events` stream starts from 7 days ago instead. Older events can't be backfilled.
-*   If a connection hasn't synced for more than 7 days, the next incremental sync of the `events` stream resumes from 7 days ago. Events created during the gap are not synced, and the sync reports success without warning about the missing interval.
+*   If a connection hasn't synced for more than 7 days, the next incremental sync of the `events` stream resumes from 7 days ago. Events that are already older than 7 days at that point are never synced, and the sync reports success without warning about the missing interval.
 *   The **Lookback Window (in days)** setting has no effect on the `events` stream.
 
 To avoid gaps in `events` data, schedule syncs to run at least once every 7 days.
