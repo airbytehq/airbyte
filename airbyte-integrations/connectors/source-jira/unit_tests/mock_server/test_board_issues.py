@@ -28,7 +28,7 @@ class TestBoardIssuesStream(TestCase):
     Tests for the Jira 'board_issues' stream.
 
     This is an incremental substream that depends on boards as parent.
-    Endpoint: /rest/agile/1.0/board/{boardId}/issue
+    Endpoint: /rest/software/1.0/board/{boardId}/issue
     Extract field: issues
     Primary key: id
     Cursor field: updated
