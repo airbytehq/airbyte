@@ -5,8 +5,10 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static io.airbyte.cdk.db.jdbc.JdbcUtils.JDBC_URL_KEY;
+import static io.airbyte.cdk.db.jdbc.JdbcUtils.JDBC_URL_PARAMS_KEY;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -185,6 +187,17 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
     assertEquals("number", properties.get("id").get("type").asText());
     assertEquals("string", properties.get("name").get("type").asText());
     assertEquals("number", properties.get("amount").get("type").asText());
+  }
+
+  @Test
+  public void testDiscoverWithLegacySslModeUrlParam() throws Exception {
+    final ObjectNode legacySslModeConfig = (ObjectNode) Jsons.clone(config());
+    legacySslModeConfig.put(JDBC_URL_PARAMS_KEY, "sslmode=STRICT");
+
+    final AirbyteCatalog catalog = source().discover(legacySslModeConfig);
+
+    assertFalse(catalog.getStreams().isEmpty());
+    assertTrue(catalog.getStreams().stream().anyMatch(stream -> stream.getName().equals("id_and_name")));
   }
 
   /**

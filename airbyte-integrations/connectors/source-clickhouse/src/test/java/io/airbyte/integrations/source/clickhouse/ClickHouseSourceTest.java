@@ -36,6 +36,34 @@ class ClickHouseSourceTest {
   }
 
   @Test
+  void filtersLegacySslModeWithSupportedParameter() {
+    final JsonNode config = baseConfig(true, "ssl=true&sslmode=STRICT");
+
+    final String jdbcUrl = new ClickHouseSource().toDatabaseConfig(config).get(JdbcUtils.JDBC_URL_KEY).asText();
+
+    assertEquals("jdbc:clickhouse:https://localhost:8123/db?ssl=true", jdbcUrl);
+    assertFalse(jdbcUrl.contains("sslmode"));
+  }
+
+  @Test
+  void omitsJdbcUrlWhenOnlyLegacySslModeIsProvided() {
+    final JsonNode config = baseConfig(true, "sslmode=none");
+
+    final String jdbcUrl = new ClickHouseSource().toDatabaseConfig(config).get(JdbcUtils.JDBC_URL_KEY).asText();
+
+    assertEquals("jdbc:clickhouse:https://localhost:8123/db", jdbcUrl);
+  }
+
+  @Test
+  void filtersLegacySslModeCaseInsensitively() {
+    final JsonNode config = baseConfig(true, "SSLMODE=STRICT&socket_timeout=30000");
+
+    final String jdbcUrl = new ClickHouseSource().toDatabaseConfig(config).get(JdbcUtils.JDBC_URL_KEY).asText();
+
+    assertEquals("jdbc:clickhouse:https://localhost:8123/db?socket_timeout=30000", jdbcUrl);
+  }
+
+  @Test
   void usesHttpWhenSslIsDisabled() {
     final JsonNode config = baseConfig(false);
 
