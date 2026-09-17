@@ -2353,7 +2353,6 @@ definitions:
               error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
             - predicate: "{{ response.get('code') == 40001 and 'Adv has no permission to operate on the Pixel' in response['message'] }}"
               action: IGNORE
-              failure_type: config_error
               error_message: "{{ response['message'] }}"
             - predicate: "{{ response.get('code') == 60001 }}"
               action: RETRY
