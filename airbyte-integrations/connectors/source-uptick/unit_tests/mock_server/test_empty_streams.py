@@ -96,6 +96,32 @@ def _record(
             "asset": _relationship(),
             "routineserviceleveltype": _relationship(),
         }
+    elif stream == "servicegroups":
+        attributes.update({"name": "Service group"})
+    elif stream == "accreditationtypes":
+        attributes.update(
+            {
+                "name": "Accreditation type",
+                "type": "general",
+                "property_specific": False,
+                "extra_fields": {},
+            }
+        )
+    elif stream == "costcentres":
+        attributes.update(
+            {
+                "name": "Cost centre",
+                "income_account_code": "4000",
+                "expense_account_code": "5000",
+                "is_active": True,
+                "is_default": False,
+                "tracking_categories": [],
+            }
+        )
+        relationships = {
+            "branch": _relationship(),
+            "taskcategory": _relationship(),
+        }
     elif stream == "promptquestions":
         attributes.update(
             {
@@ -244,6 +270,64 @@ def test_incremental_uses_state_cursor(stream: str) -> None:
         http_mocker.assert_number_of_calls(first_page, 1)
 
 
+@pytest.mark.parametrize("stream", ["servicegroups", "accreditationtypes"])
+def test_servicegroups_client_side_incremental_filters_old_records(stream: str) -> None:
+    state = StateBuilder().with_stream_state(stream, {"updated": _STATE_CURSOR}).build()
+    records = [
+        _record(stream, 1, updated="2025-12-31T00:00:00.000000+0000"),
+        _record(stream, 2, updated=_LATEST_UPDATED),
+    ]
+    with HttpMocker() as http_mocker:
+        _mock_token(http_mocker)
+        first_page = UptickRequestBuilder.collection(stream, updatedsince=_STATE_CURSOR)
+        http_mocker.get(first_page, _response(records))
+
+        output = _read(stream, state=state)
+
+        assert output.errors == []
+        assert [message.record.data["id"] for message in output.records] == [2]
+        assert output.most_recent_state.stream_descriptor.name == stream
+        assert output.most_recent_state.stream_state.updated == _LATEST_UPDATED
+        http_mocker.assert_number_of_calls(first_page, 1)
+
+
+def test_non_client_side_incremental_does_not_filter_old_records() -> None:
+    stream = "majorservices"
+    state = StateBuilder().with_stream_state(stream, {"updated": _STATE_CURSOR}).build()
+    records = [
+        _record(stream, 1, updated="2025-12-31T00:00:00.000000+0000"),
+        _record(stream, 2, updated=_LATEST_UPDATED),
+    ]
+    with HttpMocker() as http_mocker:
+        _mock_token(http_mocker)
+        first_page = UptickRequestBuilder.collection(stream, updatedsince=_STATE_CURSOR)
+        http_mocker.get(first_page, _response(records))
+
+        output = _read(stream, state=state)
+
+        assert output.errors == []
+        assert [message.record.data["id"] for message in output.records] == [1, 2]
+        http_mocker.assert_number_of_calls(first_page, 1)
+
+
+def test_costcentres_tracking_categories_array_has_no_schema_warning() -> None:
+    stream = "costcentres"
+    record = _record(stream, 1)
+    record["attributes"]["tracking_categories"] = [{"name": "x"}]
+    with HttpMocker() as http_mocker:
+        _mock_token(http_mocker)
+        first_page = UptickRequestBuilder.collection(stream)
+        http_mocker.get(first_page, _response([record]))
+
+        output = _read(stream)
+
+        assert output.errors == []
+        assert output.records[0].record.data["tracking_categories"] == [{"name": "x"}]
+        assert output.is_not_in_logs("Failed to transform")
+        assert output.is_not_in_logs("does not conform")
+        http_mocker.assert_number_of_calls(first_page, 1)
+
+
 @pytest.mark.parametrize(
     "status_code",
     [pytest.param(429, id="429"), pytest.param(500, id="500")],
@@ -356,13 +440,6 @@ def test_flattens_jsonapi_record(stream: str) -> None:
         assert output.is_not_in_logs("does not conform")
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Manifest AddFields renders attributes through Jinja, which literal_evals decimal strings "
-        "('10.00' -> 10.0) and null strings to the text 'None'; tracked as a follow-up connector fix"
-    ),
-)
 def test_creditnotelineitems_record_values_round_trip() -> None:
     stream = "creditnotelineitems"
     record = _record(stream, 1)
@@ -376,6 +453,8 @@ def test_creditnotelineitems_record_values_round_trip() -> None:
 
         assert output.errors == []
         emitted = {k: v for k, v in output.records[0].record.data.items() if k not in ("attributes", "relationships")}
+        assert "description" not in emitted
+        assert all(value != "None" for value in emitted.values())
         assert emitted == {
             "type": "CreditNoteLineItem",
             "id": 1,

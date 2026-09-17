@@ -40,6 +40,18 @@ class UptickRequestBuilder:
             "ServiceLineItem",
             "id,servicequote,description,quantity,unit_price,billingcontract_type,index,estimated_duration,taxcode,taxrate,annual_tax,site_price,annual_subtotal,service_price,created,updated",
         ),
+        "servicegroups": (
+            "ServiceGroup",
+            "id,created,updated,name",
+        ),
+        "accreditationtypes": (
+            "AccreditationType",
+            "id,created,updated,name,type,property_specific,extra_fields",
+        ),
+        "costcentres": (
+            "CostCentre",
+            "id,created,updated,name,income_account_code,expense_account_code,is_active,is_default,tracking_categories,branch,taskcategory",
+        ),
     }
 
     @classmethod
