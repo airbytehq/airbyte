@@ -9,7 +9,7 @@ The Extract CDK provides functionality for source connectors including schema di
 
 ### 1.1.12 — 2026-09-17
 
-[#TBD](https://github.com/airbytehq/airbyte/pull/TBD) — Return null instead of NPE when JDBC getTimestamp/getDate return null for a non-null string value (MySQL zero dates with zeroDateTimeBehavior=convertToNull).
+[#86412](https://github.com/airbytehq/airbyte/pull/86412) — Return null instead of NPE when JDBC getTimestamp/getDate return null for a non-null string value (MySQL zero dates with zeroDateTimeBehavior=convertToNull).
 
 ### 1.1.11 — 2026-09-02
 
