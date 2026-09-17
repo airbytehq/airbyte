@@ -236,6 +236,7 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
         .filter(s -> s.getName().equals(tableName))
         .findFirst()
         .orElseThrow(() -> new AssertionError("Table " + tableName + " not found in catalog"));
+    assertEquals("number", stream.getJsonSchema().get("properties").get("value").get("type").asText());
 
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         new AirbyteCatalog().withStreams(List.of(stream)));
