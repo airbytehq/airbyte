@@ -4,8 +4,8 @@ This document guides you through setting up the Recharge source connector in Air
 
 **Key Features:**
 *   **Sync Modes:** Supports `Full Refresh` and `Incremental` syncs for core streams.
-*   **API Version:** Primarily uses the `2021-11` API version. Includes an option to use the deprecated `2021-01` API for the `Orders` stream.
-*   **Lookback Window:** Supports a configurable lookback window for most streams to re-fetch recent data.
+*   **API Version:** Uses the `2021-11` API version for most streams. The `Orders` stream uses the deprecated `2021-01` API by default, with an option to switch to `2021-11`. The `Shop` stream always uses `2021-01`.
+*   **Lookback Window:** Supports a configurable lookback window for incremental streams to re-fetch recent data. The `events` stream is the exception, because the Recharge API only returns events from the last 7 days.
 
 ## Prerequisites
 
@@ -35,21 +35,25 @@ Before setting up the Recharge source, ensure you have the following:
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Recharge** from the Source type dropdown and enter a name for this connector.
-4. Choose required `Start date`
-5. Enter your `Access Token`.
-6. click `Set up source`.
+4. Enter the **Start Date** in the format `YYYY-MM-DDT00:00:00Z`. Data before this date isn't replicated. The `events` stream ignores this value if it's older than 7 days. See [Events stream](#events-stream).
+5. Enter your **Access Token** from Step 1.
+6. (Optional) Turn off **Use `Orders` Deprecated API** to sync the `Orders` stream with the `2021-11` API instead of the deprecated `2021-01` API.
+7. (Optional) Set a **Lookback Window (in days)** to re-fetch records updated within that many days before the saved sync position on each incremental sync. The default is `0`.
+8. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
 **For Airbyte Open Source:**
 
-1. Go to local Airbyte page.
+1. Navigate to your local Airbyte instance.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Recharge** from the Source type dropdown and enter a name for this connector.
-4. Choose required `Start date`
-5. Enter your `Access Token` generated from `Step 1`.
-6. click `Set up source`.
+4. Enter the **Start Date** in the format `YYYY-MM-DDT00:00:00Z`. Data before this date isn't replicated. The `events` stream ignores this value if it's older than 7 days. See [Events stream](#events-stream).
+5. Enter your **Access Token** from Step 1.
+6. (Optional) Turn off **Use `Orders` Deprecated API** to sync the `Orders` stream with the `2021-11` API instead of the deprecated `2021-01` API.
+7. (Optional) Set a **Lookback Window (in days)** to re-fetch records updated within that many days before the saved sync position on each incremental sync. The default is `0`.
+8. Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -82,17 +86,24 @@ The Recharge source connector supports the following sync modes:
 | Subscriptions      | [2021-11](https://developer.rechargepayments.com/2021-11/subscriptions)                                                                          | id          | ✅                    | ✅                   | ✅ Standard Plan             |
 
 **Notes on Streams:**
-*   **Orders Stream:** The connector uses the `2021-11` API for the `Orders` stream. If you need to use the deprecated `2021-01` API for orders, enable the **Use `Orders` Deprecated API** toggle in the connector configuration.
-*   **Shop Stream:** The `Shop` stream currently utilizes the deprecated `2021-01` API version. An updated stream (`Store`) using a newer API version has not yet been implemented in this connector.
+*   **Orders Stream:** By default, the connector uses the deprecated `2021-01` API for the `Orders` stream because the **Use `Orders` Deprecated API** option is turned on. Turn it off to use the `2021-11` API instead.
+*   **Shop Stream:** The `Shop` stream uses the deprecated `2021-01` API version. An updated stream (`Store`) using a newer API version has not yet been implemented in this connector.
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
+### Events stream
+
+The Recharge [`events` endpoint](https://developer.rechargepayments.com/2021-11/events/events_list) only returns events that occurred in the last 7 days, and it rejects requests for older events. To avoid failing the sync, the connector never requests events older than 7 days:
+
+*   If your **Start Date** is more than 7 days in the past, the first sync of the `events` stream starts from 7 days ago instead. Older events can't be backfilled.
+*   If a connection hasn't synced for more than 7 days, the next incremental sync of the `events` stream resumes from 7 days ago. Events created during the gap are not synced, and the sync reports success without warning about the missing interval.
+*   The **Lookback Window (in days)** setting has no effect on the `events` stream.
+
+To avoid gaps in `events` data, schedule syncs to run at least once every 7 days.
+
 ### Lookback Window
 
-The connector supports a configurable **Lookback Window (days)**. This feature allows the connector to re-fetch data from the specified number of days in the past during each incremental sync. This can be useful for capturing late-arriving or updated records.
-
-**Lookback Window for `events` Stream:**
-*   The `events` stream API has a limitation where it does not support querying data older than 7 days. At present, the lookback window setting does not affect the `events` stream.
+The connector supports a configurable **Lookback Window (in days)**. On each incremental sync, the connector re-fetches records updated within that many days before the saved sync position. This can be useful for capturing late-arriving or updated records. The setting applies to all incremental streams except `events`.
 
 ## API Token Permissions (Scopes) & Plan Requirements
 
@@ -133,14 +144,14 @@ The Recharge connector is designed to handle Recharge API limitations under norm
 
 ### Rate Limiting
 
-Recharge implements rate limits to ensure API stability and fair usage. The API uses a "leaky bucket" algorithm, which allows for infrequent bursts of calls but maintains a sustainable request rate over time.
+Recharge implements rate limits to ensure API stability and fair usage. The API uses a "leaky bucket" algorithm: each API token has a bucket of 40 requests that empties at 2 requests per second, so short bursts are allowed but the sustained rate is 2 requests per second. Higher Recharge plans may have higher limits.
 *   If the request rate exceeds the limit, the API will return a `429 - The request has been rate limited` error.
 *   When a `429` error is received, this Airbyte connector will automatically:
     *   Pause for 2 seconds.
     *   Retry the request.
     *   This retry process can happen up to 10 times.
 
-For more details, see [Recharge API Rate Limits](https://developer.rechargepayments.com/docs/api-rate-limits).
+For more details, see [Recharge API Rate Limits](https://docs.getrecharge.com/docs/api-rate-limits).
 
 ### Error Handling
 
@@ -158,7 +169,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.12 | 2026-09-16 | [86358](https://github.com/airbytehq/airbyte/pull/86358) | Fix `events` stream's `created_at_min` not clamped to the API's 7-day window, crashing the entire sync |
+| 3.0.12 | 2026-09-17 | [86358](https://github.com/airbytehq/airbyte/pull/86358) | Fix `events` stream's `created_at_min` not clamped to the API's 7-day window, crashing the entire sync |
 | 3.0.11 | 2025-10-21 | [68391](https://github.com/airbytehq/airbyte/pull/68391) | Update dependencies |
 | 3.0.10 | 2025-10-14 | [67927](https://github.com/airbytehq/airbyte/pull/67927) | Update dependencies |
 | 3.0.9 | 2025-10-08 | [67543](https://github.com/airbytehq/airbyte/pull/67543) | Update dependencies |
