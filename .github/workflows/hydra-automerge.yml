@@ -452,10 +452,9 @@ jobs:
             echo ""
             echo "### Change scope (at least one must pass)"
             echo ""
-            scope_keys="docs_only_change comment_only_change dependency_version_bump metadata_only_change net_new_stream_addition"
             scope_matched=false
             has_scope_row=false
-            for key in $scope_keys; do
+            for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change net_new_stream_addition; do
               pass=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.pass")
               if [[ "$pass" == "true" ]]; then
                 if [[ "$has_scope_row" == "false" ]]; then
@@ -469,16 +468,7 @@ jobs:
               fi
             done
             if [[ "$scope_matched" == "false" ]]; then
-              echo ":x: This PR falls outside the low-risk change types that qualify for auto-merge. A PR must consist *entirely* of one of these to qualify:"
-              echo ""
-              n=0
-              for key in $scope_keys; do
-                n=$((n + 1))
-                reasoning=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.reasoning")
-                echo "${n}. **$(pretty_label "$key")** -- ${reasoning}"
-              done
-              echo ""
-              echo "A human reviewer needs to approve and merge this PR."
+              echo ":x: This PR falls outside the low-risk change types that qualify for auto-merge (docs-only, comment-only, dependency version bump, metadata-only, net-new stream addition). A human reviewer needs to approve and merge it."
             fi
             if [[ -n "$footer_note" ]]; then
               echo ""
