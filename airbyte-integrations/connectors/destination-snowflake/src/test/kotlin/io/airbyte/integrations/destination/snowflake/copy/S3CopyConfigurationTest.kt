@@ -47,10 +47,25 @@ class S3CopyConfigurationTest {
             ids(S3CopyConfiguration.fromEnvironment(SnowflakeSpecification(), environment)!!)
         )
         val values = names.mapIndexed { i, name -> name to UUID(0, i + 1L).toString() }.toMap()
-        val env = environment + values.mapKeys { "AIRBYTE_S3_COPY_${it.key.uppercase()}_ID" }
+        val env = environment + values.mapKeys { "AIRBYTE_${it.key.uppercase()}_ID" }
         assertEquals(
             values.values.map(UUID::fromString),
             ids(S3CopyConfiguration.fromEnvironment(spec(names.associateWith { null }), env)!!)
+        )
+    }
+
+    @Test
+    fun `legacy copy-specific ID aliases are ignored`() {
+        val legacy =
+            names.associate { "AIRBYTE_S3_COPY_${it.uppercase()}_ID" to UUID(0, 99).toString() }
+        assertEquals(
+            List(5) { UUID(0, 0) },
+            ids(
+                S3CopyConfiguration.fromEnvironment(
+                    SnowflakeSpecification(),
+                    environment + legacy
+                )!!
+            )
         )
     }
 
@@ -60,9 +75,7 @@ class S3CopyConfigurationTest {
         names.forEachIndexed { index, name ->
             val env =
                 environment +
-                    names.associate {
-                        "AIRBYTE_S3_COPY_${it.uppercase()}_ID" to UUID(0, 1).toString()
-                    }
+                    names.associate { "AIRBYTE_${it.uppercase()}_ID" to UUID(0, 1).toString() }
             val result = ids(S3CopyConfiguration.fromEnvironment(spec(mapOf(name to uuid)), env)!!)
             assertEquals(UUID.fromString(uuid), result[index])
             assertEquals(uuid.lowercase(), result[index].toString())
@@ -73,7 +86,7 @@ class S3CopyConfigurationTest {
                 ids(
                     S3CopyConfiguration.fromEnvironment(
                         spec(mapOf(name to uuid)),
-                        environment + ("AIRBYTE_S3_COPY_${name.uppercase()}_ID" to "bad")
+                        environment + ("AIRBYTE_${name.uppercase()}_ID" to "bad")
                     )!!
                 )[index]
             )
@@ -103,7 +116,7 @@ class S3CopyConfigurationTest {
                     assertThrows(IllegalArgumentException::class.java) {
                         S3CopyConfiguration.fromEnvironment(
                             SnowflakeSpecification(),
-                            environment + ("AIRBYTE_S3_COPY_${name.uppercase()}_ID" to bad)
+                            environment + ("AIRBYTE_${name.uppercase()}_ID" to bad)
                         )
                     }
                 }
@@ -136,7 +149,7 @@ class S3CopyConfigurationTest {
                 mapOf(
                     "AIRBYTE_S3_COPY_ENABLED" to "false",
                     "AIRBYTE_S3_COPY_PREFIX" to "other",
-                    "AIRBYTE_S3_COPY_ORGANIZATION_ID" to UUID(0, 7).toString(),
+                    "AIRBYTE_ORGANIZATION_ID" to UUID(0, 7).toString(),
                     "AIRBYTE_S3_COPY_EXTERNAL_ID" to "external"
                 )
         val preview = S3CopyConfiguration.previewEnvironment(env)

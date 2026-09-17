@@ -31,7 +31,7 @@ class S3CopyPathsTest {
     fun `run paths include all five IDs epoch and escaped original stream`() {
         val path = S3CopyPaths.run(config, "Orders/日本 %", zero, epochSeconds)
         assertEquals(
-            "fusion/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/runs/$epochSeconds/$zero/streams/Orders%2F%E6%97%A5%E6%9C%AC%20%25/",
+            "fusion/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destination/${config.destinationId}/syncs/streams/Orders%2F%E6%97%A5%E6%9C%AC%20%25/runs/$epochSeconds/$zero/",
             path,
         )
         assertEquals(path, S3CopyPaths.run(config, "Orders/日本 %", zero, epochSeconds))

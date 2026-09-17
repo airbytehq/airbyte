@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.snowflake.copy
 
 import java.util.UUID
 
-/** A run owns its schema, cutoff directive, and all batch objects. */
+/** A run owns its schema, completion marker, and all batch objects. */
 internal object S3CopyPaths {
     fun run(
         config: S3CopyConfiguration,
@@ -15,7 +15,7 @@ internal object S3CopyPaths {
         epochSeconds: Long
     ): String {
         val path =
-            "${config.prefix}/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/runs/$epochSeconds/$runId/streams/${escape(streamName)}/"
+            "${config.prefix}/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destination/${config.destinationId}/syncs/streams/${escape(streamName)}/runs/$epochSeconds/$runId/"
         // Reserve the longest object suffix, including a full batch UUID, before any uploads.
         val longestKey = "${path}batches/${UUID(0, 0)}.csv.gz"
         require(longestKey.toByteArray(Charsets.UTF_8).size <= 1024) {
