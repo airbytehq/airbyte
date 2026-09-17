@@ -94,7 +94,7 @@ Iterable's Export API limits requests to 4 per minute per project. The connector
 Streams that support incremental sync use the following approaches:
 
 - **Users**: Splits data retrieval into 90-day intervals. Uses `profileUpdatedAt` as the cursor.
-- **Export-based event streams** (Email, Push, SMS, In-App, Web Push, Inbox, Purchase, CustomEvent, HostedUnsubscribeClick): Use adaptive date range slicing. The connector starts with a 30-day slice, then adjusts subsequent slice sizes based on how long each request takes to process. If a request fails with a connection timeout (`ChunkedEncodingError`), the connector halves the slice size and retries up to 6 times.
+- **Export-based event streams** (Email, Push, SMS, In-App, Web Push, Inbox, Purchase, CustomEvent, HostedUnsubscribeClick): Use adaptive date range slicing. The connector starts with a 30-day slice, then adjusts subsequent slice sizes based on how long each request takes to process. If Iterable closes the connection before the export finishes (a `ChunkedEncodingError`), the connector halves the slice size and retries. If 6 consecutive attempts for the same window fail this way, the sync fails with the error `Iterable Export API response repeatedly closed for the selected event window.` The slice size resets on the next sync, so retry the sync before investigating further.
 - **Templates**: Uses 90-day fixed intervals. Uses `updatedAt` as the cursor.
 
 ### Custom fields and the `data` object
@@ -134,7 +134,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.1 | 2026-05-15 | [78129](https://github.com/airbytehq/airbyte/pull/78129) | Improve the error message for Iterable Export API response closures after retries. |
+| 1.0.1 | 2026-09-16 | [78129](https://github.com/airbytehq/airbyte/pull/78129) | Improve the error message for Iterable Export API response closures after retries. |
 | 1.0.0 | 2026-08-25 | [79635](https://github.com/airbytehq/airbyte/pull/79635) | 🚨 Breaking: Restructure `users` stream schema - standard Iterable fields stay top-level, custom fields move to a `data` object, `itblInternal` flattened to dotted keys, timestamp values (`signupDate`, `profileUpdatedAt`, `itblInternal` document timestamps) normalized to RFC3339 to match their `timestamp_with_timezone` typing, added `itblUserId`, `whatsAppPhoneNumber`, `city`, `region`. See the [migration guide](/integrations/sources/iterable-migrations). |
 | 0.7.2 | 2026-05-07 | [74702](https://github.com/airbytehq/airbyte/pull/74702) | Add optional `Region` parameter to support Iterable's EU data center |
 | 0.7.1 | 2026-04-07 | [76036](https://github.com/airbytehq/airbyte/pull/76036) | Fix `reduce_range()` to actually halve slice size on ChunkedEncodingError retry |
