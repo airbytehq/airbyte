@@ -1,6 +1,6 @@
 ---
 name: source-mssql-e2e-cdc-tests
-description: Reproduce CDC bugs against source-mssql by enabling CDC on the local SQL Server backend, applying per-bug SQL fixtures, and running the connector via airbyte-ops. Composes on top of source-mssql-e2e-tests. Worked examples for airbytehq/oncall#11451, #12094, and #12162 ship with the skill.
+description: Reproduce CDC bugs against source-mssql by enabling CDC on the local SQL Server backend, applying per-bug SQL fixtures, and running the connector via airbyte-ops. Composes on top of source-mssql-e2e-tests. Worked examples for airbytehq/oncall#11451, #12094, #12162, and #13544 ship with the skill.
 ---
 
 # source-mssql-e2e-cdc-tests
@@ -47,18 +47,23 @@ source-mssql-e2e-cdc-tests/
 ├── cases/
 │   ├── 11451.sh                      # airbytehq/oncall#11451 — LSN-range regression in 4.3.4+ (multi-phase; invalid-state case)
 │   ├── 12094.sh                      # airbytehq/oncall#12094 — schema-history bloat
-│   └── 12162.sh                      # airbytehq/oncall#12162 — whitespace in stream name
+│   ├── 12162.sh                      # airbytehq/oncall#12162 — whitespace in stream name
+│   └── 13544.sh                      # airbytehq/oncall#13544 — heartbeat offset loses ALTER TABLE history
 └── fixtures/
     ├── configs/
-    │   └── cdc.template.json
+    │   ├── cdc.template.json
+    │   └── cdc-13544.template.json
     ├── catalogs/
     │   ├── users-cdc.json
+    │   ├── users-nickname-cdc.json
     │   └── order-items-cdc.json
     └── sql/
         ├── 00-init-cdc.sql
         ├── repro-11451-lsn-cleanup.sql
         ├── repro-12094-schema-history.sql
-        └── repro-12162-spaces-in-name.sql
+        ├── repro-12162-spaces-in-name.sql
+        ├── repro-13544-add-column.sql
+        └── repro-13544-insert-after-heartbeat.sql
 ```
 
 `extract-state.py` is implemented in
@@ -147,6 +152,13 @@ uses `--step-name=<bug>/<phase>` to keep its artifacts separate under
 `$REPRO_OUT/<bug>/<phase>/`.
 
 ## Worked examples
+
+### airbytehq/oncall#13544 — heartbeat offset loses ALTER TABLE history
+
+`cases/13544.sh`. Adds a column, advances the CDC upper bound with changes to
+an excluded CDC-enabled side table, and resumes from the resulting heartbeat
+offset. The unfixed connector emits the new column as `NULL`; the fixed
+connector emits its value.
 
 ### airbytehq/oncall#12162 — whitespace in stream name
 
