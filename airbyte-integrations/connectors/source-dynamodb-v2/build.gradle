@@ -1,0 +1,26 @@
+plugins {
+    id 'airbyte-bulk-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.dynamodbv2.DynamoDbSource'
+}
+
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = []
+}
+
+dependencies {
+    // AWS SDK for Java 2.x; the BOM pins every module to the same version.
+    implementation platform('software.amazon.awssdk:bom:2.54.20')
+    implementation 'software.amazon.awssdk:dynamodb'
+    // Needed on the classpath for role-based access through STS (IRSA / web identity tokens).
+    implementation 'software.amazon.awssdk:sts'
+
+    // amazon/dynamodb-local has no Testcontainers module; a GenericContainer is enough.
+    testFixturesImplementation 'org.testcontainers:testcontainers:1.21.4'
+    testImplementation 'org.testcontainers:testcontainers:1.21.4'
+}

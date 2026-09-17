@@ -1,0 +1,46 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.4@sha256:5f343797cfcf021ca98ba9bdf5970ef66cbf6222d8cc17b0d61d13860a5bcc2b
+  connectorSubtype: database
+  connectorTestSuitesOptions:
+    - suite: unitTests
+  connectorType: source
+  definitionId: 42d7528b-22cc-44d1-acd3-9026092be6ac
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-dynamodb-v2
+  # Deliberately points at the legacy source-dynamodb docs: this connector is a Bulk CDK rewrite of
+  # source-dynamodb and its `spec` output (which embeds this URL) must match the legacy one.
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dynamodb
+  githubIssueLabel: source-dynamodb-v2
+  icon: icon.svg
+  license: ELv2
+  name: DynamoDB
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:java
+  externalDocumentationUrls:
+    - title: Amazon DynamoDB API reference
+      url: https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/
+      type: api_reference
+    - title: DynamoDB authentication
+      url: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/authentication-and-access-control.html
+      type: authentication_guide
+    - title: DynamoDB rate limits
+      url: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Limits.html
+      type: rate_limits
+    - title: AWS SDK for Java 2.x
+      url: https://github.com/aws/aws-sdk-java-v2
+      type: code_repository
+    - title: AWS Service Health Dashboard
+      url: https://health.aws.amazon.com/health/status
+      type: status_page
+metadataSpecVersion: "1.0"
