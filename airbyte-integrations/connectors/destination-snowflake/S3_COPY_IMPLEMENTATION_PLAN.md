@@ -5,7 +5,7 @@ Status: Fusion preview implementation. The exact run layout and temporary routin
 The selected layout is:
 
 ```text
-s3://airbyte-fusion-context-store/fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/connections/<connection_uuid>/destination/<destination_uuid>/syncs/streams/<escaped_original_stream_name>/runs/<epoch_seconds>/<run_uuid>/
+s3://airbyte-fusion-context-store/fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/connections/<connection_uuid>/destinations/<destination_uuid>/syncs/runs/<epoch_seconds>/<run_uuid>/streams/<escaped_original_stream_name>/
   schema.json
   batches/<batch_uuid>.csv.gz
   batches/stream_complete.json
@@ -106,7 +106,7 @@ Resource cleanup needs an explicit owner. The current [DestinationLifecycle](../
 Use original stream identity for archive routing. The buffer's execution table may be temporary and must not become the archive's stream identity.
 
 ```text
-s3://airbyte-fusion-context-store/fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/connections/<connection_uuid>/destination/<destination_uuid>/syncs/streams/<escaped_original_stream_name>/runs/<epoch_seconds>/<run_uuid>/
+s3://airbyte-fusion-context-store/fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/connections/<connection_uuid>/destinations/<destination_uuid>/syncs/runs/<epoch_seconds>/<run_uuid>/streams/<escaped_original_stream_name>/
   schema.json
   batches/<batch_uuid>.csv.gz
   batches/stream_complete.json
@@ -166,6 +166,10 @@ The descriptor contains:
 Keep the explicit COPY options and descriptor in agreement through a focused test, or a small connector-local value object if that is simpler. Do not duplicate a hardcoded standard-mode column list: legacy mode has `_airbyte_loaded_at` and a JSON `_airbyte_data` column.
 
 The CSV already reflects Airbyte's mapping, coercion, and formatting. Null/missing values and empty fields follow the current formatter; nested values are serialized by that formatter. This archive cannot recover source fields already discarded before the buffer or distinctions already lost in CSV formatting. CDC fields that reach the CSV are copied as ordinary fields.
+
+The schema includes `primary_key` (a list of source field paths) and `cursor` (a source field
+path), sourced from the original configured catalog so append-mode keys/cursors survive.
+Absent keys/cursors are explicit empty arrays. These fields participate in the schema hash.
 
 ### Stream completion
 

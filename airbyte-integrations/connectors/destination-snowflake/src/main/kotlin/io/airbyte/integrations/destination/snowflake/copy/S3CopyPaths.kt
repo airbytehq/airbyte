@@ -15,7 +15,7 @@ internal object S3CopyPaths {
         epochSeconds: Long
     ): String {
         val path =
-            "${config.prefix}/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destination/${config.destinationId}/syncs/streams/${escape(streamName)}/runs/$epochSeconds/$runId/"
+            "${config.prefix}/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/runs/$epochSeconds/$runId/streams/${escape(streamName)}/"
         // Reserve the longest object suffix, including a full batch UUID, before any uploads.
         val longestKey = "${path}batches/${UUID(0, 0)}.csv.gz"
         require(longestKey.toByteArray(Charsets.UTF_8).size <= 1024) {

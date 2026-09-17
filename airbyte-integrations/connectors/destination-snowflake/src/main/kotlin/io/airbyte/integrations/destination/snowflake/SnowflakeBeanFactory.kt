@@ -24,6 +24,7 @@ import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthCo
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRawRecordFormatter
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeSchemaRecordFormatter
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
@@ -66,13 +67,21 @@ class SnowflakeBeanFactory {
         columnManager: io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager,
         snowflakeConfiguration: SnowflakeConfiguration,
         specFactory: SnowflakeMigratingConfigurationSpecificationSupplier,
+        configuredCatalog: ConfiguredAirbyteCatalog,
     ): SnowflakeS3Copy {
         val injectedSpecification = specFactory.get()
         return S3CopyConfiguration.fromEnvironment(
                 injectedSpecification,
                 S3CopyConfiguration.previewEnvironment(System.getenv()),
             )
-            ?.let { EnabledSnowflakeS3Copy(it, columnManager, snowflakeConfiguration) }
+            ?.let {
+                EnabledSnowflakeS3Copy(
+                    it,
+                    columnManager,
+                    snowflakeConfiguration,
+                    configuredCatalog = configuredCatalog
+                )
+            }
             ?: DisabledSnowflakeS3Copy
     }
 
