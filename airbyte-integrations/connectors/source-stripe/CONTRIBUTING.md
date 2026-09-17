@@ -100,7 +100,7 @@ Install the sandbox package and the pinned Airbyte CDK in the same Python enviro
 
 ```bash
 # Use a Python 3.12 environment for the pinned test runner.
-python -m pip install 'airbyte-cdk[dev]==6.59.1' /path/to/saas-sandbox poethepoet
+python -m pip install 'airbyte-cdk[dev]==7.28.4' /path/to/saas-sandbox poethepoet
 ```
 
 Use an existing `stripe-customers` scenario on the remote sandbox API and a published relay
@@ -121,13 +121,14 @@ connector image. The `sass_sandbox.airbyte` pytest plugin routes connector launc
 the sandbox and supplies `integration_tests/config-sandbox.json` for credential scenarios;
 existing secrets and the invalid-credential test remain unchanged. No images are built.
 
-Override `SASS_SCENARIO`, `CONNECTOR_IMAGE`, or `SASS_CONNECTOR_CONFIG` as needed. Use
-`PYTEST_ADDOPTS` for the existing upstream selection options, for example:
+Like normal Connector CI, this task omits `--read-from-streams`: spec and credential
+checks run, and reads are skipped. Override `SASS_SCENARIO`, `CONNECTOR_IMAGE`, or
+`SASS_CONNECTOR_CONFIG` as needed. Select tests with `PYTEST_ADDOPTS`:
 
 ```bash
-PYTEST_ADDOPTS='--read-from-streams=customers,products -k read' poe test-sandbox
-PYTEST_ADDOPTS='--read-from-streams=all' poe test-sandbox
+PYTEST_ADDOPTS='-k check' poe test-sandbox
 ```
 
-Selections are passed to the upstream tests without checking sandbox feature support.
-Unimplemented features surface through connector execution and upstream test assertions.
+Explicit read opt-ins such as `PYTEST_ADDOPTS='--read-from-streams=customers -k read'`
+exceed normal CI coverage and can hit CDK 7.28.4's empty-stream filter bug. The adapter
+contains no workaround and does not precheck sandbox feature support.

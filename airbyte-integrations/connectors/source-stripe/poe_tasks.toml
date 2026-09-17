@@ -9,4 +9,3 @@ CONNECTOR_IMAGE = { default = "airbyte/source-stripe:6.0.18" }
 SASS_SCENARIO = { default = "stripe-customers" }
 SASS_CONNECTOR_CONFIG = { default = "${POE_PWD}/integration_tests/config-sandbox.json" }
 PYTEST_PLUGINS = "sass_sandbox.airbyte"
-PYTEST_ADDOPTS = { default = "--read-from-streams=customers" }
