@@ -73,7 +73,7 @@ The steps below describe custom apps created in the Shopify admin, which Shopify
 2. In the dashboard, navigate to **Settings** > **App and sales channels** > **Develop apps** > **Create an app**.
 3. Select a name for your new app.
 4. Select **Configure Admin API scopes**.
-5. Grant access to the [following list of scopes](#custom-app-scopes). Only select scopes prefixed with `read_`, not `write_` (e.g. `read_locations`,`read_price_rules`, etc).
+5. Grant access to the [following list of scopes](#custom-app-scopes). Only select scopes prefixed with `read_`, not `write_` (for example, `read_locations` and `read_price_rules`).
 6. Click **Install app** to give this app access to your data.
 7. Once installed, go to **API Credentials** to copy the **Admin API Access Token**. You are now ready to set up the source in Airbyte!
 
@@ -91,7 +91,7 @@ The steps below describe custom apps created in the Shopify admin, which Shopify
 
 ### Custom app scopes
 
-Grant these scopes to sync all available data. The connector checks your granted scopes at the start of every sync and only syncs the streams your scopes allow. If a scope is missing, the connector logs a warning like `The stream 'Orders' could not be synced without the 'read_orders' scope` and skips that stream instead of failing the sync. Grant only the scopes for the streams you need. For more information, see the [Shopify access scopes documentation](https://shopify.dev/docs/api/usage/access-scopes).
+Grant these scopes to sync all available data. The connector checks your granted scopes at the start of every sync and only syncs the streams your scopes allow. If a scope is missing, the connector logs a warning like ``The stream `Orders` could not be synced without the `read_orders` scope. Please check the `read_orders` is granted.`` and skips that stream instead of failing the sync. Grant only the scopes for the streams you need. For more information, see the [Shopify access scopes documentation](https://shopify.dev/docs/api/usage/access-scopes).
 
 | Scope | Streams it enables |
 | :--- | :--- |
@@ -164,7 +164,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Shop](https://shopify.dev/api/admin-rest/latest/resources/shop)
 - [Smart Collections](https://shopify.dev/api/admin-rest/latest/resources/smartcollection)
 - [Tender Transactions](https://shopify.dev/api/admin-rest/latest/resources/tendertransaction)
-- [Transactions](https://shopify.dev/api/admin-rest/latest/resources/transaction#top) — Uses the BULK API by default. Enabling **Add `user_id` to Transactions** switches this stream to the REST API, which returns the `user_id` field but syncs more slowly.
+- [Transactions](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderTransaction) — Uses the BULK API by default. Enabling **Add `user_id` to Transactions** switches this stream to the [REST API](https://shopify.dev/api/admin-rest/latest/resources/transaction#top), which returns the `user_id` field but syncs more slowly.
 
 ### Entity-Relationship Diagram (ERD)
 
