@@ -72,3 +72,34 @@ def test_added_property_is_nullable_like_its_siblings(fixture_name: str, added_p
     non_nullable = [name for name, spec in siblings.items() if "null" not in spec["type"]]
     assert non_nullable == [], f"unexpected non-nullable siblings: {non_nullable}"
     assert "null" in properties[added_property]["type"]
+
+
+@pytest.fixture(scope="module")
+def engagements_task_pipelines_stage(manifest: dict) -> dict:
+    return manifest["schemas"]["engagements_task_pipelines"]["properties"]["stages"]["items"]["properties"]
+
+
+def test_task_pipeline_stage_id_is_a_string(engagements_task_pipelines_stage: dict) -> None:
+    """`stages[].id` is the join key against `engagements_tasks.properties.hs_pipeline_stage`.
+
+    HubSpot's default task stages use UUIDs, but stages created later in the UI get numeric ids
+    (for example `5996839954`). Narrowing this to an integer would make numeric ids type-mismatch
+    against `hs_pipeline_stage`, which HubSpot always returns as a string, and silently break the join.
+    """
+    assert engagements_task_pipelines_stage["id"]["type"] == ["null", "string"]
+
+
+def test_task_pipeline_stage_metadata_values_are_strings(engagements_task_pipelines_stage: dict) -> None:
+    """Task stages carry the open/closed flag as `state`, not the `ticketState` that ticket stages use.
+
+    Both flags come back as strings rather than native booleans or enums. `state` is the only thing
+    that says whether a task in the stage counts as done, so leaving it undeclared would drop it
+    silently on a schematizing destination and defeat the point of the stream.
+    """
+    metadata = engagements_task_pipelines_stage["metadata"]
+    assert metadata["additionalProperties"] is True, (
+        "HubSpot's task stage `metadata` keys are not fully documented; keeping the object open "
+        "prevents a schematizing destination from silently dropping an undeclared flag"
+    )
+    for key in ("isClosed", "state"):
+        assert metadata["properties"][key]["type"] == ["null", "string"]

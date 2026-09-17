@@ -85,6 +85,7 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
 | `email_subscriptions`       | `content`                                                                                                    |
 | `engagements`               | `crm.objects.companies.read`, `crm.objects.contacts.read`, `crm.objects.deals.read`, `tickets`, `e-commerce` |
 | `engagements_emails`        | `sales-email-read`                                                                                           |
+| `engagements_task_pipelines` | Any CRM object read scope, for example `crm.objects.contacts.read`                                           |
 | `forms`                     | `forms`                                                                                                      |
 | `form_submissions`          | `forms`                                                                                                      |
 | `goals`                     | `crm.objects.goals.read`                                                                                     |
@@ -284,6 +285,7 @@ The HubSpot source connector supports the following streams:
 - [Engagements Meetings](https://developers.hubspot.com/docs/api/crm/meetings) \(Incremental\)
 - [Engagements Notes](https://developers.hubspot.com/docs/api/crm/notes) \(Incremental\)
 - [Engagements Tasks](https://developers.hubspot.com/docs/api/crm/tasks) \(Incremental\)
+- [Engagements Task Pipelines](https://developers.hubspot.com/docs/api/crm/pipelines) \(Client-Side Incremental\)
 - [Forms](https://developers.hubspot.com/docs/api/marketing/forms) \(Client-Side Incremental\)
 - [Form Submissions](https://developers.hubspot.com/docs/api/marketing/forms) \(Client-Side Incremental\)
 - [Goals](https://developers.hubspot.com/docs/api/crm/goals) \(Incremental\)
@@ -473,6 +475,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.10.0 | 2026-09-22 | [86415](https://github.com/airbytehq/airbyte/pull/86415) | Add new `engagements_task_pipelines` stream exposing HubSpot task pipelines and their stages, so `engagements_tasks.properties.hs_pipeline_stage` can be resolved to a stage label and open/closed state |
 | 6.9.3 | 2026-09-22 | [86682](https://github.com/airbytehq/airbyte/pull/86682) | Update dependencies |
 | 6.9.2 | 2026-09-16 | [86350](https://github.com/airbytehq/airbyte/pull/86350) | Report an invalid `from_object`/`to_object` identifier in `custom_object_association_streams` as a configuration error instead of a generic credentials error |
 | 6.9.1 | 2026-09-15 | [86075](https://github.com/airbytehq/airbyte/pull/86075) | Update dependencies |
