@@ -53,7 +53,8 @@ class DynamoDbPartitionReader(
 
     private val partitionId: String = generatePartitionId(4)
     private val acquiredResources = AtomicReference<Map<ResourceType, Resource.Acquired>?>()
-    private lateinit var outputMessageRouter: OutputMessageRouter
+    /** Set in [tryAcquireResources], closed in [releaseResources]. */
+    private var outputMessageRouter: OutputMessageRouter? = null
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
         val resourceTypes: List<ResourceType> =
@@ -79,8 +80,11 @@ class DynamoDbPartitionReader(
     }
 
     override suspend fun run() {
+        val router: OutputMessageRouter =
+            outputMessageRouter
+                ?: throw IllegalStateException("run() called before resources were acquired")
         val accept: (NativeRecordPayload, Map<EmittedField, FieldValueChange>?) -> Unit =
-            outputMessageRouter.recordAcceptors[stream.id]
+            router.recordAcceptors[stream.id]
                 ?: throw IllegalStateException("No record acceptor for stream ${stream.id}")
         val baseRequest: ScanRequest = partition.scanRequest(sharedState.scanPageLimit)
         var startKey: Map<String, AttributeValue>? = lastEvaluatedKey.get()
@@ -201,9 +205,8 @@ class DynamoDbPartitionReader(
         }
 
     override fun releaseResources() {
-        if (::outputMessageRouter.isInitialized) {
-            outputMessageRouter.close()
-        }
+        outputMessageRouter?.close()
+        outputMessageRouter = null
         acquiredResources.getAndSet(null)?.values?.forEach { it.close() }
     }
 }
