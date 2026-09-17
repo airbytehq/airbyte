@@ -165,8 +165,8 @@ class MsSqlServerDebeziumOperationsOffsetTest {
         offset: DebeziumOffset,
     ): JsonNode {
         val serialized = operations.serializeState(offset, null)
-        val offsetNode = serialized[MsSqlServerDebeziumOperations.MSSQL_STATE]
-        [MsSqlServerDebeziumOperations.MSSQL_CDC_OFFSET]
+        val state = serialized[MsSqlServerDebeziumOperations.MSSQL_STATE]
+        val offsetNode = state[MsSqlServerDebeziumOperations.MSSQL_CDC_OFFSET]
         val encodedValue = offsetNode.fields().next().value.asText()
         return Jsons.readTree(encodedValue)
     }
