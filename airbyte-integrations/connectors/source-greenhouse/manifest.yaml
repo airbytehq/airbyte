@@ -39,10 +39,35 @@ definitions:
     cursor_field: updated_at
     cursor_datetime_formats:
       - "%Y-%m-%dT%H:%M:%S.%_msZ"
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S.%_ms%z"
+      - "%Y-%m-%dT%H:%M:%S%z"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
     start_datetime:
       type: MinMaxDatetime
       datetime: "1970-01-01T00:00:00Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  # The cursor every incremental stream shares. Reference it with a bare $ref: a
+  # sibling key replaces the whole value it collides with, so overriding a nested
+  # block here would silently drop the rest of it.
+  # All four RFC 3339 spellings are accepted - millisecond or second precision,
+  # Z or a numeric offset. v3 documents the millisecond-Z form and all 107 examples
+  # in its spec use it, but no response schema pins a pattern, and an unparsed
+  # cursor value is silent: records still flow while state stays parked at
+  # start_date forever. Verified per spelling before and after adding these.
+  updated_at_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: updated_at
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%_msZ"
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S.%_ms%z"
+      - "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+    lookback_window: PT1H
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   streams:
     applications:
@@ -80,16 +105,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -126,16 +142,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -172,16 +179,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -218,16 +216,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -264,16 +253,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -311,16 +291,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -357,16 +328,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -518,16 +480,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -613,16 +566,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -659,16 +603,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -705,16 +640,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -751,16 +677,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -804,16 +721,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -850,16 +758,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -896,16 +795,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -943,16 +833,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -993,16 +874,7 @@ definitions:
         schema:
           $ref: "#/schemas/scorecards"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
     sources:
       type: DeclarativeStream
       name: sources
@@ -1035,16 +907,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1082,16 +945,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1130,16 +984,7 @@ definitions:
       primary_key:
         - id
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1178,16 +1023,7 @@ definitions:
       primary_key:
         - id
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1227,16 +1063,7 @@ definitions:
       primary_key:
         - id
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1276,16 +1103,7 @@ definitions:
       primary_key:
         - id
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1322,16 +1140,9 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
+        $ref: "#/definitions/updated_at_cursor"
+        # /v3/eeoc also accepts updated_at, but switching needs a StateMigration; see AGENTS.md.
         cursor_field: submitted_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1368,16 +1179,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1414,16 +1216,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1460,16 +1253,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1508,16 +1292,7 @@ definitions:
       primary_key:
         - id
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1554,16 +1329,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1602,16 +1368,7 @@ definitions:
       primary_key:
         - id
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
