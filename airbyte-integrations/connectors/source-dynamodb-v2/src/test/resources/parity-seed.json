@@ -10,136 +10,150 @@
   "tables": [
     {
       "name": "all_types",
-      "keySchema": [{"attributeName": "id", "keyType": "HASH", "attributeType": "S"}],
+      "keySchema": [
+        { "attributeName": "id", "keyType": "HASH", "attributeType": "S" }
+      ],
       "items": [
         {
-          "id": {"S": "1"},
-          "str": {"S": "hello"},
-          "int": {"N": "42"},
-          "dec": {"N": "12.34"},
-          "big": {"N": "123456789012345678901234567890"},
-          "neg": {"N": "-7"},
-          "bin": {"B": "AQID"},
-          "sset": {"SS": ["a", "b"]},
-          "nset": {"NS": ["1", "2.5", "-3"]},
-          "bset": {"BS": ["AQID", "BAUG"]},
-          "flag": {"BOOL": true},
-          "nothing": {"NULL": true},
+          "id": { "S": "1" },
+          "str": { "S": "hello" },
+          "int": { "N": "42" },
+          "dec": { "N": "12.34" },
+          "big": { "N": "123456789012345678901234567890" },
+          "neg": { "N": "-7" },
+          "bin": { "B": "AQID" },
+          "sset": { "SS": ["a", "b"] },
+          "nset": { "NS": ["1", "2.5", "-3"] },
+          "bset": { "BS": ["AQID", "BAUG"] },
+          "flag": { "BOOL": true },
+          "nothing": { "NULL": true },
           "map": {
             "M": {
-              "s": {"S": "x"},
-              "n_int": {"N": "1"},
-              "n_dec": {"N": "1.5"},
-              "b": {"B": "AQ=="},
-              "bool": {"BOOL": false},
-              "nul": {"NULL": true},
-              "ss": {"SS": ["m"]},
-              "ns": {"NS": ["1"]},
-              "bs": {"BS": ["AQ=="]},
-              "nested_map": {"M": {"deep": {"S": "y"}}},
-              "nested_list": {"L": [{"S": "z"}, {"N": "9"}]}
+              "s": { "S": "x" },
+              "n_int": { "N": "1" },
+              "n_dec": { "N": "1.5" },
+              "b": { "B": "AQ==" },
+              "bool": { "BOOL": false },
+              "nul": { "NULL": true },
+              "ss": { "SS": ["m"] },
+              "ns": { "NS": ["1"] },
+              "bs": { "BS": ["AQ=="] },
+              "nested_map": { "M": { "deep": { "S": "y" } } },
+              "nested_list": { "L": [{ "S": "z" }, { "N": "9" }] }
             }
           },
           "list": {
             "L": [
-              {"S": "s"},
-              {"N": "1"},
-              {"N": "2.5"},
-              {"BOOL": true},
-              {"NULL": true},
-              {"M": {"k": {"S": "v"}}},
-              {"L": [{"S": "inner"}]}
+              { "S": "s" },
+              { "N": "1" },
+              { "N": "2.5" },
+              { "BOOL": true },
+              { "NULL": true },
+              { "M": { "k": { "S": "v" } } },
+              { "L": [{ "S": "inner" }] }
             ]
           },
-          "flexible": {"S": "text"}
+          "flexible": { "S": "text" }
         },
         {
-          "id": {"S": "2"},
-          "str": {"S": "world"},
-          "int": {"N": "7"},
-          "only_in_2": {"S": "second"},
-          "only_in_2_num": {"N": "3.14"},
-          "flexible": {"N": "100"}
+          "id": { "S": "2" },
+          "str": { "S": "world" },
+          "int": { "N": "7" },
+          "only_in_2": { "S": "second" },
+          "only_in_2_num": { "N": "3.14" },
+          "flexible": { "N": "100" }
         },
         {
-          "id": {"S": "3"},
-          "str": {"S": "solo"}
+          "id": { "S": "3" },
+          "str": { "S": "solo" }
         }
       ]
     },
     {
       "name": "composite_key",
       "keySchema": [
-        {"attributeName": "pk", "keyType": "HASH", "attributeType": "S"},
-        {"attributeName": "sk", "keyType": "RANGE", "attributeType": "N"}
+        { "attributeName": "pk", "keyType": "HASH", "attributeType": "S" },
+        { "attributeName": "sk", "keyType": "RANGE", "attributeType": "N" }
       ],
       "items": [
-        {"pk": {"S": "a"}, "sk": {"N": "1"}, "v": {"S": "x"}},
-        {"pk": {"S": "a"}, "sk": {"N": "2"}, "v": {"S": "y"}},
-        {"pk": {"S": "b"}, "sk": {"N": "1.5"}, "v": {"S": "z"}}
+        { "pk": { "S": "a" }, "sk": { "N": "1" }, "v": { "S": "x" } },
+        { "pk": { "S": "a" }, "sk": { "N": "2" }, "v": { "S": "y" } },
+        { "pk": { "S": "b" }, "sk": { "N": "1.5" }, "v": { "S": "z" } }
       ]
     },
     {
       "name": "numeric_key",
-      "keySchema": [{"attributeName": "id", "keyType": "HASH", "attributeType": "N"}],
+      "keySchema": [
+        { "attributeName": "id", "keyType": "HASH", "attributeType": "N" }
+      ],
       "items": [
-        {"id": {"N": "1"}, "v": {"S": "one"}},
-        {"id": {"N": "2.5"}, "v": {"S": "two and a half"}},
-        {"id": {"N": "-3"}, "v": {"S": "minus three"}}
+        { "id": { "N": "1" }, "v": { "S": "one" } },
+        { "id": { "N": "2.5" }, "v": { "S": "two and a half" } },
+        { "id": { "N": "-3" }, "v": { "S": "minus three" } }
       ]
     },
     {
       "name": "binary_key",
-      "keySchema": [{"attributeName": "id", "keyType": "HASH", "attributeType": "B"}],
+      "keySchema": [
+        { "attributeName": "id", "keyType": "HASH", "attributeType": "B" }
+      ],
       "items": [
-        {"id": {"B": "AQID"}, "v": {"S": "one"}},
-        {"id": {"B": "BAUG"}, "v": {"S": "two"}}
+        { "id": { "B": "AQID" }, "v": { "S": "one" } },
+        { "id": { "B": "BAUG" }, "v": { "S": "two" } }
       ]
     },
     {
       "name": "empty_table",
-      "keySchema": [{"attributeName": "id", "keyType": "HASH", "attributeType": "S"}],
+      "keySchema": [
+        { "attributeName": "id", "keyType": "HASH", "attributeType": "S" }
+      ],
       "items": []
     },
     {
       "name": "reserved_words",
-      "keySchema": [{"attributeName": "id", "keyType": "HASH", "attributeType": "S"}],
+      "keySchema": [
+        { "attributeName": "id", "keyType": "HASH", "attributeType": "S" }
+      ],
       "items": [
         {
-          "id": {"S": "r1"},
-          "name": {"S": "first"},
-          "status": {"S": "active"},
-          "data": {"M": {"inner": {"S": "payload"}}},
-          "field.name": {"S": "dotted"},
-          "field-name": {"S": "dashed"},
-          "count": {"N": "5"}
+          "id": { "S": "r1" },
+          "name": { "S": "first" },
+          "status": { "S": "active" },
+          "data": { "M": { "inner": { "S": "payload" } } },
+          "field.name": { "S": "dotted" },
+          "field-name": { "S": "dashed" },
+          "count": { "N": "5" }
         },
         {
-          "id": {"S": "r2"},
-          "name": {"S": "second"},
-          "status": {"S": "inactive"},
-          "data": {"S": "plain"},
-          "field.name": {"N": "2"},
-          "field-name": {"BOOL": true},
-          "count": {"N": "6.5"}
+          "id": { "S": "r2" },
+          "name": { "S": "second" },
+          "status": { "S": "inactive" },
+          "data": { "S": "plain" },
+          "field.name": { "N": "2" },
+          "field-name": { "BOOL": true },
+          "count": { "N": "6.5" }
         }
       ]
     },
     {
       "name": "many_items",
-      "keySchema": [{"attributeName": "id", "keyType": "HASH", "attributeType": "S"}],
+      "keySchema": [
+        { "attributeName": "id", "keyType": "HASH", "attributeType": "S" }
+      ],
       "generate": {
         "count": 1200,
-        "itemTemplate": {"id": {"S": "item-{i:04d}"}, "v": {"N": "{i}"}},
+        "itemTemplate": { "id": { "S": "item-{i:04d}" }, "v": { "N": "{i}" } },
         "extraFrom": 1101,
-        "extraTemplate": {"late_only": {"S": "late-{i:04d}"}}
+        "extraTemplate": { "late_only": { "S": "late-{i:04d}" } }
       }
     },
     {
       "name": "paging_{i:03d}",
-      "keySchema": [{"attributeName": "id", "keyType": "HASH", "attributeType": "S"}],
-      "generate": {"tables": 105},
-      "items": [{"id": {"S": "one"}, "table_index": {"N": "{i}"}}]
+      "keySchema": [
+        { "attributeName": "id", "keyType": "HASH", "attributeType": "S" }
+      ],
+      "generate": { "tables": 105 },
+      "items": [{ "id": { "S": "one" }, "table_index": { "N": "{i}" } }]
     }
   ]
 }

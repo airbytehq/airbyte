@@ -114,7 +114,14 @@ assumption are the only credential shapes that can travel inside a configuration
 
 `src/test/resources/legacy-spec.json` is the `spec` output of the published `airbyte/source-dynamodb`
 image, kept for reference; `expected-spec.json` is this connector's own snapshot (the strict spec test
-writes the current spec to `build/actual-spec.json` to refresh it).
+writes the current spec to `build/actual-spec.json` to refresh it). CI's format check runs prettier
+3.0.3 on every JSON and YAML file; after refreshing a snapshot (or `parity-seed.json`,
+`expected-catalog.json`) reformat it, for example without a local node:
+
+```bash
+docker run --rm -v "$PWD":/work -w /work node:20-alpine sh -c \
+  'npm i -g --silent prettier@3.0.3 && prettier --write src/test/resources/*.json'
+```
 
 ### check and discover parity (verified 2026-09-17 on DynamoDB Local 3.3.1 and on a real AWS account vs 0.3.11)
 

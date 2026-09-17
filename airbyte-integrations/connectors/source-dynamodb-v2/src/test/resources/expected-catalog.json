@@ -6,105 +6,60 @@
         "type": "object",
         "properties": {
           "big": {
-            "type": [
-              "null",
-              "number"
-            ]
+            "type": ["null", "number"]
           },
           "dec": {
-            "type": [
-              "null",
-              "number"
-            ]
+            "type": ["null", "number"]
           },
           "flag": {
-            "type": [
-              "null",
-              "boolean"
-            ]
+            "type": ["null", "boolean"]
           },
           "bin": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": ["null", "string"],
             "contentEncoding": "base64"
           },
           "nset": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": ["null", "array"],
             "items": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             }
           },
           "nothing": {
             "type": "null"
           },
           "list": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": ["null", "array"],
             "items": {
               "anyOf": [
                 {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 {
                   "type": "null"
                 },
                 {
-                  "type": [
-                    "null",
-                    "object"
-                  ],
+                  "type": ["null", "object"],
                   "properties": {
                     "k": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     }
                   }
                 },
                 {
-                  "type": [
-                    "null",
-                    "array"
-                  ],
+                  "type": ["null", "array"],
                   "items": {
                     "anyOf": [
                       {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       }
                     ]
                   }
@@ -113,199 +68,108 @@
             }
           },
           "int": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "bset": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": ["null", "array"],
             "items": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "contentEncoding": "base64"
             }
           },
           "str": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "neg": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "flexible": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "sset": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": ["null", "array"],
             "items": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "only_in_2_num": {
-            "type": [
-              "null",
-              "number"
-            ]
+            "type": ["null", "number"]
           },
           "map": {
-            "type": [
-              "null",
-              "object"
-            ],
+            "type": ["null", "object"],
             "properties": {
               "ss": {
-                "type": [
-                  "null",
-                  "array"
-                ],
+                "type": ["null", "array"],
                 "items": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 }
               },
               "bs": {
-                "type": [
-                  "null",
-                  "array"
-                ],
+                "type": ["null", "array"],
                 "items": {
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "contentEncoding": "base64"
                 }
               },
               "b": {
-                "type": [
-                  "null",
-                  "string"
-                ],
+                "type": ["null", "string"],
                 "contentEncoding": "base64"
               },
               "s": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "n_int": {
-                "type": [
-                  "null",
-                  "integer"
-                ]
+                "type": ["null", "integer"]
               },
               "bool": {
-                "type": [
-                  "null",
-                  "boolean"
-                ]
+                "type": ["null", "boolean"]
               },
               "nul": {
                 "type": "null"
               },
               "ns": {
-                "type": [
-                  "null",
-                  "array"
-                ],
+                "type": ["null", "array"],
                 "items": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 }
               },
               "nested_list": {
-                "type": [
-                  "null",
-                  "array"
-                ],
+                "type": ["null", "array"],
                 "items": {
                   "anyOf": [
                     {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     {
-                      "type": [
-                        "null",
-                        "integer"
-                      ]
+                      "type": ["null", "integer"]
                     }
                   ]
                 }
               },
               "n_dec": {
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": ["null", "number"]
               },
               "nested_map": {
-                "type": [
-                  "null",
-                  "object"
-                ],
+                "type": ["null", "object"],
                 "properties": {
                   "deep": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
+                    "type": ["null", "string"]
                   }
                 }
               }
             }
           },
           "only_in_2": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "binary_key",
@@ -313,30 +177,17 @@
         "type": "object",
         "properties": {
           "v": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": ["null", "string"],
             "contentEncoding": "base64"
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "composite_key",
@@ -344,35 +195,19 @@
         "type": "object",
         "properties": {
           "sk": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "v": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "pk": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "pk"
-        ]
-      ]
+      "source_defined_primary_key": [["pk"]]
     },
     {
       "name": "empty_table",
@@ -380,16 +215,9 @@
         "type": "object",
         "properties": {}
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "many_items",
@@ -397,35 +225,19 @@
         "type": "object",
         "properties": {
           "v": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "late_only": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "numeric_key",
@@ -433,29 +245,16 @@
         "type": "object",
         "properties": {
           "v": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "id": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_001",
@@ -463,29 +262,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_002",
@@ -493,29 +279,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_003",
@@ -523,29 +296,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_004",
@@ -553,29 +313,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_005",
@@ -583,29 +330,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_006",
@@ -613,29 +347,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_007",
@@ -643,29 +364,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_008",
@@ -673,29 +381,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_009",
@@ -703,29 +398,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_010",
@@ -733,29 +415,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_011",
@@ -763,29 +432,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_012",
@@ -793,29 +449,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_013",
@@ -823,29 +466,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_014",
@@ -853,29 +483,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_015",
@@ -883,29 +500,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_016",
@@ -913,29 +517,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_017",
@@ -943,29 +534,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_018",
@@ -973,29 +551,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_019",
@@ -1003,29 +568,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_020",
@@ -1033,29 +585,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_021",
@@ -1063,29 +602,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_022",
@@ -1093,29 +619,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_023",
@@ -1123,29 +636,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_024",
@@ -1153,29 +653,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_025",
@@ -1183,29 +670,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_026",
@@ -1213,29 +687,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_027",
@@ -1243,29 +704,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_028",
@@ -1273,29 +721,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_029",
@@ -1303,29 +738,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_030",
@@ -1333,29 +755,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_031",
@@ -1363,29 +772,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_032",
@@ -1393,29 +789,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_033",
@@ -1423,29 +806,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_034",
@@ -1453,29 +823,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_035",
@@ -1483,29 +840,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_036",
@@ -1513,29 +857,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_037",
@@ -1543,29 +874,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_038",
@@ -1573,29 +891,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_039",
@@ -1603,29 +908,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_040",
@@ -1633,29 +925,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_041",
@@ -1663,29 +942,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_042",
@@ -1693,29 +959,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_043",
@@ -1723,29 +976,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_044",
@@ -1753,29 +993,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_045",
@@ -1783,29 +1010,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_046",
@@ -1813,29 +1027,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_047",
@@ -1843,29 +1044,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_048",
@@ -1873,29 +1061,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_049",
@@ -1903,29 +1078,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_050",
@@ -1933,29 +1095,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_051",
@@ -1963,29 +1112,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_052",
@@ -1993,29 +1129,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_053",
@@ -2023,29 +1146,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_054",
@@ -2053,29 +1163,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_055",
@@ -2083,29 +1180,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_056",
@@ -2113,29 +1197,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_057",
@@ -2143,29 +1214,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_058",
@@ -2173,29 +1231,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_059",
@@ -2203,29 +1248,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_060",
@@ -2233,29 +1265,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_061",
@@ -2263,29 +1282,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_062",
@@ -2293,29 +1299,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_063",
@@ -2323,29 +1316,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_064",
@@ -2353,29 +1333,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_065",
@@ -2383,29 +1350,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_066",
@@ -2413,29 +1367,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_067",
@@ -2443,29 +1384,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_068",
@@ -2473,29 +1401,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_069",
@@ -2503,29 +1418,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_070",
@@ -2533,29 +1435,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_071",
@@ -2563,29 +1452,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_072",
@@ -2593,29 +1469,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_073",
@@ -2623,29 +1486,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_074",
@@ -2653,29 +1503,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_075",
@@ -2683,29 +1520,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_076",
@@ -2713,29 +1537,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_077",
@@ -2743,29 +1554,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_078",
@@ -2773,29 +1571,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_079",
@@ -2803,29 +1588,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_080",
@@ -2833,29 +1605,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_081",
@@ -2863,29 +1622,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_082",
@@ -2893,29 +1639,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_083",
@@ -2923,29 +1656,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_084",
@@ -2953,29 +1673,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_085",
@@ -2983,29 +1690,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_086",
@@ -3013,29 +1707,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_087",
@@ -3043,29 +1724,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_088",
@@ -3073,29 +1741,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_089",
@@ -3103,29 +1758,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_090",
@@ -3133,29 +1775,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_091",
@@ -3163,29 +1792,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_092",
@@ -3193,29 +1809,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_093",
@@ -3223,29 +1826,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_094",
@@ -3253,29 +1843,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_095",
@@ -3283,29 +1860,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_096",
@@ -3313,29 +1877,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_097",
@@ -3343,29 +1894,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_098",
@@ -3373,29 +1911,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_099",
@@ -3403,29 +1928,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_100",
@@ -3433,29 +1945,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_101",
@@ -3463,29 +1962,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_102",
@@ -3493,29 +1979,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_103",
@@ -3523,29 +1996,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_104",
@@ -3553,29 +2013,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "paging_105",
@@ -3583,29 +2030,16 @@
         "type": "object",
         "properties": {
           "table_index": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "reserved_words",
@@ -3613,59 +2047,31 @@
         "type": "object",
         "properties": {
           "field-name": {
-            "type": [
-              "null",
-              "boolean"
-            ]
+            "type": ["null", "boolean"]
           },
           "field.name": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "data": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "count": {
-            "type": [
-              "null",
-              "number"
-            ]
+            "type": ["null", "number"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "status": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "default_cursor_field": [],
-      "source_defined_primary_key": [
-        [
-          "id"
-        ]
-      ]
+      "source_defined_primary_key": [["id"]]
     }
   ]
 }
