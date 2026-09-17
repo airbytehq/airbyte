@@ -148,7 +148,19 @@ and the role. Legacy returned `FAILED` without a message in all three cases.
 
 ### read parity (verified 2026-09-17 on DynamoDB Local 3.3.1 and on a real AWS account vs 0.3.11)
 
-Against the real account (us-east-2, 4 tables, 6 items) both images return byte-identical records
+Against the real account (us-east-2) with the `abv2_*` datasets seeded by the skill's
+`parity/seed-aws.py` (10 tables, 215,213 items: every attribute type, reserved words, composite /
+numeric / binary keys, an empty table, 5,000 dated items, 10,000 mixed 1 KB items, 200 items of
+300 KB, and 200,000 items over 100 partitions) the two images return identical records on the 8
+tables legacy can read (215,211 records; strict differences are only the explicit nulls and the
+exact big numbers), identical records and states for incremental syncs on a bare-date, an ISO
+timestamp and a 200,000-item string cursor, and the integer cursors legacy crashes on work. A state
+handoff on the 200,000-item table works both ways (zero new records), a full refresh resumed from
+a saved key after record 100,000 returns exactly the remaining 100,000 in order, and with
+`checkpoint_target_interval_seconds: 1` and `concurrency: 4` the three big tables emit 48 mid-scan
+states with every record exactly once (38 s, against 59 s one table at a time and 67 s for legacy).
+
+Against the original 4 tables of that account (6 items) both images return byte-identical records
 for a full refresh of every table (strict comparison, no normalization needed), identical records
 and identical final states (`cursor`, `cursor_record_count`) for incremental syncs on two string
 cursors, and a state handoff works in both directions: the new connector resumed from the legacy
