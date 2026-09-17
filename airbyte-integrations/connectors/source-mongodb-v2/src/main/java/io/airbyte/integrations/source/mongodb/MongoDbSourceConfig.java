@@ -23,7 +23,10 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
       throw new IllegalArgumentException("MongoDbSourceConfig cannot accept a null config.");
     }
     if (!rawConfig.hasNonNull(DATABASE_CONFIG_CONFIGURATION_KEY)) {
-      throw new IllegalArgumentException("Database configuration is missing required '" + DATABASE_CONFIG_CONFIGURATION_KEY + "' property.");
+      throw new IllegalArgumentException("Database configuration is missing required '" + DATABASE_CONFIG_CONFIGURATION_KEY
+          + "' property. Top-level keys received: " + String.join(", ", (Iterable<String>) () -> rawConfig.fieldNames())
+          + ". Provide a '" + DATABASE_CONFIG_CONFIGURATION_KEY + "' object with 'cluster_type', 'connection_string' and "
+          + "'databases' (see the connector spec) and retry.");
     }
   }
 
