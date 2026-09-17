@@ -281,6 +281,11 @@ Local HTTP tests exercise the real SDK/Netty multipart protocol, including parti
 
 ## 6. Schema descriptor
 
+Always include `layout.source_schema`, for raw and typed tables and every input format. Preserve
+the matching configured stream's original JSON Schema, including nested types, annotations, and
+constraints. Only reconstruct it from the CDK source type when no configured schema is available.
+The source schema participates in `schema_id` independently of the physical batch column layout.
+
 Use a versioned `bigquery-gcs-load-csv-gzip-v1` format, distinct from Snowflake's CSV contract.
 Include connector version, loading strategy, direct/raw mode, input format, all routing IDs,
 original/mapped stream identity, logical project/dataset/table, generation and sync IDs, run ID,

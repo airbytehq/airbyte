@@ -713,6 +713,79 @@ class BigqueryCopyMetadataTest {
         assertThrows(IllegalArgumentException::class.java) { metadata.schemaId(emptyMap()) }
     }
 
+    @ParameterizedTest
+    @CsvSource(
+        "false,JSONL,false",
+        "false,PROTOBUF,false",
+        "true,JSONL,false",
+        "true,PROTOBUF,false",
+        "false,JSONL,true",
+        "false,PROTOBUF,true",
+        "true,JSONL,true",
+        "true,PROTOBUF,true"
+    )
+    fun `source schema preserves configured types and annotations in every table and input mode`(
+        raw: Boolean,
+        format: DataChannelFormat,
+        standard: Boolean,
+    ) {
+        val stream = stream().copy(namespaceMapper = NamespaceMapper(streamPrefix = "destination_"))
+        val originalSchema =
+            stream.asProtocolObject().stream.jsonSchema.deepCopy<ObjectNode>().apply {
+                put("description", "Original source schema")
+                put("additionalProperties", false)
+                putArray("required").add("id")
+                (path("properties").path("id") as ObjectNode).put("minimum", 0)
+                (path("properties").path("nested").path("properties").path("key") as ObjectNode)
+                    .putArray("enum")
+                    .add("a")
+                    .add("b")
+            }
+        val configured = stream.asProtocolObject().apply { this.stream.jsonSchema = originalSchema }
+        val other =
+            stream.asProtocolObject().apply {
+                this.stream.namespace = "other_namespace"
+                this.stream.jsonSchema = Jsons.readTree("{}")
+            }
+        for (catalog in
+            listOf(null, ConfiguredAirbyteCatalog().withStreams(listOf(other, configured)))) {
+            val metadata =
+                BigqueryCopyMetadata(
+                    config,
+                    if (standard)
+                        bigquery(raw).copy(loadingMethod = BatchedStandardInsertConfiguration)
+                    else bigquery(raw),
+                    names(stream),
+                    runId,
+                    format,
+                    catalog
+                )
+            val descriptor = tree(metadata.descriptor(stream))
+            val sourceSchema = descriptor["layout"]["source_schema"]
+            assertEquals(
+                if (standard) "BATCHED_STANDARD_INSERT" else "GCS_STAGING",
+                descriptor["layout"]["loading_strategy"].asText()
+            )
+            assertEquals(
+                if (catalog == null) stream.asProtocolObject().stream.jsonSchema
+                else originalSchema,
+                sourceSchema
+            )
+            assertTrue(sourceSchema["properties"].has("id"))
+            assertTrue(sourceSchema["properties"]["nested"]["properties"].has("key"))
+            assertEquals(if (raw) "raw" else "direct", descriptor["layout"]["table_mode"].asText())
+            if (catalog != null) {
+                configured.stream.jsonSchema =
+                    originalSchema.deepCopy().apply { put("description", "Updated source schema") }
+                assertNotEquals(
+                    descriptor["schema_id"],
+                    tree(metadata.descriptor(stream))["schema_id"]
+                )
+                configured.stream.jsonSchema = originalSchema
+            }
+        }
+    }
+
     @Test
     fun `paths preserve original names and null namespaces without using mapped table names`() {
         val stream =
