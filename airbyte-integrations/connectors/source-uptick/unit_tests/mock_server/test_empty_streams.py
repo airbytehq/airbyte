@@ -18,7 +18,6 @@ from mock_server.request_builder import UptickRequestBuilder
 
 EMPTY_STREAMS = (
     "creditnotelineitems",
-    "defectquotelineitems",
     "remarkevents",
     "majorservices",
     "promptquestions",
@@ -41,7 +40,6 @@ _RETRY_STREAM = EMPTY_STREAMS[0]
 _MODELS = {stream: fields[0] for stream, fields in UptickRequestBuilder.FIELDS.items()}
 _EXPECTED_RELATIONSHIPS = {
     "creditnotelineitems": ("creditnote", "product"),
-    "defectquotelineitems": ("product", "quote", "asset", "remark"),
     "remarkevents": ("remark", "task", "servicetask", "account"),
     "majorservices": ("asset", "routineserviceleveltype"),
     "promptquestions": ("section",),
@@ -84,29 +82,6 @@ def _record(
             }
         )
         relationships = {"creditnote": _relationship(), "product": _relationship()}
-    elif stream == "defectquotelineitems":
-        attributes.update(
-            {
-                "description": "Defect quote line",
-                "unit_price": "10.00",
-                "cost_price": "8.00",
-                "markup": "2.00",
-                "quantity": "1.00",
-                "taxcode": "GST",
-                "taxrate": "10.00",
-                "subtotal": "10.00",
-                "total": "11.00",
-                "gst": "1.00",
-                "index": 1,
-                "estimated_time": 60,
-            }
-        )
-        relationships = {
-            "product": _relationship(),
-            "quote": _relationship(),
-            "asset": _relationship(),
-            "remark": _relationship(),
-        }
     elif stream == "remarkevents":
         attributes.update({"event": "updated", "notes": "Remark updated"})
         relationships = {

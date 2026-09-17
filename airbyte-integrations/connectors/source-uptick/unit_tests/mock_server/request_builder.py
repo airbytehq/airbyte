@@ -16,10 +16,6 @@ class UptickRequestBuilder:
             "CreditNoteLineItem",
             "id,created,updated,deleted,account_code,description,unit_price,quantity,subtotal,tax,total,taxcode,taxrate,creditnote,product",
         ),
-        "defectquotelineitems": (
-            "DefectQuoteLineItem",
-            "id,created,updated,description,unit_price,cost_price,markup,quantity,taxcode,taxrate,subtotal,total,gst,index,estimated_time,product,quote,asset,remark",
-        ),
         "remarkevents": (
             "RemarkEvent",
             "id,created,updated,event,notes,remark,task,servicetask,account",
