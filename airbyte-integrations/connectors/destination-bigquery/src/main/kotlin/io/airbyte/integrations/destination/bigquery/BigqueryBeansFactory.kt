@@ -108,6 +108,7 @@ class BigqueryBeansFactory {
         streamStateStore: StreamStateStore<*>,
         catalog: DestinationCatalog,
         archive: BigqueryS3Copy,
+        syncManager: SyncManager,
     ): DestinationWriter {
         val destinationHandler =
             BigQueryDatabaseHandler(
@@ -135,6 +136,7 @@ class BigqueryBeansFactory {
                 ),
                 catalog,
                 archive,
+                syncManager,
             )
         } else {
             val sqlTableOperations =
@@ -180,6 +182,7 @@ class BigqueryBeansFactory {
                 ),
                 catalog,
                 archive,
+                syncManager,
             )
         }
     }

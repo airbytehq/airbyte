@@ -40,11 +40,11 @@ data class S3CopyConfiguration(
                     "AIRBYTE_S3_COPY_PREFIX" to "fusion",
                 ) +
                 listOf(
-                        "AIRBYTE_S3_COPY_ORGANIZATION_ID" to config.organizationId,
-                        "AIRBYTE_S3_COPY_WORKSPACE_ID" to config.workspaceId,
-                        "AIRBYTE_S3_COPY_SOURCE_ID" to config.sourceId,
-                        "AIRBYTE_S3_COPY_CONNECTION_ID" to config.connectionId,
-                        "AIRBYTE_S3_COPY_DESTINATION_ID" to config.destinationId,
+                        "AIRBYTE_ORGANIZATION_ID" to config.organizationId,
+                        "AIRBYTE_WORKSPACE_ID" to config.workspaceId,
+                        "AIRBYTE_SOURCE_ID" to config.sourceId,
+                        "AIRBYTE_CONNECTION_ID" to config.connectionId,
+                        "AIRBYTE_DESTINATION_ID" to config.destinationId,
                     )
                     .mapNotNull { (key, value) -> value?.let { key to it } }
                     .toMap()
@@ -64,10 +64,10 @@ data class S3CopyConfiguration(
             }
 
             fun uuid(suffix: String): UUID {
-                val value = env["AIRBYTE_S3_COPY_$suffix"] ?: return UUID(0, 0)
+                val value = env["AIRBYTE_$suffix"] ?: return UUID(0, 0)
                 val parsed = runCatching { UUID.fromString(value) }.getOrNull()
                 check(parsed != null && parsed.toString().equals(value, ignoreCase = true)) {
-                    "AIRBYTE_S3_COPY_$suffix must be a canonical UUID"
+                    "AIRBYTE_$suffix must be a canonical UUID"
                 }
                 return parsed
             }

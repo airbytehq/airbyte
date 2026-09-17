@@ -4,6 +4,7 @@ package io.airbyte.integrations.destination.bigquery.copy
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.DestinationFailure
+import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -13,6 +14,7 @@ class BigqueryCopyWriter(
     private val delegate: DestinationWriter,
     private val catalog: DestinationCatalog,
     private val archive: BigqueryS3Copy,
+    private val syncManager: SyncManager,
 ) : DestinationWriter {
     override suspend fun setup() {
         try {
@@ -30,7 +32,7 @@ class BigqueryCopyWriter(
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader =
-        delegate.createStreamLoader(stream)
+        BigqueryCopyStreamLoader(delegate.createStreamLoader(stream), archive, syncManager)
 
     override suspend fun teardown(destinationFailure: DestinationFailure?) {
         var failure: Exception? = null
