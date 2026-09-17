@@ -15,12 +15,12 @@ To generate the OAuth credentials, go to **Control Panel > Uptick API** in your 
 ## Configuration
 
 | Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `base_url` | `string` | Root URL of your Uptick workspace, for example `https://yourcompany.onuptick.com`. Only the host is used; the scheme, any path, and a trailing slash are normalized automatically. |  |
-| `client_id` | `string` | OAuth Client ID generated from Control Panel > Uptick API. |  |
-| `client_secret` | `string` | OAuth Client Secret generated from Control Panel > Uptick API. |  |
-| `username` | `string` | Email address for an Uptick user account with API access. |  |
-| `password` | `string` | Password for the Uptick user account. |  |
+| ------- | ------ | ------------- | --------------- |
+| `base_url` | `string` | Root URL of your Uptick workspace, for example `https://yourcompany.onuptick.com`. Only the host is used; the scheme, any path, and a trailing slash are normalized automatically. | |
+| `client_id` | `string` | OAuth Client ID generated from Control Panel > Uptick API. | |
+| `client_secret` | `string` | OAuth Client Secret generated from Control Panel > Uptick API. | |
+| `username` | `string` | Email address for an Uptick user account with API access. | |
+| `password` | `string` | Password for the Uptick user account. | |
 | `num_workers` | `integer` | Number of concurrent requests. Higher values speed up syncs but increase the chance of Uptick rate limiting. Allowed range 1–10. | `3` |
 
 ## Streams
@@ -106,7 +106,7 @@ The Uptick connector syncs data from the following streams, organized by functio
 ### Stream details
 
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
+| ------------- | ------------- | ------------ | --------------------- | ---------------------- |
 | `tasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
 | `taskcategories` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
 | `clients` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
@@ -198,8 +198,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date | Pull Request | Subject |
+| ------------------ | ------------------- | -------------- | ---------------- |
 | 1.2.0 | 2026-09-17 | [86356](https://github.com/airbytehq/airbyte/pull/86356) | Add error classification, request budget, concurrency, HTTPS normalization, and certification metadata |
 | 1.1.3 | 2026-09-15 | [86280](https://github.com/airbytehq/airbyte/pull/86280) | Update dependencies |
 | 1.1.2 | 2026-09-08 | [85702](https://github.com/airbytehq/airbyte/pull/85702) | Update dependencies |
