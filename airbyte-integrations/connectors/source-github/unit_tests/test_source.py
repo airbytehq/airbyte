@@ -11,7 +11,6 @@ import pytest
 import responses
 from source_github import constants
 from source_github.source import SourceGithub
-from source_github.streams import Branches
 
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteStream, Status, SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -21,7 +20,7 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-from .utils import command_check
+from .utils import ProbeStream, command_check
 
 
 def check_source(repo_line: str) -> AirbyteConnectionStatus:
@@ -97,9 +96,9 @@ def test_api_url_slash_normalization_keeps_python_and_manifest_urls_consistent(a
     config = source._validate_and_transform_config(config)
     assert config["api_url"] == "https://github.example.com/api/v3/"
 
-    stream = Branches(repositories=["org/repo"], page_size_for_large_streams=10, api_url=config["api_url"])
+    stream = ProbeStream(repositories=["org/repo"], page_size_for_large_streams=10, api_url=config["api_url"])
     joined = urljoin(stream.url_base, stream.path(stream_slice={"repository": "org/repo"}))
-    assert joined == "https://github.example.com/api/v3/repos/org/repo/branches"
+    assert joined == "https://github.example.com/api/v3/repos/org/repo/probe_stream"
 
     manifest_url_base = SourceGithub(config=config).resolved_manifest["definitions"]["requester_base"]["url_base"]
     interpolated = InterpolatedString.create(manifest_url_base, parameters={}).eval(config)
@@ -300,9 +299,9 @@ def test_streams_page_size(rate_limit_mock_response, requests_mock):
                 "access_token": "test_token",
                 "repository": "airbyte/test",
             },
-            10,
+            6,
         ),
-        ({"access_token": "test_token", "repository": "airbyte/test"}, 10),
+        ({"access_token": "test_token", "repository": "airbyte/test"}, 6),
     ),
 )
 def test_streams_config_start_date(config, expected, rate_limit_mock_response, requests_mock):
