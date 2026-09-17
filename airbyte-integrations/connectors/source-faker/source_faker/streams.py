@@ -51,6 +51,15 @@ class Products(Stream, IncrementalMixin):
         products = self.load_products()
         updated_at = ""
 
+        # Deduplicate products by make to avoid emitting redundant entries
+        seen_makes: set = set()
+        unique_products = []
+        for product in products:
+            if product["make"] not in seen_makes:
+                seen_makes.add(product["make"])
+                unique_products.append(product)
+        products = unique_products
+
         median_record_byte_size = 180
         rows_to_emit = len(products)
         yield generate_estimate(self.name, rows_to_emit, median_record_byte_size)
