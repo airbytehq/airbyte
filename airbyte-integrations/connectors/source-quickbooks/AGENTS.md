@@ -10,6 +10,8 @@ QuickBooks Online uses three-legged OAuth 2.0 against Intuit's identity service:
 
 The connector implements only the token half of that flow. `client_id`, `client_secret`, `refresh_token` and `realm_id` are user-entered, and `OAuthAuthenticator` exchanges the refresh token for access tokens. `refresh_token_updater` persists the rotated values back into the connection config, which matters more here than for most APIs: Intuit rotates the refresh token roughly every 24 hours and expires it after 100 days of disuse, so a connection whose replacement token is not persisted stops working within a day.
 
+`realm_id` is a company identifier rather than a credential, but it keeps `airbyte_secret: true`. Existing configs persisted it into the secret store, and dropping the flag leaves the platform with a stored secret coordinate for a field it no longer hydrates, so un-secreting it needs a platform-side migration rather than a spec edit.
+
 `access_token` and `token_expiry_date` are therefore **not** required inputs — the connector derives and maintains them. They remain in the spec because `refresh_token_updater` writes them there.
 
 There is no `oauth_connector_input_specification`, so Cloud shows no "Authenticate" button and users paste tokens from Intuit's OAuth 2.0 playground. Adding declarative OAuth requires capturing `realmId` from the consent redirect (not from the token response), which is why it is tracked separately rather than bundled with the error-handling work.

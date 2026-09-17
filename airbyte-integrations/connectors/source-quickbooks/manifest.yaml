@@ -15762,6 +15762,7 @@ spec:
           Labeled Company ID of the QuickBooks company to sync. It is shown
           in the Make API Calls panel of the Intuit developer portal, and in
           the QuickBooks UI under Settings > Additional Information.
+        airbyte_secret: true
       auth_type:
         type: string
         order: 1
