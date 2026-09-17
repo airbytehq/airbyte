@@ -51,19 +51,19 @@ jobs:
           test -n "$SASS_API_URL" || { echo "Set the SASS_API_URL repository variable"; exit 1; }
           test -n "$SASS_API_KEY" || { echo "Set the SASS_API_KEY repository secret"; exit 1; }
           test -n "$SASS_SOURCE_READ_TOKEN" || { echo "Set SASS_SOURCE_READ_TOKEN with read access to airbytehq/saas-sandbox"; exit 1; }
-      - name: Check out sandbox plugin
+      - name: Check out sandbox CLI
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: airbytehq/saas-sandbox
           ref: 620b06462c0e336cca13af2060c93e434c1a7579
           token: ${{ secrets.SASS_SOURCE_READ_TOKEN }}
-          path: sandbox-plugin
+          path: sandbox-tool
           persist-credentials: false
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "3.12"
-      - name: Install CDK and sandbox plugin in the same environment
-        run: python -m pip install -r sandbox-plugin/scripts/stripe_demo/requirements.txt ./sandbox-plugin poethepoet==0.48.0
+      - name: Install CDK, sandbox CLI, and Poe
+        run: python -m pip install -r sandbox-tool/scripts/stripe_demo/requirements.txt ./sandbox-tool poethepoet==0.48.0
       - name: Log in to GHCR for private relay images
         if: startsWith(inputs.relay_image, 'ghcr.io/')
         env:
@@ -94,7 +94,7 @@ jobs:
         id: sanitize
         if: always()
         run: >-
-          python sandbox-plugin/scripts/stripe_demo/sanitize_report.py
+          python sandbox-tool/scripts/stripe_demo/sanitize_report.py
           airbyte-integrations/connectors/source-stripe/build/test-results/standard-tests-junit.xml
       - name: Upload test report
         if: always() && steps.sanitize.outcome == 'success'

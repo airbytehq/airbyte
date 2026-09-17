@@ -95,18 +95,17 @@ The Stripe API supports `created` parameter filtering (e.g., `created[gte]`) on 
 
 ## Run the container tests with SaaS Sandbox
 
-Install the sandbox package and the pinned Airbyte CDK in the same Python environment as
-`airbyte-cdk` and `poe`:
+The generic `sandbox exec` command wraps Docker launches from the existing test runner:
 
 ```bash
-# Use a Python 3.12 environment for the pinned test runner.
-python -m pip install 'airbyte-cdk[dev]==7.28.4' /path/to/saas-sandbox poethepoet
+sandbox exec "$SASS_SCENARIO" -- airbyte-cdk image test "$connector" --image "$CONNECTOR_IMAGE"
 ```
 
-Use an existing `stripe-customers` scenario on the remote sandbox API and a published relay
-image. From this connector directory:
+It uses a temporary Docker PATH shim, not an Airbyte/pytest plugin. The sandbox CLI can
+be installed separately from the CDK; it only needs to be on PATH. For a demo environment:
 
 ```bash
+python -m pip install 'airbyte-cdk[dev]==7.28.4' /path/to/saas-sandbox poethepoet
 export SASS_API_URL=https://web-23872-79e064d3-et6sjtzv.onporter.run
 export SASS_API_KEY='<sandbox API key>'
 export SASS_RELAY_IMAGE='<published sandbox relay image>'
@@ -116,48 +115,42 @@ docker pull airbyte/source-stripe:6.0.18
 poe test-sandbox
 ```
 
-This runs the same `airbyte-cdk image test` suite used by Connector CI, with a published
-connector image. The `sass_sandbox.airbyte` pytest plugin routes connector launches through
-the sandbox and supplies `integration_tests/config-sandbox.json` for credential scenarios;
-existing secrets and the invalid-credential test remain unchanged. No images are built.
+The task stages metadata, manifest, acceptance-test config and the invalid-credential
+fixture in a temporary `source-stripe` directory. It copies the synthetic config into
+that directory's `secrets/config.json`, runs the wrapped native tests, copies JUnit back
+to `build/test-results`, and removes the temporary directory. Existing checkout secrets
+and upstream test scenarios are untouched. This credential preparation is Airbyte test
+setup, separate from the generic wrapper. No images are built.
 
-Like normal Connector CI, this task omits `--read-from-streams`: spec and credential
-checks run, and reads are skipped. Override `SASS_SCENARIO`, `CONNECTOR_IMAGE`, or
-`SASS_CONNECTOR_CONFIG` as needed. Select tests with `PYTEST_ADDOPTS`:
-
-```bash
-PYTEST_ADDOPTS='-k check' poe test-sandbox
-```
+The task defaults to the existing `stripe-customers` scenario. Override `SASS_SCENARIO`,
+`CONNECTOR_IMAGE`, or `SASS_CONNECTOR_CONFIG` as needed. Like normal Connector CI, it
+omits `--read-from-streams`: spec and valid/invalid credential checks run, reads skip.
+Select a subset with `PYTEST_ADDOPTS='-k check' poe test-sandbox`.
 
 Explicit read opt-ins such as `PYTEST_ADDOPTS='--read-from-streams=customers -k read'`
-exceed normal CI coverage and can hit CDK 7.28.4's empty-stream filter bug. The adapter
-contains no workaround and does not precheck sandbox feature support.
-
+exceed normal CI coverage and can hit CDK 7.28.4's empty-stream filter bug. There is no
+workaround or sandbox feature precheck. The wrapper supports foreground `docker run`
+with optional `--rm` and bind volumes; unsupported Docker run flags fail explicitly.
 
 ### Manual GitHub Actions demo
 
 The [Stripe sandbox demo](../../../.github/workflows/stripe-sandbox-demo.yml) workflow
-installs the pinned CDK, sandbox plugin, and Poe together before invoking the task
-above. It checks out a fixed sandbox commit, pulls both published images, and uploads
-a sanitized native JUnit report. It does not run `poe install`, which installs the CDK
-in a separate uv tool environment. Normal Connector CI remains unchanged.
+checks out the sandbox CLI at a fixed commit, installs it with the CDK and Poe, pulls
+published images, invokes the task and uploads sanitized JUnit. Normal Connector CI
+remains unchanged. Before dispatching, configure these on `airbytehq/airbyte`:
 
-Before dispatching, configure these settings on `airbytehq/airbyte`:
+- Repository variable `SASS_API_URL`: hosted sandbox API origin.
+- Repository secret `SASS_API_KEY`: service API key.
+- Repository secret `SASS_SOURCE_READ_TOKEN`: token with read-only Contents access to
+  internal `airbytehq/saas-sandbox` (for example, an approved fine-grained PAT).
+  The default job token cannot check out another internal repository.
+- For private GHCR relays, grant `airbytehq/airbyte` Read access under the package's
+  **Manage Actions access**. Image pulls use the job's `GITHUB_TOKEN` with `packages: read`.
 
-- Repository variable `SASS_API_URL`: the hosted sandbox API origin.
-- Repository secret `SASS_API_KEY`: its service API key.
-- Repository secret `SASS_SOURCE_READ_TOKEN`: a token with read-only Contents access
-  to the internal `airbytehq/saas-sandbox` repository (for example, an approved
-  fine-grained PAT). Airbyte's job token cannot check out that other repository.
-- For private GHCR relay images, grant `airbytehq/airbyte` Read access under the
-  package's **Manage Actions access** settings. The job uses its own `GITHUB_TOKEN`
-  with `packages: read` to pull the image.
-
-Publish the relay and prepare the `stripe-customers` scenario using the
-[sandbox demo setup](https://github.com/airbytehq/saas-sandbox/blob/620b06462c0e336cca13af2060c93e434c1a7579/docs/STRIPE_ACTION_DEMO.md).
+Publish the relay and prepare the scenario using the
+[sandbox demo setup](https://github.com/airbytehq/saas-sandbox/pull/5).
 The workflow uses the hosted API and existing scenario; it does not start a local
-service or reset data. Its scenario concurrency group only serializes runs within
-Airbyte, so use separate scenarios for simultaneous runs from the two repositories.
+service or reset data. Use separate scenarios for simultaneous runs across repositories.
 
 Once the workflow exists on the default branch:
 
@@ -166,7 +159,6 @@ gh workflow run stripe-sandbox-demo.yml --repo airbytehq/airbyte \
   -f relay_image='ghcr.io/airbytehq/saas-sandbox@sha256:<digest>'
 ```
 
-Optionally pass `-f tests=check` or override `image` and `scenario`. Reads remain
-omitted just like normal CI. A draft PR alone does not register a new manual workflow
-for dispatch. The fixed sandbox checkout can reference the companion PR commit before
-that PR merges; update the SHA as the integration evolves.
+Optionally pass `-f tests=check` or override `image` and `scenario`. A draft PR alone
+does not register a new manual workflow for dispatch. Update the fixed sandbox checkout
+SHA as the companion PR evolves.
