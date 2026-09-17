@@ -375,7 +375,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: airbytehq/saas-sandbox
-          ref: afbd5e1511150e8ae2caf41f1936c4a9d261505b
+          ref: 1e9a80fa506f9d624d23b34954fea126e95f9181
           token: ${{ secrets.SASS_SOURCE_READ_TOKEN }}
           path: sandbox-tool
           persist-credentials: false
@@ -385,6 +385,7 @@ jobs:
         uses: ./sandbox-tool/actions/run
         with:
           scenario: stripe-customers
+          workspace-id: ${{ vars.SASS_WORKSPACE_ID }}
           working-directory: airbyte-integrations/connectors/source-stripe
           command: airbyte-cdk image test --image airbyte/source-stripe:6.0.18
           images: airbyte/source-stripe:6.0.18
