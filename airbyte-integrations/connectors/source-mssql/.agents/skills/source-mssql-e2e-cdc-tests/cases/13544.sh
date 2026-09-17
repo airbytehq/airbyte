@@ -103,28 +103,41 @@ offset_json() {
   ' "$STATE2"
 }
 
+heartbeat_reached() {
+  local offset="$1"
+  local change_lsn commit_lsn event_serial_no
+
+  change_lsn="$(jq -r '.change_lsn // empty' <<<"$offset")"
+  if [[ "$EXPECT_BUG" == 1 ]]; then
+    [[ "$change_lsn" == "NULL" ]]
+    return
+  fi
+
+  commit_lsn="$(jq -r '.commit_lsn // empty' <<<"$offset")"
+  event_serial_no="$(jq -r '.event_serial_no // empty' <<<"$offset")"
+  [[ -n "$commit_lsn" && "$change_lsn" != "NULL" && "$change_lsn" == "$commit_lsn" && "$event_serial_no" == 0 ]]
+}
+
 run_alter_read "$STEP_NAME/alter" "$BASELINE_STATE" 1
 extract_state2 alter
 
 HEARTBEAT_OFFSET="$(offset_json)"
 for attempt in 1 2 3; do
-  CHANGE_LSN="$(jq -r '.change_lsn // empty' <<<"$HEARTBEAT_OFFSET")"
-  if [[ "$CHANGE_LSN" == "NULL" ]]; then
+  if heartbeat_reached "$HEARTBEAT_OFFSET"; then
     break
   fi
-  echo "[13544] heartbeat precondition not reached after alter attempt $attempt; retrying with state2" >&2
+  echo "[13544] heartbeat precondition not reached after alter attempt $attempt (offset: $HEARTBEAT_OFFSET); retrying with state2" >&2
   run_alter_read "$STEP_NAME/alter-retry-$attempt" "$STATE2" 0
   if ! extract_state2 "alter-retry-$attempt"; then
-    echo "[13544] alter retry emitted no STATE message; heartbeat final offset not reached" >&2
+    echo "[13544] alter retry emitted no STATE message; heartbeat final offset not reached (offset: $HEARTBEAT_OFFSET)" >&2
     break
   fi
   HEARTBEAT_OFFSET="$(offset_json)"
 done
 
-CHANGE_LSN="$(jq -r '.change_lsn // empty' <<<"$HEARTBEAT_OFFSET")"
 echo "[13544] state2 offset: $HEARTBEAT_OFFSET"
-if [[ "$CHANGE_LSN" != "NULL" ]]; then
-  echo "[13544] heartbeat final offset not reached (change_lsn='$CHANGE_LSN')" >&2
+if ! heartbeat_reached "$HEARTBEAT_OFFSET"; then
+  echo "[13544] heartbeat final offset not reached (offset: $HEARTBEAT_OFFSET)" >&2
   exit 2
 fi
 

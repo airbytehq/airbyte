@@ -25,10 +25,11 @@ class MsSqlServerDebeziumOperationsOffsetTest {
     fun `serializeState replaces textual NULL change_lsn with commit_lsn`() {
         val operations = operations()
 
-        val serialized = serializedOffset(
-            operations,
-            offset("00033e76:0000cd58:0008", TextNode.valueOf("NULL"), 0)
-        )
+        val serialized =
+            serializedOffset(
+                operations,
+                offset("00033e76:0000cd58:0008", TextNode.valueOf("NULL"), 0)
+            )
 
         assertEquals("00033e76:0000cd58:0008", serialized["change_lsn"].asText())
         assertEquals(0, serialized["event_serial_no"].asInt())
@@ -38,10 +39,8 @@ class MsSqlServerDebeziumOperationsOffsetTest {
     fun `serializeState replaces JSON null change_lsn with commit_lsn`() {
         val operations = operations()
 
-        val serialized = serializedOffset(
-            operations,
-            offset("00033e76:0000cd58:0008", NullNode.instance, 0)
-        )
+        val serialized =
+            serializedOffset(operations, offset("00033e76:0000cd58:0008", NullNode.instance, 0))
 
         assertEquals("00033e76:0000cd58:0008", serialized["change_lsn"].asText())
     }
@@ -50,10 +49,11 @@ class MsSqlServerDebeziumOperationsOffsetTest {
     fun `serializeState leaves a real change_lsn untouched`() {
         val operations = operations()
 
-        val serialized = serializedOffset(
-            operations,
-            offset("00033e7b:0001f308:0034", TextNode.valueOf("00033e7b:0001f308:0007"), 2)
-        )
+        val serialized =
+            serializedOffset(
+                operations,
+                offset("00033e7b:0001f308:0034", TextNode.valueOf("00033e7b:0001f308:0007"), 2)
+            )
 
         assertEquals("00033e7b:0001f308:0007", serialized["change_lsn"].asText())
         assertEquals(2, serialized["event_serial_no"].asInt())
@@ -66,10 +66,11 @@ class MsSqlServerDebeziumOperationsOffsetTest {
             offset("00033e76:0000cd58:0008", TextNode.valueOf("00033e76:0000cd58:0003"), 2)
         setLastLoadedOffset(operations, startingOffset)
 
-        val serialized = serializedOffset(
-            operations,
-            offset("00033e76:0000cd58:0008", TextNode.valueOf("NULL"), 0)
-        )
+        val serialized =
+            serializedOffset(
+                operations,
+                offset("00033e76:0000cd58:0008", TextNode.valueOf("NULL"), 0)
+            )
 
         assertEquals("00033e76:0000cd58:0003", serialized["change_lsn"].asText())
         assertEquals(2, serialized["event_serial_no"].asInt())
@@ -82,10 +83,11 @@ class MsSqlServerDebeziumOperationsOffsetTest {
             offset("00033e76:0000cd58:0008", TextNode.valueOf("00033e76:0000cd58:0003"), 2)
         setLastLoadedOffset(operations, startingOffset)
 
-        val serialized = serializedOffset(
-            operations,
-            offset("00033e76:0000cd60:0001", TextNode.valueOf("NULL"), 0)
-        )
+        val serialized =
+            serializedOffset(
+                operations,
+                offset("00033e76:0000cd60:0001", TextNode.valueOf("NULL"), 0)
+            )
 
         assertEquals("00033e76:0000cd60:0001", serialized["change_lsn"].asText())
         assertEquals(0, serialized["event_serial_no"].asInt())
@@ -112,9 +114,10 @@ class MsSqlServerDebeziumOperationsOffsetTest {
     fun `normalizeHeartbeatChangeLsn leaves multi-key offsets alone`() {
         val operations = operations()
         val secondKey = Jsons.readTree("""["CdcTest2",{"server":"CdcTest","database":"CdcTest"}]""")
-        val firstValue = snapshotValue("00033e76:0000cd58:0008")
-        val secondValue = snapshotValue("00033e76:0000cd60:0001")
-        val multiKeyOffset = DebeziumOffset(mapOf(offsetKey to firstValue, secondKey to secondValue))
+        val firstValue = offsetValue("00033e76:0000cd58:0008", TextNode.valueOf("NULL"), 0)
+        val secondValue = offsetValue("00033e76:0000cd60:0001", NullNode.instance, 0)
+        val multiKeyOffset =
+            DebeziumOffset(mapOf(offsetKey to firstValue, secondKey to secondValue))
 
         assertSame(multiKeyOffset, operations.normalizeHeartbeatChangeLsn(multiKeyOffset))
     }
@@ -133,13 +136,25 @@ class MsSqlServerDebeziumOperationsOffsetTest {
         return MsSqlServerDebeziumOperations(mockk<JdbcConnectionFactory>(relaxed = true), config)
     }
 
-    private fun offset(commitLsn: String, changeLsn: JsonNode?, eventSerialNo: Int): DebeziumOffset {
+    private fun offset(
+        commitLsn: String,
+        changeLsn: JsonNode?,
+        eventSerialNo: Int
+    ): DebeziumOffset {
+        return DebeziumOffset(mapOf(offsetKey to offsetValue(commitLsn, changeLsn, eventSerialNo)))
+    }
+
+    private fun offsetValue(
+        commitLsn: String,
+        changeLsn: JsonNode?,
+        eventSerialNo: Int
+    ): ObjectNode {
         val value = snapshotValue(commitLsn)
         value.put("event_serial_no", eventSerialNo)
         if (changeLsn != null) {
             value.set<JsonNode>("change_lsn", changeLsn)
         }
-        return DebeziumOffset(mapOf(offsetKey to value))
+        return value
     }
 
     private fun snapshotValue(commitLsn: String): ObjectNode =
@@ -150,9 +165,8 @@ class MsSqlServerDebeziumOperationsOffsetTest {
         offset: DebeziumOffset,
     ): JsonNode {
         val serialized = operations.serializeState(offset, null)
-        val offsetNode =
-            serialized[MsSqlServerDebeziumOperations.MSSQL_STATE]
-                [MsSqlServerDebeziumOperations.MSSQL_CDC_OFFSET]
+        val offsetNode = serialized[MsSqlServerDebeziumOperations.MSSQL_STATE]
+        [MsSqlServerDebeziumOperations.MSSQL_CDC_OFFSET]
         val encodedValue = offsetNode.fields().next().value.asText()
         return Jsons.readTree(encodedValue)
     }
@@ -161,7 +175,8 @@ class MsSqlServerDebeziumOperationsOffsetTest {
         operations: MsSqlServerDebeziumOperations,
         offset: DebeziumOffset,
     ) {
-        MsSqlServerDebeziumOperations::class.java
+        MsSqlServerDebeziumOperations::class
+            .java
             .getDeclaredField("lastLoadedOffset")
             .apply { isAccessible = true }
             .set(operations, offset)

@@ -48,7 +48,7 @@ MSSQL backend lifecycle, fixtures, and config templates:
     configured catalog).
   - `repro-11451.sh` — [`airbytehq/oncall#11451`](https://github.com/airbytehq/oncall/issues/11451)
     (saved CDC offset rejected after `min_lsn` advances past it).
-  - `repro-13544.sh` — [`airbytehq/oncall#13544`](https://github.com/airbytehq/oncall/issues/13544)
+  - `cases/13544.sh` — [`airbytehq/oncall#13544`](https://github.com/airbytehq/oncall/issues/13544)
     (heartbeat CDC offset skips `ALTER TABLE` history and emits a newly added
     column as `NULL` on resume).
 
