@@ -71,7 +71,7 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 
 **Start date** filters the Greenhouse request, not the sync. Every stream the table below marks as incremental sends `updated_at=gte|<start date>` on each sync, including a sync you configure as Full refresh, so a full refresh of those streams returns only records updated on or after your start date. Leave **Start date** empty to replicate all history.
 
-Incremental streams re-read a one-hour lookback window before the saved cursor on each sync, so records updated shortly before the previous sync finished aren't missed. Use **Incremental | Append + Deduped** if you don't want the resulting duplicates in your destination.
+Incremental streams re-read a one-hour lookback window before the saved cursor on each sync, so records updated shortly before the previous sync finished aren't missed. With Incremental - Append, this can produce duplicate records in your destination; use Incremental - Append + Deduped, if your destination supports it, to keep only the latest version of each record.
 
 ## Supported Streams
 
