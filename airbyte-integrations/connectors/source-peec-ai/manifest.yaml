@@ -629,6 +629,11 @@ schemas:
           type:
             - object
             - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
           additionalProperties: true
     required:
       - month
@@ -692,6 +697,11 @@ schemas:
           type:
             - object
             - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
           additionalProperties: true
     required:
       - month
