@@ -65,14 +65,15 @@ class ClickHouseSourceTest {
   }
 
   private JsonNode baseConfig(final boolean ssl, final String jdbcUrlParams) {
-    return Jsons.jsonNode(ImmutableMap.of(
-        JdbcUtils.HOST_KEY, "localhost",
-        JdbcUtils.PORT_KEY, 8123,
-        JdbcUtils.DATABASE_KEY, "db",
-        JdbcUtils.USERNAME_KEY, "username",
-        JdbcUtils.PASSWORD_KEY, "verysecure",
-        JdbcUtils.SSL_KEY, ssl,
-        JdbcUtils.JDBC_URL_PARAMS_KEY, jdbcUrlParams));
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.HOST_KEY, "localhost")
+        .put(JdbcUtils.PORT_KEY, 8123)
+        .put(JdbcUtils.DATABASE_KEY, "db")
+        .put(JdbcUtils.USERNAME_KEY, "username")
+        .put(JdbcUtils.PASSWORD_KEY, "verysecure")
+        .put(JdbcUtils.SSL_KEY, ssl)
+        .put(JdbcUtils.JDBC_URL_PARAMS_KEY, jdbcUrlParams)
+        .build());
   }
 
 }
