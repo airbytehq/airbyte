@@ -84,7 +84,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                   |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
-| 0.4.1-rc.1 | 2026-09-17 | [PR_NUMBER_PLACEHOLDER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER_PLACEHOLDER) | Upgrade ClickHouse JDBC driver to 0.9.9 to fix discover failing with "Magic is not correct" (LZ4) on ClickHouse 25.10+ / ClickHouse Cloud; remove legacy `sslmode=none` parameter |
+| 0.4.1-rc.1 | 2026-09-17 | [86416](https://github.com/airbytehq/airbyte/pull/86416) | Upgrade ClickHouse JDBC driver to 0.9.9 to fix discover failing with "Magic is not correct" (LZ4) on ClickHouse 25.10+ / ClickHouse Cloud; remove legacy `sslmode=none` parameter |
 | 0.4.0   | 2026-07-10 | [81633](https://github.com/airbytehq/airbyte/pull/81633)   | **Breaking**: Declare temporal column typing as breaking. Connections with schema evolution errors must follow the [migration guide](/integrations/sources/clickhouse-migrations)    |
 | 0.3.1   | 2026-06-29 | [72484](https://github.com/airbytehq/airbyte/pull/72484)   | Add JSON Schema format hints for temporal types (DateTime, Date) and fix documentation URL                |
 | 0.3.0   | 2026-01-27 | [75298](https://github.com/airbytehq/airbyte/pull/75298)   | Fold source-clickhouse-strict-encrypt into source-clickhouse                                              |
