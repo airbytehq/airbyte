@@ -467,9 +467,7 @@ class BigqueryCopyMetadataTest {
             assertEquals(if (raw) "raw" else "direct", descriptor["layout"]["table_mode"].asText())
             if (catalog != null) {
                 configured.stream.jsonSchema =
-                    originalSchema.deepCopy().apply {
-                        put("description", "Updated source schema")
-                    }
+                    originalSchema.deepCopy().apply { put("description", "Updated source schema") }
                 assertNotEquals(
                     descriptor["schema_id"],
                     tree(metadata.descriptor(stream))["schema_id"]
