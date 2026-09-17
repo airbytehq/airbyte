@@ -199,11 +199,16 @@ constructor(
             )
         }
 
+        // Same rule as the JDBC Bulk sources: the configured value wins; otherwise one table at a
+        // time on STDIO, one per socket in speed mode.
         val maxConcurrency: Int =
             when (DataChannelMedium.valueOf(dataChannelMedium)) {
-                STDIO -> 1
-                SOCKET -> socketPaths.size.coerceAtLeast(1)
+                STDIO -> pojo.concurrency ?: 1
+                SOCKET -> pojo.concurrency ?: socketPaths.size.coerceAtLeast(1)
             }
+        if (maxConcurrency <= 0) {
+            throw ConfigErrorException("'concurrency' must be positive, got $maxConcurrency.")
+        }
         log.info { "Effective concurrency: $maxConcurrency" }
 
         val (realHost: String, realPort: Int) = hostAndPort(endpoint, region)

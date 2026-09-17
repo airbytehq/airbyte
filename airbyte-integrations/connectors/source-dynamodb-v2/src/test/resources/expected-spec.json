@@ -199,6 +199,12 @@
         "default": 300,
         "minimum": 1,
         "examples": [300, 900]
+      },
+      "concurrency": {
+        "type": "integer",
+        "description": "Maximum number of tables scanned at the same time (concurrent Scan requests). Defaults to 1; every table draws on its own read capacity, so a higher value speeds up syncs of many tables.",
+        "title": "Concurrency",
+        "order": 7
       }
     },
     "required": ["credentials", "region"]

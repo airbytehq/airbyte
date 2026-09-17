@@ -113,6 +113,50 @@ class DynamoDbSourceConfigurationFactoryTest {
     }
 
     @Test
+    fun testConcurrency() {
+        val credentials =
+            """{"auth_type": "User", "access_key_id": "k", "secret_access_key": "s"}"""
+        // Default: one table at a time on STDIO.
+        Assertions.assertEquals(
+            1,
+            make("""{"credentials": $credentials, "region": "us-east-1"}""").maxConcurrency,
+        )
+        Assertions.assertEquals(
+            4,
+            make("""{"credentials": $credentials, "region": "us-east-1", "concurrency": 4}""")
+                .maxConcurrency,
+        )
+        for (value in listOf(0, -3)) {
+            assertConfigError(
+                """{"credentials": $credentials, "region": "us-east-1", "concurrency": $value}""",
+                "'concurrency' must be positive",
+            )
+        }
+    }
+
+    @Test
+    fun testCheckpointTargetInterval() {
+        val credentials =
+            """{"auth_type": "User", "access_key_id": "k", "secret_access_key": "s"}"""
+        Assertions.assertEquals(
+            java.time.Duration.ofSeconds(300),
+            make("""{"credentials": $credentials, "region": "us-east-1"}""")
+                .checkpointTargetInterval,
+        )
+        Assertions.assertEquals(
+            java.time.Duration.ofSeconds(45),
+            make(
+                    """{"credentials": $credentials, "region": "us-east-1", "checkpoint_target_interval_seconds": 45}"""
+                )
+                .checkpointTargetInterval,
+        )
+        assertConfigError(
+            """{"credentials": $credentials, "region": "us-east-1", "checkpoint_target_interval_seconds": 0}""",
+            "'checkpoint_target_interval_seconds' must be at least 1",
+        )
+    }
+
+    @Test
     fun testDiscoverSampleSizeOutOfRange() {
         val credentials =
             """{"auth_type": "User", "access_key_id": "k", "secret_access_key": "s"}"""

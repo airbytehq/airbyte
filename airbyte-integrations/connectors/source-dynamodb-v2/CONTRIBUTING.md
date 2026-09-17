@@ -61,8 +61,8 @@ regardless of the access key).
 ## How `read` works
 
 Every configured table is one stream feed with one partition (tables are read concurrently with
-each other up to `maxConcurrency`; a single table is never split into parallel `Segment` scans in
-this version, see the concurrency note in the PR). The partition reader issues `Scan` requests page
+each other up to the `concurrency` setting, default 1; a single table is never split into parallel
+`Segment` scans in this version, see the concurrency note in the PR). The partition reader issues `Scan` requests page
 by page (`ExclusiveStartKey` = the previous page's `LastEvaluatedKey`), projecting exactly the
 attributes of the configured stream. Every attribute is referenced through a placeholder
 (`#a0, #a1, ...` in `ExpressionAttributeNames`), so reserved words and special characters need no
@@ -108,6 +108,7 @@ differs from the legacy one (decision of 2026-09-17: credentials must come from 
 | `reserved_attribute_names` | marked `airbyte_secret` | plain string |
 | Discovery sample | hard-coded 1000 items per table | `discover_sample_size` (default 1000, 1..100000), like MongoDB's `discover_sample_size` |
 | Checkpoints | none (one state at the end of an incremental stream) | `checkpoint_target_interval_seconds` (default 300) like the JDBC Bulk sources: a state after every round of scan pages, resumable full refresh |
+| Concurrency | tables read one after another | `concurrency` (optional, default 1, like the JDBC Bulk sources): maximum number of tables scanned at the same time |
 
 AWS has no username/password API authentication; access keys (long-lived or temporary) and role
 assumption are the only credential shapes that can travel inside a configuration.

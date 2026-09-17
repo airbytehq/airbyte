@@ -2,6 +2,7 @@
 package io.airbyte.integrations.source.dynamodbv2
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
@@ -109,6 +110,14 @@ class DynamoDbSourceConfigurationSpecification : ConfigurationSpecification() {
         json = """{"order":6,"default":300,"minimum":1,"examples":[300, 900]}""",
     )
     var checkpointTargetIntervalSeconds: Int? = null
+
+    @JsonProperty("concurrency")
+    @JsonSchemaTitle("Concurrency")
+    @JsonSchemaInject(json = """{"order":7}""")
+    @JsonPropertyDescription(
+        "Maximum number of tables scanned at the same time (concurrent Scan requests). Defaults to 1; every table draws on its own read capacity, so a higher value speeds up syncs of many tables.",
+    )
+    var concurrency: Int? = null
 
     companion object {
         /** What the legacy connector always sampled. */
