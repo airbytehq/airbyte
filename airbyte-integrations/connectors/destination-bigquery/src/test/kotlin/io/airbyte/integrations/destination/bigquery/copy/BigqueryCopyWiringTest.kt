@@ -103,7 +103,7 @@ class BigqueryCopyWiringTest {
             put("AIRBYTE_S3_COPY_ENABLED", enabled)
             put("AIRBYTE_S3_COPY_ROLE_ARN", "invalid-enabled-only-field")
             listOf("ORGANIZATION", "WORKSPACE", "SOURCE", "CONNECTION", "DESTINATION").forEach {
-                put("AIRBYTE_S3_COPY_${it}_ID", "invalid-environment-id")
+                put("AIRBYTE_${it}_ID", "invalid-environment-id")
             }
             put("AWS_EC2_METADATA_DISABLED", "true")
         }

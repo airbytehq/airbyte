@@ -256,24 +256,13 @@ class BigqueryCopyMetadata(
         return path
     }
 
-    /** Call once per stream/run when minimumGenerationId is positive; retain on later failures. */
-    fun cutoff(stream: DestinationStream): Map<String, Any?> {
+    /** Catalog syncId is the platform job ID, independent of the random archive run ID. */
+    fun streamComplete(stream: DestinationStream): Map<String, Any> {
         validateGeneration(stream)
-        require(stream.minimumGenerationId > 0) {
-            "No cutoff requested for minimum generation zero"
-        }
-        return identity(stream) +
-            mapOf(
-                "format_version" to formatVersion,
-                "event_type" to "generation_cutoff_requested",
-                "event_id" to UUID.randomUUID().toString(),
-                "discard" to
-                    mapOf(
-                        "field" to Meta.COLUMN_NAME_AB_GENERATION_ID,
-                        "comparison" to "strictly_less_than",
-                        "value" to stream.minimumGenerationId,
-                    ),
-            )
+        return mapOf<String, Any>("job_id" to stream.syncId) +
+            if (stream.minimumGenerationId > 0)
+                mapOf("min_generation_id" to stream.minimumGenerationId)
+            else emptyMap()
     }
 
     private fun identity(stream: DestinationStream): Map<String, Any?> =

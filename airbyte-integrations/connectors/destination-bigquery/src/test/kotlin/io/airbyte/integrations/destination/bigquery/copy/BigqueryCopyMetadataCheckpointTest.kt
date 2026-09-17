@@ -75,30 +75,30 @@ class BigqueryCopyMetadataCheckpointTest {
 
     @ParameterizedTest
     @MethodSource("checkpointModes")
-    fun `zero records cannot emit state until schema and cutoff are durable`(
+    fun `zero records cannot emit state until schema are durable`(
         medium: DataChannelMedium,
         global: Boolean,
     ) = runTest {
         Fixture(this, medium, global).use { f ->
             f.startSetup()
-            f.cutoffEntered.await()
+            f.schemaEntered.await()
             f.enqueueCheckpoint()
             runCurrent()
 
-            assertEquals(listOf("schema.json"), f.completedMetadata)
+            assertEquals(emptyList<String>(), f.completedMetadata)
             assertTrue(f.streamManager.areRecordsPersistedForCheckpoint(f.key(1).checkpointId))
             assertTrue(
                 f.emitted.isEmpty(),
-                "Zero-row state escaped while cutoff upload was pending",
+                "Zero-row state escaped while schema upload was pending",
             )
             assertEquals(11L, f.reservations.totalBytesReserved)
             assertFalse(f.checkpointTask.isCompleted)
             coVerify(exactly = 0) { f.launcher.handleSetupComplete() }
 
-            f.cutoffResult.complete(Unit)
+            f.schemaResult.complete(Unit)
             f.setupResult.await().getOrThrow()
             f.checkpointTask.await().getOrThrow()
-            assertEquals(listOf("schema.json", "generation-cutoff.json"), f.completedMetadata)
+            assertEquals(listOf("schema.json"), f.completedMetadata)
             assertEquals(1, f.emitted.size)
             assertEquals(
                 if (global) AirbyteStateMessage.AirbyteStateType.GLOBAL
@@ -112,20 +112,20 @@ class BigqueryCopyMetadataCheckpointTest {
 
     @ParameterizedTest
     @MethodSource("checkpointModes")
-    fun `cutoff failure suppresses and releases zero row states including failed sync flush`(
+    fun `schema failure suppresses and releases zero row states including failed sync flush`(
         medium: DataChannelMedium,
         global: Boolean,
     ) = runTest {
         Fixture(this, medium, global).use { f ->
             f.startSetup()
-            f.cutoffEntered.await()
+            f.schemaEntered.await()
             f.enqueueCheckpoint()
             runCurrent()
             assertTrue(f.emitted.isEmpty(), "Zero-row state escaped before metadata failure")
             assertEquals(11L, f.reservations.totalBytesReserved)
 
-            val failure = IllegalStateException("generation cutoff upload failed")
-            f.cutoffResult.completeExceptionally(failure)
+            val failure = IllegalStateException("generation schema upload failed")
+            f.schemaResult.completeExceptionally(failure)
             assertNotNull(f.setupResult.await().exceptionOrNull())
             f.checkpointTask.await().getOrThrow()
             assertTrue(f.emitted.isEmpty())
@@ -169,8 +169,8 @@ class BigqueryCopyMetadataCheckpointTest {
         val streamManager = sync.getStreamManager(stream.mappedDescriptor)
         val reservations = ReservationManager(64L)
         val emitted = mutableListOf<AirbyteMessage>()
-        val cutoffEntered = CompletableDeferred<Unit>()
-        val cutoffResult = CompletableDeferred<Unit>()
+        val schemaEntered = CompletableDeferred<Unit>()
+        val schemaResult = CompletableDeferred<Unit>()
         val completedMetadata = mutableListOf<String>()
         val launcher = mockk<DestinationTaskLauncher>(relaxed = true)
         private val configuration =
@@ -184,7 +184,6 @@ class BigqueryCopyMetadataCheckpointTest {
                 every { epochSeconds } returns 1750000000L
                 every { runPath(stream) } returns "fusion/run"
                 every { streamKey(stream) } returns "stream-key"
-                every { cutoff(stream) } returns mapOf("minimum_generation_id" to 42L)
                 every { serialize(any()) } answers
                     {
                         ObjectMapper().writeValueAsBytes(firstArg<Any>())
@@ -200,9 +199,9 @@ class BigqueryCopyMetadataCheckpointTest {
                     contentType: String,
                     metadata: Map<String, String>,
                 ) {
-                    if (key.endsWith("generation-cutoff.json")) {
-                        cutoffEntered.complete(Unit)
-                        cutoffResult.await()
+                    if (key.endsWith("schema.json")) {
+                        schemaEntered.complete(Unit)
+                        schemaResult.await()
                     }
                     completedMetadata.add(key.substringAfterLast('/'))
                 }
@@ -225,7 +224,8 @@ class BigqueryCopyMetadataCheckpointTest {
                 { uploader },
                 spoolDirectory = directory,
             )
-        val writer = BigqueryCopyWriter(mockk<DestinationWriter>(relaxed = true), catalog, archive)
+        val writer =
+            BigqueryCopyWriter(mockk<DestinationWriter>(relaxed = true), catalog, archive, sync)
         private val context =
             ApplicationContext.builder()
                 .deduceEnvironment(false)

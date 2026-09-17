@@ -75,24 +75,60 @@ class BigqueryS3CopyTest {
     }
 
     @Test
-    fun `zero row refresh writes schema then cutoff once before writer setup completes`() =
-        runBlocking {
-            val fixture = Fixture(minimumGeneration = 5)
-            fixture.archive.use { archive ->
-                val delegate = mockk<DestinationWriter>(relaxed = true)
-                val writer = BigqueryCopyWriter(delegate, fixture.catalog, archive)
-                writer.setup()
-                archive.prepare(fixture.catalog)
-                assertEquals(
-                    listOf("schema.json", "generation-cutoff.json"),
-                    fixture.uploader.objects.map { it.key.substringAfterLast('/') },
-                )
-                assertEquals(1, fixture.uploader.credentialsChecks)
-                assertEquals("schema-hash", archive.context(fixture.stream).schemaId)
-                coVerify(exactly = 1) { delegate.setup() }
-            }
-            assertEmptyDirectory()
+    fun `zero row refresh writes schema at setup and completion after close`() = runBlocking {
+        val fixture = Fixture(minimumGeneration = 5)
+        fixture.archive.use { archive ->
+            val delegate = mockk<DestinationWriter>(relaxed = true)
+            val writer = BigqueryCopyWriter(delegate, fixture.catalog, archive, mockk())
+            writer.setup()
+            archive.prepare(fixture.catalog)
+            assertEquals(
+                listOf("schema.json"),
+                fixture.uploader.objects.map { it.key.substringAfterLast('/') },
+            )
+            assertEquals(1, fixture.uploader.credentialsChecks)
+            assertEquals("schema-hash", archive.context(fixture.stream).schemaId)
+            coVerify(exactly = 1) { delegate.setup() }
+            archive.complete(fixture.stream)
+            archive.complete(fixture.stream)
+            assertEquals(
+                listOf("schema.json", "stream_complete.json"),
+                fixture.uploader.objects.map { it.key.substringAfterLast('/') }
+            )
+            val marker = fixture.uploader.objects.last()
+            assertEquals("fusion/test-run/batches/stream_complete.json", marker.key)
+            assertEquals("application/json", marker.contentType)
+            assertEquals(2, fixture.uploader.objects.size)
         }
+        assertEmptyDirectory()
+    }
+
+    @Test
+    fun `completion failure propagates and a successful retry is idempotent`() = runBlocking {
+        val fixture = Fixture()
+        fixture.archive.use { archive ->
+            archive.prepare(fixture.catalog)
+            fixture.uploader.beforeUpload = { error("marker failed") }
+            assertThrows(SystemErrorException::class.java) {
+                runBlocking { archive.complete(fixture.stream) }
+            }
+            assertEquals(1, fixture.uploader.objects.size)
+            fixture.uploader.beforeUpload = {}
+            archive.complete(fixture.stream)
+            archive.complete(fixture.stream)
+            val marker = fixture.uploader.objects.last()
+            assertEquals("fusion/test-run/batches/stream_complete.json", marker.key)
+            assertEquals(
+                mapOf("job_id" to fixture.stream.syncId),
+                com.fasterxml.jackson.databind
+                    .ObjectMapper()
+                    .readValue(String(marker.bytes), Map::class.java)
+                    .mapValues { (_, v) -> (v as Number).toLong() }
+            )
+            assertEquals(2, fixture.uploader.objects.size)
+        }
+        assertEmptyDirectory()
+    }
 
     @Test
     fun `standard inserts prepare normally while duplicate names fail before AWS`() = runBlocking {
@@ -100,7 +136,7 @@ class BigqueryS3CopyTest {
         fixture.archive.use { archive ->
             every { fixture.configuration.loadingMethod } returns BatchedStandardInsertConfiguration
             val delegate = mockk<DestinationWriter>(relaxed = true)
-            BigqueryCopyWriter(delegate, fixture.catalog, archive).setup()
+            BigqueryCopyWriter(delegate, fixture.catalog, archive, mockk()).setup()
             assertTrue(archive.metadataReady())
             coVerify(exactly = 1) { delegate.setup() }
             assertEquals(1, fixture.uploader.credentialsChecks)
@@ -120,7 +156,8 @@ class BigqueryS3CopyTest {
         val fixture = Fixture()
         val failure = IllegalStateException("metadata failed")
         fixture.uploader.beforeUpload = { throw failure }
-        val writer = BigqueryCopyWriter(mockk(relaxed = true), fixture.catalog, fixture.archive)
+        val writer =
+            BigqueryCopyWriter(mockk(relaxed = true), fixture.catalog, fixture.archive, mockk())
         val thrown = runCatching { writer.setup() }.exceptionOrNull()
         assertInstanceOf(SystemErrorException::class.java, thrown)
         assertTrue(generateSequence(thrown) { it.cause }.any { it.message == failure.message })
@@ -130,18 +167,17 @@ class BigqueryS3CopyTest {
     }
 
     @Test
-    fun `cutoff failure on zero records prevents actual setup task from launching streams`() =
+    fun `schema failure on zero records prevents actual setup task from launching streams`() =
         runBlocking {
             val fixture = Fixture(minimumGeneration = 5)
             val launcher = mockk<DestinationTaskLauncher>(relaxed = true)
-            fixture.uploader.beforeUpload = {
-                if (fixture.uploader.objects.isNotEmpty()) error("cutoff refused")
-            }
-            val writer = BigqueryCopyWriter(mockk(relaxed = true), fixture.catalog, fixture.archive)
+            fixture.uploader.beforeUpload = { error("schema refused") }
+            val writer =
+                BigqueryCopyWriter(mockk(relaxed = true), fixture.catalog, fixture.archive, mockk())
             val result = runCatching { SetupTask(writer, launcher).execute() }
             assertInstanceOf(SystemErrorException::class.java, result.exceptionOrNull())
             assertEquals(
-                listOf("schema.json"),
+                emptyList<String>(),
                 fixture.uploader.objects.map { it.key.substringAfterLast('/') },
             )
             coVerify(exactly = 0) { launcher.handleSetupComplete() }
@@ -305,7 +341,7 @@ class BigqueryS3CopyTest {
         val catalog = Fixture().also { it.archive.close() }.catalog
         assertSame(
             failure,
-            runCatching { BigqueryCopyWriter(delegate, catalog, archive).teardown(null) }
+            runCatching { BigqueryCopyWriter(delegate, catalog, archive, mockk()).teardown(null) }
                 .exceptionOrNull(),
         )
         verify(exactly = 1) { archive.close() }
@@ -392,7 +428,7 @@ class BigqueryS3CopyTest {
         io.airbyte.cdk.load.task.implementor
             .FailSyncTask(
                 launcher,
-                BigqueryCopyWriter(delegate, fixture.catalog, archive),
+                BigqueryCopyWriter(delegate, fixture.catalog, archive, mockk()),
                 IllegalStateException("original failure"),
                 sync,
                 checkpoints,
@@ -484,20 +520,28 @@ class BigqueryS3CopyTest {
         }
 
     @Test
-    fun `empty standard refresh writes metadata and cutoff without a batch object`() = runBlocking {
-        val fixture = Fixture(minimumGeneration = 5)
-        every { fixture.configuration.loadingMethod } returns BatchedStandardInsertConfiguration
-        fixture.archive.use { archive ->
-            archive.prepare(fixture.catalog)
-            archive.startStandardInsertBatch(archive.context(fixture.stream)).use { it.complete(0) }
-            assertEquals(
-                listOf("schema.json", "generation-cutoff.json"),
-                fixture.uploader.objects.map { it.key.substringAfterLast('/') }
-            )
-            assertTrue(archive.metadataReady())
+    fun `empty standard refresh writes completion with cutoff after close without a data batch`() =
+        runBlocking {
+            val fixture = Fixture(minimumGeneration = 5)
+            every { fixture.configuration.loadingMethod } returns BatchedStandardInsertConfiguration
+            fixture.archive.use { archive ->
+                archive.prepare(fixture.catalog)
+                archive.startStandardInsertBatch(archive.context(fixture.stream)).use {
+                    it.complete(0)
+                }
+                assertEquals(
+                    listOf("schema.json"),
+                    fixture.uploader.objects.map { it.key.substringAfterLast('/') }
+                )
+                archive.complete(fixture.stream)
+                assertEquals(
+                    listOf("schema.json", "stream_complete.json"),
+                    fixture.uploader.objects.map { it.key.substringAfterLast('/') }
+                )
+                assertTrue(archive.metadataReady())
+            }
+            assertEmptyDirectory()
         }
-        assertEmptyDirectory()
-    }
 
     @Test
     fun `standard archive failure propagates and deletes its closed spool`() = runBlocking {
@@ -598,8 +642,10 @@ class BigqueryS3CopyTest {
             every { metadata.epochSeconds } returns 1750000000L
             every { metadata.runPath(stream) } returns "fusion/test-run"
             every { metadata.streamKey(stream) } returns "stream-hash"
-            every { metadata.cutoff(stream) } returns
-                mapOf("minimum_generation_id" to minimumGeneration)
+            every { metadata.streamComplete(stream) } returns
+                (mapOf("job_id" to stream.syncId) +
+                    if (minimumGeneration > 0) mapOf("min_generation_id" to minimumGeneration)
+                    else emptyMap())
             every { metadata.serialize(any()) } answers
                 {
                     com.fasterxml.jackson.databind.ObjectMapper().writeValueAsBytes(firstArg<Any>())
