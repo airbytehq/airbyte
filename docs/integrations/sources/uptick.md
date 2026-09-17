@@ -16,7 +16,7 @@ To generate the OAuth credentials, go to **Control Panel > Uptick API** in your 
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `base_url` | `string` | Your Uptick instance URL, for example `https://yourcompany.onuptick.com`. Do not include a trailing slash. |  |
+| `base_url` | `string` | Root URL of your Uptick workspace, for example `https://yourcompany.onuptick.com`. Only the host is used; the scheme, any path, and a trailing slash are normalized automatically. |  |
 | `client_id` | `string` | OAuth Client ID generated from Control Panel > Uptick API. |  |
 | `client_secret` | `string` | OAuth Client Secret generated from Control Panel > Uptick API. |  |
 | `username` | `string` | Email address for an Uptick user account with API access. |  |
@@ -187,7 +187,7 @@ Airbyte still offers incremental sync in the UI for the streams marked `❌ (no 
 
 ## Rate limits
 
-Uptick enforces rate limits and reasonable-use guidelines on its API. When Uptick throttles a request, the connector reads the `Retry-After` response header and waits the indicated time before retrying, for up to five attempts. To stay within these limits, sync only the streams and fields you need and schedule syncs no more frequently than your reporting requires.
+Uptick enforces rate limits and reasonable-use guidelines on its API. When Uptick throttles a request, the connector reads the `Retry-After` response header and waits the indicated time before retrying, for up to five attempts. Waits longer than 30 minutes fail the sync with a rate-limit error instead of blocking. The connector also caps itself at 60 requests per minute across all streams and runs `num_workers` concurrent requests (default 3, maximum 10); raise `num_workers` for faster syncs on tenants that tolerate it, or lower it if you see throttling. To stay within these limits, sync only the streams and fields you need and schedule syncs no more frequently than your reporting requires.
 
 ## IP allow list
 
@@ -200,7 +200,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 1.2.0 | 2026-09-15 | [86356](https://github.com/airbytehq/airbyte/pull/86356) | Add error classification, request budget, concurrency, HTTPS normalization, and certification metadata |
+| 1.2.0 | 2026-09-17 | [86356](https://github.com/airbytehq/airbyte/pull/86356) | Add error classification, request budget, concurrency, HTTPS normalization, and certification metadata |
 | 1.1.3 | 2026-09-15 | [86280](https://github.com/airbytehq/airbyte/pull/86280) | Update dependencies |
 | 1.1.2 | 2026-09-08 | [85702](https://github.com/airbytehq/airbyte/pull/85702) | Update dependencies |
 | 1.1.1 | 2026-08-18 | [84790](https://github.com/airbytehq/airbyte/pull/84790) | Update dependencies |

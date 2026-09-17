@@ -26,27 +26,21 @@ definitions:
         backoff_strategies:
           - type: WaitTimeFromHeader
             header: Retry-After
+            max_waiting_time_in_seconds: 1800
           - type: ExponentialBackoffStrategy
-            factor: 5
         response_filters:
           - type: HttpResponseFilter
             http_codes: [401]
             action: FAIL
             failure_type: config_error
-            error_message: "Uptick rejected the client credentials or user login."
+            error_message: "HTTP 401: Uptick rejected the client credentials or user login."
           - type: HttpResponseFilter
             http_codes: [403]
             action: FAIL
             failure_type: config_error
-            error_message: "Uptick user lacks permission for the requested endpoint."
-          - type: HttpResponseFilter
-            http_codes: [429]
-            action: RATE_LIMITED
-          - type: HttpResponseFilter
-            http_codes: [500, 502, 503, 504]
-            action: RETRY
+            error_message: "HTTP 403: Uptick user lacks permission for the requested endpoint."
       request_headers:
-        User-Agent: Airbyte (Connector Version 1.1.0)
+        User-Agent: Airbyte
     SimpleRetriever:
       requester:
         $ref: "#/definitions/linked/HttpRequester"
@@ -102,8 +96,6 @@ definitions:
         schema_normalization: Default
 api_budget:
   type: HTTPAPIBudget
-  ratelimit_reset_header: Retry-After
-  status_codes_for_ratelimit_hit: [429]
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
@@ -112,7 +104,7 @@ api_budget:
       matchers: []
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config['num_workers'] if (config.get('num_workers') is number and config['num_workers'] >= 1) else 3 }}"
+  default_concurrency: "{{ config['num_workers'] if (config.get('num_workers') is integer and config['num_workers'] >= 1) else 3 }}"
   max_concurrency: 10
 spec:
   type: Spec
@@ -167,11 +159,11 @@ spec:
     type: ConfigNormalizationRules
     transformations:
       - type: ConfigAddFields
-        condition: "{{ config.get('base_url') is string }}"
+        condition: "{{ config.get('base_url') is string and (config['base_url'] | trim | length) > 0 }}"
         fields:
           - type: AddedFieldDefinition
             path: ["base_url"]
-            value: "{{ 'https://' ~ ((config['base_url'] | string).split('://') | last | trim('/')) }}"
+            value: "{{ 'https://' ~ (((config['base_url'] | string | trim).split('://') | last | trim('/')).split('/') | first) }}"
 streams:
   - type: DeclarativeStream
     name: tasks
