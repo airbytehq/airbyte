@@ -453,22 +453,21 @@ jobs:
             echo "### Change scope (at least one must pass)"
             echo ""
             scope_matched=false
-            has_scope_row=false
+            echo "| Status | Scope | Reasoning |"
+            echo "|--------|-------|-----------|"
             for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change net_new_stream_addition; do
               pass=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.pass")
+              reasoning=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.reasoning // \"No reasoning provided.\"")
+              echo "| $(icon "$pass") | $(pretty_label "$key") | ${reasoning} |"
               if [[ "$pass" == "true" ]]; then
-                if [[ "$has_scope_row" == "false" ]]; then
-                  echo "| Status | Scope | Reasoning |"
-                  echo "|--------|-------|-----------|"
-                  has_scope_row=true
-                fi
-                reasoning=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.reasoning")
-                echo "| :white_check_mark: | $(pretty_label "$key") | ${reasoning} |"
                 scope_matched=true
               fi
             done
             if [[ "$scope_matched" == "false" ]]; then
-              echo ":x: No matching change scope detected."
+              echo ""
+              echo "> :x: **Not eligible for auto-merge: this PR's changes don't fit any auto-mergeable change scope.**"
+              echo ">"
+              echo "> Auto-merge is limited to low-risk changes -- docs-only, comment-only, dependency version bumps, metadata-only, or net-new stream additions. This PR changes connector behavior beyond those categories (see the reasoning above), so it needs a human reviewer to approve and merge it."
             fi
             if [[ -n "$footer_note" ]]; then
               echo ""
