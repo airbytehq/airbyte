@@ -762,12 +762,54 @@ def test_eeoc_uses_submitted_at_filter_and_cursor_only_follow_up(requests_mock, 
             {"id": 6, "name": "Rehire", "updated_at": "2024-01-02T00:00:00.000Z"},
             id="tags",
         ),
+        pytest.param(
+            "offers",
+            "https://harvest.greenhouse.io/v3/offers",
+            {
+                "id": 31,
+                "application_id": 1,
+                "version": 1,
+                "status": "signed",
+                "updated_at": "2024-01-01T00:00:00.000Z",
+            },
+            {
+                "id": 32,
+                "application_id": 2,
+                "version": 2,
+                "status": "rejected",
+                "updated_at": "2024-01-02T00:00:00.000Z",
+            },
+            id="offers",
+        ),
+        pytest.param(
+            "demographics_answers",
+            "https://harvest.greenhouse.io/v3/demographic_answers",
+            {
+                "id": 41,
+                "application_id": 1,
+                "demographic_question_id": 2,
+                "demographic_answer_option_id": 3,
+                "updated_at": "2024-01-01T00:00:00.000Z",
+            },
+            {
+                "id": 42,
+                "application_id": 2,
+                "demographic_question_id": 2,
+                "demographic_answer_option_id": 4,
+                "updated_at": "2024-01-02T00:00:00.000Z",
+            },
+            id="demographics_answers",
+        ),
     ],
 )
 def test_bypassed_streams_paginate_and_filter_on_the_first_page_only(
     requests_mock, get_source, stream_name, url, first_record, second_record
 ):
-    """prospect_pools and tags are empty in the test account, so their request shape is only covered here."""
+    """offers and demographics_answers are bypassed in acceptance-test-config, so no live read covers them.
+
+    prospect_pools and tags do return data now, but keeping them here costs nothing and pins the
+    same first-page-only contract.
+    """
     _register_token(requests_mock)
     requests = []
 
@@ -795,6 +837,55 @@ def test_bypassed_streams_paginate_and_filter_on_the_first_page_only(
     assert not output.errors
     assert [record.record.data["id"] for record in output.records] == [first_record["id"], second_record["id"]]
     assert len(requests) == 2
+
+
+def test_job_posts_filters_each_active_partition_on_the_first_page_only(requests_mock, get_source):
+    """job_posts is bypassed and default-on, and it is the only stream combining a list partition with the cursor window.
+
+    Greenhouse hides deleted posts unless active=false is requested, so the stream reads both
+    partitions. Each partition sends its own first page carrying per_page, the updated_at window
+    and its own active value, and each cursor follow-up must carry the cursor alone.
+    """
+    _register_token(requests_mock)
+    url = "https://harvest.greenhouse.io/v3/job_posts"
+    requests = []
+    records = {
+        "true": {"id": 51, "job_id": 1, "title": "Live post", "active": True, "updated_at": "2024-01-01T00:00:00.000Z"},
+        "false": {"id": 52, "job_id": 1, "title": "Deleted post", "active": False, "updated_at": "2024-01-02T00:00:00.000Z"},
+    }
+    followups = {
+        "true": {"id": 53, "job_id": 2, "title": "Live post 2", "active": True, "updated_at": "2024-01-03T00:00:00.000Z"},
+        "false": {"id": 54, "job_id": 2, "title": "Deleted post 2", "active": False, "updated_at": "2024-01-04T00:00:00.000Z"},
+    }
+
+    def callback(request, context):
+        requests.append(request)
+        context.status_code = 200
+        query = parse_qs(request.query)
+        if "cursor" in query:
+            assert query == {"cursor": [f"cursor-{query['cursor'][0].rsplit('-', 1)[-1]}"]}
+            return [followups[query["cursor"][0].rsplit("-", 1)[-1]]]
+
+        active = request.qs["active"][0]
+        assert request.qs == {
+            "per_page": ["500"],
+            "updated_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"],
+            "active": [active],
+        }
+        context.headers["Link"] = f'<{url}?cursor=cursor-{active}>; rel="next"'
+        return [records[active]]
+
+    requests_mock.get(url, json=callback)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream("job_posts", SyncMode.incremental).build()
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG, catalog=catalog)
+
+    assert not output.errors
+    assert sorted(record.record.data["id"] for record in output.records) == [51, 52, 53, 54]
+    assert len(requests) == 4
+    assert sorted(r.qs["active"][0] for r in requests if "active" in r.qs) == ["false", "true"]
 
 
 @pytest.mark.parametrize(
