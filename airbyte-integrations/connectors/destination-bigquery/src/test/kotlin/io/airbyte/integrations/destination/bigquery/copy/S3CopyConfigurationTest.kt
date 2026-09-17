@@ -18,20 +18,18 @@ class S3CopyConfigurationTest {
             "AIRBYTE_S3_COPY_BUCKET" to "archive-bucket",
             "AIRBYTE_S3_COPY_REGION" to "us-east-1",
             "AIRBYTE_S3_COPY_ROLE_ARN" to "arn:aws:iam::123456789012:role/archive",
-            "AIRBYTE_S3_COPY_ORGANIZATION_ID" to "44444444-4444-4444-8444-444444444444",
-            "AIRBYTE_S3_COPY_DESTINATION_ID" to "55555555-5555-4555-8555-555555555555",
-            "AIRBYTE_S3_COPY_WORKSPACE_ID" to "11111111-1111-4111-8111-111111111111",
-            "AIRBYTE_S3_COPY_SOURCE_ID" to "22222222-2222-4222-8222-222222222222",
-            "AIRBYTE_S3_COPY_CONNECTION_ID" to "33333333-3333-4333-8333-333333333333",
+            "AIRBYTE_ORGANIZATION_ID" to "44444444-4444-4444-8444-444444444444",
+            "AIRBYTE_DESTINATION_ID" to "55555555-5555-4555-8555-555555555555",
+            "AIRBYTE_WORKSPACE_ID" to "11111111-1111-4111-8111-111111111111",
+            "AIRBYTE_SOURCE_ID" to "22222222-2222-4222-8222-222222222222",
+            "AIRBYTE_CONNECTION_ID" to "33333333-3333-4333-8333-333333333333",
         )
 
     @Test
     fun `disabled config does not bind enabled-only values`() {
         assertNull(S3CopyConfiguration.fromEnvironment(emptyMap()))
         assertNull(S3CopyConfiguration.fromEnvironment(mapOf("AIRBYTE_S3_COPY_ENABLED" to "false")))
-        assertNull(
-            S3CopyConfiguration.fromEnvironment(mapOf("AIRBYTE_S3_COPY_WORKSPACE_ID" to "invalid"))
-        )
+        assertNull(S3CopyConfiguration.fromEnvironment(mapOf("AIRBYTE_WORKSPACE_ID" to "invalid")))
     }
 
     @Test
@@ -66,7 +64,7 @@ class S3CopyConfigurationTest {
                     val exception =
                         assertThrows(IllegalStateException::class.java) {
                             S3CopyConfiguration.fromEnvironment(
-                                enabled + ("AIRBYTE_S3_COPY_$suffix" to value)
+                                enabled + ("AIRBYTE_$suffix" to value)
                             )
                         }
                     assertTrue(exception.message!!.contains("canonical"))
@@ -79,7 +77,7 @@ class S3CopyConfigurationTest {
         val config = S3CopyConfiguration.fromEnvironment(enabled)!!
         assertEquals("fusion", config.prefix)
         assertEquals("archive-bucket", config.bucket)
-        assertEquals(enabled["AIRBYTE_S3_COPY_CONNECTION_ID"], config.connectionId.toString())
+        assertEquals(enabled["AIRBYTE_CONNECTION_ID"], config.connectionId.toString())
         assertNull(config.externalId)
         assertEquals(
             "other/nested",
@@ -129,26 +127,30 @@ class S3CopyConfigurationTest {
 
     @Test
     fun `all routing IDs are optional and independently default to zero`() {
-        val withoutIds = enabled - idNames.map { "AIRBYTE_S3_COPY_$it" }.toSet()
+        val withoutIds = enabled - idNames.map { "AIRBYTE_$it" }.toSet()
         assertEquals(List(5) { UUID(0, 0) }, ids(S3CopyConfiguration.fromEnvironment(withoutIds)!!))
         idNames.forEachIndexed { index, name ->
-            val actual =
-                ids(S3CopyConfiguration.fromEnvironment(enabled - "AIRBYTE_S3_COPY_$name")!!)
+            val actual = ids(S3CopyConfiguration.fromEnvironment(enabled - "AIRBYTE_$name")!!)
             assertEquals(UUID(0, 0), actual[index])
             actual.forEachIndexed { otherIndex, id ->
                 if (otherIndex != index)
-                    assertEquals(
-                        UUID.fromString(enabled["AIRBYTE_S3_COPY_${idNames[otherIndex]}"]),
-                        id
-                    )
+                    assertEquals(UUID.fromString(enabled["AIRBYTE_${idNames[otherIndex]}"]), id)
             }
         }
     }
 
     @Test
+    fun `legacy copy-specific identity aliases are ignored`() {
+        val env =
+            (enabled - idNames.map { "AIRBYTE_$it" }.toSet()) +
+                idNames.associate { "AIRBYTE_S3_COPY_$it" to UUID(0, 99).toString() }
+        assertEquals(List(5) { UUID(0, 0) }, ids(S3CopyConfiguration.fromEnvironment(env)!!))
+    }
+
+    @Test
     fun `uppercase canonical UUIDs normalize for every routing ID`() {
         val upper = "ABCDEFAB-CDEF-4ABC-8DEF-ABCDEFABCDEF"
-        val env = enabled + idNames.associate { "AIRBYTE_S3_COPY_$it" to upper }
+        val env = enabled + idNames.associate { "AIRBYTE_$it" to upper }
         assertEquals(
             List(5) { upper.lowercase() },
             ids(S3CopyConfiguration.fromEnvironment(env)!!).map(UUID::toString)
@@ -174,7 +176,7 @@ class S3CopyConfigurationTest {
         assertEquals("arn:aws:iam::506572016262:role/fusion-snowflake-sync-copy", config.roleArn)
         assertEquals("fusion", config.prefix)
         assertEquals("external", config.externalId)
-        assertEquals(idNames.map { UUID.fromString(enabled["AIRBYTE_S3_COPY_$it"]) }, ids(config))
+        assertEquals(idNames.map { UUID.fromString(enabled["AIRBYTE_$it"]) }, ids(config))
         assertNull(
             S3CopyConfiguration.fromEnvironment(preview + ("AIRBYTE_S3_COPY_ENABLED" to "false"))
         )
@@ -198,7 +200,7 @@ class S3CopyConfigurationTest {
                 runtime.destinationId
             )
         )
-        val env = enabled + idNames.associate { "AIRBYTE_S3_COPY_$it" to "invalid" }
+        val env = enabled + idNames.associate { "AIRBYTE_$it" to "invalid" }
         val config =
             S3CopyConfiguration.fromEnvironment(
                 S3CopyConfiguration.previewEnvironment(runtime, env)
@@ -221,8 +223,7 @@ class S3CopyConfigurationTest {
                     runtime.destinationId
                 )
             )
-            val env =
-                mapOf("AIRBYTE_S3_COPY_SOURCE_ID" to enabled.getValue("AIRBYTE_S3_COPY_SOURCE_ID"))
+            val env = mapOf("AIRBYTE_SOURCE_ID" to enabled.getValue("AIRBYTE_SOURCE_ID"))
             val config =
                 S3CopyConfiguration.fromEnvironment(
                     S3CopyConfiguration.previewEnvironment(runtime, env)
@@ -231,7 +232,7 @@ class S3CopyConfigurationTest {
                 listOf(
                     UUID(0, 0),
                     UUID(0, 0),
-                    UUID.fromString(env.getValue("AIRBYTE_S3_COPY_SOURCE_ID")),
+                    UUID.fromString(env.getValue("AIRBYTE_SOURCE_ID")),
                     UUID(0, 0),
                     UUID(0, 0)
                 ),
