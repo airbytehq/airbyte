@@ -71,7 +71,11 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 
 **Start date** filters the Greenhouse request, not the sync. Every stream the table below marks as incremental sends `updated_at=gte|<start date>` on each sync, including a sync you configure as Full refresh, so a full refresh of those streams returns only records updated on or after your start date. Leave **Start date** empty to replicate all history.
 
+Incremental streams re-read a one-hour lookback window before the saved cursor on each sync, so records updated shortly before the previous sync finished aren't missed. Use **Incremental | Append + Deduped** if you don't want the resulting duplicates in your destination.
+
 ## Supported Streams
+
+When you create a new connection, Airbyte enables 10 streams by default: `applications`, `candidates`, `jobs`, `job_posts`, `offers`, `interviews`, `scorecards`, `users`, `departments`, and `offices`. Enable any of the other streams in the connection's stream list.
 
 The table lists the stream names as they appear in Airbyte, with the Harvest v3 endpoint each one reads. **Start date** applies to every stream marked incremental here, in whichever sync mode you select it, and to no others. Only the four demographics question and answer-option streams are full refresh, because Harvest v3 exposes no date filter on `/v3/demographic_questions` or `/v3/demographic_answer_options`; they always read everything the endpoint returns, and the two child streams among them pull parent IDs over your full Greenhouse history, so their coverage doesn't depend on **Start date** either.
 
