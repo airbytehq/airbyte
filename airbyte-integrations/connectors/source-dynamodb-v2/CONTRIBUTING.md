@@ -145,7 +145,16 @@ and the role. Legacy returned `FAILED` without a message in all three cases.
 | `check` without the `credentials` property | NPE message | "Missing required 'credentials' property ..." |
 | `discover` of an empty table | stream with `"properties": {}` | stream dropped (`DiscoverOperation` skips streams without fields) |
 
-### read parity (verified 2026-09-17 on DynamoDB Local 3.3.1 vs 0.3.11)
+### read parity (verified 2026-09-17 on DynamoDB Local 3.3.1 and on a real AWS account vs 0.3.11)
+
+Against the real account (us-east-2, 4 tables, 6 items) both images return byte-identical records
+for a full refresh of every table (strict comparison, no normalization needed), identical records
+and identical final states (`cursor`, `cursor_record_count`) for incremental syncs on two string
+cursors, and a state handoff works in both directions: the new connector resumed from the legacy
+state messages and the legacy connector from the new one, each with zero new records. Legacy could
+only read those tables with `reserved_attribute_names` listing every attribute: a name starting
+with `_` (`_airbyte_data`) is a `ValidationException: Invalid ProjectionExpression: Syntax error;
+token: "_"` for it, and the integer cursor `sync_time` crashed it there too.
 
 Both images read the parity seed with the same configured catalogs (`databases/dynamodb/parity/`
 in the skill: `make-read-catalog.py`, `run-read.sh`, `summarize-read.py`, `diff-records.py`). On the
