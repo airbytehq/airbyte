@@ -452,23 +452,22 @@ jobs:
             echo ""
             echo "### Change scope (at least one must pass)"
             echo ""
+            echo "Auto-merge is limited to PRs that consist *entirely* of one of the change types below."
+            echo ""
+            echo "| Status | Scope | Reasoning |"
+            echo "|--------|-------|-----------|"
             scope_matched=false
-            has_scope_row=false
             for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change net_new_stream_addition; do
               pass=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.pass")
+              reasoning=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.reasoning")
+              echo "| $(icon "$pass") | $(pretty_label "$key") | ${reasoning} |"
               if [[ "$pass" == "true" ]]; then
-                if [[ "$has_scope_row" == "false" ]]; then
-                  echo "| Status | Scope | Reasoning |"
-                  echo "|--------|-------|-----------|"
-                  has_scope_row=true
-                fi
-                reasoning=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.reasoning")
-                echo "| :white_check_mark: | $(pretty_label "$key") | ${reasoning} |"
                 scope_matched=true
               fi
             done
             if [[ "$scope_matched" == "false" ]]; then
-              echo ":x: No matching change scope detected."
+              echo ""
+              echo "> :x: **This PR does not fit any auto-mergeable change type.** The reasoning column above explains, per scope, which changes in the PR fall outside it. PRs that mix change types, or that modify existing connector logic, need a human reviewer to approve and merge."
             fi
             if [[ -n "$footer_note" ]]; then
               echo ""
