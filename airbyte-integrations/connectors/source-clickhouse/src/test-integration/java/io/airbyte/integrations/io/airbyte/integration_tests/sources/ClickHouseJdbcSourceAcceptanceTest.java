@@ -103,8 +103,7 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   @Override
   protected AirbyteCatalog getCatalog(final String defaultNamespace) {
     final AirbyteCatalog catalog = super.getCatalog(defaultNamespace);
-    catalog.getStreams().forEach(stream ->
-        ((ObjectNode) stream.getJsonSchema().get("properties").get("updated_at")).put("format", "date"));
+    catalog.getStreams().forEach(stream -> ((ObjectNode) stream.getJsonSchema().get("properties").get("updated_at")).put("format", "date"));
     return catalog;
   }
 

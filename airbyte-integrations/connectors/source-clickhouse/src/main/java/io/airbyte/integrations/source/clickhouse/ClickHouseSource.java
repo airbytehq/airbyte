@@ -36,8 +36,8 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
 
   /**
    * The default implementation relies on {@link java.sql.DatabaseMetaData#getPrimaryKeys} method to
-   * get it but the ClickHouse JDBC driver returns an empty result set from its metadata method. That's why we have to
-   * query the system table mentioned here
+   * get it but the ClickHouse JDBC driver returns an empty result set from its metadata method.
+   * That's why we have to query the system table mentioned here
    * https://clickhouse.tech/docs/en/operations/system-tables/columns/ to fetch the primary keys.
    */
 
