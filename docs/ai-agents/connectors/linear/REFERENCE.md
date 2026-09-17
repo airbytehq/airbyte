@@ -397,7 +397,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -530,7 +530,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 ### Issues Semantic Search
 
-Search issues records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass a `semantic` object to `context_store_search` instead of `query`. Only available in hosted mode.
+Search issues records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
 
 #### CLI
 
@@ -581,6 +581,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
 | `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
 | `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
 | `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
 | `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
 | `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
@@ -1002,7 +1003,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1294,7 +1295,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1326,17 +1327,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `groupIssueHistory` | `boolean` |  |
 | `icon` | `string` |  |
 | `id` | `string` |  |
-| `inviteHash` | `string` |  |
 | `issueCount` | `number` |  |
 | `issueEstimationAllowZero` | `boolean` |  |
 | `issueEstimationExtended` | `boolean` |  |
 | `issueEstimationType` | `string` |  |
 | `key` | `string` |  |
-| `markedAsDuplicateWorkflowState` | `object` |  |
-| `markedAsDuplicateWorkflowStateId` | `string` |  |
 | `name` | `string` |  |
 | `parentTeamId` | `string` |  |
-| `private` | `boolean` |  |
 | `requirePriorityToLeaveTriage` | `boolean` |  |
 | `scimManaged` | `boolean` |  |
 | `setIssueSortOrderOnStateChange` | `string` |  |
@@ -1345,6 +1342,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `triageIssueStateId` | `string` |  |
 | `upcomingCycleCount` | `number` |  |
 | `updatedAt` | `string` |  |
+| `visibility` | `string` |  |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -1377,17 +1375,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].groupIssueHistory` | `boolean` |  |
 | `data[].icon` | `string` |  |
 | `data[].id` | `string` |  |
-| `data[].inviteHash` | `string` |  |
 | `data[].issueCount` | `number` |  |
 | `data[].issueEstimationAllowZero` | `boolean` |  |
 | `data[].issueEstimationExtended` | `boolean` |  |
 | `data[].issueEstimationType` | `string` |  |
 | `data[].key` | `string` |  |
-| `data[].markedAsDuplicateWorkflowState` | `object` |  |
-| `data[].markedAsDuplicateWorkflowStateId` | `string` |  |
 | `data[].name` | `string` |  |
 | `data[].parentTeamId` | `string` |  |
-| `data[].private` | `boolean` |  |
 | `data[].requirePriorityToLeaveTriage` | `boolean` |  |
 | `data[].scimManaged` | `boolean` |  |
 | `data[].setIssueSortOrderOnStateChange` | `string` |  |
@@ -1396,6 +1390,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].triageIssueStateId` | `string` |  |
 | `data[].upcomingCycleCount` | `number` |  |
 | `data[].updatedAt` | `string` |  |
+| `data[].visibility` | `string` |  |
 
 </details>
 
@@ -1520,7 +1515,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1756,7 +1751,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1778,7 +1773,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `guest` | `boolean` |  |
 | `id` | `string` |  |
 | `initials` | `string` |  |
-| `inviteHash` | `string` |  |
 | `isMe` | `boolean` |  |
 | `lastSeen` | `string` |  |
 | `name` | `string` |  |
@@ -1809,7 +1803,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].guest` | `boolean` |  |
 | `data[].id` | `string` |  |
 | `data[].initials` | `string` |  |
-| `data[].inviteHash` | `string` |  |
 | `data[].isMe` | `boolean` |  |
 | `data[].lastSeen` | `string` |  |
 | `data[].name` | `string` |  |
@@ -2159,7 +2152,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -2216,7 +2209,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 ### Comments Semantic Search
 
-Search comments records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass a `semantic` object to `context_store_search` instead of `query`. Only available in hosted mode.
+Search comments records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
 
 #### CLI
 
@@ -2267,6 +2260,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
 | `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
 | `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
 | `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
 | `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
 | `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |

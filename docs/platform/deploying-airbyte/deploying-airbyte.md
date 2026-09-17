@@ -8,10 +8,6 @@ The Airbyte platform is a sophisticated data integration platform that enables y
 To quickly deploy Airbyte on your local machine you can visit the [Quickstart](../using-airbyte/getting-started/oss-quickstart.md) guide.
 If setting up an Airbyte server does not fit your use case needs (for example, you're using Jupyter Notebooks or iterating on an early prototype for your project) you may find the [PyAirbyte](/developers/pyairbyte) documentation useful.
 
-:::info Self-Managed Enterprise customers
-If you're a Self-Managed Enterprise customer, skip this guide. Instead, follow the steps outlined in [Self-Managed Enterprise](../enterprise-setup/README.md) and the associated [implementation guide](../enterprise-setup/implementation-guide.md).
-:::
-
 ## Understanding the Airbyte Deployment
 
 Airbyte is built to be deployed into a Kubernetes cluster.
@@ -19,7 +15,7 @@ You can use a Cloud Provider, such as, AWS, GCP, Azure, or onto a single node, s
 
 We highly recommend deploying Airbyte using Helm and the documented Helm chart values.
 
-Helm is a Kubernetes package manager for automating deployment and management of complex applications with microservices on Kubernetes.  Refer to our [Helm Chart Usage Guide](https://airbytehq.github.io/helm-charts/) for more information about how to get started.
+Helm is a Kubernetes package manager for automating deployment and management of complex applications with microservices on Kubernetes. Use the chart repository at `https://airbytehq.github.io/charts`, as shown in the installation steps below.
 
 The [Infrastructure](./infrastructure/aws.md) section describes the Airbyte's recommended cloud infrastructure to set up for each supported platform. Keep in mind that these guides are meant to assist you, but you are not required to follow them. Airbyte is designed to be as flexible as possible in order to fit into your existing infrastructure.
 
@@ -66,7 +62,7 @@ kubectl create namespace airbyte
 To configure your installation of Airbyte, you will need to override specific parts of the Helm Chart. To do this you should create a new file called `values.yaml` somewhere that is accessible during the installation process.
 The documentation has been created to "build up" a values.yaml, so there is no need to copy the whole of the Chart values.yaml. You only need to provide the specific overrides.
 
-Each [Integration](#integrations) will provide a section of the specific values that you should override and provide examples of what the values should look like. An example `values.yaml` file may look like the following:
+Each integration provides the specific values that you should override and examples of what the values should look like. An example `values.yaml` file may look like the following:
 
 ```yaml title="values.yaml"
 global:
@@ -79,7 +75,7 @@ The Airbyte platform is built to integrate with your existing cloud infrastructu
 
 Each of these integrations will require you to create a secret upfront. For instructions on how to do that check out [Creating a Secret](./creating-secrets.md)
 
-Each of these integrations can be configured to suit your specific needs and is described in the [Integration](#integrations) section. Each of these integrations has its own section where you'll find an explanation for why it's useful to configure the integration. There, you'll also find details about how to configure the integration.
+Each integration can be configured to suit your specific needs. The linked guides explain why each integration is useful and how to configure it.
 
 Before you can configure this stuff in a cloud provider, you need to set up your policies:
 

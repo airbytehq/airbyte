@@ -51,7 +51,7 @@ This connector supports the following entities and actions. For more details, se
 | Pages | [List](./REFERENCE.md#pages-list), [Create](./REFERENCE.md#pages-create), [Get](./REFERENCE.md#pages-get), [Update](./REFERENCE.md#pages-update), [Context Store Search](./REFERENCE.md#pages-context-store-search) |
 | Data Sources | [List](./REFERENCE.md#data-sources-list), [Get](./REFERENCE.md#data-sources-get), [Update](./REFERENCE.md#data-sources-update), [Context Store Search](./REFERENCE.md#data-sources-context-store-search) |
 | Blocks | [List](./REFERENCE.md#blocks-list), [Create](./REFERENCE.md#blocks-create), [Get](./REFERENCE.md#blocks-get), [Update](./REFERENCE.md#blocks-update), [Context Store Search](./REFERENCE.md#blocks-context-store-search) |
-| Comments | [List](./REFERENCE.md#comments-list), [Create](./REFERENCE.md#comments-create), [Context Store Search](./REFERENCE.md#comments-context-store-search) |
+| Comments | [List](./REFERENCE.md#comments-list), [Create](./REFERENCE.md#comments-create), [Context Store Search](./REFERENCE.md#comments-context-store-search), [Semantic Search](./REFERENCE.md#comments-semantic-search) |
 
 
 ## Notion API docs

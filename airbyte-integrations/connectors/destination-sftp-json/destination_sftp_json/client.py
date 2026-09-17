@@ -6,6 +6,7 @@ import contextlib
 import errno
 import json
 from typing import Dict, List, TextIO
+from urllib.parse import quote
 
 import paramiko
 import smart_open
@@ -58,8 +59,11 @@ class SftpClient:
         return f"{self.destination_path}/airbyte_json_{stream}.jsonl"
 
     def _get_uri(self, stream: str) -> str:
-        path = self._get_path(stream)
-        return f"sftp://{self.username}:{self.password}@{self.host}:{self.port}/{path}"
+        username = quote(self.username, safe="")
+        password = quote(self.password, safe="")
+        host = quote(self.host, safe="")
+        path = quote(self._get_path(stream), safe="/")
+        return f"sftp://{username}:{password}@{host}:{self.port}/{path}"
 
     def _open(self, stream: str) -> TextIO:
         uri = self._get_uri(stream)

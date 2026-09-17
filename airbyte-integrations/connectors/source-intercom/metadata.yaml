@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
-  dockerImageTag: 0.13.24
+  dockerImageTag: 0.13.25
   dockerRepository: airbyte/source-intercom
   documentationUrl: https://docs.airbyte.com/integrations/sources/intercom
   externalDocumentationUrls:
@@ -26,6 +26,9 @@ data:
     - title: Intercom API OpenAPI specification
       url: https://developers.intercom.com/docs/references/rest-api/api.intercom.io/openapi.json
       type: openapi_spec
+    - title: Intercom OpenAPI specification repository
+      url: https://github.com/intercom/Intercom-OpenAPI
+      type: spec_repository
   githubIssueLabel: source-intercom
   icon: intercom.svg
   license: ELv2
@@ -43,7 +46,12 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   suggestedStreams:
     streams:
       - conversations

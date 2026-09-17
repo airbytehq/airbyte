@@ -3,27 +3,30 @@ plan: all
 sidebar_position: 4
 ---
 
-import SdkVsApi from '@site/static/_ai-agents-sdk-vs-api.md';
-
 # API
 
 The Agent API lets you manage connectors, credentials, and data operations programmatically over HTTP. Use it to integrate Airbyte Agents into any language or framework, or to build custom backend services that interact with third-party data sources.
 
-This section walks through the four operations most apps need: authenticate, add a connector, execute operations, and manage workspaces. Deeper endpoint details (every parameter, response schema, and error code) live in the [API reference](/ai-agents/reference/api).
+This section walks through the operations most apps need: authenticate, add a connector, execute operations, and manage workspaces. Deeper endpoint details (every parameter, response schema, and error code) live in the [API reference](/ai-agents/reference/api).
 
-## Choose your interface
+## When to use the API
 
-<SdkVsApi />
+- Your backend isn't Python, so the SDK isn't an option.
+- You need direct HTTP control over authentication, connector management, or execution.
+- You're building custom admin flows or embedding the authentication module in your application.
+- You want to call Airbyte Agents from any language or framework that can make HTTP requests.
+
+If you're writing Python, the [SDK](../sdk/readme.md) wraps the same endpoints with a typed interface. If your agent speaks the Model Context Protocol, the [MCP server](../mcp/readme.md) gives you zero-install access. For shell scripts and CI, see the [CLI](../cli/readme.md).
 
 ## Base URL
 
 All API requests use the base URL `https://api.airbyte.ai`.
 
-If your account belongs to multiple organizations, generate your application token from the organization you want to target. The API resolves the target organization from the token, so you don't need to pass an extra header.
+If your account belongs to a single organization, the API resolves the target organization from your credentials and you don't need to pass an extra header. If your account belongs to multiple organizations, you must add an `X-Organization-Id: <organization_id>` header when you request an application token, or the API returns a `400` asking you to specify the organization. To find the ID, run `airbyte-agent organizations list` with the [CLI](../cli/workspaces.md#list-organizations), or copy it from the `/organizations/<organization_id>` URL after you select the organization in [app.airbyte.ai](https://app.airbyte.ai).
 
 ## How the pieces fit together
 
-The four pages in this section are designed to map one-to-one with the [SDK](../sdk/readme.md) section so the same mental model works in either environment.
+The pages in this section follow the same order as the [SDK](../sdk/readme.md) section, so the same mental model works in either environment.
 
 1. **[Authentication](./authentication/readme.md)**: Get an application token (and, when needed, a scoped token). This is how every subsequent call is authorized.
 

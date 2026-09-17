@@ -13,6 +13,15 @@ The Agent MCP connects your AI agent to your data through the [Model Context Pro
 
 Airbyte hosts and manages this remote MCP server, so there's nothing to install.
 
+## When to use the MCP server
+
+- Your agent already supports the Model Context Protocol (Claude, ChatGPT, Cursor, VS Code, Codex).
+- You want zero-install setup — just add a URL and authenticate.
+- You prefer conversational, prompt-driven access to your connected data.
+- You don't need to run commands offline or in a CI pipeline.
+
+If you need to process large result sets, make many sequential calls in one turn, run long-running operations, or compose output with shell tools, use the [CLI](../cli/readme.md) instead. The CLI also provides fuller, prescriptive guidance through an installable agent skill; see [Use the CLI with AI agents](../cli/using-with-ai-agents.md). If you're building a Python agent with a framework like Pydantic AI or LangChain, see the [SDK](../sdk/readme.md). For non-Python backends or custom admin flows, see the [API](../api/readme.md).
+
 ## Requirements
 
 Before you begin, make sure you have the following:
@@ -348,7 +357,7 @@ Under the hood, the agent uses a small set of skill-docs tools to learn a connec
 
 - `inspect_connector` reports a connector's metadata, its `docs_skill_id`, and Context Store readiness.
 - `read_skill_docs` returns a connector's usage docs — an outline of entities and actions, or a specific section when the agent passes one.
-- `list_skills` and `search_skills` browse and search the skills available to your agent.
+- `list_skills` and `search_skills` browse and search the [skills](../../concepts/skills.md) available to your agent.
 
 The agent inspects the connector, reads the relevant skill docs, then executes — the same inspect → read docs → execute flow the [SDK](../sdk/execute.md) and [API](../api/execute.md) expose. Most clients call these tools automatically, so you just prompt in natural language.
 
