@@ -46,8 +46,8 @@ _EXPECTED_RELATIONSHIPS = {
     "majorservices": ("asset", "routineserviceleveltype"),
     "promptquestions": ("section",),
     "promptanswers": ("question", "answergroup"),
-    "servicequotefixedlineitems": (),
-    "servicequotedoandchargelineitems": (),
+    "servicequotefixedlineitems": ("servicequote",),
+    "servicequotedoandchargelineitems": ("servicequote",),
 }
 
 
@@ -342,37 +342,39 @@ def test_non_retryable_4xx_fails() -> None:
 
 @pytest.mark.parametrize("stream", EMPTY_STREAMS)
 def test_flattens_jsonapi_record(stream: str) -> None:
-    relationship_record = _record(stream, 1)
-    first_relationship = next(iter(relationship_record["relationships"]))
-    relationship_record = _record(
-        stream,
-        1,
-        null_relationship=first_relationship,
-    )
+    relationship_names = _EXPECTED_RELATIONSHIPS[stream]
+    first_relationship = relationship_names[0]
+    records = [
+        _record(stream, 1),
+        _record(stream, 2, null_relationship=first_relationship),
+    ]
     with HttpMocker() as http_mocker:
         _mock_token(http_mocker)
         first_page = UptickRequestBuilder.collection(stream)
-        http_mocker.get(first_page, _response([relationship_record]))
+        http_mocker.get(first_page, _response(records))
 
         output = _read(stream)
 
         assert output.errors == []
-        assert len(output.records) == 1
-        record = output.records[0].record.data
-        assert record["id"] == 1
-        assert record["created"] == _CREATED
-        assert record["updated"] == _UPDATED
-        assert "attributes" in record
-        assert "relationships" in record
-        for relationship_name in _EXPECTED_RELATIONSHIPS[stream]:
-            relationship = relationship_record["relationships"][relationship_name]
-            field_name = f"{relationship_name}_id"
-            if relationship["data"] is None:
-                assert field_name not in record
-            else:
-                assert record[field_name] == relationship["data"]["id"]
-        for relationship_name in set(relationship_record["relationships"]) - set(_EXPECTED_RELATIONSHIPS[stream]):
-            assert f"{relationship_name}_id" not in record
-        if "deleted" in relationship_record["attributes"]:
-            assert "deleted" not in record
+        assert len(output.records) == 2
+        for record_number, message in enumerate(output.records, start=1):
+            record = message.record.data
+            assert record["id"] == record_number
+            assert record["created"] == _CREATED
+            assert record["updated"] == _UPDATED
+            assert "attributes" in record
+            assert "relationships" in record
+            for relationship_name in relationship_names:
+                field_name = f"{relationship_name}_id"
+                if record_number == 2 and relationship_name == first_relationship:
+                    assert field_name not in record
+                else:
+                    assert record[field_name] == 1
+            if "deleted" in records[record_number - 1]["attributes"]:
+                assert "deleted" not in record
+        if stream == "creditnotelineitems":
+            record = output.records[0].record.data
+            assert record["account_code"] == "4000"
+            assert record["description"] == "Credit note line"
+            assert record["taxcode"] == "GST"
         assert output.is_not_in_logs("does not conform")
