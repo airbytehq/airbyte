@@ -469,7 +469,7 @@ jobs:
               fi
             done
             if [[ "$scope_matched" == "false" ]]; then
-              echo ":x: No matching change scope detected. Auto-merge requires the PR to consist *entirely* of one of these change types:"
+              echo ":x: This PR falls outside the low-risk change types that qualify for auto-merge. A PR must consist *entirely* of one of these to qualify:"
               echo ""
               n=0
               for key in $scope_keys; do
