@@ -32,8 +32,12 @@ The consent flow requests these scopes; approve all of them:
 - `harvest:departments:list`
 - `harvest:eeoc:list`
 - `harvest:email_templates:list`
+- `harvest:interview_kits:list`
+- `harvest:interviewer_tags:list`
+- `harvest:interviewers:list`
 - `harvest:interviews:list`
 - `harvest:job_interview_stages:list`
+- `harvest:job_interviews:list`
 - `harvest:job_posts:list`
 - `harvest:jobs:list`
 - `harvest:notes:list`
@@ -45,6 +49,8 @@ The consent flow requests these scopes; approve all of them:
 - `harvest:referrers:list`
 - `harvest:rejection_details:list`
 - `harvest:rejection_reasons:list`
+- `harvest:scorecard_candidate_attributes:list`
+- `harvest:scorecard_questions:list`
 - `harvest:scorecards:list`
 - `harvest:sources:list`
 - `harvest:user_job_permissions:list`
@@ -108,7 +114,11 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | [`disciplines`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Incremental (`updated_at`) | Custom field options for the `discipline` field |
 | [`eeoc`](https://harvestdocs.greenhouse.io/reference/get_v3-eeoc) | Incremental (`submitted_at`) | |
 | [`email_templates`](https://harvestdocs.greenhouse.io/reference/get_v3-email-templates) | Incremental (`updated_at`) | |
+| [`interview_kits`](https://harvestdocs.greenhouse.io/reference/get_v3-interview-kits) | Incremental (`updated_at`) | Kit content per job interview. `exercises` is the live value and may contain HTML |
+| [`interviewer_tags`](https://harvestdocs.greenhouse.io/reference/get_v3-interviewer-tags) | Incremental (`updated_at`) | The interviewer tag dictionary |
+| [`interviewers`](https://harvestdocs.greenhouse.io/reference/get_v3-interviewers) | Incremental (`updated_at`) | One row per panel member on a scheduled interview |
 | [`interviews`](https://harvestdocs.greenhouse.io/reference/get_v3-interviews) | Incremental (`updated_at`) | |
+| [`job_interviews`](https://harvestdocs.greenhouse.io/reference/get_v3-job-interviews) | Incremental (`updated_at`) | The interview plan for each job stage |
 | [`job_posts`](https://harvestdocs.greenhouse.io/reference/get_v3-job-posts) | Incremental (`updated_at`) | Includes deleted posts |
 | [`job_stages`](https://harvestdocs.greenhouse.io/reference/get_v3-job-interview-stages) | Incremental (`updated_at`) | |
 | [`jobs`](https://harvestdocs.greenhouse.io/reference/get_v3-jobs) | Incremental (`updated_at`) | |
@@ -121,6 +131,8 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | [`rejection_details`](https://harvestdocs.greenhouse.io/reference/get_v3-rejection-details) | Incremental (`updated_at`) | Reason, rejecter and note per rejected application |
 | [`rejection_reasons`](https://harvestdocs.greenhouse.io/reference/get_v3-rejection-reasons) | Incremental (`updated_at`) | Includes the reasons Greenhouse ships with |
 | [`schools`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Incremental (`updated_at`) | Custom field options for the `school_name` field |
+| [`scorecard_candidate_attributes`](https://harvestdocs.greenhouse.io/reference/get_v3-scorecard-candidate-attributes) | Incremental (`updated_at`) | Per-attribute rating on each scorecard. High volume relative to `scorecards` |
+| [`scorecard_questions`](https://harvestdocs.greenhouse.io/reference/get_v3-scorecard-questions) | Incremental (`updated_at`) | The question dictionary behind scorecards, defined per interview kit |
 | [`scorecards`](https://harvestdocs.greenhouse.io/reference/get_v3-scorecards) | Incremental (`updated_at`) | |
 | [`sources`](https://harvestdocs.greenhouse.io/reference/get_v3-sources) | Incremental (`updated_at`) | |
 | [`tags`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-tags) | Incremental (`updated_at`) | Candidate tags |
@@ -154,6 +166,9 @@ The connector requests 500 records per page, the Harvest v3 maximum, and then fo
 - **`attachments`** returns a `url` for each file that Greenhouse expires after seven days, and it may redirect to a fresh short-lived file URL on each request. A replicated `url` stops working a week after the sync that wrote it; re-sync the stream to get current links.
 - **`application_stages`** has one row per application per stage entered, which makes it the largest stream in the connector - expect roughly three to six times the row count of `applications`. Enable it only if you need funnel or time-in-stage analysis.
 - **`candidate_educations`** references schools, degrees and disciplines by custom field option id (`school_name_custom_field_option_id`, `degree_custom_field_option_id`, `discipline_custom_field_option_id`), not by name. Join to `schools`, `degrees`, and `disciplines` to resolve them.
+- **`interviewers`** has one row per panel member per interview, so an interview appears once for each attendee. `user_id` is empty for external attendees who match no Greenhouse user; their address is in `email` instead.
+- **`scorecard_candidate_attributes`** has one row per rated attribute per scorecard, roughly five to fifteen times the row count of `scorecards`.
+- **`interview_kits.exercises`** carries the live Interview Prep content and may contain HTML. The `summary` and `instructions` fields on `job_interviews` are snapshots taken when the slot was first added and do not track later edits; use `exercises` for the current text.
 - **The 18 streams that became incremental in 1.1.0** now honor **Start date**, where before they always read full history. See [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110).
 
 ## Troubleshooting
@@ -190,6 +205,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.0 | 2026-09-17 | [PRNUMBER](https://github.com/airbytehq/airbyte/pull/PRNUMBER) | Add the `interview_kits`, `interviewer_tags`, `interviewers`, `job_interviews`, `scorecard_candidate_attributes`, and `scorecard_questions` streams, restoring the interview and scorecard detail that Harvest v1 embedded on `interviews`, `job_stages`, and `scorecards`. Requests six new Harvest v3 scopes during consent |
 | 1.2.0 | 2026-09-17 | [86428](https://github.com/airbytehq/airbyte/pull/86428) | Add the `application_stages`, `applied_candidate_tags`, `attachments`, `candidate_educations`, `candidate_employments`, `prospect_details`, `referrers`, and `rejection_details` streams, restoring the candidate and application detail that Harvest v1 embedded on `candidates` and `applications`. Requests eight new Harvest v3 scopes during consent; existing connections keep syncing unchanged, but enabling a new stream requires re-running the consent flow |
 | 1.1.0 | 2026-09-17 | [85841](https://github.com/airbytehq/airbyte/pull/85841) | Sync 18 previously full-refresh streams incrementally on `updated_at`. Not breaking, but **Start date** now applies to those 18 streams in every sync mode, including full refresh, where before they always read full history - see [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110). Also read `activity_feed`, `jobs_openings`, and `user_permissions` directly instead of once per 50 parents, and suggest 10 streams for new connections |
 | 1.0.3 | 2026-09-15 | [85507](https://github.com/airbytehq/airbyte/pull/85507) | Update dependencies |

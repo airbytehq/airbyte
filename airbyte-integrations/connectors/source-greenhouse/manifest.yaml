@@ -1669,6 +1669,228 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/rejection_details"
+    interview_kits:
+      type: DeclarativeStream
+      name: interview_kits
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/interview_kits
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/interview_kits"
+    interviewer_tags:
+      type: DeclarativeStream
+      name: interviewer_tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/interviewer_tags
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/interviewer_tags"
+    interviewers:
+      type: DeclarativeStream
+      name: interviewers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/interviewers
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/interviewers"
+    job_interviews:
+      type: DeclarativeStream
+      name: job_interviews
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/job_interviews
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/job_interviews"
+    scorecard_candidate_attributes:
+      type: DeclarativeStream
+      name: scorecard_candidate_attributes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/scorecard_candidate_attributes
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/scorecard_candidate_attributes"
+    scorecard_questions:
+      type: DeclarativeStream
+      name: scorecard_questions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/scorecard_questions
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/scorecard_questions"
   base_requester:
     type: HttpRequester
     authenticator:
@@ -1739,6 +1961,12 @@ streams:
   - $ref: "#/definitions/streams/tags"
   - $ref: "#/definitions/streams/user_roles"
   - $ref: "#/definitions/streams/user_permissions"
+  - $ref: "#/definitions/streams/interview_kits"
+  - $ref: "#/definitions/streams/interviewer_tags"
+  - $ref: "#/definitions/streams/interviewers"
+  - $ref: "#/definitions/streams/job_interviews"
+  - $ref: "#/definitions/streams/scorecard_candidate_attributes"
+  - $ref: "#/definitions/streams/scorecard_questions"
   - $ref: "#/definitions/streams/application_stages"
   - $ref: "#/definitions/streams/applied_candidate_tags"
   - $ref: "#/definitions/streams/attachments"
@@ -1863,7 +2091,7 @@ spec:
         consent_url: >-
           https://auth.greenhouse.io/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&response_type=code&state={{state_value}}&{{scopes_param}}
         scope: >-
-          harvest:application_stages:list harvest:applications:list harvest:applied_candidate_tags:list harvest:approval_flows:list harvest:attachments:list harvest:candidate_educations:list harvest:candidate_employments:list harvest:candidate_tags:list harvest:candidates:list harvest:close_reasons:list harvest:custom_field_options:list harvest:custom_fields:list harvest:demographic_answer_options:list harvest:demographic_answers:list harvest:demographic_question_sets:list harvest:demographic_questions:list harvest:departments:list harvest:eeoc:list harvest:email_templates:list harvest:interviews:list harvest:job_interview_stages:list harvest:job_posts:list harvest:jobs:list harvest:notes:list harvest:offers:list harvest:offices:list harvest:openings:list harvest:prospect_details:list harvest:prospect_pools:list harvest:referrers:list harvest:rejection_details:list harvest:rejection_reasons:list harvest:scorecards:list harvest:sources:list harvest:user_job_permissions:list harvest:user_roles:list harvest:users:list
+          harvest:application_stages:list harvest:applications:list harvest:applied_candidate_tags:list harvest:approval_flows:list harvest:attachments:list harvest:candidate_educations:list harvest:candidate_employments:list harvest:candidate_tags:list harvest:candidates:list harvest:close_reasons:list harvest:custom_field_options:list harvest:custom_fields:list harvest:demographic_answer_options:list harvest:demographic_answers:list harvest:demographic_question_sets:list harvest:demographic_questions:list harvest:departments:list harvest:eeoc:list harvest:email_templates:list harvest:interview_kits:list harvest:interviewer_tags:list harvest:interviewers:list harvest:interviews:list harvest:job_interview_stages:list harvest:job_interviews:list harvest:job_posts:list harvest:jobs:list harvest:notes:list harvest:offers:list harvest:offices:list harvest:openings:list harvest:prospect_details:list harvest:prospect_pools:list harvest:referrers:list harvest:rejection_details:list harvest:rejection_reasons:list harvest:scorecard_candidate_attributes:list harvest:scorecard_questions:list harvest:scorecards:list harvest:sources:list harvest:user_job_permissions:list harvest:user_roles:list harvest:users:list
         access_token_url: https://auth.greenhouse.io/token
         access_token_headers:
           Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
@@ -1965,6 +2193,12 @@ metadata:
     prospect_details: false
     referrers: false
     rejection_details: false
+    interview_kits: false
+    interviewer_tags: false
+    interviewers: false
+    job_interviews: false
+    scorecard_candidate_attributes: false
+    scorecard_questions: false
   testedStreams:
     applications:
       streamHash: 7bd14e087c4f48d31249a151798c9ab00889959c
@@ -4907,6 +5141,292 @@ schemas:
         - integer
       rejection_reason_id:
         description: Id of the rejection reason selected for the application. References a `/v3/rejection_reasons` row scoped to the organization. `null` when the application was rejected without a reason.
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  interview_kits:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      anonymize_candidate:
+        description: Whether the candidate's name and identifying details are hidden from graders on the scorecard for this slot. Only meaningful for take-home test slots; defaults to `false`.
+        type:
+        - 'null'
+        - boolean
+      anonymize_resumes:
+        description: Whether resumes are anonymized for reviewers at this slot. Only meaningful for Application Review and Hiring Manager Review slots and requires the organization to have resume anonymization enabled; defaults to `false`.
+        type:
+        - 'null'
+        - boolean
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      exercises:
+        description: "Current Interview Prep content surfaced to interviewers \u2014 instructions, exercises, and rubric notes for this slot on this job. Reflects edits made in the job's Interview Kit. If the kit has no override, falls back to the slot's default instructions; the `summary` and `instructions` fields on the `job_interviews` endpoint are static snapshots taken when the slot was first added and do not stay in sync with later edits, so use this field for the live value. May contain HTML."
+        type:
+        - 'null'
+        - string
+      id:
+        type:
+        - 'null'
+        - integer
+      job_id:
+        description: Id of the job this kit is configured on.
+        type:
+        - 'null'
+        - integer
+      job_interview_id:
+        description: Id of the `job_interview` slot this kit belongs to. Each slot on a job's interview plan has exactly one kit.
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  interviewer_tags:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      name:
+        description: Label of the interviewer tag (surfaced as an Interviewer Group in the Greenhouse UI). Unique per organization and case sensitive; a user can be assigned to multiple tags, and scheduling flows filter the interviewer picker by these labels.
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  interviewers:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      email:
+        description: Email address used to identify this panel member. When `user_id` is set, this returns the user's primary Greenhouse email; for external attendees without a Greenhouse user, this is the raw calendar invitee address. `null` only when neither is available.
+        type:
+        - 'null'
+        - string
+      id:
+        type:
+        - 'null'
+        - integer
+      interview_id:
+        description: Id of the scheduled interview this row belongs to. References a `/v3/interviews` row; the same interview appears once per panel member.
+        type:
+        - 'null'
+        - integer
+      response_status:
+        description: Panel member's RSVP on the calendar invite. `needs_action` is the default until the invitee responds; `accepted`, `tentative`, and `declined` mirror the calendar response. For Outlook 365 customers, accept/decline only syncs back after the interview is updated in Greenhouse or the external event is re-edited.
+        type:
+        - 'null'
+        - string
+      scorecard_id:
+        description: "Id of the scorecard assigned to this panel member for this interview. Scorecards are one-to-one with interviewer rows: when an interview is scheduled, Greenhouse creates a placeholder scorecard per assigned interviewer that the same user later fills out. `null` for panel members who do not get a scorecard (typically the calendar organizer or external attendees without a Greenhouse user)."
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      user_id:
+        description: "Id of the Greenhouse user on the panel. References a `/v3/users` row. `null` when the panel member is an external attendee on the underlying calendar event whose email does not match a Greenhouse user \u2014 in that case the address surfaces in `email`."
+        type:
+        - 'null'
+        - integer
+  job_interviews:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      active:
+        description: Whether the slot is on the job's current interview plan. Inactive slots are retained for historical interviews that were scheduled against them but are not used for new applications.
+        type:
+        - 'null'
+        - boolean
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      duration:
+        description: Default length of the interview in minutes, used to seed the scheduler. `null` if not set on the slot.
+        type:
+        - 'null'
+        - integer
+      id:
+        type:
+        - 'null'
+        - integer
+      instructions:
+        description: "Interviewer-facing instructions copied from the interview's default Interview Prep when the slot was added to the job. Snapshot only \u2014 edits made later in the job's Interview Kit are not reflected here; use the Interview Kits endpoint for the live value."
+        type:
+        - 'null'
+        - string
+      job_id:
+        description: Id of the job whose interview plan this slot is defined on.
+        type:
+        - 'null'
+        - integer
+      job_interview_stage_id:
+        description: Id of the `job_interview_stage` this slot belongs to (the section of the job's interview plan, e.g. "Onsite").
+        type:
+        - 'null'
+        - integer
+      name:
+        description: Name of the interview slot as it appears on the job's interview plan (e.g. "Recruiter Phone Screen", "Hiring Manager Interview").
+        type:
+        - 'null'
+        - string
+      require_scorecard:
+        description: Whether interviewers must submit a scorecard for interviews scheduled against this slot. Only meaningful for `needs_scheduling` and `take_home_test` slots; `null` for `none` and `offer` slots, which never collect scorecards.
+        type:
+        - 'null'
+        - boolean
+      scheduling_type:
+        description: How the slot is fulfilled when a candidate hits the stage. `needs_scheduling` is a calendared interview that coordinators book against candidate availability; `take_home_test` is an asynchronous test sent through Greenhouse; `offer` is the offer step; `none` is a feedback-only slot (no scheduling). `null` for legacy steps with no scheduling type set.
+        type:
+        - 'null'
+        - string
+      sort_order:
+        description: Position of this slot within its `job_interview_stage`, ascending. The first interview in the stage is `1`.
+        type:
+        - 'null'
+        - integer
+      summary:
+        description: "Candidate-facing summary copied from the interview's default Interview Prep when the slot was added to the job. Snapshot only \u2014 edits made later in the job's Interview Kit are not reflected here; use the Interview Kits endpoint for the live value."
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  scorecard_candidate_attributes:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      candidate_attribute_rating:
+        description: Interviewer's rating for the attribute on this scorecard. One of `definitely_not`, `no`, `yes`, `strong_yes`, `mixed`, or `no_decision`. `no_decision` is recorded when the row exists (e.g. a `note` was left) but no rating was selected.
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      job_candidate_attribute_id:
+        description: Id of the job's `job_candidate_attribute` being rated (the per-job attribute catalogue entry on `/v3/job_candidate_attributes`). The attribute's display name and `candidate_attribute_type` live on that record.
+        type:
+        - 'null'
+        - integer
+      note:
+        description: Free-text note the interviewer left for this attribute (e.g. a brief justification for the rating). `null` when no note was provided.
+        type:
+        - 'null'
+        - string
+      scorecard_id:
+        description: "Id of the scorecard this attribute rating belongs to. One row per (scorecard, attribute) pair \u2014 the interviewer rated this candidate on this attribute on this scorecard."
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      value:
+        description: "Read-only alias of `candidate_attribute_rating`, in the same vocabulary the nested write path accepts (`candidate_attributes[].value` on `POST`/`PATCH /v3/scorecards`). A rating cleared with `value: null` reads back as `no_decision`."
+        type:
+        - 'null'
+        - string
+  scorecard_questions:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      active:
+        description: "`true` when the question is in use; `false` after it has been removed from the kit. Inactive questions are returned by default \u2014 pass `active=true` to filter to live questions only. Past `scorecard_question_answers` still reference inactive rows so historical scorecards stay readable."
+        type:
+        - 'null'
+        - boolean
+      answer_type:
+        description: "Shape of the answer the interviewer fills in. `text` is free-form rich text; `yes_no` is a binary choice; `single_select` and `multi_select` pick from the question's `scorecard_question_options`; `instruction` is a display-only guidance row with no answer field and no `required` semantics \u2014 instructions exist to script interviewers and do not produce a `scorecard_question_answer`. Immutable after the question is created."
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      interview_kit_id:
+        description: Id of the interview kit this question belongs to. Each `interview_kit` carries its own ordered set of scorecard questions, so the same prompt configured on two kits has two distinct `scorecard_question` rows.
+        type:
+        - 'null'
+        - integer
+      question:
+        description: "Text of the scorecard question \u2014 or, when `answer_type` is `instruction`, the body of the display-only instruction shown to interviewers. Supports basic HTML formatting (`<p>`, `<ul>`, `<li>`, `<b>`, `<i>`, `<a>`). Render or sanitize as needed."
+        type:
+        - 'null'
+        - string
+      required:
+        description: If `true`, an interviewer must answer this question before submitting the scorecard. Ignored when `answer_type` is `instruction`.
+        type:
+        - 'null'
+        - boolean
+      sort_order:
+        description: Position of this question within its interview kit, ascending. Lower values render first; aliased from the underlying `priority` column. Questions and `instruction` rows share a single ordering.
         type:
         - 'null'
         - integer
