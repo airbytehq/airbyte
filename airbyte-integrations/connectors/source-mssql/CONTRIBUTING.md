@@ -9,7 +9,7 @@ see the repo-root [`CONTRIBUTING.md`](../../../CONTRIBUTING.md) and the
 ```bash
 ./gradlew :airbyte-integrations:connectors:source-mssql:test
 ./gradlew :airbyte-integrations:connectors:source-mssql:assemble
-./gradlew :airbyte-integrations:connectors:source-mssql:dockerBuildx
+./gradlew :airbyte-integrations:connectors:source-mssql:airbyteDocker
 ```
 
 Test fixtures use `org.testcontainers:mssqlserver` — see
@@ -65,8 +65,7 @@ CDC_SKILL=airbyte-integrations/connectors/source-mssql/.agents/skills/source-mss
 "$CDC_SKILL/scripts/repro-11451.sh"
 
 # Cleanup
-BACKEND_NAME=source-mssql-db-backend \
-  airbyte-integrations/db-harness-lib/scripts/stop-backend.sh
+"$SKILL/scripts/stop-backend.sh"
 ```
 
 To investigate a new bug, write the smallest SQL fixture that produces
@@ -74,8 +73,7 @@ the reported symptom (drop into
 [`source-mssql-e2e-cdc-tests/fixtures/sql/`](.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/)),
 add a driver script alongside (`repro-<oncall-id>.sh`), and assert on the
 relevant `stdout.txt` / `stderr.txt` / exit-code shape. Each driver
-script invokes the engine shim, which delegates orchestration to
-`airbyte-integrations/db-harness-lib/scripts/run.sh`, so the connector
+script wraps the generic skill's `run-protocol-cmd.sh`, so the connector
 lifecycle (image pull, AirbyteMessage parsing, exit-code surfacing) is
 already handled.
 
@@ -100,10 +98,10 @@ directly.
   `--network` (tracked in
   [`airbytehq/airbyte-ops-mcp#765`](https://github.com/airbytehq/airbyte-ops-mcp/issues/765)).
   Until it does, both containers share Docker's default `bridge` network
-  and the connector resolves the source by IP. The shared library's
-  [`render-config.sh`](../../db-harness-lib/scripts/render-config.sh)
-  handles this: it inspects the backend's bridge IP and substitutes it
-  into the config template before each invocation.
+  and the connector resolves the source by IP. The `render-config.sh`
+  script in the generic skill handles this: it inspects the backend's
+  bridge IP and substitutes it into the config template before each
+  invocation.
 - **Connector run on `4.3.x` rejects the catalog with `Validation error(s)`.**
   Bulk-CDK on `4.3.x` requires `is_file_based`, `generation_id`,
   `minimum_generation_id`, `sync_id`, `destination_object_name`, and
@@ -133,8 +131,7 @@ directly.
 The same `airbyte-ops cloud connector regression-test` command is used
 by `/ai-prove-fix` for comparison-style work (target image vs. control
 image). For per-bug repro driver scripts that's not normally needed —
-they all pass `--skip-compare=True` via the shared
-`db-harness-lib/scripts/run.sh` orchestration. To reach for the comparison
-path manually, drop
+they all pass `--skip-compare=True` via the generic skill's
+`run-protocol-cmd.sh`. To reach for the comparison path manually, drop
 `--skip-compare=True` and supply both `--test-image` and
 `--control-image`; the CLI's `--help` covers the additional flags.
