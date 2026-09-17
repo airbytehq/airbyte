@@ -506,6 +506,8 @@ def test_fetch_record_accumulation_mixed_responses():
     assert stream._records_attempted == 6
     assert stream._user_error_skipped == 3
     assert len(all_results) == 3
+
+
 def _collection_response(records):
     response = MagicMock()
     response.json.return_value = {"items": records}

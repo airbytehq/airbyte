@@ -193,9 +193,7 @@ class SourceNetsuite(AbstractSource):
                 "base_url": base_url,
                 "start_datetime": config["start_datetime"],
                 "window_in_days": config["window_in_days"],
-                "max_concurrent_detail_requests": config.get(
-                    "max_concurrent_detail_requests", self.DEFAULT_MAX_CONCURRENT_DETAIL_REQUESTS
-                ),
+                "max_concurrent_detail_requests": config.get("max_concurrent_detail_requests", self.DEFAULT_MAX_CONCURRENT_DETAIL_REQUESTS),
                 "schemas": schemas,
             }
         )

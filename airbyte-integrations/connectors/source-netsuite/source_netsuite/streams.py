@@ -23,9 +23,9 @@ from source_netsuite.constraints import (
     MAX_NETSUITE_UTC_OFFSET_HOURS,
     META_PATH,
     NETSUITE_CONNECT_TIMEOUT_SECONDS,
-    NETSUITE_READ_TIMEOUT_SECONDS,
     NETSUITE_INPUT_DATE_FORMATS,
     NETSUITE_OUTPUT_DATETIME_FORMAT,
+    NETSUITE_READ_TIMEOUT_SECONDS,
     RECORD_PATH,
     REFERAL_SCHEMA,
     REFERAL_SCHEMA_URL,
@@ -59,10 +59,7 @@ class NetsuiteStream(HttpStream, ABC):
         self._validate_detail_concurrency(max_concurrent_detail_requests)
         # Reuse schemas fetched by SourceNetsuite during discover. Without this
         # seed, the CDK catalog builder fetches each record schema again.
-        self.schemas = {
-            META_PATH + name.lower(): schema
-            for name, schema in (schemas or {}).items()
-        }
+        self.schemas = {META_PATH + name.lower(): schema for name, schema in (schemas or {}).items()}
         self._records_attempted = 0
         self._user_error_skipped = 0
         super().__init__(authenticator=auth)
@@ -223,9 +220,7 @@ class NetsuiteStream(HttpStream, ABC):
         if response.status_code != requests.codes.ok:
             if not self._detail_thread_state.error_recorded:
                 self._mark_detail_error()
-            raise requests.HTTPError(
-                f"NetSuite detail request for {url} returned HTTP {response.status_code}: {response.text[:500]}"
-            )
+            raise requests.HTTPError(f"NetSuite detail request for {url} returned HTTP {response.status_code}: {response.text[:500]}")
         try:
             result = response.json()
         except Exception:
