@@ -91,3 +91,42 @@ The Stripe API supports `created` parameter filtering (e.g., `created[gte]`) on 
 - **No API date filter (1 streams):** `accounts` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
 - **Created-at only (40 streams):** `application_fees`, `application_fees_refunds`, `authorizations`, `balance_transactions`, `bank_accounts`, `cardholders`, `cards`, `charges`, `checkout_sessions`, `coupons`, `credit_notes`, `customers`, `disputes`, `early_fraud_warnings`, `events`, `external_account_bank_accounts`, `external_account_cards`, `file_links`, `files`, `invoice_items`, `invoice_line_items`, `invoices`, `payment_intents`, `payment_methods`, `payouts`, `persons`, `plans`, `prices`, `products`, `promotion_codes`, `refunds`, `reviews`, `setup_intents`, `shipping_rates`, `subscription_items`, `subscription_schedule`, `subscriptions`, `top_ups`, `transactions`, `transfers` — these endpoints support `created` filtering but the resources are mutable, making `created_at`-only filtering insufficient for true incremental sync.
 - **Child streams (1 streams):** `usage_records` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.
+
+
+## Run the container tests with SaaS Sandbox
+
+Install the sandbox package and the pinned Airbyte CDK in the same Python environment as
+`airbyte-cdk` and `poe`:
+
+```bash
+python -m pip install 'airbyte-cdk[dev]==7.28.4' /path/to/saas-sandbox poethepoet
+```
+
+Use an existing `stripe-customers` scenario on the remote sandbox API and a published relay
+image. From this connector directory:
+
+```bash
+export SASS_API_URL=https://web-23872-79e064d3-et6sjtzv.onporter.run
+export SASS_API_KEY='<sandbox API key>'
+export SASS_RELAY_IMAGE='<published sandbox relay image>'
+# Authenticate to the image registry first if the relay is private.
+docker pull "$SASS_RELAY_IMAGE"
+docker pull airbyte/source-stripe:6.0.18
+poe test-sandbox
+```
+
+This runs the same `airbyte-cdk image test` suite used by Connector CI, with a published
+connector image. The `sass_sandbox.airbyte` pytest plugin routes connector launches through
+the sandbox and supplies `integration_tests/config-sandbox.json` for credential scenarios;
+existing secrets and the invalid-credential test remain unchanged. No images are built.
+
+Override `SASS_SCENARIO`, `CONNECTOR_IMAGE`, or `SASS_CONNECTOR_CONFIG` as needed. Use
+`PYTEST_ADDOPTS` for the existing upstream selection options, for example:
+
+```bash
+PYTEST_ADDOPTS='--read-from-streams=customers,products -k read' poe test-sandbox
+PYTEST_ADDOPTS='--read-from-streams=all' poe test-sandbox
+```
+
+Selections are passed to the upstream tests without checking sandbox feature support.
+Unimplemented features surface through connector execution and upstream test assertions.

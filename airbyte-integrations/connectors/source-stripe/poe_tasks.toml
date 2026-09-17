@@ -1,0 +1,12 @@
+include = ["${POE_GIT_DIR}/poe-tasks/manifest-only-connector-tasks.toml"]
+
+[tasks.test-sandbox]
+help = "Run the existing container tests against a published image through SaaS Sandbox."
+cmd = "airbyte-cdk image test ${POE_PWD} --image ${CONNECTOR_IMAGE}"
+
+[tasks.test-sandbox.env]
+CONNECTOR_IMAGE = { default = "airbyte/source-stripe:6.0.18" }
+SASS_SCENARIO = { default = "stripe-customers" }
+SASS_CONNECTOR_CONFIG = { default = "${POE_PWD}/integration_tests/config-sandbox.json" }
+PYTEST_PLUGINS = "sass_sandbox.airbyte"
+PYTEST_ADDOPTS = { default = "--read-from-streams=customers" }
