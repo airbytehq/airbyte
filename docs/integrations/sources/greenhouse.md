@@ -112,6 +112,16 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | [`user_roles`](https://harvestdocs.greenhouse.io/reference/get_v3-user-roles) | Incremental (`updated_at`) | |
 | [`users`](https://harvestdocs.greenhouse.io/reference/get_v3-users) | Incremental (`updated_at`) | Includes integration service users |
 
+### Streams that became incremental in 1.1.0
+
+These 18 streams were full refresh before 1.1.0 and are now incremental on `updated_at`:
+
+`activity_feed`, `approvals`, `close_reasons`, `custom_field_options`, `custom_fields`, `degrees`, `demographics_question_sets`, `departments`, `disciplines`, `jobs_openings`, `offices`, `prospect_pools`, `rejection_reasons`, `schools`, `sources`, `tags`, `user_permissions`, `user_roles`
+
+This isn't a breaking change. Schemas, primary keys, and your existing sync modes are unchanged, and there was no stream state to migrate, so no action is required and connections keep syncing.
+
+One behavior does change: **Start date** now applies to these 18 streams, in every sync mode. Earlier versions sent no date filter on them and read your full Greenhouse history whatever **Start date** said. If you have a start date set, these streams now return only records updated on or after it - on full refresh as well as incremental, because the filter is part of the Greenhouse request rather than something applied to the sync. Clear **Start date** if you want these streams to keep reading full history, then [refresh](https://docs.airbyte.com/operator-guides/refreshes) them.
+
 ## Performance considerations
 
 Greenhouse [rate limits](https://harvestdocs.greenhouse.io/docs/api-rate-limiting) Harvest v3 in fixed 30-second windows. Each response reports your remaining allowance in `X-RateLimit-Remaining` and the time the current window resets in `X-RateLimit-Reset`. Greenhouse doesn't publish a fixed request ceiling for Harvest v3, and it applies different allowances to custom and partner integrations, so the connector holds itself to a conservative 50 requests per window, tracks those headers, and waits for the `Retry-After` interval when Greenhouse returns `429`. Because every thread draws on the same window, syncing many streams at a high **Number of concurrent threads** is a common cause of rate-limit errors. Lower that value before [creating an issue](https://github.com/airbytehq/airbyte/issues) about rate limits.
@@ -125,7 +135,7 @@ The connector requests 500 records per page, the Harvest v3 maximum, and then fo
 - **`custom_field_options`** reads every custom field option in your account, which makes it a superset of `degrees`, `disciplines`, and `schools`. Those three streams read the same Greenhouse endpoint filtered to one field key and share the same primary keys, so enabling all four writes the same option rows to four destination tables. Enable only the ones you need.
 - **`users`** includes integration service users, which Greenhouse hides by default. Service accounts have no email address, so `primary_email` is empty for those records.
 - **`rejection_reasons`** includes the default reasons Greenhouse ships with, not only the ones your organization added.
-- **Upgrading to 1.1.0 with a start date set** narrows what 18 streams return, including on full refresh. Before 1.1.0 those streams sent no date filter and read your whole history whatever **Start date** said; they are now incremental on `updated_at` and honor it in every sync mode. The streams are `activity_feed`, `approvals`, `close_reasons`, `custom_field_options`, `custom_fields`, `degrees`, `demographics_question_sets`, `departments`, `disciplines`, `jobs_openings`, `offices`, `prospect_pools`, `rejection_reasons`, `schools`, `sources`, `tags`, `user_permissions`, and `user_roles`. Clear **Start date** to keep reading full history.
+- **The 18 streams that became incremental in 1.1.0** now honor **Start date**, where before they always read full history. See [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110).
 
 ## Troubleshooting
 
@@ -142,7 +152,7 @@ The authorizing user isn't a Site Admin, or the consent flow didn't include the 
 
 ### A stream returns fewer records after upgrading to 1.1.0
 
-1.1.0 made 18 streams incremental on `updated_at`, and **Start date** is applied as a Greenhouse query filter on those streams in every sync mode. If you have a start date set, records last updated before it are no longer returned - on incremental and full refresh alike. Earlier versions sent no date filter on these streams and ignored **Start date** for them entirely. See [Limitations](#limitations) for the stream list.
+1.1.0 made 18 streams incremental on `updated_at`, and **Start date** is applied as a Greenhouse query filter on those streams in every sync mode. If you have a start date set, records last updated before it are no longer returned - on incremental and full refresh alike. Earlier versions sent no date filter on these streams and ignored **Start date** for them entirely. [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110) lists them.
 
 To read full history again, clear **Start date** in your source settings, then [refresh](https://docs.airbyte.com/operator-guides/refreshes) the affected streams so the older records are written again.
 
@@ -161,7 +171,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.1.0 | 2026-09-11 | [85841](https://github.com/airbytehq/airbyte/pull/85841) | Sync 18 more streams incrementally on `updated_at`, so **Start date** now filters those streams in every sync mode, including full refresh; read `activity_feed`, `jobs_openings`, and `user_permissions` directly instead of once per 50 parents; and suggest 10 streams for new connections |
+| 1.1.0 | 2026-09-11 | [85841](https://github.com/airbytehq/airbyte/pull/85841) | Sync 18 previously full-refresh streams incrementally on `updated_at`. Not breaking, but **Start date** now applies to those 18 streams in every sync mode, including full refresh, where before they always read full history - see [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110). Also read `activity_feed`, `jobs_openings`, and `user_permissions` directly instead of once per 50 parents, and suggest 10 streams for new connections |
 | 1.0.3 | 2026-09-15 | [85507](https://github.com/airbytehq/airbyte/pull/85507) | Update dependencies |
 | 1.0.2 | 2026-09-02 | [85306](https://github.com/airbytehq/airbyte/pull/85306) | Clarify in the spec that OAuth credentials come from Airbyte's Greenhouse partner application and must not be requested from Greenhouse |
 | 1.0.1 | 2026-09-02 | [85300](https://github.com/airbytehq/airbyte/pull/85300) | Surface expired or rotated refresh tokens (`invalid_grant`) as a re-authenticate config error instead of a system error |
