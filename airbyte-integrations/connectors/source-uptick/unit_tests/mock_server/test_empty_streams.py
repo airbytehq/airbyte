@@ -2,6 +2,7 @@
 
 import json
 from typing import Any
+from unittest.mock import patch
 
 import pytest
 from unit_tests.conftest import get_source
@@ -32,9 +33,22 @@ _TOKEN_RESPONSE = {
     "token_type": "Bearer",
     "scope": "read write",
 }
-_CREATED = "2026-01-01T00:00:00Z"
-_UPDATED = "2026-01-02T00:00:00Z"
+_CREATED = "2026-01-01T00:00:00.000000+0000"
+_UPDATED = "2026-01-02T00:00:00.000000+0000"
+_STATE_CURSOR = "2026-01-01T00:00:00.000000+0000"
+_LATEST_UPDATED = "2026-01-03T00:00:00.000000+0000"
+_RETRY_STREAM = EMPTY_STREAMS[0]
 _MODELS = {stream: fields[0] for stream, fields in UptickRequestBuilder.FIELDS.items()}
+_EXPECTED_RELATIONSHIPS = {
+    "creditnotelineitems": ("creditnote", "product"),
+    "defectquotelineitems": ("product", "quote", "asset", "remark"),
+    "remarkevents": ("remark", "task", "servicetask", "account"),
+    "majorservices": ("asset", "routineserviceleveltype"),
+    "promptquestions": ("section",),
+    "promptanswers": ("question", "answergroup"),
+    "servicequotefixedlineitems": (),
+    "servicequotedoandchargelineitems": (),
+}
 
 
 def _relationship(resource_id: int | None = 1) -> dict[str, Any]:
@@ -43,10 +57,15 @@ def _relationship(resource_id: int | None = 1) -> dict[str, Any]:
     return {"data": {"type": "RelatedResource", "id": resource_id}}
 
 
-def _record(stream: str, record_id: int) -> dict[str, Any]:
+def _record(
+    stream: str,
+    record_id: int,
+    updated: str = _UPDATED,
+    null_relationship: str | None = None,
+) -> dict[str, Any]:
     attributes: dict[str, Any] = {
         "created": _CREATED,
-        "updated": _UPDATED,
+        "updated": updated,
     }
     relationships: dict[str, Any] = {}
     if stream == "creditnotelineitems":
@@ -141,6 +160,8 @@ def _record(stream: str, record_id: int) -> dict[str, Any]:
         if stream == "servicequotedoandchargelineitems":
             attributes.update({"site_price": "10.00", "service_price": "10.00"})
         relationships = {"servicequote": _relationship()}
+    if null_relationship is not None:
+        relationships[null_relationship] = _relationship(None)
     return {
         "type": _MODELS[stream],
         "id": record_id,
@@ -156,14 +177,18 @@ def _response(records: list[dict[str, Any]], next_url: str | None = None) -> Htt
     )
 
 
-def _read(stream: str, sync_mode: SyncMode):
+def _read(
+    stream: str,
+    sync_mode: SyncMode = SyncMode.incremental,
+    state: Any | None = None,
+):
     config = ConfigBuilder().build()
     catalog = CatalogBuilder().with_stream(stream, sync_mode).build()
     return read(
-        get_source(config=config),
+        get_source(config=config, state=state),
         config=config,
         catalog=catalog,
-        state=StateBuilder().build(),
+        state=StateBuilder().build() if state is None else state,
     )
 
 
@@ -217,3 +242,137 @@ def test_empty_streams_complete_without_records(stream: str, sync_mode: SyncMode
         assert output.errors == []
         assert output.records == []
         assert output.get_stream_statuses(stream)[-1].name == "COMPLETE"
+
+
+@pytest.mark.parametrize("stream", EMPTY_STREAMS)
+def test_incremental_uses_state_cursor(stream: str) -> None:
+    state = StateBuilder().with_stream_state(stream, {"updated": _STATE_CURSOR}).build()
+    with HttpMocker() as http_mocker:
+        _mock_token(http_mocker)
+        first_page = UptickRequestBuilder.collection(stream, updatedsince=_STATE_CURSOR)
+        http_mocker.get(
+            first_page,
+            _response(
+                [
+                    _record(stream, 1, updated="2026-01-02T00:00:00.000000+0000"),
+                    _record(stream, 2, updated=_LATEST_UPDATED),
+                ]
+            ),
+        )
+
+        output = _read(stream, state=state)
+
+        assert output.errors == []
+        assert [message.record.data["id"] for message in output.records] == [1, 2]
+        assert output.most_recent_state.stream_descriptor.name == stream
+        assert output.most_recent_state.stream_state.updated == _LATEST_UPDATED
+        http_mocker.assert_number_of_calls(first_page, 1)
+
+
+@pytest.mark.parametrize(
+    "status_code",
+    [pytest.param(429, id="429"), pytest.param(500, id="500")],
+)
+def test_retries_on_transient_errors(status_code: int) -> None:
+    with HttpMocker() as http_mocker:
+        _mock_token(http_mocker)
+        first_page = UptickRequestBuilder.collection(_RETRY_STREAM)
+        http_mocker.get(
+            first_page,
+            [
+                HttpResponse(
+                    body="",
+                    status_code=status_code,
+                    headers={"Retry-After": "0"},
+                ),
+                _response([_record(_RETRY_STREAM, 1)]),
+            ],
+        )
+
+        with patch("time.sleep"):
+            output = _read(_RETRY_STREAM)
+
+        assert len(output.records) == 1
+        assert output.errors == []
+        http_mocker.assert_number_of_calls(first_page, 2)
+
+
+def test_fails_after_max_retries() -> None:
+    with HttpMocker() as http_mocker:
+        _mock_token(http_mocker)
+        first_page = UptickRequestBuilder.collection(_RETRY_STREAM)
+        http_mocker.get(
+            first_page,
+            [
+                HttpResponse(
+                    body="",
+                    status_code=500,
+                    headers={"Retry-After": "0"},
+                )
+                for _ in range(6)
+            ],
+        )
+
+        with patch("time.sleep"):
+            output = _read(_RETRY_STREAM)
+
+        assert output.records == []
+        assert output.get_stream_statuses(_RETRY_STREAM)[-1].name == "INCOMPLETE"
+        assert output.errors
+        http_mocker.assert_number_of_calls(first_page, 6)
+
+
+def test_non_retryable_4xx_fails() -> None:
+    with HttpMocker() as http_mocker:
+        _mock_token(http_mocker)
+        first_page = UptickRequestBuilder.collection(_RETRY_STREAM)
+        http_mocker.get(
+            first_page,
+            HttpResponse(body="", status_code=403),
+        )
+
+        output = _read(_RETRY_STREAM)
+
+        assert output.records == []
+        assert output.get_stream_statuses(_RETRY_STREAM)[-1].name == "INCOMPLETE"
+        assert output.errors
+        assert output.get_formatted_error_message()
+        http_mocker.assert_number_of_calls(first_page, 1)
+
+
+@pytest.mark.parametrize("stream", EMPTY_STREAMS)
+def test_flattens_jsonapi_record(stream: str) -> None:
+    relationship_record = _record(stream, 1)
+    first_relationship = next(iter(relationship_record["relationships"]))
+    relationship_record = _record(
+        stream,
+        1,
+        null_relationship=first_relationship,
+    )
+    with HttpMocker() as http_mocker:
+        _mock_token(http_mocker)
+        first_page = UptickRequestBuilder.collection(stream)
+        http_mocker.get(first_page, _response([relationship_record]))
+
+        output = _read(stream)
+
+        assert output.errors == []
+        assert len(output.records) == 1
+        record = output.records[0].record.data
+        assert record["id"] == 1
+        assert record["created"] == _CREATED
+        assert record["updated"] == _UPDATED
+        assert "attributes" in record
+        assert "relationships" in record
+        for relationship_name in _EXPECTED_RELATIONSHIPS[stream]:
+            relationship = relationship_record["relationships"][relationship_name]
+            field_name = f"{relationship_name}_id"
+            if relationship["data"] is None:
+                assert field_name not in record
+            else:
+                assert record[field_name] == relationship["data"]["id"]
+        for relationship_name in set(relationship_record["relationships"]) - set(_EXPECTED_RELATIONSHIPS[stream]):
+            assert f"{relationship_name}_id" not in record
+        if "deleted" in relationship_record["attributes"]:
+            assert "deleted" not in record
+        assert output.is_not_in_logs("does not conform")

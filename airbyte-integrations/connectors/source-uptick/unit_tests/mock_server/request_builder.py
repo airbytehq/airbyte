@@ -51,13 +51,18 @@ class UptickRequestBuilder:
         return f"{cls.BASE_URL}/api/oauth2/token/"
 
     @classmethod
-    def collection(cls, stream: str, page: int = 1) -> HttpRequest:
+    def collection(
+        cls,
+        stream: str,
+        page: int = 1,
+        updatedsince: str = START_DATE,
+    ) -> HttpRequest:
         model, fields = cls.FIELDS[stream]
         query_params: dict[str, Any] = {
             "ordering": "-updated",
             "show_deleted": "true",
             f"fields[{model}]": fields,
-            "updatedsince": cls.START_DATE,
+            "updatedsince": updatedsince,
         }
         if page > 1:
             query_params["page"] = str(page)
