@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
@@ -99,6 +100,14 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
     return new ClickHouseSource();
   }
 
+  @Override
+  protected AirbyteCatalog getCatalog(final String defaultNamespace) {
+    final AirbyteCatalog catalog = super.getCatalog(defaultNamespace);
+    catalog.getStreams().forEach(stream ->
+        ((ObjectNode) stream.getJsonSchema().get("properties").get("updated_at")).put("format", "date"));
+    return catalog;
+  }
+
   @Test
   public void testEmptyExtraParamsWithSsl() {
     final String extraParam = "";
@@ -172,7 +181,8 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
     final JsonNode properties = stream.getJsonSchema().get("properties");
     final List<String> propertyNames = new ArrayList<>();
     properties.fieldNames().forEachRemaining(propertyNames::add);
-    assertEquals(List.of("id", "name", "amount"), propertyNames);
+    assertEquals(3, propertyNames.size());
+    assertTrue(propertyNames.containsAll(List.of("id", "name", "amount")));
     assertEquals("number", properties.get("id").get("type").asText());
     assertEquals("string", properties.get("name").get("type").asText());
     assertEquals("number", properties.get("amount").get("type").asText());

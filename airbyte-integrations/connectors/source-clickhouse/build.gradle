@@ -24,4 +24,5 @@ dependencies {
     }
 
     testImplementation 'org.testcontainers:clickhouse:1.21.4'
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
 }
