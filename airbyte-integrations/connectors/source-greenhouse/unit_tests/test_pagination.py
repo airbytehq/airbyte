@@ -644,6 +644,33 @@ def test_documented_v3_examples_validate_against_stream_schemas(connector_path):
                 }
             },
         },
+        "attachments": {
+            "id": 1,
+            "created_at": "2024-01-01T12:30:30.000Z",
+            "updated_at": "2024-01-01T00:00:00.000Z",
+            "application_id": 1,
+            "candidate_id": 1,
+            "type": "resume",
+            "filename": "resume.pdf",
+            "url": "https://prod-heroku.s3.amazonaws.com/attachment/resume.pdf",
+        },
+        "interviewers": {
+            "id": 1,
+            "created_at": "2024-01-01T12:30:30.000Z",
+            "updated_at": "2024-01-01T00:00:00.000Z",
+            "interview_id": 1,
+            "user_id": 1,
+            "scorecard_id": 1,
+            "email": "bob_johnson727@localhost.com",
+            "response_status": "needs_action",
+        },
+        "job_hiring_managers": {
+            "id": 1,
+            "created_at": "2024-01-01T12:30:30.000Z",
+            "updated_at": "2024-01-01T00:00:00.000Z",
+            "user_id": 1,
+            "job_id": 1,
+        },
         "activity_feed": {
             "id": 1,
             "body": "Admin-only note",
@@ -800,6 +827,66 @@ def test_eeoc_uses_submitted_at_filter_and_cursor_only_follow_up(requests_mock, 
             },
             id="demographics_answers",
         ),
+        pytest.param(
+            "attachments",
+            "https://harvest.greenhouse.io/v3/attachments",
+            {
+                "id": 51,
+                "application_id": 1,
+                "candidate_id": 1,
+                "type": "resume",
+                "filename": "resume.pdf",
+                "updated_at": "2024-01-01T00:00:00.000Z",
+            },
+            {
+                "id": 52,
+                "application_id": 2,
+                "candidate_id": 2,
+                "type": "offer_letter",
+                "filename": "offer.pdf",
+                "updated_at": "2024-01-02T00:00:00.000Z",
+            },
+            id="attachments",
+        ),
+        pytest.param(
+            "interviewers",
+            "https://harvest.greenhouse.io/v3/interviewers",
+            {
+                "id": 61,
+                "interview_id": 1,
+                "user_id": 1,
+                "scorecard_id": 1,
+                "response_status": "accepted",
+                "updated_at": "2024-01-01T00:00:00.000Z",
+            },
+            {
+                "id": 62,
+                "interview_id": 1,
+                "user_id": None,
+                "scorecard_id": None,
+                "email": "external.panelist@example.com",
+                "response_status": "needs_action",
+                "updated_at": "2024-01-02T00:00:00.000Z",
+            },
+            id="interviewers",
+        ),
+        pytest.param(
+            "job_hiring_managers",
+            "https://harvest.greenhouse.io/v3/job_hiring_managers",
+            {
+                "id": 71,
+                "job_id": 1,
+                "user_id": 1,
+                "updated_at": "2024-01-01T00:00:00.000Z",
+            },
+            {
+                "id": 72,
+                "job_id": 1,
+                "user_id": 2,
+                "updated_at": "2024-01-02T00:00:00.000Z",
+            },
+            id="job_hiring_managers",
+        ),
     ],
 )
 def test_bypassed_streams_paginate_and_filter_on_the_first_page_only(
@@ -809,6 +896,9 @@ def test_bypassed_streams_paginate_and_filter_on_the_first_page_only(
 
     prospect_pools and tags do return data now, but keeping them here costs nothing and pins the
     same first-page-only contract.
+
+    attachments, interviewers and job_hiring_managers are here because the partner app does not yet
+    carry their scopes, so no live read can reach them at all - this is their only read coverage.
     """
     _register_token(requests_mock)
     requests = []

@@ -1373,6 +1373,117 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/user_permissions"
+    attachments:
+      type: DeclarativeStream
+      name: attachments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/attachments
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/attachments"
+    interviewers:
+      type: DeclarativeStream
+      name: interviewers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/interviewers
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/interviewers"
+    job_hiring_managers:
+      type: DeclarativeStream
+      name: job_hiring_managers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/job_hiring_managers
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/job_hiring_managers"
   base_requester:
     type: HttpRequester
     authenticator:
@@ -1443,6 +1554,9 @@ streams:
   - $ref: "#/definitions/streams/tags"
   - $ref: "#/definitions/streams/user_roles"
   - $ref: "#/definitions/streams/user_permissions"
+  - $ref: "#/definitions/streams/attachments"
+  - $ref: "#/definitions/streams/interviewers"
+  - $ref: "#/definitions/streams/job_hiring_managers"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -1559,7 +1673,7 @@ spec:
         consent_url: >-
           https://auth.greenhouse.io/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&response_type=code&state={{state_value}}&{{scopes_param}}
         scope: >-
-          harvest:applications:list harvest:approval_flows:list harvest:candidate_tags:list harvest:candidates:list harvest:close_reasons:list harvest:custom_field_options:list harvest:custom_fields:list harvest:demographic_answer_options:list harvest:demographic_answers:list harvest:demographic_question_sets:list harvest:demographic_questions:list harvest:departments:list harvest:eeoc:list harvest:email_templates:list harvest:interviews:list harvest:job_interview_stages:list harvest:job_posts:list harvest:jobs:list harvest:notes:list harvest:offers:list harvest:offices:list harvest:openings:list harvest:prospect_pools:list harvest:rejection_reasons:list harvest:scorecards:list harvest:sources:list harvest:user_job_permissions:list harvest:user_roles:list harvest:users:list
+          harvest:applications:list harvest:approval_flows:list harvest:attachments:list harvest:candidate_tags:list harvest:candidates:list harvest:close_reasons:list harvest:custom_field_options:list harvest:custom_fields:list harvest:demographic_answer_options:list harvest:demographic_answers:list harvest:demographic_question_sets:list harvest:demographic_questions:list harvest:departments:list harvest:eeoc:list harvest:email_templates:list harvest:interviewers:list harvest:interviews:list harvest:job_hiring_managers:list harvest:job_interview_stages:list harvest:job_posts:list harvest:jobs:list harvest:notes:list harvest:offers:list harvest:offices:list harvest:openings:list harvest:prospect_pools:list harvest:rejection_reasons:list harvest:scorecards:list harvest:sources:list harvest:user_job_permissions:list harvest:user_roles:list harvest:users:list
         access_token_url: https://auth.greenhouse.io/token
         access_token_headers:
           Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
@@ -4185,6 +4299,129 @@ schemas:
         format: date-time
       user_id:
         description: "Id of the user receiving access to the job. References a `/v3/users` row. Site admins are never represented here \u2014 they have implicit access to every non-confidential job \u2014 so a user with a site admin role will not appear in this list."
+        type:
+        - 'null'
+        - integer
+  attachments:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      application_id:
+        description: Id of the application this attachment is associated with. References a `/v3/applications` row.
+        type:
+        - 'null'
+        - integer
+      candidate_id:
+        description: Id of the candidate (person) the attachment ultimately belongs to, resolved through the application. References a `/v3/candidates` row. Null if the application's candidate cannot be resolved.
+        type:
+        - 'null'
+        - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      filename:
+        description: Original filename of the uploaded document, including extension.
+        type:
+        - 'null'
+        - string
+      id:
+        type:
+        - 'null'
+        - integer
+      type:
+        description: "Classification of the attachment. `resume`, `cover_letter`, and `take_home_test` are candidate-supplied documents; `offer_packet`, `offer_letter`, and `signed_offer_letter` are offer documents; `midfunnel_agreement` and `automated_agreement` are e-signed documents; `form_attachment` is generated by Greenhouse forms; `other` is a free-form bucket for any document that doesn't fit the above."
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      url:
+        description: Time-limited download URL for the underlying file. Greenhouse expires the link after seven days and may serve it through a redirect that issues a fresh short-lived file URL on each request, so a replicated `url` is only usable for a week and clients downloading it must follow redirects.
+        type:
+        - 'null'
+        - string
+  interviewers:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      email:
+        description: Email address identifying this panel member. When `user_id` is set this is the user's primary Greenhouse email; for external attendees without a Greenhouse user it is the raw calendar invitee address. Null only when neither is available.
+        type:
+        - 'null'
+        - string
+      id:
+        type:
+        - 'null'
+        - integer
+      interview_id:
+        description: Id of the scheduled interview this row belongs to. References a `/v3/interviews` row; the same interview appears once per panel member.
+        type:
+        - 'null'
+        - integer
+      response_status:
+        description: "Panel member's RSVP on the calendar invite: `needs_action`, `declined`, `tentative`, or `accepted`. `needs_action` is the default until the invitee responds. For Outlook 365 customers, accept and decline only sync back after the interview is updated in Greenhouse or the external event is re-edited."
+        type:
+        - 'null'
+        - string
+      scorecard_id:
+        description: Id of the scorecard assigned to this panel member for this interview. References a `/v3/scorecards` row. Greenhouse creates one placeholder scorecard per assigned interviewer when the interview is scheduled. Null for panel members who get no scorecard, typically the calendar organizer or external attendees without a Greenhouse user.
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      user_id:
+        description: Id of the Greenhouse user on the panel. References a `/v3/users` row. Null when the panel member is an external attendee whose calendar address matches no Greenhouse user; that address surfaces in `email` instead.
+        type:
+        - 'null'
+        - integer
+  job_hiring_managers:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      job_id:
+        description: Id of the job this hiring-manager assignment belongs to. References a `/v3/jobs` row.
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      user_id:
+        description: Id of the user designated as a hiring manager on the job. References a `/v3/users` row. The same user can be a hiring manager on multiple jobs.
         type:
         - 'null'
         - integer

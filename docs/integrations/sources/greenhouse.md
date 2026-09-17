@@ -15,6 +15,7 @@ The consent flow requests these scopes; approve all of them:
 
 - `harvest:applications:list`
 - `harvest:approval_flows:list`
+- `harvest:attachments:list`
 - `harvest:candidate_tags:list`
 - `harvest:candidates:list`
 - `harvest:close_reasons:list`
@@ -27,7 +28,9 @@ The consent flow requests these scopes; approve all of them:
 - `harvest:departments:list`
 - `harvest:eeoc:list`
 - `harvest:email_templates:list`
+- `harvest:interviewers:list`
 - `harvest:interviews:list`
+- `harvest:job_hiring_managers:list`
 - `harvest:job_interview_stages:list`
 - `harvest:job_posts:list`
 - `harvest:jobs:list`
@@ -79,6 +82,7 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | :--- | :--- | :--- |
 | [`activity_feed`](https://harvestdocs.greenhouse.io/reference/get_v3-notes) | Incremental (`updated_at`) | Notes across all candidates |
 | [`applications`](https://harvestdocs.greenhouse.io/reference/get_v3-applications) | Incremental (`updated_at`) | |
+| [`attachments`](https://harvestdocs.greenhouse.io/reference/get_v3-attachments) | Incremental (`updated_at`) | One row per file on an application. `url` is a download link Greenhouse expires after seven days |
 | [`approvals`](https://harvestdocs.greenhouse.io/reference/get_v3-approval-flows) | Incremental (`updated_at`) | |
 | [`candidates`](https://harvestdocs.greenhouse.io/reference/get_v3-candidates) | Incremental (`updated_at`) | |
 | [`close_reasons`](https://harvestdocs.greenhouse.io/reference/get_v3-close-reasons) | Incremental (`updated_at`) | |
@@ -95,7 +99,9 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | [`disciplines`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Incremental (`updated_at`) | Custom field options for the `discipline` field |
 | [`eeoc`](https://harvestdocs.greenhouse.io/reference/get_v3-eeoc) | Incremental (`submitted_at`) | |
 | [`email_templates`](https://harvestdocs.greenhouse.io/reference/get_v3-email-templates) | Incremental (`updated_at`) | |
+| [`interviewers`](https://harvestdocs.greenhouse.io/reference/get_v3-interviewers) | Incremental (`updated_at`) | One row per panel member on a scheduled interview |
 | [`interviews`](https://harvestdocs.greenhouse.io/reference/get_v3-interviews) | Incremental (`updated_at`) | |
+| [`job_hiring_managers`](https://harvestdocs.greenhouse.io/reference/get_v3-job-hiring-managers) | Incremental (`updated_at`) | One row per hiring manager on a job |
 | [`job_posts`](https://harvestdocs.greenhouse.io/reference/get_v3-job-posts) | Incremental (`updated_at`) | Includes deleted posts |
 | [`job_stages`](https://harvestdocs.greenhouse.io/reference/get_v3-job-interview-stages) | Incremental (`updated_at`) | |
 | [`jobs`](https://harvestdocs.greenhouse.io/reference/get_v3-jobs) | Incremental (`updated_at`) | |
@@ -135,6 +141,8 @@ The connector requests 500 records per page, the Harvest v3 maximum, and then fo
 - **`custom_field_options`** reads every custom field option in your account, which makes it a superset of `degrees`, `disciplines`, and `schools`. Those three streams read the same Greenhouse endpoint filtered to one field key and share the same primary keys, so enabling all four writes the same option rows to four destination tables. Enable only the ones you need.
 - **`users`** includes integration service users, which Greenhouse hides by default. Service accounts have no email address, so `primary_email` is empty for those records.
 - **`rejection_reasons`** includes the default reasons Greenhouse ships with, not only the ones your organization added.
+- **`attachments`** returns a `url` for each file that Greenhouse expires after seven days, and it may redirect to a fresh short-lived file URL on each request. A replicated `url` stops working a week after the sync that wrote it; re-sync the stream to obtain current links.
+- **`interviewers`** has one row per panel member per interview, so an interview appears as many times as it has attendees. `user_id` is empty for external attendees who match no Greenhouse user; their address is in `email` instead.
 - **The 18 streams that became incremental in 1.1.0** now honor **Start date**, where before they always read full history. See [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110).
 
 ## Troubleshooting
@@ -171,6 +179,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.0 | 2026-09-17 | [PRNUMBER](https://github.com/airbytehq/airbyte/pull/PRNUMBER) | Add the `attachments`, `interviewers`, and `job_hiring_managers` streams, and request the three matching Harvest v3 scopes during consent. Existing connections keep syncing unchanged; enabling a new stream requires re-running the consent flow so the new scopes are granted |
 | 1.1.0 | 2026-09-17 | [85841](https://github.com/airbytehq/airbyte/pull/85841) | Sync 18 previously full-refresh streams incrementally on `updated_at`. Not breaking, but **Start date** now applies to those 18 streams in every sync mode, including full refresh, where before they always read full history - see [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110). Also read `activity_feed`, `jobs_openings`, and `user_permissions` directly instead of once per 50 parents, and suggest 10 streams for new connections |
 | 1.0.3 | 2026-09-15 | [85507](https://github.com/airbytehq/airbyte/pull/85507) | Update dependencies |
 | 1.0.2 | 2026-09-02 | [85306](https://github.com/airbytehq/airbyte/pull/85306) | Clarify in the spec that OAuth credentials come from Airbyte's Greenhouse partner application and must not be requested from Greenhouse |

@@ -79,3 +79,6 @@ That is, `updated_at=gte|{datetime}|lte|{datetime}`, with `|` separating operato
 | tags | top-level | updated_at | updated_at | incremental |
 | user_roles | top-level | updated_at | updated_at | incremental |
 | user_permissions | top-level | updated_at | updated_at | incremental |
+| attachments | top-level | updated_at | updated_at | incremental |
+| interviewers | top-level | updated_at | updated_at | incremental |
+| job_hiring_managers | top-level | updated_at | updated_at | incremental |
