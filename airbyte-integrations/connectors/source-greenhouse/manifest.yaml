@@ -1,4 +1,4 @@
-version: 7.25.1
+version: 7.28.4
 
 type: DeclarativeSource
 
@@ -39,10 +39,35 @@ definitions:
     cursor_field: updated_at
     cursor_datetime_formats:
       - "%Y-%m-%dT%H:%M:%S.%_msZ"
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S.%_ms%z"
+      - "%Y-%m-%dT%H:%M:%S%z"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
     start_datetime:
       type: MinMaxDatetime
       datetime: "1970-01-01T00:00:00Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  # The cursor every incremental stream shares. Reference it with a bare $ref: a
+  # sibling key replaces the whole value it collides with, so overriding a nested
+  # block here would silently drop the rest of it.
+  # All four RFC 3339 spellings are accepted - millisecond or second precision,
+  # Z or a numeric offset. v3 documents the millisecond-Z form and all 107 examples
+  # in its spec use it, but no response schema pins a pattern, and an unparsed
+  # cursor value is silent: records still flow while state stays parked at
+  # start_date forever. Verified per spelling before and after adding these.
+  updated_at_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: updated_at
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%_msZ"
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S.%_ms%z"
+      - "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+    lookback_window: PT1H
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   streams:
     applications:
@@ -80,16 +105,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -126,16 +142,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -153,6 +160,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -170,6 +178,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -187,6 +197,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -204,6 +215,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -221,6 +234,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -238,6 +252,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -255,6 +271,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
             custom_field_key: "{{ 'degree' if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
@@ -273,6 +290,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -309,16 +328,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -451,6 +461,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -468,6 +479,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -513,6 +526,8 @@ definitions:
               partition_field: parent_id
               stream:
                 $ref: "#/definitions/streams/demographics_question_sets"
+                incremental_sync:
+                  $ref: "#/definitions/full_history_cursor"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -532,6 +547,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -549,6 +565,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -585,16 +603,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -612,7 +621,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            job_ids: "{{ stream_partition.parent_id | join(',') if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -628,22 +637,10 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
-        partition_router:
-          type: GroupingPartitionRouter
-          group_size: 50
-          deduplicate: true
-          underlying_partition_router:
-            type: SubstreamPartitionRouter
-            parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: parent_id
-              stream:
-                $ref: "#/definitions/streams/jobs"
-                incremental_sync:
-                  $ref: "#/definitions/full_history_cursor"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -680,16 +677,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -733,16 +721,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -779,16 +758,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -825,16 +795,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -852,6 +813,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
             include_defaults: "{{ 'true' if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
@@ -870,6 +832,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -910,16 +874,7 @@ definitions:
         schema:
           $ref: "#/schemas/scorecards"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
     sources:
       type: DeclarativeStream
       name: sources
@@ -933,6 +888,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -950,6 +906,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -987,16 +945,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1013,7 +962,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            candidate_ids: "{{ stream_partition.parent_id | join(',') if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1021,20 +970,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        partition_router:
-          type: GroupingPartitionRouter
-          group_size: 50
-          deduplicate: true
-          underlying_partition_router:
-            type: SubstreamPartitionRouter
-            parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: parent_id
-              stream:
-                $ref: "#/definitions/streams/candidates"
-                incremental_sync:
-                  $ref: "#/definitions/full_history_cursor"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -1048,6 +983,8 @@ definitions:
       name: activity_feed
       primary_key:
         - id
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1064,6 +1001,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1084,6 +1022,8 @@ definitions:
       name: approvals
       primary_key:
         - id
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1100,6 +1040,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
             custom_field_key: "{{ 'discipline' if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
@@ -1121,6 +1062,8 @@ definitions:
       name: disciplines
       primary_key:
         - id
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1137,6 +1080,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
             custom_field_key: "{{ 'school_name' if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
@@ -1158,6 +1102,8 @@ definitions:
       name: schools
       primary_key:
         - id
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1194,16 +1140,9 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
+        $ref: "#/definitions/updated_at_cursor"
+        # /v3/eeoc also accepts updated_at, but switching needs a StateMigration; see AGENTS.md.
         cursor_field: submitted_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1240,16 +1179,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1267,6 +1197,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1284,6 +1215,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1301,6 +1234,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1318,6 +1252,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1334,6 +1270,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1354,6 +1291,8 @@ definitions:
       name: tags
       primary_key:
         - id
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1371,6 +1310,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1388,6 +1328,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1404,7 +1346,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            user_ids: "{{ stream_partition.parent_id | join(',') if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1412,20 +1354,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        partition_router:
-          type: GroupingPartitionRouter
-          group_size: 50
-          deduplicate: true
-          underlying_partition_router:
-            type: SubstreamPartitionRouter
-            parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: parent_id
-              stream:
-                $ref: "#/definitions/streams/users"
-                incremental_sync:
-                  $ref: "#/definitions/full_history_cursor"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -1439,6 +1367,8 @@ definitions:
       name: user_permissions
       primary_key:
         - id
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
