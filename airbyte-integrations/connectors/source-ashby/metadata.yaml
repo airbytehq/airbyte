@@ -49,7 +49,7 @@ data:
     breakingChanges:
       2.0.0:
         message: "This release removes twelve always-null columns from the `interviews` stream (`applicationId`, `interviewScheduleId`, `interviewStageId`, `status`, `createdAt`, `updatedAt`, `cancelledAt`, `startTime`, `endTime`, `feedbackLink`, `interviewerUserIds`, and `meetingLink`). Ashby's `/interview.list` endpoint returns interview definitions and never populated these scheduling fields; the equivalent data is available in the `interview_schedules` stream. Users syncing the `interviews` stream must refresh the stream's schema after upgrading, and may need to recreate the destination table on data-lake destinations such as S3 Data Lake and Iceberg. See the migration guide for details."
-        upgradeDeadline: "2026-09-15"
+        upgradeDeadline: "2026-10-01"
         deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
