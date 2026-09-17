@@ -132,3 +132,41 @@ PYTEST_ADDOPTS='-k check' poe test-sandbox
 Explicit read opt-ins such as `PYTEST_ADDOPTS='--read-from-streams=customers -k read'`
 exceed normal CI coverage and can hit CDK 7.28.4's empty-stream filter bug. The adapter
 contains no workaround and does not precheck sandbox feature support.
+
+
+### Manual GitHub Actions demo
+
+The [Stripe sandbox demo](../../../.github/workflows/stripe-sandbox-demo.yml) workflow
+installs the pinned CDK, sandbox plugin, and Poe together before invoking the task
+above. It checks out a fixed sandbox commit, pulls both published images, and uploads
+a sanitized native JUnit report. It does not run `poe install`, which installs the CDK
+in a separate uv tool environment. Normal Connector CI remains unchanged.
+
+Before dispatching, configure these settings on `airbytehq/airbyte`:
+
+- Repository variable `SASS_API_URL`: the hosted sandbox API origin.
+- Repository secret `SASS_API_KEY`: its service API key.
+- Repository secret `SASS_SOURCE_READ_TOKEN`: a token with read-only Contents access
+  to the internal `airbytehq/saas-sandbox` repository (for example, an approved
+  fine-grained PAT). Airbyte's job token cannot check out that other repository.
+- For private GHCR relay images, grant `airbytehq/airbyte` Read access under the
+  package's **Manage Actions access** settings. The job uses its own `GITHUB_TOKEN`
+  with `packages: read` to pull the image.
+
+Publish the relay and prepare the `stripe-customers` scenario using the
+[sandbox demo setup](https://github.com/airbytehq/saas-sandbox/blob/620b06462c0e336cca13af2060c93e434c1a7579/docs/STRIPE_ACTION_DEMO.md).
+The workflow uses the hosted API and existing scenario; it does not start a local
+service or reset data. Its scenario concurrency group only serializes runs within
+Airbyte, so use separate scenarios for simultaneous runs from the two repositories.
+
+Once the workflow exists on the default branch:
+
+```bash
+gh workflow run stripe-sandbox-demo.yml --repo airbytehq/airbyte \
+  -f relay_image='ghcr.io/airbytehq/saas-sandbox@sha256:<digest>'
+```
+
+Optionally pass `-f tests=check` or override `image` and `scenario`. Reads remain
+omitted just like normal CI. A draft PR alone does not register a new manual workflow
+for dispatch. The fixed sandbox checkout can reference the companion PR commit before
+that PR merges; update the SHA as the integration evolves.
