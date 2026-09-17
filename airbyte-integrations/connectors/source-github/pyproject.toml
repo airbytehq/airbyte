@@ -17,7 +17,7 @@ include = "source_github"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.14"
-airbyte-cdk = "7.28.3.post9.dev35118356794"
+airbyte-cdk = "7.28.3.post10.dev35210967429"
 
 [tool.poetry.scripts]
 source-github = "source_github.run:run"

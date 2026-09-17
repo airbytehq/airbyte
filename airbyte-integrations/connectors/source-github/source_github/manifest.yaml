@@ -1,4 +1,4 @@
-version: "7.28.2"
+version: "7.28.3"
 type: DeclarativeSource
 
 definitions:
@@ -17605,11 +17605,47 @@ definitions:
       GitHub could not resolve the GraphQL query within its deadline. Retrying the same page
       with a smaller page size.
 
+  # GitHub's GraphQL API reports most failures as HTTP 200 with an `errors` array in the body:
+  # rate limiting (`errors[].type == "RATE_LIMITED"`), query timeouts ("Something went wrong
+  # while executing your query") and node-limit breaches. `success_filter` matches on status
+  # alone and `DefaultErrorHandler` stops at the first matching filter, so these two must come
+  # before it. Without them a 200 carrying `errors` is consumed as an empty successful page:
+  # the extractor yields nothing, the paginator sees no next page, the partition ends early and
+  # the sync is reported successful with part of the data missing and nothing in the logs. The
+  # deleted `GitHubGraphQLErrorHandler` had both branches (`check_graphql_rate_limited` and the
+  # `_safe_json_get_errors` retry).
+  #
+  # `errors` is not always a list of objects — the legacy test for this used
+  # `{"errors": "not found"}` — so neither predicate may assume a shape. `selectattr` over a
+  # string iterates its characters, none of which has a `type`, so the rate-limit predicate
+  # simply matches nothing there and the generic filter below picks the response up.
+  graphql_body_rate_limited_filter:
+    type: HttpResponseFilter
+    predicate: >-
+      {{ response is mapping
+         and ((response.get('errors') or []) | selectattr('type', 'defined')
+              | selectattr('type', 'equalto', 'RATE_LIMITED') | list | length) > 0 }}
+    action: RATE_LIMITED
+    error_message: "GitHub GraphQL rate limit hit. Waiting for the rate limit window to reset before retrying."
+
+  graphql_body_error_filter:
+    type: HttpResponseFilter
+    predicate: "{{ response is mapping and ((response.get('errors') or []) | length) > 0 }}"
+    action: RETRY
+    failure_type: transient_error
+    error_message: "GitHub GraphQL returned errors in the response body. Retrying."
+
   graphql_error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
       $ref: "#/definitions/rate_limit_backoff_strategies"
     response_filters:
+      # Both body filters precede `success_filter`, which would otherwise classify every 200 as
+      # a success and stop the chain. They cannot replace it: `success_filter` exists to keep a
+      # 200 carrying `Retry-After` from being read as a rate limit, so it still has to run for
+      # every 200 whose body has no `errors`.
+      - $ref: "#/definitions/graphql_body_rate_limited_filter"
+      - $ref: "#/definitions/graphql_body_error_filter"
       - $ref: "#/definitions/success_filter"
       - $ref: "#/definitions/retry_after_rate_limit_filter"
       - $ref: "#/definitions/primary_rate_limit_filter"
@@ -17629,8 +17665,11 @@ definitions:
     error_handler:
       $ref: "#/definitions/graphql_error_handler"
 
-  # Halving on every 502/504, floored at 1, giving up after 5 reductions in a single page
-  # loop. `reset_policy: NEVER` keeps the reduced size for the rest of the partition:
+  # Halving on every 502/504, floored at 1. At the default page size of 10 the floor is what
+  # ends the loop, not `max_attempts`: the sequence is 10 -> 5 -> 2 -> 1, three reductions, and
+  # the fourth 502 fails on "already at the minimum". `max_attempts` only binds from a
+  # configured page size of 32 up, and is kept as the bound for those.
+  # `reset_policy: NEVER` keeps the reduced size for the rest of the partition:
   # restoring it after each good page re-triggers the timeout on the next page, which is the
   # ineffective behavior the legacy handler had. The size is local to one `_read_pages` call,
   # so one repository reducing does not change the page size any other repository is using.
@@ -17680,69 +17719,69 @@ definitions:
         $ref: "#/definitions/graphql_page_size_reduction"
       requester:
         $ref: "#/definitions/graphql_requester"
-        request_body_json:
-          query: |
-            query Releases($owner: String!, $name: String!, $first: Int!, $after: String) {
-              repository(owner: $owner, name: $name) {
-                name
-                owner { login }
-                releases(first: $first, after: $after, orderBy: {field: CREATED_AT, direction: ASC}) {
-                  nodes {
-                    node_id: id
-                    id: databaseId
-                    name
-                    tag_name: tagName
-                    created_at: createdAt
-                    published_at: publishedAt
-                    updated_at: updatedAt
-                    draft: isDraft
-                    prerelease: isPrerelease
-                    body: description
-                    body_html: descriptionHTML
-                    html_url: url
-                    tagCommit { target_commitish: oid }
-                    author {
-                      __typename
-                      ... on User {
-                        node_id: id
-                        id: databaseId
-                        login
-                        avatar_url: avatarUrl
-                        html_url: url
-                        site_admin: isSiteAdmin
-                      }
-                    }
-                    assets: releaseAssets(first: 100) {
-                      nodes {
-                        node_id: id
-                        name
-                        content_type: contentType
-                        size
-                        download_count: downloadCount
-                        created_at: createdAt
-                        updated_at: updatedAt
-                        browser_download_url: downloadUrl
-                        url
-                        uploader: uploadedBy {
-                          __typename
-                          ... on User { id: databaseId }
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            query: |
+              query Releases($owner: String!, $name: String!, $first: Int!, $after: String) {
+                repository(owner: $owner, name: $name) {
+                  releases(first: $first, after: $after, orderBy: {field: CREATED_AT, direction: ASC}) {
+                    nodes {
+                      node_id: id
+                      id: databaseId
+                      name
+                      tag_name: tagName
+                      created_at: createdAt
+                      published_at: publishedAt
+                      updated_at: updatedAt
+                      draft: isDraft
+                      prerelease: isPrerelease
+                      body: description
+                      body_html: descriptionHTML
+                      html_url: url
+                      tagCommit { target_commitish: oid }
+                      author {
+                        __typename
+                        ... on User {
+                          node_id: id
+                          id: databaseId
+                          login
+                          avatar_url: avatarUrl
+                          html_url: url
+                          site_admin: isSiteAdmin
                         }
                       }
-                      pageInfo { hasNextPage }
+                      assets: releaseAssets(first: 100) {
+                        nodes {
+                          node_id: id
+                          name
+                          content_type: contentType
+                          size
+                          download_count: downloadCount
+                          created_at: createdAt
+                          updated_at: updatedAt
+                          browser_download_url: downloadUrl
+                          url
+                          uploader: uploadedBy {
+                            __typename
+                            ... on User { id: databaseId }
+                          }
+                        }
+                        pageInfo { hasNextPage }
+                      }
+                      reaction_groups: reactionGroups {
+                        content
+                        reactors { totalCount }
+                      }
+                      mentions_connection: mentions(first: 0) { totalCount }
                     }
-                    reaction_groups: reactionGroups {
-                      content
-                      reactors { totalCount }
-                    }
-                    mentions_connection: mentions(first: 0) { totalCount }
+                    pageInfo { hasNextPage endCursor }
                   }
-                  pageInfo { hasNextPage endCursor }
                 }
               }
-            }
-          variables:
-            owner: "{{ stream_partition.repository.split('/')[0] }}"
-            name: "{{ stream_partition.repository.split('/')[1] }}"
+            variables:
+              owner: "{{ stream_partition.repository.split('/')[0] }}"
+              name: "{{ stream_partition.repository.split('/')[1] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -18087,45 +18126,45 @@ definitions:
         $ref: "#/definitions/graphql_page_size_reduction"
       requester:
         $ref: "#/definitions/graphql_requester"
-        request_body_json:
-          query: |
-            query ProjectsV2($owner: String!, $name: String!, $first: Int!, $after: String) {
-              repository(owner: $owner, name: $name) {
-                name
-                owner { login }
-                projectsV2(first: $first, after: $after, orderBy: {field: UPDATED_AT, direction: ASC}) {
-                  nodes {
-                    closed
-                    created_at: createdAt
-                    closed_at: closedAt
-                    updated_at: updatedAt
-                    creator {
-                      avatarUrl
-                      login
-                      resourcePath
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            query: |
+              query ProjectsV2($owner: String!, $name: String!, $first: Int!, $after: String) {
+                repository(owner: $owner, name: $name) {
+                  projectsV2(first: $first, after: $after, orderBy: {field: UPDATED_AT, direction: ASC}) {
+                    nodes {
+                      closed
+                      created_at: createdAt
+                      closed_at: closedAt
+                      updated_at: updatedAt
+                      creator {
+                        avatarUrl
+                        login
+                        resourcePath
+                        url
+                      }
+                      node_id: id
+                      id: databaseId
+                      number
+                      public
+                      readme
+                      short_description: shortDescription
+                      template
+                      title
                       url
+                      viewerCanClose
+                      viewerCanReopen
+                      viewerCanUpdate
+                      owner { id }
                     }
-                    node_id: id
-                    id: databaseId
-                    number
-                    public
-                    readme
-                    short_description: shortDescription
-                    template
-                    title
-                    url
-                    viewerCanClose
-                    viewerCanReopen
-                    viewerCanUpdate
-                    owner { id }
+                    pageInfo { hasNextPage endCursor }
                   }
-                  pageInfo { hasNextPage endCursor }
                 }
               }
-            }
-          variables:
-            owner: "{{ stream_partition.repository.split('/')[0] }}"
-            name: "{{ stream_partition.repository.split('/')[1] }}"
+            variables:
+              owner: "{{ stream_partition.repository.split('/')[0] }}"
+              name: "{{ stream_partition.repository.split('/')[1] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -18303,51 +18342,51 @@ definitions:
           # https://docs.github.com/en/graphql/overview/schema-previews#merge-info-preview
           User-Agent: "PostmanRuntime/7.28.0"
           Accept: "application/vnd.github.merge-info-preview+json"
-        request_body_json:
-          query: |
-            query PullRequestStats($owner: String!, $name: String!, $first: Int!, $after: String) {
-              repository(owner: $owner, name: $name) {
-                name
-                owner { login }
-                pullRequests(first: $first, after: $after, orderBy: {field: UPDATED_AT, direction: DESC}) {
-                  nodes {
-                    node_id: id
-                    id: databaseId
-                    number
-                    updated_at: updatedAt
-                    changed_files: changedFiles
-                    deletions
-                    additions
-                    merged
-                    mergeable
-                    can_be_rebased: canBeRebased
-                    maintainer_can_modify: maintainerCanModify
-                    merge_state_status: mergeStateStatus
-                    comments { totalCount }
-                    commits { totalCount }
-                    review_comments: reviews(first: 100) {
-                      totalCount
-                      nodes { comments { totalCount } }
-                    }
-                    merged_by: mergedBy {
-                      type: __typename
-                      ... on User {
-                        node_id: id
-                        id: databaseId
-                        login
-                        avatar_url: avatarUrl
-                        html_url: url
-                        site_admin: isSiteAdmin
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            query: |
+              query PullRequestStats($owner: String!, $name: String!, $first: Int!, $after: String) {
+                repository(owner: $owner, name: $name) {
+                  pullRequests(first: $first, after: $after, orderBy: {field: UPDATED_AT, direction: DESC}) {
+                    nodes {
+                      node_id: id
+                      id: databaseId
+                      number
+                      updated_at: updatedAt
+                      changed_files: changedFiles
+                      deletions
+                      additions
+                      merged
+                      mergeable
+                      can_be_rebased: canBeRebased
+                      maintainer_can_modify: maintainerCanModify
+                      merge_state_status: mergeStateStatus
+                      comments { totalCount }
+                      commits { totalCount }
+                      review_comments: reviews(first: 100) {
+                        totalCount
+                        nodes { comments { totalCount } }
+                      }
+                      merged_by: mergedBy {
+                        type: __typename
+                        ... on User {
+                          node_id: id
+                          id: databaseId
+                          login
+                          avatar_url: avatarUrl
+                          html_url: url
+                          site_admin: isSiteAdmin
+                        }
                       }
                     }
+                    pageInfo { hasNextPage endCursor }
                   }
-                  pageInfo { hasNextPage endCursor }
                 }
               }
-            }
-          variables:
-            owner: "{{ stream_partition.repository.split('/')[0] }}"
-            name: "{{ stream_partition.repository.split('/')[1] }}"
+            variables:
+              owner: "{{ stream_partition.repository.split('/')[0] }}"
+              name: "{{ stream_partition.repository.split('/')[1] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -18523,7 +18562,7 @@ definitions:
     name: reviews
     primary_key: "id"
     $parameters:
-      # Referenced from `request_body_json` below for the very first request, which has no
+      # Referenced from `request_body` below for the very first request, which has no
       # page token yet, and handed to the pagination strategy for every later one. Declared
       # once here so the two can never drift.
       list_document: |
@@ -18609,17 +18648,19 @@ definitions:
         $ref: "#/definitions/graphql_page_size_reduction"
       requester:
         $ref: "#/definitions/graphql_requester"
-        request_body_json:
-          # The traversal switches between the parent listing and a drill-down rooted at one
-          # parent, so the document itself changes per page. The strategy puts the document it
-          # wants next into the token; the listing document is the entry point.
-          query: "{{ next_page_token['next_page_token']['document'] if next_page_token else parameters['list_document'] }}"
-          variables:
-            owner: "{{ stream_partition.repository.split('/')[0] }}"
-            name: "{{ stream_partition.repository.split('/')[1] }}"
-            # A null-valued key is dropped from the body entirely, so the first request simply
-            # omits `after` — which GraphQL reads as "from the beginning".
-            after: "{{ next_page_token['next_page_token']['after'] if next_page_token else None }}"
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            # The traversal switches between the parent listing and a drill-down rooted at one
+            # parent, so the document itself changes per page. The strategy puts the document it
+            # wants next into the token; the listing document is the entry point.
+            query: "{{ next_page_token['next_page_token']['document'] if next_page_token else parameters['list_document'] }}"
+            variables:
+              owner: "{{ stream_partition.repository.split('/')[0] }}"
+              name: "{{ stream_partition.repository.split('/')[1] }}"
+              # A null-valued key is dropped from the body entirely, so the first request simply
+              # omits `after` — which GraphQL reads as "from the beginning".
+              after: "{{ next_page_token['next_page_token']['after'] if next_page_token else None }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -18632,7 +18673,7 @@ definitions:
       paginator:
         type: DefaultPaginator
         # No `page_token_option`: the token is a traversal state object, not a value to inject.
-        # `request_body_json` above reads what it needs out of it.
+        # `request_body` above reads what it needs out of it.
         page_size_option:
           type: RequestOption
           inject_into: body_json
@@ -18805,7 +18846,7 @@ definitions:
     name: issue_reactions
     primary_key: "id"
     $parameters:
-      # Referenced from `request_body_json` below for the very first request, which has no
+      # Referenced from `request_body` below for the very first request, which has no
       # page token yet, and handed to the pagination strategy for every later one. Declared
       # once here so the two can never drift.
       list_document: |
@@ -18873,17 +18914,19 @@ definitions:
         $ref: "#/definitions/graphql_page_size_reduction"
       requester:
         $ref: "#/definitions/graphql_requester"
-        request_body_json:
-          # The traversal switches between the parent listing and a drill-down rooted at one
-          # parent, so the document itself changes per page. The strategy puts the document it
-          # wants next into the token; the listing document is the entry point.
-          query: "{{ next_page_token['next_page_token']['document'] if next_page_token else parameters['list_document'] }}"
-          variables:
-            owner: "{{ stream_partition.repository.split('/')[0] }}"
-            name: "{{ stream_partition.repository.split('/')[1] }}"
-            # A null-valued key is dropped from the body entirely, so the first request simply
-            # omits `after` — which GraphQL reads as "from the beginning".
-            after: "{{ next_page_token['next_page_token']['after'] if next_page_token else None }}"
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            # The traversal switches between the parent listing and a drill-down rooted at one
+            # parent, so the document itself changes per page. The strategy puts the document it
+            # wants next into the token; the listing document is the entry point.
+            query: "{{ next_page_token['next_page_token']['document'] if next_page_token else parameters['list_document'] }}"
+            variables:
+              owner: "{{ stream_partition.repository.split('/')[0] }}"
+              name: "{{ stream_partition.repository.split('/')[1] }}"
+              # A null-valued key is dropped from the body entirely, so the first request simply
+              # omits `after` — which GraphQL reads as "from the beginning".
+              after: "{{ next_page_token['next_page_token']['after'] if next_page_token else None }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -18896,7 +18939,7 @@ definitions:
       paginator:
         type: DefaultPaginator
         # No `page_token_option`: the token is a traversal state object, not a value to inject.
-        # `request_body_json` above reads what it needs out of it.
+        # `request_body` above reads what it needs out of it.
         page_size_option:
           type: RequestOption
           inject_into: body_json
@@ -19000,7 +19043,7 @@ definitions:
     primary_key: "id"
     $parameters:
       # One document per object type the traversal can re-root at. The repository listing is
-      # also the entry point, so `request_body_json` references it directly.
+      # also the entry point, so `request_body` references it directly.
       root_repository_document: |
         query PullRequestCommentReactions($owner: String!, $name: String!, $first: Int!, $after: String) {
           repository(owner: $owner, name: $name) {
@@ -19008,24 +19051,20 @@ definitions:
             owner { login }
             pullRequests(first: $first, after: $after) {
               pageInfo { hasNextPage endCursor }
-              totalCount
               nodes {
                 node_id: id
                 reviews(first: 5) {
                   pageInfo { hasNextPage endCursor }
-                  totalCount
                   nodes {
                     node_id: id
                     id: databaseId
                     comments(first: 2) {
                       pageInfo { hasNextPage endCursor }
-                      totalCount
                       nodes {
                         node_id: id
                         id: databaseId
                         reactions(first: 2) {
                           pageInfo { hasNextPage endCursor }
-                          totalCount
                           nodes {
                           node_id: id
                           id: databaseId
@@ -19058,19 +19097,16 @@ definitions:
               repository { name owner { login } }
               reviews(first: $first, after: $after) {
                 pageInfo { hasNextPage endCursor }
-                totalCount
                 nodes {
                   node_id: id
                   id: databaseId
                   comments(first: 2) {
                     pageInfo { hasNextPage endCursor }
-                    totalCount
                     nodes {
                       node_id: id
                       id: databaseId
                       reactions(first: 2) {
                         pageInfo { hasNextPage endCursor }
-                        totalCount
                         nodes {
                         node_id: id
                         id: databaseId
@@ -19102,13 +19138,11 @@ definitions:
               repository { name owner { login } }
               comments(first: $first, after: $after) {
                 pageInfo { hasNextPage endCursor }
-                totalCount
                 nodes {
                   node_id: id
                   id: databaseId
                   reactions(first: 2) {
                     pageInfo { hasNextPage endCursor }
-                    totalCount
                     nodes {
                     node_id: id
                     id: databaseId
@@ -19139,7 +19173,6 @@ definitions:
               repository { name owner { login } }
               reactions(first: $first, after: $after) {
                 pageInfo { hasNextPage endCursor }
-                totalCount
                 nodes {
                             node_id: id
                             id: databaseId
@@ -19164,21 +19197,23 @@ definitions:
         $ref: "#/definitions/graphql_page_size_reduction"
       requester:
         $ref: "#/definitions/graphql_requester"
-        request_body_json:
-          query: "{{ next_page_token['next_page_token']['document'] if next_page_token else parameters['root_repository_document'] }}"
-          variables:
-            # `owner`/`name` are only declared by the repository listing document; the
-            # drill-down documents root at `node(id:)` and declare neither, so they are
-            # omitted whenever the token carries a drill-down document. A GraphQL document
-            # rejects a variable it does not declare, which is why this cannot just always
-            # send all of them. The test is which document the token carries, not the mere
-            # presence of a token: the listing paginates too (`typename: PullRequest` re-roots
-            # at the listing, with no node id), and dropping the variables on its second page
-            # made GitHub answer `data: null`, so the stream stopped after the first page and
-            # only the newest `page_size_for_large_streams` pull requests were ever scanned.
-            owner: "{{ None if next_page_token and next_page_token['next_page_token']['typename'] != 'PullRequest' else stream_partition.repository.split('/')[0] }}"
-            name: "{{ None if next_page_token and next_page_token['next_page_token']['typename'] != 'PullRequest' else stream_partition.repository.split('/')[1] }}"
-            after: "{{ next_page_token['next_page_token']['after'] if next_page_token else None }}"
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            query: "{{ next_page_token['next_page_token']['document'] if next_page_token else parameters['root_repository_document'] }}"
+            variables:
+              # `owner`/`name` are only declared by the repository listing document; the
+              # drill-down documents root at `node(id:)` and declare neither, so they are
+              # omitted whenever the token carries a drill-down document. A GraphQL document
+              # rejects a variable it does not declare, which is why this cannot just always
+              # send all of them. The test is which document the token carries, not the mere
+              # presence of a token: the listing paginates too (`typename: PullRequest` re-roots
+              # at the listing, with no node id), and dropping the variables on its second page
+              # made GitHub answer `data: null`, so the stream stopped after the first page and
+              # only the newest `page_size_for_large_streams` pull requests were ever scanned.
+              owner: "{{ None if next_page_token and next_page_token['next_page_token']['typename'] != 'PullRequest' else stream_partition.repository.split('/')[0] }}"
+              name: "{{ None if next_page_token and next_page_token['next_page_token']['typename'] != 'PullRequest' else stream_partition.repository.split('/')[1] }}"
+              after: "{{ next_page_token['next_page_token']['after'] if next_page_token else None }}"
       record_selector:
         type: RecordSelector
         extractor:

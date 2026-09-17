@@ -389,6 +389,8 @@ def test_every_discovered_schema_is_fully_expanded(monkeypatch):
     The shared schemas are expanded at every use instead, so nothing here may look like a ref.
     """
     source = SourceGithub(config=_CONFIG)
+    # `streams()` already returns [], but it resolves the configured repositories over HTTP on
+    # the way there. Stubbing it keeps this test off the network.
     monkeypatch.setattr(SourceGithub, "streams", MagicMock(return_value=[]))
 
     catalog = source.discover(logging.getLogger("airbyte"), _CONFIG)

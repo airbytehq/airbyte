@@ -202,7 +202,7 @@ class NestedGraphQLPaginationStrategy(PaginationStrategy):
 
     The token is `{document, after, number, pending, list_after}`:
 
-    - `document` is the query to send next, so the retriever's `request_body_json` only has to
+    - `document` is the query to send next, so the retriever's `request_body` only has to
       choose between "the token's document" and the root listing document.
     - `pending` is the queue of `(parent_number, child_cursor)` pairs still to drill into,
       popped LIFO to match the legacy `dict.popitem()`.
@@ -230,7 +230,7 @@ class NestedGraphQLPaginationStrategy(PaginationStrategy):
         # Read from `$parameters` rather than from a manifest field: a custom component's
         # string fields are not interpolated, so a `{{ parameters[...] }}` reference would
         # arrive verbatim. The stream declares each document once and both the requester's
-        # `request_body_json` and this strategy read that one declaration.
+        # `request_body` and this strategy read that one declaration.
         for field in ("list_document", "drilldown_document"):
             value = parameters.get(field)
             if not value:
@@ -385,7 +385,7 @@ class DeepNestedGraphQLPaginationStrategy(PaginationStrategy):
     the partitions are read concurrently. The legacy `self.cursor_storage` was a single heap
     shared across repositories.
 
-    One legacy behavior is deliberately not carried over: `request_body_json` used to send
+    One legacy behavior is deliberately not carried over: the legacy `request_body_json` used to send
     `first = min(page_size, total_count)` to avoid paying for pages larger than what remained.
     `first` has to stay a GraphQL variable for `REDUCE_PAGE_SIZE` to be able to shrink it, and
     a variable cannot be per-token, so the connector may now over-ask on the last page of a

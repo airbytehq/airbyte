@@ -375,6 +375,46 @@ def test_persistent_gateway_timeout_fails_the_stream_instead_of_looping(rate_lim
     ]
 
 
+def test_graphql_body_errors_are_retried_instead_of_ending_the_partition(rate_limit_mock_response, requests_mock):
+    """GitHub's GraphQL API answers 200 and puts the complaint in the body. `success_filter`
+    matches on status alone, so without a body filter ahead of it such a page is consumed as an
+    empty success: the extractor yields nothing, the paginator sees no next page, and the sync
+    ends green having skipped every record behind that page. Ported from the deleted
+    `test_graphql_rate_limited` and `test_stream_projects_v2_graphql_retry`; the second of those
+    is why `{"errors": "not found"}` — a string, not a list of objects — is in here.
+    """
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(
+        GRAPHQL_URL,
+        [
+            {"json": _repository_envelope("releases", [_release_node("RE_1", 11)], has_next_page=True, end_cursor="CUR")},
+            {"json": {"data": None, "errors": [{"type": "RATE_LIMITED", "message": "API rate limit exceeded"}]}},
+            {"json": {"errors": "not found"}},
+            {"json": _repository_envelope("releases", [_release_node("RE_2", 12, tag="v2.0.0")])},
+        ],
+    )
+
+    records, error = _read(_config(), "releases")
+
+    assert error is None
+    assert sorted(record["id"] for record in records) == [11, 12], "the page behind the errors must still be read"
+    assert len(_graphql_requests(requests_mock)) == 4
+
+
+def test_persistent_graphql_body_errors_fail_the_stream(rate_limit_mock_response, requests_mock):
+    """The other half of the same guarantee: errors that never clear must surface as a failure
+    rather than as a short, successful sync."""
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(GRAPHQL_URL, json={"errors": [{"message": "Something went wrong while executing your query."}]})
+
+    messages, error = _read_messages(_config(), "releases")
+
+    assert error is not None
+    assert _records(messages) == []
+    assert len(_graphql_requests(requests_mock)) > 1, "a body error must be retried, not consumed once and dropped"
+    assert any("GitHub GraphQL returned errors in the response body" in message for message in _trace_error_messages(messages))
+
+
 def test_page_size_for_large_streams_config_is_still_honored(rate_limit_mock_response, requests_mock):
     """The deprecated knob keeps working; reduction starts from whatever it set."""
     _mock_repository_resolution(requests_mock)

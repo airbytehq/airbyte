@@ -27,6 +27,11 @@ names by `class_name`).
 
 Things worth knowing before touching either half:
 
+- `test_discover_returns_union_of_python_and_manifest_streams` and
+  `test_read_routes_manifest_streams_to_concurrent_and_python_streams_to_synchronous` both fake a
+  Python stream with `monkeypatch`. Since `streams()` returns `[]`, the union in `discover()` and
+  the concurrent/synchronous split in `read()` have no production caller; those tests pin the
+  routing as a safety net, they are not evidence the path is live.
 - `SourceGithub.streams()` returns an empty list. It is kept because `discover()` calls it and
   because the repository resolution inside it is what turns an unusable
   repositories/organizations config into a config error rather than an empty catalog. `read()`
@@ -246,4 +251,4 @@ The GitHub REST and GraphQL APIs support `since` parameter on many list endpoint
 - **The three streams migrated in Step 6** (`comments`, `issues`, `review_comments`) are the connector's only REST streams that filter server-side: their endpoints accept `since` and the declarative `DatetimeBasedCursor` injects it via `start_time_option`. Any further stream whose endpoint accepts `since` belongs in that group rather than the client-side-filtered one.
 - **The eight streams migrated in Step 7** (`pull_request_commits`, `project_columns`, `project_cards`, `team_members`, `team_memberships`, `issue_timeline_events`, `commit_comment_reactions`, `issue_comment_reactions`) are substreams. `project_columns`, `project_cards` and the two reaction streams are client-side incremental with a cursor per parent record; the other four have no cursor and stay full refresh.
 - **The four streams migrated in Step 8** (`commits`, `contributor_activity`, `workflow_runs`, `workflow_jobs`): `commits` filters server-side with `since` per branch, `workflow_runs` and `workflow_jobs` are client-side incremental with the 32-day `created` window described above, `contributor_activity` has no cursor and stays full refresh.
-- **The six streams migrated in Step 9** (`releases`, `projects_v2`, `pull_request_stats`, `reviews`, `issue_reactions`, `pull_request_comment_reactions`) are the GraphQL streams. All six are client-side incremental: GraphQL exposes no `since` filter, so the cursor window is applied to the records the query returns. `pull_request_stats` and `reviews` read newest-first and stop at the first already-synced pull request.
+- **The six streams migrated in Step 9** (`releases`, `projects_v2`, `pull_request_stats`, `reviews`, `issue_reactions`, `pull_request_comment_reactions`) are the GraphQL streams. GraphQL exposes no `since` filter, so the cursor window is applied to the records the query returns. Five of them are client-side incremental; `pull_request_stats` alone reads `pullRequests(orderBy: {field: UPDATED_AT, direction: DESC})` with `is_data_feed: true` and stops at the first already-synced pull request. `reviews` reads the same connection `ASC` and is client-side incremental, because its traversal order is not its cursor order, so it has no early exit to take.
