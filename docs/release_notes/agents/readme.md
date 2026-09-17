@@ -1,5 +1,15 @@
 # Airbyte Agents release notes
 
+## September 17, 2026
+
+API
+
+- When you page through connector results with the execute endpoint, the `cursor` parameter now works for every connector, including connectors whose own paging parameter has a different name, such as GitHub. Previously, the cursor could be silently ignored and you'd receive the first page again. If you pass both `cursor` and the connector's native paging parameter, you now get a validation error instead of an ambiguous result.
+
+Connectors
+
+- The Shopify connector now uses Shopify's 2026-07 Admin API version, so it keeps working correctly after Shopify retires the previous version in October 2026. The data your agents receive is unchanged.
+
 ## September 16, 2026
 
 SDK
