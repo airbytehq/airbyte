@@ -104,7 +104,7 @@ api_budget:
       matchers: []
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config['num_workers'] if (config.get('num_workers') is integer and config['num_workers'] >= 1) else 3 }}"
+  default_concurrency: "{{ config['num_workers'] if (config.get('num_workers') is integer and config['num_workers'] is not boolean and config['num_workers'] >= 1) else 3 }}"
   max_concurrency: 10
 spec:
   type: Spec
