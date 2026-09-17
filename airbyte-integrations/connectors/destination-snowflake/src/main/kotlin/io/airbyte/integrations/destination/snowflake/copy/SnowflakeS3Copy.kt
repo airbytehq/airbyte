@@ -8,6 +8,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -174,7 +176,14 @@ class EnabledSnowflakeS3Copy(
             }
         val primaryKey = configured?.primaryKey.orEmpty()
         val cursor = configured?.cursorField.orEmpty()
+        // Preserve the input JSON Schema, including annotations lost by CDK type conversion.
+        // Raw mode changes finalSchema, but retains the source fields in inputSchema.
+        val sourceSchema =
+            configured?.stream?.jsonSchema
+                ?: AirbyteTypeToJsonSchema()
+                    .convert(ObjectType(LinkedHashMap(stream.tableSchema.columnSchema.inputSchema)))
         return mapOf(
+            "source_schema" to sourceSchema,
             "primary_key" to primaryKey,
             "cursor" to cursor,
             "contract_version" to 1,

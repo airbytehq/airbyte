@@ -6,11 +6,19 @@ package io.airbyte.integrations.destination.snowflake.copy
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
@@ -22,6 +30,8 @@ import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 class SnowflakeStreamCompletionTest {
     @Test
@@ -96,7 +106,87 @@ class SnowflakeStreamCompletionTest {
             }
         }
 
-    private class Fixture(minimum: Long, configuredCatalog: ConfiguredAirbyteCatalog? = null) {
+    @ParameterizedTest
+    @CsvSource("false,false", "false,true", "true,false", "true,true")
+    fun `schema includes source fields in raw and typed modes`(raw: Boolean, withCatalog: Boolean) =
+        runBlocking {
+            val originalSchema =
+                Jsons.readTree(
+                    """{
+                  "type":"object", "required":["id"], "additionalProperties":false,
+                  "properties":{
+                    "id":{"type":"integer", "description":"Source identifier", "minimum":0},
+                    "nested":{"type":"object", "properties":{"key":{"type":"string", "enum":["a","b"]}}}
+                  }
+                }"""
+                )
+            val configured =
+                ConfiguredAirbyteStream()
+                    .withStream(
+                        AirbyteStream()
+                            .withName("Orders/日本")
+                            .withNamespace("public")
+                            .withJsonSchema(originalSchema)
+                    )
+            // A same-name stream in another namespace must not be selected.
+            val other =
+                ConfiguredAirbyteStream()
+                    .withStream(
+                        AirbyteStream()
+                            .withName("Orders/日本")
+                            .withNamespace("other")
+                            .withJsonSchema(Jsons.readTree("{}"))
+                    )
+            val catalog =
+                if (withCatalog) ConfiguredAirbyteCatalog().withStreams(listOf(other, configured))
+                else null
+            val fixture = Fixture(0, catalog, raw)
+            fixture.copy.use { copy ->
+                copy.prepare(DestinationCatalog(listOf(fixture.stream)))
+                val schema = Jsons.readTree(fixture.uploader.json.values.single())
+                val expected =
+                    if (withCatalog) originalSchema
+                    else
+                        AirbyteTypeToJsonSchema()
+                            .convert(
+                                ObjectType(
+                                    LinkedHashMap(
+                                        fixture.stream.tableSchema.columnSchema.inputSchema
+                                    )
+                                )
+                            )
+                assertEquals(expected, schema["source_schema"])
+                assertTrue(schema["source_schema"]["properties"].has("id"))
+                assertTrue(schema["source_schema"]["properties"]["nested"]["properties"].has("key"))
+                assertEquals(raw, schema["columns"].has("_airbyte_data"))
+                assertEquals(!raw, schema["columns"].has("ID"))
+                assertEquals(if (raw) "raw" else "schema", schema["mode"].asText())
+                if (withCatalog) {
+                    configured.stream.jsonSchema =
+                        Jsons.readTree(
+                            originalSchema
+                                .toString()
+                                .replace("Source identifier", "Updated description")
+                        )
+                    val changed = Fixture(0, catalog, raw)
+                    changed.copy.use { next ->
+                        next.prepare(DestinationCatalog(listOf(changed.stream)))
+                        val nextSchema = Jsons.readTree(changed.uploader.json.values.single())
+                        assertNotEquals(schema["schema_id"], nextSchema["schema_id"])
+                    }
+                }
+            }
+        }
+
+    private class Fixture(
+        minimum: Long,
+        configuredCatalog: ConfiguredAirbyteCatalog? = null,
+        raw: Boolean = false
+    ) {
+        private val configuration =
+            mockk<SnowflakeConfiguration>(relaxed = true) {
+                every { legacyRawTablesOnly } returns raw
+            }
         val stream =
             mockk<DestinationStream> {
                 every { unmappedName } returns "Orders/日本"
@@ -108,7 +198,25 @@ class SnowflakeStreamCompletionTest {
                 every { tableSchema } returns
                     StreamTableSchema(
                         TableNames(finalTableName = TableName("public", "orders")),
-                        ColumnSchema(emptyMap(), emptyMap(), emptyMap()),
+                        ColumnSchema(
+                            linkedMapOf(
+                                "id" to FieldType(IntegerType, false),
+                                "nested" to
+                                    FieldType(
+                                        ObjectType(
+                                            linkedMapOf("key" to FieldType(StringType, true))
+                                        ),
+                                        true
+                                    )
+                            ),
+                            mapOf("id" to "ID", "nested" to "NESTED"),
+                            if (raw) mapOf("_airbyte_data" to ColumnType("VARIANT", false))
+                            else
+                                mapOf(
+                                    "ID" to ColumnType("NUMBER", false),
+                                    "NESTED" to ColumnType("VARIANT", true)
+                                )
+                        ),
                         Append,
                     )
             }
@@ -125,8 +233,8 @@ class SnowflakeStreamCompletionTest {
                     "fusion",
                     null
                 ),
-                mockk(relaxed = true),
-                mockk(relaxed = true),
+                SnowflakeColumnManager(configuration),
+                configuration,
                 uploader,
                 configuredCatalog,
             )

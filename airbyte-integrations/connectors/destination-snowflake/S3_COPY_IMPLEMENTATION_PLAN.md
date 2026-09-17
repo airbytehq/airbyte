@@ -153,6 +153,8 @@ S3 user metadata has a 2 KB limit and lowercase keys. Keep column lists, Unicode
 
 Write descriptors as `application/json` before ingesting data. Their successful upload is a prerequisite for returning successfully from writer setup. Each stream has its own `schema.json` in each run; schema IDs still hash the descriptor body independently of run identity. No `HEAD` request or read permission is necessary.
 
+Every descriptor includes top-level `source_schema`, in both raw and typed modes. It preserves the matching configured stream's original JSON Schema, including nested field types and annotations, independently of the physical CSV `columns`. If no configured schema is supplied, reconstruct it from the CDK's retained input schema. The source schema participates in `schema_id`; raw mode's `_airbyte_data` storage layout must never replace it.
+
 The descriptor contains:
 
 - All five routing UUIDs, run UUID, epoch seconds, generation and sync IDs, and the schema ID.
