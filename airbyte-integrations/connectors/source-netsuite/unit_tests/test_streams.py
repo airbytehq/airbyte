@@ -295,6 +295,11 @@ def _make_base_stream(object_name: str = "journalentry") -> NetsuiteStream:
     stream.schemas = {}
     stream._records_attempted = 0
     stream._user_error_skipped = 0
+    stream._detail_concurrency = 8
+    stream._detail_error_count = 0
+    stream._detail_state_lock = Lock()
+    stream._detail_thread_state = MagicMock(active=False, error_recorded=False)
+    stream._session_prepare_lock = Lock()
     stream.index_datetime_format = 0
     stream.raise_on_http_errors = True
     stream._session = MagicMock()
@@ -379,10 +384,9 @@ def test_fetch_record_yields_on_200():
     ok_resp = _make_response(200, {"id": "42", "type": "journalentry"})
     stream._send_request = MagicMock(return_value=ok_resp)
 
-    results = list(stream.fetch_record({"links": [{"href": "https://test/record/42"}]}, {}))
+    result = stream.fetch_record({"links": [{"href": "https://test/record/42"}]}, {})
 
-    assert len(results) == 1
-    assert results[0]["id"] == "42"
+    assert result["id"] == "42"
     assert stream._records_attempted == 1
     assert stream._user_error_skipped == 0
 
@@ -392,9 +396,9 @@ def test_fetch_record_skips_and_tracks_user_error():
     err_resp = _make_response(400, _USER_ERROR_JSON)
     stream._send_request = MagicMock(return_value=err_resp)
 
-    results = list(stream.fetch_record({"links": [{"href": "https://test/record/99"}]}, {}))
+    result = stream.fetch_record({"links": [{"href": "https://test/record/99"}]}, {})
 
-    assert results == []
+    assert result is None
     assert stream._records_attempted == 1
     assert stream._user_error_skipped == 1
 
@@ -495,7 +499,9 @@ def test_fetch_record_accumulation_mixed_responses():
 
     all_results = []
     for i in range(6):
-        all_results.extend(stream.fetch_record({"links": [{"href": f"https://test/record/{i}"}]}, {}))
+        result = stream.fetch_record({"links": [{"href": f"https://test/record/{i}"}]}, {})
+        if result is not None:
+            all_results.append(result)
 
     assert stream._records_attempted == 6
     assert stream._user_error_skipped == 3
@@ -605,10 +611,10 @@ def test_detail_retryable_response_scales_down_without_changing_date_format():
 
 def test_detail_non_retryable_responses_are_fatal_and_scale_down():
     stream = _make_stream()
-    response = MagicMock(status_code=400, text="bad detail request")
+    response = MagicMock(status_code=422, text="bad detail request")
     with patch.object(stream, "_send_request", return_value=response):
         for record_id in ("1", "2"):
-            with pytest.raises(Exception, match="returned HTTP 400"):
+            with pytest.raises(Exception, match="returned HTTP 422"):
                 stream.fetch_record(_collection_record(record_id), {})
 
     assert stream._current_detail_concurrency() == 7
