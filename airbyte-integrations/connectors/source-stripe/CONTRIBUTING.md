@@ -99,7 +99,8 @@ Install the sandbox package and the pinned Airbyte CDK in the same Python enviro
 `airbyte-cdk` and `poe`:
 
 ```bash
-python -m pip install 'airbyte-cdk[dev]==7.28.4' /path/to/saas-sandbox poethepoet
+# Use a Python 3.12 environment for the pinned test runner.
+python -m pip install 'airbyte-cdk[dev]==6.59.1' /path/to/saas-sandbox poethepoet
 ```
 
 Use an existing `stripe-customers` scenario on the remote sandbox API and a published relay
