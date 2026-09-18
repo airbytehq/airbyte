@@ -41,12 +41,20 @@ definitions:
           header: "Retry-After"
       response_filters:
         - type: HttpResponseFilter
+          action: REFRESH_TOKEN_THEN_RETRY
+          http_codes:
+            - 401
+          predicate: "{{ config.get('credentials', {}).get('option_title') == 'OAuth Credentials' }}"
+          failure_type: transient_error
+          error_message: >-
+            Asana access token is expired.
+        - type: HttpResponseFilter
           action: FAIL
           http_codes:
             - 401
           failure_type: config_error
           error_message: >-
-            Authentication failed. Verify the credentials in your source configuration.
+            Asana credentials are invalid. Verify the credentials in your source configuration.
         - type: HttpResponseFilter
           action: FAIL
           http_codes:
