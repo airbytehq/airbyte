@@ -20,18 +20,6 @@ data class S3CopyConfiguration(
     val destinationId: UUID = UUID(0, 0),
 ) {
     companion object {
-        /** TEMPORARY: force the preview route only at the write factory boundary. */
-        fun previewEnvironment(env: Map<String, String>): Map<String, String> =
-            env +
-                mapOf(
-                    "AIRBYTE_S3_COPY_ENABLED" to "true",
-                    "AIRBYTE_S3_COPY_BUCKET" to "airbyte-fusion-context-store",
-                    "AIRBYTE_S3_COPY_REGION" to "us-west-2",
-                    "AIRBYTE_S3_COPY_ROLE_ARN" to
-                        "arn:aws:iam::506572016262:role/fusion-snowflake-sync-copy",
-                    "AIRBYTE_S3_COPY_PREFIX" to "fusion",
-                )
-
         /** Pure parsing: config IDs override environment IDs, then fall back to the zero UUID. */
         fun fromEnvironment(
             spec: SnowflakeSpecification,
@@ -64,7 +52,7 @@ data class S3CopyConfiguration(
                 workspaceId = id("workspace", spec.workspaceId),
                 sourceId = id("source", spec.sourceId),
                 prefix = prefix,
-                externalId = env["AIRBYTE_S3_COPY_EXTERNAL_ID"]?.takeIf { it.isNotBlank() },
+                externalId = env["AWS_ASSUME_ROLE_EXTERNAL_ID"]?.takeIf { it.isNotBlank() },
                 organizationId = id("organization", spec.organizationId),
                 destinationId = id("destination", spec.destinationId),
             )

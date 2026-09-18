@@ -11,7 +11,7 @@ s3://airbyte-fusion-context-store/fusion/organizations/<organization_uuid>/works
   batches/stream_complete.json
 ```
 
-Preview writes force enabled `true`, bucket `airbyte-fusion-context-store`, region `us-west-2`, role `arn:aws:iam::506572016262:role/fusion-snowflake-sync-copy`, and prefix `fusion`. The five optional, TEMPORARY top-level advanced config fields are `organization_id`, `workspace_id`, `source_id`, `connection_id`, and `destination_id`. Each nullable string has UUID format: config overrides its matching `AIRBYTE_<NAME>_ID` environment variable, then defaults to `00000000-0000-0000-0000-000000000000`. Supplied values must have the canonical UUID shape; uppercase is normalized, and blank or shortened UUIDs are rejected.
+The connector reads enablement and archive routing from environment variables. The five optional, TEMPORARY top-level advanced config fields are `organization_id`, `workspace_id`, `source_id`, `connection_id`, and `destination_id`. Each nullable string has UUID format: config overrides its matching `AIRBYTE_<NAME>_ID` environment variable, then defaults to `00000000-0000-0000-0000-000000000000`. Supplied values must have the canonical UUID shape; uppercase is normalized, and blank or shortened UUIDs are rejected.
 
 `epoch_seconds` is captured once when the write service/run is created using `Instant.now().epochSecond`, alongside a new run UUID, and passed explicitly to the path helper. All streams and batches in that run reuse it. Stream names preserve original case and use percent-encoded UTF-8 path components. The helper returns the trailing slash; schema, completion, and batch suffixes are appended without another slash. Before uploading sidecars, setup validates every stream path against S3's 1024-byte key limit, including the longest `batches/<batch_uuid>.csv.gz` suffix. Setup writes the run's schema before ingestion; generation IDs remain in metadata rather than directory names. All five IDs, the run UUID, and epoch appear in schema and batch metadata (`epoch_seconds` in JSON, `epoch-seconds` in S3 headers). Consumers resolve `schema.json` in the parent of the batch's `batches` directory.
 
@@ -58,20 +58,20 @@ Also, [PipelineRunner](../../../airbyte-cdk/bulk/core/load/src/main/kotlin/io/ai
 
 ## 3. Temporary preview configuration contract
 
-`S3CopyConfiguration.fromEnvironment(spec, env)` is a pure parser, separate from Snowflake connection settings. It accepts a supplied environment map so tests can route to mocks. Without the preview overlay it defaults disabled and validates enabled-only fields only for enabled writes. The write-only `SnowflakeBeanFactory` obtains the parsed `injectedSpecification` from the migrating supplier and passes `previewEnvironment(System.getenv())`; only this factory applies the forced preview routing. `@Requires(property = Operation.PROPERTY, value = "write")` gates this before any AWS initialization for `spec` and `check`.
+`S3CopyConfiguration.fromEnvironment(spec, env)` is a pure parser, separate from Snowflake connection settings. It accepts a supplied environment map so tests can route to mocks. It defaults disabled and validates enabled-only fields only for enabled writes. The write-only `SnowflakeBeanFactory` obtains the parsed `injectedSpecification` from the migrating supplier and passes `System.getenv()`. `@Requires(property = Operation.PROPERTY, value = "write")` gates this before any AWS initialization for `spec` and `check`.
 
-| Setting | Preview behavior |
+| Setting | Behavior |
 | --- | --- |
-| `AIRBYTE_S3_COPY_ENABLED` | Forced `true` by the preview factory. |
-| `AIRBYTE_S3_COPY_BUCKET` | Forced `airbyte-fusion-context-store`. |
-| `AIRBYTE_S3_COPY_REGION` | Forced `us-west-2`. |
-| `AIRBYTE_S3_COPY_ROLE_ARN` | Forced `arn:aws:iam::506572016262:role/fusion-snowflake-sync-copy`. |
-| `AIRBYTE_S3_COPY_PREFIX` | Forced `fusion`; the pure parser normalizes surrounding slashes and rejects an empty prefix. |
+| `AIRBYTE_S3_COPY_ENABLED` | `true` enables the archive; absent or `false` disables it. |
+| `AIRBYTE_S3_COPY_BUCKET` | Required when enabled. |
+| `AIRBYTE_S3_COPY_REGION` | Required when enabled. |
+| `AIRBYTE_S3_COPY_ROLE_ARN` | Required when enabled. |
+| `AIRBYTE_S3_COPY_PREFIX` | Defaults to `fusion`; the pure parser normalizes surrounding slashes and rejects an empty prefix. |
 | `organization_id`, `workspace_id`, `source_id`, `connection_id`, `destination_id` | Optional TEMPORARY nullable UUID strings in the top-level advanced group of both cloud and OSS specs. |
 | `AIRBYTE_ORGANIZATION_ID`, `AIRBYTE_WORKSPACE_ID`, `AIRBYTE_SOURCE_ID`, `AIRBYTE_CONNECTION_ID`, `AIRBYTE_DESTINATION_ID` | Fallbacks for absent/null config fields, then zero UUID. |
-| `AIRBYTE_S3_COPY_EXTERNAL_ID` | Optional STS external ID, preserved by the preview overlay. |
+| `AWS_ASSUME_ROLE_EXTERNAL_ID` | Optional STS external ID injected by the platform; currently the workspace ID. |
 
-Malformed supplied IDs fail enabled writes before ingestion; a valid config value overrides even a malformed environment fallback. No AWS access keys or secret credentials are hardcoded or added to the specification. Existing ambient workload credentials bootstrap AssumeRole. Non-write commands require no archive AWS setup. The temporary fields and forced routing must be revisited before general rollout; the environment enable flag cannot disable this preview factory.
+Malformed supplied IDs fail enabled writes before ingestion; a valid config value overrides even a malformed environment fallback. No AWS access keys, secret credentials, or routing values are hardcoded or added to the specification. Existing ambient workload credentials bootstrap AssumeRole. Non-write commands require no archive AWS setup. The temporary fields must be revisited before general rollout.
 
 ## 4. Credentials, dependencies, and resource ownership
 
@@ -338,7 +338,7 @@ Provision the Airbyte-owned bucket, scoped role/trust, encryption, and incomplet
 
 Log one startup event identifying copy enablement and the archive contract version. Add counters for files/bytes/records successfully copied, failures by operation, retries, and metadata events; add timers for copy duration, waiting for a copy slot, and extra flush wait after Snowflake succeeds. Use existing connector metrics/logging facilities. Keep connection/run/batch identifiers in structured diagnostic logs instead of high-cardinality metric labels. Do not log payloads, credential material, or full configuration.
 
-Run failure injection before expanding enablement. A slow or unavailable S3 service should visibly delay/fail opted-in writes. The preview overlay overrides the enable flag, so disabling requires a code/deployment change; do not automatically disable after an upload failure. No rollback deletes archive data.
+Run failure injection before expanding enablement. A slow or unavailable S3 service should visibly delay/fail opted-in writes. The deployment controls the enable flag; do not automatically disable after an upload failure. No rollback deletes archive data.
 
 ## 10. Acceptance criteria and remaining deployment inputs
 
@@ -352,4 +352,4 @@ The implementation is complete when:
 - The pure parser supports disabled writes without AWS setup. Non-write commands do not initialize archive AWS clients; the public specification exposes only the five optional temporary routing fields.
 - Real-service tests establish role access, multipart behavior, and acceptable resource use before rollout.
 
-The preview bucket, region, prefix, and role are fixed above. The coordinator reported provisioning the private AES256 bucket, one-day incomplete-upload lifecycle, prefix-scoped role policy, and successful real AssumeRole/Put verification. Central build, generated-spec validation, and runtime tests remain coordinator-owned. Platform ID injection and worker bootstrap identity remain rollout concerns. No format conversion, Iceberg dependency, or generic CDK implementation is needed to deliver this contract.
+The deployment supplies the bucket, region, prefix, role, and bootstrap credentials. Central build, generated-spec validation, and runtime tests remain coordinator-owned. Platform ID injection and worker bootstrap identity remain rollout concerns. No format conversion, Iceberg dependency, or generic CDK implementation is needed to deliver this contract.

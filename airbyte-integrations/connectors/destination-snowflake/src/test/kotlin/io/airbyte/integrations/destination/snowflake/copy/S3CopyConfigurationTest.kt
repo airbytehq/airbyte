@@ -143,33 +143,21 @@ class S3CopyConfigurationTest {
     }
 
     @Test
-    fun `preview forces route while preserving ID and external ID overrides`() {
-        val env =
-            environment +
-                mapOf(
-                    "AIRBYTE_S3_COPY_ENABLED" to "false",
-                    "AIRBYTE_S3_COPY_PREFIX" to "other",
-                    "AIRBYTE_ORGANIZATION_ID" to UUID(0, 7).toString(),
-                    "AIRBYTE_S3_COPY_EXTERNAL_ID" to "external"
-                )
-        val preview = S3CopyConfiguration.previewEnvironment(env)
+    fun `reads the platform injected assume role external ID`() {
+        val externalId = "workspace-external-id"
         val config =
             S3CopyConfiguration.fromEnvironment(
-                spec(mapOf("destination" to UUID(0, 8).toString())),
-                preview
+                SnowflakeSpecification(),
+                environment + ("AWS_ASSUME_ROLE_EXTERNAL_ID" to externalId),
             )!!
-        assertEquals("false", env["AIRBYTE_S3_COPY_ENABLED"])
-        assertEquals("true", preview["AIRBYTE_S3_COPY_ENABLED"])
-        assertEquals("airbyte-fusion-context-store", config.bucket)
-        assertEquals("us-west-2", config.region)
-        assertEquals("arn:aws:iam::506572016262:role/fusion-snowflake-sync-copy", config.roleArn)
-        assertEquals("fusion", config.prefix)
-        assertEquals(UUID(0, 7), config.organizationId)
-        assertEquals(UUID(0, 8), config.destinationId)
-        assertEquals("external", config.externalId)
-        assertEquals(
-            "test-bucket",
-            S3CopyConfiguration.fromEnvironment(SnowflakeSpecification(), environment)!!.bucket
+
+        assertEquals(externalId, config.externalId)
+        assertNull(
+            S3CopyConfiguration.fromEnvironment(
+                SnowflakeSpecification(),
+                environment + ("AIRBYTE_S3_COPY_EXTERNAL_ID" to "stale-value"),
+            )!!.externalId,
         )
     }
+
 }
