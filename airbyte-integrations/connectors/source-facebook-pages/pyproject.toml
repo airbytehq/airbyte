@@ -19,7 +19,7 @@ include = "source_facebook_pages"
 python = "^3.10,<3.12"
 # DO NOT MERGE as-is: prerelease built from airbytehq/airbyte-python-cdk#1149, which ships the
 # REDUCE_PAGE_SIZE action. Move to the released CDK once that PR is merged.
-airbyte-cdk = "7.28.3.post14.dev35239229954"
+airbyte-cdk = "7.28.3.post15.dev35369167792"
 pendulum = "^3.0.0"
 
 [tool.poetry.scripts]
