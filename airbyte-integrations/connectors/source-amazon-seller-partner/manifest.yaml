@@ -336,8 +336,9 @@ spec:
         description: >-
           The maximum number of results to return per page for the ListFinancialEvents
           stream. If the response exceeds the maximum number of transactions or 10 MB,
-          the API returns an InvalidInput error. Lower this value if you encounter
-          InvalidInput errors during sync. Valid range is 1-100.
+          the API returns an InvalidInput error; the connector then retries the same page
+          with a smaller page size on its own, down to one record per page, so this is the
+          size it starts from rather than a limit you have to tune. Valid range is 1-100.
         type: integer
         default: 100
         minimum: 1
@@ -1307,6 +1308,21 @@ definitions:
       retriever:
         type: SimpleRetriever
         ignore_stream_slicer_parameters_on_paginated_requests: true
+        page_size_reduction:
+          type: PageSizeReduction
+          reduction_factor: 2
+          minimum_page_size: 1
+          # 100 records per page reaches the floor of 1 in 7 halvings, so a window dense enough to need
+          # one record per page is still readable within a single run of reductions. The budget restarts
+          # after every page that succeeds, so this bounds what it takes to get one page through.
+          max_attempts: 7
+          # NEVER: the page size that worked is kept for the rest of the window. Restoring 100 after every
+          # page would pay the InvalidInput round trip again on each one, and a window big enough to fail
+          # once usually keeps failing.
+          reset_policy: NEVER
+          failure_message: >-
+            If this keeps happening, lower the 'Financial Events Step Size' setting so that each request
+            covers a shorter time window.
         requester:
           $ref: "#/definitions/base_requester"
           path: "finances/v0/financialEvents"
@@ -1318,17 +1334,23 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
+                  # InvalidInput on this endpoint is a statement about the size of this page: the window
+                  # asked for held more transactions than MaxResultsPerPage allows, or more than 10 MB.
+                  # It used to fail the sync and ask the user to lower the page size by hand and start the
+                  # sync over, which is a binary search run across sync restarts - the right page size
+                  # depends on the volume of the window being read, so one value does not settle it for a
+                  # whole account either. REDUCE_PAGE_SIZE re-issues the same NextToken with a smaller
+                  # MaxResultsPerPage instead.
                   - type: HttpResponseFilter
-                    action: FAIL
+                    action: REDUCE_PAGE_SIZE
+                    failure_type: transient_error
                     http_codes:
                       - 400
                     predicate: "{{ 'InvalidInput' in response.get('errors', [{}])[0].get('code', '') }}"
                     error_message: >-
-                      The API returned an InvalidInput error. This typically occurs when the response
-                      exceeds the maximum number of transactions or 10 MB per page. To resolve this,
-                      lower the 'Financial Events Max Results Per Page' setting in your connector
-                      configuration. Current value: {{ config.get('financial_events_max_results_per_page', 100) }}.
-                      Try reducing it to a smaller value (e.g., 50, 25, 10, or even 1 for very high-volume accounts).
+                      The API returned an InvalidInput error, which on this endpoint means the page
+                      exceeded the maximum number of transactions or 10 MB. Retrying the same page with a
+                      smaller page size.
                 backoff_strategies:
                   - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
