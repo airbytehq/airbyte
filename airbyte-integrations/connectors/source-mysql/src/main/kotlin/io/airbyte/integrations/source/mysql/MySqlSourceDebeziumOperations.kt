@@ -512,8 +512,11 @@ class MySqlSourceDebeziumOperations(
         // Constants defining a range for the random value picked for the database.server.id
         // Debezium property which uniquely identifies the binlog consumer.
         // https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-property-database-server-id
+        // MySQL supports server_id values from 1 to 2^32-1. We use a wide range
+        // (5400 to Int.MAX_VALUE) to minimize collision probability when multiple
+        // CDC connections target the same MySQL server (birthday-problem mitigation).
         const val MIN_SERVER_ID = 5400
-        const val MAX_SERVER_ID = 6400
+        const val MAX_SERVER_ID = Integer.MAX_VALUE
 
         const val MAX_UNCOMPRESSED_LENGTH = 1024 * 1024
         const val STATE = "state"
