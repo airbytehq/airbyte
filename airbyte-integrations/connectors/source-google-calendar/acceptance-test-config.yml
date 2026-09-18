@@ -24,6 +24,10 @@ acceptance_tests:
         empty_streams:
           - name: "events"
             bypass_reason: "Test calendar has no events"
+          - name: "acl"
+            bypass_reason: "Sandbox account owns no shared calendars; ACL returns no entries"
+          - name: "freebusy"
+            bypass_reason: "Test calendar has no busy blocks in the query window"
   incremental:
     tests:
       - config_path: "secrets/config.json"
