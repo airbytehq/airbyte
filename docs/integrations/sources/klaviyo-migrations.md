@@ -32,6 +32,8 @@ Each entry of `campaign_messages` now carries its channel-specific configuration
 
 `definition` also exposes mobile push message fields that the previous revision did not return (`content.title`, `content.dynamic_image`, `content.action_buttons`, `options.badge`, `options.on_open`, `options.play_sound`, `kv_pairs`, `notification_type`). `created_at`, `updated_at` and `send_times` are unchanged.
 
+Only email message definitions carry `label`. SMS messages, which previously had an auto-generated `label`, return `definition.label` as `null` at this revision.
+
 ### Migration steps
 
 1. Upgrade the connector to version 4.0.0.
