@@ -39,7 +39,7 @@ The Uptick user account needs read access to each module you want to sync, and t
 | Full Refresh Sync | ✅ |
 | Incremental Sync | ✅ |
 
-All streams support full refresh. Incremental sync is available on streams whose Uptick endpoints report deletions; on the remaining streams an incremental sync retains rows in your destination after they're deleted in Uptick, so use full refresh for those. See the stream table below for per-stream support.
+All streams support both full refresh and incremental sync on the `updated` cursor. Only the streams marked ✅ in the **Supports Incremental** column below surface deletions; on the streams marked `❌ (no soft delete)` an incremental sync retains rows in your destination after they're deleted in Uptick, so use full refresh for those. `task_profitability` is a generated report with no deleted state and is safe to sync incrementally.
 
 ## Supported Streams
 
@@ -199,9 +199,9 @@ Prompt data spans three streams, and Uptick reworked its prompt model in API v2.
 
 ### Incremental sync
 
-For streams that support incremental sync, the connector uses each record's `updated` timestamp as the cursor and fetches only records changed since the last sync through the Uptick API's `updatedsince` filter. Streams that support only full refresh are re-read in full on every sync.
+For every stream, the connector uses each record's `updated` timestamp as the cursor and fetches only records changed since the last sync through the Uptick API's `updatedsince` filter. Streams that support only full refresh are re-read in full on every sync.
 
-Airbyte still offers incremental sync in the UI for the streams marked `❌ (no soft delete)`, because the connector defines the `updated` cursor for every stream. Avoid it for those streams: their Uptick endpoints don't report deletions, so an incremental sync keeps records in your destination after they're deleted in Uptick. Sync them in full refresh mode instead.
+Avoid incremental sync for the streams marked `❌ (no soft delete)`: their Uptick endpoints don't report deletions, so an incremental sync keeps records in your destination after they're deleted in Uptick. Sync them with **Full Refresh | Overwrite** instead.
 
 ## Data type map
 
@@ -209,7 +209,8 @@ Airbyte still offers incremental sync in the UI for the streams marked `❌ (no 
 | -------------------- | ------------ |
 | string | string |
 | integer | integer |
-| number, decimal | number |
+| number | number |
+| decimal | string (airbyte_type `decimal`) |
 | boolean | boolean |
 | date | string (format `date`) |
 | datetime | string (format `date-time`, airbyte_type `timestamp_with_timezone`) |
@@ -228,11 +229,11 @@ If the client credentials or user login are rejected, the sync fails with `HTTP 
 
 ### Deleted records
 
-Streams marked `❌ (no soft delete)` in the table above don't report deletions, so records deleted in Uptick stay in your destination until you run a full refresh sync. Streams that support incremental sync expose a `deleted` timestamp on deleted records.
+Streams marked `❌ (no soft delete)` in the table above don't report deletions, so records deleted in Uptick stay in your destination until you run a **Full Refresh | Overwrite** sync (Full Refresh | Append doesn't remove rows). The 12 JSON:API streams marked ✅ expose a `deleted` timestamp on deleted records; `task_profitability` is a generated report and has no deleted state.
 
 ### Rate limits
 
-Uptick enforces rate limits and reasonable-use guidelines on its API. When Uptick throttles a request, the connector reads the `Retry-After` response header and waits the indicated time before retrying, for up to five attempts. Waits longer than 30 minutes fail the sync with a rate-limit error instead of blocking. The connector also caps itself at 60 requests per minute across all streams and runs `num_workers` concurrent requests (default 3, maximum 10); raise `num_workers` for faster syncs on tenants that tolerate it, or lower it if you see throttling. To stay within these limits, sync only the streams and fields you need and schedule syncs no more frequently than your reporting requires.
+Uptick enforces rate limits and reasonable-use guidelines on its API. When Uptick throttles a request, the connector reads the `Retry-After` response header and waits the indicated time before retrying, up to five retries after the initial request. Waits longer than 30 minutes fail the sync with a rate-limit error instead of blocking. The connector also caps itself at 60 requests per minute across all streams and runs `num_workers` concurrent requests (default 3, maximum 10); raise `num_workers` for faster syncs on tenants that tolerate it, or lower it if you see throttling. To stay within these limits, sync only the streams and fields you need and schedule syncs no more frequently than your reporting requires.
 
 ### IP allow list
 

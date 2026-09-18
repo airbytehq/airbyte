@@ -4,7 +4,7 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Overview
 
-`source-uptick` is a manifest-only connector built on `source-declarative-manifest`; all behavior lives in `manifest.yaml` and there is no `components.py`. It exposes 55 streams against Uptick's JSON:API endpoints: every stream except `task_profitability` reads a pinned `/api/v2.15/` endpoint, while `task_profitability` reads the intelligence report at `/api/v2/intelligencereports/profitability_by_task/`.
+`source-uptick` is a manifest-only connector built on `source-declarative-manifest`; all behavior lives in `manifest.yaml` and there is no `components.py`. It exposes 55 streams: 54 read pinned JSON:API endpoints under `/api/v2.15/`, and `task_profitability` reads the intelligence report at `/api/v2/intelligencereports/profitability_by_task/` (a plain `results` array, not JSON:API).
 
 ## Authentication
 
@@ -18,7 +18,7 @@ HTTP 401 fails fast as a `config_error` rather than refresh-and-retry — the au
 
 ## Streams and pagination
 
-Pagination follows the JSON:API `links.next` URL via `CursorPagination` with a `RequestPath` page token. Each stream requests a curated sparse fieldset (`fields[<Type>]`) and orders by `ordering: -updated`. `AddFields` transformations flatten the JSON:API `attributes` object into top-level columns and each `relationships` entry into a scalar `<relationship>_id` column.
+All streams paginate by following the `links.next` URL via `CursorPagination` with a `RequestPath` page token. Each of the 54 JSON:API streams requests a curated sparse fieldset (`fields[<Type>]`) and orders by `ordering: -updated`; `AddFields` transformations flatten the JSON:API `attributes` object into top-level columns and each `relationships` entry into a scalar `<relationship>_id` column. `task_profitability` sends no request parameters, extracts `results`, and emits the report rows as-is.
 
 ## Incremental sync
 
