@@ -11,7 +11,7 @@ package-mode = false
 python = "^3.10,<3.13"
 # DO NOT MERGE as-is: prerelease built from airbytehq/airbyte-python-cdk#1149, which ships the
 # REDUCE_PAGE_SIZE action. Move to the released CDK once that PR is merged.
-airbyte-cdk = "7.28.3.post14.dev35239229954"
+airbyte-cdk = "7.28.3.post15.dev35369167792"
 pytest = "^8"
 pytest-lazy-fixtures = "^1.1.4"
 requests-mock = "^1.12.1"
