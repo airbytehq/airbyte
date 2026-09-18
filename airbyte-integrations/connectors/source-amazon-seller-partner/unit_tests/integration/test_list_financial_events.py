@@ -51,9 +51,7 @@ class TestPageSizeReduction:
         )
 
     @HttpMocker()
-    def test_given_invalid_input_when_read_then_retry_the_same_page_with_a_smaller_page_size(
-        self, http_mocker: HttpMocker
-    ) -> None:
+    def test_given_invalid_input_when_read_then_retry_the_same_page_with_a_smaller_page_size(self, http_mocker: HttpMocker) -> None:
         """
         The window is read at 100 records per page, rejected, then re-read at 50 and at 25 without the user
         touching the configuration. Before `REDUCE_PAGE_SIZE` the first response ended the sync with an error
