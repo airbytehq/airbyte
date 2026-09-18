@@ -33,6 +33,20 @@ class MyFacebookAdsApi(FacebookAdsApi):
     MAX_RATE, MAX_PAUSE_INTERVAL = (95, timedelta(minutes=10))
     MIN_RATE, MIN_PAUSE_INTERVAL = (85, timedelta(minutes=2))
 
+    # Graph API error codes that mean the ad account/app is locked out until a quota block clears,
+    # rather than a transient failure the generic expo backoff can retry through. Value is the set
+    # of error_subcodes that qualify for that code. Only codes backed by production evidence are
+    # enabled here; other known rate-limit codes (4 app-level, 80000-80004 business use case, 613
+    # custom rate limit) can be added the same way once they're observed to need this treatment.
+    QUOTA_BLOCK_ERROR_CODES = {
+        17: {2446079},  # "Ad Account Has Too Many API Calls"
+    }
+
+    # Observed quota blocks lasted up to an hour. Cap how long a single `call()` invocation will
+    # keep retrying one so a block that never clears still surfaces as a failure -- through the
+    # unchanged backoff/give-up path -- instead of holding the worker forever.
+    MAX_QUOTA_BLOCK_WAIT = timedelta(hours=1)
+
     # see `_should_restore_page_size` method docstring for more info.
     # attribute to handle the reduced request limit
     request_record_limit_is_reduced: bool = False
@@ -118,6 +132,12 @@ class MyFacebookAdsApi(FacebookAdsApi):
             pause_interval = max(pause_interval_from_response, pause_interval)
         return usage, pause_interval
 
+    def _pause_if_usage_high(self, usage, pause_interval):
+        if usage >= self.MIN_RATE:
+            sleep_time = self._compute_pause_interval(usage=usage, pause_interval=pause_interval)
+            logger.warning(f"Facebook API Utilization is too high ({usage})%, pausing for {sleep_time}")
+            sleep(sleep_time.total_seconds())
+
     def _handle_call_rate_limit(self, response, params):
         if "batch" in params:
             records = response.json()
@@ -126,10 +146,36 @@ class MyFacebookAdsApi(FacebookAdsApi):
             headers = response.headers()
             usage, pause_interval = self._parse_call_rate_header(headers)
 
-        if usage >= self.MIN_RATE:
-            sleep_time = self._compute_pause_interval(usage=usage, pause_interval=pause_interval)
-            logger.warning(f"Facebook API Utilization is too high ({usage})%, pausing for {sleep_time}")
-            sleep(sleep_time.total_seconds())
+        self._pause_if_usage_high(usage, pause_interval)
+
+    def _is_quota_block_error(self, exc: FacebookRequestError) -> bool:
+        """A quota block (e.g. code 17 / 2446079, "Ad Account Has Too Many API Calls") means the
+        account is locked out until the block clears -- retrying it on the generic expo backoff
+        ladder just spends more rejected calls inside that same window."""
+        subcodes = self.QUOTA_BLOCK_ERROR_CODES.get(exc.api_error_code())
+        return subcodes is not None and exc.api_error_subcode() in subcodes
+
+    def _handle_quota_block_error(self, exc: FacebookRequestError) -> timedelta:
+        """A quota block's own response usually carries `estimated_time_to_regain_access`; wait
+        that long instead of the ~75s expo ladder, capped at MAX_PAUSE_INTERVAL since a block can
+        last up to an hour and re-checking is better than sleeping through it in one shot. Fall
+        back to MAX_PAUSE_INTERVAL when the field isn't present. Returns the wait applied, so the
+        caller can bound how long it keeps retrying."""
+        _, pause_interval = self._parse_call_rate_header(exc.http_headers())
+        wait = min(pause_interval, self.MAX_PAUSE_INTERVAL) if pause_interval else self.MAX_PAUSE_INTERVAL
+        logger.warning(
+            f"Facebook API quota block (code={exc.api_error_code()}, subcode={exc.api_error_subcode()}); "
+            f"pausing for {wait} before retrying"
+        )
+        sleep(wait.total_seconds())
+        return wait
+
+    def _handle_failed_call_rate_limit(self, exc: FacebookRequestError):
+        """The rate-limit signal lives in the response headers, which for a failed call are only
+        reachable through the raised exception -- mirrors `_handle_call_rate_limit` so a failing
+        call gets the same utilization-based pause a successful one would."""
+        usage, pause_interval = self._parse_call_rate_header(exc.http_headers())
+        self._pause_if_usage_high(usage, pause_interval)
 
     def _update_insights_throttle_limit(self, response: FacebookResponse):
         """
@@ -168,10 +214,23 @@ class MyFacebookAdsApi(FacebookAdsApi):
         """Makes an API call, delegate actual work to parent class and handles call rates"""
         if self._should_restore_default_page_size(params):
             params.update(**{"limit": self.default_page_size})
-        response = super().call(method, path, params, headers, files, url_override, api_version)
-        self._update_insights_throttle_limit(response)
-        self._handle_call_rate_limit(response, params)
-        return response
+        quota_block_wait_elapsed = timedelta()
+        while True:
+            try:
+                response = super().call(method, path, params, headers, files, url_override, api_version)
+            except FacebookRequestError as exc:
+                if self._is_quota_block_error(exc) and quota_block_wait_elapsed < self.MAX_QUOTA_BLOCK_WAIT:
+                    # Handled and retried here, without raising, so the wait isn't counted against
+                    # @backoff_policy's max_tries -- a quota block can outlast that budget. Bounded
+                    # by MAX_QUOTA_BLOCK_WAIT so a block that never clears still falls through to
+                    # the same handling (and eventual give-up) as any other failed call, below.
+                    quota_block_wait_elapsed += self._handle_quota_block_error(exc)
+                    continue
+                self._handle_failed_call_rate_limit(exc)
+                raise
+            self._update_insights_throttle_limit(response)
+            self._handle_call_rate_limit(response, params)
+            return response
 
 
 class API:
