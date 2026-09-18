@@ -11,11 +11,12 @@ from unittest.mock import MagicMock
 
 import pendulum
 import pytest
+import requests
 import responses
 import source_mixpanel
 from source_mixpanel import SourceMixpanel
 from source_mixpanel.components import iter_dicts
-from source_mixpanel.streams import Export
+from source_mixpanel.streams import Export, MixpanelStreamBackoffStrategy
 from source_mixpanel.utils import read_full_refresh
 
 from airbyte_cdk.models import (
@@ -27,6 +28,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
+    FailureType,
     StreamDescriptor,
     SyncMode,
 )
@@ -453,6 +455,97 @@ def test_funnels_stream(requests_mock, config, funnels_response, funnel_ids_resp
     assert len(records) == 2
 
 
+def test_funnels_stream_skips_invalid_bookmark_funnel(requests_mock, config_raw, caplog):
+    config_raw["start_date"] = "2024-01-01T00:00:00Z"
+    config_raw["end_date"] = "2024-01-05T00:00:00Z"
+    stream = init_stream("funnels", config=config_raw)
+    requests_mock.register_uri(
+        "GET",
+        MIXPANEL_BASE_URL + "funnels/list",
+        json=[{"funnel_id": 1, "name": "bad"}, {"funnel_id": 2, "name": "good"}],
+    )
+    requests_mock.register_uri(
+        "GET",
+        MIXPANEL_BASE_URL + "funnels",
+        status_code=400,
+        json={"request": "/api/query/funnels", "error": "Invalid bookmark format. There must only be one metric that's funnel."},
+        additional_matcher=lambda request: request.qs.get("funnel_id") == ["1"],
+    )
+    requests_mock.register_uri(
+        "GET",
+        MIXPANEL_BASE_URL + "funnels",
+        status_code=200,
+        json={
+            "meta": {"dates": ["2024-01-02", "2024-01-04"]},
+            "data": {
+                "2024-01-02": {
+                    "steps": [],
+                    "analysis": {
+                        "completion": 20524,
+                        "starting_amount": 32688,
+                        "steps": 2,
+                        "worst": 1,
+                    },
+                },
+                "2024-01-04": {
+                    "steps": [],
+                    "analysis": {
+                        "completion": 20500,
+                        "starting_amount": 34750,
+                        "steps": 2,
+                        "worst": 1,
+                    },
+                },
+            },
+        },
+        additional_matcher=lambda request: request.qs.get("funnel_id") == ["2"],
+    )
+
+    with caplog.at_level(logging.INFO, logger="airbyte"):
+        records = []
+        for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental):
+            records.extend(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+
+    assert records
+    assert all(record["funnel_id"] == 2 for record in records)
+    assert any(
+        'Skipping saved funnel that Mixpanel rejected with "Invalid bookmark format"; it is not queryable as a single-metric funnel.'
+        in record.message
+        for record in caplog.records
+    )
+
+
+def test_funnels_stream_generic_400_is_not_reported_as_auth_error(requests_mock, config_raw):
+    config_raw["start_date"] = "2024-01-01T00:00:00Z"
+    config_raw["end_date"] = "2024-01-05T00:00:00Z"
+    stream = init_stream("funnels", config=config_raw)
+    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "funnels/list", json=[{"funnel_id": 1, "name": "bad"}])
+    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "funnels", status_code=400, json={"error": "Some other bad request"})
+
+    stream_slice = list(stream.stream_slices(sync_mode=SyncMode.incremental))[0]
+    with pytest.raises(AirbyteTracedException) as exception:
+        list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+
+    assert "Authentication" not in exception.value.message
+    assert "Mixpanel rejected the request as invalid (HTTP 400)." in exception.value.message
+    assert exception.value.failure_type == FailureType.system_error
+
+
+def test_funnels_stream_auth_400_is_config_error(requests_mock, config_raw):
+    config_raw["start_date"] = "2024-01-01T00:00:00Z"
+    config_raw["end_date"] = "2024-01-05T00:00:00Z"
+    stream = init_stream("funnels", config=config_raw)
+    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "funnels/list", json=[{"funnel_id": 1, "name": "bad"}])
+    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "funnels", status_code=400, json={"error": "Unable to authenticate request"})
+
+    stream_slice = list(stream.stream_slices(sync_mode=SyncMode.incremental))[0]
+    with pytest.raises(AirbyteTracedException) as exception:
+        list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+
+    assert exception.value.failure_type == FailureType.config_error
+    assert "Mixpanel rejected the provided credentials" in exception.value.message
+
+
 @pytest.fixture
 def engage_schema_response():
     return setup_response(
@@ -629,6 +722,14 @@ def test_export_stream(requests_mock, export_response, config):
 
     records_length = sum(1 for _ in records)
     assert records_length == 1
+
+
+def test_backoff_strategy_uses_retry_after(export_config):
+    stream = Export(authenticator=MagicMock(), **export_config)
+    response = requests.Response()
+    response.headers["Retry-After"] = "7"
+
+    assert MixpanelStreamBackoffStrategy(stream).backoff_time(response) == 7.0
 
 
 def test_export_stream_fail(requests_mock, export_response, config):
