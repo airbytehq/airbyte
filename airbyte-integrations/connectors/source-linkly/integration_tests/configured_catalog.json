@@ -1,0 +1,58 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "workspaces",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "links",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "domains",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["workspace_id"], ["name"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "clicks",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["t"],
+        "source_defined_primary_key": [["workspace_id"], ["t"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["t"],
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["workspace_id"], ["t"]]
+    },
+    {
+      "stream": {
+        "name": "conversions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

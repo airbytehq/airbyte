@@ -1,0 +1,17 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "clicks" },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "workspace_id": 1, "parent_slice": {} },
+            "cursor": { "t": "2099-12-31" }
+          }
+        ]
+      }
+    }
+  }
+]
