@@ -276,5 +276,7 @@ def test_post_does_not_reduce_its_page_size():
     assert "page_size_reduction" not in manifest["definitions"]["post_stream"]["retriever"]
     assert manifest["definitions"]["post_insights_stream"]["retriever"]["page_size_reduction"]["type"] == "PageSizeReduction"
 
-    post_actions = {f["action"] for f in _response_filters("base_error_handler") if "reduce the amount of data" in f.get("error_message_contains", "")}
+    post_actions = {
+        f["action"] for f in _response_filters("base_error_handler") if "reduce the amount of data" in f.get("error_message_contains", "")
+    }
     assert post_actions == {"FAIL"}
