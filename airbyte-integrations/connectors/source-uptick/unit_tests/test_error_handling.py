@@ -3,13 +3,12 @@
 """Guards the 401/403 response filters shared by every stream via
 `definitions.linked.HttpRequester.error_handler` in `manifest.yaml`.
 
-Both statuses must fail immediately as `config_error` with the connector's own message instead of
-retrying or surfacing a raw HTTP error. `task_profitability` is used because it has no record
-transformations, and it is the endpoint that returns 403 in production for users without the
-Intelligence-report permission.
+401 responses must refresh the access token and retry before failing as `config_error`, while 403
+responses fail immediately with the connector's own message. `task_profitability` is used because
+it has no record transformations, and it is the endpoint that returns 403 in production for users
+without the Intelligence-report permission.
 """
 
-import pytest
 from conftest import base_config, get_source
 
 from airbyte_cdk.models import FailureType, SyncMode
@@ -24,40 +23,63 @@ _BASE_URL = "https://demo.onuptick.com"
 _TOKEN_REQUEST_BODY = "grant_type=password&client_id=client-id&client_secret=client-secret&username=user%40example.com&password=password"
 
 
-def _read_stream(status_code: int, response_body: str) -> tuple[int, list]:
+def _read_stream(status_code: int, response_body: str | list[HttpResponse]) -> tuple[int, list, HttpMocker, HttpRequest]:
     config = base_config()
     catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
     with HttpMocker() as http_mocker:
-        http_mocker.post(
-            HttpRequest(f"{_BASE_URL}/api/oauth2/token/", body=_TOKEN_REQUEST_BODY),
-            HttpResponse('{"access_token": "token", "expires_in": 3600}', 200),
-        )
-        http_mocker.get(
-            HttpRequest(f"{_BASE_URL}/api/v2/intelligencereports/profitability_by_task/", query_params=ANY_QUERY_PARAMS),
-            HttpResponse(response_body, status_code),
-        )
+        token_request = HttpRequest(f"{_BASE_URL}/api/oauth2/token/", body=_TOKEN_REQUEST_BODY)
+        stream_request = HttpRequest(f"{_BASE_URL}/api/v2/intelligencereports/profitability_by_task/", query_params=ANY_QUERY_PARAMS)
+        http_mocker.post(token_request, HttpResponse('{"access_token": "token", "expires_in": 3600}', 200))
+        responses = response_body if isinstance(response_body, list) else HttpResponse(response_body, status_code)
+        http_mocker.get(stream_request, responses)
         output = read(get_source(config, catalog), config, catalog)
-    return len(output.records), output.errors
+    return len(output.records), output.errors, http_mocker, token_request
 
 
-@pytest.mark.parametrize(
-    "status_code, expected_message",
-    [
-        pytest.param(401, "HTTP 401: Uptick rejected the client credentials or user login.", id="401_config_error"),
-        pytest.param(403, "HTTP 403: Uptick user lacks permission for the requested endpoint.", id="403_config_error"),
-    ],
-)
-def test_auth_failures_fail_fast_as_config_error(status_code: int, expected_message: str) -> None:
-    record_count, errors = _read_stream(status_code, '{"detail": "denied"}')
+def test_401_refreshes_token_and_retries() -> None:
+    record_count, errors, http_mocker, token_request = _read_stream(
+        401,
+        [
+            HttpResponse('{"detail": "expired"}', 401),
+            HttpResponse('{"results": [{"task_id": 1, "updated": "2024-01-01T00:00:00.000000+0000"}], "links": {"next": null}}', 200),
+        ],
+    )
+
+    assert errors == []
+    assert record_count == 1
+    http_mocker.assert_number_of_calls(token_request, 2)
+
+
+def test_persistent_401_fails_as_config_error(monkeypatch) -> None:
+    monkeypatch.setattr("time.sleep", lambda *_: None)
+    record_count, errors, _, _ = _read_stream(401, '{"detail": "expired"}')
 
     assert record_count == 0
-    stream_errors = [error.trace.error for error in errors if error.trace.error.message == expected_message]
+    stream_errors = [
+        error.trace.error
+        for error in errors
+        if "HTTP 401: Uptick rejected the access token. The connector refreshed the token and retried, but Uptick still returned 401 - check the client credentials and user login."
+        in error.trace.error.message
+    ]
+    assert len(stream_errors) == 1, f"expected exactly one stream error with the connector message, got {errors}"
+    assert stream_errors[0].failure_type == FailureType.config_error
+
+
+def test_403_fails_fast_as_config_error() -> None:
+    record_count, errors, _, _ = _read_stream(403, '{"detail": "denied"}')
+
+    assert record_count == 0
+    stream_errors = [
+        error.trace.error
+        for error in errors
+        if error.trace.error.message == "HTTP 403: Uptick user lacks permission for the requested endpoint."
+    ]
     assert len(stream_errors) == 1, f"expected exactly one stream error with the connector message, got {errors}"
     assert stream_errors[0].failure_type == FailureType.config_error
 
 
 def test_successful_read_emits_records() -> None:
-    record_count, errors = _read_stream(
+    record_count, errors, _, _ = _read_stream(
         200, '{"results": [{"task_id": 1, "updated": "2024-01-01T00:00:00.000000+0000"}], "links": {"next": null}}'
     )
 
