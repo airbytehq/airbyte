@@ -101,7 +101,14 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
     }
     // Get the new _id field to start the next subquery from.
     Document next = currentIterator.next();
-    currentState = getCurrentState(next.get(MongoConstants.ID_FIELD));
+    final Object idValue = next.get(MongoConstants.ID_FIELD);
+    if (idValue != null) {
+      currentState = getCurrentState(idValue);
+    } else {
+      LOGGER.warn("Encountered a document with a null _id value in collection {}. "
+          + "The record will still be emitted, but state will not be updated for this document.",
+          collection.getNamespace().getCollectionName());
+    }
     return next;
   }
 

@@ -76,7 +76,9 @@ public class InitialSnapshotHandler {
                 .emitAnalyticsTrace(new AirbyteAnalyticsTraceMessage().withType(MULTIPLE_ID_TYPES_ANALYTICS_MESSAGE_KEY).withValue("1"));
           }
 
-          idTypes.stream().findFirst().ifPresent(idType -> {
+          // Filter out "null" type — documents with _id: null are handled gracefully in the iterator
+          final var nonNullIdTypes = idTypes.stream().filter(t -> !"null".equalsIgnoreCase(t)).toList();
+          nonNullIdTypes.stream().findFirst().ifPresent(idType -> {
             if (IdType.findByBsonType(idType).isEmpty()) {
               throw new ConfigErrorException("Only _id fields with the following types are currently supported: " + IdType.SUPPORTED
                   + " (collection = " + collectionName + ").");
