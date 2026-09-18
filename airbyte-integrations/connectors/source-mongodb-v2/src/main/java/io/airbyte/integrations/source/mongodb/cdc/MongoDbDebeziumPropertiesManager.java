@@ -151,10 +151,10 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
    * @param config The connector configuration.
    * @return The connection string. When the dedicated username and password configuration fields are
    *         set, any URI-embedded userinfo (such as the Atlas {@code <db_username>:<db_password>@}
-   *         template) is removed so that it cannot override the configured credentials in the
-   *         MongoDB client or Debezium. Otherwise only the literal {@code <username>:<password>@}
-   *         placeholder is removed, so that credentials supplied solely through the connection
-   *         string keep working.
+   *         template) is removed so that it cannot override the configured credentials in the MongoDB
+   *         client or Debezium. Otherwise only the literal {@code <username>:<password>@} placeholder
+   *         is removed, so that credentials supplied solely through the connection string keep
+   *         working.
    */
   public static String buildConnectionString(final JsonNode config) {
     final String connectionString = config.get(CONNECTION_STRING_CONFIGURATION_KEY)
