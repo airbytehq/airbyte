@@ -96,7 +96,6 @@ That is, `updated_at=gte|{datetime}|lte|{datetime}`, with `|` separating operato
 | approver_groups | top-level | updated_at | updated_at | incremental |
 | approvers | top-level | updated_at | updated_at | incremental |
 | job_hiring_managers | top-level | updated_at | updated_at | incremental |
-| job_notes | top-level | updated_at | updated_at | incremental |
 | job_owners | top-level | updated_at | updated_at | incremental |
 | prospect_pool_stages | top-level | updated_at | updated_at | incremental |
 | user_emails | top-level | updated_at | updated_at | incremental |

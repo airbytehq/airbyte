@@ -41,7 +41,6 @@ The consent flow requests these scopes; approve all of them:
 - `harvest:job_hiring_managers:list`
 - `harvest:job_interview_stages:list`
 - `harvest:job_interviews:list`
-- `harvest:job_notes:list`
 - `harvest:job_owners:list`
 - `harvest:job_posts:list`
 - `harvest:jobs:list`
@@ -129,7 +128,6 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | [`interviews`](https://harvestdocs.greenhouse.io/reference/get_v3-interviews) | Incremental (`updated_at`) | |
 | [`job_hiring_managers`](https://harvestdocs.greenhouse.io/reference/get_v3-job-hiring-managers) | Incremental (`updated_at`) | One row per hiring manager on a job |
 | [`job_interviews`](https://harvestdocs.greenhouse.io/reference/get_v3-job-interviews) | Incremental (`updated_at`) | The interview plan for each job stage |
-| [`job_notes`](https://harvestdocs.greenhouse.io/reference/get_v3-job-notes) | Incremental (`updated_at`) | Free-text notes on jobs |
 | [`job_owners`](https://harvestdocs.greenhouse.io/reference/get_v3-job-owners) | Incremental (`updated_at`) | Recruiter, sourcer and coordinator per job, with a `responsible` flag |
 | [`job_posts`](https://harvestdocs.greenhouse.io/reference/get_v3-job-posts) | Incremental (`updated_at`) | Includes deleted posts |
 | [`job_stages`](https://harvestdocs.greenhouse.io/reference/get_v3-job-interview-stages) | Incremental (`updated_at`) | |
@@ -221,7 +219,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.4.0 | 2026-09-17 | [86430](https://github.com/airbytehq/airbyte/pull/86430) | Add the `approver_groups`, `approvers`, `job_hiring_managers`, `job_notes`, `job_owners`, `prospect_pool_stages`, and `user_emails` streams, restoring the hiring team, approval chain, prospect pool stage, and user email detail that Harvest v1 embedded on `jobs`, `approvals`, `prospect_pools`, and `users`. Requests seven new Harvest v3 scopes during consent |
+| 1.4.0 | 2026-09-17 | [86430](https://github.com/airbytehq/airbyte/pull/86430) | Add the `approver_groups`, `approvers`, `job_hiring_managers`, `job_owners`, `prospect_pool_stages`, and `user_emails` streams, restoring the hiring team, approval chain, prospect pool stage, and user email detail that Harvest v1 embedded on `jobs`, `approvals`, `prospect_pools`, and `users`. Requests six new Harvest v3 scopes during consent |
 | 1.3.0 | 2026-09-17 | [86429](https://github.com/airbytehq/airbyte/pull/86429) | Add the `interview_kits`, `interviewer_tags`, `interviewers`, `job_interviews`, `scorecard_candidate_attributes`, and `scorecard_questions` streams, restoring the interview and scorecard detail that Harvest v1 embedded on `interviews`, `job_stages`, and `scorecards`. Requests six new Harvest v3 scopes during consent |
 | 1.2.0 | 2026-09-17 | [86428](https://github.com/airbytehq/airbyte/pull/86428) | Add the `application_stages`, `applied_candidate_tags`, `attachments`, `candidate_educations`, `candidate_employments`, `prospect_details`, `referrers`, and `rejection_details` streams, restoring the candidate and application detail that Harvest v1 embedded on `candidates` and `applications`. Requests eight new Harvest v3 scopes during consent; existing connections keep syncing unchanged, but enabling a new stream requires re-running the consent flow |
 | 1.1.0 | 2026-09-17 | [85841](https://github.com/airbytehq/airbyte/pull/85841) | Sync 18 previously full-refresh streams incrementally on `updated_at`. Not breaking, but **Start date** now applies to those 18 streams in every sync mode, including full refresh, where before they always read full history - see [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110). Also read `activity_feed`, `jobs_openings`, and `user_permissions` directly instead of once per 50 parents, and suggest 10 streams for new connections |

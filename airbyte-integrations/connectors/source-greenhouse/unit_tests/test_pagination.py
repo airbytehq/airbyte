@@ -623,15 +623,6 @@ DOCUMENTED_V3_EXAMPLES = {
         "updated_at": "2024-01-01T00:00:00.000Z",
         "job_id": 1,
     },
-    "job_notes": {
-        "id": 1,
-        "user_id": 1,
-        "body": "This is a sample note for the hiring plan.",
-        "created_at": "2024-01-01T12:30:30.000Z",
-        "updated_at": "2024-01-01T12:30:30.000Z",
-        "visibility": "admin_only_visible",
-        "job_id": 1,
-    },
     "job_owners": {
         "id": 1,
         "user_id": 1,
@@ -1241,7 +1232,6 @@ PARITY_STREAM_ENDPOINTS = {
     "approver_groups": "https://harvest.greenhouse.io/v3/approver_groups",
     "approvers": "https://harvest.greenhouse.io/v3/approvers",
     "job_hiring_managers": "https://harvest.greenhouse.io/v3/job_hiring_managers",
-    "job_notes": "https://harvest.greenhouse.io/v3/job_notes",
     "job_owners": "https://harvest.greenhouse.io/v3/job_owners",
     "prospect_pool_stages": "https://harvest.greenhouse.io/v3/prospect_pool_stages",
     "user_emails": "https://harvest.greenhouse.io/v3/user_emails",
