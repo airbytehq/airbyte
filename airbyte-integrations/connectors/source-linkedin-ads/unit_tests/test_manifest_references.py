@@ -2,7 +2,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import re
 from pathlib import Path
 
 import yaml
@@ -11,8 +10,6 @@ from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import 
 
 
 _MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
-
-_YAML_ANCHOR_OR_ALIAS_PATTERN = re.compile(r"^\s*[\w-]+:\s*[&*][\w-]+\s*$", re.MULTILINE)
 
 
 def _resolved_definitions() -> dict:
@@ -23,11 +20,11 @@ def _resolved_definitions() -> dict:
 
 def test_manifest_has_no_yaml_anchors_or_aliases():
     manifest_text = _MANIFEST_PATH.read_text()
-    assert not _YAML_ANCHOR_OR_ALIAS_PATTERN.search(
-        manifest_text
-    ), "manifest.yaml should not use YAML anchors or aliases; use declarative $ref instead"
-    assert "&analytics_query_property_list" not in manifest_text
-    assert "*analytics_query_property_list" not in manifest_text
+    anchor_or_alias_tokens = [token for token in yaml.scan(manifest_text) if isinstance(token, (yaml.AnchorToken, yaml.AliasToken))]
+    assert not anchor_or_alias_tokens, (
+        "manifest.yaml should not use YAML anchors or aliases; use declarative $ref instead. Found: "
+        + ", ".join(f"{type(t).__name__}({t.value}) at line {t.start_mark.line + 1}" for t in anchor_or_alias_tokens)
+    )
 
 
 def test_impression_device_property_list_resolves_to_shared_list():
