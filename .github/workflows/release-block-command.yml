@@ -1,0 +1,185 @@
+name: Add or remove a release-block marker for a connector
+
+on:
+  workflow_dispatch:
+    inputs:
+      connector:
+        description: "Connector name (e.g. source-pokeapi)"
+        required: true
+        type: string
+      reason:
+        description: "Reason for blocking the release"
+        required: false
+        default: ""
+        type: string
+      action:
+        description: "Action to perform: 'add' to block, 'remove' to unblock"
+        required: false
+        default: "add"
+        type: choice
+        options:
+          - add
+          - remove
+      comment-id:
+        description: "Optional. The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+
+      # These must be declared, but they are unused and ignored.
+      # TODO: Infer 'repo' and 'gitref' from PR number on other workflows, so we can remove these.
+      repo:
+        description: "Repo (Ignored)"
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "Ref (Ignored)"
+        required: false
+      pr:
+        description: "PR number (Ignored)"
+        required: false
+
+run-name: "Release block: ${{ inputs.action }} for ${{ inputs.connector }}"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-block:
+    name: "${{ inputs.action == 'remove' && 'Remove' || 'Add' }} release-block for ${{ inputs.connector }}"
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Validate connector name
+        shell: bash
+        run: |
+          CONNECTOR="${{ inputs.connector }}"
+          if [[ -z "$CONNECTOR" ]]; then
+            echo "::error::Connector name is required."
+            exit 1
+          fi
+          # Basic validation: connector name should match expected pattern
+          if [[ ! "$CONNECTOR" =~ ^(source|destination)-[a-z0-9-]+$ ]]; then
+            echo "::error::Invalid connector name: '$CONNECTOR'. Expected format: source-<name> or destination-<name>."
+            exit 1
+          fi
+
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Configure git identity
+        run: |
+          git config --global user.name "Octavia Squidington III"
+          git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
+
+      - name: Checkout Airbyte repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          fetch-depth: 1
+
+      - name: Verify connector directory exists
+        shell: bash
+        run: |
+          CONNECTOR_DIR="airbyte-integrations/connectors/${{ inputs.connector }}"
+          if [[ ! -d "$CONNECTOR_DIR" ]]; then
+            echo "::error::Connector directory not found: $CONNECTOR_DIR"
+            exit 1
+          fi
+
+      - name: Add release-block marker
+        if: inputs.action == 'add'
+        shell: bash
+        env:
+          REASON: ${{ inputs.reason }}
+        run: |
+          BLOCK_FILE="airbyte-integrations/connectors/${{ inputs.connector }}/release-block.yaml"
+
+          if [[ -f "$BLOCK_FILE" ]]; then
+            echo "::warning::release-block.yaml already exists for ${{ inputs.connector }}. Overwriting."
+          fi
+
+          cat > "$BLOCK_FILE" << EOF
+          # This file blocks publishing for ${{ inputs.connector }}.
+          # Remove this file to unblock publishing.
+          reason: "${REASON:-No reason provided}"
+          created_by: "${{ github.actor }}"
+          created_at: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          EOF
+
+          # Remove leading whitespace from heredoc
+          sed -i 's/^          //' "$BLOCK_FILE"
+
+          echo "Created release-block.yaml:"
+          cat "$BLOCK_FILE"
+
+      - name: Remove release-block marker
+        if: inputs.action == 'remove'
+        shell: bash
+        run: |
+          BLOCK_FILE="airbyte-integrations/connectors/${{ inputs.connector }}/release-block.yaml"
+          if [[ ! -f "$BLOCK_FILE" ]]; then
+            echo "::warning::No release-block.yaml found for ${{ inputs.connector }}. Nothing to remove."
+            exit 0
+          fi
+
+          echo "Removing release-block.yaml:"
+          cat "$BLOCK_FILE"
+          rm "$BLOCK_FILE"
+
+      - name: Check for changes
+        id: git-diff
+        shell: bash
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then echo "changes=true" >> $GITHUB_OUTPUT; else echo "No changes to commit"; fi
+
+      - name: Create PR with release-block change
+        if: steps.git-diff.outputs.changes == 'true'
+        id: create-pr
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          commit-message: "ci: ${{ inputs.action }} release-block for ${{ inputs.connector }}"
+          branch: "release-block/${{ inputs.action }}/${{ inputs.connector }}"
+          base: ${{ github.event.repository.default_branch }}
+          delete-branch: true
+          title: "ci: ${{ inputs.action }} release-block for ${{ inputs.connector }}"
+          body: |
+            ${{ inputs.action == 'add' && format('Adds a `release-block.yaml` marker to block publishing for `{0}`.', inputs.connector) || format('Removes the `release-block.yaml` marker to unblock publishing for `{0}`.', inputs.connector) }}
+
+            ${{ inputs.reason != '' && format('**Reason:** {0}', inputs.reason) || '' }}
+
+            Triggered by @${{ github.actor }} via [`release-block` workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          labels: |
+            area/connectors
+
+      - name: Append comment with PR link
+        if: inputs.comment-id && steps.create-pr.outputs.pull-request-number
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          body: |
+            > Release-block PR created: #${{ steps.create-pr.outputs.pull-request-number }}
+
+      - name: Summary
+        if: steps.create-pr.outputs.pull-request-number
+        env:
+          BLOCK_REASON: ${{ inputs.reason }}
+        run: |
+          echo "### Release Block PR Created" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Connector:** ${{ inputs.connector }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Action:** ${{ inputs.action }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **PR:** #${{ steps.create-pr.outputs.pull-request-number }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Reason:** ${BLOCK_REASON:-No reason provided}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Summary (no changes)
+        if: steps.git-diff.outputs.changes != 'true'
+        run: |
+          echo "### No Changes Needed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "No changes were needed for ${{ inputs.connector }} (action: ${{ inputs.action }})." >> $GITHUB_STEP_SUMMARY
