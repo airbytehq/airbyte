@@ -14,6 +14,7 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMALESS_M
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.MongoCommandException;
+import com.mongodb.MongoSecurityException;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -402,6 +403,29 @@ public class MongoUtil {
 
   private static boolean isSupportedCollection(final String collectionName) {
     return IGNORED_COLLECTIONS.stream().noneMatch(collectionName::startsWith);
+  }
+
+  /**
+   * Determines whether the exception (or any of its causes) represents a MongoDB authentication
+   * failure. Debezium reports authentication failures raised while validating its connection as a
+   * plain message ("Exception authenticating MongoCredential{...}") without the underlying
+   * {@link MongoSecurityException} as a cause, so the message is inspected as well.
+   *
+   * @param exception The exception to check.
+   * @return {@code true} if the exception represents an authentication failure, {@code false} otherwise.
+   */
+  public static boolean isAuthenticationException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoSecurityException) {
+        return true;
+      }
+      if (current.getMessage() != null && current.getMessage().contains(MongoConstants.DEBEZIUM_AUTHENTICATION_FAILURE_MESSAGE_FRAGMENT)) {
+        return true;
+      }
+      current = current.getCause();
+    }
+    return false;
   }
 
   /**

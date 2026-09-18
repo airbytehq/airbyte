@@ -48,6 +48,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class MongoDbDebeziumPropertiesManagerTest {
 
@@ -274,6 +276,30 @@ class MongoDbDebeziumPropertiesManagerTest {
     final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config);
     assertNotNull(connectionString);
     assertEquals(EXPECTED_CONNECTION_STRING, connectionString);
+  }
+
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', value = {
+    // literal placeholder
+    "mongodb://<username>:<password>@localhost:27017/ | mongodb://localhost:27017/",
+    // Atlas template
+    "mongodb+srv://<db_username>:<db_password>@cluster0.abcde.mongodb.net/ | mongodb+srv://cluster0.abcde.mongodb.net/",
+    // partially substituted Atlas template
+    "mongodb+srv://admin:<db_password>@cluster0.abcde.mongodb.net/?retryWrites=true&w=majority | mongodb+srv://cluster0.abcde.mongodb.net/?retryWrites=true&w=majority",
+    // real embedded credentials, including a percent-encoded password
+    "mongodb://admin:p%40ss%3Aword@host1:27017,host2:27017/?replicaSet=rs0 | mongodb://host1:27017,host2:27017/?replicaSet=rs0",
+    // username only
+    "mongodb://admin@localhost:27017/ | mongodb://localhost:27017/",
+    // no userinfo
+    "mongodb://localhost:27017/ | mongodb://localhost:27017/",
+    "mongodb+srv://cluster0.abcde.mongodb.net/?authSource=admin | mongodb+srv://cluster0.abcde.mongodb.net/?authSource=admin",
+    // '@' after the host section is not userinfo
+    "mongodb://localhost:27017/?appName=foo%40bar | mongodb://localhost:27017/?appName=foo%40bar",
+  })
+  void testCreateConnectionStringStripsUserInfo(final String configured, final String expected) {
+    final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
+    ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, configured);
+    assertEquals(expected, MongoDbDebeziumPropertiesManager.buildConnectionString(config));
   }
 
   private JsonNode createConfiguration(final Optional<String> username, final Optional<String> password, final Optional<String> authMode) {

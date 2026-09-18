@@ -19,12 +19,15 @@ import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.IOException;
@@ -142,6 +145,7 @@ class MongoDbSourceTest {
     final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
     assertNotNull(airbyteConnectionStatus);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
+    assertEquals(AUTHENTICATION_FAILED_ERROR_MESSAGE, airbyteConnectionStatus.getMessage());
   }
 
   @Test
@@ -269,6 +273,42 @@ class MongoDbSourceTest {
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
     source.read(airbyteSourceConfigWithoutSchema, new ConfiguredAirbyteCatalog(), null);
     verify(mongoClient, never()).close();
+  }
+
+  @Test
+  void testCdcDebeziumAuthenticationFailureIsConfigError() throws Exception {
+    // Debezium reports connection validation failures as a message-only RuntimeException surfaced on close().
+    final RuntimeException debeziumFailure = new RuntimeException(new RuntimeException(
+        "Connector configuration is not valid. Unable to connect: Exception authenticating MongoCredential{mechanism=SCRAM-SHA-1, userName='admin', source='admin', password=<hidden>, mechanismProperties=<hidden>}"));
+    final AutoCloseableIterator<AirbyteMessage> failingIterator = mock(AutoCloseableIterator.class);
+    doThrow(debeziumFailure).when(failingIterator).close();
+
+    final AutoCloseableIterator<AirbyteMessage> wrapped = source.wrapIteratorWithErrorHandling(failingIterator);
+    final ConfigErrorException e = assertThrows(ConfigErrorException.class, wrapped::close);
+    assertEquals(AUTHENTICATION_FAILED_ERROR_MESSAGE, e.getDisplayMessage());
+    assertSame(debeziumFailure, e.getCause());
+  }
+
+  @Test
+  void testCdcMongoSecurityExceptionIsConfigError() {
+    final MongoSecurityException securityException = new MongoSecurityException(
+        MongoCredential.createCredential("username", DB_NAME, "password".toCharArray()), "test");
+    final AutoCloseableIterator<AirbyteMessage> failingIterator = mock(AutoCloseableIterator.class);
+    when(failingIterator.hasNext()).thenThrow(new RuntimeException(securityException));
+
+    final AutoCloseableIterator<AirbyteMessage> wrapped = source.wrapIteratorWithErrorHandling(failingIterator);
+    final ConfigErrorException e = assertThrows(ConfigErrorException.class, wrapped::hasNext);
+    assertEquals(AUTHENTICATION_FAILED_ERROR_MESSAGE, e.getDisplayMessage());
+  }
+
+  @Test
+  void testCdcUnrelatedExceptionIsRethrownUnchanged() {
+    final RuntimeException unrelated = new RuntimeException("Connector configuration is not valid. Something else went wrong.");
+    final AutoCloseableIterator<AirbyteMessage> failingIterator = mock(AutoCloseableIterator.class);
+    when(failingIterator.hasNext()).thenThrow(unrelated);
+
+    final AutoCloseableIterator<AirbyteMessage> wrapped = source.wrapIteratorWithErrorHandling(failingIterator);
+    assertSame(unrelated, assertThrows(RuntimeException.class, wrapped::hasNext));
   }
 
   private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password, final boolean isSchemaEnforced) {
