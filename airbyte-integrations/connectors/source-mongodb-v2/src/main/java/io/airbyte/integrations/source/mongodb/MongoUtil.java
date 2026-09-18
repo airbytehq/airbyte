@@ -412,7 +412,8 @@ public class MongoUtil {
    * {@link MongoSecurityException} as a cause, so the message is inspected as well.
    *
    * @param exception The exception to check.
-   * @return {@code true} if the exception represents an authentication failure, {@code false} otherwise.
+   * @return {@code true} if the exception represents an authentication failure, {@code false}
+   *         otherwise.
    */
   public static boolean isAuthenticationException(final Throwable exception) {
     Throwable current = exception;

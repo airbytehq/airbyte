@@ -277,7 +277,8 @@ class MongoDbSourceTest {
 
   @Test
   void testCdcDebeziumAuthenticationFailureIsConfigError() throws Exception {
-    // Debezium reports connection validation failures as a message-only RuntimeException surfaced on close().
+    // Debezium reports connection validation failures as a message-only RuntimeException surfaced on
+    // close().
     final RuntimeException debeziumFailure = new RuntimeException(new RuntimeException(
         "Connector configuration is not valid. Unable to connect: Exception authenticating MongoCredential{mechanism=SCRAM-SHA-1, userName='admin', source='admin', password=<hidden>, mechanismProperties=<hidden>}"));
     final AutoCloseableIterator<AirbyteMessage> failingIterator = mock(AutoCloseableIterator.class);

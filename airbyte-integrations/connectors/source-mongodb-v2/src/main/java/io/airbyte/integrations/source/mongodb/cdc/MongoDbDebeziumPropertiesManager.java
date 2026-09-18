@@ -44,7 +44,8 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   static final String DOUBLE_QUOTES_PATTERN = "\"";
   /**
    * Matches the userinfo section (everything between the scheme and the last '@' before the host
-   * list) of a MongoDB connection string, e.g. {@code user:pass@} in {@code mongodb://user:pass@host}.
+   * list) of a MongoDB connection string, e.g. {@code user:pass@} in
+   * {@code mongodb://user:pass@host}.
    */
   static final Pattern CONNECTION_STRING_USERINFO_PATTERN = Pattern.compile("^([a-zA-Z][a-zA-Z0-9+.-]*://)[^/?#]*@");
   static final String MONGODB_AUTHSOURCE_KEY = "mongodb.authsource";
@@ -149,8 +150,9 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
    * @param config The connector configuration.
    * @return The connection string, with any URI-embedded userinfo removed. Credentials are always
    *         supplied through the dedicated username/password/auth source configuration fields, so
-   *         userinfo left in the connection string (such as the Atlas {@code <db_username>:<db_password>@}
-   *         template) must not reach the MongoDB client or Debezium.
+   *         userinfo left in the connection string (such as the Atlas
+   *         {@code <db_username>:<db_password>@} template) must not reach the MongoDB client or
+   *         Debezium.
    */
   public static String buildConnectionString(final JsonNode config) {
     final String connectionString = config.get(CONNECTION_STRING_CONFIGURATION_KEY)
