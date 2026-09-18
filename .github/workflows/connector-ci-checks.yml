@@ -40,6 +40,7 @@ permissions:
   # Allow the workflow to read contents
   # and to read/write checks and PR comments.
   contents: read
+  packages: read
   checks: write
   pull-requests: write
 
@@ -251,6 +252,7 @@ jobs:
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
     env:
+      SANDBOX_STRIPE: ${{ matrix.connector == 'source-stripe' && vars.SASS_STRIPE_DEMO == 'true' && (inputs.repo || github.event.pull_request.head.repo.full_name || github.repository) == github.repository }}
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
 
@@ -367,13 +369,39 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
+      # Temporary private checkout; replace with a public action usable directly from any repo.
+      - name: Check out sandbox action
+        if: env.SANDBOX_STRIPE == 'true'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: airbytehq/saas-sandbox
+          ref: d55bea729e70caf80f84a864c8cca677574cebee
+          token: ${{ secrets.SASS_SOURCE_READ_TOKEN }}
+          path: sandbox-tool
+          persist-credentials: false
+
+      - name: Container Tests through sandbox
+        if: env.SANDBOX_STRIPE == 'true'
+        uses: ./sandbox-tool/actions/run
+        with:
+          scenario: stripe-customers
+          workspace-id: ${{ vars.SASS_WORKSPACE_ID }}
+          working-directory: airbyte-integrations/connectors/source-stripe
+          command: airbyte-cdk image test --image airbyte/source-stripe:6.0.18
+          images: airbyte/source-stripe:6.0.18
+          api-url: ${{ vars.SASS_API_URL }}
+          api-key: ${{ secrets.SASS_API_KEY }}
+          relay-image: ${{ vars.SASS_RELAY_IMAGE }}
+          config-path: secrets/config.json
+          config-json: ${{ secrets.STRIPE_SANDBOX_CONFIG_JSON }}
+
       - name: Build connector image
-        if: matrix.connector
+        if: matrix.connector && env.SANDBOX_STRIPE != 'true'
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: airbyte-cdk image build
 
       - name: Container Tests
-        if: matrix.connector
+        if: matrix.connector && env.SANDBOX_STRIPE != 'true'
         continue-on-error: ${{ steps.connector-test-policy.outputs.allow-test-failures == 'true' }}
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
