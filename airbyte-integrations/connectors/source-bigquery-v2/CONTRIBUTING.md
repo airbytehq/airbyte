@@ -367,13 +367,17 @@ because the return value of "BigQueryTypeRegistry.convert(Object, Class)" is nul
   tests read every type's NULL path.
 
 Next: Stage 5 (terabyte-scale table, memory, checkpoint cadence, kill-and-resume, bytes billed vs
-legacy), a CDK fix or workaround for `_ab_*` columns, the docs page, and a breaking-change
-evaluation of the deliberate deviations.
+legacy), a CDK fix or workaround for `_ab_*` columns, and a breaking-change evaluation of the
+deliberate deviations. The user-facing docs page is `docs/integrations/sources/bigquery-v2.md`.
 
-Known scaling limit of `discover` without `dataset_id`: on the test project (45,080 datasets,
-127,127 tables of CI leftovers) v2 fetched about 500 tables per minute and had reached 1.4 GiB
-after 31,000 tables when the run was stopped, because `BigQuerySourceMetadataQuerier` keeps every
-fetched `Table` (full schema) until the operation ends and the default JVM heap in a small
-container is about 1.9 GiB. Keeping only the fields and primary key per table would make memory
-scale with the catalog instead; a catalog of that many streams is impractical for the platform
-regardless, so users of such projects should set `dataset_id`.
+Scaling of `discover` without `dataset_id`: `BigQuerySourceMetadataQuerier` keeps one small
+`TableMetadata` (the mapped columns and the primary key) per fetched table, not the full `Table`
+object, so memory scales with the catalog. (An earlier version kept every `Table` and reached
+1.4 GiB after 31,000 tables on the test project.) Time is the remaining limit: the CDK's
+`DiscoverOperation` lists each dataset's tables in turn and the querier lists with the API's
+default page size, so on the test project (37,355 datasets on 2026-09-18, mostly one-table CI
+leftovers) a whole-project `discover` needed about 9 minutes for `datasets.list` alone and
+covered about 1,500 datasets in 40 minutes. A native-client probe with `pageSize(1000)` listed
+all datasets in 55 seconds, so larger pages and listing the tables of several datasets
+concurrently are the obvious follow-up. A catalog of that many streams is impractical for the
+platform regardless, so users of such projects should set `dataset_id`.

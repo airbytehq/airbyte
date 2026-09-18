@@ -79,11 +79,11 @@ class BigQuerySourceSpecTest {
         )
     }
 
+    /** The `spec` carries the URL of this connector's own docs page (from `metadata.yaml`). */
     @Test
-    fun testDocumentationUrlMatchesLegacyConnector() {
-        val legacy: JsonNode = Jsons.readTree(ResourceUtils.readResource(LEGACY_SPEC_RESOURCE))
+    fun testDocumentationUrlPointsAtTheConnectorDocsPage() {
         Assertions.assertEquals(
-            legacy["documentationUrl"].asText(),
+            "https://docs.airbyte.com/integrations/sources/bigquery-v2",
             actualSpec().documentationUrl.toString(),
         )
     }

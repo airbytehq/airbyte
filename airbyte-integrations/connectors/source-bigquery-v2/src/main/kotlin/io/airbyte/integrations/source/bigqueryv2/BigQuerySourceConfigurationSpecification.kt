@@ -62,7 +62,7 @@ class BigQuerySourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("credentials_json")
     @JsonSchemaTitle("Service Account Key JSON")
     @JsonSchemaDescription(
-        "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#service-account-key\">docs</a> if you need help generating this key."
+        "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery-v2#service-account-key\">docs</a> if you need help generating this key."
     )
     @JsonSchemaInject(
         json = """{"group":"connection","order":2,"airbyte_secret":true,"always_show":true}"""

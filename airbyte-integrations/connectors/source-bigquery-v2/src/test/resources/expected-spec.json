@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/bigquery",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/bigquery-v2",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Source Spec",
@@ -22,7 +22,7 @@
       },
       "credentials_json": {
         "type": "string",
-        "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#service-account-key\">docs</a> if you need help generating this key.",
+        "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery-v2#service-account-key\">docs</a> if you need help generating this key.",
         "title": "Service Account Key JSON",
         "group": "connection",
         "order": 2,
