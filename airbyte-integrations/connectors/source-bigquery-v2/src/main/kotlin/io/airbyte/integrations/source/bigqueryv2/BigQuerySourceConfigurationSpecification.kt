@@ -26,7 +26,15 @@ import jakarta.inject.Singleton
         """{"groups":[{"id":"connection","title":"Connection"},{"id":"advanced","title":"Advanced"}]}"""
 )
 @JsonPropertyOrder(
-    value = ["project_id", "dataset_id", "credentials_json", "job_project_id", "max_db_connections"]
+    value =
+        [
+            "project_id",
+            "dataset_id",
+            "credentials_json",
+            "job_project_id",
+            "max_db_connections",
+            "use_storage_read_api",
+        ]
 )
 @Singleton
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
@@ -80,4 +88,12 @@ class BigQuerySourceConfigurationSpecification : ConfigurationSpecification() {
     )
     @JsonSchemaInject(json = """{"group":"advanced","order":4,"always_show":true,"minimum":1}""")
     var maxDbConnections: Int? = null
+
+    @JsonProperty("use_storage_read_api")
+    @JsonSchemaTitle("Use the BigQuery Storage Read API")
+    @JsonSchemaDescription(
+        "Read query results through the high-throughput BigQuery Storage Read API instead of the REST API. This is many times faster for large tables. It requires the service account to have the BigQuery Read Session User role (the bigquery.readsessions.create permission), and Storage Read API usage is billed separately from query bytes. Read more <a href=\"https://cloud.google.com/bigquery/docs/reference/storage\">here</a>."
+    )
+    @JsonSchemaInject(json = """{"group":"advanced","order":5}""")
+    var useStorageReadApi: Boolean? = null
 }

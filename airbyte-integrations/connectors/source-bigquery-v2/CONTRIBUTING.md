@@ -77,7 +77,7 @@ with a precise `ConfigErrorException`. The JDBC URL is
 `jdbc:bigquery://https://www.googleapis.com/bigquery/v2:443;ProjectId=<project>;OAuthType=0` and
 the credentials travel as the JDBC properties `OAuthServiceAcctEmail` (= `client_email`) and
 `OAuthPvtKey` (= the PEM `private_key`), which is what Google's driver expects for `OAuthType=0`
-(besides `OAuthPvtKeyPath`, a key *file*); passing the whole key JSON inline is rejected with
+(besides `OAuthPvtKeyPath`, a key _file_); passing the whole key JSON inline is rejected with
 "No valid credentials provided." The CDK logs the URL, never the properties.
 
 ## Speed mode (socket data channel)
@@ -128,6 +128,34 @@ encoder and decoder, including a fixture row compared with its JSON rendering;
 `BigQuerySourceSpeedModeReadTest` (`@Isolated`, sets the `airbyte.connector.data-channel.*` system
 properties for the duration of the read) runs the emulator catalog once on STDIO and once over two
 sockets in each format, playing the destination, and checks records, states and statuses.
+
+## Read throughput: sequential reads and the Storage Read API
+
+Each stream is read by a single ordered, resumable query (`application.yml` `mode: sequential`).
+Splitting one table into concurrent partitions is deliberately not done: on BigQuery there is no
+scan-free way to compute balanced boundaries (`TABLESAMPLE SYSTEM` samples storage blocks, so its
+boundaries cluster and one partition ends up with almost the whole table), and each partition query
+re-reads whole storage blocks, multiplying the bytes billed. Tables are still read in parallel with
+each other, bounded by `maxConcurrency`.
+
+Throughput within a single query comes from the **BigQuery Storage Read API** instead, an opt-in
+`use_storage_read_api` spec property (default off). When set, the factory adds the driver property
+`EnableHighThroughputAPI=1`, and the driver streams query results as Apache Arrow batches over gRPC
+rather than paging JSON through REST. Measured on a 5.2M-row / 1.3 GB table, this took a sequential
+read from about 15 minutes to about 90 seconds; value fidelity is identical to the REST path across
+every type the connector emits.
+
+Two requirements:
+
+- **JVM flag**: Arrow needs `--add-opens=java.base/java.nio=ALL-UNNAMED` on JDK 17+; without it the
+  read fails to initialize Arrow. It is baked into `applicationDefaultJvmArgs` in `build.gradle`, so
+  the image has it. If you run the connector another way, add it to `JAVA_OPTS`.
+- **Permission**: the service account needs the BigQuery Read Session User role
+  (`bigquery.readsessions.create`). Storage Read API usage is billed separately from query bytes.
+
+The property is wired only against the real service; the emulator path leaves it off. The driver
+falls back to the REST API automatically for small results (fewer than ~10,000 rows or a single
+page), so enabling it never hurts small tables.
 
 ## The BigQuery emulator
 
@@ -200,7 +228,7 @@ Identical:
 - Namespaces are datasets (all datasets of the project when `dataset_id` is blank), streams are the
   tables, views, materialized views, external tables and snapshots of `tables.list`, discovered with
   the same `datasets.list` -> `tables.list` -> `tables.get` calls (legacy: `BigQueryDatabase.
-  getProjectTables`/`getDatasetTables`; v2 runs `tables.get` on 32 threads per dataset).
+getProjectTables`/`getDatasetTables`; v2 runs `tables.get` on 32 threads per dataset).
 - `INT64` -> `{"type":"number","airbyte_type":"integer"}`, `FLOAT64`/`NUMERIC`/`BIGNUMERIC` ->
   `number`, `BOOL` -> `boolean`, `STRING`/`GEOGRAPHY`/`INTERVAL` -> `string`.
 
@@ -232,11 +260,11 @@ the same configs, and `read` with configured catalogs derived from each image's 
 - `check`: both images succeed with and without `dataset_id`. Failure messages differ in wording
   only: unknown dataset -> `Not found: Dataset <project>:<dataset>` in both (legacy appends
   ` was not found in location US`); unknown project -> v2 `Project <id> is not found. Make sure it
-  references valid GCP project that hasn't been deleted.`, legacy `ProjectId must be non-empty`;
+references valid GCP project that hasn't been deleted.`, legacy `ProjectId must be non-empty`;
   broken private key -> v2 `'credentials_json' has an invalid 'private_key'...` (validated in the
   config factory because the driver only says `No valid credentials provided.`), legacy `Unexpected
-  exception reading PKCS#8 data`; `authorized_user` JSON -> v2 factory message, legacy `'type' value
-  'authorized_user' not recognized`. All are classified `config_error`.
+exception reading PKCS#8 data`; `authorized_user` JSON -> v2 factory message, legacy `'type' value
+'authorized_user' not recognized`. All are classified `config_error`.
 - `discover`: a 50-table dataset written by destination-bigquery differs only by the deliberate
   type upgrades listed above (382 typed `TIMESTAMP`/`DATE` columns, 217 typed `JSON` columns);
   two small tables differ only by `is_resumable: false` and `source_defined_cursor: false`, which
@@ -282,22 +310,23 @@ Everything above the emulator also passes on the real service; nothing is emulat
 
 ## Stage status and next steps
 
-| Stage | Status |
-|---|---|
-| 1. `spec` + `check` | Done: `BigQuerySourceConfigurationSpecification`, `BigQuerySourceConfiguration(Factory)`, `BigQueryClientFactory`, check queries and exception classifiers in `application.yml`; tests `BigQuerySourceSpecTest`, `BigQuerySourceConfigurationFactoryTest`, `BigQuerySourceCheckTest` |
-| 2. `discover` | Done: `BigQuerySourceMetadataQuerier` (native client, prefetch per dataset, `check` fetches one table), `BigQueryFieldTypes` (+ `BigQueryStructFieldType`/`BigQueryArrayFieldType`), `BigQuerySourceOperations.create()` renders nested schemas; snapshots `expected-catalog-single-dataset.json`, `expected-catalog-all-datasets.json` |
-| 3. first `read` (stream statuses) | Done: `read` boots on the toolkit's `JdbcConcurrentPartitionsCreatorFactory`/`DefaultJdbcSharedState`; `BigQuerySourceReadTest` checks `STARTED`/`COMPLETE` for populated, empty and view streams and `STARTED`/`INCOMPLETE` + config error for a missing one |
-| 4. `read` | Done: full refresh, cursor incremental with checkpoint and resume, legacy state translation; verified against the real service for scalar types. Speed mode (socket data channel, JSONL and protobuf) tested on the emulator |
-| 5. validation at scale | To do |
+| Stage                             | Status                                                                                                                                                                                                                                                                                                                                    |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. `spec` + `check`               | Done: `BigQuerySourceConfigurationSpecification`, `BigQuerySourceConfiguration(Factory)`, `BigQueryClientFactory`, check queries and exception classifiers in `application.yml`; tests `BigQuerySourceSpecTest`, `BigQuerySourceConfigurationFactoryTest`, `BigQuerySourceCheckTest`                                                      |
+| 2. `discover`                     | Done: `BigQuerySourceMetadataQuerier` (native client, prefetch per dataset, `check` fetches one table), `BigQueryFieldTypes` (+ `BigQueryStructFieldType`/`BigQueryArrayFieldType`), `BigQuerySourceOperations.create()` renders nested schemas; snapshots `expected-catalog-single-dataset.json`, `expected-catalog-all-datasets.json`   |
+| 3. first `read` (stream statuses) | Done: `read` boots on the toolkit's `JdbcSequentialPartitionsCreatorFactory`/`DefaultJdbcSharedState`; `BigQuerySourceReadTest` checks `STARTED`/`COMPLETE` for populated, empty and view streams and `STARTED`/`INCOMPLETE` + config error for a missing one                                                                             |
+| 4. `read`                         | Done: full refresh, cursor incremental with checkpoint and resume, legacy state translation; verified against the real service for scalar types. Speed mode (socket data channel, JSONL and protobuf) tested on the emulator                                                                                                              |
+| 5. validation at scale            | Concurrency measured on the real service: parallel partitions help only with balanced boundaries, which `TABLESAMPLE` cannot give, so reads are `mode: sequential`; per-query throughput comes from the opt-in Storage Read API (`use_storage_read_api`, see "Read throughput" above). Terabyte-scale heap/kill-resume checks still to do |
 
 How `read` is put together:
 
 - Partitions, readers, sampling, checkpointing and the emitted state shape are the `extract-jdbc`
   defaults (`DefaultJdbcPartition*`, `DefaultJdbcStreamStateValue`: `{"primary_key": {...},
-  "cursors": {...}}`). `application.yml` selects `mode: concurrent` with sampling; on STDIO
-  `maxConcurrency` is 1, so tables below the target partition size are read by a single
-  non-resumable `SELECT`, i.e. one BigQuery job per table plus up to three small sampling jobs.
-  In speed mode `maxConcurrency` is the number of sockets (see "Speed mode" above).
+"cursors": {...}}`). `application.yml` selects `mode: sequential` with sampling, so each stream is
+  read by a single ordered, resumable `SELECT` (one BigQuery job per table plus up to three small
+  sampling jobs); tables are read in parallel with each other up to `maxConcurrency`. In speed mode
+  `maxConcurrency` is the number of sockets (see "Speed mode" above). See "Read throughput" for why
+  within-stream partitioning is off and how the Storage Read API supplies per-query throughput.
 - `BigQueryJdbcPartitionFactory` (`@Primary`) wraps `DefaultJdbcPartitionFactory` and only steps
   in when the stream's state is in the legacy `source-bigquery` shape
   (`BigQueryLegacyStreamState`): the legacy cursor string is converted to the cursor column's
@@ -327,7 +356,7 @@ How `read` is put together:
   `BigQueryBaseResultSet` (`getBoolean`, `getLong`, `getInt`, `getShort`, `getByte`, `getDouble`,
   `getFloat`) is `getObject` + `BigQueryTypeRegistry.convert(value, Class)` + an unboxing without a
   null check, so a NULL value throws `NullPointerException: Cannot invoke "java.lang.Long.longValue()"
-  because the return value of "BigQueryTypeRegistry.convert(Object, Class)" is null`. The toolkit's
+because the return value of "BigQueryTypeRegistry.convert(Object, Class)" is null`. The toolkit's
   `BooleanFieldType`/`LongFieldType`/`DoubleFieldType` call those getters before `wasNull`, and
   `JdbcSelectQuerier` reports the exception as a `SOURCE_RETRIEVAL_ERROR` change on the record (the
   value is null either way; on `purchases`, 1.2M records, exactly the 21 NULL `INT64` values carried

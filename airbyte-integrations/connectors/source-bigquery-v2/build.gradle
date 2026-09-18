@@ -6,6 +6,19 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.source.bigqueryv2.BigQuerySource'
+    // The read streams rows with a bounded heap, and the Storage Read API path
+    // ('use_storage_read_api') additionally uses Apache Arrow OFF-HEAP direct memory. Override the
+    // Bulk CDK default JVM args (which pre-commit and cap the heap at 75% of the container via
+    // Initial/MaxRAMPercentage): pre-committing 75% and then allocating Arrow off-heap on top
+    // inflates the pod's footprint and, on small single-node deployments (e.g. abctl, where the
+    // whole cluster shares one VM), starves co-located pods and gets the Airbyte server OOMKilled.
+    // Cap the heap at 50% so Arrow and native memory have room inside the pod, don't pre-commit it,
+    // keep fail-fast on heap exhaustion, and open java.nio for Arrow. Mirrors source-snowflake.
+    applicationDefaultJvmArgs = [
+            '-XX:+ExitOnOutOfMemoryError',
+            '-XX:MaxRAMPercentage=50.0',
+            '--add-opens=java.base/java.nio=ALL-UNNAMED',
+    ]
 }
 
 airbyteBulkConnector {

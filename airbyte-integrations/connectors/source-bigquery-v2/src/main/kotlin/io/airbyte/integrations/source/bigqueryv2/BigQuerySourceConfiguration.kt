@@ -44,6 +44,12 @@ data class BigQuerySourceConfiguration(
      */
     val jobProjectId: String,
     /**
+     * Whether query results are read through the BigQuery Storage Read API (the driver's
+     * `EnableHighThroughputAPI`). Much faster than the REST API on large tables; only applied
+     * against the real service (never the emulator).
+     */
+    val useStorageReadApi: Boolean,
+    /**
      * Base URL of a BigQuery API emulator (e.g. `http://localhost:9050`), or null to use the real
      * service. Test-only, see [BigQueryEmulator].
      */
@@ -78,7 +84,7 @@ data class BigQuerySourceConfiguration(
     /** Keeps the credentials out of logs. */
     override fun toString(): String =
         "BigQuerySourceConfiguration(projectId=$projectId, datasetId=$datasetId, " +
-            "jobProjectId=$jobProjectId, emulatorHost=$emulatorHost, jdbcUrlFmt=$jdbcUrlFmt, " +
+            "jobProjectId=$jobProjectId, useStorageReadApi=$useStorageReadApi, emulatorHost=$emulatorHost, jdbcUrlFmt=$jdbcUrlFmt, " +
             "jdbcProperties=${jdbcProperties.keys}, maxConcurrency=$maxConcurrency, " +
             "checkpointTargetInterval=$checkpointTargetInterval)"
 
@@ -152,7 +158,23 @@ constructor(
         // The URL is logged by the CDK; secrets go into the JDBC properties instead. The driver's
         // ProjectId is the project that runs (and is billed for) the query jobs; the data project
         // only appears in the fully qualified table references of the generated SQL.
+        // The BigQuery Storage Read API (driver property EnableHighThroughputAPI) is only wired
+        // against the real service: the emulator path is test-only and does not serve it. The read
+        // still requires the JVM to be started with
+        // '--add-opens=java.base/java.nio=ALL-UNNAMED' (baked into the image's JVM args) so Apache
+        // Arrow can access direct memory.
+        val useStorageReadApi: Boolean =
+            (pojo.useStorageReadApi == true) && serviceAccountKey != null
+
         val jdbcProperties: MutableMap<String, String> = mutableMapOf("ProjectId" to jobProjectId)
+        if (useStorageReadApi) {
+            jdbcProperties["EnableHighThroughputAPI"] = "1"
+        }
+        val readApiState: String = if (useStorageReadApi) "ENABLED" else "disabled"
+        log.info {
+            "BigQuery Storage Read API (high-throughput reads): $readApiState " +
+                "(use_storage_read_api=${pojo.useStorageReadApi})"
+        }
         val jdbcUrlFmt: String
         val realHost: String
         if (serviceAccountKey != null) {
@@ -179,6 +201,7 @@ constructor(
             credentialsJson = credentialsJson,
             datasetId = datasetId,
             jobProjectId = jobProjectId,
+            useStorageReadApi = useStorageReadApi,
             emulatorHost = emulatorHost,
             jdbcUrlFmt = jdbcUrlFmt.replace("%", "%%"),
             jdbcProperties = jdbcProperties,

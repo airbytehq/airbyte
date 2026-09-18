@@ -28,6 +28,7 @@ class BigQuerySourceConfigurationFactoryTest {
         credentialsJson: String? = SERVICE_ACCOUNT_KEY,
         jobProjectId: String? = null,
         maxDbConnections: Int? = null,
+        useStorageReadApi: Boolean? = null,
     ): String {
         val node = Jsons.objectNode()
         projectId?.let { node.put("project_id", it) }
@@ -35,6 +36,7 @@ class BigQuerySourceConfigurationFactoryTest {
         credentialsJson?.let { node.put("credentials_json", it) }
         jobProjectId?.let { node.put("job_project_id", it) }
         maxDbConnections?.let { node.put("max_db_connections", it) }
+        useStorageReadApi?.let { node.put("use_storage_read_api", it) }
         return Jsons.writeValueAsString(node)
     }
 
@@ -66,6 +68,9 @@ class BigQuerySourceConfigurationFactoryTest {
         Assertions.assertFalse(config.checkPrivileges)
         Assertions.assertEquals(1, config.maxConcurrency)
         Assertions.assertNull(config.maxSnapshotReadDuration)
+        // The Storage Read API is opt-in; by default the driver uses the REST API.
+        Assertions.assertFalse(config.useStorageReadApi)
+        Assertions.assertFalse(config.jdbcProperties.containsKey("EnableHighThroughputAPI"))
     }
 
     @Test
@@ -136,6 +141,26 @@ class BigQuerySourceConfigurationFactoryTest {
                 e.message
             )
         }
+    }
+
+    @Test
+    fun testStorageReadApiIsOffByDefaultAndTogglesTheDriverProperty() {
+        val off: BigQuerySourceConfiguration = make(configJson(useStorageReadApi = false))
+        Assertions.assertFalse(off.useStorageReadApi)
+        Assertions.assertFalse(off.jdbcProperties.containsKey("EnableHighThroughputAPI"))
+
+        val on: BigQuerySourceConfiguration = make(configJson(useStorageReadApi = true))
+        Assertions.assertTrue(on.useStorageReadApi)
+        Assertions.assertEquals("1", on.jdbcProperties["EnableHighThroughputAPI"])
+    }
+
+    @Test
+    fun testStorageReadApiIsNotWiredAgainstTheEmulator() {
+        System.setProperty(BigQueryEmulator.SYSTEM_PROPERTY, "http://localhost:9050")
+        val config: BigQuerySourceConfiguration = make(configJson(useStorageReadApi = true))
+        // The emulator path is test-only and does not serve the Storage Read API.
+        Assertions.assertFalse(config.useStorageReadApi)
+        Assertions.assertFalse(config.jdbcProperties.containsKey("EnableHighThroughputAPI"))
     }
 
     @Test

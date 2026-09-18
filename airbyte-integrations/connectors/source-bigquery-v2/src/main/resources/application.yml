@@ -8,7 +8,12 @@ airbyte:
       buffer-byte-size-threshold-for-flush: 8192
     extract:
       jdbc:
-        mode: concurrent
+        # One partition per stream: read each table with a single ordered, resumable query. On
+        # BigQuery, splitting a table into concurrent partitions needs a scan-free way to compute
+        # balanced boundaries (TABLESAMPLE block-sampling does not give one) and its per-partition
+        # re-scan multiplies bytes billed. Throughput comes from the Storage Read API
+        # ('use_storage_read_api') instead. Tables are still read in parallel with each other.
+        mode: sequential
         with-sampling: true
         table-sample-size: 1024
         throughput-bytes-per-second: 10000000

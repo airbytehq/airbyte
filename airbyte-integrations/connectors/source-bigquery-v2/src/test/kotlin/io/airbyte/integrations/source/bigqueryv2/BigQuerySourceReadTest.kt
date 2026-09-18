@@ -170,9 +170,9 @@ class BigQuerySourceReadTest {
     }
 
     /**
-     * `max_db_connections` above 1 lets the toolkit read partitions concurrently, and a
-     * `job_project_id` (the emulator's only project) exercises the fully qualified table
-     * references; the output must not change.
+     * `max_db_connections` above 1 lets the toolkit read several streams at once (in `sequential`
+     * mode each stream is still one partition), and a `job_project_id` (the emulator's only
+     * project) exercises the fully qualified table references; the output must not change.
      */
     @Test
     fun testFullRefreshWithConcurrentQueriesAndJobProject() {

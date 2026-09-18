@@ -44,12 +44,25 @@
         "order": 4,
         "always_show": true,
         "minimum": 1
+      },
+      "use_storage_read_api": {
+        "type": "boolean",
+        "description": "Read query results through the high-throughput BigQuery Storage Read API instead of the REST API. This is many times faster for large tables. It requires the service account to have the BigQuery Read Session User role (the bigquery.readsessions.create permission), and Storage Read API usage is billed separately from query bytes. Read more <a href=\"https://cloud.google.com/bigquery/docs/reference/storage\">here</a>.",
+        "title": "Use the BigQuery Storage Read API",
+        "group": "advanced",
+        "order": 5
       }
     },
     "required": ["project_id", "credentials_json"],
     "groups": [
-      { "id": "connection", "title": "Connection" },
-      { "id": "advanced", "title": "Advanced" }
+      {
+        "id": "connection",
+        "title": "Connection"
+      },
+      {
+        "id": "advanced",
+        "title": "Advanced"
+      }
     ]
   },
   "supportsNormalization": false,
