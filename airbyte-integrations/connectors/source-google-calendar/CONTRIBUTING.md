@@ -4,7 +4,7 @@ Manifest-only declarative connector built on `source-declarative-manifest`. All 
 
 ## Authentication
 
-Two options under `credentials`: OAuth (recommended — backed by `advanced_auth` for the Airbyte Cloud "Authenticate your Google account" flow, scope `calendar.readonly`) and a manual refresh-token option for OSS users who mint their own token. Legacy flat configs (`client_id`/`client_secret`/`client_refresh_token_2`) are transparently migrated by `config_normalization_rules`.
+Two options under `credentials`: OAuth (recommended — backed by `advanced_auth` for the Airbyte Cloud "Authenticate your Google account" flow, scopes `calendar.readonly` and `calendar.acls.readonly`) and a manual refresh-token option for OSS users who mint their own token. Legacy flat configs (`client_id`/`client_secret`/`client_refresh_token_2`) are transparently migrated by `config_normalization_rules`.
 
 ## Design choices
 

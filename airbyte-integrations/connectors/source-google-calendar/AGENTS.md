@@ -6,7 +6,7 @@ Manifest-only connector (`manifest.yaml` only; no `components.py`). Base image `
 
 ## Authentication
 
-`credentials` oneOf: `oauth2.0` (Cloud OAuth button via `advanced_auth`, scope `https://www.googleapis.com/auth/calendar.readonly`, `extract_output: [refresh_token]`) or `manual` refresh token. `config_normalization_rules` migrates legacy flat `client_id`/`client_secret`/`client_refresh_token_2` configs into `credentials` at runtime.
+`credentials` oneOf: `oauth2.0` (Cloud OAuth button via `advanced_auth`, scopes `https://www.googleapis.com/auth/calendar.readonly` and `https://www.googleapis.com/auth/calendar.acls.readonly`, `extract_output: [refresh_token]`) or `manual` refresh token. `config_normalization_rules` migrates legacy flat `client_id`/`client_secret`/`client_refresh_token_2` configs into `credentials` at runtime.
 
 ## Per-stream reference
 
@@ -30,7 +30,7 @@ Manifest-only connector (`manifest.yaml` only; no `components.py`). Base image `
 
 ## Error handling
 
-`base_requester` CompositeErrorHandler order matters: 403 rate-limit predicate (`userRateLimitExceeded`/`rateLimitExceeded`/`quotaExceeded` → RETRY RATE_LIMITED) must precede the plain-403 config_error filter. 404 → config_error (bad `calendarid`). 410 → system_error (stale `events` cursor → reset). The `acl` requester overrides with 403+404 IGNORE (non-owned calendars / missing scope). `api_budget` = 500/PT1M with `matchers: []` (empty matches all requests, including POST `freebusy`).
+`base_requester` CompositeErrorHandler order matters: 403 rate-limit predicate (`userRateLimitExceeded`/`rateLimitExceeded` → RETRY RATE_LIMITED) must precede the plain-403 config_error filter. 404 → config_error (bad `calendarid`). 410 → system_error (stale `events` cursor → reset). The `acl` requester overrides with 403+404 IGNORE (non-owned calendars / missing scope). `api_budget` = 500/PT1M with `matchers: []` (empty matches all requests, including POST `freebusy`).
 
 ## Excluded resource
 
