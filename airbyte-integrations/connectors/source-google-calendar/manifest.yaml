@@ -204,7 +204,7 @@ definitions:
                 - 401
               action: FAIL
               failure_type: config_error
-              error_message: "Google rejected the credentials. Re-authenticate the connector or regenerate the refresh token."
+              error_message: "Google rejected the OAuth credentials for the Calendar API."
             - type: HttpResponseFilter
               http_codes:
                 - 403
@@ -215,19 +215,19 @@ definitions:
                 - 403
               action: FAIL
               failure_type: config_error
-              error_message: "The authorized Google account does not have access to this calendar or the Calendar API is not enabled for the OAuth project."
+              error_message: "The authorized Google account lacks access to the configured calendar or the Calendar API is disabled."
             - type: HttpResponseFilter
               http_codes:
                 - 404
               action: FAIL
               failure_type: config_error
-              error_message: "Calendar '{{ config['calendarid'] }}' was not found. Use the calendar's ID from Google Calendar settings (or 'primary')."
+              error_message: "The calendar configured in \"Calendar Id\" was not found by the Google Calendar API."
             - type: HttpResponseFilter
               http_codes:
                 - 410
               action: FAIL
               failure_type: system_error
-              error_message: "The saved sync position is too old for Google Calendar. Reset the events stream to resync."
+              error_message: "The saved sync position for the events stream is older than Google Calendar permits."
             - type: HttpResponseFilter
               http_codes:
                 - 429
