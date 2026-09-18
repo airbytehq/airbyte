@@ -56,6 +56,17 @@ def test_clickhouse_uuid_order_and_slice_start_are_preserved(requests_mock):
     assert [dict(r) for r in read(stream("events"))] == records
 
 
+def test_duplicate_event_keys_within_a_page_are_preserved(requests_mock):
+    records = [event(1), event(1), event(2)]
+    requests_mock.get(
+        BASE + "events/",
+        [{"json": {"results": records}}, {"json": {"results": [event(3)]}}, {"json": {"results": []}}],
+    )
+    events = stream("events")
+    assert [dict(r) for r in read(events)] == records + [event(3)]
+    assert events.state == {"42": {"timestamp": event(3)["timestamp"]}}
+
+
 @pytest.mark.parametrize(
     "bad_page",
     [

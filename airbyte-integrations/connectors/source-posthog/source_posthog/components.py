@@ -116,14 +116,18 @@ class EventsRetriever(PosthogRetriever):
             if not isinstance(payload, dict) or not isinstance(payload.get("results"), list):
                 raise ValueError("PostHog returned an invalid events page")
         records = list(super()._parse_response(response, stream_state, records_schema, stream_slice, next_page_token))
-        previous = self._key(self._event_page_token) if self._event_page_token else None
+        boundary = self._key(self._event_page_token) if self._event_page_token else None
+        previous = None
         start, end = self._timestamp(stream_slice["start_time"]), self._timestamp(stream_slice["end_time"])
         for record in records:
             key = self._key(record)
             if not start <= key[0] < end:
                 raise ValueError("PostHog returned an event outside the requested slice")
-            if previous is not None and key <= previous:
-                raise ValueError("PostHog event pagination did not advance in timestamp/UUID order")
+            if boundary is not None and key <= boundary:
+                raise ValueError("PostHog event page did not advance beyond the requested timestamp/UUID cursor")
+            if previous is not None and key < previous:
+                field = "timestamp" if key[0] < previous[0] else "UUID"
+                raise ValueError(f"PostHog event page reversed {field} order within the page")
             previous = key
         return records
 

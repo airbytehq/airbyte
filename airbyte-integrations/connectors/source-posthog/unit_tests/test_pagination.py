@@ -16,7 +16,7 @@ def stream(name, **config):
 import pytest
 
 
-@pytest.mark.parametrize("page_size", [1000, 250])
+@pytest.mark.parametrize("page_size", [1000, 250, 10000])
 def test_persons_follow_next_and_configure_page_size(requests_mock, page_size):
     url = BASE + "persons"
     requests_mock.get(url, json={"results": [{"id": "one"}], "next": url + "?offset=1&limit=100"})

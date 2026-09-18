@@ -41,7 +41,7 @@
         "type": "integer",
         "default": 1000,
         "minimum": 100,
-        "maximum": 1000,
+        "maximum": 10000,
         "title": "Persons page size",
         "description": "Persons per request. Larger pages reduce API requests during the full refresh; lower this if your PostHog server times out."
       },
