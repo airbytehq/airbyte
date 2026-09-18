@@ -12,7 +12,7 @@ The connector authenticates with the Uptick API using OAuth 2.0 with the passwor
 
 To generate the OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance, select **Create Application**, provide a name, and save. Uptick generates the Client ID and Client Secret for you. For step-by-step instructions, see [Uptick API - Getting started](https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started).
 
-The Uptick user account needs an API application created under **Control Panel > Uptick API**, read access to each module you want to sync, and the Intelligence reports permission to sync `task_profitability`.
+The Uptick user account needs read access to each module you want to sync, and the Intelligence reports permission to sync `task_profitability`.
 
 ## Setup guide
 
