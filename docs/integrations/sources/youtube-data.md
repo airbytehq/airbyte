@@ -132,6 +132,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 1.0.2 | 2026-09-18 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Fix authentication failures (HTTP 401) on channels with many videos: refresh the access token and retry on 401, and shorten API budget windows so syncs no longer wait past the token lifetime |
 | 1.0.1 | 2026-09-15 | [86306](https://github.com/airbytehq/airbyte/pull/86306) | Update dependencies |
 | 1.0.0 | 2026-08-31 | [85214](https://github.com/airbytehq/airbyte/pull/85214) | Breaking: promote connector to certified — declare primary keys and timestamp formats and restrict `videos` to video results (see the [migration guide](/integrations/sources/youtube-data-migrations)) |
 | 0.0.66 | 2026-09-08 | [85721](https://github.com/airbytehq/airbyte/pull/85721) | Update dependencies |
