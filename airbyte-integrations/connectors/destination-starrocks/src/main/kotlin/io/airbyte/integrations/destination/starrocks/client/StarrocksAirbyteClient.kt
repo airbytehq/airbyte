@@ -30,7 +30,9 @@ import io.airbyte.integrations.destination.starrocks.tunnel.StarrocksSshTunnel
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.DriverManager
+import java.time.Duration
 import java.util.UUID
+import kotlinx.coroutines.delay
 
 private val log = KotlinLogging.logger {}
 
@@ -333,7 +335,15 @@ class StarrocksAirbyteClient(
         expectedColumns: Map<String, ColumnType>,
         columnChangeset: ColumnChangeset,
     ) {
-        if (columnChangeset.isNoop()) return
+        // Explicit emptiness check rather than ColumnChangeset.isNoop(): since load CDK 1.0.17
+        // isNoop() ignores columnsToDrop, which would silently turn a drop-only changeset into a
+        // no-op. This connector applies documented in-place drops (non-key columns).
+        if (
+            columnChangeset.columnsToAdd.isEmpty() &&
+                columnChangeset.columnsToDrop.isEmpty() &&
+                columnChangeset.columnsToChange.isEmpty()
+        )
+            return
 
         // A type/nullability change often can't be applied in place — StarRocks rejects many ALTER
         // MODIFYs (e.g. BIGINT->DECIMAL for integer->number). Rather than
@@ -349,31 +359,82 @@ class StarrocksAirbyteClient(
         }
 
         // No type changes: cheap in-place ADD/DROP (metadata-only on shared-data fast schema
-        // evolution).
-        val qualifiedTable = "${quoteIdent(tableName.namespace)}.${quoteIdent(tableName.name)}"
-        columnChangeset.columnsToAdd.forEach { (name, type) ->
-            // New columns are always added NULLABLE: StarRocks rejects `ADD COLUMN ... NOT NULL`
-            // without a DEFAULT on a populated table, and existing rows have no value for a freshly
-            // added column anyway (so they must be null) (#43).
-            if (!type.nullable) {
-                log.warn {
-                    "Adding column `$name` as NULLABLE — StarRocks cannot ADD a NOT NULL column to an existing table"
+        // evolution). All clauses go out as ONE ALTER statement: StarRocks runs each ALTER as an
+        // async schema-change job and rejects a second ALTER on the table while the first is still
+        // in flight ("A schema change operation is in progress"), which a per-column ALTER loop hit
+        // live on a 4.0 shared-data cluster.
+        val addColumns =
+            columnChangeset.columnsToAdd.map { (name, type) ->
+                // New columns are always added NULLABLE: StarRocks rejects `ADD COLUMN ... NOT
+                // NULL`
+                // without a DEFAULT on a populated table, and existing rows have no value for a
+                // freshly added column anyway (so they must be null) (#43).
+                if (!type.nullable) {
+                    log.warn {
+                        "Adding column `$name` as NULLABLE — StarRocks cannot ADD a NOT NULL column to an existing table"
+                    }
                 }
+                StarrocksColumn(name, type.type, nullable = true)
             }
-            execute("ALTER TABLE $qualifiedTable ADD COLUMN ${quoteIdent(name)} ${type.type} NULL")
-        }
-        columnChangeset.columnsToDrop.forEach { (name, _) ->
-            // #70 Gap A (deferred — intentionally not guarded): if `name` is a PRIMARY KEY column
-            // (the
-            // source dropped/renamed its PK), StarRocks rejects this ("Can not drop key column in
-            // primary data model table") and the sync fails. The real fix is a table recreation,
-            // which
-            // Airbyte gates behind a manual Refresh (a PK removal is a breaking change → the
-            // connection
-            // pauses for review). Revisit only to surface a clearer error than the raw 1064.
-            execute("ALTER TABLE $qualifiedTable DROP COLUMN ${quoteIdent(name)}")
+        // #70 Gap A (deferred — intentionally not guarded): if a dropped column is a PRIMARY KEY
+        // column (the source dropped/renamed its PK), StarRocks rejects this ("Can not drop key
+        // column in primary data model table") and the sync fails. The real fix is a table
+        // recreation, which Airbyte gates behind a manual Refresh (a PK removal is a breaking
+        // change → the connection pauses for review). Revisit only to surface a clearer error than
+        // the raw 1064.
+        val dropColumns = columnChangeset.columnsToDrop.keys.toList()
+        execute(
+            sqlGenerator.alterTableColumns(
+                tableName.namespace,
+                tableName.name,
+                addColumns,
+                dropColumns
+            ),
+        )
+        awaitSchemaChange(tableName)
+    }
+
+    /**
+     * Waits for the most recent schema-change job on [tableName] to finish. StarRocks applies
+     * `ALTER TABLE ... COLUMN` asynchronously: the statement returns while the job is still
+     * PENDING/RUNNING. Loads against the table succeed meanwhile, but the next ALTER on it (the
+     * next sync's evolution) is rejected with "A schema change operation is in progress", and
+     * `information_schema.columns` may still show the old shape. On shared-data clusters this
+     * finishes within seconds; the bound turns a stuck job into a loud failure instead of a hang.
+     */
+    internal suspend fun awaitSchemaChange(tableName: TableName) {
+        val deadline = System.nanoTime() + SCHEMA_CHANGE_TIMEOUT.toNanos()
+        while (true) {
+            val (state, msg) = latestSchemaChange(tableName) ?: return
+            when (state) {
+                "FINISHED" -> return
+                "CANCELLED" ->
+                    throw IllegalStateException(
+                        "Schema change on ${tableName.namespace}.${tableName.name} was cancelled by StarRocks: $msg"
+                    )
+            }
+            check(System.nanoTime() < deadline) {
+                "Schema change on ${tableName.namespace}.${tableName.name} still $state after " +
+                    "${SCHEMA_CHANGE_TIMEOUT.toMinutes()} min; see SHOW ALTER TABLE COLUMN"
+            }
+            delay(SCHEMA_CHANGE_POLL.toMillis())
         }
     }
+
+    /** (State, Msg) of the latest schema-change job on the table, or null if it never had one. */
+    private fun latestSchemaChange(tableName: TableName): Pair<String, String>? =
+        withConnection { conn ->
+            conn.createStatement().use { stmt ->
+                stmt
+                    .executeQuery(
+                        sqlGenerator.showLatestSchemaChange(tableName.namespace, tableName.name)
+                    )
+                    .use { rs ->
+                        if (rs.next()) rs.getString("State") to (rs.getString("Msg") ?: "")
+                        else null
+                    }
+            }
+        }
 
     /**
      * Rebuilds [tableName] to the stream's desired schema when a type/nullability change can't be
@@ -455,6 +516,8 @@ class StarrocksAirbyteClient(
     }
 
     companion object {
+        private val SCHEMA_CHANGE_POLL: Duration = Duration.ofSeconds(1)
+        private val SCHEMA_CHANGE_TIMEOUT: Duration = Duration.ofMinutes(10)
         private val META_COLUMNS =
             listOf(
                 COLUMN_NAME_AB_RAW_ID,

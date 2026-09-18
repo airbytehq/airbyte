@@ -254,8 +254,11 @@ This applies to:
 ## Schema evolution
 
 When a source column is added, dropped, or retyped, the connector evolves the destination table to
-match. Adding a column and dropping a non-key column are applied in place (`ADD COLUMN` — always
-nullable, since StarRocks cannot add a `NOT NULL` column to a populated table — and `DROP COLUMN`).
+match. Adding a column and dropping a non-key column are applied in place, as a single
+`ALTER TABLE` statement per sync (`ADD COLUMN` — always nullable, since StarRocks cannot add a
+`NOT NULL` column to a populated table — and `DROP COLUMN`). StarRocks runs the change as an
+asynchronous schema-change job; the connector waits for it to finish before loading, so consecutive
+syncs that each evolve the schema do not collide.
 
 **Type changes** are applied by **rebuilding the table**. StarRocks cannot `ALTER ... MODIFY COLUMN`
 between many types in place (for example `integer` ⇄ `number`, i.e. `BIGINT` ⇄ `DECIMAL`), so the

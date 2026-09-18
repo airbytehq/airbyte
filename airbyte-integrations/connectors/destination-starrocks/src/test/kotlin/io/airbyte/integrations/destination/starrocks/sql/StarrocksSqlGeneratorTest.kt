@@ -157,6 +157,46 @@ class StarrocksSqlGeneratorTest {
     }
 
     @Test
+    fun `in-place column evolution is ONE ALTER with comma-separated clauses`() {
+        // Regression: a per-column ALTER loop failed live with "A schema change operation is in
+        // progress" because StarRocks runs each ALTER TABLE ... COLUMN as an async job and rejects
+        // a second one on the same table while the first is in flight. Adds are always NULL-able.
+        val sql =
+            gen.alterTableColumns(
+                database = "db",
+                table = "t",
+                addColumns =
+                    listOf(
+                        StarrocksColumn("d", "STRING", nullable = true),
+                        StarrocksColumn("e", "BIGINT", nullable = false),
+                    ),
+                dropColumns = listOf("a", "c"),
+            )
+        assertEquals(
+            "ALTER TABLE `db`.`t` ADD COLUMN `d` STRING NULL, ADD COLUMN `e` BIGINT NULL, " +
+                "DROP COLUMN `a`, DROP COLUMN `c`",
+            sql,
+        )
+        assertEquals(1, sql.split("ALTER TABLE").size - 1, "must be a single statement")
+        assertEquals(
+            "ALTER TABLE `db`.`t` DROP COLUMN `x`",
+            gen.alterTableColumns("db", "t", emptyList(), listOf("x")),
+        )
+        assertThrows<IllegalArgumentException> {
+            gen.alterTableColumns("db", "t", emptyList(), emptyList())
+        }
+    }
+
+    @Test
+    fun `latest schema-change lookup inlines an escaped string literal (SHOW ALTER rejects prepared params)`() {
+        assertEquals(
+            "SHOW ALTER TABLE COLUMN FROM `db` WHERE TableName = 'it''s' ORDER BY CreateTime DESC LIMIT 1",
+            gen.showLatestSchemaChange("db", "it's"),
+        )
+        assertEquals("'a''b'", sqlStringLiteral("a'b"))
+    }
+
+    @Test
     fun `swap target is qualified but the SWAP WITH operand is unqualified`() {
         // Regression: a 2nd overwrite sync emitted `SWAP WITH \`db\`.\`tmp\``, which StarRocks
         // rejects

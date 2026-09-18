@@ -12,6 +12,9 @@ package io.airbyte.integrations.destination.starrocks.sql
  */
 internal fun quoteIdent(name: String): String = "`" + name.replace("`", "``") + "`"
 
+/** Single-quoted SQL string literal with embedded quotes doubled. */
+internal fun sqlStringLiteral(value: String): String = "'" + value.replace("'", "''") + "'"
+
 /** A resolved StarRocks column (name + SQL type + nullability). */
 data class StarrocksColumn(val name: String, val sqlType: String, val nullable: Boolean)
 
@@ -43,6 +46,36 @@ class StarrocksSqlGenerator {
      */
     fun swapTable(database: String, target: String, withTable: String): String =
         "ALTER TABLE ${quoteIdent(database)}.${quoteIdent(target)} SWAP WITH ${quoteIdent(withTable)}"
+
+    /**
+     * In-place column evolution as ONE statement. StarRocks runs every `ALTER TABLE ... COLUMN` as
+     * an asynchronous schema-change job and rejects a second ALTER on the same table while one is
+     * still in flight ("A schema change operation is in progress"), so all adds and drops for a
+     * sync must be issued as comma-separated clauses of a single ALTER. Added columns are always
+     * NULL-able: StarRocks cannot ADD a NOT NULL column without a DEFAULT to a populated table.
+     */
+    /**
+     * Most recent schema-change job on [table]. StarRocks rejects `SHOW ALTER` in the prepared
+     * statement protocol, so the table name is inlined as an escaped string literal.
+     */
+    fun showLatestSchemaChange(database: String, table: String): String =
+        "SHOW ALTER TABLE COLUMN FROM ${quoteIdent(database)} " +
+            "WHERE TableName = ${sqlStringLiteral(table)} ORDER BY CreateTime DESC LIMIT 1"
+
+    fun alterTableColumns(
+        database: String,
+        table: String,
+        addColumns: List<StarrocksColumn>,
+        dropColumns: List<String>,
+    ): String {
+        require(addColumns.isNotEmpty() || dropColumns.isNotEmpty()) {
+            "alterTableColumns: nothing to alter"
+        }
+        val clauses =
+            addColumns.map { "ADD COLUMN ${quoteIdent(it.name)} ${it.sqlType} NULL" } +
+                dropColumns.map { "DROP COLUMN ${quoteIdent(it)}" }
+        return "ALTER TABLE ${quoteIdent(database)}.${quoteIdent(table)} ${clauses.joinToString(", ")}"
+    }
 
     fun createTable(
         database: String,
