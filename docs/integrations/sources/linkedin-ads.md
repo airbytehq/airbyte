@@ -236,7 +236,7 @@ Keep in mind the following limitations:
 - Legacy media assets uploaded through the deprecated Assets API (`urn:li:digitalmediaAsset:` URNs) cannot be retrieved through the Videos API and are skipped.
 - Posts or videos that were deleted, or that the authenticated user is not allowed to read, are skipped with a log message rather than failing the sync.
 - Resolving a creative's post requires the `r_organization_social` scope ([Posts API permissions](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/posts-api#permissions)). The connector's OAuth flow requests it; if you authenticate with a raw access token that lacks this scope, the stream completes with zero records because every post lookup is skipped.
-- Message Ads (Sponsored InMail) creatives reference InMail content rather than a post; they cannot carry videos retrievable through the Videos API and are skipped.
+- Message Ads (Sponsored InMail) creatives reference InMail content (`urn:li:adInMailContent:` URNs) rather than a post; they cannot carry videos retrievable through the Videos API, so the post lookup is rejected with a `400` and the creative is skipped with a log message rather than failing the sync.
 - The stream intentionally does not use the Videos API `associatedAccount` finder (the account's whole media library): LinkedIn gates that finder at the application level, and applications holding only the `r_ads` scope receive `403 ACCESS_DENIED` from it. Fetching each video by URN works with the standard scopes this connector already requests.
 
 ## IP allow list
@@ -250,6 +250,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.2.2 | 2026-09-15 | [86321](https://github.com/airbytehq/airbyte/pull/86321) | Fix the `videos` stream aborting the whole sync on Message Ads (Sponsored InMail) creatives: the skip predicate now also matches LinkedIn's `UGC_VALIDATIONS_FAILED` response, whose invalid-URN detail is nested in `errorDetails` rather than in `message` |
 | 6.2.1 | 2026-09-15 | [84019](https://github.com/airbytehq/airbyte/pull/84019) | Update dependencies |
 | 6.2.0 | 2026-09-14 | [76087](https://github.com/airbytehq/airbyte/pull/76087) | Add `organizations` stream via the `organizationAcls` endpoint |
 | 6.1.0 | 2026-09-14 | [81509](https://github.com/airbytehq/airbyte/pull/81509) | Add `videos` stream |

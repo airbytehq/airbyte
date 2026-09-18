@@ -613,10 +613,17 @@ definitions:
               # (Message Ads), which is not a post URN - the Posts API rejects it with
               # 400 INVALID_URN_TYPE - and an explicitly null reference would produce a
               # request for `posts/None`, also rejected as a malformed URN. Skip both:
-              # neither can reference a video. The predicate only matches 400s whose
-              # message points at the URN, so genuine request errors still fail loudly.
+              # neither can reference a video. LinkedIn returns two different envelopes
+              # here: a restli error naming the URN in `message`, and UGC_VALIDATIONS_FAILED
+              # whose `message` is generic and whose offending URN appears only under
+              # `errorDetails`. Match both. The errorDetails clause looks for the
+              # `urn:li:` token rather than a bare "URN", which would also match prose
+              # such as "returned"; a 400 with no URN signal still fails loudly.
               - type: HttpResponseFilter
-                predicate: "{{ response.get('status') == 400 and 'URN' in ((response.get('message') or '') | upper) }}"
+                predicate: >-
+                  {{ response.get('status') == 400
+                  and ('URN' in ((response.get('message') or '') | upper)
+                  or 'URN:LI:' in ((response.get('errorDetails') or {}) | string | upper)) }}
                 action: IGNORE
                 error_message: "Skipping a creative reference that is not a fetchable post URN (e.g. urn:li:adInMailContent from Message Ads); it cannot reference a video."
             backoff_strategies:
