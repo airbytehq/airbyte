@@ -80,7 +80,7 @@ Airbyte takes security issues very seriously. **Please do not file GitHub issues
 
 [Airbyte Enterprise](https://airbyte.com/airbyte-enterprise) also offers additional security features (among others) on top of Airbyte open-source.
 
-### License
+### Licenses
 
 See the [LICENSE](docs/LICENSE) file for licensing information, and our [FAQ](https://docs.airbyte.com/platform/developer-guides/licenses/license-faq) for any questions you may have on that topic.
 
