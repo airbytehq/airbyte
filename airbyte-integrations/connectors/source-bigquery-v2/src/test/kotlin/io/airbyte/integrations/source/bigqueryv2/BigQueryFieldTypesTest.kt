@@ -113,7 +113,7 @@ class BigQueryFieldTypesTest {
                 StandardSQLTypeName.INT64 to BigQueryLongFieldType,
                 StandardSQLTypeName.FLOAT64 to BigQueryDoubleFieldType,
                 StandardSQLTypeName.NUMERIC to BigDecimalFieldType,
-                StandardSQLTypeName.BIGNUMERIC to BigDecimalFieldType,
+                StandardSQLTypeName.BIGNUMERIC to BigQueryBigNumericFieldType,
                 StandardSQLTypeName.STRING to StringFieldType,
                 StandardSQLTypeName.BYTES to BytesFieldType,
                 StandardSQLTypeName.DATE to BigQueryDateFieldType,
@@ -138,7 +138,11 @@ class BigQueryFieldTypesTest {
     fun testTypeNamesFromJdbcMetadata() {
         Assertions.assertEquals(BigQueryLongFieldType, BigQueryFieldTypes.fromTypeName("INT64"))
         Assertions.assertEquals(BigQueryLongFieldType, BigQueryFieldTypes.fromTypeName("bigint"))
-        Assertions.assertEquals(BigDecimalFieldType, BigQueryFieldTypes.fromTypeName("BIGNUMERIC"))
+        Assertions.assertEquals(BigDecimalFieldType, BigQueryFieldTypes.fromTypeName("NUMERIC"))
+        Assertions.assertEquals(
+            BigQueryBigNumericFieldType,
+            BigQueryFieldTypes.fromTypeName("BIGNUMERIC")
+        )
         Assertions.assertEquals(
             OffsetDateTimeFieldType,
             BigQueryFieldTypes.fromTypeName("TIMESTAMP")

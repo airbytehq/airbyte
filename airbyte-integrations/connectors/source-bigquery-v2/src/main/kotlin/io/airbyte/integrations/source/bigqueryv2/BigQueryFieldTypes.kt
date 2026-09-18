@@ -12,6 +12,7 @@ import com.google.cloud.bigquery.FieldValue
 import com.google.cloud.bigquery.FieldValueList
 import com.google.cloud.bigquery.StandardSQLTypeName
 import io.airbyte.cdk.data.ArrayAirbyteSchemaType
+import io.airbyte.cdk.data.BigDecimalCodec
 import io.airbyte.cdk.data.BooleanCodec
 import io.airbyte.cdk.data.DoubleCodec
 import io.airbyte.cdk.data.JsonCodec
@@ -23,6 +24,7 @@ import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.FieldType
+import io.airbyte.cdk.jdbc.BigDecimalAccessor
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BooleanAccessor
 import io.airbyte.cdk.jdbc.BytesFieldType
@@ -37,6 +39,7 @@ import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
 import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
+import io.airbyte.cdk.jdbc.SymmetricJdbcFieldType
 import io.airbyte.cdk.jdbc.TimeAccessor
 import io.airbyte.cdk.jdbc.TimestampAccessor
 import io.airbyte.cdk.output.sockets.ProtobufAwareCustomConnectorJsonCodec
@@ -102,9 +105,9 @@ object BigQueryFieldTypes {
             "FLOAT64",
             "FLOAT" -> BigQueryDoubleFieldType
             "NUMERIC",
-            "DECIMAL",
+            "DECIMAL" -> BigDecimalFieldType
             "BIGNUMERIC",
-            "BIGDECIMAL" -> BigDecimalFieldType
+            "BIGDECIMAL" -> BigQueryBigNumericFieldType
             "STRING" -> StringFieldType
             "BYTES" -> BytesFieldType
             "DATE" -> BigQueryDateFieldType
@@ -258,6 +261,16 @@ sealed class BigQueryTextTemporalFieldType<T>(
     codec: JsonCodec<T>,
     setter: JdbcSetter<in T>,
     parser: (String) -> T,
+    /**
+     * The BigQuery type name (`DATE`, `DATETIME`, `TIME`) used to `CAST` a bound cursor/PK value in
+     * a `WHERE` clause. These columns are compared natively (not as text), but no JDBC setter
+     * produces a `DATETIME` parameter — the driver's `setTimestamp`/`setObject(LocalDateTime)` both
+     * bind a `TIMESTAMP`, which BigQuery refuses to compare against a `DATETIME` column ("No
+     * matching signature for operator >= for argument types: DATETIME, TIMESTAMP"). The value is
+     * therefore bound as a `STRING` and cast back to this type in SQL (see
+     * [BigQuerySourceOperations]).
+     */
+    val bigQueryTypeName: String,
 ) :
     LosslessJdbcFieldType<T, T>(
         airbyteSchemaType,
@@ -273,6 +286,7 @@ data object BigQueryDateFieldType :
         LocalDateCodec,
         DateAccessor,
         { LocalDate.parse(it) },
+        "DATE",
     )
 
 data object BigQueryDateTimeFieldType :
@@ -281,6 +295,7 @@ data object BigQueryDateTimeFieldType :
         LocalDateTimeCodec,
         TimestampAccessor,
         { LocalDateTime.parse(it, BigQueryTemporalText.DATETIME) },
+        "DATETIME",
     )
 
 data object BigQueryTimeFieldType :
@@ -289,6 +304,22 @@ data object BigQueryTimeFieldType :
         LocalTimeCodec,
         TimeAccessor,
         { LocalTime.parse(it, BigQueryTemporalText.TIME) },
+        "TIME",
+    )
+
+/**
+ * `BIGNUMERIC` is read as a [BigDecimal] exactly like `NUMERIC` ([BigDecimalFieldType]); it exists
+ * as a distinct type only so a `WHERE` bound can be cast to `BIGNUMERIC` (see
+ * [BigQuerySourceOperations]): the JDBC driver binds a `BigDecimal` as a `NUMERIC` parameter, which
+ * cannot hold a `BIGNUMERIC` value ("Invalid NUMERIC value") and would be a `NUMERIC` vs
+ * `BIGNUMERIC` comparison. Values are emitted as plain JSON numbers (never scientific notation),
+ * which the CDK's number serialization already guarantees.
+ */
+data object BigQueryBigNumericFieldType :
+    SymmetricJdbcFieldType<BigDecimal>(
+        LeafAirbyteSchemaType.NUMBER,
+        BigDecimalAccessor,
+        BigDecimalCodec,
     )
 
 /** Reads the column as text and parses it. */

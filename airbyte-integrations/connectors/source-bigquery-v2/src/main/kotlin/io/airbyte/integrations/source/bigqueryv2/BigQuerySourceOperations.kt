@@ -15,7 +15,9 @@ import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
+import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
+import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.Equal
@@ -46,6 +48,7 @@ import io.airbyte.cdk.read.Where
 import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.WhereNode
+import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.micronaut.context.annotation.Primary
@@ -195,12 +198,34 @@ private constructor(
         when (this) {
             is And -> conj.joinToString(") AND (", "(", ")") { it.sql() }
             is Or -> disj.joinToString(") OR (", "(", ")") { it.sql() }
-            is Equal -> "${column.sql()} = ?"
-            is GreaterOrEqual -> "${column.sql()} >= ?"
-            is Greater -> "${column.sql()} > ?"
-            is LesserOrEqual -> "${column.sql()} <= ?"
-            is Lesser -> "${column.sql()} < ?"
+            is Equal -> "${column.sql()} = ${column.bindPlaceholder()}"
+            is GreaterOrEqual -> "${column.sql()} >= ${column.bindPlaceholder()}"
+            is Greater -> "${column.sql()} > ${column.bindPlaceholder()}"
+            is LesserOrEqual -> "${column.sql()} <= ${column.bindPlaceholder()}"
+            is Lesser -> "${column.sql()} < ${column.bindPlaceholder()}"
         }
+
+    /**
+     * The BigQuery type a `WHERE`-clause bound must be cast to, or null to bind it natively. No
+     * JDBC setter produces a `DATE`/`DATETIME`/`TIME` or `BIGNUMERIC` parameter, and `setTimestamp`
+     * truncates a `TIMESTAMP` to milliseconds; for those the value is bound as a `STRING` (see
+     * [bindings]) and cast back here so the comparison is same-typed and full-precision. The bound
+     * text for the decimal case is a plain number (the CDK never emits scientific notation), which
+     * `CAST` accepts.
+     */
+    private fun DataField.whereCastType(): String? =
+        when (val t = type) {
+            is BigQueryTextTemporalFieldType<*> -> t.bigQueryTypeName
+            BigQueryBigNumericFieldType -> "BIGNUMERIC"
+            OffsetDateTimeFieldType -> "TIMESTAMP"
+            else -> null
+        }
+
+    /**
+     * The `?` placeholder for a bound value in a `WHERE` clause, cast when [whereCastType] applies.
+     */
+    private fun DataField.bindPlaceholder(): String =
+        whereCastType()?.let { "CAST(? AS $it)" } ?: "?"
 
     fun OrderByNode.sql(): String =
         when (this) {
@@ -234,8 +259,23 @@ private constructor(
             is And -> conj.flatMap { it.bindings() }
             is Or -> disj.flatMap { it.bindings() }
             is WhereClauseLeafNode -> {
-                val type = column.type as LosslessJdbcFieldType<*, *>
-                listOf(SelectQuery.Binding(bindingValue, type))
+                // Columns with a whereCastType are bound as STRING and cast back to their type in
+                // the
+                // SQL (see bindPlaceholder); everything else binds with its own JDBC setter. The
+                // value
+                // is normalized to a text node so a plain-number decimal binds as text too.
+                if (column.whereCastType() != null) {
+                    listOf(
+                        SelectQuery.Binding(Jsons.textNode(bindingValue.asText()), StringFieldType)
+                    )
+                } else {
+                    listOf(
+                        SelectQuery.Binding(
+                            bindingValue,
+                            column.type as LosslessJdbcFieldType<*, *>
+                        )
+                    )
+                }
             }
         }
 

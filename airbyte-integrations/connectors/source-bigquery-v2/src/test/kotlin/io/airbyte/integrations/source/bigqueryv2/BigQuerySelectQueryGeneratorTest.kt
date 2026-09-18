@@ -9,6 +9,7 @@ import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.From
 import io.airbyte.cdk.read.FromSample
 import io.airbyte.cdk.read.Greater
+import io.airbyte.cdk.read.GreaterOrEqual
 import io.airbyte.cdk.read.LesserOrEqual
 import io.airbyte.cdk.read.Limit
 import io.airbyte.cdk.read.OrderBy
@@ -19,6 +20,7 @@ import io.airbyte.cdk.read.SelectQuerySpec
 import io.airbyte.cdk.read.Where
 import io.airbyte.cdk.read.optimize
 import io.airbyte.cdk.util.Jsons
+import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -47,7 +49,7 @@ class BigQuerySelectQueryGeneratorTest {
         Assertions.assertEquals(
             "SELECT `id`, CAST(`day` AS STRING) AS `day`, CAST(`local_ts` AS STRING) AS `local_ts`, " +
                 "CAST(`tod` AS STRING) AS `tod`, `updated_at` FROM `my-project`.`sales`.`orders` " +
-                "WHERE `day` > ? ORDER BY `day`",
+                "WHERE `day` > CAST(? AS DATE) ORDER BY `day`",
             query.sql,
         )
         val max: SelectQuery =
@@ -130,15 +132,71 @@ class BigQuerySelectQueryGeneratorTest {
                 )
             )
         Assertions.assertEquals(
-            "SELECT `id`, `updated_at` FROM `my-project`.`sales`.`orders` WHERE (`id` > ?) AND (`updated_at` <= ?) ORDER BY `id` LIMIT 10",
+            "SELECT `id`, `updated_at` FROM `my-project`.`sales`.`orders` WHERE (`id` > ?) AND (`updated_at` <= CAST(? AS TIMESTAMP)) ORDER BY `id` LIMIT 10",
             query.sql,
         )
         Assertions.assertEquals(
             listOf(
                 SelectQuery.Binding(Jsons.numberNode(10), LongFieldType),
+                // TIMESTAMP is bound as text + CAST so microseconds survive (setTimestamp truncates
+                // to milliseconds).
+                SelectQuery.Binding(Jsons.textNode("2026-01-01T00:00:00Z"), StringFieldType),
+            ),
+            query.bindings,
+        )
+    }
+
+    @Test
+    fun testCursorBoundsThatNeedACastAreBoundAsString() {
+        // Regression: DATE/DATETIME/TIME, TIMESTAMP and BIGNUMERIC columns are compared natively,
+        // but
+        // no JDBC setter produces a matching, full-precision parameter (setTimestamp binds a
+        // millisecond TIMESTAMP even for DATETIME, setBigDecimal binds a NUMERIC even for
+        // BIGNUMERIC),
+        // so BigQuery rejected the comparison or lost microseconds. Each bound is bound as a STRING
+        // and
+        // cast back to the column's BigQuery type; the decimal bound is a plain number (never
+        // scientific).
+        val dt = EmittedField("dt", BigQueryDateTimeFieldType)
+        val day = EmittedField("day", BigQueryDateFieldType)
+        val tod = EmittedField("tod", BigQueryTimeFieldType)
+        val ts = EmittedField("ts", OffsetDateTimeFieldType)
+        val big = EmittedField("big", BigQueryBigNumericFieldType)
+        val query: SelectQuery =
+            generator.generate(
+                SelectQuerySpec(
+                    SelectColumns(id),
+                    From("users", "ds"),
+                    Where(
+                        And(
+                            GreaterOrEqual(dt, Jsons.textNode("2024-01-10T20:53:31.000000")),
+                            LesserOrEqual(day, Jsons.textNode("2024-06-01")),
+                            LesserOrEqual(tod, Jsons.textNode("15:30:00.000001")),
+                            GreaterOrEqual(ts, Jsons.textNode("2024-12-31T17:18:19.000005Z")),
+                            LesserOrEqual(
+                                big,
+                                Jsons.numberNode(BigDecimal("3300000000000000000000000000000"))
+                            ),
+                        )
+                    ),
+                )
+            )
+        Assertions.assertEquals(
+            "SELECT `id` FROM `my-project`.`ds`.`users` WHERE " +
+                "(`dt` >= CAST(? AS DATETIME)) AND (`day` <= CAST(? AS DATE)) AND " +
+                "(`tod` <= CAST(? AS TIME)) AND (`ts` >= CAST(? AS TIMESTAMP)) AND " +
+                "(`big` <= CAST(? AS BIGNUMERIC))",
+            query.sql,
+        )
+        Assertions.assertEquals(
+            listOf(
+                SelectQuery.Binding(Jsons.textNode("2024-01-10T20:53:31.000000"), StringFieldType),
+                SelectQuery.Binding(Jsons.textNode("2024-06-01"), StringFieldType),
+                SelectQuery.Binding(Jsons.textNode("15:30:00.000001"), StringFieldType),
+                SelectQuery.Binding(Jsons.textNode("2024-12-31T17:18:19.000005Z"), StringFieldType),
                 SelectQuery.Binding(
-                    Jsons.textNode("2026-01-01T00:00:00Z"),
-                    OffsetDateTimeFieldType
+                    Jsons.textNode("3300000000000000000000000000000"),
+                    StringFieldType
                 ),
             ),
             query.bindings,
