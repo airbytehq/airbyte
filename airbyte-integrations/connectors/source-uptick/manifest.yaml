@@ -265,11 +265,8 @@ spec:
         description: "Move the pre-1.2.0 flat password-grant fields into `credentials` with `auth_type: password`."
         transformations:
           - type: ConfigAddFields
-            condition: "{{ config.get('username') is not none and (config.get('credentials') or {}).get('auth_type', 'password') == 'password' }}"
+            condition: "{{ config.get('username') is not none and (config.get('credentials') or {}).get('auth_type') is none }}"
             fields:
-              - type: AddedFieldDefinition
-                path: [credentials, auth_type]
-                value: password
               - type: AddedFieldDefinition
                 path: [credentials, client_id]
                 value: "{{ config['client_id'] }}"
@@ -282,6 +279,9 @@ spec:
               - type: AddedFieldDefinition
                 path: [credentials, password]
                 value: "{{ config['password'] }}"
+              - type: AddedFieldDefinition
+                path: [credentials, auth_type]
+                value: password
 streams:
   - type: DeclarativeStream
     name: tasks
