@@ -33,7 +33,7 @@ definitions:
             http_codes: [401]
             action: REFRESH_TOKEN_THEN_RETRY
             failure_type: config_error
-            error_message: "HTTP 401: Uptick rejected the access token. The connector refreshed the token and retried, but Uptick still returned 401 - check the client credentials and user login."
+            error_message: "HTTP 401: Uptick rejected the refreshed access token."
           - type: HttpResponseFilter
             http_codes: [403]
             action: FAIL

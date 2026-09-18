@@ -56,10 +56,7 @@ def test_persistent_401_fails_as_config_error(monkeypatch) -> None:
 
     assert record_count == 0
     stream_errors = [
-        error.trace.error
-        for error in errors
-        if "HTTP 401: Uptick rejected the access token. The connector refreshed the token and retried, but Uptick still returned 401 - check the client credentials and user login."
-        in error.trace.error.message
+        error.trace.error for error in errors if "HTTP 401: Uptick rejected the refreshed access token." in error.trace.error.message
     ]
     assert len(stream_errors) == 1, f"expected exactly one stream error with the connector message, got {errors}"
     assert stream_errors[0].failure_type == FailureType.config_error
