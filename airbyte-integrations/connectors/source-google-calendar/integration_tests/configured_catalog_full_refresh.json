@@ -4,9 +4,7 @@
       "stream": {
         "name": "colors",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -15,9 +13,7 @@
       "stream": {
         "name": "settings",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -26,9 +22,7 @@
       "stream": {
         "name": "calendarlist",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -37,9 +31,7 @@
       "stream": {
         "name": "calendars",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -48,13 +40,8 @@
       "stream": {
         "name": "events",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "default_cursor_field": [
-          "updated"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["updated"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -63,9 +50,7 @@
       "stream": {
         "name": "acl",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -74,9 +59,7 @@
       "stream": {
         "name": "freebusy",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
