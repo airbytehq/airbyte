@@ -183,9 +183,15 @@ def test_facebook_transient_bad_request_is_retried(error):
         assert not output.errors
 
 
-def test_facebook_app_approval_error_is_config_error():
+def _response_filters(error_handler_name):
+    """Resolve the named error handler's `$ref`-ed response filters back into plain dicts."""
     manifest = yaml.safe_load(MANIFEST_PATH.read_text())
-    response_filter = manifest["definitions"]["requester"]["error_handler"]["response_filters"][0]
+    definitions = manifest["definitions"]
+    return [definitions[f["$ref"].rsplit("/", 1)[-1]] for f in definitions[error_handler_name]["response_filters"]]
+
+
+def test_facebook_app_approval_error_is_config_error():
+    response_filter = _response_filters("base_error_handler")[0]
 
     assert response_filter["error_message_contains"] == "This application has not been approved to use this API"
     assert response_filter["failure_type"] == FailureType.config_error.value
@@ -194,9 +200,9 @@ def test_facebook_app_approval_error_is_config_error():
     )
 
 
-def test_invalid_insights_metric_error_is_not_retried():
-    manifest = yaml.safe_load(MANIFEST_PATH.read_text())
-    response_filters = manifest["definitions"]["requester"]["error_handler"]["response_filters"]
+@pytest.mark.parametrize("error_handler_name", ["base_error_handler", "paginated_error_handler"])
+def test_invalid_insights_metric_error_is_not_retried(error_handler_name):
+    response_filters = _response_filters(error_handler_name)
 
     invalid_metric_filters = [f for f in response_filters if f.get("error_message_contains") == "must be a valid insights metric"]
     assert len(invalid_metric_filters) == 1, "Expected exactly one response filter for Meta's invalid-metric error"
@@ -208,3 +214,67 @@ def test_invalid_insights_metric_error_is_not_retried():
     # An invalid metric is permanent, so the filter must be evaluated before the blanket 400 retry.
     blanket_400_index = next(i for i, f in enumerate(response_filters) if f.get("http_codes") == [400])
     assert response_filters.index(invalid_metric_filter) < blanket_400_index
+
+
+_TOO_LARGE_ERROR = {
+    "error": {
+        "message": "Please reduce the amount of data you're asking for, then retry your request",
+        "type": "OAuthException",
+        "code": 1,
+    }
+}
+
+
+def _post_insights_page():
+    return {
+        "data": [{"id": "1_123", "insights": {"data": [{"name": "post_clicks", "values": [{"value": 3}]}]}}],
+        "paging": {},
+    }
+
+
+def _requested_page_sizes(request_history):
+    return [parse_qs(urlparse(req.url).query)["limit"][0] for req in request_history if urlparse(req.url).path == "/v24.0/1/feed"]
+
+
+def test_post_insights_retries_an_oversized_page_at_a_smaller_page_size():
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        feed_request = m.get(
+            FEED_URL,
+            [
+                {"json": _TOO_LARGE_ERROR, "status_code": 400},
+                {"json": _TOO_LARGE_ERROR, "status_code": 400},
+                {"json": _post_insights_page(), "status_code": 200},
+            ],
+        )
+
+        output = read_from_stream(CONFIG, "post_insights", SyncMode.full_refresh)
+
+        assert not output.errors
+        assert len(output.records) == 1
+        assert feed_request.call_count == 3
+        # 100 is halved on each rejection until Facebook accepts the page.
+        assert _requested_page_sizes(m.request_history) == ["100", "50", "25"]
+
+
+def test_post_insights_keeps_the_full_page_size_when_facebook_accepts_the_page():
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        m.get(FEED_URL, json=_post_insights_page())
+
+        output = read_from_stream(CONFIG, "post_insights", SyncMode.full_refresh)
+
+        assert not output.errors
+        assert len(output.records) == 1
+        assert _requested_page_sizes(m.request_history) == ["100"]
+
+
+def test_post_does_not_reduce_its_page_size():
+    """`post` chunks its field list, so a page cannot be re-requested smaller without duplicating records."""
+    manifest = yaml.safe_load(MANIFEST_PATH.read_text())
+
+    assert "page_size_reduction" not in manifest["definitions"]["post_stream"]["retriever"]
+    assert manifest["definitions"]["post_insights_stream"]["retriever"]["page_size_reduction"]["type"] == "PageSizeReduction"
+
+    post_actions = {f["action"] for f in _response_filters("base_error_handler") if "reduce the amount of data" in f.get("error_message_contains", "")}
+    assert post_actions == {"FAIL"}
