@@ -207,8 +207,6 @@ definitions:
               failure_type: config_error
               error_message: "Google rejected the OAuth credentials for the Calendar API."
             - type: HttpResponseFilter
-              http_codes:
-                - 403
               predicate: "{{ 'rateLimitExceeded' in response.get('error', {}) | string or 'userRateLimitExceeded' in response.get('error', {}) | string }}"
               action: RATE_LIMITED
             - type: HttpResponseFilter
