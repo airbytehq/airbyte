@@ -5,6 +5,11 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "manifest.yaml"
+        # Spec moved credentials under a `credentials` object in 0.2.0; a runtime
+        # ConfigMigration rewrites legacy flat configs, but the static spec comparison
+        # flags the change, so backward-compat checks are disabled for that version.
+        backward_compatibility_tests_config:
+          disable_for_version: "0.2.0"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -15,7 +20,7 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+        configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"
         empty_streams:
           - name: "events"
             bypass_reason: "Test calendar has no events"
@@ -28,4 +33,4 @@ acceptance_tests:
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+        configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"

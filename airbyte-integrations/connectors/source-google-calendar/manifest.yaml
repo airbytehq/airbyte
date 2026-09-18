@@ -169,10 +169,11 @@ definitions:
         cursor_field: updated
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', day_delta(-25, '%Y-%m-%dT%H:%M:%S.000Z')) }}"
+          datetime: "{{ format_datetime(config.get('start_date') or day_delta(-25, '%Y-%m-%dT%H:%M:%S.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_time_option:
           type: RequestOption
@@ -241,7 +242,15 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
                 response_filters:
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 403
+                    predicate: "{{ 'rateLimitExceeded' in response.get('error', {}) | string or 'userRateLimitExceeded' in response.get('error', {}) | string }}"
+                    action: RATE_LIMITED
                   - type: HttpResponseFilter
                     http_codes:
                       - 403
@@ -518,8 +527,6 @@ spec:
         title: Start date
         format: date-time
         description: Sync events modified on or after this date. Google only accepts dates within roughly the last 30 days; leave unset to default to 25 days ago.
-        examples:
-          - "2026-01-01T00:00:00.000Z"
       num_workers:
         type: integer
         order: 3
