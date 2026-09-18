@@ -224,21 +224,24 @@ def test_source_check_connection_failed(config, requests_mock, capsys, json_resp
         assert len(trace_messages) == expected_message
 
 
-def test_error_40001_classified_as_config_error(config, requests_mock):
+def test_error_40001_classified_as_config_error(requests_mock):
     """Error code 40001 (PERMISSION_ERROR) must be classified as config_error, not system_error."""
+    config = {"access_token": "TOKEN", "start_date": "2024-01-01", "end_date": "2024-01-02"}
     json_response = {"code": 40001, "message": "Permission error: The access token lacks the required scope."}
     ok_response = {"code": 0, "message": "ok", "data": {"list": [{"advertiser_id": "917429327", "advertiser_name": "name"}]}}
 
     requests_mock.get("https://business-api.tiktok.com/open_api/v1.3/oauth2/advertiser/get/", json=ok_response)
     requests_mock.get("https://business-api.tiktok.com/open_api/v1.3/advertiser/info/", json=ok_response)
-    requests_mock.get("https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/", json=json_response)
+    report_mock = requests_mock.get("https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/", json=json_response)
 
     catalog = CatalogBuilder().with_stream("ads_reports_daily", SyncMode.full_refresh).build()
     source = get_source(config=config, state=None)
     output = read(source, config, catalog)
 
+    assert report_mock.called, "Expected the report endpoint to be requested"
     assert len(output.errors) > 0, "Expected at least one error trace for 40001"
     for error_msg in output.errors:
         assert (
             error_msg.trace.error.failure_type == FailureType.config_error
         ), f"Error 40001 should be config_error but got {error_msg.trace.error.failure_type}"
+    assert any("Insufficient permissions for this endpoint (error 40001)" in error_msg.trace.error.message for error_msg in output.errors)
