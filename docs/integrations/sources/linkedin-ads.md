@@ -250,6 +250,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.2.2 | 2026-09-18 | [86483](https://github.com/airbytehq/airbyte/pull/86483) | Replace YAML anchors with declarative `$ref` for the shared analytics property list (no functional change) |
 | 6.2.1 | 2026-09-15 | [84019](https://github.com/airbytehq/airbyte/pull/84019) | Update dependencies |
 | 6.2.0 | 2026-09-14 | [76087](https://github.com/airbytehq/airbyte/pull/76087) | Add `organizations` stream via the `organizationAcls` endpoint |
 | 6.1.0 | 2026-09-14 | [81509](https://github.com/airbytehq/airbyte/pull/81509) | Add `videos` stream |
