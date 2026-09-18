@@ -56,6 +56,8 @@ The saved timestamp is replayed on the next sync. Set `events_lookback_hours` to
 
 Persons remains a full refresh to capture profile edits and merges. `persons_page_size` defaults to 1,000 and accepts values from 100 to 10,000. Increase it for large projects when your server supports larger pages; reduce it if requests time out. Persons runs after the other streams, including on existing connections with a saved catalog order. Larger pages reduce request count but do not remove the full scan.
 
+HTTP requests have a 30-second connection timeout and a 120-second read timeout. Timeouts use the connector's bounded retry policy, so a stalled request can retry or fail instead of waiting indefinitely.
+
 The [REST events API is deprecated](https://posthog.com/docs/api/events). This pagination change preserves compatibility with existing fields and state; PostHog recommends [batch exports](https://posthog.com/docs/cdp/batch-exports) for recurring exports.
 
 ### Rate limiting

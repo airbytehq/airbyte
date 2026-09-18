@@ -10,6 +10,7 @@ from urllib.parse import parse_qsl, urljoin, urlsplit
 from uuid import UUID
 
 from dateutil.parser import isoparse
+from requests.adapters import HTTPAdapter
 
 from airbyte_cdk.sources.declarative.incremental import Cursor
 from airbyte_cdk.sources.declarative.requesters.paginators.default_paginator import DefaultPaginator
@@ -17,6 +18,15 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+
+
+class PosthogHTTPAdapter(HTTPAdapter):
+    timeout = (30, 120)
+
+    def send(self, request, **kwargs):
+        if kwargs.get("timeout") is None:
+            kwargs["timeout"] = self.timeout
+        return super().send(request, **kwargs)
 
 
 @dataclass
