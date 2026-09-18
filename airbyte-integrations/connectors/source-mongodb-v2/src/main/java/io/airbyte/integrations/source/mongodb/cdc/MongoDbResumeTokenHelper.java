@@ -12,11 +12,13 @@ import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.debezium.connector.mongodb.ResumeTokens;
 import java.util.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
 import org.bson.conversions.Bson;
@@ -29,6 +31,8 @@ import org.slf4j.LoggerFactory;
 public class MongoDbResumeTokenHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbResumeTokenHelper.class);
+
+  private static final Pattern HEX_RESUME_TOKEN_DATA = Pattern.compile("^[0-9A-Fa-f]+$");
 
   /**
    * Retrieves the most recent resume token for the specified databases and collections from the
@@ -83,6 +87,30 @@ public class MongoDbResumeTokenHelper {
       eventStreamCursor.tryNext();
       return eventStreamCursor.getResumeToken();
     }
+  }
+
+  /**
+   * Parses a resume token as stored by Debezium in an offset. Debezium 2.x stored the hex
+   * {@code _data} string of the token, while Debezium 3.x stores the base64-encoded BSON document of
+   * the token (and still reads the old form). Accept both so that offsets and saved state written by
+   * either version can be read.
+   *
+   * @param value The resume token value as found in an offset.
+   * @return The resume token document.
+   */
+  public static BsonDocument resumeTokenFromOffsetValue(final String value) {
+    return HEX_RESUME_TOKEN_DATA.matcher(value).matches() ? ResumeTokens.fromData(value) : ResumeTokens.fromBase64(value);
+  }
+
+  /**
+   * Returns the hex {@code _data} string of a resume token, which is the form in which this connector
+   * persists resume tokens in its state.
+   *
+   * @param resumeToken The resume token document.
+   * @return The hex {@code _data} value of the token.
+   */
+  public static String resumeTokenData(final BsonDocument resumeToken) {
+    return ResumeTokens.getData(resumeToken).asString().getValue();
   }
 
   /**

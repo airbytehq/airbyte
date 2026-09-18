@@ -11,11 +11,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.protocol.models.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.debezium.connector.mongodb.ResumeTokens;
 import java.util.Map;
+import org.bson.BsonTimestamp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -54,6 +57,26 @@ class MongoDbCdcStateHandlerTest {
   @Test
   void testSaveStateAfterCompletionOfSnapshotOfNewStreams() {
     assertThrows(RuntimeException.class, () -> mongoDbCdcStateHandler.saveStateAfterCompletionOfSnapshotOfNewStreams());
+  }
+
+  @Test
+  void testSavingStateNormalizesDebeziumBase64ResumeToken() {
+    final Map<String, String> hexOffset =
+        Jsons.object(MongoDbDebeziumStateUtil.formatState(DATABASE, RESUME_TOKEN), new TypeReference<>() {});
+    final String offsetKey = hexOffset.keySet().iterator().next();
+    // Debezium 3.x emits offsets with a base64-encoded resume token and unset timestamp fields
+    final Map<String, String> debeziumOffset = Map.of(offsetKey, Jsons.serialize(
+        Map.of("sec", -1, "ord", -1, MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN,
+            ResumeTokens.toBase64(ResumeTokens.fromData(RESUME_TOKEN)))));
+
+    final AirbyteMessage airbyteMessage = mongoDbCdcStateHandler.saveState(debeziumOffset, null);
+
+    final MongoDbCdcState savedState = Jsons.object(airbyteMessage.getState().getGlobal().getSharedState(), MongoDbCdcState.class);
+    final JsonNode savedOffsetValue = Jsons.deserialize(savedState.state().get(offsetKey).asText());
+    final BsonTimestamp timestamp = ResumeTokens.getTimestamp(ResumeTokens.fromData(RESUME_TOKEN));
+    assertEquals(RESUME_TOKEN, savedOffsetValue.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN).asText());
+    assertEquals(timestamp.getTime(), savedOffsetValue.get(MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS).asInt());
+    assertEquals(timestamp.getInc(), savedOffsetValue.get(MongoDbDebeziumConstants.OffsetState.VALUE_INCREMENT).asInt());
   }
 
 }
