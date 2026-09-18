@@ -82,9 +82,11 @@ class TestCampaignsDetailedStream(TestCase):
                                         "type": "campaign-message",
                                         "id": "msg_001",
                                         "attributes": {
-                                            "label": "Email Message",
-                                            "channel": "email",
-                                            "content": {"subject": "Welcome!", "preview_text": "Thanks for joining"},
+                                            "definition": {
+                                                "label": "Email Message",
+                                                "channel": "email",
+                                                "content": {"subject": "Welcome!", "preview_text": "Thanks for joining"},
+                                            },
                                         },
                                     }
                                 ],
