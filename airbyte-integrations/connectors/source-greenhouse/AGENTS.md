@@ -82,7 +82,6 @@ That is, `updated_at=gte|{datetime}|lte|{datetime}`, with `|` separating operato
 | application_stages | top-level | updated_at | updated_at | incremental |
 | applied_candidate_tags | top-level | updated_at | updated_at | incremental |
 | attachments | top-level | updated_at | updated_at | incremental |
-| candidate_attribute_types | top-level | updated_at | updated_at | incremental |
 | candidate_educations | top-level | updated_at | updated_at | incremental |
 | candidate_employments | top-level | updated_at | updated_at | incremental |
 | prospect_details | top-level | updated_at | updated_at | incremental |

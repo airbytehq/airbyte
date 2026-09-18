@@ -18,7 +18,6 @@ The consent flow requests these scopes; approve all of them:
 - `harvest:applied_candidate_tags:list`
 - `harvest:approval_flows:list`
 - `harvest:attachments:list`
-- `harvest:candidate_attribute_types:list`
 - `harvest:candidate_educations:list`
 - `harvest:candidate_employments:list`
 - `harvest:candidate_tags:list`
@@ -92,7 +91,6 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | [`applied_candidate_tags`](https://harvestdocs.greenhouse.io/reference/get_v3-applied-candidate-tags) | Incremental (`updated_at`) | Candidate-to-tag assignments; `tags` on its own is only the dictionary |
 | [`approvals`](https://harvestdocs.greenhouse.io/reference/get_v3-approval-flows) | Incremental (`updated_at`) | |
 | [`attachments`](https://harvestdocs.greenhouse.io/reference/get_v3-attachments) | Incremental (`updated_at`) | One file per application. `url` is a download link Greenhouse expires after seven days |
-| [`candidate_attribute_types`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-attribute-types) | Incremental (`updated_at`) | The scorecard attribute dictionary, defined per job |
 | [`candidate_educations`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-educations) | Incremental (`updated_at`) | School, degree and discipline history per candidate |
 | [`candidate_employments`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-employments) | Incremental (`updated_at`) | Employer and title history per candidate |
 | [`candidates`](https://harvestdocs.greenhouse.io/reference/get_v3-candidates) | Incremental (`updated_at`) | |
@@ -192,7 +190,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.2.0 | 2026-09-17 | [86428](https://github.com/airbytehq/airbyte/pull/86428) | Add the `application_stages`, `applied_candidate_tags`, `attachments`, `candidate_attribute_types`, `candidate_educations`, `candidate_employments`, `prospect_details`, `referrers`, and `rejection_details` streams, restoring the candidate and application detail that Harvest v1 embedded on `candidates` and `applications`. Requests nine new Harvest v3 scopes during consent; existing connections keep syncing unchanged, but enabling a new stream requires re-running the consent flow |
+| 1.2.0 | 2026-09-17 | [86428](https://github.com/airbytehq/airbyte/pull/86428) | Add the `application_stages`, `applied_candidate_tags`, `attachments`, `candidate_educations`, `candidate_employments`, `prospect_details`, `referrers`, and `rejection_details` streams, restoring the candidate and application detail that Harvest v1 embedded on `candidates` and `applications`. Requests eight new Harvest v3 scopes during consent; existing connections keep syncing unchanged, but enabling a new stream requires re-running the consent flow |
 | 1.1.0 | 2026-09-17 | [85841](https://github.com/airbytehq/airbyte/pull/85841) | Sync 18 previously full-refresh streams incrementally on `updated_at`. Not breaking, but **Start date** now applies to those 18 streams in every sync mode, including full refresh, where before they always read full history - see [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110). Also read `activity_feed`, `jobs_openings`, and `user_permissions` directly instead of once per 50 parents, and suggest 10 streams for new connections |
 | 1.0.3 | 2026-09-15 | [85507](https://github.com/airbytehq/airbyte/pull/85507) | Update dependencies |
 | 1.0.2 | 2026-09-02 | [85306](https://github.com/airbytehq/airbyte/pull/85306) | Clarify in the spec that OAuth credentials come from Airbyte's Greenhouse partner application and must not be requested from Greenhouse |

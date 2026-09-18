@@ -615,16 +615,6 @@ DOCUMENTED_V3_EXAMPLES = {
         "filename": "Oldest Attachments",
         "url": "https://example.com/signed-resource",
     },
-    "candidate_attribute_types": {
-        "id": 1,
-        "name": "Skills",
-        "active": True,
-        "is_draft": None,
-        "created_at": "2024-01-01T00:00:00.000Z",
-        "updated_at": "2024-01-01T00:00:00.000Z",
-        "sort_order": 0,
-        "job_id": 1,
-    },
     "candidate_educations": {
         "id": 1,
         "latest": True,
@@ -1117,14 +1107,12 @@ def test_oauth_refresh_failure_surfaces_reauthenticate_config_error(status_code,
     ]
 
 
-# Every Harvest v3 parity stream reads one list endpoint with the shared offers shape. The partner
-# app does not carry their scopes yet, so no live read can reach any of them - these mocks are their
-# only read coverage until the scopes are granted.
+# Every Harvest v3 parity stream reads one list endpoint with the shared offers shape. These mocks
+# pin the request contract; live reads against the test account cover the records themselves.
 PARITY_STREAM_ENDPOINTS = {
     "application_stages": "https://harvest.greenhouse.io/v3/application_stages",
     "applied_candidate_tags": "https://harvest.greenhouse.io/v3/applied_candidate_tags",
     "attachments": "https://harvest.greenhouse.io/v3/attachments",
-    "candidate_attribute_types": "https://harvest.greenhouse.io/v3/candidate_attribute_types",
     "candidate_educations": "https://harvest.greenhouse.io/v3/candidate_educations",
     "candidate_employments": "https://harvest.greenhouse.io/v3/candidate_employments",
     "prospect_details": "https://harvest.greenhouse.io/v3/prospect_details",
