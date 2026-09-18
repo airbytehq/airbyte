@@ -72,7 +72,7 @@ class SnowflakeBeanFactory {
         val injectedSpecification = specFactory.get()
         return S3CopyConfiguration.fromEnvironment(
                 injectedSpecification,
-                S3CopyConfiguration.previewEnvironment(System.getenv()),
+                System.getenv(),
             )
             ?.let {
                 EnabledSnowflakeS3Copy(
