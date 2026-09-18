@@ -15,7 +15,7 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+        configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"
         empty_streams:
           - name: "events"
             bypass_reason: "Test calendar has no events"
@@ -28,4 +28,4 @@ acceptance_tests:
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+        configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"
