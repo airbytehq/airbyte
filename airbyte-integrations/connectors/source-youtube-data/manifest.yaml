@@ -307,9 +307,9 @@ definitions:
               http_codes:
                 - 401
               error_message: >-
-                Authentication failed. The access token is refreshed and the
-                request retried; if this persists, re-authenticate with Google
-                OAuth from the source settings, or provide a valid API key.
+                Authentication failed. The request is retried; if this
+                persists, re-authenticate with Google OAuth from the source
+                settings, or provide a valid API key.
             - type: HttpResponseFilter
               action: FAIL
               failure_type: config_error

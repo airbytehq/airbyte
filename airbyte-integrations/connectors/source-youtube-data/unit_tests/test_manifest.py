@@ -84,7 +84,7 @@ def _base_requester_filters(manifest: dict) -> list:
 def test_api_budget_windows_bounded_below_token_lifetime():
     policies = _manifest()["api_budget"]["policies"]
 
-    matched_patterns = set()
+    rate_by_pattern = {}
     for policy in policies:
         for rate in policy["rates"]:
             interval = _parse_iso8601_duration(rate["interval"])
@@ -93,13 +93,13 @@ def test_api_budget_windows_bounded_below_token_lifetime():
                 "3600s access-token lifetime; keep windows at PT1M or shorter"
             )
             assert interval < _TOKEN_LIFETIME
-        for matcher in policy["matchers"]:
-            matched_patterns.add(matcher["url_path_pattern"])
+            for matcher in policy["matchers"]:
+                rate_by_pattern[matcher["url_path_pattern"]] = (rate["limit"], rate["interval"])
 
-    # Both cost tiers from the quota model must be covered: the 100-unit
-    # search.list and the 1-unit list endpoints.
-    assert "/search" in matched_patterns
-    assert "/(channels|videos|commentThreads)" in matched_patterns
+    # Both cost tiers from the quota model must be covered at the documented
+    # per-minute rates: the 100-unit search.list and the 1-unit list endpoints.
+    assert rate_by_pattern["/search"] == (3, "PT1M")
+    assert rate_by_pattern["/(channels|videos|commentThreads)"] == (100, "PT1M")
 
 
 def test_401_filter_uses_refresh_token_then_retry():
@@ -127,10 +127,6 @@ class Test401RefreshesTokenAndRetries(TestCase):
             ],
         )
 
-        channels_request = HttpRequest(
-            url=f"{_BASE}/channels",
-            query_params="any query_parameters",
-        )
         unauthorized_body = {
             "error": {
                 "code": 401,
@@ -138,12 +134,23 @@ class Test401RefreshesTokenAndRetries(TestCase):
                 "errors": [{"reason": "authError"}],
             }
         }
+        # Header matching is subset-based, so each mock only matches the request
+        # carrying its token: the first attempt (expired token) gets the 401 and
+        # the retried request must carry the refreshed token to get the 200.
+        expired_token_request = HttpRequest(
+            url=f"{_BASE}/channels",
+            query_params="any query_parameters",
+            headers={"Authorization": "Bearer first-token"},
+        )
+        http_mocker.get(expired_token_request, HttpResponse(body=json.dumps(unauthorized_body), status_code=401))
+        refreshed_token_request = HttpRequest(
+            url=f"{_BASE}/channels",
+            query_params="any query_parameters",
+            headers={"Authorization": "Bearer refreshed-token"},
+        )
         http_mocker.get(
-            channels_request,
-            [
-                HttpResponse(body=json.dumps(unauthorized_body), status_code=401),
-                HttpResponse(body=json.dumps({"items": [{"id": "UCxxxxxxxxxxxxxxxxxxxxxx", "kind": "youtube#channel"}]})),
-            ],
+            refreshed_token_request,
+            HttpResponse(body=json.dumps({"items": [{"id": "UCxxxxxxxxxxxxxxxxxxxxxx", "kind": "youtube#channel"}]})),
         )
 
         catalog = CatalogBuilder().with_stream("channels", SyncMode.full_refresh).build()
@@ -156,4 +163,5 @@ class Test401RefreshesTokenAndRetries(TestCase):
         assert output.errors == [], output.get_formatted_error_message()
         # One token fetch for the initial request, one for the post-401 refresh.
         http_mocker.assert_number_of_calls(token_request, 2)
-        http_mocker.assert_number_of_calls(channels_request, 2)
+        http_mocker.assert_number_of_calls(expired_token_request, 1)
+        http_mocker.assert_number_of_calls(refreshed_token_request, 1)
