@@ -12,7 +12,16 @@ The connector authenticates with the Uptick API using OAuth 2.0 with the passwor
 
 To generate the OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance, select **Create Application**, provide a name, and save. Uptick generates the Client ID and Client Secret for you. For step-by-step instructions, see [Uptick API - Getting started](https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started).
 
-## Configuration
+The Uptick user account needs an API application created under **Control Panel > Uptick API**, read access to each module you want to sync, and the Intelligence reports permission to sync `task_profitability`.
+
+## Setup guide
+
+### Set up the Uptick source in Airbyte
+
+1. In Airbyte, go to **Sources** and select **+ New source**.
+2. Search for and select **Uptick** as the source type.
+3. Fill in the fields from the configuration table below. Consider creating a dedicated Uptick service user for the connector: the API token inherits that user's permissions, so a service user keeps access scoped to exactly what you sync.
+4. Select **Set up source** to test the connection.
 
 | Input | Type | Description | Default Value |
 | ------- | ------ | ------------- | --------------- |
@@ -23,7 +32,16 @@ To generate the OAuth credentials, go to **Control Panel > Uptick API** in your 
 | `password` | `string` | Password for the Uptick user account. | |
 | `num_workers` | `integer` | Number of concurrent requests. Higher values speed up syncs but increase the chance of Uptick rate limiting. Allowed range 1–10. | `3` |
 
-## Streams
+## Supported sync modes
+
+| Sync mode | Supported |
+| --------- | --------- |
+| Full Refresh Sync | ✅ |
+| Incremental Sync | ✅ |
+
+All streams support full refresh. Incremental sync is available on streams whose Uptick endpoints report deletions; on the remaining streams an incremental sync retains rows in your destination after they're deleted in Uptick, so use full refresh for those. See the stream table below for per-stream support.
+
+## Supported Streams
 
 The Uptick connector syncs data from the following streams, organized by functional area:
 
@@ -185,11 +203,38 @@ For streams that support incremental sync, the connector uses each record's `upd
 
 Airbyte still offers incremental sync in the UI for the streams marked `❌ (no soft delete)`, because the connector defines the `updated` cursor for every stream. Avoid it for those streams: their Uptick endpoints don't report deletions, so an incremental sync keeps records in your destination after they're deleted in Uptick. Sync them in full refresh mode instead.
 
-## Rate limits
+## Data type map
+
+| Uptick JSON:API type | Airbyte type |
+| -------------------- | ------------ |
+| string | string |
+| integer | integer |
+| number, decimal | number |
+| boolean | boolean |
+| date | string (format `date`) |
+| datetime | string (format `date-time`, airbyte_type `timestamp_with_timezone`) |
+| object | object |
+| array | array |
+
+## Limitations & Troubleshooting
+
+### Permission errors (403)
+
+If the Uptick user account lacks permission for an endpoint, the sync fails with `HTTP 403: Uptick user lacks permission for the requested endpoint.` In production this has been seen on `task_profitability`, which requires the Intelligence reports permission, and on `billingcontractlineitems`. Grant the missing module permission in Uptick or deselect the stream.
+
+### Authentication errors (401)
+
+If the client credentials or user login are rejected, the sync fails with `HTTP 401: Uptick rejected the client credentials or user login.` Check the Client ID, Client Secret, username, and password in the source configuration.
+
+### Deleted records
+
+Streams marked `❌ (no soft delete)` in the table above don't report deletions, so records deleted in Uptick stay in your destination until you run a full refresh sync. Streams that support incremental sync expose a `deleted` timestamp on deleted records.
+
+### Rate limits
 
 Uptick enforces rate limits and reasonable-use guidelines on its API. When Uptick throttles a request, the connector reads the `Retry-After` response header and waits the indicated time before retrying, for up to five attempts. Waits longer than 30 minutes fail the sync with a rate-limit error instead of blocking. The connector also caps itself at 60 requests per minute across all streams and runs `num_workers` concurrent requests (default 3, maximum 10); raise `num_workers` for faster syncs on tenants that tolerate it, or lower it if you see throttling. To stay within these limits, sync only the streams and fields you need and schedule syncs no more frequently than your reporting requires.
 
-## IP allow list
+### IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
@@ -204,7 +249,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 1.1.3 | 2026-09-15 | [86280](https://github.com/airbytehq/airbyte/pull/86280) | Update dependencies |
 | 1.1.2 | 2026-09-08 | [85702](https://github.com/airbytehq/airbyte/pull/85702) | Update dependencies |
 | 1.1.1 | 2026-08-18 | [84790](https://github.com/airbytehq/airbyte/pull/84790) | Update dependencies |
-| 1.1.0 | 2026-08-12 | [83710](https://github.com/airbytehq/airbyte/pull/83710) | Add 6 new streams (clientcontacts, propertycontacts, promptquestions, promptanswergroups, promptanswers, majorservices), add fields to the clients, properties, invoices, defectquotes, servicequotes, users, and purchaseorders streams, and make relationship field extraction null-safe |
+| 1.1.0 | 2026-08-12 | [83710](https://github.com/airbytehq/airbyte/pull/83710) | Add 6 new streams, expand fields on 7 existing streams, and make relationship field extraction null-safe |
 | 1.0.3 | 2026-08-11 | [84162](https://github.com/airbytehq/airbyte/pull/84162) | Update dependencies |
 | 1.0.2 | 2026-08-04 | [83652](https://github.com/airbytehq/airbyte/pull/83652) | Update dependencies |
 | 1.0.1 | 2026-07-28 | [83098](https://github.com/airbytehq/airbyte/pull/83098) | Update dependencies |
@@ -225,7 +270,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.5.3 | 2026-02-23 | [72302](https://github.com/airbytehq/airbyte/pull/72302) | Add fields to defectquotes and projects streams |
 | 0.5.2 | 2026-02-17 | [73433](https://github.com/airbytehq/airbyte/pull/73433) | Update dependencies |
 | 0.5.1 | 2026-02-10 | [73007](https://github.com/airbytehq/airbyte/pull/73007) | Update dependencies |
-| 0.5.0 | 2026-01-22 | [71122](https://github.com/airbytehq/airbyte/pull/71122) | Add invoice_id to invoicelineitems, and add 6 new streams: servicetasks, routineservices, routineservicelevels, routineservicetypes, routineserviceleveltypes, subtasks |
+| 0.5.0 | 2026-01-22 | [71122](https://github.com/airbytehq/airbyte/pull/71122) | Add invoice_id to invoicelineitems and add 6 new routine-service and subtask streams |
 | 0.4.3 | 2026-01-20 | [72056](https://github.com/airbytehq/airbyte/pull/72056) | Update dependencies |
 | 0.4.2 | 2026-01-14 | [71437](https://github.com/airbytehq/airbyte/pull/71437) | Update dependencies |
 | 0.4.1 | 2025-12-18 | [70713](https://github.com/airbytehq/airbyte/pull/70713) | Update dependencies |
