@@ -300,7 +300,9 @@ spec:
         order: 4
         title: Start date
         format: date-time
-        description: Sync events modified on or after this date. Leave unset to sync all events.
+        description: Sync events modified on or after this date. Google only accepts dates within roughly the last 30 days; leave unset to default to 25 days ago.
+        examples:
+          - "2026-01-01T00:00:00.000Z"
       num_workers:
         type: integer
         order: 5
