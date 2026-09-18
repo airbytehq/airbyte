@@ -11,24 +11,21 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
-import io.airbyte.cdk.command.AIRBYTE_CLOUD_ENV
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.airbyte.protocol.models.v0.DestinationSyncMode
-import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
 /**
- * StarRocks destination connector configuration spec (OSS).
+ * StarRocks destination connector configuration spec.
  *
  * Data plane = HTTP Stream Load (`http_port`, default 8030); control plane (DDL, `SELECT
  * current_version()`) = MySQL protocol (`port`, default 9030). See the connector's CONTRIBUTING.md
  * for the shared-data feature gating.
  */
 @Singleton
-@Requires(notEnv = [AIRBYTE_CLOUD_ENV])
 class StarrocksSpecification : ConfigurationSpecification() {
     @get:JsonSchemaTitle("Host")
     @get:JsonPropertyDescription("FE host of the StarRocks cluster.")

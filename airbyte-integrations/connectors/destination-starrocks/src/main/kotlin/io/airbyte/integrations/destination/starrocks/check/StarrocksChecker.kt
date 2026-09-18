@@ -41,8 +41,8 @@ internal fun tunnelLoadMethodCompatible(
  *    and drop it — exercising http_port reachability, Basic-auth, and INSERT privilege. Previously
  *    `check` only opened JDBC, so it could pass while every write failed (issue #44).
  * ```
- * CDK 1.0.13 [DestinationChecker] is non-parameterized: the config is injected and `check()` takes
- * no arguments. Any thrown exception becomes the FAILED connection-status message.
+ * The Bulk CDK [DestinationChecker] is non-parameterized: the config is injected and `check()`
+ * takes no arguments. Any thrown exception becomes the FAILED connection-status message.
  */
 @Singleton
 class StarrocksChecker(
