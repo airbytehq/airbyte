@@ -8,6 +8,7 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.CAPTURE_MODE
 import static io.airbyte.integrations.source.mongodb.MongoConstants.UPDATE_CAPTURE_MODE;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.AUTH_SOURCE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.CREDENTIALS_PLACEHOLDER;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.PASSWORD_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.USERNAME_CONFIGURATION_KEY;
@@ -148,18 +149,22 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
    * removing any values accidentally copied and pasted from the MongoDB Atlas UI.
    *
    * @param config The connector configuration.
-   * @return The connection string, with any URI-embedded userinfo removed. Credentials are always
-   *         supplied through the dedicated username/password/auth source configuration fields, so
-   *         userinfo left in the connection string (such as the Atlas
-   *         {@code <db_username>:<db_password>@} template) must not reach the MongoDB client or
-   *         Debezium.
+   * @return The connection string. When the dedicated username and password configuration fields are
+   *         set, any URI-embedded userinfo (such as the Atlas {@code <db_username>:<db_password>@}
+   *         template) is removed so that it cannot override the configured credentials in the
+   *         MongoDB client or Debezium. Otherwise only the literal {@code <username>:<password>@}
+   *         placeholder is removed, so that credentials supplied solely through the connection
+   *         string keep working.
    */
   public static String buildConnectionString(final JsonNode config) {
     final String connectionString = config.get(CONNECTION_STRING_CONFIGURATION_KEY)
         .asText()
         .trim()
         .replaceAll(DOUBLE_QUOTES_PATTERN, "");
-    return CONNECTION_STRING_USERINFO_PATTERN.matcher(connectionString).replaceFirst("$1");
+    if (config.has(USERNAME_CONFIGURATION_KEY) && config.has(PASSWORD_CONFIGURATION_KEY)) {
+      return CONNECTION_STRING_USERINFO_PATTERN.matcher(connectionString).replaceFirst("$1");
+    }
+    return connectionString.replaceAll(CREDENTIALS_PLACEHOLDER, "");
   }
 
 }

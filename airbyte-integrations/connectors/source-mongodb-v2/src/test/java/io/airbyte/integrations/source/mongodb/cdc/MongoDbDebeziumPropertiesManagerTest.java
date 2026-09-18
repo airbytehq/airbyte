@@ -303,6 +303,21 @@ class MongoDbDebeziumPropertiesManagerTest {
     assertEquals(expected, MongoDbDebeziumPropertiesManager.buildConnectionString(config));
   }
 
+  @ParameterizedTest
+  @CsvSource(delimiter = '|',
+             value = {
+               // literal placeholder is still removed
+               "mongodb://<username>:<password>@localhost:27017/ | mongodb://localhost:27017/",
+               // credentials supplied only through the connection string are preserved
+               "mongodb://admin:secret@localhost:27017/?authSource=admin | mongodb://admin:secret@localhost:27017/?authSource=admin",
+               "mongodb://localhost:27017/ | mongodb://localhost:27017/",
+             })
+  void testCreateConnectionStringWithoutDedicatedCredentials(final String configured, final String expected) {
+    final JsonNode config = createConfiguration(Optional.empty(), Optional.empty(), Optional.empty());
+    ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, configured);
+    assertEquals(expected, MongoDbDebeziumPropertiesManager.buildConnectionString(config));
+  }
+
   private JsonNode createConfiguration(final Optional<String> username, final Optional<String> password, final Optional<String> authMode) {
     final Map<String, Object> baseConfig = Map.of(
         DATABASE_CONFIGURATION_KEY, List.of(DATABASE_NAME),
