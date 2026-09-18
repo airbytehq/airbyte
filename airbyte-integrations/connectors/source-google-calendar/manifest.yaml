@@ -130,12 +130,30 @@ definitions:
       name: events
       primary_key:
         - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', day_delta(-25, '%Y-%m-%dT%H:%M:%S.000Z')) }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updatedMin
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: calendars/{{ config['calendarid'] }}/events
           http_method: GET
+          request_parameters:
+            showDeleted: "true"
+            maxResults: "2500"
+            singleEvents: "false"
         record_selector:
           type: RecordSelector
           extractor:
@@ -152,6 +170,12 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get('nextPageToken') }}"
             stop_condition: "{{ response.get('nextPageToken') is not defined }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - calendar_id
+              value: "{{ config['calendarid'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -167,6 +191,68 @@ definitions:
       refresh_token: "{{ config[\"client_refresh_token_2\"] }}"
       refresh_request_body: {}
       token_refresh_endpoint: https://oauth2.googleapis.com/token
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 5
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 401
+              action: FAIL
+              failure_type: config_error
+              error_message: "Google rejected the credentials. Re-authenticate the connector or regenerate the refresh token."
+            - type: HttpResponseFilter
+              http_codes:
+                - 403
+              predicate: "{{ 'rateLimitExceeded' in response.get('error', {}) | string or 'userRateLimitExceeded' in response.get('error', {}) | string }}"
+              action: RATE_LIMITED
+            - type: HttpResponseFilter
+              http_codes:
+                - 403
+              action: FAIL
+              failure_type: config_error
+              error_message: "The authorized Google account does not have access to this calendar or the Calendar API is not enabled for the OAuth project."
+            - type: HttpResponseFilter
+              http_codes:
+                - 404
+              action: FAIL
+              failure_type: config_error
+              error_message: "Calendar '{{ config['calendarid'] }}' was not found. Use the calendar's ID from Google Calendar settings (or 'primary')."
+            - type: HttpResponseFilter
+              http_codes:
+                - 410
+              action: FAIL
+              failure_type: system_error
+              error_message: "The saved sync position is too old for Google Calendar. Reset the events stream to resync."
+            - type: HttpResponseFilter
+              http_codes:
+                - 429
+              action: RATE_LIMITED
+            - type: HttpResponseFilter
+              http_codes:
+                - 500
+                - 502
+                - 503
+                - 504
+              action: RETRY
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 10
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 500
+          interval: PT1M
+      matchers: []
 
 streams:
   - $ref: "#/definitions/streams/colors"
@@ -190,21 +276,39 @@ spec:
         type: string
         order: 0
         title: Client ID
+        description: The OAuth 2.0 client ID from your Google Cloud project.
         airbyte_secret: true
       client_secret:
         type: string
         order: 1
         title: Client secret
+        description: The OAuth 2.0 client secret from your Google Cloud project.
         airbyte_secret: true
       client_refresh_token_2:
         type: string
         order: 2
         title: Refresh token
+        description: The OAuth 2.0 refresh token granting access to the Google Calendar account.
         airbyte_secret: true
       calendarid:
         type: string
         order: 3
         title: Calendar Id
+        description: The ID of the calendar to sync events from, found in the calendar's settings in Google Calendar. Use 'primary' for the primary calendar.
+      start_date:
+        type: string
+        order: 4
+        title: Start date
+        format: date-time
+        description: Sync events modified on or after this date. Leave unset to sync all events.
+      num_workers:
+        type: integer
+        order: 5
+        title: Number of concurrent workers
+        description: The number of worker threads used to fetch data concurrently.
+        minimum: 1
+        maximum: 10
+        default: 3
     additionalProperties: true
 
 metadata:
@@ -1004,6 +1108,10 @@ schemas:
               type:
                 - string
                 - "null"
+      calendar_id:
+        type:
+          - string
+          - "null"
       attendees:
         type:
           - array

@@ -20,7 +20,11 @@ acceptance_tests:
           - name: "events"
             bypass_reason: "Test calendar has no events"
   incremental:
-    bypass_reason: "No incremental streams"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
