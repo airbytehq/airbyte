@@ -1,11 +1,11 @@
-:::warning Airbyte versions before 2.3 require a MinIO image override
+<details>
+<summary>Airbyte versions before 2.3: MinIO image override required</summary>
+
 The `minio/minio` image that Airbyte versions before 2.3 use for internal storage is no longer available on Docker Hub. If you deploy or upgrade an Airbyte version earlier than 2.3 without overriding the MinIO image, MinIO fails to pull its image and the deployment stalls. Airbyte 2.3 and later use the `airbyte/minio` image and don't need this override.
 
 Set `minio.image.repository` to `airbyte/minio`. Keep the image tag unchanged.
 
-New installs:
-
-Add `--set minio.image.repository=airbyte/minio` to your install command. For example:
+**New installs**: Add `--set minio.image.repository=airbyte/minio` to your install command. For example:
 
 ```bash
 helm install airbyte airbyte-v2/airbyte \
@@ -13,9 +13,7 @@ helm install airbyte airbyte-v2/airbyte \
   --set minio.image.repository=airbyte/minio
 ```
 
-Existing installs:
-
-Run these steps in order. Don't run `helm upgrade` first. It fails while MinIO is down.
+**Existing installs**: Run these steps in order. Don't run `helm upgrade` first. It fails while MinIO is down.
 
 These commands assume your namespace and Helm release are both named `airbyte`. If yours differ, substitute your own names.
 
@@ -43,4 +41,5 @@ These commands assume your namespace and Helm release are both named `airbyte`. 
    ```
 
    If this step fails on a `minio` hook, run it again.
-:::
+
+</details>
