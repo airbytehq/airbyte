@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 
 class ConfigBuilder:
@@ -8,12 +8,24 @@ class ConfigBuilder:
         self._credentials: Dict[str, str] = {}
         self._board_ids: List[int] = []
 
-    def with_oauth_credentials(self, client_id: str, client_secret: str, access_token: str, subdomain: str) -> "ConfigBuilder":
+    def with_oauth_credentials(
+        self,
+        client_id: str,
+        client_secret: str,
+        access_token: str,
+        subdomain: str,
+        refresh_token: Optional[str] = None,
+        token_expiry_date: Optional[str] = None,
+    ) -> "ConfigBuilder":
         self._credentials["auth_type"] = "oauth2.0"
         self._credentials["client_id"] = client_id
         self._credentials["client_secret"] = client_secret
         self._credentials["access_token"] = access_token
         self._credentials["subdomain"] = subdomain
+        if refresh_token is not None:
+            self._credentials["refresh_token"] = refresh_token
+        if token_expiry_date is not None:
+            self._credentials["token_expiry_date"] = token_expiry_date
         return self
 
     def with_api_token_credentials(self, api_token: str) -> "ConfigBuilder":
