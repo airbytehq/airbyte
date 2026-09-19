@@ -31,7 +31,7 @@ def _read_deals(config):
 def test_replication_start_date_is_optional_with_default():
     manifest = yaml.safe_load(_YAML_FILE_PATH.read_text())
     spec = manifest["spec"]["connection_specification"]
-    assert spec["required"] == ["api_token"]
+    assert spec["required"] == ["credentials"]
     assert spec["properties"]["replication_start_date"]["default"] == DEFAULT_START_DATE
 
 
@@ -67,7 +67,7 @@ def test_replication_start_date_pattern(value, expected):
 )
 def test_start_date_reaches_the_api_as_updated_since(requests_mock, start_date, expected_updated_since):
     requests_mock.get(_DEALS_URL, json=_EMPTY_PAGE)
-    config = {"api_token": "token"}
+    config = {"credentials": {"auth_type": "api_token", "api_token": "token"}}
     if start_date is not None:
         config["replication_start_date"] = start_date
 
@@ -80,7 +80,7 @@ def test_start_date_reaches_the_api_as_updated_since(requests_mock, start_date, 
 def test_malformed_start_date_fails_config_validation(requests_mock):
     requests_mock.get(_DEALS_URL, json=_EMPTY_PAGE)
 
-    output = _read_deals({"api_token": "token", "replication_start_date": "2017/01/25"})
+    output = _read_deals({"credentials": {"auth_type": "api_token", "api_token": "token"}, "replication_start_date": "2017/01/25"})
 
     assert not requests_mock.called
     assert len(output.errors) == 1
@@ -99,6 +99,18 @@ def test_legacy_authorization_config_is_migrated(capsys):
 
 
 def test_current_config_is_not_migrated(capsys):
-    source = get_source({"api_token": "current-token", "replication_start_date": "2017-01-25T00:00:00Z"})
-    assert source._config["api_token"] == "current-token"
+    config = {
+        "credentials": {"auth_type": "api_token", "api_token": "current-token"},
+        "replication_start_date": "2017-01-25T00:00:00Z",
+    }
+    source = get_source(config)
+    assert source._config["credentials"]["api_token"] == "current-token"
     assert "CONTROL" not in capsys.readouterr().out
+
+
+def test_flat_api_token_config_is_wrapped_into_credentials(capsys):
+    source = get_source({"api_token": "current-token", "replication_start_date": "2017-01-25T00:00:00Z"})
+    assert source._config["credentials"] == {"auth_type": "api_token", "api_token": "current-token"}
+    control_messages = [json.loads(line) for line in capsys.readouterr().out.splitlines() if '"CONTROL"' in line]
+    assert len(control_messages) == 1
+    assert control_messages[0]["control"]["connectorConfig"]["config"]["credentials"]["api_token"] == "current-token"

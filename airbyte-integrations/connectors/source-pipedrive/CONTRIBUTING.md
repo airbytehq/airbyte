@@ -25,10 +25,10 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    are `date-time` + `timestamp_with_timezone`; `YYYY-MM-DD HH:MM:SS` values (API v1) are `date-time` +
    `timestamp_without_timezone`; `HH:MM` fields such as `activities.due_time` stay untyped. Adding
    or changing a `format` is a breaking change. Details in AGENTS.md section 3.
-4. **Authentication Is a Query Parameter, Not an Authenticator** -- the API token rides in the URL
-   and scopes every stream to one user's visibility. OAuth is owned by
-   [airbyte-internal-issues#17201](https://github.com/airbytehq/airbyte-internal-issues/issues/17201);
-   don't add or document it early. Details in AGENTS.md section 4.
+4. **OAuth Is the Default, the API Token Travels in a Header, Old Configs Are Migrated** -- a
+   `SelectiveAuthenticator` on `credentials.auth_type` picks Bearer (OAuth, company host from
+   `api_domain`) or the `x-api-token` header; never put `api_token` in `request_parameters` and keep
+   test configs in the `credentials` shape. Details in AGENTS.md section 4.
 5. **Mail Streams Are Scoped to One User's Mailbox and Fan Out per Folder and Thread** --
    `mailThreads` queries four folders (so threads can repeat) and `mail` makes one request per
    thread; both only see the token owner's mailbox. `mailThreads` keeps `use_cache: false` because
@@ -51,12 +51,38 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    no other stream replicates deletions, and `is_deleted` on other records is passed through as
    returned. Details in AGENTS.md section 8.
 
+## OAuth app scopes
+
+The Airbyte OAuth app must carry these Pipedrive scopes (Developer Hub name, scope key) for every
+stream to read; a missing scope surfaces as a `403 Scope and URL mismatch` config error:
+
+| Developer Hub toggle | Scope | Streams |
+| :------------------- | :---- | :------ |
+| Access to basic information | `base` | `currencies` (check stream), `users/me` |
+| Deals: Read only | `deals:read` | `deals`, `deals_archived`, `deal_fields`, `deal_products`, `deal_installments`, `pipelines`, `stages`, `filters`, `notes`, `files` |
+| Contacts: Read only | `contacts:read` | `persons`, `organizations`, `person_fields`, `organization_fields` |
+| Activities: Read only | `activities:read` | `activities`, `activity_fields`, `activity_types` |
+| Products: Read only | `products:read` | `products`, `product_fields` |
+| Leads: Read only | `leads:read` | `leads`, `lead_labels`, `lead_sources` |
+| Mail: Read only | `mail:read` | `mail`, `mailThreads` |
+| Read users data | `users:read` | `users`, `legacy_teams` |
+| Administer account | `admin` | `roles`, `permission_sets`, `permission_set_assignments` |
+| Goals: Read only | `goals:read` | `goals` |
+| Projects: Read only | `projects:read` | `projects`, `tasks` |
+| Call logs | `phone-integration` | `call_logs` |
+| See recent account activity | `recents:read` | `deal_flow` |
+
+`roles` and `GET /callLogs` need `admin` and `phone-integration` even though the
+vendor scope reference lists them under `users:read` and write-only call-log
+endpoints (verified live). Re-run one consent flow after any scope change; an
+existing refresh token does not gain new scopes.
+
 ## Testing notes
 
 - Validate manifest changes with `airbyte-cdk connector test` from the connector directory;
   mock-server unit tests live in `unit_tests/` and run with `poetry run pytest` from that directory.
 - `integration_tests/` holds the acceptance test config. `expected_records.jsonl` mirrors a
   specific sandbox account, so record-level assertions need an updated fixture when the sandbox
-  data changes; the sandbox's daily request budget (30,000 tokens) is small, so do not run several
+  data changes; the sandbox's daily token budget (99,999 on the sandbox plan) is shared with CI, so do not run several
   full reads in parallel.
 - Custom field keys are account-specific; don't hard-code hash keys in tests or schemas.
