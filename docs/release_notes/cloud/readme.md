@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## September 18, 2026
+
+Platform
+
+- On the Pro and Enterprise Flex plans, permissions you receive through a user group now work everywhere in Airbyte. Previously, if a group granted you access to a workspace, that workspace could be missing from your workspace list and the interface could hide pages and actions you were allowed to use. Group-granted access now shows up the same way as access granted to you directly.
+
 ## September 17, 2026
 
 Platform
