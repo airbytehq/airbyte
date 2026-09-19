@@ -1,0 +1,13 @@
+connector_image: airbyte/source-comfyui:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    bypass_reason: "Community contribution — credentials not available in CI"
+  discovery:
+    bypass_reason: "Community contribution — credentials not available in CI"
+  basic_read:
+    bypass_reason: "Community contribution — credentials not available in CI"
+  incremental:
+    bypass_reason: "Community contribution — credentials not available in CI"
