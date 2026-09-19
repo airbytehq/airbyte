@@ -26,8 +26,21 @@ definitions:
         backoff_strategies:
           - type: WaitTimeFromHeader
             header: Retry-After
+            max_waiting_time_in_seconds: 1800
+          - type: ExponentialBackoffStrategy
+        response_filters:
+          - type: HttpResponseFilter
+            http_codes: [401]
+            action: REFRESH_TOKEN_THEN_RETRY
+            failure_type: config_error
+            error_message: "HTTP 401: Uptick rejected the refreshed access token."
+          - type: HttpResponseFilter
+            http_codes: [403]
+            action: FAIL
+            failure_type: config_error
+            error_message: "HTTP 403: Uptick user lacks permission for the requested endpoint."
       request_headers:
-        User-Agent: Airbyte (Connector Version 1.1.0)
+        User-Agent: Airbyte
     SimpleRetriever:
       requester:
         $ref: "#/definitions/linked/HttpRequester"
@@ -81,6 +94,18 @@ definitions:
           field_path:
             - data
         schema_normalization: Default
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 60
+          interval: PT1M
+      matchers: []
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config['num_workers'] if (config.get('num_workers') is integer and config['num_workers'] is not boolean and config['num_workers'] >= 1) else 3 }}"
+  max_concurrency: 10
 spec:
   type: Spec
   connection_specification:
@@ -95,29 +120,50 @@ spec:
     properties:
       base_url:
         type: string
-        description: eg. https://demo-fire.onuptick.com (no trailing slash)
+        description: Root URL of the Uptick workspace, for example https://demo-fire.onuptick.com. Only the host is used; the scheme and trailing slash are normalized.
         order: 0
         title: Base Url
       client_id:
         type: string
+        description: Client ID of the OAuth application created in Uptick under Control Panel > Uptick API > Create Application.
         order: 1
         title: OAuth Client ID
         airbyte_secret: true
       client_secret:
         type: string
+        description: Client secret of that Uptick OAuth application.
         order: 2
         title: OAuth Client Secret
         airbyte_secret: true
       username:
         type: string
+        description: Email address of the Uptick user the connector signs in as. Synced data is limited to what this user can see in Uptick.
         order: 3
         title: Uptick API Account Email
       password:
         type: string
+        description: Password of that Uptick user.
         order: 4
         title: Uptick API Account Password
         airbyte_secret: true
+      num_workers:
+        type: integer
+        title: Number of Concurrent Threads
+        description: Number of concurrent requests. Higher values speed up syncs but increase the chance of Uptick rate limiting.
+        default: 3
+        minimum: 1
+        maximum: 10
+        order: 5
     additionalProperties: true
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    transformations:
+      - type: ConfigAddFields
+        condition: "{{ config.get('base_url') is string and (config['base_url'] | trim | length) > 0 }}"
+        fields:
+          - type: AddedFieldDefinition
+            path: ["base_url"]
+            value: "{{ 'https://' ~ (((config['base_url'] | string | trim).split('://') | last | trim('/')).split('/') | first) }}"
 streams:
   - type: DeclarativeStream
     name: tasks
