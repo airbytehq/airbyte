@@ -5,7 +5,7 @@ Set `minio.image.repository` to `airbyte/minio`. Keep the image tag unchanged.
 
 New installs:
 
-For example:
+Add `--set minio.image.repository=airbyte/minio` to your install command. For example:
 
 ```bash
 helm install airbyte airbyte-v2/airbyte \
