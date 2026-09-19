@@ -44,4 +44,10 @@ data:
     - title: NetSuite authentication
       url: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_4389727047.html
       type: authentication_guide
+    - title: NetSuite Release Notes
+      url: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/book_N3865324.html
+      type: api_release_history
+    - title: Token-based Authentication (TBA) end of support and SOAP Removal Plans FAQ
+      url: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/article_2104046421.html
+      type: api_deprecations
 metadataSpecVersion: "1.0"
