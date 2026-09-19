@@ -51,7 +51,8 @@ Some Google Search Console implementations return a 400 error for certain `aggre
 configured. The connector provides an `always_use_aggregation_type_auto` boolean config that, when
 enabled, overrides all stream-specific `aggregationType` values to `auto`.
 
-The error handler explicitly matches HTTP 400 responses and surfaces a message telling the user to
+The error handler explicitly matches responses whose error message contains
+`"is not a valid aggregation type"` and surfaces a message telling the user to
 enable this setting.
 
 **Why this matters:** Without this override, certain streams (like `search_analytics_page_report` which
