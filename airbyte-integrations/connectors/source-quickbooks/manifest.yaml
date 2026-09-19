@@ -15245,6 +15245,69 @@ spec:
         default: false
         description: Determines whether to use the sandbox or production environment.
     additionalProperties: true
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+    - type: ConfigMigration
+      description: |
+        Flattens the pre-4.0.0 authentication format, which 4.0.0 replaced without
+        migrating existing configs.
+        OLD: {"credentials": {"client_id": ..., "client_secret": ..., "refresh_token": ..., "access_token": ..., "token_expiry_date": ..., "realm_id": ..., "auth_type": "oauth2.0"}}
+        NEW: {"client_id": ..., "client_secret": ..., "refresh_token": ..., "access_token": ..., "token_expiry_date": ..., "realm_id": ..., "auth_type": "oauth2.0"}
+      transformations:
+      - type: ConfigAddFields
+        fields:
+        - type: AddedFieldDefinition
+          path: ["client_id"]
+          value: "{{ (config.get('credentials') or {}).get('client_id') }}"
+          value_type: string
+        condition: "{{ (config.get('credentials') or {}).get('client_id') is not none and config.get('client_id') is none }}"
+      - type: ConfigAddFields
+        fields:
+        - type: AddedFieldDefinition
+          path: ["client_secret"]
+          value: "{{ (config.get('credentials') or {}).get('client_secret') }}"
+          value_type: string
+        condition: "{{ (config.get('credentials') or {}).get('client_secret') is not none and config.get('client_secret') is none }}"
+      - type: ConfigAddFields
+        fields:
+        - type: AddedFieldDefinition
+          path: ["refresh_token"]
+          value: "{{ (config.get('credentials') or {}).get('refresh_token') }}"
+          value_type: string
+        condition: "{{ (config.get('credentials') or {}).get('refresh_token') is not none and config.get('refresh_token') is none }}"
+      - type: ConfigAddFields
+        fields:
+        - type: AddedFieldDefinition
+          path: ["access_token"]
+          value: "{{ (config.get('credentials') or {}).get('access_token') }}"
+          value_type: string
+        condition: "{{ (config.get('credentials') or {}).get('access_token') is not none and config.get('access_token') is none }}"
+      - type: ConfigAddFields
+        fields:
+        - type: AddedFieldDefinition
+          path: ["token_expiry_date"]
+          value: "{{ (config.get('credentials') or {}).get('token_expiry_date') }}"
+          value_type: string
+        condition: "{{ (config.get('credentials') or {}).get('token_expiry_date') is not none and config.get('token_expiry_date') is none }}"
+      - type: ConfigAddFields
+        fields:
+        - type: AddedFieldDefinition
+          path: ["realm_id"]
+          value: "{{ (config.get('credentials') or {}).get('realm_id') }}"
+          value_type: string
+        condition: "{{ (config.get('credentials') or {}).get('realm_id') is not none and config.get('realm_id') is none }}"
+      - type: ConfigAddFields
+        fields:
+        - type: AddedFieldDefinition
+          path: ["auth_type"]
+          value: oauth2.0
+          value_type: string
+        condition: "{{ config.get('credentials') is not none and config.get('auth_type') is none }}"
+      - type: ConfigRemoveFields
+        field_pointers:
+        - ["credentials"]
+        condition: "{{ config.get('client_id') is not none and config.get('client_secret') is not none and config.get('refresh_token') is not none and config.get('realm_id') is not none }}"
 metadata:
   autoImportSchema:
     accounts: false
