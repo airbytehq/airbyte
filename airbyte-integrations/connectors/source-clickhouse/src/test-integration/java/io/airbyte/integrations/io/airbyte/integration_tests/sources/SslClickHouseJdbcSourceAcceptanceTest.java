@@ -56,7 +56,7 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends ClickHouseJdbcSourceA
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         ClickHouseSource.DRIVER_CLASS,
-        String.format("jdbc:clickhouse:https://%s:%d?sslmode=NONE",
+        String.format("jdbc:clickhouse:https://%s:%d",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt()));
 
