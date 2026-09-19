@@ -139,12 +139,8 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('start_date') or day_delta(-25, '%Y-%m-%dT%H:%M:%S.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime: "{{ format_datetime(config.get('start_date') or '2000-01-01T00:00:00.000000Z', '%Y-%m-%dT%H:%M:%S.%fZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: updatedMin
       retriever:
         type: SimpleRetriever
         requester:
@@ -155,6 +151,9 @@ definitions:
             showDeleted: "true"
             maxResults: "2500"
             singleEvents: "false"
+            # Empty string is dropped by the CDK. The sentinel start_datetime means
+            # "no bound": only a saved cursor or a configured start_date sends updatedMin.
+            updatedMin: "{{ stream_slice['start_time'] if stream_slice['start_time'] > '2001-01-01' else '' }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -299,7 +298,7 @@ spec:
         order: 4
         title: Start date
         format: date-time
-        description: Sync events modified on or after this date. Google only accepts dates within roughly the last 30 days; leave unset to default to 25 days ago.
+        description: Sync events modified on or after this date. When unset, the first sync fetches all events and later incremental syncs only fetch events updated since the saved cursor. Google only accepts dates within roughly the last 30 days.
       num_workers:
         type: integer
         order: 5
