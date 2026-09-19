@@ -4,7 +4,74 @@ check:
   type: CheckStream
   stream_names:
   - accounts
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+  - type: MovingWindowCallRatePolicy
+    rates:
+    - limit: 500
+      interval: PT1M
+    matchers: []
+  status_codes_for_ratelimit_hit:
+  - 429
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 4
+  max_concurrency: 40
 definitions:
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    response_filters:
+    - type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      predicate: >-
+        {{ (response is mapping) and (((response.get('Fault') or
+        response.get('fault') or {}).get('Error') or (response.get('Fault') or
+        response.get('fault') or {}).get('error') or [{}])[0].get('code') or 0)
+        | int == 3200 }}
+      error_message: QuickBooks rejected the app credentials backing this connection.
+    - type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      predicate: >-
+        {{ (response is mapping) and (((response.get('Fault') or
+        response.get('fault') or {}).get('Error') or (response.get('Fault') or
+        response.get('fault') or {}).get('error') or [{}])[0].get('code') or 0)
+        | int == 3201 }}
+      error_message: The QuickBooks user has not authorized this app for the configured company.
+    - type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+      - 401
+      failure_type: config_error
+      error_message: The QuickBooks OAuth grant is expired or revoked, so the source must be re-authenticated.
+    - type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+      - 403
+      failure_type: config_error
+      error_message: The QuickBooks OAuth grant lacks the accounting scope for the configured company.
+    - type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+      - 404
+      failure_type: config_error
+      error_message: QuickBooks does not recognize the configured Realm ID.
+    - type: HttpResponseFilter
+      action: RETRY
+      http_codes:
+      - 429
+      - 500
+      - 502
+      - 503
+      - 504
+      failure_type: transient_error
+      error_message: QuickBooks returned a retryable throttling or server error.
+    backoff_strategies:
+    - type: ExponentialBackoffStrategy
+      factor: 5
   streams:
     accounts:
       type: DeclarativeStream
@@ -34,6 +101,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -48,6 +122,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -208,6 +284,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -222,6 +305,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -463,6 +548,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -477,6 +569,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -813,6 +907,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -827,6 +928,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1017,6 +1120,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -1031,6 +1141,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1154,6 +1266,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -1168,6 +1287,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1543,6 +1664,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -1557,6 +1685,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1899,6 +2029,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -1913,6 +2050,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2036,6 +2175,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -2050,6 +2196,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2325,6 +2473,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -2339,6 +2494,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2528,6 +2685,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -2542,6 +2706,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2966,6 +3132,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -2980,6 +3153,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -3520,6 +3695,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -3534,6 +3716,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -3720,6 +3904,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -3734,6 +3925,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4040,6 +4233,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -4054,6 +4254,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4164,6 +4366,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -4178,6 +4387,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4460,6 +4671,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -4474,6 +4692,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4908,6 +5128,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -4922,6 +5149,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -5302,6 +5531,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -5316,6 +5552,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -5651,6 +5889,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -5665,6 +5910,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -6088,6 +6335,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -6102,6 +6356,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -6216,6 +6472,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -6230,6 +6493,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -6392,6 +6657,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -6406,6 +6678,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -6579,6 +6853,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -6593,6 +6874,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -6727,6 +7010,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -6741,6 +7031,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -6911,6 +7203,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -6925,6 +7224,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -7075,6 +7376,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -7089,6 +7397,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -7338,6 +7648,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -7352,6 +7669,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -7595,6 +7914,13 @@ definitions:
         refresh_token_config_path:
         - refresh_token
       token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+      refresh_token_error_status_codes:
+      - 400
+      - 401
+      refresh_token_error_key: error
+      refresh_token_error_values:
+      - invalid_grant
+      - invalid_client
 streams:
 - type: DeclarativeStream
   name: accounts
@@ -7623,6 +7949,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -7637,6 +7970,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -7797,6 +8132,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -7811,6 +8153,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -8052,6 +8396,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -8066,6 +8417,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -8402,6 +8755,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -8416,6 +8776,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -8606,6 +8968,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -8620,6 +8989,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -8743,6 +9114,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -8757,6 +9135,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -9132,6 +9512,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -9146,6 +9533,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -9488,6 +9877,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -9502,6 +9898,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -9625,6 +10023,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -9639,6 +10044,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -9914,6 +10321,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -9928,6 +10342,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -10117,6 +10533,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -10131,6 +10554,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -10555,6 +10980,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -10569,6 +11001,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -11109,6 +11543,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -11123,6 +11564,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -11309,6 +11752,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -11323,6 +11773,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -11629,6 +12081,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -11643,6 +12102,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -11753,6 +12214,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -11767,6 +12235,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -12049,6 +12519,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -12063,6 +12540,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -12497,6 +12976,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -12511,6 +12997,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -12891,6 +13379,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -12905,6 +13400,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -13240,6 +13737,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -13254,6 +13758,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -13677,6 +14183,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -13691,6 +14204,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -13805,6 +14320,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -13819,6 +14341,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -13981,6 +14505,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -13995,6 +14526,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -14168,6 +14701,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -14182,6 +14722,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -14316,6 +14858,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -14330,6 +14879,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -14500,6 +15051,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -14514,6 +15072,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -14664,6 +15224,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -14678,6 +15245,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -14927,6 +15496,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -14941,6 +15517,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -15173,19 +15751,17 @@ spec:
     - client_id
     - client_secret
     - refresh_token
-    - access_token
-    - token_expiry_date
     - realm_id
     - start_date
-    - sandbox
     properties:
       realm_id:
         type: string
         order: 0
         title: Realm ID
         description: >-
-          Labeled Company ID. The Make API Calls panel is populated with
-          the realm id and the current access token.
+          Labeled Company ID of the QuickBooks company to sync. It is shown
+          in the Make API Calls panel of the Intuit developer portal, and in
+          the QuickBooks UI under Settings > Additional Information.
         airbyte_secret: true
       auth_type:
         type: string
@@ -15204,7 +15780,10 @@ spec:
         type: string
         order: 3
         title: Access Token
-        description: Access token for making authenticated requests.
+        description: >-
+          Access token for making authenticated requests. Optional: the
+          connector obtains and refreshes it from the refresh token, and
+          persists the current value here.
         airbyte_secret: true
       client_secret:
         type: string
@@ -15225,7 +15804,9 @@ spec:
         order: 6
         title: Token Expiry Date
         format: date-time
-        description: The date-time when the access token should be refreshed.
+        description: >-
+          The date-time when the access token should be refreshed. Optional:
+          the connector maintains this value after each token refresh.
       start_date:
         type: string
         order: 7
