@@ -117,7 +117,7 @@ class SnowflakeChecker(
 
                 snowflakeInsertBuffer.accumulate(data)
                 snowflakeInsertBuffer.flush()
-                val tableCount = snowflakeAirbyteClient.countTable(qualifiedTableName)
+                val tableCount = snowflakeAirbyteClient.exactCountTable(qualifiedTableName)
                 require(tableCount == 1L) {
                     "Failed to insert expected rows into check table. Actual written: $tableCount"
                 }
