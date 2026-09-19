@@ -26,7 +26,7 @@ Manifest-only connector (`manifest.yaml` only; no `components.py`). Base image `
 
 ## Incremental events
 
-`DatetimeBasedCursor` on `updated`, sent as `updatedMin`. `start_date` defaults to ~25 days ago because Google rejects `updatedMin` older than ~30 days with `410 updatedMinTooLongAgo`. `state_migrations: [LegacyToPerPartitionStateMigration]` converts pre-0.3.0 global state into per-partition state. `showDeleted=true` delivers deletions as `status: "cancelled"`. `syncToken` was rejected: opaque, non-datetime, and still requires full resync on 410.
+`DatetimeBasedCursor` on `updated`, sent as `updatedMin`. The cursor `start_datetime` defaults to a `2000-01-01` sentinel when `start_date` is unset, and `updatedMin` is only sent when `stream_slice['start_time'] > '2001-01-01'` — so full refresh and first incremental syncs fetch all events; saved cursors and configured `start_date` are honored. Google rejects `updatedMin` older than ~30 days with `410 updatedMinTooLongAgo` (a paused connection beyond that window needs an events reset). `state_migrations: [LegacyToPerPartitionStateMigration]` converts pre-0.3.0 global state into per-partition state. `showDeleted=true` delivers deletions as `status: "cancelled"`. `syncToken` was rejected: opaque, non-datetime, and still requires full resync on 410.
 
 ## Error handling
 

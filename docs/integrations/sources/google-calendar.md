@@ -52,7 +52,7 @@ To authenticate with OAuth you need a **Client ID**, **Client Secret**, and **Re
 4. Enter a name for the connector.
 5. Under **Authentication**, choose **Authenticate via Google (OAuth)** and click **Authenticate your Google account** to authorize.
 6. (Optional) For **Calendar Id**, enter a specific calendar ID to sync only that calendar. Leave empty to sync every calendar in the account's calendar list. The value `primary` is accepted for the account's primary calendar.
-7. (Optional) For **Start Date**, enter the earliest `updated` timestamp for incremental `events` syncs in the format `YYYY-MM-DDTHH:mm:ssZ` or `YYYY-MM-DDTHH:mm:ss.SSSZ`. Defaults to 25 days ago; Google rejects bounds older than roughly 30 days.
+7. (Optional) For **Start Date**, enter the earliest `updated` timestamp for incremental `events` syncs in the format `YYYY-MM-DDTHH:mm:ssZ` or `YYYY-MM-DDTHH:mm:ss.SSSZ`. When unset, the first sync fetches all events; Google rejects values older than roughly 30 days.
 8. (Optional) For **Number of concurrent workers**, set the number of concurrent request workers (1–10, default 3).
 9. Click **Set up source** and wait for the tests to complete.
 
@@ -70,7 +70,7 @@ To authenticate with OAuth you need a **Client ID**, **Client Secret**, and **Re
    - **Authenticate via Google (OAuth):** enter the **Client ID**, **Client Secret**, and **Refresh Token** you obtained in Step 1.
    - **Refresh token (manual):** enter a manually obtained refresh token granted the `calendar.readonly` and `calendar.acls.readonly` scopes, plus your **Client ID** and **Client Secret**. Without `calendar.acls.readonly`, the `acl` stream is skipped (its 403 responses are ignored).
 6. (Optional) For **Calendar Id**, enter a specific calendar ID to sync only that calendar, or `primary` for the account's primary calendar. Leave empty to sync all calendars.
-7. (Optional) For **Start Date**, enter the earliest `updated` timestamp for incremental `events` syncs (`YYYY-MM-DDTHH:mm:ssZ` or `YYYY-MM-DDTHH:mm:ss.SSSZ`). Defaults to 25 days ago.
+7. (Optional) For **Start Date**, enter the earliest `updated` timestamp for incremental `events` syncs (`YYYY-MM-DDTHH:mm:ssZ` or `YYYY-MM-DDTHH:mm:ss.SSSZ`). When unset, the first sync fetches all events; Google rejects values older than roughly 30 days.
 8. (Optional) For **Number of concurrent workers**, set the number of concurrent request workers (1–10, default 3).
 9. Click **Set up source** and wait for the tests to complete.
 
