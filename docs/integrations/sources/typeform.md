@@ -63,7 +63,7 @@ Skip this step. Airbyte Cloud uses OAuth to authenticate with Typeform.
 1. Go to your local Airbyte instance.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New Source**.
 3. On the source setup page, enter a name for the connector and select **Typeform** from the Source type dropdown.
-4. Enter your personal access token in the **API Token** field.
+4. Under **Authorization Method**, select **Private Token** and enter your personal access token in the **Private Token** field.
 5. **Start date** (Optional) - The date from which you want to replicate data for the Responses stream, in the format `YYYY-MM-DDT00:00:00Z`. If not set, the connector fetches response data from one year before the current date.
 6. **Form IDs** (Optional) - IDs of specific forms to sync. If not specified, the connector syncs all forms in your account. You can find form IDs in your form URLs on the **Share** panel. For example, in the URL `https://mysite.typeform.com/to/u6nXL7`, the form ID is `u6nXL7`.
 7. Click **Set up source**.
@@ -87,7 +87,9 @@ This connector uses the Typeform US API endpoint (`api.typeform.com`). If your T
 
 ## Performance considerations
 
-The Typeform API enforces a rate limit of 2 requests per second per account. The connector respects this limit automatically. For more information, see the [Typeform API rate limits documentation](https://developer.typeform.com/get-started/#rate-limits).
+The Typeform API enforces a rate limit of 2 requests per second per account. For more information, see the [Typeform API rate limits documentation](https://developer.typeform.com/get-started/#rate-limits).
+
+The connector reads streams concurrently and doesn't throttle requests ahead of time. When Typeform returns a `429 Too Many Requests` response, the connector retries the request with backoff.
 
 Page size limits per stream:
 
@@ -111,11 +113,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
 | 1.4.9 | 2026-09-15 | [74518](https://github.com/airbytehq/airbyte/pull/74518) | Update dependencies |
-| 1.4.8-rc.5 | 2026-04-16 | [76418](https://github.com/airbytehq/airbyte/pull/76418) | Increase max_concurrency to 75, no api_budget (reviewed/explored, relying on CDK 429 backoff) |
+| 1.4.8 | 2026-04-27 | [77124](https://github.com/airbytehq/airbyte/pull/77124) | Promoted release candidate to GA |
+| 1.4.8-rc.5 | 2026-04-21 | [76418](https://github.com/airbytehq/airbyte/pull/76418) | Increase max_concurrency to 75, no api_budget (reviewed/explored, relying on CDK 429 backoff) |
 | 1.4.8-rc.4 | 2026-04-15 | [76363](https://github.com/airbytehq/airbyte/pull/76363) | Remove API budget, set concurrency to 25 |
 | 1.4.8-rc.3 | 2026-04-14 | [76319](https://github.com/airbytehq/airbyte/pull/76319) | Adjust default_concurrency from 3 to 2 for tuning retry |
 | 1.4.8-rc.2 | 2026-04-13 | [76270](https://github.com/airbytehq/airbyte/pull/76270) | Adjust default_concurrency from 4 to 3 for tuning retry |
-| 1.4.8-rc.1 | 2026-04-09 | [76204](https://github.com/airbytehq/airbyte/pull/76204) | Add concurrency_level and HTTPAPIBudget for concurrent stream reads |
+| 1.4.8-rc.1 | 2026-04-12 | [76204](https://github.com/airbytehq/airbyte/pull/76204) | Add concurrency_level and HTTPAPIBudget for concurrent stream reads |
 | 1.4.7 | 2026-04-02 | [76030](https://github.com/airbytehq/airbyte/pull/76030) | Promoted release candidate to GA |
 | 1.4.7-rc.2 | 2026-03-31 | [75898](https://github.com/airbytehq/airbyte/pull/75898) | Update CDK to 7.15.0 |
 | 1.4.7-rc.1 | 2026-03-26 | [75506](https://github.com/airbytehq/airbyte/pull/75506) | Upgrade CDK version to 7.13.0 |
