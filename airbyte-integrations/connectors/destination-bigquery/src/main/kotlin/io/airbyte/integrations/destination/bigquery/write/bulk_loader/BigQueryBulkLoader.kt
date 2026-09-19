@@ -8,6 +8,7 @@ import com.google.cloud.bigquery.*
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.LoadJobConfiguration
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.config.DataChannelMedium
@@ -22,6 +23,9 @@ import io.airbyte.cdk.load.write.db.BulkLoader
 import io.airbyte.cdk.load.write.db.BulkLoaderFactory
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
+import io.airbyte.integrations.destination.bigquery.copy.BigqueryCopyContext
+import io.airbyte.integrations.destination.bigquery.copy.BigqueryS3Copy
+import io.airbyte.integrations.destination.bigquery.copy.DisabledBigqueryS3Copy
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsFilePostProcessing
@@ -37,12 +41,18 @@ import jakarta.inject.Singleton
 
 private val logger = KotlinLogging.logger {}
 
+@SuppressFBWarnings(
+    value = ["NP_NONNULL_PARAM_VIOLATION"],
+    justification = "Kotlin coroutine resume stubs pass null placeholders for saved arguments",
+)
 class BigQueryBulkLoader(
     private val storageClient: GcsClient,
     private val bigQueryClient: BigQuery,
     private val bigQueryConfiguration: BigqueryConfiguration,
     private val tableId: TableId,
     private val schema: Schema,
+    private val archive: BigqueryS3Copy = DisabledBigqueryS3Copy,
+    private val copyContext: BigqueryCopyContext? = null,
 ) : BulkLoader<GcsBlob> {
     override suspend fun load(remoteObject: GcsBlob) {
         val gcsUri = "gs://${remoteObject.storageConfig.gcsBucketName}/${remoteObject.key}"
@@ -79,7 +89,7 @@ class BigQueryBulkLoader(
         } catch (e: Exception) {
             throw RuntimeException(
                 "Failed to load CSV data from $gcsUri to table ${tableId.toPrettyString()}",
-                e
+                e,
             )
         }
 
@@ -93,6 +103,10 @@ class BigQueryBulkLoader(
             throw RuntimeException(
                 "${tableId.toPrettyString()}: Nonzero bad records detected: ${stats.badRecords}"
             )
+        }
+
+        copyContext?.let {
+            archive.copyCompletedGcsObject(storageClient, remoteObject, it, stats.outputRows)
         }
 
         val loadingMethodPostProcessing =
@@ -125,6 +139,7 @@ class BigQueryBulkLoaderFactory(
     private val typingDedupingStreamStateStore: StreamStateStore<TypingDedupingExecutionConfig>?,
     private val directLoadStreamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>?,
     @Named("dataChannelMedium") private val dataChannelMedium: DataChannelMedium,
+    private val archive: BigqueryS3Copy,
 ) : BulkLoaderFactory<StreamKey, GcsBlob> {
     override val numPartWorkers: Int = 2
     override val numUploadWorkers: Int = 10
@@ -165,12 +180,14 @@ class BigQueryBulkLoaderFactory(
             bigQueryConfiguration,
             tableId,
             schema,
+            archive,
+            archive.context(catalog.getStream(key.stream)),
         )
     }
 
     private fun <S> waitForStateStore(
         stateStore: StreamStateStore<S>,
-        streamDescriptor: DestinationStream.Descriptor
+        streamDescriptor: DestinationStream.Descriptor,
     ): S {
         // Poll the state store until it's populated by the coordinating StreamLoader thread
         var attempts = 0
@@ -187,7 +204,7 @@ class BigQueryBulkLoaderFactory(
         }
 
         throw RuntimeException(
-            "Timeout waiting for StreamStateStore to be populated for stream $streamDescriptor. This indicates a coordination issue between workers.",
+            "Timeout waiting for StreamStateStore to be populated for stream $streamDescriptor. This indicates a coordination issue between workers."
         )
     }
 }
