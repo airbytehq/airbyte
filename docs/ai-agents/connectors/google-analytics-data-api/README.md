@@ -6,7 +6,8 @@ Google Analytics 4 (GA4) Data API connector for accessing website and app analyt
 This connector provides access to pre-configured analytics reports including website overview,
 active users, traffic sources, page performance, device breakdowns, and geographic locations.
 Reports are retrieved via the GA4 Data API v1beta using configurable date ranges and
-property IDs. Requires OAuth2 authentication with Google Analytics read-only scope.
+property IDs. Supports OAuth2 and service account key authentication with Google
+Analytics read-only scope.
 
 
 ## Example prompts
@@ -394,13 +395,11 @@ inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> ex
 from airbyte_agent_sdk import build_connector_tools
 from pydantic_ai import Agent
 from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
-from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig
 
 connector = GoogleAnalyticsDataApiConnector(
-    auth_config=GoogleAnalyticsDataApiAuthConfig(
-        client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
-        client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
-        refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
+    auth_config=GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig(
+        credentials_json="<The JSON key linked to the service account used for authorization. For steps on obtaining this key, refer to https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide>"
     )
 )
 
@@ -414,13 +413,11 @@ agent = Agent("openai:gpt-4o", tools=tools.as_list())
 from airbyte_agent_sdk import build_connector_tools
 from langchain_core.tools import StructuredTool
 from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
-from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig
 
 connector = GoogleAnalyticsDataApiConnector(
-    auth_config=GoogleAnalyticsDataApiAuthConfig(
-        client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
-        client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
-        refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
+    auth_config=GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig(
+        credentials_json="<The JSON key linked to the service account used for authorization. For steps on obtaining this key, refer to https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide>"
     )
 )
 
@@ -441,13 +438,11 @@ langchain_tools = [
 from airbyte_agent_sdk import build_connector_tools
 from agents import Agent, function_tool
 from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
-from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig
 
 connector = GoogleAnalyticsDataApiConnector(
-    auth_config=GoogleAnalyticsDataApiAuthConfig(
-        client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
-        client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
-        refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
+    auth_config=GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig(
+        credentials_json="<The JSON key linked to the service account used for authorization. For steps on obtaining this key, refer to https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide>"
     )
 )
 
@@ -463,13 +458,11 @@ agent = Agent(name="Google-Analytics-Data-Api Assistant", tools=openai_tools)
 from airbyte_agent_sdk import build_connector_tools
 from fastmcp import FastMCP
 from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
-from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig
 
 connector = GoogleAnalyticsDataApiConnector(
-    auth_config=GoogleAnalyticsDataApiAuthConfig(
-        client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
-        client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
-        refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
+    auth_config=GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig(
+        credentials_json="<The JSON key linked to the service account used for authorization. For steps on obtaining this key, refer to https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide>"
     )
 )
 
@@ -488,13 +481,11 @@ These examples are kept for existing integrations. For new agents, use `build_co
 ```python title="Pydantic AI"
 from pydantic_ai import Agent
 from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
-from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig
 
 connector = GoogleAnalyticsDataApiConnector(
-    auth_config=GoogleAnalyticsDataApiAuthConfig(
-        client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
-        client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
-        refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
+    auth_config=GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig(
+        credentials_json="<The JSON key linked to the service account used for authorization. For steps on obtaining this key, refer to https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide>"
     )
 )
 
@@ -511,13 +502,11 @@ async def google_analytics_data_api_execute(entity: str, action: str, params: di
 ```python title="LangChain"
 from langchain_core.tools import tool
 from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
-from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig
 
 connector = GoogleAnalyticsDataApiConnector(
-    auth_config=GoogleAnalyticsDataApiAuthConfig(
-        client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
-        client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
-        refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
+    auth_config=GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig(
+        credentials_json="<The JSON key linked to the service account used for authorization. For steps on obtaining this key, refer to https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide>"
     )
 )
 
@@ -535,13 +524,11 @@ async def google_analytics_data_api_execute(entity: str, action: str, params: di
 ```python title="OpenAI Agents"
 from agents import Agent, function_tool
 from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
-from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig
 
 connector = GoogleAnalyticsDataApiConnector(
-    auth_config=GoogleAnalyticsDataApiAuthConfig(
-        client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
-        client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
-        refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
+    auth_config=GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig(
+        credentials_json="<The JSON key linked to the service account used for authorization. For steps on obtaining this key, refer to https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide>"
     )
 )
 
@@ -562,13 +549,11 @@ agent = Agent(name="Google-Analytics-Data-Api Assistant", tools=[google_analytic
 ```python title="FastMCP"
 from fastmcp import FastMCP
 from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
-from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig
 
 connector = GoogleAnalyticsDataApiConnector(
-    auth_config=GoogleAnalyticsDataApiAuthConfig(
-        client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
-        client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
-        refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
+    auth_config=GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig(
+        credentials_json="<The JSON key linked to the service account used for authorization. For steps on obtaining this key, refer to https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide>"
     )
 )
 
@@ -593,4 +578,4 @@ If your organization restricts access to specific IPs, add the [Airbyte Agents I
 
 ## Version information
 
-**Connector version:** 1.0.5
+**Connector version:** 1.1.0

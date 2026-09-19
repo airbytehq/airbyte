@@ -4,10 +4,13 @@
 
 package io.airbyte.integrations.destination.postgres.write.transform
 
+import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
@@ -48,19 +51,30 @@ internal const val TEXT_LIMIT_BYTES = 1 * 1024 * 1024 * 1024 // 1GB
 internal const val TIMESTAMP_MIN_EPOCH_SECONDS = -210866760000L
 internal const val TIMESTAMP_MAX_EPOCH_SECONDS = 9223371331200L
 
+private const val NUL = '\u0000'
+private const val NUL_STRING = "\u0000"
+
 @Singleton
 class PostgresValueCoercer : ValueCoercer {
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+        // Object, array, and union values are written to jsonb columns, which reject NUL
+        // characters ("unsupported Unicode escape sequence"). Jackson emits NUL as a literal
+        // six-character escape rather than dropping it, so sanitizing the serialized text
+        // afterwards finds nothing — the value tree has to be cleaned before it is serialized.
+        val sanitized =
+            if (value.abValue.containsNullCharacter()) value.abValue.stripNullCharacters()
+            else value.abValue
+
         value.abValue =
             if (value.type is UnionType || value.type is UnknownType) {
                 // Don't serialize null values - keep them as NullValue
-                if (value.abValue is NullValue) {
-                    value.abValue
+                if (sanitized is NullValue) {
+                    sanitized
                 } else {
-                    StringValue(value.abValue.serializeToString())
+                    StringValue(sanitized.serializeToString())
                 }
             } else {
-                value.abValue
+                sanitized
             }
         return value
     }
@@ -84,14 +98,6 @@ class PostgresValueCoercer : ValueCoercer {
                 } else ValidationResult.Valid
             }
             is StringValue -> {
-                // PostgreSQL doesn't allow null bytes (\u0000) in text fields
-                // Replace them with empty string to prevent COPY errors
-                // Using replace() without regex for optimal performance (O(n) vs O(n*m) with regex)
-                if (abValue.value.contains('\u0000')) {
-                    val sanitizedValue = abValue.value.replace("\u0000", "")
-                    value.abValue = StringValue(sanitizedValue)
-                }
-
                 // Validate string length (conservative check - actual byte size may vary with
                 // encoding)
                 // PostgreSQL uses UTF-8, so we check character count * 4 (max bytes per UTF-8 char)
@@ -127,3 +133,34 @@ class PostgresValueCoercer : ValueCoercer {
             }
         }
 }
+
+/**
+ * Cheap pre-check so the common (NUL-free) case walks the tree without allocating a sanitized copy
+ * of it.
+ */
+private fun AirbyteValue.containsNullCharacter(): Boolean =
+    when (this) {
+        is StringValue -> value.contains(NUL)
+        is ArrayValue -> values.any { it.containsNullCharacter() }
+        is ObjectValue -> values.any { (k, v) -> k.contains(NUL) || v.containsNullCharacter() }
+        else -> false
+    }
+
+// Postgres text cannot contain null bytes. We remove them.
+// TODO: We don't currently set the metadata indicating that the data was modified (see
+//  ValidationResultHandler). Doing so properly would require substantial CDK changes.
+private fun AirbyteValue.stripNullCharacters(): AirbyteValue =
+    when (this) {
+        is StringValue -> StringValue(value.replace(NUL_STRING, ""))
+        is ArrayValue -> ArrayValue(values.map { it.stripNullCharacters() })
+        is ObjectValue -> {
+            // jsonb rejects NUL in object keys too, not just in values. Stripping can collide two
+            // keys into one ("a\u0000" and "a"); last one wins, which beats failing the record.
+            val sanitized = LinkedHashMap<String, AirbyteValue>(values.size)
+            values.forEach { (k, v) ->
+                sanitized[k.replace(NUL_STRING, "")] = v.stripNullCharacters()
+            }
+            ObjectValue(sanitized)
+        }
+        else -> this
+    }
