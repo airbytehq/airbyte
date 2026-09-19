@@ -62,4 +62,10 @@ data:
     - title: Rate limiting
       url: https://docs.apify.com/api/v2#/introduction/rate-limiting
       type: rate_limits
+    - title: Apify changelog
+      url: https://apify.com/change-log
+      type: api_release_history
+    - title: Apify API OpenAPI specification (apify-docs)
+      url: https://github.com/apify/apify-docs/tree/master/apify-api/openapi
+      type: spec_repository
 metadataSpecVersion: "1.0"
