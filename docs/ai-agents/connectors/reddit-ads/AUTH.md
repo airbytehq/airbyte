@@ -1,6 +1,6 @@
-# Monday authentication
+# Reddit-Ads authentication
 
-This page documents the authentication and configuration options for the Monday agent connector.
+This page documents the authentication and configuration options for the Reddit-Ads agent connector.
 
 ## Hosted mode (most cases)
 
@@ -13,7 +13,7 @@ Use the CLI for hosted OAuth connector creation when possible. It opens the host
 airbyte-agent login
 airbyte-agent connectors create --json '{
   "workspace": "<your_workspace_name>",
-  "name": "monday"
+  "name": "reddit-ads"
 }'
 ```
 
@@ -24,9 +24,20 @@ For API-first use cases, create a connector with OAuth credentials directly.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `access_token` | `str` | Yes | Access token obtained via OAuth 2.0 flow |
-| `client_id` | `str` | Yes | The Client ID of your Monday.com OAuth application |
-| `client_secret` | `str` | Yes | The Client Secret of your Monday.com OAuth application |
+| `client_id` | `str` | Yes | The OAuth2 client ID from your Reddit developer application. |
+| `client_secret` | `str` | Yes | The OAuth2 client secret from your Reddit developer application. |
+| `refresh_token` | `str` | Yes | The OAuth2 refresh token obtained through the authorization code flow.
+ |
+
+`replication_config` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `ad_account_id` | `str` | Yes | The Reddit Ads account ID to replicate data from. |
+| `start_time` | `str (date-time)` | No | UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ. Data will be replicated starting from this date. Defaults to 24 months ago.
+ |
+| `user_agent` | `str` | No | A unique user agent string identifying the client. Recommended format: platform:app_id:version (by /u/username).
+ |
 
 Example request:
 
@@ -36,12 +47,20 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Content-Type: application/json" \
   -d '{
     "workspace_name": "<WORKSPACE_NAME>",
-    "connector_type": "Monday",
-    "name": "My Monday Connector",
+    "connector_type": "Reddit-Ads",
+    "name": "My Reddit-Ads Connector",
     "credentials": {
-      "access_token": "<Access token obtained via OAuth 2.0 flow>",
-      "client_id": "<The Client ID of your Monday.com OAuth application>",
-      "client_secret": "<The Client Secret of your Monday.com OAuth application>"
+      "client_id": "<The OAuth2 client ID from your Reddit developer application.>",
+      "client_secret": "<The OAuth2 client secret from your Reddit developer application.>",
+      "refresh_token": "<The OAuth2 refresh token obtained through the authorization code flow.
+>"
+    },
+    "replication_config": {
+      "ad_account_id": "<The Reddit Ads account ID to replicate data from.>",
+      "start_time": "<UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ. Data will be replicated starting from this date. Defaults to 24 months ago.
+>",
+      "user_agent": "<A unique user agent string identifying the client. Recommended format: platform:app_id:version (by /u/username).
+>"
     }
   }'
 ```
@@ -50,31 +69,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
 
 
 ### Token
-Create a connector with Token credentials.
-
-
-`credentials` fields you need:
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `api_key` | `str` | Yes | Your Monday.com personal API token |
-
-Example request:
-
-
-```bash
-curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
-  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "workspace_name": "<WORKSPACE_NAME>",
-    "connector_type": "Monday",
-    "name": "My Monday Connector",
-    "credentials": {
-      "api_key": "<Your Monday.com personal API token>"
-    }
-  }'
-```
+This authentication method isn't available for this connector.
 
 ### Execution
 
@@ -94,7 +89,7 @@ Create the connector. The CLI opens the hosted setup flow:
 ```bash
 airbyte-agent connectors create --json '{
   "workspace": "<your_workspace_name>",
-  "name": "monday"
+  "name": "reddit-ads"
 }'
 ```
 
@@ -103,7 +98,7 @@ Describe the connector to see its supported entities and actions:
 ```bash
 airbyte-agent connectors describe --json '{
   "workspace": "<your_workspace_name>",
-  "name": "monday"
+  "name": "reddit-ads"
 }'
 ```
 
@@ -112,7 +107,7 @@ Execute an action:
 ```bash
 airbyte-agent connectors execute --json '{
   "workspace": "<your_workspace_name>",
-  "name": "monday",
+  "name": "reddit-ads",
   "entity": "<entity>",
   "action": "<action>",
   "params": {}
@@ -121,7 +116,7 @@ airbyte-agent connectors execute --json '{
 
 **Python SDK**
 
-The `connect()` factory returns a fully typed `MondayConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+The `connect()` factory returns a fully typed `RedditAdsConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
 
 
 The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
@@ -140,9 +135,9 @@ The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute
 from airbyte_agent_sdk import build_connector_tools
 from pydantic_ai import Agent
 from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.reddit_ads import RedditAdsConnector
 
-connector = connect("monday", workspace_name="<your_workspace_name>")
+connector = connect("reddit-ads", workspace_name="<your_workspace_name>")
 
 tools = build_connector_tools(connector, framework="pydantic_ai")
 agent = Agent("openai:gpt-4o", tools=tools.as_list())
@@ -154,9 +149,9 @@ agent = Agent("openai:gpt-4o", tools=tools.as_list())
 from airbyte_agent_sdk import build_connector_tools
 from langchain_core.tools import StructuredTool
 from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.reddit_ads import RedditAdsConnector
 
-connector = connect("monday", workspace_name="<your_workspace_name>")
+connector = connect("reddit-ads", workspace_name="<your_workspace_name>")
 
 tools = build_connector_tools(connector, framework="langchain")
 langchain_tools = [
@@ -175,14 +170,14 @@ langchain_tools = [
 from airbyte_agent_sdk import build_connector_tools
 from agents import Agent, function_tool
 from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.reddit_ads import RedditAdsConnector
 
-connector = connect("monday", workspace_name="<your_workspace_name>")
+connector = connect("reddit-ads", workspace_name="<your_workspace_name>")
 
 tools = build_connector_tools(connector, framework="openai_agents")
 openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
 
-agent = Agent(name="Monday Assistant", tools=openai_tools)
+agent = Agent(name="Reddit-Ads Assistant", tools=openai_tools)
 ```
 
 **FastMCP**
@@ -191,11 +186,11 @@ agent = Agent(name="Monday Assistant", tools=openai_tools)
 from airbyte_agent_sdk import build_connector_tools
 from fastmcp import FastMCP
 from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.reddit_ads import RedditAdsConnector
 
-connector = connect("monday", workspace_name="<your_workspace_name>")
+connector = connect("reddit-ads", workspace_name="<your_workspace_name>")
 
-mcp = FastMCP("Monday Agent")
+mcp = FastMCP("Reddit-Ads Agent")
 
 for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
@@ -203,34 +198,34 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
 
 #### Custom tool bodies
 
-When you need custom tool bodies — or a framework without native support — use `MondayConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+When you need custom tool bodies — or a framework without native support — use `RedditAdsConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
 
 ```python title="Pydantic AI"
 from pydantic_ai import Agent
 from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.reddit_ads import RedditAdsConnector
 
-connector = connect("monday", workspace_name="<your_workspace_name>")
+connector = connect("reddit-ads", workspace_name="<your_workspace_name>")
 
 agent = Agent("openai:gpt-4o")
 
 @agent.tool_plain
-@MondayConnector.agent_tool(
+@RedditAdsConnector.agent_tool(
     framework="pydantic_ai",
-    inspect_tool="monday_inspect",
-    docs_tool="monday_read_docs",
+    inspect_tool="reddit_ads_inspect",
+    docs_tool="reddit_ads_read_docs",
 )
-async def monday_execute(entity: str, action: str, params: dict | None = None):
+async def reddit_ads_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 
 @agent.tool_plain
-@MondayConnector.agent_tool(framework="pydantic_ai")
-async def monday_inspect():
+@RedditAdsConnector.agent_tool(framework="pydantic_ai")
+async def reddit_ads_inspect():
     return await connector.inspect_connector()
 
 @agent.tool_plain
-@MondayConnector.agent_tool(framework="pydantic_ai")
-async def monday_read_docs(section: str | None = None):
+@RedditAdsConnector.agent_tool(framework="pydantic_ai")
+async def reddit_ads_read_docs(section: str | None = None):
     return await connector.read_skill_docs(section)
 ```
 
@@ -249,29 +244,29 @@ On a framework the SDK does not support natively — or in a raw LLM dispatch lo
 ```python title="No framework"
 from airbyte_agent_sdk import AirbyteToolError
 from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.reddit_ads import RedditAdsConnector
 
-connector = connect("monday", workspace_name="<your_workspace_name>")
+connector = connect("reddit-ads", workspace_name="<your_workspace_name>")
 
-@MondayConnector.agent_tool(
-    inspect_tool="monday_inspect",
-    docs_tool="monday_read_docs",
+@RedditAdsConnector.agent_tool(
+    inspect_tool="reddit_ads_inspect",
+    docs_tool="reddit_ads_read_docs",
 )
-async def monday_execute(entity: str, action: str, params: dict | None = None):
+async def reddit_ads_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 
-@MondayConnector.agent_tool()
-async def monday_inspect():
+@RedditAdsConnector.agent_tool()
+async def reddit_ads_inspect():
     return await connector.inspect_connector()
 
-@MondayConnector.agent_tool()
-async def monday_read_docs(section: str | None = None):
+@RedditAdsConnector.agent_tool()
+async def reddit_ads_read_docs(section: str | None = None):
     return await connector.read_skill_docs(section)
 
 # Advertise all three to the model, using each function's docstring as its description.
 handlers = {
     fn.__name__: fn
-    for fn in (monday_inspect, monday_read_docs, monday_execute)
+    for fn in (reddit_ads_inspect, reddit_ads_read_docs, reddit_ads_execute)
 }
 
 # `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
@@ -285,22 +280,22 @@ Each function's docstring carries the guidance the model needs, so pass it throu
 
 #### Legacy alternatives
 
-These examples are kept for existing integrations. The deprecated `MondayConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `MondayConnector.agent_tool` above.
+These examples are kept for existing integrations. The deprecated `RedditAdsConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `RedditAdsConnector.agent_tool` above.
 
 **Pydantic AI**
 
 ```python title="Pydantic AI"
 from pydantic_ai import Agent
 from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.reddit_ads import RedditAdsConnector
 
-connector = connect("monday", workspace_name="<your_workspace_name>")
+connector = connect("reddit-ads", workspace_name="<your_workspace_name>")
 
 agent = Agent("openai:gpt-4o")
 
 @agent.tool_plain
-@MondayConnector.tool_utils
-async def monday_execute(entity: str, action: str, params: dict | None = None):
+@RedditAdsConnector.tool_utils
+async def reddit_ads_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
@@ -309,14 +304,14 @@ async def monday_execute(entity: str, action: str, params: dict | None = None):
 ```python title="LangChain"
 from langchain_core.tools import tool
 from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.reddit_ads import RedditAdsConnector
 
-connector = connect("monday", workspace_name="<your_workspace_name>")
+connector = connect("reddit-ads", workspace_name="<your_workspace_name>")
 
 @tool
-@MondayConnector.tool_utils
-async def monday_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Monday connector operations."""
+@RedditAdsConnector.tool_utils
+async def reddit_ads_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Reddit-Ads connector operations."""
     result = await connector.execute(entity, action, params or {})
     # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
@@ -327,20 +322,20 @@ async def monday_execute(entity: str, action: str, params: dict | None = None):
 ```python title="OpenAI Agents"
 from agents import Agent, function_tool
 from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.reddit_ads import RedditAdsConnector
 
-connector = connect("monday", workspace_name="<your_workspace_name>")
+connector = connect("reddit-ads", workspace_name="<your_workspace_name>")
 
 # strict_mode=False because `params: dict` is permissive and the default strict
 # JSON schema rejects objects with additionalProperties.
 @function_tool(strict_mode=False)
-@MondayConnector.tool_utils(framework="openai_agents")
-async def monday_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Monday connector operations."""
+@RedditAdsConnector.tool_utils(framework="openai_agents")
+async def reddit_ads_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Reddit-Ads connector operations."""
     result = await connector.execute(entity, action, params or {})
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 
-agent = Agent(name="Monday Assistant", tools=[monday_execute])
+agent = Agent(name="Reddit-Ads Assistant", tools=[reddit_ads_execute])
 ```
 
 **FastMCP**
@@ -348,16 +343,16 @@ agent = Agent(name="Monday Assistant", tools=[monday_execute])
 ```python title="FastMCP"
 from fastmcp import FastMCP
 from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.reddit_ads import RedditAdsConnector
 
-connector = connect("monday", workspace_name="<your_workspace_name>")
+connector = connect("reddit-ads", workspace_name="<your_workspace_name>")
 
-mcp = FastMCP("Monday Agent")
+mcp = FastMCP("Reddit-Ads Agent")
 
 @mcp.tool
-@MondayConnector.tool_utils
-async def monday_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Monday connector operations."""
+@RedditAdsConnector.tool_utils
+async def reddit_ads_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Reddit-Ads connector operations."""
     result = await connector.execute(entity, action, params or {})
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
@@ -370,10 +365,10 @@ Or pass credentials explicitly (equivalent, useful when you're not loading them 
 ```python title="Pydantic AI"
 from airbyte_agent_sdk import build_connector_tools
 from pydantic_ai import Agent
-from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.reddit_ads import RedditAdsConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
-connector = MondayConnector(
+connector = RedditAdsConnector(
     auth_config=AirbyteAuthConfig(
         workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
@@ -391,10 +386,10 @@ agent = Agent("openai:gpt-4o", tools=tools.as_list())
 ```python title="LangChain"
 from airbyte_agent_sdk import build_connector_tools
 from langchain_core.tools import StructuredTool
-from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.reddit_ads import RedditAdsConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
-connector = MondayConnector(
+connector = RedditAdsConnector(
     auth_config=AirbyteAuthConfig(
         workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
@@ -419,10 +414,10 @@ langchain_tools = [
 ```python title="OpenAI Agents"
 from airbyte_agent_sdk import build_connector_tools
 from agents import Agent, function_tool
-from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.reddit_ads import RedditAdsConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
-connector = MondayConnector(
+connector = RedditAdsConnector(
     auth_config=AirbyteAuthConfig(
         workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
@@ -434,7 +429,7 @@ connector = MondayConnector(
 tools = build_connector_tools(connector, framework="openai_agents")
 openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
 
-agent = Agent(name="Monday Assistant", tools=openai_tools)
+agent = Agent(name="Reddit-Ads Assistant", tools=openai_tools)
 ```
 
 **FastMCP**
@@ -442,10 +437,10 @@ agent = Agent(name="Monday Assistant", tools=openai_tools)
 ```python title="FastMCP"
 from airbyte_agent_sdk import build_connector_tools
 from fastmcp import FastMCP
-from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.reddit_ads import RedditAdsConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
-connector = MondayConnector(
+connector = RedditAdsConnector(
     auth_config=AirbyteAuthConfig(
         workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
@@ -454,7 +449,7 @@ connector = MondayConnector(
     )
 )
 
-mcp = FastMCP("Monday Agent")
+mcp = FastMCP("Reddit-Ads Agent")
 
 for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
@@ -483,43 +478,27 @@ In open source mode, provide API credentials directly to the connector.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `access_token` | `str` | Yes | Access token obtained via OAuth 2.0 flow |
-| `client_id` | `str` | Yes | The Client ID of your Monday.com OAuth application |
-| `client_secret` | `str` | Yes | The Client Secret of your Monday.com OAuth application |
+| `client_id` | `str` | Yes | The OAuth2 client ID from your Reddit developer application. |
+| `client_secret` | `str` | Yes | The OAuth2 client secret from your Reddit developer application. |
+| `refresh_token` | `str` | Yes | The OAuth2 refresh token obtained through the authorization code flow.
+ |
 
 Example request:
 
 ```python
-from airbyte_agent_sdk.connectors.monday import MondayConnector
-from airbyte_agent_sdk.connectors.monday.models import MondayOauth20AuthenticationAuthConfig
+from airbyte_agent_sdk.connectors.reddit_ads import RedditAdsConnector
+from airbyte_agent_sdk.connectors.reddit_ads.models import RedditAdsAuthConfig
 
-connector = MondayConnector(
-    auth_config=MondayOauth20AuthenticationAuthConfig(
-        access_token="<Access token obtained via OAuth 2.0 flow>",
-        client_id="<The Client ID of your Monday.com OAuth application>",
-        client_secret="<The Client Secret of your Monday.com OAuth application>"
+connector = RedditAdsConnector(
+    auth_config=RedditAdsAuthConfig(
+        client_id="<The OAuth2 client ID from your Reddit developer application.>",
+        client_secret="<The OAuth2 client secret from your Reddit developer application.>",
+        refresh_token="<The OAuth2 refresh token obtained through the authorization code flow.
+>"
     )
 )
 ```
 
 ### Token
-
-`credentials` fields you need:
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `api_key` | `str` | Yes | Your Monday.com personal API token |
-
-Example request:
-
-```python
-from airbyte_agent_sdk.connectors.monday import MondayConnector
-from airbyte_agent_sdk.connectors.monday.models import MondayApiTokenAuthenticationAuthConfig
-
-connector = MondayConnector(
-    auth_config=MondayApiTokenAuthenticationAuthConfig(
-        api_key="<Your Monday.com personal API token>"
-    )
-)
-```
+This authentication method isn't available for this connector.
 
