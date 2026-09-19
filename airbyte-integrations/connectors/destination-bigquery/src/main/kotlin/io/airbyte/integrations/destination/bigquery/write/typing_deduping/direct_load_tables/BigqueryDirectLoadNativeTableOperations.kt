@@ -48,8 +48,17 @@ class BigqueryDirectLoadNativeTableOperations(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
     ) {
-        val existingTable =
-            bigquery.getTable(tableName.toTableId()).getDefinition<TableDefinition>()
+        val table = bigquery.getTable(tableName.toTableId())
+        if (table == null) {
+            // The table existed when we gathered initial status, but is gone now
+            // (e.g. dataset default table expiration, or an external DROP).
+            logger.warn {
+                "Table ${tableName.toPrettyString()} for stream ${stream.mappedDescriptor.toPrettyString()} no longer exists. Creating it."
+            }
+            sqlOperations.createTable(stream, tableName, columnNameMapping, replace = false)
+            return
+        }
+        val existingTable = table.getDefinition<TableDefinition>()
         val shouldRecreateTable = shouldRecreateTable(stream, columnNameMapping, existingTable)
         val alterTableReport = buildAlterTableReport(stream, columnNameMapping, existingTable)
         logger.info {
