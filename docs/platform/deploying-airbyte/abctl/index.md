@@ -6,7 +6,7 @@ import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWindows } from "@fortawesome/free-brands-svg-icons";
-import MinioImagePre23 from "@site/static/_minio_image_pre_2_3.md";
+import MinioImagePre23Abctl from "@site/static/_minio_image_pre_2_3_abctl.md";
 
 # abctl
 
@@ -186,7 +186,7 @@ This section shows you how to use abctl. It's not a step-by-step guide to deploy
 
 To install or update Airbyte, run:
 
-<MinioImagePre23 />
+<MinioImagePre23Abctl />
 
 ```bash
 abctl local install
