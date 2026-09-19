@@ -426,6 +426,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         tableName: TableName,
         columnsToAdd: Map<String, ColumnType>,
         columnsToModify: Map<String, ColumnTypeChange>,
+        isMetaColumnSuper: Boolean = true,
     ): String {
         val clauses = mutableListOf<String>()
         val fqn = getFullyQualifiedName(tableName)
@@ -437,7 +438,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
 
         // Modify column types via 4-step rename pattern
         columnsToModify.forEach { (name, typeChange) ->
-            clauses.addAll(buildTypeChangeStatements(fqn, name, typeChange))
+            clauses.addAll(buildTypeChangeStatements(fqn, name, typeChange, isMetaColumnSuper))
         }
 
         return """
@@ -464,6 +465,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         fullyQualifiedTableName: String,
         columnName: String,
         typeChange: ColumnTypeChange,
+        isMetaColumnSuper: Boolean,
     ): List<String> {
         val quotedName = quoteIdentifier(columnName)
         val tempColumn = quoteIdentifier("_airbyte_tmp_$columnName")
@@ -490,15 +492,19 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             add("UPDATE $fullyQualifiedTableName SET $tempColumn = $castExpression;")
             // Step 3: Record DESTINATION_TYPECAST_ERROR in _airbyte_meta for rows where
             // the original value was non-null but the cast produced null.
-            add(
-                buildMetaUpdateForTypecastError(
-                    fullyQualifiedTableName,
-                    quotedName,
-                    tempColumn,
-                    quotedMeta,
-                    columnName
+            // Skip when _airbyte_meta is not SUPER (e.g. legacy VARCHAR column) because
+            // Redshift disallows SUPER-navigation on non-SUPER columns.
+            if (isMetaColumnSuper) {
+                add(
+                    buildMetaUpdateForTypecastError(
+                        fullyQualifiedTableName,
+                        quotedName,
+                        tempColumn,
+                        quotedMeta,
+                        columnName
+                    )
                 )
-            )
+            }
             // Step 4: Drop the original column
             add("ALTER TABLE $fullyQualifiedTableName DROP COLUMN $quotedName$cascadeSuffix;")
             // Step 5: Rename temp column to the original name
