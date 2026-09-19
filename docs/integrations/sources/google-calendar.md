@@ -30,6 +30,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.3.0 | 2026-09-18 | [86470](https://github.com/airbytehq/airbyte/pull/86470) | Add `acl` and `freebusy` streams, partition `events`/`acl`/`freebusy` over all calendars, make `calendarid` optional |
+| 0.2.0 | 2026-09-18 | [86469](https://github.com/airbytehq/airbyte/pull/86469) | Add declarative OAuth authentication with config migration for legacy flat credentials |
+| 0.1.0 | 2026-09-18 | [86468](https://github.com/airbytehq/airbyte/pull/86468) | Add error handling, API budget, concurrency, incremental `events`, and enable acceptance tests |
 | 0.0.52 | 2026-09-15 | [86070](https://github.com/airbytehq/airbyte/pull/86070) | Update dependencies |
 | 0.0.51 | 2026-09-08 | [85541](https://github.com/airbytehq/airbyte/pull/85541) | Update dependencies |
 | 0.0.50 | 2026-08-18 | [84636](https://github.com/airbytehq/airbyte/pull/84636) | Update dependencies |
