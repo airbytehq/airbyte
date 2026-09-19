@@ -99,13 +99,13 @@ Notice that user #2’s latest entry doesn’t belong to the current (e.g. `max(
 
 ### How is a Full Refresh sync that uses Append + Overwrite to write to the destination different from a refresh?
 
-They're completely identical! A Full Refresh | Append + Overwite sync is running a refresh on every sync and retaining all records. A Full Refresh | Overwrite sync is running a refresh on every sync and removing any reecords that no longer appear in the source. Notably, this means that `_airbyte_generation_id` will increment on every sync.
+They're completely identical! A Full Refresh | Append + Overwrite sync is running a refresh on every sync and retaining all records. A Full Refresh | Overwrite sync is running a refresh on every sync and removing any records that no longer appear in the source. Notably, this means that `_airbyte_generation_id` will increment on every sync.
 
 ### Does the generation ID reset to 0 after running a Clear and sync again? 
 
 The generation ID will be incremented whenever you run a clear or refresh. Airbyte will never decrease the generation ID.
 
-Iif you run a Refresh immediately after running a Clear (including syncing a full refresh stream normally, as noted in the above question, that will _also_ increment the generation ID. This means the generation ID will increment twice, even though one of those "generations" never emitted any records.
+If you run a Refresh immediately after running a Clear (including syncing a full refresh stream normally, as noted in the above question, that will _also_ increment the generation ID. This means the generation ID will increment twice, even though one of those "generations" never emitted any records.
 
 ### For DV2 destinations, how do clears or Refreshes that remove records interact with the raw and final tables?
 

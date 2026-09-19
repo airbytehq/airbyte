@@ -35,7 +35,7 @@ Opsgenie has [rate limits](https://docs.opsgenie.com/docs/api-rate-limiting), bu
 ### Requirements
 
 - Opsgenie Account
-- Opsgenie API Key wih the necessary permissions \(described below\)
+- Opsgenie API Key with the necessary permissions \(described below\)
 
 ### Setup Guide
 

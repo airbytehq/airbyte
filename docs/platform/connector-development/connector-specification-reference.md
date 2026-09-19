@@ -64,7 +64,7 @@ By default, all optional fields will be collapsed into an `Optional fields` sect
 
 These `Optional fields` sections are placed at the bottom of a field group, meaning that all required fields in the same group will be placed above it. To interleave optional fields with required fields, set `always_show: true` on the optional field along with an `order`, which will cause the field to no longer be collapsed in an `Optional fields` section and be ordered as normal.
 
-**Note:** `always_show` also causes fields that are normally hidden by an OAuth button to still be shwon.
+**Note:** `always_show` also causes fields that are normally hidden by an OAuth button to still be shown.
 
 Within a collapsed `Optional fields` section, the optional fields' `order` defines their position in the section; those without an `order` will be placed after fields with an `order`, and will themselves be ordered alphabetically by field name.
 

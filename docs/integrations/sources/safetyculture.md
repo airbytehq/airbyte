@@ -5,7 +5,7 @@ This is the guide for the Safetyculture source connector which ingests data from
 ## Prerequisites
 
 This source uses the Authorization Bearer Token for handling requests. In order to obtain the credientials, you must first create a Safetyculture account.
-The API usage is only availabe for paid plans https://www.safetyculture.com/
+The API usage is only available for paid plans https://www.safetyculture.com/
 
 Once you have created your account, you can log in to your account.
 You can create an API token under Account Settings -> Integrations -> Manage MY API Tokens

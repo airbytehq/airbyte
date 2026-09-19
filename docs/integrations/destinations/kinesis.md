@@ -8,7 +8,7 @@
 
 ### Output schema
 
-The incoming Airbyte data is structured in a Json format and is sent across diferent stream shards determined by the partition key.
+The incoming Airbyte data is structured in a Json format and is sent across different stream shards determined by the partition key.
 This connector maps an incoming data from a namespace and stream to a unique Kinesis stream. The Kinesis record which is sent to the stream is consisted of the following Json fields
 
 - `_airbyte_ab_id`: Random UUID generated to be used as a partition key for sending data to different shards.
