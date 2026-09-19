@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.12 — 2026-09-17
+
+[#86422](https://github.com/airbytehq/airbyte/pull/86422) — Treat an empty `{}` stream state as a cold start in `DefaultJdbcPartitionFactory` so retried full-refresh streams are re-read instead of being silently skipped.
+
 ### 1.1.11 — 2026-09-02
 
 [#85313](https://github.com/airbytehq/airbyte/pull/85313) — Tolerate empty STREAM-typed input state in global (CDC) mode instead of failing.

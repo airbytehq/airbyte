@@ -51,7 +51,9 @@ class DefaultJdbcPartitionFactory(
             return null
         }
 
-        if (opaqueStateValue == null) {
+        // An empty object state (e.g. the placeholder emitted for a stream that never checkpointed)
+        // carries no progress information, so it's treated the same as a missing state.
+        if (opaqueStateValue == null || (opaqueStateValue.isObject && opaqueStateValue.isEmpty)) {
             return coldStart(streamState)
         }
         val sv: DefaultJdbcStreamStateValue =
