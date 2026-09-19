@@ -1,0 +1,99 @@
+---
+airbyte:
+  connector:
+    data-channel:
+      medium: ${DATA_CHANNEL_MEDIUM:STDIO}
+      format: ${DATA_CHANNEL_FORMAT:JSONL}
+      socket-paths: ${DATA_CHANNEL_SOCKET_PATHS}
+    output:
+      buffer-byte-size-threshold-for-flush: 8192
+    extract:
+      dynamodb:
+        # Maximum number of items per Scan page (DynamoDB `Limit`); 0 = the service default of one
+        # 1 MB page. Smaller pages bound the memory per page and give finer checkpoints at the cost
+        # of more requests. Tests lower it to exercise multi-page scans.
+        scan-page-limit: ${DYNAMODB_SCAN_PAGE_LIMIT:0}
+    exception-classifiers:
+      regex:
+        # Rules are applied in order to a Throwable's message and to the messages of its causes.
+        # See airbyte-cdk/bulk/core/base/src/main/kotlin/io/airbyte/cdk/output/ExceptionClassifier.kt
+        # The AWS SDK reports service errors as DynamoDbException subclasses whose message is
+        # "<service message> (Service: DynamoDb, Status Code: 400, Request ID: ...)".
+        rules:
+          # Captured from the real service on 2026-09-17: an unknown access key id and a bogus session
+          # token both produce this message (the latter without the trailing period).
+          - pattern: "(?i).*The security token included in the request is invalid.*"
+            input-example: >-
+              software.amazon.awssdk.services.dynamodb.model.DynamoDbException: The security token included in the
+              request is invalid. (Service: DynamoDb, Status Code: 400, Request ID: UCMPMFPGROCDVT7GHVR3V6OTSBVV4KQNSO5AEMVJF66Q9ASUAAJG)
+              (SDK Attempt Count: 1)
+            error: config
+            output: "The access key id or the session token is invalid. Please check the source's configured credentials."
+
+          # Captured from the real service on 2026-09-17 with a wrong secret access key.
+          - pattern: "(?i).*The request signature we calculated does not match the signature you provided.*"
+            input-example: >-
+              software.amazon.awssdk.services.dynamodb.model.DynamoDbException: The request signature we calculated
+              does not match the signature you provided. Check your AWS Secret Access Key and signing method.
+              Consult the service documentation for details. (Service: DynamoDb, Status Code: 400, Request ID:
+              1PHQ765RCJ5IF9VTVIAD5518NRVV4KQNSO5AEMVJF66Q9ASUAAJG) (SDK Attempt Count: 1)
+            error: config
+            output: "The secret access key is invalid. Please check the source's configured credentials."
+
+          - pattern: "(?i).*The security token included in the request is expired.*"
+            input-example: >-
+              software.amazon.awssdk.services.dynamodb.model.DynamoDbException: The security token included in the
+              request is expired (Service: DynamoDb, Status Code: 400, Request ID: ABC)
+            error: config
+            output: "The temporary credentials (session token) have expired. Please configure new credentials."
+
+          # Captured from the real service on 2026-09-17 (role ARN the access key may not assume). The
+          # service message names the caller and the role, so it is passed through unchanged.
+          - pattern: "(?i).*is not authorized to perform: sts:AssumeRole.*"
+            input-example: >-
+              software.amazon.awssdk.services.sts.model.StsException: User: arn:aws:iam::123456789012:user/airbyte is
+              not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::000000000000:role/does-not-exist
+              (Service: Sts, Status Code: 403, Request ID: 614ec3a4-1962-4bd4-bcf5-695c55d1e368) (SDK Attempt Count: 1)
+            error: config
+
+          - pattern: "(?i).*is not authorized to perform: dynamodb:.*"
+            input-example: >-
+              software.amazon.awssdk.services.dynamodb.model.DynamoDbException: User:
+              arn:aws:iam::123456789012:user/airbyte is not authorized to perform: dynamodb:ListTables on resource:
+              arn:aws:dynamodb:us-east-1:123456789012:table/* because no identity-based policy allows the
+              dynamodb:ListTables action (Service: DynamoDb, Status Code: 400, Request ID: ABC)
+            error: config
+
+          # A configured table was deleted (or renamed) after the catalog was configured. At the
+          # start of a READ such a stream is dropped by the catalog validation; this rule covers a
+          # table disappearing while it is being scanned.
+          - pattern: "(?i).*Requested resource not found.*"
+            input-example: >-
+              software.amazon.awssdk.services.dynamodb.model.ResourceNotFoundException: Requested resource not
+              found (Service: DynamoDb, Status Code: 400, Request ID: ABC)
+            error: config
+            output: "A configured table does not exist (any more). Refresh the source schema and retry."
+
+          # The saved ExclusiveStartKey does not match the table's key schema: the table was
+          # recreated with other key attributes since the state was saved.
+          - pattern: "(?i).*The provided starting key is invalid.*"
+            input-example: >-
+              software.amazon.awssdk.services.dynamodb.model.DynamoDbException: The provided starting key is
+              invalid: The provided key element does not match the schema (Service: DynamoDb, Status Code: 400,
+              Request ID: ABC)
+            error: config
+            output: "The saved state of a stream does not match its table's key schema; the table was probably recreated. Clear the connection's data to reset the stream and retry."
+
+          - pattern: "(?i).*Unable to execute HTTP request.*"
+            input-example: >-
+              software.amazon.awssdk.core.exception.SdkClientException: Unable to execute HTTP request:
+              does-not-exist: Name or service not known
+            error: config
+            output: "Could not reach the DynamoDB endpoint. Please check the configured endpoint and region."
+
+          - pattern: "(?i).*(ProvisionedThroughputExceededException|Throughput exceeds the current capacity|Rate of requests exceeds the allowed throughput|ThrottlingException|Too Many Requests).*"
+            input-example: >-
+              software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughputExceededException: The level of
+              configured provisioned throughput for the table was exceeded. Consider increasing your provisioning
+              level with the UpdateTable API. (Service: DynamoDb, Status Code: 400, Request ID: ABC)
+            error: transient
