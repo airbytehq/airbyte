@@ -57,6 +57,6 @@ Every endpoint answers newest first and returns at most 100 records per call. Th
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2026-09-19 | | Initial release by [@asyntai](https://github.com/asyntai) via Connector Builder |
+| 0.0.1 | 2026-09-19 | [86485](https://github.com/airbytehq/airbyte/pull/86485) | Initial release by [@asyntai](https://github.com/asyntai) via Connector Builder |
 
 </details>
