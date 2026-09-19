@@ -7,11 +7,14 @@ data:
       - ${subdomain}.zendesk.com
       - zendesk.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.8@sha256:58d3593d8e816d4a346570570d5a42bb78e41de344f8c74c2a5c225acdc4c4d1
+    # DO NOT MERGE: prerelease SDM image built from airbytehq/airbyte-python-cdk#1169, which is what
+    # rewrites the page size inside a RequestPath page token URL. Without it this manifest is rejected
+    # at config time. Restore a released base image once that PR and its base #1149 are merged.
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.28.3.post16.dev35375782673@sha256:fcf97b22fc72dffd6fe697955f47e30e55b30f9314dd548cff79a8849515ae7d
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 5.6.0
+  dockerImageTag: 5.7.0
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   githubIssueLabel: source-zendesk-support
