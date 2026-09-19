@@ -157,10 +157,10 @@
       "queue_size": {
         "type": "integer",
         "title": "Size of the queue (Advanced)",
-        "description": "The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.",
+        "description": "How many change events the connector may hold in memory at once during incremental (CDC) syncs. Lower this (for example to 10-100) for collections with large documents - hundreds of KB or more, especially with pre-images enabled - to avoid out-of-memory failures, since memory use scales with this value multiplied by your document size. Higher values can improve throughput for collections with small documents.",
         "default": 10000,
         "order": 9,
-        "min": 1000,
+        "min": 10,
         "max": 10000,
         "group": "advanced"
       },

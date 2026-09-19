@@ -61,14 +61,27 @@ public class MongoUtil {
 
   /**
    * The minimum size of the Debezium event queue. This value will be selected if the provided
-   * configuration value for the queue size is less than this value
+   * configuration value for the queue size is less than this value.
+   * <p>
+   * The configured queue size bounds how many whole change events the CDC pipeline holds in memory at
+   * once: it sizes the Airbyte event queue directly, and via
+   * {@link io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcProperties} it also sizes Debezium's
+   * {@code max.batch.size}, which in turn caps both the Debezium in-flight batch and the MongoDB
+   * connector's change-stream prefetch buffer. None of those three is bounded by bytes, so
+   * collections with large documents (hundreds of KB and up, especially with pre-images enabled) need
+   * a small value here to stay inside the container's heap.
    */
   @VisibleForTesting
-  static final int MIN_QUEUE_SIZE = 1000;
+  static final int MIN_QUEUE_SIZE = 10;
 
   /**
    * The maximum size of the Debezium event queue. This value will be selected if the provided
    * configuration value for the queue size is greater than this value OR if no value is provided.
+   * <p>
+   * Must stay well below Debezium's {@code max.queue.size} (8192), because Debezium validates
+   * {@code max.queue.size > max.batch.size} at startup and rejects the configuration otherwise. See
+   * {@link io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcProperties#getDebeziumProperties(int)},
+   * which clamps the derived batch size to Debezium's own default for exactly this reason.
    */
   @VisibleForTesting
   static final int MAX_QUEUE_SIZE = 10000;

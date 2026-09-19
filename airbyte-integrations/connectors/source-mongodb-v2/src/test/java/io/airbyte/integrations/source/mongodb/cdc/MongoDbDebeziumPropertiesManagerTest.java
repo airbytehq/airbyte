@@ -55,6 +55,31 @@ class MongoDbDebeziumPropertiesManagerTest {
   private static final Path PATH = Path.of(".");
   public static final String EXPECTED_CONNECTION_STRING = "mongodb://localhost:27017/";
 
+  /**
+   * The queue-derived {@code max.batch.size} is supplied through the constructor {@code properties}
+   * argument, which the CDK applies with {@code props.putAll(properties)} before its own
+   * {@code putIfAbsent("max.batch.size", "2048")}. This test pins that ordering: if the CDK ever goes
+   * back to {@code setProperty} for that default, the connector's value would be silently discarded
+   * and large-document collections would OOM again.
+   */
+  @Test
+  void testQueueDerivedMaxBatchSizeSurvivesCdkDefaults() {
+    final int queueSize = 10;
+    final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
+    when(catalog.getStreams()).thenReturn(createStreams(1));
+    final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
+
+    final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(
+        MongoDbCdcProperties.getDebeziumProperties(queueSize), config, catalog, createCdcStreamList(catalog));
+    final Properties debeziumProperties =
+        debeziumPropertiesManager.getDebeziumProperties(mock(AirbyteFileOffsetBackingStore.class));
+
+    assertEquals(String.valueOf(queueSize), debeziumProperties.get("max.batch.size"),
+        "the CDK default must not overwrite the queue-derived max.batch.size");
+    // max.queue.size must remain strictly greater, or Debezium refuses to start the connector.
+    assertEquals("8192", debeziumProperties.get("max.queue.size"));
+  }
+
   @Test
   void testDebeziumProperties() {
     final List<ConfiguredAirbyteStream> streams = createStreams(4);
