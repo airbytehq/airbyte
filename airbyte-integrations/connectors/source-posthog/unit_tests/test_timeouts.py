@@ -41,6 +41,10 @@ def test_stalled_http_request_retries_then_recovers_or_fails(monkeypatch, mocker
     try:
         config = {"api_key": "test", "base_url": f"http://127.0.0.1:{server.server_port}", "start_date": "2026-09-01T00:00:00Z"}
         persons = next(stream for stream in SourcePosthog().streams(config) if stream.name == "persons")
+        session = persons.retriever.requester._session
+        adapter = session.get_adapter("https://app.posthog.com")
+        assert isinstance(adapter, PosthogHTTPAdapter)
+        session.mount("http://", adapter)
         if always_stall:
             with pytest.raises(ReadTimeout):
                 list(persons.read_records(SyncMode.full_refresh, stream_slice={"id": 42}))

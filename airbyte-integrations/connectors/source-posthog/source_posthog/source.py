@@ -10,11 +10,10 @@ from source_posthog.components import EventsRetriever, PosthogHTTPAdapter, Posth
 class PosthogComponentFactory(ModelToComponentFactory):
     def create_http_requester(self, model, config, **kwargs):
         requester = super().create_http_requester(model, config, **kwargs)
-        for scheme in ("http://", "https://"):
-            requester._session.mount(
-                scheme,
-                PosthogHTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE),
-            )
+        requester._session.mount(
+            "https://",
+            PosthogHTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE),
+        )
         return requester
 
     def create_simple_retriever(self, model, config, **kwargs):
