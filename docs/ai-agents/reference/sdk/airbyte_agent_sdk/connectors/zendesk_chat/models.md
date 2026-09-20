@@ -307,6 +307,7 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult[DepartmentsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult[ShortcutsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult[TriggersSearchData]
+    * airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

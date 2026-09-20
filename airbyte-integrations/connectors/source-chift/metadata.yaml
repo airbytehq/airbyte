@@ -13,16 +13,43 @@ data:
       enabled: false
       packageName: airbyte-source-chift
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.24.0@sha256:e34fb609bccdeb77474763c77e3621ea9d5adf9f65f2d9851102cc14a1caa281
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.28.4@sha256:da2dee37f8b6532edfcbde6b5402a14e5d7364b2b7dbfbcb61e9cad85c25fe63
   connectorSubtype: api
   connectorType: source
   definitionId: d03aa64c-21a9-4edc-97b9-5590600ee3d6
-  dockerImageTag: 0.0.23
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-chift
   githubIssueLabel: source-chift
   icon: icon.svg
   license: ELv2
   name: Chift
+  releases:
+    breakingChanges:
+      0.1.0:
+        message: >-
+          Two objects that carry integration-defined rather than contract-defined keys are now
+          declared schemaless, matching Chift's own OpenAPI contract, where both are free-form:
+          `connections.data`, whose payload differs per integration, and
+          `syncs.mappings[].sub_mappings[].target_field.display_condition`, a condition
+          expression tree with an open-ended operator set. On destinations that materialize
+          declared nested shapes (S3 and GCS in Avro or Parquet format) each object was written
+          as a record holding only the enumerated keys, so every other key was dropped silently;
+          it now becomes a JSON string that preserves every key. Destinations that already store
+          whole objects as JSON, VARIANT or JSONB columns (BigQuery, Snowflake, Postgres, and
+          Iceberg-based destinations including S3 Data Lake) keep the same column contents: for
+          them the upgrade is a source schema refresh, with no query change. On S3 or GCS in
+          Avro or Parquet format, refresh the source schema, clear the `connections` and `syncs`
+          streams if the connection replicates them in Full refresh | Append mode (so the prefix
+          does not mix record-typed and string-typed files; both streams are full refresh, so
+          the next sync re-supplies every record), and read `data` and `display_condition` with
+          your engine's JSON extraction function instead of nested field access. See the
+          [migration guide](https://docs.airbyte.com/integrations/sources/chift-migrations#upgrading-to-010)
+          for the per-destination steps.
+        upgradeDeadline: "2026-10-31"
+        deadlineAction: "disable"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["connections", "syncs"]
   releaseDate: 2025-10-13
   releaseStage: alpha
   supportLevel: community

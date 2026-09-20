@@ -2,6 +2,137 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## September 17, 2026
+
+Platform
+
+- On the Pro and Enterprise Flex plans, when Airbyte staff take an action in your organization as part of a support case, your audit logs now attribute that action to "Airbyte Support" instead of an individual employee's email address, making it clearer which changes came from Airbyte rather than from your own team.
+- Viewing your SCIM configuration no longer creates an audit log entry. Your audit logs now show only actual changes to SCIM settings, not every time an admin opens the page.
+
+## September 15, 2026
+
+**Important**: Updated pricing model
+
+- **Airbyte Cloud has a new pricing model** for self-serve plans (Standard and Plus). Pro and Flex are not affected. For many of you, **the price of the Plus plan is significantly cheaper** than the price of the Standard plan. We strongly recommend visiting [Airbyte's pricing page](https://airbyte.com/pricing) to determine the optimal plan for you. New Plus plans are available immediately. The Standard plan switches on September 21. Here's what's changing:
+    - **Standard**: the base price for Standard increases from $10 per month to $20 per month. The number of free credits each month also increases from 4 to 5. The price for additional credits increases from $2.50 to $5.00. Single sign on (SSO) is no longer available on Standard, but if you already use SSO, you may continue doing so as long as you keep your plan.
+    - **Plus**: Multiple new pricing tiers are available. All Plus plans include a much larger allocation of credits, less expensive overage credits, 15-minute sync frequency, two workspaces, mappings (renames only), single sign-on, and premium support. Existing Plus subscribers are being moved from 50 to 100 credits and your plan cost has dropped $50. The following Plus tiers are available:
+        - 40 credits: $189 (equivalent to $4.75/cr) + $5/cr for overages
+        - 100 credits: $449 (equivalent to $4.5/cr) + $5/cr for overages
+        - 250 credits: $999 (equivalent to $4/cr) + $4.5/cr for overages
+        - 500 credits: $1,799 (equivalent to $3.6/cr) + $4.15/cr for overages
+        - 1,000 credits: $3,199 (equivalent to $3.2/cr) + $3.75/cr for overages
+        - 2,000 credits: $4,999 (equivalent to $2.5/cr) + $2.5/cr for overages
+    - **Credit rollovers**: Unused credits now roll over for 3 months (previously 2), so you have a full quarter to use them.
+
+  As a temporary incentive to encourage you to optimize your spend, Airbyte is offering limited free overage credits to organizations that upgrade to a higher plan by September 29. Conditions apply, and the number of free overage credits depends on the plan you select.
+
+  To adjust your plan, open Airbyte Cloud and click **Organization settings** > **Plans**. See [Manage billing and credits](/platform/cloud/managing-airbyte-cloud/manage-credits) for more help.
+
+## September 10, 2026
+
+Platform
+
+- When your organization has reached the number of workspaces your plan includes, hovering over the locked New workspace button now shows how many workspaces you've used out of your limit and what upgrading to Plus or Pro adds, with links to view plans or talk to sales. Previously, the button only told you to upgrade your plan. The upgrade details also now correctly state that the Plus plan includes up to 2 workspaces.
+- If your organization doesn't have a subscription yet, the Billing page now also shows the Flex plan alongside Standard, Plus, and Pro, with a Talk to Sales link. Flex is a hybrid option for enterprises that need Airbyte's managed control plane with data planes they run themselves.
+
+## September 4, 2026
+
+Platform
+
+- On Cloud Pro and Enterprise Flex plans, the Audit Logs page in Organization settings now shows a loading indicator while it fetches results after you change a filter or move to another page. Previously, the earlier results stayed on screen with no sign that a new request was in progress.
+
+## September 1, 2026
+
+Connections
+
+- When you authenticate the Salesforce source or the HubSpot destination with OAuth, the consent step now completes. Airbyte previously formatted part of the authorization request in a way these providers reject, which could cause the authorization to fail.
+
+Platform
+
+- On Cloud Pro and Enterprise Flex plans, the data worker usage chart in your organization's Usage settings has a new Compare to previous period option. Turning it on shows the selected period next to the equivalent previous day, week, month, quarter, or year, so you can see whether your peak capacity usage is trending up or down.
+- The Billing page now shows the date your next invoice is scheduled to be issued. You see the same date in the confirmation messages when you cancel your subscription or delete a workspace.
+
+## August 31, 2026
+
+Platform
+
+- If your organization is on a capacity-based plan, the Usage page in Organization settings now offers 1Q and 1Y date ranges alongside 1D, 1W, and 1M, so you can review data worker usage across a full quarter or year.
+- The Plus and Pro cards on the Plan page in Organization settings now list the support coverage each plan includes. Hover over the info icon next to a support line to see the exact hours and response times.
+
+## August 27, 2026
+
+Platform
+
+- If your organization is on a capacity-based plan (Pro or Enterprise Flex), the workspace Usage page now shows which region the workspace runs in, alongside its data worker usage. This makes it easier to tell which region's capacity your workspace consumes.
+- If your organization signs in with single sign-on but your plan doesn't include role-based access control, people who sign in for the first time are now added as organization admins. Previously they could be left with a role that nobody in your organization was able to change.
+- If your organization is on the Plus plan, reported usage no longer schedules an unintended downgrade to the Standard plan. Your plan stays as you purchased it.
+
+## August 26, 2026
+
+Platform
+
+- If your organization has committed data worker capacity, you can now switch the data worker usage graphs between one-day, one-week, and one-month ranges instead of always seeing a fixed window.
+
+API
+
+- You can now choose the time zone for a cron sync schedule when you create or update a connection through the API, so your syncs run at the hour you expect in your own time zone rather than always in UTC. Error messages for invalid cron schedules also explain the requirements more clearly.
+
+## August 25, 2026
+
+Connections
+
+- When schema changes are applied to your connection, the affected incremental streams are now backfilled correctly so your destination data stays complete and accurate.
+- When you create a new private link for S3 storage, the DNS name Airbyte gives you is now correct. Previously, the provided hostname could cause connection checks to fail with a certificate error. Existing private links are not changed.
+
+Platform
+
+- The Data Worker usage chart on the workspace usage page now shows hourly usage as bars, matching the look of the organization usage chart, so it's easier to compare usage across the two views.
+
+## August 24, 2026
+
+Platform
+
+- If you're an organization admin on the Enterprise Flex plan, you can now view audit logs directly in Airbyte. The new Audit Logs page in your organization settings shows who changed what and when across your organization, with filters for date range, workspace, actor, and operation. Click any entry to see the full details of that event and copy them to your clipboard.
+
+## August 21, 2026
+
+Platform
+
+- The Data Worker usage chart on your organization's Usage page is easier to read. Each day now has a single bar for peak usage instead of stacked, color-coded workspace segments, and hovering over a bar shows your region's peak next to a per-workspace breakdown. The dates along the bottom of the chart also display correctly now. This chart is available if your plan includes contracted Data Worker capacity.
+
+## August 20, 2026
+
+Connections
+
+- When Airbyte provides its own OAuth application for a connector, the source and destination setup forms no longer show the manual authentication option. This prevents confusion by hiding fields that asked for developer credentials you don't need.
+
+Platform
+
+- If your organization manages users through your identity provider with SCIM, workspace settings now show a SCIM badge and no longer allow you to add or change workspace members directly in Airbyte. This keeps your membership consistent with your identity provider.
+- If you store audit logs in your own bucket on the Enterprise Flex plan, Airbyte now organizes those log files into folders by organization and date, making them easier to browse and manage.
+
+## August 19, 2026
+
+Connections
+
+- When a connector test or schema refresh hits an unexpected internal error, the job now fails immediately with a clear error message instead of appearing to run until it times out.
+
+## August 18, 2026
+
+Connections
+
+- Setting up or refreshing the schema for a source with a very large number of tables and columns is now more reliable. Previously, these requests could run out of memory and fail before the schema reached you.
+
+## August 14, 2026
+
+Connections
+
+- Your connections now recover immediately when Airbyte runs into a conflict while starting a sync. Previously, the connection paused for about 10 minutes in this situation, which delayed its next scheduled sync.
+
+Connector Builder
+
+- Fields that share a linked value keep that link when you switch between the UI and YAML views. Previously, the first switch to YAML could replace shared values with copies, so later edits to one field no longer updated the others.
+
 ## August 12, 2026
 
 Connections
