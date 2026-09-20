@@ -1,14 +1,10 @@
 # DuckDB
 
-<!-- env:cloud -->
-
 :::caution
 
-Local file-based DBs will not work in Airbyte Cloud or Kubernetes. Please use MotherDuck when running in Airbyte Cloud.
+Local file-based DBs will not work on Kubernetes deployments, including Airbyte Cloud and local deployments via `abctl`. Please use [MotherDuck](https://motherduck.com) instead. If you are running Airbyte via Docker Compose on a local machine, local file paths will work.
 
 :::
-
-<!-- /env:cloud -->
 
 ## Overview
 
