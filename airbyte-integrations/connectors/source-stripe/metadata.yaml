@@ -104,11 +104,14 @@ data:
     - title: API upgrades
       url: https://docs.stripe.com/upgrades
       type: api_release_history
-    - title: Stripe API changelog
-      url: https://stripe.com/docs/upgrades
+    - title: API versioning and release trains
+      url: https://docs.stripe.com/api/versioning
       type: api_release_history
     - title: Stripe authentication
       url: https://stripe.com/docs/api/authentication
+      type: authentication_guide
+    - title: Restricted API keys
+      url: https://docs.stripe.com/keys/restricted-api-keys
       type: authentication_guide
     - title: Stripe API OpenAPI specification
       url: https://github.com/stripe/openapi
