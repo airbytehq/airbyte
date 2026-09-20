@@ -513,25 +513,29 @@ definitions:
   page_link_paginator:
     type: DefaultPaginator
     page_token_option:
-      type: RequestOption
-      inject_into: request_parameter
-      field_name: "page"
+      type: RequestPath
     pagination_strategy:
       # GitHub's documented end-of-data signal is the absence of a `rel="next"` link
       # header — a short page is not guaranteed to be the last page. This mirrors the
       # legacy `GithubStreamABC.next_page_token`, which parsed `page` out of that same link.
       # Inferring the end from `last_page_size < 100` instead would silently truncate the org
       # repo list that drives every downstream partition.
+      # The full `next` URL becomes the request path (`DefaultPaginator.path()` returns the
+      # token for a `RequestPath` option, and `HttpRequester` accepts an absolute URL as
+      # path). Extracting only `page=N` is not enough: past GitHub's large-dataset threshold
+      # the next link carries an opaque `after` cursor and page-only requests are rejected
+      # with 422. The requester's `request_parameters`/`since` are still appended and
+      # duplicate the ones already in the URL with identical values, which GitHub accepts.
       # CursorPaginationStrategy replaces `headers["link"]` with `response.links`, so this
       # walks that dict. Chained `.get(...)` with defaults is required rather than
       # `headers.link.next.url`: on the last page there is no `next` link, and attribute
       # access would raise Jinja's UndefinedError. InterpolatedString defaults `default` to
       # the template itself, so JinjaInterpolation.eval's UndefinedError guard just
       # re-evaluates the same failing expression and the error escapes, failing the sync.
-      # On the last page there is no `next` link, so `regex_search` gets "" and returns None;
-      # CursorPaginationStrategy ends on `token if token else None`, so pagination stops.
+      # On the last page there is no `next` link, so the cursor renders "" which becomes
+      # None; CursorPaginationStrategy ends on `token if token else None`, so pagination stops.
       type: CursorPagination
-      cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", "") | regex_search("[?&]page=([0-9]+)") }}'
+      cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", "") }}'
 
   # Resolver streams: internal parent streams used only to drive the shared
   # partition routers below. They are not exposed in the catalog.
