@@ -18,10 +18,10 @@ You can find more about the API here https://chargedesk.com/api-docs
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| charges | charge_id | DefaultPaginator | ✅ |  ✅  |
-| customers | customer_id | DefaultPaginator | ✅ |  ✅  |
-| subscriptions | subscription_id | DefaultPaginator | ✅ |  ✅  |
-| products | product_id | DefaultPaginator | ✅ |  ❌  |
+| charges | charge_id | DefaultPaginator | Supported | Supported |
+| customers | customer_id | DefaultPaginator | Supported | Supported |
+| subscriptions | subscription_id | DefaultPaginator | Supported | Supported |
+| products | product_id | DefaultPaginator | Supported | Not supported |
 
 ## IP allow list
 

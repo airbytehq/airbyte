@@ -1,8 +1,11 @@
+import { faBookOpen, faBug, faCode } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { usePluginData } from "@docusaurus/useGlobalData";
 import TabItem from "@theme/TabItem";
 import Tabs from "@theme/Tabs";
 import { useEffect, useState } from "react";
 import { COMPOSITE_REGISTRY_URL } from "../constants";
+import { BooleanTableIndicator } from "./BooleanTableIndicator";
 import styles from "./ConnectorRegistry.module.css";
 
 const iconStyle = { maxWidth: 25, maxHeight: 25 };
@@ -114,7 +117,12 @@ function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnector
                   <div className={styles.connectorName}>
                     {connector.iconUrl && (
                       <div className={styles.connectorIconBackground}>
-                        <img src={connector.iconUrl} style={iconStyle} />
+                        <img
+                          alt=""
+                          aria-hidden="true"
+                          src={connector.iconUrl}
+                          style={iconStyle}
+                        />
                       </div>
                     )}
 
@@ -130,20 +138,48 @@ function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnector
                       justifyContent: "center",
                     }}
                   >
-                    <a href={docsLink}>📕</a>
+                    <a
+                      aria-label={`${connector.name} documentation`}
+                      className={styles.connectorLink}
+                      href={docsLink}
+                    >
+                      <FontAwesomeIcon aria-hidden="true" icon={faBookOpen} />
+                    </a>
                     {connector.supportLevel != "archived" &&
-                    connector.github_url  ? (
-                      <a href={connector.github_url}>⚙️</a>
+                    connector.github_url ? (
+                      <a
+                        aria-label={`View ${connector.name} source code`}
+                        className={styles.connectorLink}
+                        href={connector.github_url}
+                      >
+                        <FontAwesomeIcon aria-hidden="true" icon={faCode} />
+                      </a>
                     ) : (
                       ""
                     )}
                     {connector.supportLevel != "archived" ? (
-                      <a href={connector.issue_url}>🐛</a>
+                      <a
+                        aria-label={`Report an issue with ${connector.name}`}
+                        className={styles.connectorLink}
+                        href={connector.issue_url}
+                      >
+                        <FontAwesomeIcon aria-hidden="true" icon={faBug} />
+                      </a>
                     ) : null}
                   </div>
                 </td>
-                <td>{connector.is_oss ? "✅" : "❌"}</td>
-                <td>{connector.is_cloud ? "✅" : "❌"}</td>
+                <td>
+                  <BooleanTableIndicator
+                    label={connector.is_oss ? "Yes" : "No"}
+                    status={connector.is_oss ? "supported" : "unsupported"}
+                  />
+                </td>
+                <td>
+                  <BooleanTableIndicator
+                    label={connector.is_cloud ? "Yes" : "No"}
+                    status={connector.is_cloud ? "supported" : "unsupported"}
+                  />
+                </td>
                 {connectorSupportLevel !== "enterprise" && (
                   <td>
                     <small>
