@@ -4,12 +4,32 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Incremental Stream Considerations
 
-The Shopify REST API supports `updated_at_min` filtering on most resource endpoints. The connector is a Python CDK connector with `IncrementalShopifyStream`, `IncrementalShopifySubstream`, and `IncrementalShopifyNestedStream` classes providing layered incremental patterns.
+The Shopify REST and GraphQL Admin APIs support `updated_at_min` filtering on most resource endpoints. The connector is a Python CDK connector with comprehensive incremental patterns: `IncrementalShopifyStream` (REST with `updated_at_min`), `IncrementalShopifyGraphQlBulkStream` (GraphQL Bulk Operations), `IncrementalShopifySubstream`, `IncrementalShopifyNestedStream`, and `IncrementalShopifyStreamWithDeletedEvents` (tracks both updates and deletions via Events API).
 
 **Connector type:** Python CDK
 
-**Analysis status:** Pure Python CDK connector with comprehensive incremental patterns. Full stream-by-stream analysis requires Python code review.
+**Analysis status:** Complete stream-by-stream analysis performed. Nearly all streams (40+) already use incremental sync with appropriate cursor fields. Only 3 streams are full-refresh, all correctly so.
 
-### Future incremental stream candidates
+### Already Incremental Streams (Partial List)
 
-- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+The connector has 40+ incremental streams across REST, GraphQL Bulk, substream, and nested patterns. Key examples:
+
+| Stream | Cursor Field | Pattern | Notes |
+|--------|-------------|---------|-------|
+| Orders | updated_at | IncrementalShopifyStreamWithDeletedEvents | Tracks updates + deletions |
+| Products | updated_at | IncrementalShopifyGraphQlBulkStream | GraphQL Bulk Operations |
+| Customers | updated_at | IncrementalShopifyStream | REST with `updated_at_min` |
+| Articles | updated_at | IncrementalShopifyStreamWithDeletedEvents | Tracks updates + deletions |
+| Collections | updated_at | IncrementalShopifyGraphQlBulkStream | GraphQL Bulk |
+| InventoryLevels | updated_at | IncrementalShopifyGraphQlBulkStream | GraphQL Bulk |
+| Fulfillments | updated_at | IncrementalShopifyNestedStream | Nested under Orders |
+| Transactions | created_at | IncrementalShopifySubstream | Child of Orders |
+| All Metafield streams | updated_at | Various | 10+ metafield substreams |
+
+### Full-Refresh Streams (Not Actionable)
+
+| Stream | Reason | Evidence |
+|--------|--------|----------|
+| Locations | No date-based filtering | Shopify REST API `GET /admin/api/{version}/locations.json` does not support `updated_at_min` parameter; locations rarely change |
+| Shop | Single record | Returns one record per Shopify store; no incremental benefit |
+| Countries | Small reference dataset | `HttpSubStream` + `FullRefreshShopifyGraphQlBulkStream`; shipping country configuration rarely changes |
