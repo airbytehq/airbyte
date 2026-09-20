@@ -110,6 +110,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 1.5.3 | 2026-05-23 | [78379](https://github.com/airbytehq/airbyte/pull/78379) | Classify missing Salesloft email content access as a configuration error for the emails_scoped_fields stream. |
 | 1.5.2 | 2025-03-24 | [56365](https://github.com/airbytehq/airbyte/pull/56365) | Correct data types for email_scoped_fields |
 | 1.5.1 | 2025-03-16 | [55779](https://github.com/airbytehq/airbyte/pull/55779) | Adding missing columns too emails_scoped_fields stream |
 | 1.5.0 | 2025-03-06 | [55229](https://github.com/airbytehq/airbyte/pull/55229) | Add emails_scoped_fields stream. Remove body and subject fields from email stream |
