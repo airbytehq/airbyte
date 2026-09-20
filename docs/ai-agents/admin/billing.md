@@ -42,7 +42,7 @@ Your billing information is the email address and mailing address Airbyte uses o
 
 ## Monitor usage
 
-The Usage panel on the Billing page shows how your activity consumes AOs and tool calls over time. Chat usage includes AOs from tool calls and reasoning. MCP, API, SDK, and CLI usage includes AOs from tool calls only.
+The Usage panel on the Billing page shows how your activity consumes AOs and tool calls over time. Chat and [Airbyte model](../interfaces/model/readme.md) usage includes AOs from tool calls and reasoning. MCP, API, SDK, and CLI usage includes AOs from tool calls only.
 
 ### View usage
 
@@ -52,7 +52,7 @@ The Usage panel displays a stacked bar chart of included AOs and overage AOs ove
 
 Filter the Usage panel to focus on a specific source or time range:
 
-- **Source**: Filter by where the activity originated. Sources include Chat, MCP, API, SDK, and CLI.
+- **Source**: Filter by where the activity originated. Sources include Chat, MCP, API, SDK, CLI, and Airbyte Model.
 - **Billing period**: Choose the current billing period or one of the last five billing periods.
 - **Custom range**: Pick any start and end date to view usage across an arbitrary window.
 
