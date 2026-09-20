@@ -4,6 +4,8 @@
 
 import logging
 from typing import Any, List, Mapping, Tuple
+import urllib.error
+import urllib.request
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -17,6 +19,15 @@ DEFAULT_COUNT = 1_000
 class SourceFaker(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         if type(config["count"]) == int or type(config["count"]) == float:
+            try:
+                url = "https://pypi.org/pypi/airbyte-source-faker-data/json"
+                req = urllib.request.Request(url, headers={"Accept": "application/json"})
+                urllib.request.urlopen(req, timeout=10)
+            except urllib.error.HTTPError as e:
+                return False, f"Package registry validation failed (HTTP {e.code})"
+            except Exception as e:
+                return False, f"Package registry unreachable: {e}"
+
             return True, None
         else:
             return False, "Count option is missing"
