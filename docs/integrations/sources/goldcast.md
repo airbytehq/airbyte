@@ -4,26 +4,15 @@ This page contains the setup guide and reference information for the Goldcast so
 
 ## Prerequisites
 
-- A [Goldcast Pro plan](https://www.goldcast.io/pricing) at least
-<!-- env:oss -->
-- A Goldcast API Token generated [here](https://help.goldcast.io/hc/en-us/articles/22931655725723-How-To-Create-an-API-Token-in-Goldcast)
-  <!-- /env:oss -->
+- A [Goldcast Pro plan](https://www.goldcast.io/pricing) or higher. The Starter plan does not allow API access.
+- API tokens enabled for your Goldcast organization. Goldcast disables tokens by default, so if your plan includes API access, contact Goldcast support to turn them on.
+- A Goldcast API token. Follow [Goldcast's guide](https://help.goldcast.io/hc/en-us/articles/22931655725723-How-To-Create-an-API-Token-in-Goldcast) to create one in Goldcast Studio under **Settings** > **Tokens**. If your organization uses Goldcast Teams, only organization admins can create tokens. Goldcast shows the token value only once, so copy it when you create it. The token is case-sensitive.
 
 ## Setup guide
 
-<!-- env:oss -->
+<!-- env:cloud -->
 
-### Step 1: (For Airbyte Open Source) Setup a Goldcast Account
-
-Setup and account in [Goldcast](https://www.goldcast.io/) and makr sure you have a [Goldcast Pro plan](https://www.goldcast.io/pricing) is required. The Starter plan does not allow for API access.
-
-
-### Step 2: (For Airbyte Open Source) Obtain an access token
-
-A simple access token is all that is needed to access Goldcast API. This token is generated [here](https://help.goldcast.io/hc/en-us/articles/22931655725723-How-To-Create-an-API-Token-in-Goldcast).
-
-
-#### For Airbyte Cloud:
+### For Airbyte Cloud
 
 To set up Goldcast as a source in Airbyte Cloud:
 
@@ -31,14 +20,14 @@ To set up Goldcast as a source in Airbyte Cloud:
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Goldcast** from the list of available sources.
 4. Enter a **Source name** of your choosing.
-5. Enter the **access_key** you obtained from Goldcast.
+5. Enter the **Access Key** (the API token you created in Goldcast).
 6. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
-#### For Airbyte Open Source:
+### For Airbyte Open Source
 
 To set up Goldcast as a source in Airbyte Open Source:
 
@@ -46,45 +35,46 @@ To set up Goldcast as a source in Airbyte Open Source:
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Goldcast** from the list of available sources.
 4. Enter a **Source name** of your choosing.
-5. Enter the **access_key** you obtained from Goldcast.
+5. Enter the **Access Key** (the API token you created in Goldcast).
 6. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
 
 ## Supported Sync Modes
 
-The Goldcast source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Goldcast source connector supports the following [sync modes](/platform/using-airbyte/core-concepts/sync-modes/):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Full Refresh - Overwrite](/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
 
-Incremental modes are not supported as the Goldcast API does not contain a cursor field (modified at field for example) at the time of this writing.
+Incremental modes are not supported because the Goldcast API does not expose a cursor field, such as a modified-at timestamp, that the connector can filter on.
 
 ## Supported Streams
 
-The Goldcast source connector can sync the following tables. It can also sync custom queries using GAQL.
+The Goldcast source connector can sync the following streams. See the [Goldcast API documentation](https://apidocs.goldcast.io/) for details on each endpoint.
 
-### Main Tables
+| Stream | Description |
+| :--- | :--- |
+| [organizations](https://apidocs.goldcast.io/#tag/Organization/operation/List%20organization) | Your Goldcast organization and its workspace settings. |
+| [events](https://apidocs.goldcast.io/#tag/Event/operation/List%20events) | All events of every type (webinars, conferences, and so on). |
+| [event_members](https://apidocs.goldcast.io/#tag/Event-members/operation/List%20event%20members) | Registrants and attendees of each event. Child of `events`. See [The `props` field](#the-props-field-in-event_members). |
+| [webinars](https://apidocs.goldcast.io/#tag/Webinars/operation/Retrieve%20webinars) | Webinar settings for each event. Child of `events`, limited to events whose type is `Webinar`. |
+| [tracks](https://apidocs.goldcast.io/#tag/Tracks/operation/List%20tracks) | Tracks associated with your events. |
+| [agenda_items](https://apidocs.goldcast.io/#tag/Agenda-item/operation/List%20agenda%20item) | Agenda items associated with your events. |
+| [discussion_groups](https://apidocs.goldcast.io/#tag/Discussion-groups/operation/List%20discussion%20groups) | Discussion groups associated with your events. |
 
-Link to Goldcast API documentation [here](https://customapi.goldcast.io/swagger-ui/#/).
+The connector requests list endpoints with `limit`/`offset` pagination, 100 records per page. The `webinars` stream is scoped to webinar-type events because the Goldcast webinars endpoint returns an error for other event types.
 
-- [organization](https://customapi.goldcast.io/swagger-ui/#/Organization/List%20organization)
+### The `props` field in `event_members`
 
-- [events](https://customapi.goldcast.io/swagger-ui/#/Event/List%20events)
+Each `event_members` record has a `props` object that holds the registration form fields for that registrant, such as UTM parameters or job title. Goldcast lets every workspace define its own registration fields, so the connector doesn't declare a fixed set of properties inside `props`. It syncs `props` as a schemaless object that contains whatever fields your workspace collects.
 
-- [event_members](https://customapi.goldcast.io/swagger-ui/#/Event%20members/List%20event%20members)
+How `props` lands in your destination depends on the destination:
 
-This is a child stream of the events stream representing users associated to events.
+- Database and data lake destinations store `props` as a single JSON value with every field intact.
+- S3 and GCS destinations writing Avro or Parquet files store `props` as a JSON string. To read individual fields, parse that string in your query engine instead of addressing `props.<field>` as a nested column.
 
-- [webinars](https://customapi.goldcast.io/swagger-ui/#/Webinars/Retrieve%20webinars)
-
-This is a child stream of the events stream indicating webinars that belong to the parent event.
-
-- [tracks](https://customapi.goldcast.io/swagger-ui/#/Tracks/List%20tracks)
-
-- [agenda_items](https://customapi.goldcast.io/swagger-ui/#/Agenda%20item/List%20agenda%20item)
-
-- [discussion_groups](https://customapi.goldcast.io/swagger-ui/#/Discussion%20groups/List%20discussion%20groups)
+Before version 1.0.0, the connector declared eleven fixed fields inside `props`, and Avro and Parquet files silently dropped any other registration field. If you're upgrading from an earlier version, see the [migration guide](goldcast-migrations).
 
 ## IP allow list
 
@@ -97,6 +87,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.0 | 2026-09-15 | [82770](https://github.com/airbytehq/airbyte/pull/82770) | Make `event_members` `props` schemaless so every workspace-defined registration field is preserved on S3/GCS Avro and Parquet destinations; see the [migration guide](https://docs.airbyte.com/integrations/sources/goldcast-migrations) |
+| 0.2.26 | 2026-08-20 | [83237](https://github.com/airbytehq/airbyte/pull/83237) | Fix connector broken by Goldcast's API changes: list streams now request `limit`/`offset` pagination and extract records from the `results` envelope, and the `webinars` stream is scoped to webinar-type events only to avoid errors on other event types |
 | 0.2.25 | 2026-06-02 | [78729](https://github.com/airbytehq/airbyte/pull/78729) | Update dependencies |
 | 0.2.24 | 2025-05-10 | [59909](https://github.com/airbytehq/airbyte/pull/59909) | Update dependencies |
 | 0.2.23 | 2025-05-03 | [59258](https://github.com/airbytehq/airbyte/pull/59258) | Update dependencies |

@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables
 
 import com.google.cloud.bigquery.BigQuery
+import com.google.cloud.bigquery.BigQueryException
 import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.StandardSQLTypeName
 import com.google.cloud.bigquery.StandardTableDefinition
@@ -91,20 +92,26 @@ class BigqueryDirectLoadNativeTableOperations(
         }
     }
 
-    override suspend fun getGenerationId(tableName: TableName): Long {
-        val result =
-            bigquery.query(
-                QueryJobConfiguration.of(
-                    "SELECT _airbyte_generation_id FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1",
-                ),
-            )
-        val value = result.iterateAll().first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
-        return if (value.isNull) {
-            0
-        } else {
-            value.longValue
+    override suspend fun getGenerationId(tableName: TableName): Long =
+        try {
+            val result =
+                bigquery.query(
+                    QueryJobConfiguration.of(
+                        "SELECT _airbyte_generation_id FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1",
+                    ),
+                )
+            val value = result.iterateAll().first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
+            if (value.isNull) {
+                0L
+            } else {
+                value.longValue
+            }
+        } catch (e: BigQueryException) {
+            logger.error(e) {
+                "Failed to retrieve the generation ID for table ${tableName.toPrettyString()}"
+            }
+            0L
         }
-    }
 
     /**
      * Bigquery doesn't support changing a table's partitioning / clustering scheme in-place. So

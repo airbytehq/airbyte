@@ -5,6 +5,7 @@
 
 from os import remove
 
+import orjson
 import pytest
 import requests
 from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
@@ -26,7 +27,7 @@ from source_shopify.streams.streams import (
     TransactionsGraphql,
 )
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 
 
 _ANY_SLICE = {}
@@ -289,6 +290,48 @@ def test_retry_on_job_creation_exception(
 
 
 @pytest.mark.parametrize(
+    "job_response, expected_error_type, expected_failure_type, expected_msg",
+    [
+        pytest.param(
+            "bulk_response_with_auth_error",
+            ShopifyBulkExceptions.BulkJobAuthFailedError,
+            FailureType.config_error,
+            "Shopify access token is invalid or has expired.",
+            id="auth_error_from_server_errors_string",
+        ),
+        pytest.param(
+            "bulk_response_with_auth_error_in_user_errors",
+            ShopifyBulkExceptions.BulkJobAuthFailedError,
+            FailureType.config_error,
+            "Shopify access token is invalid or has expired.",
+            id="auth_error_from_user_errors_dict",
+        ),
+        pytest.param(
+            "bulk_successful_response_with_errors",
+            ShopifyBulkExceptions.BulkJobNonHandableError,
+            FailureType.system_error,
+            "Non-handable error occured",
+            id="non_auth_error_stays_system_error",
+        ),
+    ],
+)
+def test_auth_error_classified_as_config_error(
+    request, requests_mock, auth_config, job_response, expected_error_type, expected_failure_type, expected_msg
+) -> None:
+    stream = MetafieldOrders(auth_config)
+    stream.job_manager._job_backoff_time = 0
+    stream.job_manager._job_max_retries = 0
+
+    requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue(job_response))
+
+    with pytest.raises(expected_error_type) as error:
+        stream.job_manager.create_job(_ANY_SLICE, _ANY_FILTER_FIELD)
+
+    assert expected_msg in str(error.value)
+    assert error.value.failure_type == expected_failure_type
+
+
+@pytest.mark.parametrize(
     "job_response, expected",
     [
         ("bulk_job_created_response", ShopifyBulkJobStatus.CREATED.value),
@@ -443,6 +486,54 @@ def test_bulk_stream_parse_response(
         assert test_records == [expected_result]
     elif isinstance(expected_result, list):
         assert test_records == expected_result
+
+
+def test_discount_codes_parse_more_than_100_grouped_redeem_codes(requests_mock, bulk_job_completed_response, auth_config) -> None:
+    stream = DiscountCodes(auth_config)
+    parent_id = "gid://shopify/DiscountCodeNode/945205379261"
+    parent_record = {
+        "__typename": "DiscountCodeNode",
+        "id": parent_id,
+        "codeDiscount": {
+            "__typename": "DiscountCodeFreeShipping",
+            "updatedAt": "2023-12-07T11:40:44Z",
+            "createdAt": "2021-07-08T12:40:37Z",
+            "discountType": "SHIPPING",
+            "startsAt": "2021-07-08T12:40:13Z",
+            "endsAt": "2024-01-02T07:59:59Z",
+            "status": "EXPIRED",
+            "title": "HZAVNV2487WC",
+            "usageLimit": None,
+            "appliesOncePerCustomer": False,
+            "asyncUsageCount": 0,
+            "codesCount": {"count": 101},
+            "totalSales": None,
+            "summary": "Free shipping",
+        },
+    }
+    child_records = [
+        {
+            "__typename": "DiscountRedeemCode",
+            "usageCount": 0,
+            "code": f"CODE-{index:03d}",
+            "id": f"gid://shopify/DiscountRedeemCode/{11545139282109 + index}",
+            "createdBy": None,
+            "__parentId": parent_id,
+        }
+        for index in range(101)
+    ]
+    jsonl_content = "\n".join(orjson.dumps(record).decode() for record in [parent_record, *child_records]) + "\n"
+    test_result_url = bulk_job_completed_response.get("data", {}).get("node", {}).get("url")
+
+    requests_mock.post(stream.job_manager.base_url, json=bulk_job_completed_response)
+    requests_mock.get(test_result_url, text=jsonl_content)
+
+    test_records = list(stream.read_records(SyncMode.full_refresh, stream_slice={}))
+
+    assert len(test_records) == 101
+    assert test_records[0]["code"] == "CODE-000"
+    assert test_records[-1]["code"] == "CODE-100"
+    assert {record["price_rule_id"] for record in test_records} == {945205379261}
 
 
 @pytest.mark.parametrize(

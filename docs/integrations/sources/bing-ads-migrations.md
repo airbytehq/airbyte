@@ -1,5 +1,17 @@
 # Bing Ads Migration Guide
 
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
+## Upgrading to 3.0.0
+
+Version 3.0.0 expands the primary keys of all report streams so that they include every attribute (dimension) column the connector requests from Microsoft's reporting API. Without this fix, when the previous (narrower) primary keys were used for incremental append+dedup, destinations silently collapsed rows that differed only on a requested-but-not-in-PK attribute, causing significant data loss.
+
+The affected streams are all aggregations (`_hourly`, `_daily`, `_weekly`, `_monthly`) of `age_gender_audience_report`, `campaign_performance_report`, `ad_group_performance_report`, `keyword_performance_report`, `ad_group_impression_performance_report`, `audience_performance_report`, `goals_and_funnels_report`, `user_location_performance_report`, `account_performance_report`, `ad_performance_report`, `search_query_performance_report`, `product_search_query_performance_report`, plus `budget_summary_report`.
+
+### Connector upgrade guide
+
+<MigrationGuide />
+
 ## Upgrading to 2.0.0
 
 This version update affects all hourly reports (end in report_hourly) and the following streams:

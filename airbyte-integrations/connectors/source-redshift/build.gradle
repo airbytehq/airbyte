@@ -19,5 +19,5 @@ dependencies {
     implementation 'com.amazon.redshift:redshift-jdbc42:1.2.43.1067'
 
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
-    testImplementation "org.testcontainers:jdbc:1.19.4"
+    testImplementation "org.testcontainers:jdbc:1.21.4"
 }

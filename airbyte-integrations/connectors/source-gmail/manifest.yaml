@@ -484,11 +484,6 @@ spec:
               - type: AddedFieldDefinition
                 path:
                   - credentials
-                  - auth_type
-                value: "Client"
-              - type: AddedFieldDefinition
-                path:
-                  - credentials
                   - client_id
                 value: "{{ config['client_id'] }}"
               - type: AddedFieldDefinition
@@ -501,7 +496,12 @@ spec:
                   - credentials
                   - client_refresh_token
                 value: "{{ config['client_refresh_token'] }}"
-            condition: "{{ config.get('client_id') is not none }}"
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - auth_type
+                value: "Client"
+            condition: "{{ (config.get('client_id') or False) and (config.get('client_secret') or False) and (config.get('client_refresh_token') or False) and not (config.get('credentials') or {}).get('auth_type') }}"
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -511,7 +511,7 @@ spec:
     oauth_config_specification:
       oauth_connector_input_specification:
         scopes:
-          - scope: "https://www.googleapis.com/auth/gmail.readonly"
+          - scope: "https://www.googleapis.com/auth/gmail.modify"
         consent_url: "https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent"
         access_token_url: "https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code"
         extract_output:

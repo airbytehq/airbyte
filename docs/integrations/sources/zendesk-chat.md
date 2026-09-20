@@ -36,7 +36,7 @@ This page contains the setup guide and reference information for the Zendesk Cha
 4. Enter the name for the Zendesk Chat connector.
 5. For **Subdomain**, enter your [Zendesk subdomain](https://support.zendesk.com/hc/en-us/articles/4409381383578-Where-can-I-find-my-Zendesk-subdomain-) (for example, if your Zendesk URL is `https://mycompany.zendesk.com`, enter `mycompany`).
 6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated.
-7. For **Authorization Method**, select **Access Token** from the dropdown and enter your Zendesk [access token](https://developer.zendesk.com/documentation/live-chat/getting-started/auth/). The token must have `read` scope.
+7. For **Authorization Method**, select **Access Token** from the dropdown and enter your Zendesk [access token](https://developer.zendesk.com/documentation/live-chat/getting-started/auth/). The token must have the `read` and `chat` scopes.
 8. Click **Set up source**.
 <!-- /env:oss -->
 
@@ -68,6 +68,19 @@ The Zendesk Chat source connector supports the following [sync modes](https://do
 
 The Zendesk Chat API enforces a rate limit of [200 requests per minute](https://developer.zendesk.com/api-reference/live-chat/introduction/) per endpoint. The connector handles rate limiting automatically by respecting the `Retry-After` header when a 429 response is returned.
 
+## Troubleshooting
+
+### Zendesk Chat access token is invalid, expired, or missing the required read and chat scopes
+
+Zendesk Chat returned a `401 Unauthorized` response, so the connector stops the sync and reports a configuration error. To resolve it:
+
+- **Airbyte Cloud**: Edit the source and click **Authenticate your Zendesk Chat account** to re-authorize the connection.
+- **Airbyte Open Source**: Generate a new [access token](https://developer.zendesk.com/documentation/live-chat/getting-started/auth/) with the `read` and `chat` scopes and update the **Access Token** field.
+
+### Requests that return 404
+
+When Zendesk Chat returns a `404 Not Found` response to any request, the connector ignores that response and continues the sync instead of failing. No records from that request are emitted. This most often happens when a record has been deleted, but it applies to every stream and every request, so a 404 on a list request drops that page of results.
+
 ## Data type map
 
 | Integration Type | Airbyte Type |
@@ -88,6 +101,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.26 | 2026-09-16 | [83336](https://github.com/airbytehq/airbyte/pull/83336) | Show a clearer error when Zendesk Chat rejects the access token |
+| 1.3.25 | 2026-09-15 | [86312](https://github.com/airbytehq/airbyte/pull/86312) | Update dependencies |
+| 1.3.24 | 2026-09-08 | [85714](https://github.com/airbytehq/airbyte/pull/85714) | Update dependencies |
+| 1.3.23 | 2026-08-18 | [84835](https://github.com/airbytehq/airbyte/pull/84835) | Update dependencies |
+| 1.3.22 | 2026-08-11 | [84170](https://github.com/airbytehq/airbyte/pull/84170) | Update dependencies |
+| 1.3.21 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 1.3.20 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 1.3.18 — 1.3.19 is built on SDM 7.23.7, which breaks bundled custom components |
+| 1.3.19 | 2026-07-28 | [83161](https://github.com/airbytehq/airbyte/pull/83161) | Update dependencies |
+| 1.3.18 | 2026-07-21 | [82671](https://github.com/airbytehq/airbyte/pull/82671) | Update dependencies |
+| 1.3.17 | 2026-07-14 | [82082](https://github.com/airbytehq/airbyte/pull/82082) | Update dependencies |
+| 1.3.16 | 2026-06-30 | [81327](https://github.com/airbytehq/airbyte/pull/81327) | Update dependencies |
+| 1.3.15 | 2026-06-23 | [80709](https://github.com/airbytehq/airbyte/pull/80709) | Update dependencies |
+| 1.3.14 | 2026-06-16 | [80102](https://github.com/airbytehq/airbyte/pull/80102) | Update dependencies |
+| 1.3.13 | 2026-06-09 | [79569](https://github.com/airbytehq/airbyte/pull/79569) | Update dependencies |
 | 1.3.12 | 2026-06-02 | [79069](https://github.com/airbytehq/airbyte/pull/79069) | Update dependencies |
 | 1.3.11 | 2026-04-28 | [77490](https://github.com/airbytehq/airbyte/pull/77490) | Update dependencies |
 | 1.3.10 | 2026-04-21 | [76846](https://github.com/airbytehq/airbyte/pull/76846) | Bump SDM base image to stable 7.17.2 |
@@ -100,7 +127,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 1.3.3 | 2026-02-17 | [73534](https://github.com/airbytehq/airbyte/pull/73534) | Update dependencies |
 | 1.3.2 | 2026-02-10 | [73151](https://github.com/airbytehq/airbyte/pull/73151) | Update dependencies |
 | 1.3.1 | 2026-02-03 | [72611](https://github.com/airbytehq/airbyte/pull/72611) | Update dependencies |
-| 1.3.0 | 2026-01-17 | [71829](https://github.com/airbytehq/airbyte/pull/71829) | Add OAuth2.0 support for Airbyte Cloud |
+| 1.3.0 | 2026-01-28 | [71829](https://github.com/airbytehq/airbyte/pull/71829) | Add OAuth2.0 support for Airbyte Cloud |
 | 1.2.31 | 2026-01-20 | [72091](https://github.com/airbytehq/airbyte/pull/72091) | Update dependencies |
 | 1.2.30 | 2026-01-14 | [71701](https://github.com/airbytehq/airbyte/pull/71701) | Update dependencies |
 | 1.2.29 | 2025-12-18 | [70681](https://github.com/airbytehq/airbyte/pull/70681) | Update dependencies |

@@ -374,6 +374,7 @@ Classes
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[TicketFormsSearchData]
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[UserRolesSearchData]
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[UsersSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
