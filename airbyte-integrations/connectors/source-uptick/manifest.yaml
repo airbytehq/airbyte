@@ -31,9 +31,9 @@ definitions:
         response_filters:
           - type: HttpResponseFilter
             http_codes: [401]
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: FAIL
             failure_type: config_error
-            error_message: "HTTP 401: Uptick rejected the refreshed access token."
+            error_message: "HTTP 401: Uptick rejected the client credentials or user login."
           - type: HttpResponseFilter
             http_codes: [403]
             action: FAIL
