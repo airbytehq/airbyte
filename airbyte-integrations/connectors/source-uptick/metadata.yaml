@@ -66,6 +66,9 @@ data:
     ql: 100
     sl: 100
   externalDocumentationUrls:
-    - title: Uptick API documentation
-      url: https://developer.uptick.com/
-      type: api_reference
+    - title: Uptick API - Overview and patch notes
+      url: https://support.uptickhq.com/en/articles/6728314-uptick-api-overview-and-patch-notes
+      type: api_release_history
+    - title: Uptick API - Getting started
+      url: https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started
+      type: authentication_guide
