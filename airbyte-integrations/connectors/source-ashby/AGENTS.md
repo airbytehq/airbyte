@@ -4,6 +4,14 @@
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
+## `interviews` Returns Interview Definitions, Not Scheduled Interviews
+
+`/interview.list` returns the reusable interview *templates* configured on a job — its `Interview` component declares exactly twelve properties: `id`, `title`, `externalTitle`, `type`, `isArchived`, `isDebrief`, `isFeedbackRequired`, `isFeedbackRequested`, `instructionsHtml`, `instructionsPlain`, `jobId`, `feedbackFormDefinitionId`. Nothing about a *scheduled* interview (`applicationId`, `interviewStageId`, `status`, `startTime`, `endTime`, `meetingLink`, `feedbackLink`, `interviewerUserIds`, `createdAt`, `updatedAt`, `cancelledAt`, `interviewScheduleId`) comes back from it. Those fields were declared on the stream anyway and emitted as null on every record; 2.0.0 removed them ([oncall#13405](https://github.com/airbytehq/oncall/issues/13405), after [#85183](https://github.com/airbytehq/airbyte/pull/85183) declared the real fields but kept the null ones to stay non-breaking).
+
+Scheduling data lives in `interview_schedules`: `applicationId`, `interviewStageId`, `status`, `createdAt`, and `updatedAt` are top-level, and `startTime`, `endTime`, `feedbackLink`, `interviewerUserIds`, `meetingLink`, and `interviewScheduleId` are on the objects in its `interviewEvents` array. Cancellation is represented by the schedule's `status`, not by a `cancelledAt` timestamp.
+
+**Why this matters:** a request for interview scheduling data must be answered from `interview_schedules`, not by adding fields to `interviews`. Ashby returns 200 with the fields simply absent, so a wrongly declared property looks like a healthy always-null column rather than an error. `unit_tests/test_interviews_schema.py` pins the `interviews` schema to the twelve real properties in both directions.
+
 ## Incremental Stream Considerations
 
 The Ashby API uses `.list` endpoints with cursor-based pagination. The `applications` and `interview_schedules` endpoints support `createdAfter` filtering, but since these resources are mutable (status changes, updates), `created_at`-only filtering is insufficient for true incremental sync. The Ashby API may support `updatedAfter` on some endpoints — this needs live API verification. All other `.list` endpoints (candidates, jobs, offers, etc.) do not document date-based filtering.
