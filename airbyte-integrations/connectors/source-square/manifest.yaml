@@ -147,11 +147,11 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: labor/shifts/search
+          path: /labor/timecards/search
           http_method: POST
           request_headers:
             Content-Type: application/json
-            Square-Version: "2022-10-19"
+            Square-Version: "2025-05-21"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -181,7 +181,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - shifts
+              - timecards
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1748,10 +1748,19 @@ schemas:
         type:
           - "null"
           - string
-      employee_id:
+      declared_cash_tip_money:
         type:
           - "null"
-          - string
+          - object
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
       end_at:
         type:
           - "null"
@@ -1802,6 +1811,14 @@ schemas:
                 type:
                   - "null"
                   - string
+          job_id:
+            type:
+              - "null"
+              - string
+          tip_eligible:
+            type:
+              - "null"
+              - boolean
           title:
             type:
               - "null"
