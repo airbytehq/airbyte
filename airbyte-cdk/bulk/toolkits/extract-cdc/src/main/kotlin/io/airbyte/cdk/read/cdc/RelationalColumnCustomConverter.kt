@@ -27,6 +27,12 @@ interface RelationalColumnCustomConverter : CustomConverter<SchemaBuilder, Relat
 
         /** Partial conversion functions, applied in sequence until conversion occurs. */
         val partialConverters: List<PartialConverter>
+
+        /**
+         * Same as [partialConverters], for handlers which need per-column state. Called once per
+         * column, so the returned list may close over state scoped to that column.
+         */
+        fun partialConverters(column: RelationalColumn): List<PartialConverter> = partialConverters
     }
 
     override fun configure(props: Properties?) {}
@@ -40,7 +46,7 @@ interface RelationalColumnCustomConverter : CustomConverter<SchemaBuilder, Relat
         }
         val handler: Handler = handlers.find { it.matches(column) } ?: return
         val converter: CustomConverter.Converter =
-            ConverterFactory(javaClass).build(column, handler.partialConverters)
+            ConverterFactory(javaClass).build(column, handler.partialConverters(column))
         registration.register(handler.outputSchemaBuilder(), converter)
     }
 }
