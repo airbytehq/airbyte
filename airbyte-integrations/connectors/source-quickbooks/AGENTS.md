@@ -52,7 +52,7 @@ All 28 streams share `definitions.error_handler`. Intuit returns errors as a `Fa
 The fault code is matched with a `predicate` rather than `error_message_contains`, because the latter is compared against `JsonErrorMessageParser.parse_response_error_message()`, which only walks lowercase keys (`message`, `error`, `detail`, …). Intuit's payload is `{"Fault": {"Error": [{"Message": …, "code": "3200"}]}}`, so the parser returns `None` and no substring can ever match. The predicate reads `Fault.Error[0].code`, tolerates either capitalization and the zero-padded form (`003200`), and is guarded with `response is mapping` so it cannot match a successful response — `HttpResponseFilter` evaluates predicates against every response, including HTTP 200s.
 
 | Response | Action | Failure type | Rationale |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Fault code `3200` (`ApplicationAuthenticationFailed`) | FAIL | `config_error` | The app credentials themselves are rejected: wrong `client_id`/`client_secret`, or development keys used against production. Retrying cannot help. |
 | Fault code `3201` (`AuthorizationFailure`) | FAIL | `config_error` | The user has not authorized the app for this company, or authorization was revoked in Intuit's My Apps. |
 | 401 | FAIL | `config_error` | The OAuth grant is expired or revoked. Intuit invalidates the refresh token after 100 days of disuse, and re-authentication is the only remedy — retrying with the same grant will not recover. |
@@ -73,14 +73,14 @@ Intuit documents [throttling](https://developer.intuit.com/app/developer/qbo/doc
 
 ## Config shape history
 
-`4.0.0` flattened the config: `credentials.client_id` and siblings moved to the root. It shipped no config migration, so connections created before it stop loading rather than being upgraded — the breaking-change message asks users to repopulate the fields by hand. This cannot be repaired inside the manifest alone: the platform validates the config against the spec before any interpolation runs, so a legacy nested config fails on missing required root fields before a fallback expression such as `config.get('client_id') or config.credentials.client_id` would ever be evaluated. Fixing it needs a real config migration, which manifest-only connectors have no entrypoint hook for.
+`4.0.0` flattened the config: `credentials.client_id` and siblings moved to the root. It shipped no config migration, so connections created before it stopped loading rather than being upgraded. `4.2.0` closes that gap with `spec.config_normalization_rules.config_migrations`: a `ConfigMigration` that lifts the six `credentials.*` fields to the root (`ConfigAddFields`, skipping absent optional ones) and drops `credentials` (`ConfigRemoveFields`). The CDK applies migrations in the source constructor — before `check_config_against_spec` — rewrites the config file on disk, and emits a `CONNECTOR_CONFIG` control message so the platform persists the migrated config. A nested config therefore validates and syncs without manual repopulation.
 
 ## Competitor parity (Fivetran)
 
 Fivetran's [QuickBooks connector](https://fivetran.com/docs/connectors/applications/quickbooks) reads the same Accounting API. Verdicts use the certification vocabulary: `covered` / `covered-as-field` / `missing` / `out-of-scope`.
 
 | Fivetran table | Verdict | Reason |
-|---|---|---|
+| --- | --- | --- |
 | `account`, `bill`, `bill_payment`, `budget`, `class`, `credit_memo`, `customer`, `department`, `deposit`, `employee`, `estimate`, `invoice`, `item`, `journal_entry`, `payment`, `payment_method`, `purchase`, `purchase_order`, `refund_receipt`, `sales_receipt`, `tax_agency`, `tax_code`, `tax_rate`, `term`, `time_activity`, `transfer`, `vendor`, `vendor_credit` | covered | The 28 streams of this connector map one-to-one onto these entities. |
 | Line-item tables (`invoice_line`, `bill_line`, `journal_entry_line`, `estimate_line`, `credit_memo_line`, `deposit_line`, `purchase_line`, `purchase_order_line`, `refund_receipt_line`, `sales_receipt_line`, `vendor_credit_line`, `bill_payment_line`) | covered-as-field | Fivetran normalizes the entity's `Line[]` array into a child table; this connector ships the array as a nested field on the parent record. |
 | Linked-transaction and tax-detail tables (`*_linked_txn`, `*_tax_line`, `*_custom_field`) | covered-as-field | Same normalization difference: `LinkedTxn[]`, `TxnTaxDetail`, `CustomField[]` are nested on the parent. |

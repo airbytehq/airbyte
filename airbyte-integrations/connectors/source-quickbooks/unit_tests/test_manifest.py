@@ -123,3 +123,65 @@ def test_every_authenticator_classifies_refresh_token_rejection(manifest):
         assert authenticator["refresh_token_error_status_codes"] == [400, 401]
         assert authenticator["refresh_token_error_key"] == "error"
         assert authenticator["refresh_token_error_values"] == ["invalid_grant", "invalid_client"]
+
+
+def _migrated(manifest, config):
+    """Run the manifest's spec.config_normalization_rules against a config dict."""
+    from airbyte_cdk.sources.declarative.concurrent_declarative_source import (
+        ConcurrentDeclarativeSource,
+    )
+
+    source = ConcurrentDeclarativeSource(source_config=manifest, config=config, catalog=None, state=None)
+    return source._migrate_and_transform_config(None, dict(config))
+
+
+def test_nested_legacy_config_is_flattened(manifest):
+    """A pre-4.0.0 `credentials` object is lifted to root keys and removed."""
+    nested = {
+        "sandbox": True,
+        "start_date": "2024-01-01T00:00:00Z",
+        "credentials": {
+            "client_id": "cid",
+            "client_secret": "cs",
+            "refresh_token": "rt",
+            "realm_id": "123",
+            "access_token": "at",
+            "token_expiry_date": "2024-01-01T01:00:00Z",
+        },
+    }
+    migrated = _migrated(manifest, nested)
+    for key in ("client_id", "client_secret", "refresh_token", "realm_id", "access_token", "token_expiry_date"):
+        assert migrated[key] == nested["credentials"][key]
+    assert "credentials" not in migrated
+    assert migrated["sandbox"] is True
+
+
+def test_nested_config_missing_optional_fields(manifest):
+    """Absent `access_token`/`token_expiry_date` are skipped rather than written as empty values."""
+    nested = {
+        "sandbox": True,
+        "start_date": "2024-01-01T00:00:00Z",
+        "credentials": {
+            "client_id": "cid",
+            "client_secret": "cs",
+            "refresh_token": "rt",
+            "realm_id": "123",
+        },
+    }
+    migrated = _migrated(manifest, nested)
+    assert migrated["client_id"] == "cid"
+    assert "access_token" not in migrated
+    assert "token_expiry_date" not in migrated
+    assert "credentials" not in migrated
+
+
+def test_flat_config_is_untouched(manifest):
+    flat = {
+        "client_id": "cid",
+        "client_secret": "cs",
+        "refresh_token": "rt",
+        "realm_id": "123",
+        "start_date": "2024-01-01T00:00:00Z",
+        "sandbox": True,
+    }
+    assert _migrated(manifest, flat) == flat

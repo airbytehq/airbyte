@@ -19,25 +19,56 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
           disable_for_version: "2.0.0" #change type of a field in payments schema
-  # basic_read:
-  #   tests:
-  #     - config_path: "secrets/config.json"
-  #       empty_streams:
-  #         - name: vendor_credits
-  #           bypass_reason: "unable to populate"
-  #         - name: vendors
-  #           bypass_reason: "unable to populate"
-  #         - name: classes
-  #           bypass_reason: "unable to populate"
-  #         - name: budgets
-  #           bypass_reason: "unable to populate"
-  #         - name: transfers
-  #           bypass_reason: "unable to populate"
-  #         - name: departments
-  #           bypass_reason: "unable to populate"
-  # expect_records:
-  #   path: "integration_tests/expected_records.jsonl"
-  #   exact_order: no
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        empty_streams:
+          - name: bill_payments
+            bypass_reason: "The sandbox company has no BillPayment records"
+          - name: bills
+            bypass_reason: "The sandbox company has no Bill records"
+          - name: budgets
+            bypass_reason: "The sandbox company has no Budget records"
+          - name: classes
+            bypass_reason: "The sandbox company has no Class records"
+          - name: credit_memos
+            bypass_reason: "The sandbox company has no CreditMemo records"
+          - name: departments
+            bypass_reason: "The sandbox company has no Department records"
+          - name: employees
+            bypass_reason: "The sandbox company has no Employee records"
+          - name: items
+            bypass_reason: "The sandbox company has no Item records"
+          - name: journal_entries
+            bypass_reason: "The sandbox company has no JournalEntry records"
+          - name: payment_methods
+            bypass_reason: "The sandbox company has no PaymentMethod records"
+          - name: payments
+            bypass_reason: "The sandbox company has no Payment records"
+          - name: purchase_orders
+            bypass_reason: "The sandbox company has no PurchaseOrder records"
+          - name: purchases
+            bypass_reason: "The sandbox company has no Purchase records"
+          - name: refund_receipts
+            bypass_reason: "The sandbox company has no RefundReceipt records"
+          - name: sales_receipts
+            bypass_reason: "The sandbox company has no SalesReceipt records"
+          - name: tax_agencies
+            bypass_reason: "The sandbox company has no TaxAgency records"
+          - name: tax_codes
+            bypass_reason: "The sandbox company has no TaxCode records"
+          - name: tax_rates
+            bypass_reason: "The sandbox company has no TaxRate records"
+          - name: terms
+            bypass_reason: "The sandbox company has no Term records"
+          - name: time_activities
+            bypass_reason: "The sandbox company has no TimeActivity records"
+          - name: transfers
+            bypass_reason: "The sandbox company has no Transfer records"
+          - name: vendor_credits
+            bypass_reason: "The sandbox company has no VendorCredit records"
+          - name: vendors
+            bypass_reason: "The sandbox company has no Vendor records"
   incremental:
     tests:
       - config_path: "secrets/config.json"
