@@ -125,6 +125,31 @@ day-aligned, and the full-refresh snapshot and forecast streams (`GET_VENDOR_INV
 `GET_VENDOR_FORECASTING_FRESH_REPORT`, `GET_VENDOR_FORECASTING_RETAIL_REPORT`) have no cursor and
 intentionally send no window at all.
 
+## 8. Settlement Reports Use `AsyncRetriever` Without Creating Anything
+
+`GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` is the one report stream Amazon generates on its own —
+`createReport` is not allowed for it. It still uses `basic_async_retriever`, with the
+`creation_requester` overridden to a **GET** of `reports/2021-06-30/reports/{reportId}` for a report
+that `flat_file_settlement_v2_helper` already listed. Nothing is created; the async machinery is
+there for its `download_target_requester`, which resolves `reportDocumentId` to a pre-signed URL and
+downloads it in the same call.
+
+Two constraints that are easy to break:
+
+- **Do not move the document lookup into a parent stream.** Amazon signs the URL with
+  `X-Amz-Expires=300`. Resolving it in a `SubstreamPartitionRouter` parent minted the URL during
+  partition generation and consumed it during partition read, which blew the five-minute window on
+  any sizeable backfill (`getReportDocument` is budgeted at 1 request/minute, so 100 reports is ~100
+  minutes) and replayed the same dead URL on every retry.
+- **`getReports` pagination must send `nextToken` alone.** Reports 2021-06-30 returns `400
+  InvalidInput` if `nextToken` arrives with `reportTypes`, `pageSize`, `createdSince` or
+  `createdUntil` — unlike Orders v0, which ignores them. Suppressing all four takes two mechanisms:
+  `ignore_stream_slicer_parameters_on_paginated_requests` on the **SimpleRetriever** (the CDK ignores
+  it on the DeclarativeStream) covers the cursor's `createdSince`/`createdUntil`, and
+  `"{{ '' if next_page_token else ... }}"` in the requester's `request_parameters` covers
+  `reportTypes` and `pageSize`. The paginator's `page_size_option` cannot be used, because
+  `DefaultPaginator` injects it on paginated requests too.
+
 ## Incremental Stream Considerations
 
 The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 8 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.
