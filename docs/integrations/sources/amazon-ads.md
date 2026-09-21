@@ -222,6 +222,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 9.2.3 | 2026-09-20 | [79107](https://github.com/airbytehq/airbyte/pull/79107) | Fixed off-by-one error in 60-day data retention cap that caused API failures at the boundary date. Added error handler for retention date errors. |
 | 9.2.2 | 2026-09-15 | [85934](https://github.com/airbytehq/airbyte/pull/85934) | Update dependencies |
 | 9.2.1 | 2026-09-08 | [84485](https://github.com/airbytehq/airbyte/pull/84485) | Update dependencies |
 | 9.2.0 | 2026-08-20 | [74367](https://github.com/airbytehq/airbyte/pull/74367) | Add Sponsored Products Search Terms report streams (summary and daily) using the `spSearchTerm` report type |

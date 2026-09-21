@@ -85,6 +85,10 @@ definitions:
         action: FAIL
         failure_type: config_error
         error_message: "{{ response.details }}"
+      - predicate: "{{ 'must be equal to or after report type data retention start date' in response.details }}"
+        action: FAIL
+        failure_type: config_error
+        error_message: "{{ response.details }}"
       - type: HttpResponseFilter
         http_codes: [ 425 ]
         action: FAIL
