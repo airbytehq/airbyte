@@ -28,6 +28,23 @@ def test_cached_authenticator(config):
 
 
 @pytest.mark.parametrize(
+    ("region", "expected_refresh_endpoint"),
+    (
+        ("US", "https://accounts.zoho.com/oauth/v2/token"),
+        ("AU", "https://accounts.zoho.com.au/oauth/v2/token"),
+        ("EU", "https://accounts.zoho.eu/oauth/v2/token"),
+        ("IN", "https://accounts.zoho.in/oauth/v2/token"),
+        ("CN", "https://accounts.zoho.com.cn/oauth/v2/token"),
+        ("JP", "https://accounts.zoho.jp/oauth/v2/token"),
+        ("eu", "https://accounts.zoho.eu/oauth/v2/token"),
+    ),
+)
+def test_token_refresh_endpoint_follows_dc_region(config, region, expected_refresh_endpoint):
+    api = ZohoAPI({**config, "dc_region": region})
+    assert api.authenticator.get_token_refresh_endpoint() == expected_refresh_endpoint
+
+
+@pytest.mark.parametrize(
     ("region", "environment", "expected_result"),
     (
         ("US", "Developer", "https://developer.zohoapis.com"),
