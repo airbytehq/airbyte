@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables
 
 import com.google.cloud.bigquery.StandardSQLTypeName
+import com.google.cloud.bigquery.TimePartitioning
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
@@ -31,6 +32,8 @@ import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadSqlGenerator
 import io.airbyte.integrations.destination.bigquery.spec.CdcDeletionMode
+import io.airbyte.integrations.destination.bigquery.spec.PartitioningGranularity
+import io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider
 import java.util.ArrayList
 import java.util.stream.Collectors
 import org.apache.commons.lang3.StringUtils
@@ -38,6 +41,7 @@ import org.apache.commons.lang3.StringUtils
 class BigqueryDirectLoadSqlGenerator(
     private val projectId: String?,
     private val cdcDeletionMode: CdcDeletionMode,
+    private val streamConfigProvider: StreamConfigProvider,
 ) : DirectLoadSqlGenerator {
     override fun createTable(
         stream: DestinationStream,
@@ -60,10 +64,21 @@ class BigqueryDirectLoadSqlGenerator(
 
         val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
         val clusterConfig =
-            clusteringColumns(stream, columnNameMapping)
+            clusteringColumns(
+                    stream,
+                    columnNameMapping,
+                    streamConfigProvider.getClusteringFields(stream.mappedDescriptor),
+                )
                 .stream()
                 .map { c: String? -> StringUtils.wrap(c, QUOTE) }
                 .collect(Collectors.joining(", "))
+        val partitioning =
+            resolvePartitioning(
+                stream,
+                columnNameMapping,
+                streamConfigProvider.getPartitioningField(stream.mappedDescriptor),
+                streamConfigProvider.getPartitioningGranularity(stream.mappedDescriptor),
+            )
         val finalTableId = tableName.toPrettyString(QUOTE)
         // bigquery has a CREATE OR REPLACE TABLE statement, but we can't use it
         // because you can't change a partitioning/clustering scheme in-place.
@@ -87,7 +102,7 @@ class BigqueryDirectLoadSqlGenerator(
                   _airbyte_generation_id INTEGER,
                   $columnDeclarations
                 )
-                PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
+                PARTITION BY (${partitioning.expression})
                 CLUSTER BY $clusterConfig;
                 """.trimIndent()
             )
@@ -325,8 +340,37 @@ class BigqueryDirectLoadSqlGenerator(
 
         fun clusteringColumns(
             stream: DestinationStream,
-            columnNameMapping: ColumnNameMapping
+            columnNameMapping: ColumnNameMapping,
+            configuredFields: List<String>? = null,
         ): List<String> {
+            if (configuredFields != null) {
+                return configuredFields.map { field ->
+                    val (mappedName, type) =
+                        if (field == StreamConfigProvider.DEFAULT_PARTITIONING_FIELD) {
+                            field to StandardSQLTypeName.TIMESTAMP
+                        } else {
+                            val fieldType =
+                                stream.schema.asColumns()[field]
+                                    ?: throw ConfigErrorException(
+                                        "Stream ${stream.mappedDescriptor.toPrettyString()}: Clustering field '$field' does not exist in the schema",
+                                    )
+                            val mappedName =
+                                columnNameMapping[field]
+                                    ?: throw ConfigErrorException(
+                                        "Stream ${stream.mappedDescriptor.toPrettyString()}: Clustering field '$field' does not have a destination column mapping",
+                                    )
+                            mappedName to toDialectType(fieldType.type)
+                        }
+
+                    if (type !in CLUSTERABLE_TYPES) {
+                        throw ConfigErrorException(
+                            "Stream ${stream.mappedDescriptor.toPrettyString()}: Clustering field '$field' has unsupported BigQuery type $type",
+                        )
+                    }
+                    mappedName
+                }
+            }
+
             val clusterColumns: MutableList<String> = ArrayList()
             if (stream.importType is Dedupe) {
                 // We're doing de-duping, therefore we have a primary key.
@@ -348,5 +392,85 @@ class BigqueryDirectLoadSqlGenerator(
             clusterColumns.add("_airbyte_extracted_at")
             return clusterColumns
         }
+
+        fun resolvePartitioning(
+            stream: DestinationStream,
+            columnNameMapping: ColumnNameMapping,
+            requestedField: String,
+            granularity: PartitioningGranularity,
+        ): ResolvedPartitioning {
+            val (mappedField, fieldType) =
+                if (requestedField == StreamConfigProvider.DEFAULT_PARTITIONING_FIELD) {
+                    requestedField to StandardSQLTypeName.TIMESTAMP
+                } else {
+                    val fieldType =
+                        stream.schema.asColumns()[requestedField]
+                            ?: throw ConfigErrorException(
+                                "Stream ${stream.mappedDescriptor.toPrettyString()}: Partitioning field '$requestedField' does not exist in the schema",
+                            )
+                    val mappedField =
+                        columnNameMapping[requestedField]
+                            ?: throw ConfigErrorException(
+                                "Stream ${stream.mappedDescriptor.toPrettyString()}: Partitioning field '$requestedField' does not have a destination column mapping",
+                            )
+                    mappedField to toDialectType(fieldType.type)
+                }
+
+            if (
+                fieldType == StandardSQLTypeName.DATE && granularity == PartitioningGranularity.HOUR
+            ) {
+                throw ConfigErrorException(
+                    "Stream ${stream.mappedDescriptor.toPrettyString()}: DATE partitioning field '$requestedField' does not support HOUR granularity",
+                )
+            }
+
+            val expression =
+                when (fieldType) {
+                    StandardSQLTypeName.DATE -> "DATE_TRUNC(`$mappedField`, ${granularity.value})"
+                    StandardSQLTypeName.TIMESTAMP ->
+                        if (
+                            requestedField == StreamConfigProvider.DEFAULT_PARTITIONING_FIELD &&
+                                granularity == PartitioningGranularity.DAY
+                        ) {
+                            // Preserve the connector's existing DDL when no custom configuration
+                            // is present.
+                            "DATE_TRUNC(_airbyte_extracted_at, DAY)"
+                        } else {
+                            "TIMESTAMP_TRUNC(`$mappedField`, ${granularity.value})"
+                        }
+                    StandardSQLTypeName.DATETIME ->
+                        "DATETIME_TRUNC(`$mappedField`, ${granularity.value})"
+                    else ->
+                        throw ConfigErrorException(
+                            "Stream ${stream.mappedDescriptor.toPrettyString()}: Partitioning field '$requestedField' must be DATE, TIMESTAMP, or DATETIME, but maps to $fieldType",
+                        )
+                }
+
+            val type =
+                when (granularity) {
+                    PartitioningGranularity.HOUR -> TimePartitioning.Type.HOUR
+                    PartitioningGranularity.DAY -> TimePartitioning.Type.DAY
+                    PartitioningGranularity.MONTH -> TimePartitioning.Type.MONTH
+                    PartitioningGranularity.YEAR -> TimePartitioning.Type.YEAR
+                }
+            return ResolvedPartitioning(mappedField, type, expression)
+        }
+
+        private val CLUSTERABLE_TYPES =
+            setOf(
+                StandardSQLTypeName.BOOL,
+                StandardSQLTypeName.DATE,
+                StandardSQLTypeName.DATETIME,
+                StandardSQLTypeName.INT64,
+                StandardSQLTypeName.NUMERIC,
+                StandardSQLTypeName.STRING,
+                StandardSQLTypeName.TIMESTAMP,
+            )
     }
 }
+
+data class ResolvedPartitioning(
+    val field: String,
+    val type: TimePartitioning.Type,
+    val expression: String,
+)
