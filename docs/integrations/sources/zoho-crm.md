@@ -190,7 +190,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.3.1 | 2026-09-21 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Map bundle editions (e.g. Zoho One, CRM Plus) to the contained CRM edition when detecting the concurrency limit |
+| 0.3.1 | 2026-09-21 | [86502](https://github.com/airbytehq/airbyte/pull/86502) | Map bundle editions (e.g. Zoho One, CRM Plus) to the contained CRM edition when detecting the concurrency limit |
 | 0.3.0 | 2026-09-21 | [86491](https://github.com/airbytehq/airbyte/pull/86491) | Auto-detect Zoho CRM edition from the organization API instead of the `edition` config field (defaulting to a concurrency limit of 5 when detection fails); add optional `max_concurrent_requests` override |
 | 0.2.0 | 2026-09-16 | [85833](https://github.com/airbytehq/airbyte/pull/85833) | Add `advanced_auth` with declarative OAuth (data-center-aware consent and token URLs) requesting Zoho's documented read scopes; document the OAuth and manual setup paths |
 | 0.1.6 | 2026-09-15 | [86301](https://github.com/airbytehq/airbyte/pull/86301) | Update dependencies |
