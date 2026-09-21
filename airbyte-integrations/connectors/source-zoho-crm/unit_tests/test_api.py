@@ -112,6 +112,23 @@ def test_max_concurrent_requests_detects_edition(mocker, request_mocker, config,
         assert api._detect_edition() == "Enterprise"
 
 
+def test_max_concurrent_requests_uses_configured_override(mocker, config):
+    requests_get = mocker.patch("source_zoho_crm.api.requests.get")
+    mocker.patch("source_zoho_crm.api.ZohoOauth2Authenticator.get_auth_header", Mock(return_value={}))
+    api = ZohoAPI({**config, "max_concurrent_requests": 12})
+
+    assert api.max_concurrent_requests == 12
+    requests_get.assert_not_called()
+
+
+def test_max_concurrent_requests_detects_edition_when_override_is_none(mocker, request_mocker, config):
+    request = request_mocker(content=json.dumps({"org": [{"license_details": {"paid": True, "paid_type": "enterprise"}}]}).encode())
+    mock_request(mocker, request)
+    api = ZohoAPI({**config, "max_concurrent_requests": None})
+
+    assert api.max_concurrent_requests == 20
+
+
 def test_max_concurrent_requests_detects_trial_edition(mocker, request_mocker, config):
     mock_request(
         mocker,

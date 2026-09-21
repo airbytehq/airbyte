@@ -55,6 +55,13 @@
         ],
         "description": "ISO 8601, for instance: `YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS+HH:MM`",
         "format": "date-time"
+      },
+      "max_concurrent_requests": {
+        "title": "Max Concurrent Requests",
+        "type": "integer",
+        "minimum": 1,
+        "description": "Maximum number of concurrent requests to the Zoho CRM API. When left empty, the connector detects your Zoho CRM edition via the organization API and uses that edition's limit (Free: 5, Standard: 10, Professional: 15, Enterprise: 20, Ultimate: 25), defaulting to 5 if detection fails. Set this to raise the limit without re-authenticating, or to throttle the connector when sharing API credits with other integrations.",
+        "order": 6
       }
     }
   },

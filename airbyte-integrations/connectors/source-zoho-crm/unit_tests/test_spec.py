@@ -96,3 +96,5 @@ def test_extract_output_is_refresh_token_only():
 def test_edition_is_not_a_config_field():
     assert "edition" not in CONNECTION_PROPERTIES
     assert "edition" not in SPEC["connectionSpecification"]["required"]
+    assert "max_concurrent_requests" in CONNECTION_PROPERTIES
+    assert "max_concurrent_requests" not in SPEC["connectionSpecification"]["required"]

@@ -61,13 +61,22 @@ class ZohoAPI:
     @property
     def max_concurrent_requests(self) -> int:
         if self._max_concurrent_requests is None:
-            edition = self._detect_edition()
-            if edition is None:
-                logger.warning(f"Falling back to the default concurrency limit of {self._DEFAULT_CONCURRENCY}")
-                self._max_concurrent_requests = self._DEFAULT_CONCURRENCY
+            override = self.config.get("max_concurrent_requests")
+            if isinstance(override, int) and not isinstance(override, bool) and override >= 1:
+                self._max_concurrent_requests = override
+                logger.info(f"Using configured concurrency limit {override}")
             else:
-                self._max_concurrent_requests = self._CONCURRENCY_API_LIMITS[edition]
-                logger.info(f"Detected Zoho CRM edition {edition}, concurrency limit {self._max_concurrent_requests}")
+                edition = self._detect_edition()
+                if edition is None:
+                    logger.warning(
+                        f"Falling back to the default concurrency limit of {self._DEFAULT_CONCURRENCY}. "
+                        "Re-authenticate granting the ZohoCRM.org.READ scope to enable edition detection, "
+                        "or set max_concurrent_requests in the connector configuration."
+                    )
+                    self._max_concurrent_requests = self._DEFAULT_CONCURRENCY
+                else:
+                    self._max_concurrent_requests = self._CONCURRENCY_API_LIMITS[edition]
+                    logger.info(f"Detected Zoho CRM edition {edition}, concurrency limit {self._max_concurrent_requests}")
         return self._max_concurrent_requests
 
     def _detect_edition(self) -> Optional[str]:
