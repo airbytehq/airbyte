@@ -177,7 +177,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 
 ## Countries and market-driven shipping
 
-Shopify is moving merchant shipping configuration from delivery profiles to [Markets](https://shopify.dev/docs/apps/build/orders-fulfillment/market-driven-shipping). Once a shop is on market-driven shipping, the `deliveryProfiles` API that backs the `Countries` stream returns a frozen snapshot that no longer reflects changes made by the merchant.
+Shopify is moving merchant shipping configuration from delivery profiles to [Markets](https://shopify.dev/docs/apps/build/orders-fulfillment/market-driven-shipping/upgrade-your-app). Once a shop is on market-driven shipping, the `deliveryProfiles` API that backs the `Countries` stream returns a frozen snapshot that no longer reflects changes made by the merchant.
 
 To avoid syncing stale data, the connector checks `shop.features.marketDrivenShipping` at the start of each sync:
 
