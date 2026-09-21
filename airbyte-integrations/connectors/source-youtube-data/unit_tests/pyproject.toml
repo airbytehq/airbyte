@@ -1,19 +1,22 @@
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
-name = "source-stripe"
+name = "source-youtube-data-tests"
 version = "0.0.0"
-description = "Unit tests for source-stripe"
+description = "Unit tests for source-youtube-data"
 authors = ["Airbyte <contact@airbyte.io>"]
+
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
-airbyte-cdk = "^7"
+airbyte-cdk = "7.28.4"
 pytest = "^8"
-freezegun = "^1.4.0"
-pytest-mock = "^3.6.1"
-requests-mock = "^1.12.1"
-mock = "^5.1.0"
+pyyaml = "^6"
+# `airbyte_cdk.test.mock_http.HttpMocker` imports `requests_mock`, which the CDK does not
+# declare itself, so tests using it fail at collection without this.
+requests-mock = "^1"
+
 [tool.pytest.ini_options]
 filterwarnings = [
     "ignore:This class is experimental*"
