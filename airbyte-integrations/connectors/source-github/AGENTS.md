@@ -242,8 +242,8 @@ not interchangeable:
   repository is not a partition either — that is why the declarative streams need no equivalent
   of the `repository_owners` filter the test helper applies by hand.
 
-The asymmetric `parent_key`s are load-bearing, not an inconsistency to tidy: *list org repos*
-returns `owner` but no `organization`, while *get a repository* returns both, so using
+The asymmetric `parent_key`s are load-bearing, not an inconsistency to tidy: _list org repos_
+returns `owner` but no `organization`, while _get a repository_ returns both, so using
 `owner/login` on the explicit-repo branch would hand user logins back to the org-scoped streams.
 
 2.2.0 wired the org-scoped streams to the config-derived router, and every affected sync died on
