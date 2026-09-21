@@ -23,4 +23,5 @@ source-declarative-manifest check --config secrets/config.json --manifest-path m
 source-declarative-manifest discover --config secrets/config.json --manifest-path manifest.yaml
 source-declarative-manifest read --config secrets/config.json --catalog integration_tests/configured_catalog.json --manifest-path manifest.yaml
 poe test-integration-tests   # connector acceptance tests
+cd unit_tests && poetry install && poetry run pytest   # unit tests
 ```
