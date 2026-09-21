@@ -1484,6 +1484,43 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/attachments"
+    candidate_attribute_types:
+      type: DeclarativeStream
+      name: candidate_attribute_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/candidate_attribute_types
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/candidate_attribute_types"
     candidate_educations:
       type: DeclarativeStream
       name: candidate_educations
@@ -2002,6 +2039,43 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/job_hiring_managers"
+    job_notes:
+      type: DeclarativeStream
+      name: job_notes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/job_notes
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/job_notes"
     job_owners:
       type: DeclarativeStream
       name: job_owners
@@ -2186,6 +2260,7 @@ streams:
   - $ref: "#/definitions/streams/approver_groups"
   - $ref: "#/definitions/streams/approvers"
   - $ref: "#/definitions/streams/job_hiring_managers"
+  - $ref: "#/definitions/streams/job_notes"
   - $ref: "#/definitions/streams/job_owners"
   - $ref: "#/definitions/streams/prospect_pool_stages"
   - $ref: "#/definitions/streams/user_emails"
@@ -2198,6 +2273,7 @@ streams:
   - $ref: "#/definitions/streams/application_stages"
   - $ref: "#/definitions/streams/applied_candidate_tags"
   - $ref: "#/definitions/streams/attachments"
+  - $ref: "#/definitions/streams/candidate_attribute_types"
   - $ref: "#/definitions/streams/candidate_educations"
   - $ref: "#/definitions/streams/candidate_employments"
   - $ref: "#/definitions/streams/prospect_details"
@@ -2319,7 +2395,7 @@ spec:
         consent_url: >-
           https://auth.greenhouse.io/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&response_type=code&state={{state_value}}&{{scopes_param}}
         scope: >-
-          harvest:application_stages:list harvest:applications:list harvest:applied_candidate_tags:list harvest:approval_flows:list harvest:approver_groups:list harvest:approvers:list harvest:attachments:list harvest:candidate_educations:list harvest:candidate_employments:list harvest:candidate_tags:list harvest:candidates:list harvest:close_reasons:list harvest:custom_field_options:list harvest:custom_fields:list harvest:demographic_answer_options:list harvest:demographic_answers:list harvest:demographic_question_sets:list harvest:demographic_questions:list harvest:departments:list harvest:eeoc:list harvest:email_templates:list harvest:interview_kits:list harvest:interviewer_tags:list harvest:interviewers:list harvest:interviews:list harvest:job_hiring_managers:list harvest:job_interview_stages:list harvest:job_interviews:list harvest:job_owners:list harvest:job_posts:list harvest:jobs:list harvest:notes:list harvest:offers:list harvest:offices:list harvest:openings:list harvest:prospect_details:list harvest:prospect_pool_stages:list harvest:prospect_pools:list harvest:referrers:list harvest:rejection_details:list harvest:rejection_reasons:list harvest:scorecard_candidate_attributes:list harvest:scorecard_questions:list harvest:scorecards:list harvest:sources:list harvest:user_emails:list harvest:user_job_permissions:list harvest:user_roles:list harvest:users:list
+          harvest:application_stages:list harvest:applications:list harvest:applied_candidate_tags:list harvest:approval_flows:list harvest:approver_groups:list harvest:approvers:list harvest:attachments:list harvest:candidate_attribute_types:list harvest:candidate_educations:list harvest:candidate_employments:list harvest:candidate_tags:list harvest:candidates:list harvest:close_reasons:list harvest:custom_field_options:list harvest:custom_fields:list harvest:demographic_answer_options:list harvest:demographic_answers:list harvest:demographic_question_sets:list harvest:demographic_questions:list harvest:departments:list harvest:eeoc:list harvest:email_templates:list harvest:interview_kits:list harvest:interviewer_tags:list harvest:interviewers:list harvest:interviews:list harvest:job_hiring_managers:list harvest:job_interview_stages:list harvest:job_interviews:list harvest:job_notes:list harvest:job_owners:list harvest:job_posts:list harvest:jobs:list harvest:notes:list harvest:offers:list harvest:offices:list harvest:openings:list harvest:prospect_details:list harvest:prospect_pool_stages:list harvest:prospect_pools:list harvest:referrers:list harvest:rejection_details:list harvest:rejection_reasons:list harvest:scorecard_candidate_attributes:list harvest:scorecard_questions:list harvest:scorecards:list harvest:sources:list harvest:user_emails:list harvest:user_job_permissions:list harvest:user_roles:list harvest:users:list
         access_token_url: https://auth.greenhouse.io/token
         access_token_headers:
           Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
@@ -2416,6 +2492,7 @@ metadata:
     application_stages: false
     applied_candidate_tags: false
     attachments: false
+    candidate_attribute_types: false
     candidate_educations: false
     candidate_employments: false
     prospect_details: false
@@ -2430,6 +2507,7 @@ metadata:
     approver_groups: false
     approvers: false
     job_hiring_managers: false
+    job_notes: false
     job_owners: false
     prospect_pool_stages: false
     user_emails: false
@@ -5098,6 +5176,52 @@ schemas:
         type:
         - 'null'
         - string
+  candidate_attribute_types:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      active:
+        description: "`true` when the attribute type is in use; `false` after it has been archived from the job's attribute list. Defaults to `true`."
+        type:
+        - 'null'
+        - boolean
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      is_draft:
+        description: "`true` while the attribute is being authored on a draft job and has not yet been published; `false` or `null` once the attribute is part of the live job."
+        type:
+        - 'null'
+        - boolean
+      job_id:
+        description: "Id of the job this attribute type belongs to. Each job carries its own set of attribute types \u2014 there is no org-wide attribute dictionary."
+        type:
+        - 'null'
+        - integer
+      name:
+        description: Display name of the attribute type (e.g. `JavaScript`, `Leadership`, `Years of experience`). Unique among active, same-draft-status attribute types on the same job.
+        type:
+        - 'null'
+        - string
+      sort_order:
+        description: Display priority within the job's attribute list. Lower values sort first.
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
   candidate_educations:
     type:
     - 'null'
@@ -5842,6 +5966,47 @@ schemas:
         type:
         - 'null'
         - integer
+  job_notes:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      body:
+        description: Free-text body of the note. Newline characters are stored verbatim and rendered as line breaks in the Greenhouse UI.
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      job_id:
+        description: Id of the job this note is attached to. Job notes are always anchored to a single job and are not shared across jobs.
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      user_id:
+        description: Id of the Greenhouse user who authored the note.
+        type:
+        - 'null'
+        - integer
+      visibility:
+        description: Who can see this note. `admin_only_visible` is restricted to users with Job Admin or higher access on the job; `privately_visible` is further restricted to users with the "view and create private job notes" permission on the job.
+        type:
+        - 'null'
+        - string
   job_owners:
     type:
     - 'null'
