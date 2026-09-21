@@ -5,6 +5,8 @@ data:
   allowedHosts:
     hosts:
       - api.pipedrive.com
+      - oauth.pipedrive.com
+      - "*.pipedrive.com"
   remoteRegistries:
     pypi:
       enabled: false
@@ -17,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8286229-c680-4063-8c59-23b9b391c700
-  dockerImageTag: 3.0.2
+  dockerImageTag: 3.1.0
   dockerRepository: airbyte/source-pipedrive
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   githubIssueLabel: source-pipedrive
