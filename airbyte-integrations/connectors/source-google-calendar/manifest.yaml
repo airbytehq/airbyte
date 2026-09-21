@@ -161,10 +161,10 @@ definitions:
     url_base: https://www.googleapis.com/calendar/v3/
     authenticator:
       type: OAuthAuthenticator
-      client_id: "{{ config[\"client_id\"] }}"
+      client_id: "{{ config['credentials']['client_id'] }}"
       grant_type: refresh_token
-      client_secret: "{{ config[\"client_secret\"] }}"
-      refresh_token: "{{ config[\"client_refresh_token_2\"] }}"
+      client_secret: "{{ config['credentials']['client_secret'] }}"
+      refresh_token: "{{ config['credentials']['refresh_token'] }}"
       refresh_request_body: {}
       token_refresh_endpoint: https://oauth2.googleapis.com/token
 
@@ -181,31 +181,150 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - client_id
-      - client_secret
-      - client_refresh_token_2
+      - credentials
       - calendarid
     properties:
-      client_id:
-        type: string
+      credentials:
+        type: object
         order: 0
-        title: Client ID
-        airbyte_secret: true
-      client_secret:
-        type: string
-        order: 1
-        title: Client secret
-        airbyte_secret: true
-      client_refresh_token_2:
-        type: string
-        order: 2
-        title: Refresh token
-        airbyte_secret: true
+        title: Authentication
+        oneOf:
+          - title: Authenticate via Google (OAuth)
+            type: object
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: The OAuth 2.0 client ID from your Google Cloud project.
+                airbyte_secret: true
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The OAuth 2.0 client secret from your Google Cloud project.
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: Refresh token obtained from the Google OAuth consent flow.
+                airbyte_secret: true
+          - title: Refresh token (manual)
+            type: object
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: manual
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: The OAuth 2.0 client ID from your Google Cloud project.
+                airbyte_secret: true
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The OAuth 2.0 client secret from your Google Cloud project.
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: Refresh token obtained from a Google OAuth consent flow with the calendar.readonly scope.
+                airbyte_secret: true
       calendarid:
         type: string
-        order: 3
+        order: 1
         title: Calendar Id
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: "https://www.googleapis.com/auth/calendar.readonly"
+        consent_url: "https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent"
+        access_token_url: "https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code"
+        extract_output:
+          - refresh_token
+      complete_oauth_output_specification:
+        type: object
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Move flat OAuth credentials under `credentials`
+        transformations:
+          - type: ConfigAddFields
+            condition: "{{ 'client_refresh_token_2' in config }}"
+            fields:
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - auth_type
+                value: "oauth2.0"
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - client_id
+                value: "{{ config['client_id'] }}"
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - client_secret
+                value: "{{ config['client_secret'] }}"
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - refresh_token
+                value: "{{ config['client_refresh_token_2'] }}"
+          - type: ConfigRemoveFields
+            condition: "{{ 'credentials' in config }}"
+            field_pointers:
+              - - client_id
+              - - client_secret
+              - - client_refresh_token_2
 
 metadata:
   autoImportSchema:
