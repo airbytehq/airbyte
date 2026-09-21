@@ -113,7 +113,7 @@ class SourceFacebookMarketing(AbstractSource):
                 )
             else:
                 api = API(access_token=config.access_token, page_size=config.page_size)
-            # fail fast on rate limits: the platform kills a check job that stays silent for 9 minutes
+            # fail fast on rate limits: the platform fails a check that has not finished within 9 minutes
             api.api.pause_on_rate_limit = False
 
             for account_id in config.account_ids:

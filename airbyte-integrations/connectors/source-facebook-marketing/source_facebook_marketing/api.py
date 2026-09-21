@@ -55,8 +55,8 @@ class MyFacebookAdsApi(FacebookAdsApi):
     # cumulative quota-block wait of the current block episode; kept on the instance so it survives
     # @backoff_policy re-entering `call()`, reset by the next successful call
     _quota_block_wait_elapsed: timedelta = timedelta()
-    # the connection check turns this off: the platform kills a check job that stays silent for 9 minutes,
-    # so waiting out a rate limit there only replaces the connector's error with a platform timeout
+    # the connection check turns this off: the platform fails a check that has not finished within 9 minutes
+    # (total run time), so waiting out a rate limit there only replaces the connector's error with a platform timeout
     pause_on_rate_limit: bool = True
 
     @dataclass
