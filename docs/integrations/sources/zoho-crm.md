@@ -144,12 +144,12 @@ The Zoho Developer environment API is inconsistent with production environment A
 
 There are two ways to authenticate, depending on where you run Airbyte. In both cases you also fill in these fields:
 
-| Field                | Required | Notes                                                                                                   |
-| :------------------- | :------- | :------------------------------------------------------------------------------------------------------ |
-| Data Center Location | Yes      | The region that hosts your Zoho CRM account: `US`, `AU`, `EU`, `IN`, `CN`, or `JP`                      |
-| Environment          | Yes      | `Production`, `Developer`, or `Sandbox`                                                                 |
-| Start Date           | No       | See [Start date](#start-date)                                                                           |
-| Max Concurrent Requests | No    | Overrides edition detection. See [Performance considerations](#performance-considerations)             |
+| Field                   | Required | Notes                                                                                      |
+| :---------------------- | :------- | :----------------------------------------------------------------------------------------- |
+| Data Center Location    | Yes      | The region that hosts your Zoho CRM account: `US`, `AU`, `EU`, `IN`, `CN`, or `JP`         |
+| Environment             | Yes      | `Production`, `Developer`, or `Sandbox`                                                    |
+| Start Date              | No       | See [Start date](#start-date)                                                              |
+| Max Concurrent Requests | No       | Overrides edition detection. See [Performance considerations](#performance-considerations) |
 
 ### Airbyte Cloud: sign in with Zoho
 
