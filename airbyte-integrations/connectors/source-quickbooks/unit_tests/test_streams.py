@@ -79,6 +79,8 @@ STREAM_ENTITY = {
     "vendors": "Vendor",
 }
 
+FULL_REFRESH_STREAMS = {"company_info", "preferences"}
+
 
 def _flat_config() -> dict:
     return {
@@ -103,6 +105,20 @@ def _nested_config() -> dict:
 
 
 def _catalog(stream_name: str) -> ConfiguredAirbyteCatalog:
+    if stream_name in FULL_REFRESH_STREAMS:
+        return ConfiguredAirbyteCatalog(
+            streams=[
+                ConfiguredAirbyteStream(
+                    stream=AirbyteStream(
+                        name=stream_name,
+                        json_schema={},
+                        supported_sync_modes=[SyncMode.full_refresh],
+                    ),
+                    sync_mode=SyncMode.full_refresh,
+                    destination_sync_mode=DestinationSyncMode.overwrite,
+                )
+            ]
+        )
     return ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -203,7 +219,8 @@ def test_stream_reads_single_record(stream_name: str, entity: str, manifest):
     record = output.records[0].record
     assert record.stream == stream_name
     assert record.data["Id"] == "1"
-    assert record.data["airbyte_cursor"]
+    if stream_name not in FULL_REFRESH_STREAMS:
+        assert record.data["airbyte_cursor"]
 
     statuses = [
         message.trace.stream_status.status
@@ -211,7 +228,8 @@ def test_stream_reads_single_record(stream_name: str, entity: str, manifest):
         if message.type == Type.TRACE and message.trace.type == TraceType.STREAM_STATUS
     ]
     assert AirbyteStreamStatus.COMPLETE in statuses
-    assert any(message.type == Type.STATE for message in output._messages)
+    if stream_name not in FULL_REFRESH_STREAMS:
+        assert any(message.type == Type.STATE for message in output._messages)
 
 
 def test_nested_legacy_config_is_migrated_and_read(manifest):

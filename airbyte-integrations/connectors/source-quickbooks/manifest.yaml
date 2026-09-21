@@ -1459,13 +1459,8 @@ definitions:
           http_method: GET
           request_parameters:
             query: >-
-              SELECT * FROM CompanyInfo WHERE Metadata.LastUpdatedTime > '{{
-              stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
-              }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
-              + ":" + stream_slice.start_time[-2:] }}'
-               ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
-              (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              SELECT * FROM CompanyInfo MAXRESULTS {{ (config.max_results
+              or '200') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -1479,24 +1474,7 @@ definitions:
             - QueryResponse
             - CompanyInfo
         paginator:
-          type: DefaultPaginator
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 5
-      incremental_sync:
-        type: DatetimeBasedCursor
-        step: P30D
-        cursor_field: airbyte_cursor
-        end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.start_date }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
-      transformations:
-      - type: AddFields
-        fields:
-        - path:
-          - airbyte_cursor
-          value: "{{ record.MetaData.LastUpdatedTime }}"
+          type: NoPagination
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1590,10 +1568,6 @@ definitions:
               type:
               - "null"
               - object
-            airbyte_cursor:
-              type:
-              - "null"
-              - string
             domain:
               type:
               - "null"
@@ -5363,13 +5337,8 @@ definitions:
           http_method: GET
           request_parameters:
             query: >-
-              SELECT * FROM Preferences WHERE Metadata.LastUpdatedTime > '{{
-              stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
-              }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
-              + ":" + stream_slice.start_time[-2:] }}'
-               ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
-              (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-              (config.max_results or '200') | int }}
+              SELECT * FROM Preferences MAXRESULTS {{ (config.max_results
+              or '200') | int }}
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -5383,24 +5352,7 @@ definitions:
             - QueryResponse
             - Preferences
         paginator:
-          type: DefaultPaginator
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 5
-      incremental_sync:
-        type: DatetimeBasedCursor
-        step: P30D
-        cursor_field: airbyte_cursor
-        end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.start_date }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
-      transformations:
-      - type: AddFields
-        fields:
-        - path:
-          - airbyte_cursor
-          value: "{{ record.MetaData.LastUpdatedTime }}"
+          type: NoPagination
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -5473,10 +5425,6 @@ definitions:
               type:
               - "null"
               - object
-            airbyte_cursor:
-              type:
-              - "null"
-              - string
             domain:
               type:
               - "null"
@@ -10324,13 +10272,8 @@ streams:
       http_method: GET
       request_parameters:
         query: >-
-          SELECT * FROM CompanyInfo WHERE Metadata.LastUpdatedTime > '{{
-          stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
-          }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
-          + ":" + stream_slice.start_time[-2:] }}'
-           ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
-          (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          SELECT * FROM CompanyInfo MAXRESULTS {{ (config.max_results
+          or '200') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -10344,25 +10287,7 @@ streams:
         - QueryResponse
         - CompanyInfo
     paginator:
-      type: DefaultPaginator
-      pagination_strategy:
-        type: OffsetIncrement
-        page_size: 5
-  incremental_sync:
-    type: DatetimeBasedCursor
-    step: P30D
-    cursor_field: airbyte_cursor
-    end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.start_date }}"
-    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
-  transformations:
-  - type: AddFields
-    fields:
-    - path:
-      - airbyte_cursor
-      value: "{{ record.MetaData.LastUpdatedTime }}"
-      type: AddedFieldDefinition
+      type: NoPagination
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -10456,10 +10381,6 @@ streams:
           type:
           - "null"
           - object
-        airbyte_cursor:
-          type:
-          - "null"
-          - string
         domain:
           type:
           - "null"
@@ -14228,13 +14149,8 @@ streams:
       http_method: GET
       request_parameters:
         query: >-
-          SELECT * FROM Preferences WHERE Metadata.LastUpdatedTime > '{{
-          stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
-          }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
-          + ":" + stream_slice.start_time[-2:] }}'
-           ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
-          (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
-          (config.max_results or '200') | int }}
+          SELECT * FROM Preferences MAXRESULTS {{ (config.max_results
+          or '200') | int }}
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -14248,25 +14164,7 @@ streams:
         - QueryResponse
         - Preferences
     paginator:
-      type: DefaultPaginator
-      pagination_strategy:
-        type: OffsetIncrement
-        page_size: 5
-  incremental_sync:
-    type: DatetimeBasedCursor
-    step: P30D
-    cursor_field: airbyte_cursor
-    end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.start_date }}"
-    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
-  transformations:
-  - type: AddFields
-    fields:
-    - path:
-      - airbyte_cursor
-      value: "{{ record.MetaData.LastUpdatedTime }}"
-      type: AddedFieldDefinition
+      type: NoPagination
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -14339,10 +14237,6 @@ streams:
           type:
           - "null"
           - object
-        airbyte_cursor:
-          type:
-          - "null"
-          - string
         domain:
           type:
           - "null"
@@ -17999,8 +17893,6 @@ metadata:
       - incrementalSync
       classes:
       - incrementalSync
-      company_info:
-      - incrementalSync
       credit_card_payments:
       - incrementalSync
       credit_memos:
@@ -18026,8 +17918,6 @@ metadata:
       payment_methods:
       - incrementalSync
       payments:
-      - incrementalSync
-      preferences:
       - incrementalSync
       purchase_orders:
       - incrementalSync

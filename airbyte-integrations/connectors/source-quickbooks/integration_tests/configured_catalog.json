@@ -76,13 +76,10 @@
       "stream": {
         "name": "company_info",
         "json_schema": {},
-        "supported_sync_modes": ["incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
+        "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "incremental",
-      "cursor_field": ["MetaData", "LastUpdatedTime"],
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -244,13 +241,10 @@
       "stream": {
         "name": "preferences",
         "json_schema": {},
-        "supported_sync_modes": ["incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
+        "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "incremental",
-      "cursor_field": ["MetaData", "LastUpdatedTime"],
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {

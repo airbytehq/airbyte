@@ -18,7 +18,7 @@ Cloud shows an "Authenticate" button driven by `spec.advanced_auth` and the plat
 
 ## Incremental Stream Considerations
 
-All 34 streams are incremental with the same shape. QuickBooks exposes no cursor field at the top level of an entity: the modification timestamp lives at `MetaData.LastUpdatedTime`, so each stream hoists it to a synthesized top-level `airbyte_cursor` with `AddFields`, and the `DatetimeBasedCursor` uses that field.
+32 of the 34 streams are incremental with the same shape; `company_info` and `preferences` are full refresh (see below). QuickBooks exposes no cursor field at the top level of an entity: the modification timestamp lives at `MetaData.LastUpdatedTime`, so each stream hoists it to a synthesized top-level `airbyte_cursor` with `AddFields`, and the `DatetimeBasedCursor` uses that field.
 
 Server-side filtering is done in the SQL-like query language rather than with request parameters:
 
@@ -32,7 +32,7 @@ STARTPOSITION <n> MAXRESULTS <max_results>
 
 The casing in that query (`Metadata`) reproduces the manifest verbatim and differs from the record field the cursor and schema use (`MetaData`). Both spellings predate `4.0.0` and incremental syncs work in production, so Intuit evidently resolves the query identifier case-insensitively — inference from behavior, not from Intuit's documentation. Do not normalize the query occurrences without a live API to verify against.
 
-`step: P30D` windows the query, and `cursor_granularity: PT0S` with a `>` lower bound makes slices non-overlapping. `Active IN (true, false)` is required because QuickBooks otherwise returns only active records. Six streams are on entities that expose no `Active` field — `company_info`, `preferences`, `exchange_rates`, `reimburse_charges`, `attachables`, `credit_card_payments` — and Intuit rejects the clause with an `Invalid query` fault on those entities, so their queries omit it (verified against the sandbox query endpoint). Two entity quirks found while probing: `CompanyInfo` filters `>` against a stale internal timestamp (older than the record's displayed `MetaData.LastUpdatedTime`) and ignores `<=`, so early slices can re-emit the same row while late windows legitimately see none; and `ExchangeRate` expands to per-currency-pair-per-day rows, so the stream is large (~192k records for a 2023 sandbox start date).
+`step: P30D` windows the query, and `cursor_granularity: PT0S` with a `>` lower bound makes slices non-overlapping. `Active IN (true, false)` is required because QuickBooks otherwise returns only active records. Six streams are on entities that expose no `Active` field — `company_info`, `preferences`, `exchange_rates`, `reimburse_charges`, `attachables`, `credit_card_payments` — and Intuit rejects the clause with an `Invalid query` fault on those entities, so their queries omit it (verified against the sandbox query endpoint). `company_info` and `preferences` run full refresh instead: they are single-row entities, and `CompanyInfo`'s windowed query is unusable anyway — Intuit applies `>` against a stale internal timestamp and ignores `<=`, which would either drop the row or re-emit it once per slice. `ExchangeRate` expands to per-currency-pair-per-day rows, so `exchange_rates` is a large stream (~192k records for a 2023 sandbox start date).
 
 Two things to know before changing this:
 
