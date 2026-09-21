@@ -5,7 +5,7 @@
 
 import logging
 import sys
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 from source_shopify.shopify_graphql.bulk.query import (
@@ -18,6 +18,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     FulfillmentOrder,
     InventoryItem,
     InventoryLevel,
+    MarketCountry,
     MetafieldCollection,
     MetafieldCustomer,
     MetafieldDraftOrder,
@@ -760,6 +761,12 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
         stream_state: Optional[Mapping[str, Any]] = None,
         **kwargs,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        if self.market_driven_shipping_enabled:
+            self.logger.info(
+                f"Stream `{self.name}`: the shop uses market-driven shipping, `deliveryProfiles` no longer reflects its live shipping settings. "
+                "Use the `market_countries` stream instead. No records will be emitted."
+            )
+            return
         for stream_slice in super().stream_slices(stream_state=stream_state, **kwargs):
             parent = stream_slice.get("parent", {})
             profile_location_groups = parent.get("profile_location_groups", [])
@@ -838,3 +845,120 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
 
         country["shop_url"] = self.config["shop"]
         return country
+
+
+class MarketCountries(FullRefreshShopifyGraphQlBulkStream):
+    """
+    Countries a shop ships to, sourced from Markets (`Market.conditions.regionsCondition.regions`)
+    together with the market's shipping configuration (`Market.delivery.shipping`).
+    Emits one record per (market, country) and only for shops with `marketDrivenShipping` enabled,
+    where the legacy `deliveryProfiles` used by the `countries` stream returns a frozen snapshot.
+    https://shopify.dev/docs/api/admin-graphql/latest/queries/markets
+    """
+
+    query = MarketCountry
+    response_field = "markets"
+
+    def __init__(self, config: Mapping[str, Any]) -> None:
+        super().__init__(config)
+        self._page_cursor: Optional[str] = None
+        self._sub_page_cursor: Optional[str] = None
+
+    def stream_slices(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        **kwargs,
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        if not self.market_driven_shipping_enabled:
+            self.logger.info(
+                f"Stream `{self.name}`: the shop does not use market-driven shipping yet, its shipping settings are available "
+                "in the `countries` stream. No records will be emitted."
+            )
+            return
+        yield {}
+
+    @staticmethod
+    def _regions_page_info(market: Mapping[str, Any]) -> Mapping[str, Any]:
+        regions_condition = (market.get("conditions") or {}).get("regionsCondition") or {}
+        return (regions_condition.get("regions") or {}).get("pageInfo") or {"hasNextPage": False}
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        json_response = response.json().get("data") or {}
+        if not json_response:
+            return None
+
+        markets = json_response.get(self.response_field) or {}
+        page_info = markets.get("pageInfo") or {"hasNextPage": False}
+        # only one market per page in query
+        nodes = markets.get("nodes") or []
+        sub_page_info = self._regions_page_info(nodes[0]) if nodes else {"hasNextPage": False}
+
+        if sub_page_info["hasNextPage"]:
+            self._sub_page_cursor = sub_page_info["endCursor"]
+        elif page_info["hasNextPage"]:
+            self._page_cursor = page_info["endCursor"]
+            self._sub_page_cursor = None
+        else:
+            return None
+
+        return {
+            "cursor": self._page_cursor,
+            "sub_cursor": self._sub_page_cursor,
+        }
+
+    def request_body_json(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[Mapping[str, Any]]:
+        return {"query": self.query(regions_cursor=self._sub_page_cursor).get(query_args={"cursor": self._page_cursor})}
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        for market in super().parse_response(response, **kwargs):
+            regions_condition = (market.get("conditions") or {}).get("regionsCondition") or {}
+            shipping = (market.get("delivery") or {}).get("shipping") or {}
+            shipping_options = [
+                self._process_shipping_option(option) for option in (shipping.get("option_definitions") or {}).get("nodes") or []
+            ]
+            for country in (regions_condition.get("regions") or {}).get("nodes") or []:
+                # `regions` may contain non-country regions, which resolve to an empty inline fragment
+                if country.get("id"):
+                    yield self._transformer.transform(self._process_country(country, market, shipping, shipping_options))
+
+    @staticmethod
+    def _gid_to_int(gid: str) -> int:
+        return int(gid.split("/")[-1])
+
+    def _process_shipping_option(self, option: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {
+            "id": self._gid_to_int(option["id"]),
+            "type": option.get("__typename"),
+            "name": option.get("name"),
+            "description": option.get("description"),
+            "currency": option.get("currency"),
+            "is_active": option.get("is_active"),
+            "free_delivery_minimum_value": option.get("free_delivery_minimum_value"),
+        }
+
+    def _process_country(
+        self,
+        country: Mapping[str, Any],
+        market: Mapping[str, Any],
+        shipping: Mapping[str, Any],
+        shipping_options: List[Mapping[str, Any]],
+    ) -> Mapping[str, Any]:
+        return {
+            "id": self._gid_to_int(country["id"]),
+            "name": country.get("name"),
+            "code": country.get("code"),
+            "currency_code": (country.get("currency") or {}).get("currency_code"),
+            "market_id": self._gid_to_int(market["id"]),
+            "market_name": market.get("name"),
+            "market_handle": market.get("handle"),
+            "market_status": market.get("status"),
+            "market_type": market.get("type"),
+            "shipping_enabled": shipping.get("is_enabled"),
+            "shipping_options": shipping_options,
+            "shop_url": self.config["shop"],
+        }

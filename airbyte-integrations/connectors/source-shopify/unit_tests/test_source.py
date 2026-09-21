@@ -23,6 +23,7 @@ from source_shopify.streams.streams import (
     Fulfillments,
     InventoryLevels,
     Locations,
+    MarketCountries,
     MetafieldArticles,
     MetafieldBlogs,
     MetafieldCollections,
@@ -423,7 +424,15 @@ def test_user_scopes_generate_full_list_of_streams(config, mocker):
 
     # Adjust this number based on the actual permitted streams
     expected_streams_number = 48
-    assert len(source.streams(config)) == expected_streams_number
+    streams = source.streams(config)
+    assert len(streams) == expected_streams_number
+    # `market_countries` requires the `read_markets` scope
+    assert "market_countries" not in [stream.name for stream in streams]
+
+    expected_user_scopes.append("read_markets")
+    streams = source.streams(config)
+    assert len(streams) == expected_streams_number + 1
+    assert "market_countries" in [stream.name for stream in streams]
 
 
 @pytest.mark.parametrize(
@@ -589,3 +598,238 @@ def test_countries_parse_response(config, countries_response_data, countries_exp
         countries_expected_record_data,
     ]
     assert list(records) == expected_records
+
+
+def test_market_countries_request_body_json(config):
+    config["shop"] = "test-store"
+    stream = MarketCountries(config)
+    stream._page_cursor = "market_cursor"
+    stream._sub_page_cursor = "regions_cursor"
+    request_body = stream.request_body_json(stream_state={})
+
+    expected_request_body = {
+        "query": """query MarketCountriesList {
+  markets(
+    first: 1
+    after: "market_cursor"
+  ) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    nodes {
+      id
+      name
+      handle
+      status
+      type
+      conditions {
+        regionsCondition {
+          regions(
+            first: 250
+            after: "regions_cursor"
+          ) {
+            nodes {
+              ... on MarketRegionCountry {
+                id
+                name
+                code
+                currency {
+                  currency_code: currencyCode
+                }
+              }
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+          }
+        }
+      }
+      delivery {
+        shipping {
+          is_enabled: isEnabled
+          option_definitions: optionDefinitions(
+            first: 50
+          ) {
+            nodes {
+              __typename
+              id
+              currency
+              description
+              is_active: isActive
+              free_delivery_minimum_value: freeDeliveryMinimumValue {
+                amount
+                currency_code: currencyCode
+              }
+              ... on DeliveryFlatRateOptionDefinition {
+                name
+              }
+              ... on DeliveryWeightBasedOptionDefinition {
+                name
+              }
+              ... on DeliveryValueBasedOptionDefinition {
+                name
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}"""
+    }
+    assert request_body == expected_request_body
+
+
+def _markets_response(markets_has_next: bool, regions_has_next: bool) -> dict:
+    return {
+        "data": {
+            "markets": {
+                "pageInfo": {"hasNextPage": markets_has_next, "endCursor": "market_cursor"},
+                "nodes": [
+                    {
+                        "conditions": {
+                            "regionsCondition": {
+                                "regions": {
+                                    "nodes": [],
+                                    "pageInfo": {"hasNextPage": regions_has_next, "endCursor": "regions_cursor"},
+                                }
+                            }
+                        }
+                    }
+                ],
+            }
+        }
+    }
+
+
+@pytest.mark.parametrize(
+    "response_data, expected_token",
+    [
+        pytest.param(_markets_response(markets_has_next=False, regions_has_next=False), None, id="last_page"),
+        pytest.param(
+            _markets_response(markets_has_next=True, regions_has_next=False),
+            {"cursor": "market_cursor", "sub_cursor": None},
+            id="next_market",
+        ),
+        pytest.param(
+            _markets_response(markets_has_next=True, regions_has_next=True),
+            {"cursor": None, "sub_cursor": "regions_cursor"},
+            id="next_regions_page_of_the_same_market_first",
+        ),
+        pytest.param({"data": {"markets": {"pageInfo": {"hasNextPage": False}, "nodes": []}}}, None, id="no_markets"),
+        pytest.param({"errors": [{"message": "Access denied"}]}, None, id="no_data"),
+    ],
+)
+def test_market_countries_next_page_token(config, response_data, expected_token):
+    stream = MarketCountries(config)
+    response = requests.Response()
+    response.status_code = 200
+    response._content = json.dumps(response_data).encode("utf-8")
+    assert stream.next_page_token(response) == expected_token
+
+
+def test_market_countries_parse_response(config):
+    stream = MarketCountries(config)
+    response = MagicMock(status_code=requests.codes.OK)
+    response.json.return_value = {
+        "data": {
+            "markets": {
+                "pageInfo": {"hasNextPage": False, "endCursor": None},
+                "nodes": [
+                    {
+                        "id": "gid://shopify/Market/100",
+                        "name": "Europe",
+                        "handle": "eu",
+                        "status": "ACTIVE",
+                        "type": "REGION",
+                        "conditions": {
+                            "regionsCondition": {
+                                "regions": {
+                                    "nodes": [
+                                        {
+                                            "id": "gid://shopify/MarketRegionCountry/1",
+                                            "name": "Germany",
+                                            "code": "DE",
+                                            "currency": {"currency_code": "EUR"},
+                                        },
+                                        # non-country region resolves to an empty inline fragment
+                                        {},
+                                        {
+                                            "id": "gid://shopify/MarketRegionCountry/2",
+                                            "name": "France",
+                                            "code": "FR",
+                                            "currency": {"currency_code": "EUR"},
+                                        },
+                                    ],
+                                    "pageInfo": {"hasNextPage": False, "endCursor": None},
+                                }
+                            }
+                        },
+                        "delivery": {
+                            "shipping": {
+                                "is_enabled": True,
+                                "option_definitions": {
+                                    "nodes": [
+                                        {
+                                            "__typename": "DeliveryFlatRateOptionDefinition",
+                                            "id": "gid://shopify/DeliveryFlatRateOptionDefinition/10",
+                                            "currency": "EUR",
+                                            "description": None,
+                                            "is_active": True,
+                                            "free_delivery_minimum_value": {"amount": "50.0", "currency_code": "EUR"},
+                                            "name": "Standard",
+                                        },
+                                        {
+                                            "__typename": "DeliveryCarrierCalculatedOptionDefinition",
+                                            "id": "gid://shopify/DeliveryCarrierCalculatedOptionDefinition/11",
+                                            "currency": "EUR",
+                                            "description": "DHL",
+                                            "is_active": False,
+                                            "free_delivery_minimum_value": None,
+                                        },
+                                    ]
+                                },
+                            }
+                        },
+                    }
+                ],
+            }
+        }
+    }
+
+    expected_shipping_options = [
+        {
+            "id": 10,
+            "type": "DeliveryFlatRateOptionDefinition",
+            "name": "Standard",
+            "description": None,
+            "currency": "EUR",
+            "is_active": True,
+            "free_delivery_minimum_value": {"amount": 50.0, "currency_code": "EUR"},
+        },
+        {
+            "id": 11,
+            "type": "DeliveryCarrierCalculatedOptionDefinition",
+            "name": None,
+            "description": "DHL",
+            "currency": "EUR",
+            "is_active": False,
+            "free_delivery_minimum_value": None,
+        },
+    ]
+    market_fields = {
+        "market_id": 100,
+        "market_name": "Europe",
+        "market_handle": "eu",
+        "market_status": "ACTIVE",
+        "market_type": "REGION",
+        "shipping_enabled": True,
+        "shipping_options": expected_shipping_options,
+        "shop_url": "test-shop",
+    }
+    assert list(stream.parse_response(response)) == [
+        {"id": 1, "name": "Germany", "code": "DE", "currency_code": "EUR", **market_fields},
+        {"id": 2, "name": "France", "code": "FR", "currency_code": "EUR", **market_fields},
+    ]

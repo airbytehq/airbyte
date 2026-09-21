@@ -8,7 +8,7 @@ import pytest
 import requests
 from source_shopify.run import run
 from source_shopify.source import ConnectionCheckTest, SourceShopify
-from source_shopify.streams.streams import BalanceTransactions, Countries, DiscountCodes, PriceRules
+from source_shopify.streams.streams import BalanceTransactions, Countries, DiscountCodes, MarketCountries, PriceRules
 from source_shopify.utils import ShopifyNonRetryableErrors
 
 
@@ -161,11 +161,12 @@ def test_run_module_emits_spec():
         ),
     ],
 )
-def test_countries_stream_slices_filters_empty_profile_location_groups(mocker, auth_config, parent_slices, expected_slices):
+def test_countries_stream_slices_filters_empty_profile_location_groups(mocker, requests_mock, auth_config, parent_slices, expected_slices):
     """
     Test that Countries.stream_slices filters out slices where profile_location_groups is empty.
     This prevents IndexError when request_body_json tries to access profile_location_groups[0].
     """
+    mock_shop_features(requests_mock, market_driven_shipping=False)
     mocker.patch(
         "source_shopify.streams.streams.HttpSubStream.stream_slices",
         return_value=iter(parent_slices),
@@ -173,3 +174,59 @@ def test_countries_stream_slices_filters_empty_profile_location_groups(mocker, a
     stream = Countries(parent=mocker.MagicMock(), config=auth_config)
     result = list(stream.stream_slices())
     assert result == expected_slices
+
+
+def mock_shop_features(requests_mock, market_driven_shipping: bool) -> None:
+    requests_mock.post(
+        "https://test-shop.myshopify.com/admin/api/2026-07/graphql.json",
+        json={"data": {"shop": {"features": {"marketDrivenShipping": market_driven_shipping}}}},
+    )
+
+
+@pytest.mark.parametrize(
+    "market_driven_shipping, expected_slices",
+    [
+        pytest.param(
+            False, [{"parent": {"profile_location_groups": [{"locationGroup": {"id": "123"}}]}}], id="legacy_shop_reads_delivery_profiles"
+        ),
+        pytest.param(True, [], id="market_driven_shop_emits_nothing"),
+    ],
+)
+def test_countries_stream_slices_gated_by_market_driven_shipping(
+    mocker, requests_mock, auth_config, market_driven_shipping, expected_slices
+):
+    mock_shop_features(requests_mock, market_driven_shipping)
+    parent_slices = mocker.patch(
+        "source_shopify.streams.streams.HttpSubStream.stream_slices",
+        return_value=iter([{"parent": {"profile_location_groups": [{"locationGroup": {"id": "123"}}]}}]),
+    )
+    stream = Countries(parent=mocker.MagicMock(), config=auth_config)
+    assert list(stream.stream_slices()) == expected_slices
+    # the parent `deliveryProfiles` stream is not read at all for market-driven shops
+    assert parent_slices.called is not market_driven_shipping
+
+
+@pytest.mark.parametrize(
+    "market_driven_shipping, expected_slices",
+    [
+        pytest.param(False, [], id="legacy_shop_emits_nothing"),
+        pytest.param(True, [{}], id="market_driven_shop_reads_markets"),
+    ],
+)
+def test_market_countries_stream_slices_gated_by_market_driven_shipping(
+    requests_mock, auth_config, market_driven_shipping, expected_slices
+):
+    mock_shop_features(requests_mock, market_driven_shipping)
+    stream = MarketCountries(auth_config)
+    assert list(stream.stream_slices()) == expected_slices
+
+
+def test_market_driven_shipping_flag_is_fetched_once_and_defaults_to_false(requests_mock, auth_config):
+    requests_mock.post("https://test-shop.myshopify.com/admin/api/2026-07/graphql.json", json={"data": {"shop": {"features": {}}}})
+    stream = MarketCountries(auth_config)
+    assert stream.market_driven_shipping_enabled is False
+    assert stream.market_driven_shipping_enabled is False
+    assert requests_mock.call_count == 1
+    assert requests_mock.last_request.json() == {
+        "query": "query ShopFeatures {\n  shop {\n    features {\n      marketDrivenShipping\n    }\n  }\n}"
+    }

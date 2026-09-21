@@ -16,7 +16,7 @@ from requests.exceptions import RequestException
 from source_shopify.http_request import ShopifyErrorHandler
 from source_shopify.shopify_graphql.bulk.external_sort import DEFAULT_SORT_CHUNK_SIZE, external_stable_sort
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
-from source_shopify.shopify_graphql.bulk.query import DeliveryZoneList, ShopifyBulkQuery
+from source_shopify.shopify_graphql.bulk.query import DeliveryZoneList, ShopFeatures, ShopifyBulkQuery
 from source_shopify.transform import DataTypeEnforcer
 from source_shopify.utils import ApiTypeEnum, ShopifyNonRetryableErrors
 from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
@@ -943,6 +943,23 @@ class FullRefreshShopifyGraphQlBulkStream(ShopifyStream):
 
     query: DeliveryZoneList
     response_field: str
+
+    @cached_property
+    def market_driven_shipping_enabled(self) -> bool:
+        """
+        Shops with `marketDrivenShipping` enabled keep their shipping configuration on `Market.delivery`;
+        for them the legacy `deliveryProfiles` API only returns a frozen snapshot.
+        See https://shopify.dev/docs/apps/build/orders-fulfillment/market-driven-shipping/upgrade-your-app
+        """
+        _, response = self._http_client.send_request(
+            http_method=self.http_method,
+            url=f"{self.url_base}{self.path()}",
+            json={"query": ShopFeatures().get()},
+            request_kwargs={},
+        )
+        data = response.json().get("data") or {}
+        features = (data.get("shop") or {}).get("features") or {}
+        return bool(features.get("marketDrivenShipping", False))
 
     def request_body_json(
         self,

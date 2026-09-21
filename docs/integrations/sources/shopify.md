@@ -97,6 +97,7 @@ Add the following scopes to your custom app to ensure Airbyte can sync all avail
 - `read_locations`
 - `read_locales`
 - `read_marketing_events`
+- `read_markets`
 - `read_merchant_managed_fulfillment_orders`
 - `read_online_store_pages`
 - `read_order_edits`
@@ -139,7 +140,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Collects](https://shopify.dev/api/admin-rest/latest/resources/collect#top)
 - [Collection Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Collection#field-Collection.fields.products) — All products associated with each collection, including smart collection matches
 - [Collections (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Collection)
-- [Countries (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/queries/deliveryProfiles)
+- [Countries (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/queries/deliveryProfiles) — Legacy shipping configuration. Emits no records for shops using [market-driven shipping](#countries-and-market-driven-shipping).
 - [Custom Collections](https://shopify.dev/api/admin-rest/latest/resources/customcollection#top)
 - [Customers](https://shopify.dev/api/admin-rest/latest/resources/customer#top)
 - [Customer Journey Summary (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/customerjourneysummary)
@@ -154,6 +155,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Inventory Items (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryItem)
 - [Inventory Levels (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryLevel)
 - [Locations](https://shopify.dev/api/admin-rest/latest/resources/location)
+- [Market Countries (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/queries/markets) — Shipping configuration of shops using [market-driven shipping](#countries-and-market-driven-shipping). Requires the `read_markets` scope.
 - [Metafields (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Metafield) — Available as separate streams for: Articles, Blogs, Collections, Customers, Draft Orders, Locations, Orders, Pages, Product Images, Products, Product Variants, Shops, and Smart Collections
 - [Order Agreements (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderAgreement)
 - [Orders](https://shopify.dev/api/admin-rest/latest/resources/order#top)
@@ -172,6 +174,17 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
+
+## Countries and market-driven shipping
+
+Shopify is moving merchant shipping configuration from delivery profiles to [Markets](https://shopify.dev/docs/apps/build/orders-fulfillment/market-driven-shipping). Once a shop is on market-driven shipping, the `deliveryProfiles` API that backs the `Countries` stream returns a frozen snapshot that no longer reflects changes made by the merchant.
+
+To avoid syncing stale data, the connector checks `shop.features.marketDrivenShipping` at the start of each sync:
+
+- Shops on legacy shipping: `Countries` syncs as before; `Market Countries` emits no records.
+- Shops on market-driven shipping: `Countries` emits no records; `Market Countries` emits one record per market and country, with the market's shipping options.
+
+`Market Countries` requires the `read_markets` scope. If your custom app does not have it, the stream is not available in the catalog. When a shop migrates to market-driven shipping, enable the `Market Countries` stream on your connection; records previously synced by `Countries` stay in your destination but are no longer refreshed.
 
 ## Capturing deleted records
 
@@ -304,6 +317,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.1.0 | 2026-09-21 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add `market_countries` stream for shops on market-driven shipping (requires `read_markets`); `countries` emits no records for such shops since `deliveryProfiles` returns a frozen snapshot |
 | 4.0.3 | 2026-09-16 | [86371](https://github.com/airbytehq/airbyte/pull/86371) | Fix `ValueError: year 0 is out of range` when the lookback window is applied to an empty stream state |
 | 4.0.2 | 2026-09-15 | [83335](https://github.com/airbytehq/airbyte/pull/83335) | Upgrade Shopify API version to 2026-07 |
 | 4.0.1 | 2026-09-14 | [81363](https://github.com/airbytehq/airbyte/pull/81363) | Classify Shopify authentication errors as config errors instead of system errors during bulk job creation |

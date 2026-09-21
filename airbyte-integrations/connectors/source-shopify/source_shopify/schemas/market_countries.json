@@ -1,0 +1,97 @@
+{
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "Unique identifier of the country within the market (MarketRegionCountry).",
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "description": "Name of the country.",
+      "type": ["null", "string"]
+    },
+    "code": {
+      "description": "ISO country code.",
+      "type": ["null", "string"]
+    },
+    "currency_code": {
+      "description": "Currency used for this country given the market settings.",
+      "type": ["null", "string"]
+    },
+    "market_id": {
+      "description": "Unique identifier of the market the country belongs to.",
+      "type": ["null", "integer"]
+    },
+    "market_name": {
+      "description": "Name of the market.",
+      "type": ["null", "string"]
+    },
+    "market_handle": {
+      "description": "Handle of the market.",
+      "type": ["null", "string"]
+    },
+    "market_status": {
+      "description": "Status of the market (ACTIVE, DRAFT).",
+      "type": ["null", "string"]
+    },
+    "market_type": {
+      "description": "Type of the market (REGION, LOCATION, COMPANY_LOCATION, NONE).",
+      "type": ["null", "string"]
+    },
+    "shipping_enabled": {
+      "description": "Whether shipping is enabled for the market.",
+      "type": ["null", "boolean"]
+    },
+    "shipping_options": {
+      "description": "Shipping options configured for the market and shown to buyers at checkout.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "description": "Unique identifier of the shipping option.",
+            "type": ["null", "integer"]
+          },
+          "type": {
+            "description": "Shipping option type (DeliveryFlatRateOptionDefinition, DeliveryWeightBasedOptionDefinition, DeliveryValueBasedOptionDefinition, DeliveryCarrierCalculatedOptionDefinition).",
+            "type": ["null", "string"]
+          },
+          "name": {
+            "description": "Name of the shipping option shown to buyers. Not available for carrier-calculated options.",
+            "type": ["null", "string"]
+          },
+          "description": {
+            "description": "Description of the shipping option shown to buyers.",
+            "type": ["null", "string"]
+          },
+          "currency": {
+            "description": "Currency used for all money values in the shipping option.",
+            "type": ["null", "string"]
+          },
+          "is_active": {
+            "description": "Whether the shipping option is active and shown to buyers.",
+            "type": ["null", "boolean"]
+          },
+          "free_delivery_minimum_value": {
+            "description": "Cart subtotal required for free shipping, if set.",
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "description": "Decimal money amount.",
+                "type": ["null", "number"]
+              },
+              "currency_code": {
+                "description": "Currency of the money amount.",
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "shop_url": {
+      "description": "URL for the shop related to this country.",
+      "type": ["null", "string"]
+    }
+  }
+}
