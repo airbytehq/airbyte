@@ -234,10 +234,13 @@ class MySqlSourceDebeziumOperations(
 
         // newGtidSet is gtids from server that hasn't been seen by this connector yet. If the set
         // exists, check that they are not purged, or we may lose those data.
-        val newGtidSet = availableGtidSet.subtract(savedGtidSet)
+        val newGtidSet = availableGtidSet.subtractNullSafe(savedGtidSet)
         if (!newGtidSet.isEmpty) {
             val purgedGtidSet = queryPurgedIds()
-            if (!purgedGtidSet.isEmpty && !newGtidSet.subtract(purgedGtidSet).equals(newGtidSet)) {
+            if (
+                !purgedGtidSet.isEmpty &&
+                    !newGtidSet.subtractNullSafe(purgedGtidSet).equals(newGtidSet)
+            ) {
                 return abortCdcSync(
                     "Connector has not seen GTIDs $newGtidSet, but MySQL server has purged $purgedGtidSet"
                 )
@@ -257,6 +260,21 @@ class MySqlSourceDebeziumOperations(
             }
         }
         return ValidDebeziumWarmStartState(debeziumState.offset, debeziumState.schemaHistory)
+    }
+
+    /**
+     * Same as [MySqlGtidSet.subtract], but keeps the GTIDs of the server UUIDs which are absent
+     * from [other] instead of throwing a [NullPointerException]. Debezium does the same itself from
+     * 3.3.2.Final on (DBZ-9682,
+     * https://github.com/debezium/debezium/commit/84206138cdb1983a33623f31517e2caea5d16c35), so
+     * this can be replaced by [MySqlGtidSet.subtract] once the CDK uses such a version.
+     */
+    private fun MySqlGtidSet.subtractNullSafe(other: MySqlGtidSet): MySqlGtidSet {
+        val sharedWithOther: MySqlGtidSet = retainAll { other.forServerWithId(it) != null }
+        val absentFromOther: MySqlGtidSet = retainAll { other.forServerWithId(it) == null }
+        // with() is declared to return GtidSet, but MySqlGtidSet.with always returns either this
+        // or a new MySqlGtidSet (MySqlGtidSet.java:94-103 in Debezium 3.1.2.Final).
+        return sharedWithOther.subtract(other).with(absentFromOther) as MySqlGtidSet
     }
 
     private fun abortCdcSync(reason: String): InvalidDebeziumWarmStartState =
