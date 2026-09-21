@@ -129,8 +129,12 @@ The connector detects your **Zoho CRM Edition** automatically from the Zoho orga
 | Enterprise   | 20                |
 | Ultimate     | 25                |
 
-If the edition cannot be detected, the connector falls back to a concurrency limit of 5 (the Free tier).
-You can optionally set **Max Concurrent Requests** to override edition detection, which is useful when existing tokens lack `ZohoCRM.org.READ` or when you need to throttle the connector while sharing API credits with other integrations.
+If the connector can't detect your edition, it falls back to a concurrency limit of 5 (the Free tier) and logs a warning that explains why. Common causes:
+
+- Your refresh token doesn't include the `ZohoCRM.org.READ` scope. Sources authenticated through Airbyte Cloud with connector version 0.2.0 didn't request this scope, so they fall into this group until you re-authenticate.
+- Zoho reports an edition name that isn't one of the five in the table. The warning includes the name Zoho returned.
+
+To skip detection, set **Max Concurrent Requests** to the number of parallel requests you want. Use this to raise the limit without re-authenticating, to match the limit Zoho lists for your plan in its [API limits](https://www.zoho.com/crm/developer/docs/api/v2/api-limits.html) table, or to throttle the connector when other integrations share the same Zoho API credits. A value higher than your account's concurrency limit can push the connector past what Zoho allows during discovery.
 
 ### Note about using the Zoho Developer Environment
 
@@ -145,6 +149,7 @@ There are two ways to authenticate, depending on where you run Airbyte. In both 
 | Data Center Location | Yes      | The region that hosts your Zoho CRM account: `US`, `AU`, `EU`, `IN`, `CN`, or `JP`                      |
 | Environment          | Yes      | `Production`, `Developer`, or `Sandbox`                                                                 |
 | Start Date           | No       | See [Start date](#start-date)                                                                           |
+| Max Concurrent Requests | No    | Overrides edition detection. See [Performance considerations](#performance-considerations)             |
 
 ### Airbyte Cloud: sign in with Zoho
 
