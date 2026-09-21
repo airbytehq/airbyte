@@ -34,7 +34,7 @@ class ShopifyStream(HttpStream, ABC):
     logger = logging.getLogger("airbyte")
 
     # Latest Stable Release
-    api_version = "2025-10"
+    api_version = "2026-07"
     # Page size
     limit = 250
 
@@ -216,7 +216,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         This helps capture records that may have been missed due to race conditions or late-arriving data.
         """
         lookback_days = self.config.get("lookback_window_in_days", 0)
-        if lookback_days > 0:
+        if lookback_days > 0 and state_value:
             state_datetime = pdm.parse(state_value)
             adjusted_datetime = state_datetime.subtract(days=lookback_days)
             # Ensure we don't go before the configured start_date
@@ -865,7 +865,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     @stream_state_cache.cache_stream_state
     def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         if self.filter_field:
-            state = self._get_state_value(stream_state)
+            state = self._get_state_value(stream_state) or self.config.get("start_date")
             # Apply lookback window to the start of the sync window for GraphQL BULK streams
             if stream_state:
                 state = self._apply_lookback_window(state)

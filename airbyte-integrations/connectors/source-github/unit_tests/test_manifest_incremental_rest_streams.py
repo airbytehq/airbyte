@@ -18,6 +18,7 @@ budget is re-asserted here.
 
 import logging
 from unittest.mock import patch
+from urllib.parse import parse_qs, urlparse
 
 import pytest
 from source_github.source import SourceGithub
@@ -297,6 +298,67 @@ def test_pagination_follows_link_header(stream_name, endpoint, rate_limit_mock_r
     assert all(request.qs["since"] == [_START_DATE.lower()] for request in listings)
 
 
+@pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
+def test_pagination_follows_next_link_with_after_cursor(stream_name, endpoint, rate_limit_mock_response, requests_mock):
+    """Regression test for GitHub's large-dataset HTTP 422: past GitHub's result-set threshold the
+    `rel="next"` link carries an opaque `after` cursor, and re-requesting with `page=N` alone is
+    rejected with "Pagination with the page parameter is not supported for large datasets".
+    The whole next URL must be followed, with `after` decoded exactly once."""
+    config = _config("docker/compose")
+    _mock_repository_resolution(requests_mock, "docker/compose")
+    next_url = (
+        f"https://api.github.com/repositories/1/{endpoint}"
+        "?per_page=10&state=all&sort=updated&direction=asc&since=2022-02-02T10%3A10%3A01Z"
+        "&page={page}&after={cursor}"
+    )
+    after_cursors = {
+        2: "Y3Vyc29yOnYyOpLPAAABgJu9UEjOQuMqZQ==",
+        3: "Y3Vyc29yOnYyOpLPAAABgJ910CDOSSsTvQ==",
+    }
+    requests_mock.get(
+        f"https://api.github.com/repos/docker/compose/{endpoint}",
+        [
+            {
+                "json": [{"id": 1, "updated_at": "2022-03-01T00:00:00Z"}],
+                "headers": _next_link(next_url.format(page=2, cursor="Y3Vyc29yOnYyOpLPAAABgJu9UEjOQuMqZQ%3D%3D")),
+            },
+            # Reached only when the paginator re-requests the stream path with `page=2` instead
+            # of following the next URL — the pre-fix behaviour this test guards against.
+            {"json": [{"id": 99, "updated_at": "2022-03-09T00:00:00Z"}]},
+        ],
+    )
+    requests_mock.get(
+        f"https://api.github.com/repositories/1/{endpoint}",
+        [
+            {
+                "json": [{"id": 2, "updated_at": "2022-03-02T00:00:00Z"}],
+                "headers": _next_link(next_url.format(page=3, cursor="Y3Vyc29yOnYyOpLPAAABgJ910CDOSSsTvQ%3D%3D")),
+            },
+            {"json": [{"id": 3, "updated_at": "2022-03-03T00:00:00Z"}]},
+        ],
+    )
+
+    records, _, _, error = _read(config, stream_name)
+
+    assert error is None
+    assert [record["id"] for record in records] == [1, 2, 3]
+    listings = _listings(requests_mock, endpoint)
+    assert len(listings) == 3
+    for page, request in zip((2, 3), listings[1:]):
+        assert request.path == f"/repositories/1/{endpoint}"
+        assert "%253D" not in request.url
+        query = parse_qs(urlparse(request.url).query)
+        assert query["after"] == [after_cursors[page]]
+        assert query["page"] == [str(page)]
+        # The requester's request_parameters are appended on top of the ones already in the next
+        # URL with identical values; GitHub accepts the duplication.
+        assert set(query["since"]) == {_START_DATE}
+        assert set(query["state"]) == {"all"}
+        assert set(query["sort"]) == {"updated"}
+        assert set(query["direction"]) == {"asc"}
+        assert set(query["per_page"]) == {"10"}
+
+
 def test_issues_sends_the_legacy_base_params(rate_limit_mock_response, requests_mock):
     """`Issues.stream_base_params`. `state=all` is the load-bearing one: without it GitHub
     returns open issues only and every closed issue silently disappears from the stream."""
@@ -319,8 +381,8 @@ def test_issues_sends_the_legacy_base_params(rate_limit_mock_response, requests_
 @pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
 def test_reaction_counts_are_renamed(stream_name, endpoint, rate_limit_mock_response, requests_mock):
     """`GithubStream.transform` renamed `+1`/`-1` to `plus_one`/`minus_one` and popped the
-    originals. `schemas/shared/reactions.json` declares only the renamed keys, so dropping the
-    rename would lose both counts."""
+    originals. The inline `reactions` schema declares only the renamed keys, so dropping
+    the rename would lose both counts."""
     config = _config("docker/compose")
     _mock_repository_resolution(requests_mock, "docker/compose")
     requests_mock.get(
