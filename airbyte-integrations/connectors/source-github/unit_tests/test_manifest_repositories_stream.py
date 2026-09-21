@@ -193,7 +193,8 @@ def test_secondary_rate_limit_without_retry_after_is_retried(sleep_mock, rate_li
 
 @patch("time.sleep")
 def test_exhausted_quota_error_without_retry_after_is_retried(sleep_mock, rate_limit_mock_response, requests_mock):
-    """Legacy retried any non-200 carrying `X-RateLimit-Remaining: 0` (errors_handlers.py), which is
+    """Legacy retried any non-200 carrying `X-RateLimit-Remaining: 0` (the Python error handler,
+    removed in 2.7.0), which is
     also the fallback GitHub's docs prescribe when `Retry-After` is absent. Such a 403 must be waited
     out even when its message matches neither documented rate-limit wording."""
     config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}
@@ -293,7 +294,7 @@ def test_primary_rate_limit_rotates_instead_of_waiting_out_the_reset(sleep_mock,
 @patch("time.sleep")
 def test_rate_limit_backoff_respects_min_wait(sleep_mock, rate_limit_mock_response, requests_mock):
     """A reset timestamp already in the past must still back off for the 60s floor the legacy
-    strategy enforced (backoff_strategies.py:26), not retry immediately against a quota that
+    strategy enforced, not retry immediately against a quota that
     has not refilled."""
     config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}
     requests_mock.get(

@@ -1,20 +1,21 @@
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
-name = "source-stripe"
-version = "0.0.0"
-description = "Unit tests for source-stripe"
+name = "source-uptick-tests"
+version = "0.0.1"
+description = "Unit tests for source-uptick"
 authors = ["Airbyte <contact@airbyte.io>"]
+package-mode = false
+
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
 airbyte-cdk = "^7"
 pytest = "^8"
-freezegun = "^1.4.0"
-pytest-mock = "^3.6.1"
-requests-mock = "^1.12.1"
-mock = "^5.1.0"
+requests-mock = "^1"
+
 [tool.pytest.ini_options]
 filterwarnings = [
-    "ignore:This class is experimental*"
+    "ignore:This class is experimental*",
 ]
