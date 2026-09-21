@@ -5,7 +5,7 @@ Status: Fusion preview implementation. The exact run layout and temporary routin
 The selected layout is:
 
 ```text
-s3://airbyte-fusion-context-store/fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/connections/<connection_uuid>/destinations/<destination_uuid>/syncs/runs/<epoch_seconds>/<run_uuid>/streams/<escaped_original_stream_name>/
+s3://airbyte-fusion-context-store/fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/connections/<connection_uuid>/destinations/<destination_uuid>/syncs/streams/<escaped_original_stream_name>/runs/<epoch_seconds>/<run_uuid>/
   schema.json
   batches/<batch_uuid>.csv.gz
   batches/stream_complete.json
@@ -106,7 +106,7 @@ Resource cleanup needs an explicit owner. The current [DestinationLifecycle](../
 Use original stream identity for archive routing. The buffer's execution table may be temporary and must not become the archive's stream identity.
 
 ```text
-s3://airbyte-fusion-context-store/fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/connections/<connection_uuid>/destinations/<destination_uuid>/syncs/runs/<epoch_seconds>/<run_uuid>/streams/<escaped_original_stream_name>/
+s3://airbyte-fusion-context-store/fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/connections/<connection_uuid>/destinations/<destination_uuid>/syncs/streams/<escaped_original_stream_name>/runs/<epoch_seconds>/<run_uuid>/
   schema.json
   batches/<batch_uuid>.csv.gz
   batches/stream_complete.json
