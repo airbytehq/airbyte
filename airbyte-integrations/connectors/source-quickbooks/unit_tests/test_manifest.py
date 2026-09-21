@@ -109,8 +109,10 @@ def test_terminal_and_retryable_status_codes(response_filters):
         for code in f.get("http_codes", [])
     }
     retryable = {code for f in response_filters if f.get("action") == "RETRY" for code in f.get("http_codes", [])}
+    rate_limited = {code for f in response_filters if f.get("action") == "RATE_LIMITED" for code in f.get("http_codes", [])}
     assert terminal == {401, 403, 404}
-    assert retryable == {429, 500, 502, 503, 504}
+    assert retryable == {500, 502, 503, 504}
+    assert rate_limited == {429}
 
 
 def test_no_catch_all_filter(response_filters):

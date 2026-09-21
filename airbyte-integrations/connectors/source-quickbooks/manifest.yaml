@@ -60,9 +60,14 @@ definitions:
       failure_type: config_error
       error_message: QuickBooks does not recognize the configured Realm ID.
     - type: HttpResponseFilter
-      action: RETRY
+      action: RATE_LIMITED
       http_codes:
       - 429
+      failure_type: transient_error
+      error_message: QuickBooks throttled the request; retrying after a backoff.
+    - type: HttpResponseFilter
+      action: RETRY
+      http_codes:
       - 500
       - 502
       - 503
