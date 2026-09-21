@@ -9,7 +9,6 @@ from unittest.mock import patch
 import pytest
 from source_github.source import SourceGithub
 
-from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
@@ -22,8 +21,7 @@ def _resolve(config):
     """Run repository resolution the way `check_connection`/`streams()` do: config
     normalization first, then enumeration of the manifest's partition routers."""
     source = SourceGithub(config=dict(config))
-    normalized = source._validate_and_transform_config(dict(config))
-    return source._resolve_repositories_and_organizations(normalized)
+    return source._resolve_repositories_and_organizations(source._config)
 
 
 def test_check_connection_still_fails_when_every_explicit_repository_is_forbidden(requests_mock):
@@ -325,7 +323,7 @@ def test_every_max_waiting_time_the_spec_allows_builds(requests_mock, max_waitin
     }
 
     source = SourceGithub(config=dict(config))
-    streams = ConcurrentDeclarativeSource.streams(source, config)
+    streams = source.streams(config)
 
     # Building at all is the assertion: every manifest stream shares the authenticator and the
     # backoff strategies, so a value one of those interpolations cannot render fails here.
@@ -474,7 +472,7 @@ def test_resolution_custom_api_url(requests_mock):
 
 def test_resolution_legacy_repository_field(requests_mock):
     """Legacy space-delimited `repository` field is normalized by
-    `_validate_and_transform_config` before resolution and validated."""
+    `ConfigNormalization` before resolution and validated."""
     _mock_rate_limit(requests_mock)
     for repo in ("org/repo1", "org/repo2"):
         requests_mock.get(

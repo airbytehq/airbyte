@@ -8,10 +8,19 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 Every stream now lives in `source_github/manifest.yaml` (tracking issue:
 airbytehq/airbyte-internal-issues#16492). Step 9 moved the last six — the GraphQL streams — and
-deleted the Python stream layer (`streams.py`, `errors_handlers.py`, `backoff_strategies.py`).
-What remains in Python is `source.py` (config validation, repository resolution, `check`,
-and the `read`/`discover` overrides) and `components.py` (the custom components the manifest
-names by `class_name`).
+deleted the Python stream layer (`streams.py`, `errors_handlers.py`, `backoff_strategies.py`),
+and Step 10 removed the hybrid routing and the `AbstractSource` base: `SourceGithub` is a plain
+`YamlDeclarativeSource`. What remains in `source.py` is `check`/`check_connection`,
+repository/organization resolution (`_resolve_repositories_and_organizations`),
+`get_access_token` and `_get_authenticator`; `components.py` holds the custom components the
+manifest names by `class_name`.
+
+Config normalization and validation live in the manifest `spec.config_normalization_rules`,
+backed by `components.ConfigNormalization` (default/normalize `api_url`, convert the legacy
+`repository`/`branch` strings to collections) and `components.ApiUrlValidationStrategy`. The
+CDK runs the transform at construction on `self._config` and the validations in `streams()`,
+so `read`/`discover` get a config error; `check_connection` calls both on its own config
+argument because the entrypoint hands `check` the raw file config.
 
 - `source_github/manifest.yaml` — every stream, with every schema inline
   (`InlineSchemaLoader`). `source_github/schemas/` is gone; there is no `JsonFileSchemaLoader`
@@ -27,16 +36,6 @@ names by `class_name`).
 
 Things worth knowing before touching either half:
 
-- `test_discover_returns_union_of_python_and_manifest_streams` and
-  `test_read_routes_manifest_streams_to_concurrent_and_python_streams_to_synchronous` both fake a
-  Python stream with `monkeypatch`. Since `streams()` returns `[]`, the union in `discover()` and
-  the concurrent/synchronous split in `read()` have no production caller; those tests pin the
-  routing as a safety net, they are not evidence the path is live.
-- `SourceGithub.streams()` returns an empty list. It is kept because `discover()` calls it and
-  because the repository resolution inside it is what turns an unusable
-  repositories/organizations config into a config error rather than an empty catalog. `read()`
-  still routes a catalog stream the manifest does not define to `AbstractSource.read`, but no
-  such stream exists any more.
 - No Python _technical_ stream is left. `Branches` and `RepositoryStats` went with Step 8: the
   manifest's `repository_partition_router` now carries the repository's `default_branch` as an
   `extra_fields` entry on every repository partition, and `repository_branches_resolver` (an
@@ -244,14 +243,56 @@ The GitHub REST and GraphQL APIs support `since` parameter on many list endpoint
 
 **Analysis status:** Every stream is in the manifest; the per-step notes below cover them all.
 
-### Future incremental stream candidates
+### Stream-by-stream incremental analysis
+
+| Stream | Sync mode | Cursor field | Filtering | Notes |
+| :----- | :-------- | :----------- | :-------- | :---- |
+| `repositories` | incremental | `updated_at` | data feed (newest-first stop) | |
+| `assignees` | full refresh | — | — | |
+| `branches` | full refresh | — | — | |
+| `collaborators` | full refresh | — | — | |
+| `issue_labels` | full refresh | — | — | |
+| `tags` | full refresh | — | — | |
+| `organizations` | full refresh | — | — | |
+| `teams` | full refresh | — | — | |
+| `users` | full refresh | — | — | |
+| `events` | incremental | `created_at` | client-side | |
+| `pull_requests` | incremental | `updated_at` | data feed (newest-first stop) | |
+| `commit_comments` | incremental | `updated_at` | client-side | |
+| `issue_milestones` | incremental | `updated_at` | data feed (newest-first stop) | |
+| `stargazers` | incremental | `starred_at` | client-side | |
+| `projects` | incremental | `updated_at` | client-side | |
+| `issue_events` | incremental | `created_at` | client-side | |
+| `deployments` | incremental | `updated_at` | client-side | |
+| `workflows` | incremental | `updated_at` | client-side | `%z` offset timestamps |
+| `comments` | incremental | `updated_at` | server-side `since` | |
+| `issues` | incremental | `updated_at` | server-side `since` | |
+| `review_comments` | incremental | `updated_at` | server-side `since` | |
+| `pull_request_commits` | full refresh | — | — | substream of `pull_requests` |
+| `project_columns` | incremental | `updated_at` | client-side | substream of `projects` |
+| `project_cards` | incremental | `updated_at` | client-side | substream of `project_columns` |
+| `team_members` | full refresh | — | — | substream of `teams` |
+| `team_memberships` | full refresh | — | — | substream of `team_members` |
+| `issue_timeline_events` | full refresh | — | — | substream of `issues` |
+| `commit_comment_reactions` | incremental | `created_at` | client-side | substream of `commit_comments` |
+| `issue_comment_reactions` | incremental | `created_at` | client-side | substream of `comments` |
+| `commits` | incremental | `created_at` | server-side `since` | slices per branch via `CommitsBranchPartitionRouter` |
+| `contributor_activity` | full refresh | — | — | retries 202 with a 90s constant backoff |
+| `workflow_runs` | incremental | `updated_at` | client-side, 32-day window | `WorkflowRunsPaginationStrategy` |
+| `workflow_jobs` | incremental | `completed_at` | client-side, 32-day window | substream of `workflow_runs` |
+| `releases` | incremental | `created_at` | client-side | GraphQL |
+| `projects_v2` | incremental | `updated_at` | client-side | GraphQL |
+| `pull_request_stats` | incremental | `updated_at` | data feed (newest-first stop) | GraphQL |
+| `reviews` | incremental | `updated_at` | client-side | GraphQL |
+| `issue_reactions` | incremental | `created_at` | client-side | GraphQL |
+| `pull_request_comment_reactions` | incremental | `created_at` | client-side | GraphQL |
 
 - **The five streams migrated in Step 3** (`assignees`, `branches`, `collaborators`, `issue_labels`, `tags`) have no usable cursor: none of their endpoints returns an `updated_at`/`created_at` field or accepts `since`, so they stay full refresh.
 - **The nine streams migrated in Step 5** (`events`, `pull_requests`, `commit_comments`, `issue_milestones`, `stargazers`, `projects`, `issue_events`, `deployments`, `workflows`) have a cursor field but no server-side filter, so they are client-side incremental; `pull_requests` and `issue_milestones` additionally sort newest-first and use the data-feed stop condition. See the semi-incremental bullet above before adding another.
 - **The three streams migrated in Step 6** (`comments`, `issues`, `review_comments`) are the connector's only REST streams that filter server-side: their endpoints accept `since` and the declarative `DatetimeBasedCursor` injects it via `start_time_option`. Any further stream whose endpoint accepts `since` belongs in that group rather than the client-side-filtered one.
 - **The eight streams migrated in Step 7** (`pull_request_commits`, `project_columns`, `project_cards`, `team_members`, `team_memberships`, `issue_timeline_events`, `commit_comment_reactions`, `issue_comment_reactions`) are substreams. `project_columns`, `project_cards` and the two reaction streams are client-side incremental with a cursor per parent record; the other four have no cursor and stay full refresh.
 - **The four streams migrated in Step 8** (`commits`, `contributor_activity`, `workflow_runs`, `workflow_jobs`): `commits` filters server-side with `since` per branch, `workflow_runs` and `workflow_jobs` are client-side incremental with the 32-day `created` window described above, `contributor_activity` has no cursor and stays full refresh.
-- The GraphQL error contract is carried by the *order* of `graphql_error_handler.response_filters`,
+- The GraphQL error contract is carried by the _order_ of `graphql_error_handler.response_filters`,
   not by the filters alone. GitHub reports GraphQL failures in the body — on a 200 and on a
   502/504 alike — so the body predicates and the status matchers compete for the same responses
   and `DefaultErrorHandler` stops at the first one that matches. Three rules hold:

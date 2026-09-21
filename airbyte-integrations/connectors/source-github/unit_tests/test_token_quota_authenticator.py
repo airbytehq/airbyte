@@ -15,7 +15,6 @@ from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth.rate_limited_multiple_token import (
     RateLimitedMultipleTokenAuthenticator,
 )
-from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
@@ -62,8 +61,8 @@ def test_multiple_tokens(rate_limit_mock_response):
 def test_token_precedence_matches_get_access_token(credentials_config, expected_token, rate_limit_mock_response):
     """The manifest's `tokens` expression and `SourceGithub.get_access_token` must pick the same
     token when more than one config key is populated, or the manifest streams would authenticate
-    as one identity while the Python streams authenticate as another — and the shared quota
-    counters would be tracking the wrong token. Only exercised when the keys *coexist*: a config
+    as one identity while the repository-resolution requests authenticate as another — and the
+    shared quota counters would be tracking the wrong token. Only exercised when the keys *coexist*: a config
     with a single key cannot tell a correct precedence chain from a broken one."""
     config = {"repositories": ["org/repo"], **credentials_config}
     source = SourceGithub(catalog=None, config=config, state=None)
@@ -90,7 +89,7 @@ def test_comma_separated_tokens_are_split_and_the_first_one_signs(rate_limit_moc
 
 
 def test_authenticator_instance_is_shared_with_manifest_streams(rate_limit_mock_response, requests_mock):
-    """The Python streams must charge the same quota counters as the declarative streams.
+    """The repository-resolution requests must charge the same quota counters as the declarative streams.
 
     Two authenticators over one set of tokens would each believe they own the full 5000-point
     budget, so the connector would plan for twice the quota GitHub actually grants. The CDK
@@ -100,25 +99,25 @@ def test_authenticator_instance_is_shared_with_manifest_streams(rate_limit_mock_
     config = {"access_token": "token1,token2", "repositories": ["org/repo"], "api_url": "https://api.github.com"}
     source = SourceGithub(catalog=None, config=config, state=None)
 
-    manifest_stream = ConcurrentDeclarativeSource.streams(source, config)[0]
+    manifest_stream = source.streams(config)[0]
     manifest_authenticator = manifest_stream._stream_partition_generator._partition_factory._retriever.requester.authenticator
 
     requests_mock.get("https://api.github.com/repos/org/repo", json={"full_name": "org/repo", "organization": {"login": "org"}})
-    python_streams = source.streams(config)
+    source._resolve_repositories_and_organizations(config)
 
-    assert all(stream._http_client._session.auth is manifest_authenticator for stream in python_streams)
+    assert source._get_authenticator(config) is manifest_authenticator
     assert len(source._constructor._rate_limited_authenticators) == 1
 
 
-def test_quota_is_charged_once_across_repository_resolution_and_python_streams(rate_limit_mock_response, requests_mock):
+def test_quota_is_charged_once_across_repository_resolution_and_probe_stream(rate_limit_mock_response, requests_mock):
     """Requests made while resolving repositories (manifest components) and requests made by a
-    Python stream draw down one counter, not two."""
+    probe stream draw down one counter, not two."""
     config = {"access_token": "token1", "repositories": ["org/repo"], "api_url": "https://api.github.com"}
     source = SourceGithub(catalog=None, config=config, state=None)
     requests_mock.get("https://api.github.com/repos/org/repo", json={"full_name": "org/repo", "organization": {"login": "org"}})
     requests_mock.get("https://api.github.com/repos/org/repo/probe_stream", json=[{"id": 1}])
 
-    source.streams(config)
+    source._resolve_repositories_and_organizations(config)
     authenticator = source._get_authenticator(config)
     after_resolution = _remaining(authenticator, "token1")
 
@@ -255,9 +254,9 @@ def test_exhaustion_waits_for_reset_then_refreshes_counters(sleep_mock, requests
     list(read_full_refresh(stream))
 
     all_sleeps = [c.args[0] for c in sleep_mock.call_args_list]
-    assert (
-        sum(all_sleeps) >= accepted_waiting_time_in_seconds
-    ), f"Expected total sleep >= {accepted_waiting_time_in_seconds}s, got {sum(all_sleeps):.1f}s"
+    assert sum(all_sleeps) >= accepted_waiting_time_in_seconds, (
+        f"Expected total sleep >= {accepted_waiting_time_in_seconds}s, got {sum(all_sleeps):.1f}s"
+    )
     heartbeat_sleeps = [s for s in all_sleeps if s >= 1.0]
     assert len(heartbeat_sleeps) > 1, "Expected multiple heartbeat sleep chunks, not a single blocking sleep"
     # Counters were reseeded to 500 each after the wait; the two remaining pages were charged

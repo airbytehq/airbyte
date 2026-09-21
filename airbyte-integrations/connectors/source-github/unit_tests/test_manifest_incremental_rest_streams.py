@@ -487,8 +487,7 @@ def test_stream_primary_key_and_sync_modes_match_legacy(stream_name, endpoint):
     would make existing destinations deduplicate on a different key."""
     config = _config("docker/compose")
     source = SourceGithub(config=config)
-    # `super()` skips `SourceGithub.streams()`, which returns the Python streams only.
-    manifest_streams = {stream.name: stream for stream in super(SourceGithub, source).streams(config=config)}
+    manifest_streams = {stream.name: stream for stream in source.streams(config=config)}
 
     airbyte_stream = manifest_streams[stream_name].as_airbyte_stream()
     assert airbyte_stream.source_defined_primary_key == [["id"]]
@@ -504,8 +503,6 @@ def test_streams_are_served_by_the_manifest_only(rate_limit_mock_response, reque
     requests_mock.get("https://api.github.com/repos/docker/compose/branches", json=[{"name": "master"}])
 
     migrated = {name for name, _ in MIGRATED_STREAMS}
-    assert {stream.name for stream in SourceGithub(config=dict(config)).streams(config=dict(config))} & migrated == set()
-
     discovered = [stream.name for stream in SourceGithub(config=dict(config)).discover(logging.getLogger("airbyte"), dict(config)).streams]
     for name in migrated:
         assert discovered.count(name) == 1

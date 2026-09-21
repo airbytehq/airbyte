@@ -125,8 +125,7 @@ def test_stream_primary_key_matches_legacy(stream_name, endpoint, primary_key):
     existing destinations would start deduplicating on a different key."""
     config = _config("airbytehq/airbyte")
     source = SourceGithub(config=config)
-    # `super()` skips `SourceGithub.streams()`, which returns the Python streams only.
-    manifest_streams = {stream.name: stream for stream in super(SourceGithub, source).streams(config=config)}
+    manifest_streams = {stream.name: stream for stream in source.streams(config=config)}
 
     airbyte_stream = manifest_streams[stream_name].as_airbyte_stream()
     assert airbyte_stream.source_defined_primary_key == [[field] for field in primary_key]
@@ -142,8 +141,6 @@ def test_streams_are_served_by_the_manifest_only(rate_limit_mock_response, reque
 
     source = SourceGithub(config=dict(config))
     migrated = {name for name, _, _ in MIGRATED_STREAMS}
-
-    assert {stream.name for stream in source.streams(config=dict(config))} & migrated == set()
 
     discovered = [stream.name for stream in source.discover(logging.getLogger("airbyte"), dict(config)).streams]
     for name in migrated:

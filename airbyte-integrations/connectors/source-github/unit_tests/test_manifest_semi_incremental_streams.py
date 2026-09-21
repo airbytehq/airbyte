@@ -249,11 +249,9 @@ def test_streams_are_served_by_the_manifest_only(rate_limit_mock_response, reque
     _mock_repository_resolution(requests_mock, "docker/compose")
     source = SourceGithub(config=dict(config), catalog=None, state=None)
 
-    python_names = {stream.name for stream in source.streams(dict(config))}
     discovered = [stream.name for stream in source.discover(logging.getLogger("airbyte"), dict(config)).streams]
 
     migrated = {stream[0] for stream in MIGRATED_STREAMS}
-    assert not python_names & migrated
     assert migrated <= set(discovered)
     assert len(discovered) == len(set(discovered))
 

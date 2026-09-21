@@ -19625,3 +19625,14 @@ spec:
             path_in_connector_config:
               - credentials
               - client_secret
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    transformations:
+      - type: CustomConfigTransformation
+        class_name: source_github.components.ConfigNormalization
+    validations:
+      - type: DpathValidator
+        field_path: ["api_url"]
+        validation_strategy:
+          type: CustomValidationStrategy
+          class_name: source_github.components.ApiUrlValidationStrategy

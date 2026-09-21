@@ -85,7 +85,7 @@ class EventsTest(TestCase):
             HttpResponse(json.dumps(find_template("events", __file__)), 200),
         )
 
-        source = SourceGithub()
+        source = SourceGithub(config=_CONFIG)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 2
@@ -101,7 +101,7 @@ class EventsTest(TestCase):
             HttpResponse(json.dumps(find_template("events", __file__)), 200),
         )
 
-        source = SourceGithub()
+        source = SourceGithub(config=_CONFIG)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 2
@@ -130,7 +130,7 @@ class EventsTest(TestCase):
                 status_code=200,
             ),
         )
-        source = SourceGithub()
+        source = SourceGithub(config=_CONFIG)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 4

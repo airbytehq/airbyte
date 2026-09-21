@@ -75,7 +75,7 @@ class CommentsTest(TestCase):
             HttpResponse(json.dumps(find_template("comments", __file__)), 200),
         )
 
-        source = SourceGithub()
+        source = SourceGithub(config=_CONFIG)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 1
