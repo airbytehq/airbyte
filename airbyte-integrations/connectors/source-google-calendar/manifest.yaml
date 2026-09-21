@@ -125,6 +125,63 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/calendars"
+    calendar_partitions:
+      type: DeclarativeStream
+      name: calendar_partitions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users/me/calendarList
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+          record_filter:
+            type: RecordFilter
+            condition: "{{ not config.get('calendarid') }}"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken') }}"
+            stop_condition: "{{ response.get('nextPageToken') is not defined }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/calendarlist"
+    configured_calendar_partition:
+      type: DeclarativeStream
+      name: configured_calendar_partition
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: calendars/{{ (config.get('calendarid') or 'primary') | urlencode }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+          record_filter:
+            type: RecordFilter
+            condition: "{{ config.get('calendarid') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/calendars"
     events:
       type: DeclarativeStream
       name: events
@@ -145,7 +202,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: calendars/{{ config['calendarid'] }}/events
+          path: calendars/{{ stream_partition.calendar_id | urlencode }}/events
           http_method: GET
           request_parameters:
             showDeleted: "true"
@@ -170,16 +227,161 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get('nextPageToken') }}"
             stop_condition: "{{ response.get('nextPageToken') is not defined }}"
+        partition_router:
+          $ref: "#/definitions/calendar_partition_router"
+      state_migrations:
+        - type: LegacyToPerPartitionStateMigration
       transformations:
         - type: AddFields
           fields:
             - path:
                 - calendar_id
-              value: "{{ config['calendarid'] }}"
+              value: "{{ stream_partition.calendar_id }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/events"
+    acl:
+      type: DeclarativeStream
+      name: acl
+      primary_key:
+        - calendar_id
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: calendars/{{ stream_partition.calendar_id | urlencode }}/acl
+          http_method: GET
+          request_parameters:
+            maxResults: "250"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    predicate: "{{ 'rateLimitExceeded' in response.get('error', {}) | string or 'userRateLimitExceeded' in response.get('error', {}) | string }}"
+                    action: RATE_LIMITED
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 403
+                    action: IGNORE
+                    error_message: "ACL is not readable for calendars the account does not own."
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 404
+                    action: IGNORE
+                    error_message: "The calendar for the ACL read does not exist or is no longer shared."
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 401
+                    action: FAIL
+                    failure_type: config_error
+                    error_message: "Google rejected the OAuth credentials for the Calendar API."
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 410
+                    action: FAIL
+                    failure_type: system_error
+                    error_message: "The saved sync position for the events stream is older than Google Calendar permits."
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 429
+                    action: RATE_LIMITED
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 500
+                      - 502
+                      - 503
+                      - 504
+                    action: RETRY
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken') }}"
+            stop_condition: "{{ response.get('nextPageToken') is not defined }}"
+        partition_router:
+          $ref: "#/definitions/calendar_partition_router"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - calendar_id
+              value: "{{ stream_partition.calendar_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/acl"
+    freebusy:
+      type: DeclarativeStream
+      name: freebusy
+      primary_key:
+        - calendar_id
+        - start
+        - end
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: freeBusy
+          http_method: POST
+          request_body_json:
+            timeMin: "{{ config.get('start_date') or (now_utc() - duration('P30D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+            timeMax: "{{ (now_utc() + duration('P45D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+            items:
+              - id: "{{ stream_partition.calendar_id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - calendars
+              - "*"
+              - busy
+              - "*"
+        partition_router:
+          $ref: "#/definitions/calendar_partition_router"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - calendar_id
+              value: "{{ stream_partition.calendar_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/freebusy"
+  calendar_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream:
+          $ref: "#/definitions/streams/calendar_partitions"
+        parent_key: id
+        partition_field: calendar_id
+      - stream:
+          $ref: "#/definitions/streams/configured_calendar_partition"
+        parent_key: id
+        partition_field: calendar_id
   base_requester:
     type: HttpRequester
     url_base: https://www.googleapis.com/calendar/v3/
@@ -258,6 +460,8 @@ streams:
   - $ref: "#/definitions/streams/calendarlist"
   - $ref: "#/definitions/streams/calendars"
   - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/acl"
+  - $ref: "#/definitions/streams/freebusy"
 
 spec:
   type: Spec
@@ -266,7 +470,6 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - credentials
-      - calendarid
     properties:
       credentials:
         type: object
@@ -325,13 +528,13 @@ spec:
               refresh_token:
                 type: string
                 title: Refresh Token
-                description: Refresh token obtained from a Google OAuth consent flow with the calendar.readonly scope.
+                description: Refresh token obtained from a Google OAuth consent flow with the calendar.readonly and calendar.acls.readonly scopes.
                 airbyte_secret: true
       calendarid:
         type: string
         order: 1
         title: Calendar Id
-        description: The ID of the calendar to sync events from, found in the calendar's settings in Google Calendar. Use 'primary' for the primary calendar.
+        description: Optional. Sync only this calendar ID. Leave empty to sync every calendar in the account's calendar list.
       start_date:
         type: string
         order: 2
@@ -357,6 +560,7 @@ spec:
       oauth_connector_input_specification:
         scopes:
           - scope: "https://www.googleapis.com/auth/calendar.readonly"
+          - scope: "https://www.googleapis.com/auth/calendar.acls.readonly"
         consent_url: "https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent"
         access_token_url: "https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code"
         extract_output:
@@ -1642,3 +1846,58 @@ schemas:
           - "null"
     required:
       - id
+  acl:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      kind:
+        type:
+          - string
+          - "null"
+      etag:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      scope:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      role:
+        type:
+          - string
+          - "null"
+      calendar_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  freebusy:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      calendar_id:
+        type:
+          - string
+          - "null"
+      start:
+        type:
+          - string
+          - "null"
+      end:
+        type:
+          - string
+          - "null"

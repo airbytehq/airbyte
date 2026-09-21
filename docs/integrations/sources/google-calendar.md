@@ -3,7 +3,7 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 
 ## Configuration
 
-On Airbyte Cloud, authenticate with **Authenticate your Google account** (OAuth). On Airbyte Open Source, enter a manually obtained OAuth refresh token under **Credentials** — it must be granted the `calendar.readonly` scope, together with your OAuth client ID and client secret. Existing configurations with flat `client_id`/`client_secret`/`client_refresh_token_2` fields are migrated automatically.
+On Airbyte Cloud, authenticate with **Authenticate your Google account** (OAuth). On Airbyte Open Source, enter a manually obtained OAuth refresh token under **Credentials** — it must be granted the `calendar.readonly` and `calendar.acls.readonly` scopes, together with your OAuth client ID and client secret. Existing configurations with flat `client_id`/`client_secret`/`client_refresh_token_2` fields are migrated automatically.
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
@@ -32,6 +32,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.3.0 | 2026-09-21 | [86470](https://github.com/airbytehq/airbyte/pull/86470) | Add `acl` and `freebusy` streams, partition `events`/`acl`/`freebusy` over all calendars, make `calendarid` optional |
 | 0.2.0 | 2026-09-21 | [86468](https://github.com/airbytehq/airbyte/pull/86468) | Add error handling, API budget, concurrency, incremental `events`, and enable acceptance tests |
 | 0.1.0 | 2026-09-21 | [86469](https://github.com/airbytehq/airbyte/pull/86469) | Add declarative OAuth (`advanced_auth`) with `credentials` config migration |
 | 0.0.52 | 2026-09-15 | [86070](https://github.com/airbytehq/airbyte/pull/86070) | Update dependencies |
