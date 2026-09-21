@@ -11,6 +11,8 @@ from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.exceptions import FacebookRequestError
 
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
@@ -262,7 +264,7 @@ class TestMyFacebookAdsApi:
         mocker.patch.object(source_facebook_marketing.api, "sleep")
         mocker.patch.object(source_facebook_marketing.api, "logger")
 
-        fb_api._handle_quota_block_error(exc)
+        assert fb_api._handle_quota_block_error(exc) == timedelta(minutes=7)
 
         source_facebook_marketing.api.sleep.assert_called_once_with(timedelta(minutes=7).total_seconds())
         warning_message = source_facebook_marketing.api.logger.warning.call_args[0][0]
@@ -277,7 +279,7 @@ class TestMyFacebookAdsApi:
         exc = self._make_error(17, 2446079, headers=headers)
         mocker.patch.object(source_facebook_marketing.api, "sleep")
 
-        fb_api._handle_quota_block_error(exc)
+        assert fb_api._handle_quota_block_error(exc) == fb_api.MAX_PAUSE_INTERVAL
 
         source_facebook_marketing.api.sleep.assert_called_once_with(fb_api.MAX_PAUSE_INTERVAL.total_seconds())
 
@@ -285,7 +287,7 @@ class TestMyFacebookAdsApi:
         exc = self._make_error(17, 2446079, headers={})
         mocker.patch.object(source_facebook_marketing.api, "sleep")
 
-        fb_api._handle_quota_block_error(exc)
+        assert fb_api._handle_quota_block_error(exc) == fb_api.MAX_PAUSE_INTERVAL
 
         source_facebook_marketing.api.sleep.assert_called_once_with(fb_api.MAX_PAUSE_INTERVAL.total_seconds())
 
@@ -297,8 +299,23 @@ class TestMyFacebookAdsApi:
 
         fb_api._handle_failed_call_rate_limit(exc)
 
-        source_facebook_marketing.api.sleep.assert_called_once()
+        source_facebook_marketing.api.sleep.assert_called_once_with(fb_api.MAX_PAUSE_INTERVAL.total_seconds())
         source_facebook_marketing.api.logger.warning.assert_called_once()
+
+    def test__handle_failed_call_rate_limit_caps_wait_at_max_pause_interval(self, mocker, fb_api):
+        """Unlike the success path, this pause repeats on every @backoff_policy retry, so the
+        API-provided estimate must not be honoured beyond MAX_PAUSE_INTERVAL per attempt."""
+        headers = {
+            "x-business-use-case-usage": json.dumps(
+                {"act_123": [{"call_count": 100, "total_cputime": 100, "total_time": 100, "estimated_time_to_regain_access": 60}]}
+            )
+        }
+        exc = self._make_error(4, None, headers=headers)
+        mocker.patch.object(source_facebook_marketing.api, "sleep")
+
+        fb_api._handle_failed_call_rate_limit(exc)
+
+        source_facebook_marketing.api.sleep.assert_called_once_with(fb_api.MAX_PAUSE_INTERVAL.total_seconds())
 
     def test__handle_failed_call_rate_limit_no_pause_when_usage_low(self, mocker, fb_api):
         headers = {"x-ad-account-usage": json.dumps({"acc_id_util_pct": 10})}
@@ -330,31 +347,68 @@ class TestMyFacebookAdsApi:
         assert response is success_response
         assert mock_super_call.call_count == 2
         source_facebook_marketing.api.sleep.assert_called_once_with(timedelta(minutes=2).total_seconds())
+        # the success resets the wait budget for the next block episode
+        assert fb_api._quota_block_wait_elapsed == timedelta()
 
     def test_call_gives_up_on_quota_block_after_max_wait(self, mocker, fb_api):
         """A quota block that never clears must not loop forever: once cumulative quota-wait time
-        reaches MAX_QUOTA_BLOCK_WAIT, `call()` falls through to the same handling (and re-raise)
-        as any other failed call, instead of retrying indefinitely."""
+        reaches MAX_QUOTA_BLOCK_WAIT, `call()` re-raises without pausing again, so the outer
+        @backoff_policy ladder gives up instead of retrying indefinitely."""
         quota_error = self._make_error(17, 2446079, headers={})
 
         mocker.patch.object(fb_api, "MAX_QUOTA_BLOCK_WAIT", timedelta(minutes=5))
-        mock_handle_quota_block = mocker.patch.object(fb_api, "_handle_quota_block_error", return_value=timedelta(minutes=6))
+        # finite side effects: an unbounded loop dies on StopIteration instead of hanging the suite
+        mock_handle_quota_block = mocker.patch.object(fb_api, "_handle_quota_block_error", side_effect=[timedelta(minutes=6)])
         mock_handle_failed = mocker.patch.object(fb_api, "_handle_failed_call_rate_limit")
-        mock_super_call = mocker.patch.object(FacebookAdsApi, "call", side_effect=quota_error)
+        mock_super_call = mocker.patch.object(FacebookAdsApi, "call", side_effect=[quota_error] * 3)
 
         with pytest.raises(FacebookRequestError):
             source_facebook_marketing.api.MyFacebookAdsApi.call.__wrapped__(fb_api, method="GET", path=("act_123", "ads"), params={})
 
         # 1st failure: 0 min elapsed < 5 min cap -> retries, accrues 6 min.
-        # 2nd failure: 6 min elapsed >= 5 min cap -> gives up instead of retrying again.
+        # 2nd failure: 6 min elapsed >= 5 min cap -> re-raises; the budget is spent, so no extra pause.
         assert mock_super_call.call_count == 2
         assert mock_handle_quota_block.call_count == 1
-        mock_handle_failed.assert_called_once_with(quota_error)
+        mock_handle_failed.assert_not_called()
 
-    def test_call_reraises_non_quota_error_unchanged(self, mocker, fb_api):
-        """A non-quota FacebookRequestError must still propagate out of `call()` so
-        @backoff_policy's original expo ladder (unchanged) is the one that retries it."""
-        headers = {"x-ad-account-usage": json.dumps({"acc_id_util_pct": 10})}
+    def test_call_quota_block_budget_spans_backoff_retries(self, mocker, fb_api):
+        """Through the DECORATED `call`: a quota block that never clears spends at most
+        MAX_QUOTA_BLOCK_WAIT in total, not MAX_QUOTA_BLOCK_WAIT per @backoff_policy try."""
+        quota_error = self._make_error(17, 2446079, headers={}, is_transient=True)
+        mock_super_call = mocker.patch.object(FacebookAdsApi, "call", side_effect=quota_error)
+        mocker.patch("time.sleep")  # @backoff_policy's own expo waits
+        mock_sleep = mocker.patch.object(
+            source_facebook_marketing.api, "sleep", side_effect=[None] * 20 + [AssertionError("quota loop did not stop")]
+        )
+
+        # code 17 is a rate-limit code, so retry_pattern's give_up converts it before re-raising
+        with pytest.raises(AirbyteTracedException):
+            fb_api.call(method="GET", path=("act_123", "ads"), params={})
+
+        # No header -> each pause is MAX_PAUSE_INTERVAL: 1 h / 10 min = 6 pauses over 7 calls spend the
+        # budget in the first try; the 4 remaining backoff tries re-enter with it spent and fail fast.
+        pauses = fb_api.MAX_QUOTA_BLOCK_WAIT // fb_api.MAX_PAUSE_INTERVAL
+        assert mock_sleep.call_args_list == [mocker.call(fb_api.MAX_PAUSE_INTERVAL.total_seconds())] * pauses
+        assert mock_super_call.call_count == pauses + 1 + 4
+
+    def test_call_pauses_then_reraises_other_rate_limit_error(self, mocker, fb_api):
+        """A non-quota rate-limit FacebookRequestError gets the header-based pause and still
+        propagates out of `call()` so @backoff_policy's original expo ladder retries it."""
+        headers = {"x-ad-account-usage": json.dumps({"acc_id_util_pct": 96})}
+        rate_limit_error = self._make_error(4, None, headers=headers)
+
+        mocker.patch.object(FacebookAdsApi, "call", side_effect=rate_limit_error)
+        mock_handle_failed = mocker.patch.object(fb_api, "_handle_failed_call_rate_limit")
+
+        with pytest.raises(FacebookRequestError):
+            source_facebook_marketing.api.MyFacebookAdsApi.call.__wrapped__(fb_api, method="GET", path=("act_123", "ads"), params={})
+
+        mock_handle_failed.assert_called_once_with(rate_limit_error)
+
+    def test_call_reraises_non_rate_limit_error_without_pausing(self, mocker, fb_api):
+        """Errors outside FACEBOOK_RATE_LIMIT_ERROR_CODES (config errors, the HTTP 500 page-size
+        reduction path) must surface immediately even when the usage headers are high."""
+        headers = {"x-ad-account-usage": json.dumps({"acc_id_util_pct": 96})}
         other_error = self._make_error(100, 12345, headers=headers)
 
         mocker.patch.object(FacebookAdsApi, "call", side_effect=other_error)
@@ -363,7 +417,7 @@ class TestMyFacebookAdsApi:
         with pytest.raises(FacebookRequestError):
             source_facebook_marketing.api.MyFacebookAdsApi.call.__wrapped__(fb_api, method="GET", path=("act_123", "ads"), params={})
 
-        mock_handle_failed.assert_called_once_with(other_error)
+        mock_handle_failed.assert_not_called()
 
     def test_find_account(self, api, account_id, requests_mock):
         requests_mock.register_uri(

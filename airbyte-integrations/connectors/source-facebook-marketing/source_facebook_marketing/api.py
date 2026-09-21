@@ -14,7 +14,7 @@ from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
 
-from source_facebook_marketing.streams.common import retry_pattern
+from source_facebook_marketing.streams.common import FACEBOOK_RATE_LIMIT_ERROR_CODES, retry_pattern
 
 
 logger = logging.getLogger("airbyte")
@@ -42,9 +42,9 @@ class MyFacebookAdsApi(FacebookAdsApi):
         17: {2446079},  # "Ad Account Has Too Many API Calls"
     }
 
-    # Observed quota blocks lasted up to an hour. Cap how long a single `call()` invocation will
-    # keep retrying one so a block that never clears still surfaces as a failure -- through the
-    # unchanged backoff/give-up path -- instead of holding the worker forever.
+    # Observed quota blocks lasted up to an hour. Cap the cumulative wait on one block episode so a
+    # block that never clears still surfaces as a failure -- through the unchanged backoff/give-up
+    # path -- instead of holding the worker forever.
     MAX_QUOTA_BLOCK_WAIT = timedelta(hours=1)
 
     # see `_should_restore_page_size` method docstring for more info.
@@ -52,6 +52,9 @@ class MyFacebookAdsApi(FacebookAdsApi):
     request_record_limit_is_reduced: bool = False
     # attribute to save the status of the last successful call
     last_api_call_is_successful: bool = False
+    # cumulative quota-block wait of the current block episode; kept on the instance so it survives
+    # @backoff_policy re-entering `call()`, reset by the next successful call
+    _quota_block_wait_elapsed: timedelta = timedelta()
 
     @dataclass
     class Throttle:
@@ -165,7 +168,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
         wait = min(pause_interval, self.MAX_PAUSE_INTERVAL) if pause_interval else self.MAX_PAUSE_INTERVAL
         logger.warning(
             f"Facebook API quota block (code={exc.api_error_code()}, subcode={exc.api_error_subcode()}); "
-            f"pausing for {wait} before retrying"
+            f"pausing for {wait} before retrying ({self._quota_block_wait_elapsed + wait} of {self.MAX_QUOTA_BLOCK_WAIT} wait budget used)"
         )
         sleep(wait.total_seconds())
         return wait
@@ -173,9 +176,10 @@ class MyFacebookAdsApi(FacebookAdsApi):
     def _handle_failed_call_rate_limit(self, exc: FacebookRequestError):
         """The rate-limit signal lives in the response headers, which for a failed call are only
         reachable through the raised exception -- mirrors `_handle_call_rate_limit` so a failing
-        call gets the same utilization-based pause a successful one would."""
+        call gets the same utilization-based pause a successful one would. Capped at
+        MAX_PAUSE_INTERVAL because @backoff_policy repeats this pause on every retry."""
         usage, pause_interval = self._parse_call_rate_header(exc.http_headers())
-        self._pause_if_usage_high(usage, pause_interval)
+        self._pause_if_usage_high(usage, min(pause_interval, self.MAX_PAUSE_INTERVAL))
 
     def _update_insights_throttle_limit(self, response: FacebookResponse):
         """
@@ -214,20 +218,22 @@ class MyFacebookAdsApi(FacebookAdsApi):
         """Makes an API call, delegate actual work to parent class and handles call rates"""
         if self._should_restore_default_page_size(params):
             params.update(**{"limit": self.default_page_size})
-        quota_block_wait_elapsed = timedelta()
         while True:
             try:
                 response = super().call(method, path, params, headers, files, url_override, api_version)
             except FacebookRequestError as exc:
-                if self._is_quota_block_error(exc) and quota_block_wait_elapsed < self.MAX_QUOTA_BLOCK_WAIT:
+                if self._is_quota_block_error(exc):
                     # Handled and retried here, without raising, so the wait isn't counted against
-                    # @backoff_policy's max_tries -- a quota block can outlast that budget. Bounded
-                    # by MAX_QUOTA_BLOCK_WAIT so a block that never clears still falls through to
-                    # the same handling (and eventual give-up) as any other failed call, below.
-                    quota_block_wait_elapsed += self._handle_quota_block_error(exc)
-                    continue
-                self._handle_failed_call_rate_limit(exc)
+                    # @backoff_policy's max_tries -- a quota block can outlast that budget. Once the
+                    # MAX_QUOTA_BLOCK_WAIT budget is spent, re-raise without pausing again so the
+                    # ladder gives up in seconds instead of re-entering with a fresh budget.
+                    if self._quota_block_wait_elapsed < self.MAX_QUOTA_BLOCK_WAIT:
+                        self._quota_block_wait_elapsed += self._handle_quota_block_error(exc)
+                        continue
+                elif exc.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES:
+                    self._handle_failed_call_rate_limit(exc)
                 raise
+            self._quota_block_wait_elapsed = timedelta()
             self._update_insights_throttle_limit(response)
             self._handle_call_rate_limit(response, params)
             return response
