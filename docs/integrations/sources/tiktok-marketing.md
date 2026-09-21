@@ -161,6 +161,8 @@ TikTok returns most errors with an HTTP 200 status and an error code in the resp
 
 If a resource is inaccessible or no longer exists (error 40002), the connector skips that resource and continues syncing.
 
+If TikTok returns a permission error (error 40001), the connector fails the sync with a configuration error rather than retrying. This means the access token can't call an endpoint that a selected stream needs. Check that the developer application's permissions include the data you're syncing, re-authorize the connector, and run the sync again. The `PixelEventsStatistics` stream is the exception: if an advertiser has no permission to read a pixel, the connector skips that advertiser and continues.
+
 For daily report streams, if the TikTok API returns error 40067 ("query too large"), the connector surfaces a configuration error directing you to reduce the **Daily Reports Date Step** setting. This typically affects accounts with many ads or ad groups. Reduce the value to 7 or 1 and retry the sync.
 
 ## Upgrading
@@ -178,7 +180,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.1.17 | 2026-09-17 | [79183](https://github.com/airbytehq/airbyte/pull/79183) | Classify TikTok API error code 40001 (PERMISSION_ERROR) as config_error instead of system_error |
+| 5.1.17 | 2026-09-21 | [79183](https://github.com/airbytehq/airbyte/pull/79183) | Classify TikTok API error code 40001 (PERMISSION_ERROR) as config_error instead of system_error |
 | 5.1.16 | 2026-09-15 | [86277](https://github.com/airbytehq/airbyte/pull/86277) | Update dependencies |
 | 5.1.15 | 2026-09-11 | [85796](https://github.com/airbytehq/airbyte/pull/85796) | Stop enabling production-only streams for legacy configs with an empty `secret` |
 | 5.1.14 | 2026-09-09 | [85187](https://github.com/airbytehq/airbyte/pull/85187) | Retry transient TikTok API error 51002 |
