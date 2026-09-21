@@ -67,8 +67,8 @@ To authenticate with OAuth you need a **Client ID**, **Client Secret**, and **Re
 3. On the Set up the source page, select **Google Calendar** from the Source type dropdown.
 4. Enter a name for the connector.
 5. Under **Authentication**, choose one of:
-   - **Authenticate via Google (OAuth):** enter the **Client ID**, **Client Secret**, and **Refresh Token** you obtained in Step 1.
-   - **Refresh token (manual):** enter a manually obtained refresh token granted the `calendar.readonly` and `calendar.acls.readonly` scopes, plus your **Client ID** and **Client Secret**. Without `calendar.acls.readonly`, the `acl` stream is skipped (its 403 responses are ignored).
+   - **Authenticate via Google (OAuth):** sign in with Google using Airbyte's OAuth app (Cloud); enter the **Client ID**, **Client Secret**, and **Refresh Token** you obtained in Step 1.
+   - **Authenticate with custom app (client ID / secret):** enter a refresh token issued by *your own* Google Cloud OAuth app with the `calendar.readonly` and `calendar.acls.readonly` scopes, plus that app's **Client ID** and **Client Secret**. Without `calendar.acls.readonly`, the `acl` stream is skipped (its 403 responses are ignored). Existing configurations with flat `client_id`/`client_secret`/`client_refresh_token_2` fields are migrated automatically to this option.
 6. (Optional) For **Calendar Id**, enter a specific calendar ID to sync only that calendar, or `primary` for the account's primary calendar. The calendar does not need to appear in the account's calendar list; it is read directly. Leave empty to sync all calendars.
 7. (Optional) For **Start Date**, enter the earliest `updated` timestamp for incremental `events` syncs (`YYYY-MM-DDTHH:mm:ssZ` or `YYYY-MM-DDTHH:mm:ss.SSSZ`). When unset, the first sync fetches all events; Google rejects values older than roughly 30 days.
 8. (Optional) For **Number of concurrent workers**, set the number of concurrent request workers (1–10, default 3).
@@ -140,7 +140,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 |------------------|-------------------|--------------|----------------|
 | 0.3.0 | 2026-09-21 | [86470](https://github.com/airbytehq/airbyte/pull/86470) | Add `acl` and `freebusy` streams, partition `events`/`acl`/`freebusy` over all calendars, make `calendarid` optional |
 | 0.2.0 | 2026-09-21 | [86468](https://github.com/airbytehq/airbyte/pull/86468) | Add error handling, API budget, concurrency, incremental `events`, and enable acceptance tests |
-| 0.1.0 | 2026-09-21 | [86469](https://github.com/airbytehq/airbyte/pull/86469) | Add declarative OAuth (`advanced_auth`) with `credentials` config migration |
+| 0.1.0 | 2026-09-21 | [86469](https://github.com/airbytehq/airbyte/pull/86469) | Add declarative OAuth (`advanced_auth`); legacy flat credentials migrate to the custom-app `credentials` option |
 | 0.0.52 | 2026-09-15 | [86070](https://github.com/airbytehq/airbyte/pull/86070) | Update dependencies |
 | 0.0.51 | 2026-09-08 | [85541](https://github.com/airbytehq/airbyte/pull/85541) | Update dependencies |
 | 0.0.50 | 2026-08-18 | [84636](https://github.com/airbytehq/airbyte/pull/84636) | Update dependencies |
