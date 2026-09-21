@@ -2,6 +2,13 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## September 17, 2026
+
+Platform
+
+- On the Pro and Enterprise Flex plans, when Airbyte staff take an action in your organization as part of a support case, your audit logs now attribute that action to "Airbyte Support" instead of an individual employee's email address, making it clearer which changes came from Airbyte rather than from your own team.
+- Viewing your SCIM configuration no longer creates an audit log entry. Your audit logs now show only actual changes to SCIM settings, not every time an admin opens the page.
+
 ## September 15, 2026
 
 **Important**: Updated pricing model
