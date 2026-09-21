@@ -1,5 +1,17 @@
 # Airbyte Agents release notes
 
+## September 18, 2026
+
+Connectors
+
+- A new Reddit Ads connector is now available. Your agents can read your Reddit advertising structure, including businesses, ad accounts, campaigns, ad groups, and ads, and can search campaigns and ads by their attributes, such as status, objective, or spend cap. Connect it with your Reddit account, and it's also available in the SDK. Performance metrics like impressions, clicks, and spend aren't included.
+
+## September 16, 2026
+
+SDK
+
+- The `api_search` action for connector-native search, such as Salesforce SOSL or Jira JQL queries, is now called `search`. Your existing code that uses `api_search` keeps working for now but logs a deprecation warning, so update your agents and tools to use `search`.
+
 ## September 9, 2026
 
 Other

@@ -20,14 +20,20 @@ acceptance_tests:
       # Restore expect_records from a regenerated live Harvest v3 read before enabling fixture validation.
       - config_path: "secrets/config_oauth.json"
         empty_streams:
+          # These four hold no records on the test account and cannot be seeded through
+          # Harvest v3: eeoc and demographics_answers only exist once a candidate submits
+          # the questionnaire themselves (POST /v3/eeoc returns 404 - there is no write
+          # endpoint), and job_posts and offers need a published post and a live offer.
+          # eeoc has a mock read test in unit_tests/test_pagination.py; the other three
+          # are covered only by the schema in discover.
           - name: eeoc
-            bypass_reason: "No data"
-          - name: prospect_pools
-            bypass_reason: "No data"
-          - name: tags
-            bypass_reason: "No data"
-          - name: user_permissions
-            bypass_reason: "No Data"
+            bypass_reason: "Test account has no submitted EEOC responses"
+          - name: demographics_answers
+            bypass_reason: "Test account has no submitted demographic answers"
+          - name: job_posts
+            bypass_reason: "Test account has no published job posts"
+          - name: offers
+            bypass_reason: "Test account has no offers"
   full_refresh:
     tests:
       - config_path: "secrets/config_oauth.json"
