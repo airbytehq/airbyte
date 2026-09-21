@@ -4,23 +4,33 @@ Extract data from Uptick, a field service management platform designed for the f
 
 ## Prerequisites
 
-The connector authenticates with the Uptick API using OAuth 2.0 with the password grant, so you need both an OAuth application and an Uptick user account:
+The connector supports OAuth 2.0 authorization-code authentication (recommended) and the legacy username-and-password flow.
 
 - Your Uptick instance URL, for example `https://yourcompany.onuptick.com`.
-- An OAuth Client ID and Client Secret generated from your Uptick instance.
-- The email address and password of an Uptick user account. The connector signs in as this user, so the account must have permission to view every resource you want to sync.
 
-To generate the OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance, select **Create Application**, provide a name, and save. Uptick generates the Client ID and Client Secret for you. For step-by-step instructions, see [Uptick API - Getting started](https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started).
+### OAuth 2.0 (recommended)
+
+On Airbyte Cloud, create an OAuth application under **Control Panel > Uptick API**, then click **Authenticate your Uptick account** when configuring the connector. On Airbyte OSS, provide the OAuth Client ID, OAuth Client Secret, and Refresh Token from the OAuth flow.
+
+For step-by-step instructions, see [Uptick API - Getting started](https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started).
+
+### Username and Password (legacy)
+
+Create an OAuth application under **Control Panel > Uptick API** and provide its Client ID and Client Secret, along with the email address and password of an Uptick user account. The connector signs in as this user, so the account must have permission to view every resource you want to sync.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `base_url` | `string` | Your Uptick instance URL, for example `https://yourcompany.onuptick.com`. Do not include a trailing slash. |  |
-| `client_id` | `string` | OAuth Client ID generated from Control Panel > Uptick API. |  |
-| `client_secret` | `string` | OAuth Client Secret generated from Control Panel > Uptick API. |  |
-| `username` | `string` | Email address for an Uptick user account with API access. |  |
-| `password` | `string` | Password for the Uptick user account. |  |
+| `credentials.auth_type` | `string` | Authentication method: `oauth2.0` or `password`. |  |
+| `credentials.client_id` | `string` | OAuth Client ID generated from Control Panel > Uptick API. Required for both authentication methods. |  |
+| `credentials.client_secret` | `string` | OAuth Client Secret generated from Control Panel > Uptick API. Required for both authentication methods. |  |
+| `credentials.refresh_token` | `string` | Refresh Token obtained from the OAuth flow. Required when `credentials.auth_type` is `oauth2.0` on Airbyte OSS. |  |
+| `credentials.access_token` | `string` | Access Token obtained from the OAuth flow. Refreshed automatically. |  |
+| `credentials.token_expiry_date` | `string` | Date-time when the OAuth access token should be refreshed. |  |
+| `credentials.username` | `string` | Email address for an Uptick user account with API access. Required when `credentials.auth_type` is `password`. |  |
+| `credentials.password` | `string` | Password for the Uptick user account. Required when `credentials.auth_type` is `password`. |  |
 
 ## Streams
 
@@ -199,6 +209,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 1.2.0 | 2026-09-18 | [86464](https://github.com/airbytehq/airbyte/pull/86464) | Add OAuth 2.0 authorization-code authentication; move password-grant fields under `credentials` |
 | 1.1.3 | 2026-09-15 | [86280](https://github.com/airbytehq/airbyte/pull/86280) | Update dependencies |
 | 1.1.2 | 2026-09-08 | [85702](https://github.com/airbytehq/airbyte/pull/85702) | Update dependencies |
 | 1.1.1 | 2026-08-18 | [84790](https://github.com/airbytehq/airbyte/pull/84790) | Update dependencies |
