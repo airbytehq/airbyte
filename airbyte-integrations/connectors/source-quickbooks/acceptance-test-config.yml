@@ -23,6 +23,8 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         empty_streams:
+          - name: attachables
+            bypass_reason: "The sandbox company has no Attachable records"
           - name: bill_payments
             bypass_reason: "The sandbox company has no BillPayment records"
           - name: bills
@@ -31,6 +33,8 @@ acceptance_tests:
             bypass_reason: "The sandbox company has no Budget records"
           - name: classes
             bypass_reason: "The sandbox company has no Class records"
+          - name: credit_card_payments
+            bypass_reason: "The sandbox company has no CreditCardPaymentTxn records"
           - name: credit_memos
             bypass_reason: "The sandbox company has no CreditMemo records"
           - name: departments

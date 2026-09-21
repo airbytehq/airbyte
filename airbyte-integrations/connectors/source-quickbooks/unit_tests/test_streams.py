@@ -3,7 +3,7 @@
 """
 HttpMocker tests for source-quickbooks manifest.yaml.
 
-Each of the 28 streams is read against a mocked Intuit Accounting API: the query
+Each of the 34 streams is read against a mocked Intuit Accounting API: the query
 endpoint returns a single entity record, and the OAuth token endpoint returns a
 rotated token in case the authenticator refreshes. One extra test feeds the
 legacy pre-4.0.0 nested config shape to prove the manifest's config migration
@@ -44,24 +44,30 @@ QUERY_URL = f"https://sandbox-quickbooks.api.intuit.com/v3/company/{REALM_ID}/qu
 
 STREAM_ENTITY = {
     "accounts": "Account",
+    "attachables": "Attachable",
     "bill_payments": "BillPayment",
     "bills": "Bill",
     "budgets": "Budget",
     "classes": "Class",
+    "company_info": "CompanyInfo",
+    "credit_card_payments": "CreditCardPaymentTxn",
     "credit_memos": "CreditMemo",
     "customers": "Customer",
     "departments": "Department",
     "deposits": "Deposit",
     "employees": "Employee",
     "estimates": "Estimate",
+    "exchange_rates": "ExchangeRate",
     "invoices": "Invoice",
     "items": "Item",
     "journal_entries": "JournalEntry",
     "payment_methods": "PaymentMethod",
     "payments": "Payment",
+    "preferences": "Preferences",
     "purchase_orders": "PurchaseOrder",
     "purchases": "Purchase",
     "refund_receipts": "RefundReceipt",
+    "reimburse_charges": "ReimburseCharge",
     "sales_receipts": "SalesReceipt",
     "tax_agencies": "TaxAgency",
     "tax_codes": "TaxCode",

@@ -56,7 +56,7 @@ def _fault_predicates(response_filters):
 
 def test_every_stream_shares_the_error_handler(manifest):
     stream_names = {stream["name"] for stream in manifest["streams"]}
-    assert len(stream_names) == 28
+    assert len(stream_names) == 34
     for stream in manifest["streams"]:
         error_handler = stream["retriever"]["requester"]["error_handler"]
         assert error_handler["$ref"] == "#/definitions/error_handler", stream["name"]
@@ -123,7 +123,7 @@ def test_no_catch_all_filter(response_filters):
 
 def test_every_authenticator_classifies_refresh_token_rejection(manifest):
     authenticators = list(_iter_authenticators(manifest))
-    assert len(authenticators) == 57
+    assert len(authenticators) == 69
     for authenticator in authenticators:
         assert authenticator["token_refresh_endpoint"] == TOKEN_REFRESH_ENDPOINT
         assert authenticator["refresh_token_error_status_codes"] == [400, 401]
@@ -187,3 +187,22 @@ def test_flat_config_is_untouched(manifest):
         "sandbox": True,
     }
     assert _migrated(manifest, flat) == flat
+
+
+def test_advanced_auth_is_legacy_oauth_flow(manifest):
+    """Cloud OAuth runs through the platform's built-in QuickbooksOAuthFlow, not declarative OAuth."""
+    spec = manifest["spec"]
+    advanced_auth = spec.get("advanced_auth")
+    assert advanced_auth is not None
+    assert advanced_auth["auth_flow_type"] == "oauth2.0"
+    output_props = advanced_auth["oauth_config_specification"]["complete_oauth_output_specification"]["properties"]
+    paths = {k: v["path_in_connector_config"] for k, v in output_props.items()}
+    assert paths == {
+        "access_token": ["access_token"],
+        "refresh_token": ["refresh_token"],
+        "token_expiry_date": ["token_expiry_date"],
+        "realm_id": ["realm_id"],
+    }
+    # realmId arrives on the consent redirect, which oauth_connector_input_specification
+    # cannot capture — it must never be declared here.
+    assert "oauth_connector_input_specification" not in spec

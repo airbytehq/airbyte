@@ -14,11 +14,11 @@ The connector implements only the token half of that flow. `client_id`, `client_
 
 `access_token` and `token_expiry_date` are therefore **not** required inputs — the connector derives and maintains them. They remain in the spec because `refresh_token_updater` writes them there.
 
-There is no `oauth_connector_input_specification`, so Cloud shows no "Authenticate" button and users paste tokens from Intuit's OAuth 2.0 playground. Adding declarative OAuth requires capturing `realmId` from the consent redirect (not from the token response), which is why it is tracked separately rather than bundled with the error-handling work.
+Cloud shows an "Authenticate" button driven by `spec.advanced_auth` and the platform's built-in `QuickbooksOAuthFlow`, which captures `realmId` from the consent redirect. Declarative OAuth (`oauth_connector_input_specification`) is deliberately not used: it can only extract fields from the token response, `realmId` arrives on the redirect query params instead, and the platform prefers the declarative flow whenever the spec declares one — adding it would silently drop `realm_id` from generated configs. That constraint, not inertia, is the justification for keeping the legacy `advanced_auth` shape.
 
 ## Incremental Stream Considerations
 
-All 28 streams are incremental with the same shape. QuickBooks exposes no cursor field at the top level of an entity: the modification timestamp lives at `MetaData.LastUpdatedTime`, so each stream hoists it to a synthesized top-level `airbyte_cursor` with `AddFields`, and the `DatetimeBasedCursor` uses that field.
+All 34 streams are incremental with the same shape. QuickBooks exposes no cursor field at the top level of an entity: the modification timestamp lives at `MetaData.LastUpdatedTime`, so each stream hoists it to a synthesized top-level `airbyte_cursor` with `AddFields`, and the `DatetimeBasedCursor` uses that field.
 
 Server-side filtering is done in the SQL-like query language rather than with request parameters:
 
@@ -32,7 +32,7 @@ STARTPOSITION <n> MAXRESULTS <max_results>
 
 The casing in that query (`Metadata`) reproduces the manifest verbatim and differs from the record field the cursor and schema use (`MetaData`). Both spellings predate `4.0.0` and incremental syncs work in production, so Intuit evidently resolves the query identifier case-insensitively — inference from behavior, not from Intuit's documentation. Do not normalize the query occurrences without a live API to verify against.
 
-`step: P30D` windows the query, and `cursor_granularity: PT0S` with a `>` lower bound makes slices non-overlapping. `Active IN (true, false)` is required because QuickBooks otherwise returns only active records.
+`step: P30D` windows the query, and `cursor_granularity: PT0S` with a `>` lower bound makes slices non-overlapping. `Active IN (true, false)` is required because QuickBooks otherwise returns only active records. Six streams are on entities that expose no `Active` field — `company_info`, `preferences`, `exchange_rates`, `reimburse_charges`, `attachables`, `credit_card_payments` — and Intuit rejects the clause with an `Invalid query` fault on those entities, so their queries omit it (verified against the sandbox query endpoint). Two entity quirks found while probing: `CompanyInfo` filters `>` against a stale internal timestamp (older than the record's displayed `MetaData.LastUpdatedTime`) and ignores `<=`, so early slices can re-emit the same row while late windows legitimately see none; and `ExchangeRate` expands to per-currency-pair-per-day rows, so the stream is large (~192k records for a 2023 sandbox start date).
 
 Two things to know before changing this:
 
@@ -41,13 +41,15 @@ Two things to know before changing this:
 
 ## Deletions
 
+The connector's canonical deletion pattern is the deletion-flag field on the primary stream — `Active: false` — not a dedicated `deleted_*` stream. The `Active IN (true, false)` clause in the stream query is what makes that flag arrive: QuickBooks filters inactive records out by default, so the flag would never reach the destination without the clause. The 6 streams on entities with no `Active` field (`company_info`, `preferences`, `exchange_rates`, `reimburse_charges`, `attachables`, `credit_card_payments`) omit the clause and have no soft-delete signal at all.
+
 QuickBooks soft-deletes by flipping `Active` to false, which the query captures — an updated `MetaData.LastUpdatedTime` brings the record through on the next incremental sync with `Active: false`.
 
 Hard deletes are **not** captured. Intuit exposes them only through the [change data capture](https://developer.intuit.com/app/developer/qbo/docs/develop/explore-the-quickbooks-online-api/change-data-capture) endpoint, which this connector does not read, so a hard-deleted record simply stops being returned and remains in the destination. There is no deletion flag for it.
 
 ## Error handling
 
-All 28 streams share `definitions.error_handler`. Intuit returns errors as a `Fault` object carrying its own error code alongside the HTTP status, and the two disagree often enough that the filters check both. Filter order matters — the CDK returns the first match — so the fault-code filters must stay ahead of the status-code filters.
+All 34 streams share `definitions.error_handler`. Intuit returns errors as a `Fault` object carrying its own error code alongside the HTTP status, and the two disagree often enough that the filters check both. Filter order matters — the CDK returns the first match — so the fault-code filters must stay ahead of the status-code filters.
 
 The fault code is matched with a `predicate` rather than `error_message_contains`, because the latter is compared against `JsonErrorMessageParser.parse_response_error_message()`, which only walks lowercase keys (`message`, `error`, `detail`, …). Intuit's payload is `{"Fault": {"Error": [{"Message": …, "code": "3200"}]}}`, so the parser returns `None` and no substring can ever match. The predicate reads `Fault.Error[0].code`, tolerates either capitalization and the zero-padded form (`003200`), and is guarded with `response is mapping` so it cannot match a successful response — `HttpResponseFilter` evaluates predicates against every response, including HTTP 200s.
 
@@ -62,7 +64,7 @@ The fault code is matched with a `predicate` rather than `error_message_contains
 | 500, 502, 503, 504 | RETRY | `transient_error` | Intuit server errors; `max_retries: 5` with `ExponentialBackoffStrategy` at factor 5. |
 | Any other error response | FAIL (terminal) | `system_error` | CDK `DefaultErrorHandler` fallback. An explicit catch-all filter is deliberately omitted: `HttpResponseFilter` predicates are evaluated against every response, including HTTP 200s, so a literal catch-all would match successful responses. |
 
-The stream error handler only sees responses from the accounting API. A refresh token Intuit rejects at `https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer` never reaches it, so every `OAuthAuthenticator` sets `refresh_token_error_status_codes: [400, 401]`, `refresh_token_error_key: error` and `refresh_token_error_values: [invalid_grant, invalid_client]`. That makes the CDK raise a `config_error` telling the user to re-authenticate instead of a generic authentication failure. Intuit answers a rotated, expired or already-used refresh token with `400 {"error": "invalid_grant"}`, and rejected app credentials with `invalid_client`. The authenticator is duplicated per stream in this manifest, so all 57 occurrences (28 stream definitions, 28 top-level streams, and `definitions.base_requester`) carry the same three fields.
+The stream error handler only sees responses from the accounting API. A refresh token Intuit rejects at `https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer` never reaches it, so every `OAuthAuthenticator` sets `refresh_token_error_status_codes: [400, 401]`, `refresh_token_error_key: error` and `refresh_token_error_values: [invalid_grant, invalid_client]`. That makes the CDK raise a `config_error` telling the user to re-authenticate instead of a generic authentication failure. Intuit answers a rotated, expired or already-used refresh token with `400 {"error": "invalid_grant"}`, and rejected app credentials with `invalid_client`. The authenticator is duplicated per stream in this manifest, so all 69 occurrences (34 stream definitions, 34 top-level streams, and `definitions.base_requester`) carry the same three fields.
 
 401 is classified as terminal rather than `REFRESH_TOKEN_THEN_RETRY` on purpose. `OAuthAuthenticator` already refreshes proactively from `token_expiry_date`, so a 401 reaching the error handler means the refresh itself is not fixing the problem — retrying it burns the rotation window instead of surfacing an actionable message.
 
@@ -70,7 +72,7 @@ The `error_message` strings are deterministic and interpolate nothing: they stat
 
 ## Rate limits and concurrency
 
-Intuit documents [throttling](https://developer.intuit.com/app/developer/qbo/docs/develop/troubleshooting/error-codes#rate-limits) at 500 requests per minute per realm and 40 concurrent requests per app, answered with HTTP 429. The manifest declares both: `api_budget` is a `MovingWindowCallRatePolicy` of 500 calls per sliding `PT1M` across all endpoints, and `concurrency_level` runs 4 streams at a time (`max_concurrency: 40`, matching Intuit's concurrent-request cap). A fixed-window policy must not be used here: the CDK seeds its window reset 10 days out and relies on `ratelimit-*` response headers to correct it, which Intuit does not send, so after 500 calls every worker would sleep for the rest of the window. Without an explicit `concurrency_level` the CDK's `ConcurrentDeclarativeSource` would still run 2 streams concurrently, so the declaration is what makes the limit deliberate rather than incidental. `max_results` (default 200, max 1,000 per Intuit's query limits) is the lever that reduces page count on companies with long histories (28 streams × one request per 30-day window per page).
+Intuit documents [throttling](https://developer.intuit.com/app/developer/qbo/docs/develop/troubleshooting/error-codes#rate-limits) at 500 requests per minute per realm and 40 concurrent requests per app, answered with HTTP 429. The manifest declares both: `api_budget` is a `MovingWindowCallRatePolicy` of 500 calls per sliding `PT1M` across all endpoints, and `concurrency_level` runs 4 streams at a time (`max_concurrency: 40`, matching Intuit's concurrent-request cap). A fixed-window policy must not be used here: the CDK seeds its window reset 10 days out and relies on `ratelimit-*` response headers to correct it, which Intuit does not send, so after 500 calls every worker would sleep for the rest of the window. Without an explicit `concurrency_level` the CDK's `ConcurrentDeclarativeSource` would still run 2 streams concurrently, so the declaration is what makes the limit deliberate rather than incidental. `max_results` (default 200, max 1,000 per Intuit's query limits) is the lever that reduces page count on companies with long histories (34 streams × one request per 30-day window per page).
 
 ## Config shape history
 
@@ -82,14 +84,17 @@ Fivetran's [QuickBooks connector](https://fivetran.com/docs/connectors/applicati
 
 | Fivetran table | Verdict | Reason |
 | --- | --- | --- |
-| `account`, `bill`, `bill_payment`, `budget`, `class`, `credit_memo`, `customer`, `department`, `deposit`, `employee`, `estimate`, `invoice`, `item`, `journal_entry`, `payment`, `payment_method`, `purchase`, `purchase_order`, `refund_receipt`, `sales_receipt`, `tax_agency`, `tax_code`, `tax_rate`, `term`, `time_activity`, `transfer`, `vendor`, `vendor_credit` | covered | The 28 streams of this connector map one-to-one onto these entities. |
+| `account`, `bill`, `bill_payment`, `budget`, `class`, `credit_memo`, `customer`, `department`, `deposit`, `employee`, `estimate`, `invoice`, `item`, `journal_entry`, `payment`, `payment_method`, `purchase`, `purchase_order`, `refund_receipt`, `sales_receipt`, `tax_agency`, `tax_code`, `tax_rate`, `term`, `time_activity`, `transfer`, `vendor`, `vendor_credit` | covered | The 28 original streams of this connector map one-to-one onto these entities. |
 | Line-item tables (`invoice_line`, `bill_line`, `journal_entry_line`, `estimate_line`, `credit_memo_line`, `deposit_line`, `purchase_line`, `purchase_order_line`, `refund_receipt_line`, `sales_receipt_line`, `vendor_credit_line`, `bill_payment_line`) | covered-as-field | Fivetran normalizes the entity's `Line[]` array into a child table; this connector ships the array as a nested field on the parent record. |
 | Linked-transaction and tax-detail tables (`*_linked_txn`, `*_tax_line`, `*_custom_field`) | covered-as-field | Same normalization difference: `LinkedTxn[]`, `TxnTaxDetail`, `CustomField[]` are nested on the parent. |
-| `company_info` | **missing** | The `CompanyInfo` entity is not synced. Small, single-row, and cheap to add; the most defensible parity gap to close first. |
-| `preferences` | **missing** | The `Preferences` entity is not synced. |
-| `attachable` | **missing** | Attachment metadata (`Attachable`) is not synced. |
-| `exchange_rate` | **missing** | Multi-currency exchange rates are not synced; relevant only to companies with multi-currency enabled. |
-| `recurring_transaction`, `reimburse_charge`, `tax_service` | **missing** | Lower-traffic entities not requested by users to date. |
-| `credit_card_payment` | **missing** | Newer Intuit entity, not modelled by this connector. |
+| `company_info` | covered | Synced since 4.2.0 as the `company_info` stream. |
+| `preferences` | covered | Synced since 4.2.0 as the `preferences` stream. |
+| `attachable` | covered | Synced since 4.2.0 as the `attachables` stream. |
+| `exchange_rate` | covered | Synced since 4.2.0 as the `exchange_rates` stream; relevant only to companies with multi-currency enabled. |
+| `reimburse_charge` | covered | Synced since 4.2.0 as the `reimburse_charges` stream. |
+| `credit_card_payment` | covered | Synced since 4.2.0 as the `credit_card_payments` stream (`CreditCardPaymentTxn` entity). |
+| `recurring_transaction` | **missing** | Records carry no `MetaData.LastUpdatedTime` and the query response wraps each record per transaction type (`{"Bill": {...}}`), so the shared incremental shape does not fit. |
+| `tax_service` | **missing** | The query endpoint rejects `TaxService` (`Invalid query`) — it is served by a separate tax API, not entity queries. |
+| `tax_payment` | **missing** | The query endpoint rejects `TaxPayment` on this realm ("not supported for this region"). |
 | Deleted records | **missing** | Fivetran reads Intuit's change-data-capture feed for hard deletes; this connector does not (see § Deletions). |
 | `transaction_list` and other report endpoints | out-of-scope | Intuit report endpoints are a separate API surface with their own request model, not entity queries. |

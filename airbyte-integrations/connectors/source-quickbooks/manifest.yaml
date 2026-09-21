@@ -261,6 +261,183 @@ definitions:
               type:
               - "null"
               - boolean
+    attachables:
+      type: DeclarativeStream
+      name: attachables
+      primary_key:
+      - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: >-
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+            'https://quickbooks.api.intuit.com' }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config['client_id'] }}"
+            client_secret: "{{ config['client_secret'] }}"
+            refresh_token: "{{ config['refresh_token'] }}"
+            expires_in_name: expires_in
+            access_token_name: access_token
+            refresh_token_updater:
+              refresh_token_name: refresh_token
+              access_token_config_path:
+              - access_token
+              token_expiry_date_config_path:
+              - token_expiry_date
+              refresh_token_config_path:
+              - refresh_token
+            token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
+          path: /v3/company/{{ config.realm_id }}/query
+          http_method: GET
+          request_parameters:
+            query: >-
+              SELECT * FROM Attachable WHERE Metadata.LastUpdatedTime > '{{
+              stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+              }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+              + ":" + stream_slice.start_time[-2:] }}'
+               ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+              (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+              (config.max_results or '200') | int }}
+          request_headers:
+            Accept: application/json
+            User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - QueryResponse
+            - Attachable
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 5
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P30D
+        cursor_field: airbyte_cursor
+        end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+        start_datetime: "{{ config.start_date }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        cursor_granularity: PT0S
+      transformations:
+      - type: AddFields
+        fields:
+        - path:
+          - airbyte_cursor
+          value: "{{ record.MetaData.LastUpdatedTime }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+          - "null"
+          - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            AttachableRef:
+              type:
+              - "null"
+              - array
+            Category:
+              type:
+              - "null"
+              - string
+            ContentType:
+              type:
+              - "null"
+              - string
+            FileAccessUri:
+              type:
+              - "null"
+              - string
+            FileName:
+              type:
+              - "null"
+              - string
+            Id:
+              type:
+              - "null"
+              - string
+            Lat:
+              type:
+              - "null"
+              - string
+            Long:
+              type:
+              - "null"
+              - string
+            MetaData:
+              type:
+              - "null"
+              - object
+              properties:
+                CreateTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+                LastUpdatedTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+            Note:
+              type:
+              - "null"
+              - string
+            PlaceName:
+              type:
+              - "null"
+              - string
+            Size:
+              type:
+              - "null"
+              - number
+            SyncToken:
+              type:
+              - "null"
+              - string
+            Tag:
+              type:
+              - "null"
+              - string
+            TempDownloadUri:
+              type:
+              - "null"
+              - string
+            ThumbnailFileAccessUri:
+              type:
+              - "null"
+              - string
+            ThumbnailTempDownloadUri:
+              type:
+              - "null"
+              - string
+            airbyte_cursor:
+              type:
+              - "null"
+              - string
+            domain:
+              type:
+              - "null"
+              - string
+            sparse:
+              type:
+              - "null"
+              - boolean
     bill_payments:
       type: DeclarativeStream
       name: bill_payments
@@ -1243,6 +1420,373 @@ definitions:
               type:
               - "null"
               - string
+    company_info:
+      type: DeclarativeStream
+      name: company_info
+      primary_key:
+      - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: >-
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+            'https://quickbooks.api.intuit.com' }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config['client_id'] }}"
+            client_secret: "{{ config['client_secret'] }}"
+            refresh_token: "{{ config['refresh_token'] }}"
+            expires_in_name: expires_in
+            access_token_name: access_token
+            refresh_token_updater:
+              refresh_token_name: refresh_token
+              access_token_config_path:
+              - access_token
+              token_expiry_date_config_path:
+              - token_expiry_date
+              refresh_token_config_path:
+              - refresh_token
+            token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
+          path: /v3/company/{{ config.realm_id }}/query
+          http_method: GET
+          request_parameters:
+            query: >-
+              SELECT * FROM CompanyInfo WHERE Metadata.LastUpdatedTime > '{{
+              stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+              }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+              + ":" + stream_slice.start_time[-2:] }}'
+               ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+              (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+              (config.max_results or '200') | int }}
+          request_headers:
+            Accept: application/json
+            User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - QueryResponse
+            - CompanyInfo
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 5
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P30D
+        cursor_field: airbyte_cursor
+        end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+        start_datetime: "{{ config.start_date }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        cursor_granularity: PT0S
+      transformations:
+      - type: AddFields
+        fields:
+        - path:
+          - airbyte_cursor
+          value: "{{ record.MetaData.LastUpdatedTime }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+          - "null"
+          - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            CompanyAddr:
+              type:
+              - "null"
+              - object
+            CompanyName:
+              type:
+              - "null"
+              - string
+            CompanyStartDate:
+              type:
+              - "null"
+              - string
+              format: date
+            Country:
+              type:
+              - "null"
+              - string
+            CustomerCommunicationAddr:
+              type:
+              - "null"
+              - object
+            CustomerCommunicationEmailAddr:
+              type:
+              - "null"
+              - object
+            DefaultTimeZone:
+              type:
+              - "null"
+              - string
+            Email:
+              type:
+              - "null"
+              - object
+            FiscalYearStartMonth:
+              type:
+              - "null"
+              - string
+            Id:
+              type:
+              - "null"
+              - string
+            LegalAddr:
+              type:
+              - "null"
+              - object
+            LegalName:
+              type:
+              - "null"
+              - string
+            MetaData:
+              type:
+              - "null"
+              - object
+              properties:
+                CreateTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+                LastUpdatedTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+            NameValue:
+              type:
+              - "null"
+              - array
+            PrimaryPhone:
+              type:
+              - "null"
+              - object
+            SupportedLanguages:
+              type:
+              - "null"
+              - string
+            SyncToken:
+              type:
+              - "null"
+              - string
+            WebAddr:
+              type:
+              - "null"
+              - object
+            airbyte_cursor:
+              type:
+              - "null"
+              - string
+            domain:
+              type:
+              - "null"
+              - string
+            sparse:
+              type:
+              - "null"
+              - boolean
+    credit_card_payments:
+      type: DeclarativeStream
+      name: credit_card_payments
+      primary_key:
+      - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: >-
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+            'https://quickbooks.api.intuit.com' }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config['client_id'] }}"
+            client_secret: "{{ config['client_secret'] }}"
+            refresh_token: "{{ config['refresh_token'] }}"
+            expires_in_name: expires_in
+            access_token_name: access_token
+            refresh_token_updater:
+              refresh_token_name: refresh_token
+              access_token_config_path:
+              - access_token
+              token_expiry_date_config_path:
+              - token_expiry_date
+              refresh_token_config_path:
+              - refresh_token
+            token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
+          path: /v3/company/{{ config.realm_id }}/query
+          http_method: GET
+          request_parameters:
+            query: >-
+              SELECT * FROM CreditCardPaymentTxn WHERE Metadata.LastUpdatedTime > '{{
+              stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+              }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+              + ":" + stream_slice.start_time[-2:] }}'
+               ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+              (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+              (config.max_results or '200') | int }}
+          request_headers:
+            Accept: application/json
+            User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - QueryResponse
+            - CreditCardPaymentTxn
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 5
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P30D
+        cursor_field: airbyte_cursor
+        end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+        start_datetime: "{{ config.start_date }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        cursor_granularity: PT0S
+      transformations:
+      - type: AddFields
+        fields:
+        - path:
+          - airbyte_cursor
+          value: "{{ record.MetaData.LastUpdatedTime }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+          - "null"
+          - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            Amount:
+              type:
+              - "null"
+              - number
+            BankAccountRef:
+              type:
+              - "null"
+              - object
+              properties:
+                name:
+                  type:
+                  - "null"
+                  - string
+                value:
+                  type:
+                  - "null"
+                  - string
+            CheckNum:
+              type:
+              - "null"
+              - string
+            CreditCardAccountRef:
+              type:
+              - "null"
+              - object
+              properties:
+                name:
+                  type:
+                  - "null"
+                  - string
+                value:
+                  type:
+                  - "null"
+                  - string
+            Id:
+              type:
+              - "null"
+              - string
+            Memo:
+              type:
+              - "null"
+              - string
+            MetaData:
+              type:
+              - "null"
+              - object
+              properties:
+                CreateTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+                LastUpdatedTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+            PrintStatus:
+              type:
+              - "null"
+              - string
+            PrivateNote:
+              type:
+              - "null"
+              - string
+            SyncToken:
+              type:
+              - "null"
+              - string
+            TxnDate:
+              type:
+              - "null"
+              - string
+              format: date
+            VendorRef:
+              type:
+              - "null"
+              - object
+              properties:
+                name:
+                  type:
+                  - "null"
+                  - string
+                value:
+                  type:
+                  - "null"
+                  - string
+            airbyte_cursor:
+              type:
+              - "null"
+              - string
+            domain:
+              type:
+              - "null"
+              - string
+            sparse:
+              type:
+              - "null"
+              - boolean
     credit_memos:
       type: DeclarativeStream
       name: credit_memos
@@ -3109,6 +3653,138 @@ definitions:
               type:
               - "null"
               - boolean
+    exchange_rates:
+      type: DeclarativeStream
+      name: exchange_rates
+      primary_key:
+      - SourceCurrencyCode
+      - TargetCurrencyCode
+      - AsOfDate
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: >-
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+            'https://quickbooks.api.intuit.com' }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config['client_id'] }}"
+            client_secret: "{{ config['client_secret'] }}"
+            refresh_token: "{{ config['refresh_token'] }}"
+            expires_in_name: expires_in
+            access_token_name: access_token
+            refresh_token_updater:
+              refresh_token_name: refresh_token
+              access_token_config_path:
+              - access_token
+              token_expiry_date_config_path:
+              - token_expiry_date
+              refresh_token_config_path:
+              - refresh_token
+            token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
+          path: /v3/company/{{ config.realm_id }}/query
+          http_method: GET
+          request_parameters:
+            query: >-
+              SELECT * FROM ExchangeRate WHERE Metadata.LastUpdatedTime > '{{
+              stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+              }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+              + ":" + stream_slice.start_time[-2:] }}'
+               ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+              (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+              (config.max_results or '200') | int }}
+          request_headers:
+            Accept: application/json
+            User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - QueryResponse
+            - ExchangeRate
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 5
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P30D
+        cursor_field: airbyte_cursor
+        end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+        start_datetime: "{{ config.start_date }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        cursor_granularity: PT0S
+      transformations:
+      - type: AddFields
+        fields:
+        - path:
+          - airbyte_cursor
+          value: "{{ record.MetaData.LastUpdatedTime }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+          - "null"
+          - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            AsOfDate:
+              type:
+              - "null"
+              - string
+              format: date
+            MetaData:
+              type:
+              - "null"
+              - object
+              properties:
+                CreateTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+                LastUpdatedTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+            Rate:
+              type:
+              - "null"
+              - number
+            SourceCurrencyCode:
+              type:
+              - "null"
+              - string
+            TargetCurrencyCode:
+              type:
+              - "null"
+              - string
+            airbyte_cursor:
+              type:
+              - "null"
+              - string
+            domain:
+              type:
+              - "null"
+              - string
+            sparse:
+              type:
+              - "null"
+              - boolean
     invoices:
       type: DeclarativeStream
       name: invoices
@@ -4648,6 +5324,167 @@ definitions:
               type:
               - "null"
               - boolean
+    preferences:
+      type: DeclarativeStream
+      name: preferences
+      primary_key:
+      - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: >-
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+            'https://quickbooks.api.intuit.com' }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config['client_id'] }}"
+            client_secret: "{{ config['client_secret'] }}"
+            refresh_token: "{{ config['refresh_token'] }}"
+            expires_in_name: expires_in
+            access_token_name: access_token
+            refresh_token_updater:
+              refresh_token_name: refresh_token
+              access_token_config_path:
+              - access_token
+              token_expiry_date_config_path:
+              - token_expiry_date
+              refresh_token_config_path:
+              - refresh_token
+            token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
+          path: /v3/company/{{ config.realm_id }}/query
+          http_method: GET
+          request_parameters:
+            query: >-
+              SELECT * FROM Preferences WHERE Metadata.LastUpdatedTime > '{{
+              stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+              }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+              + ":" + stream_slice.start_time[-2:] }}'
+               ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+              (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+              (config.max_results or '200') | int }}
+          request_headers:
+            Accept: application/json
+            User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - QueryResponse
+            - Preferences
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 5
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P30D
+        cursor_field: airbyte_cursor
+        end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+        start_datetime: "{{ config.start_date }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        cursor_granularity: PT0S
+      transformations:
+      - type: AddFields
+        fields:
+        - path:
+          - airbyte_cursor
+          value: "{{ record.MetaData.LastUpdatedTime }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+          - "null"
+          - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            AccountingInfoPrefs:
+              type:
+              - "null"
+              - object
+            CurrencyPrefs:
+              type:
+              - "null"
+              - object
+            EmailMessagesPrefs:
+              type:
+              - "null"
+              - object
+            Id:
+              type:
+              - "null"
+              - string
+            MetaData:
+              type:
+              - "null"
+              - object
+              properties:
+                CreateTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+                LastUpdatedTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+            OtherPrefs:
+              type:
+              - "null"
+              - object
+            ProductAndServicesPrefs:
+              type:
+              - "null"
+              - object
+            ReportPrefs:
+              type:
+              - "null"
+              - object
+            SalesFormsPrefs:
+              type:
+              - "null"
+              - object
+            SyncToken:
+              type:
+              - "null"
+              - string
+            TaxPrefs:
+              type:
+              - "null"
+              - object
+            TimeTrackingPrefs:
+              type:
+              - "null"
+              - object
+            VendorAndPurchasesPrefs:
+              type:
+              - "null"
+              - object
+            airbyte_cursor:
+              type:
+              - "null"
+              - string
+            domain:
+              type:
+              - "null"
+              - string
+            sparse:
+              type:
+              - "null"
+              - boolean
     purchase_orders:
       type: DeclarativeStream
       name: purchase_orders
@@ -5854,6 +6691,186 @@ definitions:
                   type:
                   - "null"
                   - integer
+            airbyte_cursor:
+              type:
+              - "null"
+              - string
+            domain:
+              type:
+              - "null"
+              - string
+            sparse:
+              type:
+              - "null"
+              - boolean
+    reimburse_charges:
+      type: DeclarativeStream
+      name: reimburse_charges
+      primary_key:
+      - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: >-
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+            'https://quickbooks.api.intuit.com' }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config['client_id'] }}"
+            client_secret: "{{ config['client_secret'] }}"
+            refresh_token: "{{ config['refresh_token'] }}"
+            expires_in_name: expires_in
+            access_token_name: access_token
+            refresh_token_updater:
+              refresh_token_name: refresh_token
+              access_token_config_path:
+              - access_token
+              token_expiry_date_config_path:
+              - token_expiry_date
+              refresh_token_config_path:
+              - refresh_token
+            token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
+          path: /v3/company/{{ config.realm_id }}/query
+          http_method: GET
+          request_parameters:
+            query: >-
+              SELECT * FROM ReimburseCharge WHERE Metadata.LastUpdatedTime > '{{
+              stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+              }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+              + ":" + stream_slice.start_time[-2:] }}'
+               ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+              (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+              (config.max_results or '200') | int }}
+          request_headers:
+            Accept: application/json
+            User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - QueryResponse
+            - ReimburseCharge
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 5
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P30D
+        cursor_field: airbyte_cursor
+        end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+        start_datetime: "{{ config.start_date }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        cursor_granularity: PT0S
+      transformations:
+      - type: AddFields
+        fields:
+        - path:
+          - airbyte_cursor
+          value: "{{ record.MetaData.LastUpdatedTime }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+          - "null"
+          - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            Amount:
+              type:
+              - "null"
+              - number
+            CurrencyRef:
+              type:
+              - "null"
+              - object
+              properties:
+                name:
+                  type:
+                  - "null"
+                  - string
+                value:
+                  type:
+                  - "null"
+                  - string
+            CustomerRef:
+              type:
+              - "null"
+              - object
+              properties:
+                name:
+                  type:
+                  - "null"
+                  - string
+                value:
+                  type:
+                  - "null"
+                  - string
+            ExchangeRate:
+              type:
+              - "null"
+              - number
+            HasBeenInvoiced:
+              type:
+              - "null"
+              - boolean
+            HomeTotalAmt:
+              type:
+              - "null"
+              - number
+            Id:
+              type:
+              - "null"
+              - string
+            Line:
+              type:
+              - "null"
+              - array
+            LinkedTxn:
+              type:
+              - "null"
+              - array
+            MetaData:
+              type:
+              - "null"
+              - object
+              properties:
+                CreateTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+                LastUpdatedTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+            PrivateNote:
+              type:
+              - "null"
+              - string
+            SyncToken:
+              type:
+              - "null"
+              - string
+            TxnDate:
+              type:
+              - "null"
+              - string
+              format: date
             airbyte_cursor:
               type:
               - "null"
@@ -8111,6 +9128,183 @@ streams:
           - "null"
           - boolean
 - type: DeclarativeStream
+  name: attachables
+  primary_key:
+  - Id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: >-
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+        'https://quickbooks.api.intuit.com' }}
+      authenticator:
+        type: OAuthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        refresh_token: "{{ config['refresh_token'] }}"
+        expires_in_name: expires_in
+        access_token_name: access_token
+        refresh_token_updater:
+          refresh_token_name: refresh_token
+          access_token_config_path:
+          - access_token
+          token_expiry_date_config_path:
+          - token_expiry_date
+          refresh_token_config_path:
+          - refresh_token
+        token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
+      path: /v3/company/{{ config.realm_id }}/query
+      http_method: GET
+      request_parameters:
+        query: >-
+          SELECT * FROM Attachable WHERE Metadata.LastUpdatedTime > '{{
+          stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+          }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+          + ":" + stream_slice.start_time[-2:] }}'
+           ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+          (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+          (config.max_results or '200') | int }}
+      request_headers:
+        Accept: application/json
+        User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - QueryResponse
+        - Attachable
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: OffsetIncrement
+        page_size: 5
+  incremental_sync:
+    type: DatetimeBasedCursor
+    step: P30D
+    cursor_field: airbyte_cursor
+    end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+    start_datetime: "{{ config.start_date }}"
+    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    cursor_granularity: PT0S
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - airbyte_cursor
+      value: "{{ record.MetaData.LastUpdatedTime }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type:
+      - "null"
+      - object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        AttachableRef:
+          type:
+          - "null"
+          - array
+        Category:
+          type:
+          - "null"
+          - string
+        ContentType:
+          type:
+          - "null"
+          - string
+        FileAccessUri:
+          type:
+          - "null"
+          - string
+        FileName:
+          type:
+          - "null"
+          - string
+        Id:
+          type:
+          - "null"
+          - string
+        Lat:
+          type:
+          - "null"
+          - string
+        Long:
+          type:
+          - "null"
+          - string
+        MetaData:
+          type:
+          - "null"
+          - object
+          properties:
+            CreateTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+            LastUpdatedTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+        Note:
+          type:
+          - "null"
+          - string
+        PlaceName:
+          type:
+          - "null"
+          - string
+        Size:
+          type:
+          - "null"
+          - number
+        SyncToken:
+          type:
+          - "null"
+          - string
+        Tag:
+          type:
+          - "null"
+          - string
+        TempDownloadUri:
+          type:
+          - "null"
+          - string
+        ThumbnailFileAccessUri:
+          type:
+          - "null"
+          - string
+        ThumbnailTempDownloadUri:
+          type:
+          - "null"
+          - string
+        airbyte_cursor:
+          type:
+          - "null"
+          - string
+        domain:
+          type:
+          - "null"
+          - string
+        sparse:
+          type:
+          - "null"
+          - boolean
+- type: DeclarativeStream
   name: bill_payments
   primary_key:
   - Id
@@ -9092,6 +10286,373 @@ streams:
           type:
           - "null"
           - string
+- type: DeclarativeStream
+  name: company_info
+  primary_key:
+  - Id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: >-
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+        'https://quickbooks.api.intuit.com' }}
+      authenticator:
+        type: OAuthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        refresh_token: "{{ config['refresh_token'] }}"
+        expires_in_name: expires_in
+        access_token_name: access_token
+        refresh_token_updater:
+          refresh_token_name: refresh_token
+          access_token_config_path:
+          - access_token
+          token_expiry_date_config_path:
+          - token_expiry_date
+          refresh_token_config_path:
+          - refresh_token
+        token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
+      path: /v3/company/{{ config.realm_id }}/query
+      http_method: GET
+      request_parameters:
+        query: >-
+          SELECT * FROM CompanyInfo WHERE Metadata.LastUpdatedTime > '{{
+          stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+          }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+          + ":" + stream_slice.start_time[-2:] }}'
+           ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+          (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+          (config.max_results or '200') | int }}
+      request_headers:
+        Accept: application/json
+        User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - QueryResponse
+        - CompanyInfo
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: OffsetIncrement
+        page_size: 5
+  incremental_sync:
+    type: DatetimeBasedCursor
+    step: P30D
+    cursor_field: airbyte_cursor
+    end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+    start_datetime: "{{ config.start_date }}"
+    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    cursor_granularity: PT0S
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - airbyte_cursor
+      value: "{{ record.MetaData.LastUpdatedTime }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type:
+      - "null"
+      - object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        CompanyAddr:
+          type:
+          - "null"
+          - object
+        CompanyName:
+          type:
+          - "null"
+          - string
+        CompanyStartDate:
+          type:
+          - "null"
+          - string
+          format: date
+        Country:
+          type:
+          - "null"
+          - string
+        CustomerCommunicationAddr:
+          type:
+          - "null"
+          - object
+        CustomerCommunicationEmailAddr:
+          type:
+          - "null"
+          - object
+        DefaultTimeZone:
+          type:
+          - "null"
+          - string
+        Email:
+          type:
+          - "null"
+          - object
+        FiscalYearStartMonth:
+          type:
+          - "null"
+          - string
+        Id:
+          type:
+          - "null"
+          - string
+        LegalAddr:
+          type:
+          - "null"
+          - object
+        LegalName:
+          type:
+          - "null"
+          - string
+        MetaData:
+          type:
+          - "null"
+          - object
+          properties:
+            CreateTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+            LastUpdatedTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+        NameValue:
+          type:
+          - "null"
+          - array
+        PrimaryPhone:
+          type:
+          - "null"
+          - object
+        SupportedLanguages:
+          type:
+          - "null"
+          - string
+        SyncToken:
+          type:
+          - "null"
+          - string
+        WebAddr:
+          type:
+          - "null"
+          - object
+        airbyte_cursor:
+          type:
+          - "null"
+          - string
+        domain:
+          type:
+          - "null"
+          - string
+        sparse:
+          type:
+          - "null"
+          - boolean
+- type: DeclarativeStream
+  name: credit_card_payments
+  primary_key:
+  - Id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: >-
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+        'https://quickbooks.api.intuit.com' }}
+      authenticator:
+        type: OAuthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        refresh_token: "{{ config['refresh_token'] }}"
+        expires_in_name: expires_in
+        access_token_name: access_token
+        refresh_token_updater:
+          refresh_token_name: refresh_token
+          access_token_config_path:
+          - access_token
+          token_expiry_date_config_path:
+          - token_expiry_date
+          refresh_token_config_path:
+          - refresh_token
+        token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
+      path: /v3/company/{{ config.realm_id }}/query
+      http_method: GET
+      request_parameters:
+        query: >-
+          SELECT * FROM CreditCardPaymentTxn WHERE Metadata.LastUpdatedTime > '{{
+          stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+          }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+          + ":" + stream_slice.start_time[-2:] }}'
+           ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+          (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+          (config.max_results or '200') | int }}
+      request_headers:
+        Accept: application/json
+        User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - QueryResponse
+        - CreditCardPaymentTxn
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: OffsetIncrement
+        page_size: 5
+  incremental_sync:
+    type: DatetimeBasedCursor
+    step: P30D
+    cursor_field: airbyte_cursor
+    end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+    start_datetime: "{{ config.start_date }}"
+    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    cursor_granularity: PT0S
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - airbyte_cursor
+      value: "{{ record.MetaData.LastUpdatedTime }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type:
+      - "null"
+      - object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        Amount:
+          type:
+          - "null"
+          - number
+        BankAccountRef:
+          type:
+          - "null"
+          - object
+          properties:
+            name:
+              type:
+              - "null"
+              - string
+            value:
+              type:
+              - "null"
+              - string
+        CheckNum:
+          type:
+          - "null"
+          - string
+        CreditCardAccountRef:
+          type:
+          - "null"
+          - object
+          properties:
+            name:
+              type:
+              - "null"
+              - string
+            value:
+              type:
+              - "null"
+              - string
+        Id:
+          type:
+          - "null"
+          - string
+        Memo:
+          type:
+          - "null"
+          - string
+        MetaData:
+          type:
+          - "null"
+          - object
+          properties:
+            CreateTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+            LastUpdatedTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+        PrintStatus:
+          type:
+          - "null"
+          - string
+        PrivateNote:
+          type:
+          - "null"
+          - string
+        SyncToken:
+          type:
+          - "null"
+          - string
+        TxnDate:
+          type:
+          - "null"
+          - string
+          format: date
+        VendorRef:
+          type:
+          - "null"
+          - object
+          properties:
+            name:
+              type:
+              - "null"
+              - string
+            value:
+              type:
+              - "null"
+              - string
+        airbyte_cursor:
+          type:
+          - "null"
+          - string
+        domain:
+          type:
+          - "null"
+          - string
+        sparse:
+          type:
+          - "null"
+          - boolean
 - type: DeclarativeStream
   name: credit_memos
   primary_key:
@@ -10959,6 +12520,138 @@ streams:
           - "null"
           - boolean
 - type: DeclarativeStream
+  name: exchange_rates
+  primary_key:
+  - SourceCurrencyCode
+  - TargetCurrencyCode
+  - AsOfDate
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: >-
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+        'https://quickbooks.api.intuit.com' }}
+      authenticator:
+        type: OAuthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        refresh_token: "{{ config['refresh_token'] }}"
+        expires_in_name: expires_in
+        access_token_name: access_token
+        refresh_token_updater:
+          refresh_token_name: refresh_token
+          access_token_config_path:
+          - access_token
+          token_expiry_date_config_path:
+          - token_expiry_date
+          refresh_token_config_path:
+          - refresh_token
+        token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
+      path: /v3/company/{{ config.realm_id }}/query
+      http_method: GET
+      request_parameters:
+        query: >-
+          SELECT * FROM ExchangeRate WHERE Metadata.LastUpdatedTime > '{{
+          stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+          }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+          + ":" + stream_slice.start_time[-2:] }}'
+           ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+          (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+          (config.max_results or '200') | int }}
+      request_headers:
+        Accept: application/json
+        User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - QueryResponse
+        - ExchangeRate
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: OffsetIncrement
+        page_size: 5
+  incremental_sync:
+    type: DatetimeBasedCursor
+    step: P30D
+    cursor_field: airbyte_cursor
+    end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+    start_datetime: "{{ config.start_date }}"
+    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    cursor_granularity: PT0S
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - airbyte_cursor
+      value: "{{ record.MetaData.LastUpdatedTime }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type:
+      - "null"
+      - object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        AsOfDate:
+          type:
+          - "null"
+          - string
+          format: date
+        MetaData:
+          type:
+          - "null"
+          - object
+          properties:
+            CreateTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+            LastUpdatedTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+        Rate:
+          type:
+          - "null"
+          - number
+        SourceCurrencyCode:
+          type:
+          - "null"
+          - string
+        TargetCurrencyCode:
+          type:
+          - "null"
+          - string
+        airbyte_cursor:
+          type:
+          - "null"
+          - string
+        domain:
+          type:
+          - "null"
+          - string
+        sparse:
+          type:
+          - "null"
+          - boolean
+- type: DeclarativeStream
   name: invoices
   primary_key:
   - Id
@@ -12498,6 +14191,167 @@ streams:
           - "null"
           - boolean
 - type: DeclarativeStream
+  name: preferences
+  primary_key:
+  - Id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: >-
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+        'https://quickbooks.api.intuit.com' }}
+      authenticator:
+        type: OAuthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        refresh_token: "{{ config['refresh_token'] }}"
+        expires_in_name: expires_in
+        access_token_name: access_token
+        refresh_token_updater:
+          refresh_token_name: refresh_token
+          access_token_config_path:
+          - access_token
+          token_expiry_date_config_path:
+          - token_expiry_date
+          refresh_token_config_path:
+          - refresh_token
+        token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
+      path: /v3/company/{{ config.realm_id }}/query
+      http_method: GET
+      request_parameters:
+        query: >-
+          SELECT * FROM Preferences WHERE Metadata.LastUpdatedTime > '{{
+          stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+          }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+          + ":" + stream_slice.start_time[-2:] }}'
+           ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+          (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+          (config.max_results or '200') | int }}
+      request_headers:
+        Accept: application/json
+        User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - QueryResponse
+        - Preferences
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: OffsetIncrement
+        page_size: 5
+  incremental_sync:
+    type: DatetimeBasedCursor
+    step: P30D
+    cursor_field: airbyte_cursor
+    end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+    start_datetime: "{{ config.start_date }}"
+    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    cursor_granularity: PT0S
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - airbyte_cursor
+      value: "{{ record.MetaData.LastUpdatedTime }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type:
+      - "null"
+      - object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        AccountingInfoPrefs:
+          type:
+          - "null"
+          - object
+        CurrencyPrefs:
+          type:
+          - "null"
+          - object
+        EmailMessagesPrefs:
+          type:
+          - "null"
+          - object
+        Id:
+          type:
+          - "null"
+          - string
+        MetaData:
+          type:
+          - "null"
+          - object
+          properties:
+            CreateTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+            LastUpdatedTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+        OtherPrefs:
+          type:
+          - "null"
+          - object
+        ProductAndServicesPrefs:
+          type:
+          - "null"
+          - object
+        ReportPrefs:
+          type:
+          - "null"
+          - object
+        SalesFormsPrefs:
+          type:
+          - "null"
+          - object
+        SyncToken:
+          type:
+          - "null"
+          - string
+        TaxPrefs:
+          type:
+          - "null"
+          - object
+        TimeTrackingPrefs:
+          type:
+          - "null"
+          - object
+        VendorAndPurchasesPrefs:
+          type:
+          - "null"
+          - object
+        airbyte_cursor:
+          type:
+          - "null"
+          - string
+        domain:
+          type:
+          - "null"
+          - string
+        sparse:
+          type:
+          - "null"
+          - boolean
+- type: DeclarativeStream
   name: purchase_orders
   primary_key:
   - Id
@@ -13703,6 +15557,186 @@ streams:
               type:
               - "null"
               - integer
+        airbyte_cursor:
+          type:
+          - "null"
+          - string
+        domain:
+          type:
+          - "null"
+          - string
+        sparse:
+          type:
+          - "null"
+          - boolean
+- type: DeclarativeStream
+  name: reimburse_charges
+  primary_key:
+  - Id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: >-
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+        'https://quickbooks.api.intuit.com' }}
+      authenticator:
+        type: OAuthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        refresh_token: "{{ config['refresh_token'] }}"
+        expires_in_name: expires_in
+        access_token_name: access_token
+        refresh_token_updater:
+          refresh_token_name: refresh_token
+          access_token_config_path:
+          - access_token
+          token_expiry_date_config_path:
+          - token_expiry_date
+          refresh_token_config_path:
+          - refresh_token
+        token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
+      path: /v3/company/{{ config.realm_id }}/query
+      http_method: GET
+      request_parameters:
+        query: >-
+          SELECT * FROM ReimburseCharge WHERE Metadata.LastUpdatedTime > '{{
+          stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+          }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+          + ":" + stream_slice.start_time[-2:] }}'
+           ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+          (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+          (config.max_results or '200') | int }}
+      request_headers:
+        Accept: application/json
+        User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - QueryResponse
+        - ReimburseCharge
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: OffsetIncrement
+        page_size: 5
+  incremental_sync:
+    type: DatetimeBasedCursor
+    step: P30D
+    cursor_field: airbyte_cursor
+    end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+    start_datetime: "{{ config.start_date }}"
+    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    cursor_granularity: PT0S
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - airbyte_cursor
+      value: "{{ record.MetaData.LastUpdatedTime }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type:
+      - "null"
+      - object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        Amount:
+          type:
+          - "null"
+          - number
+        CurrencyRef:
+          type:
+          - "null"
+          - object
+          properties:
+            name:
+              type:
+              - "null"
+              - string
+            value:
+              type:
+              - "null"
+              - string
+        CustomerRef:
+          type:
+          - "null"
+          - object
+          properties:
+            name:
+              type:
+              - "null"
+              - string
+            value:
+              type:
+              - "null"
+              - string
+        ExchangeRate:
+          type:
+          - "null"
+          - number
+        HasBeenInvoiced:
+          type:
+          - "null"
+          - boolean
+        HomeTotalAmt:
+          type:
+          - "null"
+          - number
+        Id:
+          type:
+          - "null"
+          - string
+        Line:
+          type:
+          - "null"
+          - array
+        LinkedTxn:
+          type:
+          - "null"
+          - array
+        MetaData:
+          type:
+          - "null"
+          - object
+          properties:
+            CreateTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+            LastUpdatedTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+        PrivateNote:
+          type:
+          - "null"
+          - string
+        SyncToken:
+          type:
+          - "null"
+          - string
+        TxnDate:
+          type:
+          - "null"
+          - string
+          format: date
         airbyte_cursor:
           type:
           - "null"
@@ -15868,27 +17902,80 @@ spec:
         default: false
         description: Determines whether to use the sandbox or production environment.
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+    - auth_type
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+            - access_token
+          refresh_token:
+            type: string
+            path_in_connector_config:
+            - refresh_token
+          token_expiry_date:
+            type: string
+            format: date-time
+            path_in_connector_config:
+            - token_expiry_date
+          realm_id:
+            type: string
+            path_in_connector_config:
+            - realm_id
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+            - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+            - client_secret
 metadata:
   autoImportSchema:
     accounts: false
+    attachables: false
     bill_payments: false
     bills: false
     budgets: false
     classes: false
+    company_info: false
+    credit_card_payments: false
     credit_memos: false
     customers: false
     departments: false
     deposits: false
     employees: false
     estimates: false
+    exchange_rates: false
     invoices: false
     items: false
     journal_entries: false
     payment_methods: false
     payments: false
+    preferences: false
     purchase_orders: false
     purchases: false
     refund_receipts: false
+    reimburse_charges: false
     sales_receipts: false
     tax_agencies: false
     tax_codes: false
@@ -15902,6 +17989,8 @@ metadata:
     streams:
       accounts:
       - incrementalSync
+      attachables:
+      - incrementalSync
       bill_payments:
       - incrementalSync
       bills:
@@ -15909,6 +17998,10 @@ metadata:
       budgets:
       - incrementalSync
       classes:
+      - incrementalSync
+      company_info:
+      - incrementalSync
+      credit_card_payments:
       - incrementalSync
       credit_memos:
       - incrementalSync
@@ -15922,6 +18015,8 @@ metadata:
       - incrementalSync
       estimates:
       - incrementalSync
+      exchange_rates:
+      - incrementalSync
       invoices:
       - incrementalSync
       items:
@@ -15932,11 +18027,15 @@ metadata:
       - incrementalSync
       payments:
       - incrementalSync
+      preferences:
+      - incrementalSync
       purchase_orders:
       - incrementalSync
       purchases:
       - incrementalSync
       refund_receipts:
+      - incrementalSync
+      reimburse_charges:
       - incrementalSync
       sales_receipts:
       - incrementalSync
