@@ -6,6 +6,8 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -54,3 +56,13 @@ def get_source(
         config=config,
         state=state if state is not None else StateBuilder().build(),
     )
+
+
+@pytest.fixture(autouse=True)
+def clear_cache_before_each_test():
+    """Clear the HTTP request cache so cached responses do not leak between tests."""
+    cache_dir = Path(os.environ["REQUEST_CACHE_PATH"])
+    if cache_dir.is_dir():
+        for file_path in cache_dir.glob("*.sqlite"):
+            file_path.unlink()
+    yield

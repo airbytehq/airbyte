@@ -8,6 +8,20 @@ check:
     - routing_settings
 
 definitions:
+  error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        http_codes: [404]
+        action: IGNORE
+      - type: HttpResponseFilter
+        http_codes: [401]
+        action: FAIL
+        failure_type: config_error
+        error_message: "Zendesk Chat access token is invalid, expired, or missing the required read and chat scopes."
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
   streams:
     accounts:
       type: DeclarativeStream
@@ -23,14 +37,7 @@ definitions:
           path: account
           http_method: GET
           error_handler:
-            type: DefaultErrorHandler
-            description: The default error handler
-            response_filters:
-              - http_codes: [404]
-                action: IGNORE
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           description: Base records selector for Full Refresh streams
@@ -59,14 +66,7 @@ definitions:
           path: agents
           http_method: GET
           error_handler:
-            type: DefaultErrorHandler
-            description: The default error handler
-            response_filters:
-              - http_codes: [404]
-                action: IGNORE
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           description: Base records selector for Full Refresh streams
@@ -120,14 +120,7 @@ definitions:
           request_parameters:
             fields: agent_timeline(*)
           error_handler:
-            type: DefaultErrorHandler
-            description: The default error handler
-            response_filters:
-              - http_codes: [404]
-                action: IGNORE
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           description: Base records selector for Full Refresh streams
@@ -196,14 +189,7 @@ definitions:
           path: bans
           http_method: GET
           error_handler:
-            type: DefaultErrorHandler
-            description: The default error handler
-            response_filters:
-              - http_codes: [404]
-                action: IGNORE
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -257,14 +243,7 @@ definitions:
           request_parameters:
             fields: chats(*)
           error_handler:
-            type: DefaultErrorHandler
-            description: The default error handler
-            response_filters:
-              - http_codes: [404]
-                action: IGNORE
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           description: Base records selector for Full Refresh streams
@@ -318,14 +297,7 @@ definitions:
           path: departments
           http_method: GET
           error_handler:
-            type: DefaultErrorHandler
-            description: The default error handler
-            response_filters:
-              - http_codes: [404]
-                action: IGNORE
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           description: Base records selector for Full Refresh streams
@@ -353,14 +325,7 @@ definitions:
           path: goals
           http_method: GET
           error_handler:
-            type: DefaultErrorHandler
-            description: The default error handler
-            response_filters:
-              - http_codes: [404]
-                action: IGNORE
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           description: Base records selector for Full Refresh streams
@@ -388,14 +353,7 @@ definitions:
           path: roles
           http_method: GET
           error_handler:
-            type: DefaultErrorHandler
-            description: The default error handler
-            response_filters:
-              - http_codes: [404]
-                action: IGNORE
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           description: Base records selector for Full Refresh streams
@@ -423,14 +381,7 @@ definitions:
           path: routing_settings/account
           http_method: GET
           error_handler:
-            type: DefaultErrorHandler
-            description: The default error handler
-            response_filters:
-              - http_codes: [404]
-                action: IGNORE
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -456,14 +407,7 @@ definitions:
           path: shortcuts
           http_method: GET
           error_handler:
-            type: DefaultErrorHandler
-            description: The default error handler
-            response_filters:
-              - http_codes: [404]
-                action: IGNORE
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           description: Base records selector for Full Refresh streams
@@ -491,14 +435,7 @@ definitions:
           path: skills
           http_method: GET
           error_handler:
-            type: DefaultErrorHandler
-            description: The default error handler
-            response_filters:
-              - http_codes: [404]
-                action: IGNORE
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           description: Base records selector for Full Refresh streams
@@ -526,14 +463,7 @@ definitions:
           path: triggers
           http_method: GET
           error_handler:
-            type: DefaultErrorHandler
-            description: The default error handler
-            response_filters:
-              - http_codes: [404]
-                action: IGNORE
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           description: Base records selector for Full Refresh streams

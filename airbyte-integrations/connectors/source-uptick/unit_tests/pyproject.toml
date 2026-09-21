@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "source-uptick-tests"
-version = "0.0.0"
+version = "0.0.1"
 description = "Unit tests for source-uptick"
 authors = ["Airbyte <contact@airbyte.io>"]
 package-mode = false
@@ -13,11 +13,9 @@ package-mode = false
 python = "^3.10,<3.13"
 airbyte-cdk = "^7"
 pytest = "^8"
-# `airbyte_cdk.test.mock_http.HttpMocker` imports `requests_mock`, which the CDK does not
-# declare itself, so tests using it fail at collection without this.
 requests-mock = "^1"
 
 [tool.pytest.ini_options]
 filterwarnings = [
-    "ignore:This class is experimental*"
+    "ignore:This class is experimental*",
 ]
