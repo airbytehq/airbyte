@@ -80,7 +80,7 @@ class ZohoAPI:
         return self._max_concurrent_requests
 
     def _detect_edition(self) -> Optional[str]:
-        """Returns the edition key from `_CONCURRENCY_API_LIMITS` for this org, or None if it cannot be determined."""
+        """Returns the matching edition key, including for bundle names containing a known edition such as `zohooneenterprise` or `crmplusprofessional`."""
         try:
             response = requests.get(url=f"{self.api_url}/crm/v2/org", headers=self.authenticator.get_auth_header())
             response.raise_for_status()
@@ -102,8 +102,9 @@ class ZohoAPI:
         if not isinstance(edition, str):
             logger.warning("Could not detect Zoho CRM edition: no edition in license details")
             return None
+        normalized = edition.strip().lower()
         for known in self._CONCURRENCY_API_LIMITS:
-            if edition.strip().lower() == known.lower():
+            if known.lower() in normalized:
                 return known
         logger.warning(f"Could not detect Zoho CRM edition: unrecognized edition {edition!r}")
         return None

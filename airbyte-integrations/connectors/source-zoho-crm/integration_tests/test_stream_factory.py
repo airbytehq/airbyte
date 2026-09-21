@@ -100,9 +100,6 @@ def test_stream_factory(request_sniffer, config):
     # Any of former two can result in 204 and empty body what blocks us
     # from generating stream schema and, therefore, a stream.
     for url, status in request_sniffer.items():
-        if url == "/v2/org":
-            # Existing GSM tokens may not include ZohoCRM.org.READ; edition detection falls back to Free.
-            continue
         assert status in (200, 204)
         module = url.split("?module=")[-1]
         if module == url:
@@ -118,5 +115,5 @@ def test_stream_factory(request_sniffer, config):
 def test_detect_edition_live(config):
     api = ZohoAPI(config)
     edition = api._detect_edition()
-    assert edition is None or edition in ZohoAPI._CONCURRENCY_API_LIMITS
-    assert api.max_concurrent_requests in ZohoAPI._CONCURRENCY_API_LIMITS.values()
+    assert edition is not None and edition in ZohoAPI._CONCURRENCY_API_LIMITS
+    assert api.max_concurrent_requests == ZohoAPI._CONCURRENCY_API_LIMITS[edition]

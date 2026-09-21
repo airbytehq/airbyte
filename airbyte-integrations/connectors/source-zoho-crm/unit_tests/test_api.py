@@ -100,6 +100,9 @@ def test_json_from_path_fail(mocker, request_mocker, config):
         ("enterprise", 20),
         ("ultimate", 25),
         ("Enterprise", 20),
+        ("zohooneenterprise", 20),
+        ("CRMPlusProfessional", 15),
+        ("zohoone_ultimate", 25),
     ),
 )
 def test_max_concurrent_requests_detects_edition(mocker, request_mocker, config, edition, expected_concurrency):
