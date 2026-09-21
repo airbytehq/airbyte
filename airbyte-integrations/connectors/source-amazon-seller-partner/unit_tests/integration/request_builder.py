@@ -62,6 +62,10 @@ class RequestBuilder:
         return cls("vendor/orders/v1/purchaseOrdersStatus")
 
     @classmethod
+    def list_financial_events_endpoint(cls) -> RequestBuilder:
+        return cls("finances/v0/financialEvents")
+
+    @classmethod
     def fba_inbound_shipments_endpoint(cls) -> RequestBuilder:
         return cls("fba/inbound/v0/shipments")
 

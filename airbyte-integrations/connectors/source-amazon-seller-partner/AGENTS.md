@@ -125,6 +125,24 @@ day-aligned, and the full-refresh snapshot and forecast streams (`GET_VENDOR_INV
 `GET_VENDOR_FORECASTING_FRESH_REPORT`, `GET_VENDOR_FORECASTING_RETAIL_REPORT`) have no cursor and
 intentionally send no window at all.
 
+## 8. `ListFinancialEvents` Answers `InvalidInput` by Shrinking the Page
+
+`finances/v0/financialEvents` rejects a page with HTTP 400 `InvalidInput` when the page it would
+return exceeds Amazon's per-response limits (too many transactions, or more than 10 MB). The message
+names neither limit, and the same `InvalidInput` code is also what a genuinely malformed request
+gets, so the stream's response filter matches on the code and treats it as "this page is too big".
+
+The stream answers it with the CDK's `REDUCE_PAGE_SIZE` action instead of failing: the same page is
+re-requested with `MaxResultsPerPage` halved, down to 1, and the accepted size is kept for the rest
+of the stream (`reset_policy: NEVER`). Users used to have to lower the `Financial Events Step Size`
+or `financial_events_max_results_per_page` setting by hand and restart the sync.
+
+**Why this matters:** an `InvalidInput` on this endpoint is no longer a terminal error, so a test
+that expects the sync to stop there will now see up to seven extra requests at descending page
+sizes. If a future change makes the stream chunk its query properties, read its parent lazily, or
+paginate by page number, the CDK will reject `page_size_reduction` at config time — those
+combinations cannot be retried without duplicating records.
+
 ## Incremental Stream Considerations
 
 The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 8 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.
