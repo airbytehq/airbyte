@@ -25,11 +25,9 @@ BASE_CONFIG = {
     "aws_environment": "SANDBOX",
     "region": "US",
     "account_type": "Seller",
-    "replication_start_date": "2025-05-01T00:00:00Z",
 }
 
 REPORTS_URL = "https://sandbox.sellingpartnerapi-na.amazon.com/reports/2021-06-30/reports"
-NEXT_TOKEN = "next-token-abc"
 
 
 def _report(report_id: str) -> dict:
@@ -43,9 +41,17 @@ def _report(report_id: str) -> dict:
     }
 
 
-@pytest.mark.parametrize("token_key", ["nextToken", "NextToken"])
+# Each case uses a distinct start date and token so its request URLs are unique across the test
+# session: the connector's requests_cache would otherwise serve a response recorded by another test.
+@pytest.mark.parametrize(
+    "token_key,start_date,next_token",
+    [
+        ("nextToken", "2025-05-05T00:00:00Z", "next-token-lower"),
+        ("NextToken", "2025-05-07T00:00:00Z", "next-token-upper"),
+    ],
+)
 @freeze_time("2025-06-15T12:00:00Z")
-def test_settlement_helper_paginated_request_sends_only_next_token(requests_mock, mocker, token_key):
+def test_settlement_helper_paginated_request_sends_only_next_token(requests_mock, mocker, token_key, start_date, next_token):
     # Bypass requests_cache so requests_mock can intercept all HTTP calls.
     mocker.patch(
         "requests_cache.CachedSession.send",
@@ -61,11 +67,11 @@ def test_settlement_helper_paginated_request_sends_only_next_token(requests_mock
         context.status_code = 200
         if "nexttoken" in request.qs:
             return {"reports": [_report("report-2")]}
-        return {"reports": [_report("report-1")], token_key: NEXT_TOKEN}
+        return {"reports": [_report("report-1")], token_key: next_token}
 
     requests_mock.get(REPORTS_URL, json=reports_callback)
 
-    source = get_source(config=BASE_CONFIG, state=None)
+    source = get_source(config={**BASE_CONFIG, "replication_start_date": start_date}, state=None)
     streams = source.streams(source._config)
     stream = next((s for s in streams if s.name == "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE"), None)
     assert stream is not None, "Stream 'GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE' not found"
@@ -80,10 +86,10 @@ def test_settlement_helper_paginated_request_sends_only_next_token(requests_mock
     # requests_mock lowercases query parameter names and values
     assert first_request.qs["reporttypes"] == ["get_v2_settlement_report_data_flat_file"]
     assert first_request.qs["pagesize"] == ["100"]
-    assert first_request.qs["createdsince"] == ["2025-05-01t00:00:00z"]
+    assert first_request.qs["createdsince"] == [start_date.lower()]
     assert "createduntil" in first_request.qs
     assert "nexttoken" not in first_request.qs
 
     assert second_request.qs == {
-        "nexttoken": [NEXT_TOKEN.lower()]
+        "nexttoken": [next_token]
     }, f"Paginated getReports request must send nextToken as the only query parameter, got: {second_request.qs}"
