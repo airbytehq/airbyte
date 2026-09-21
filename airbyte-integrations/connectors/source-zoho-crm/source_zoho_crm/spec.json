@@ -9,8 +9,7 @@
       "client_secret",
       "refresh_token",
       "environment",
-      "dc_region",
-      "edition"
+      "dc_region"
     ],
     "additionalProperties": true,
     "properties": {
@@ -56,13 +55,6 @@
         ],
         "description": "ISO 8601, for instance: `YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS+HH:MM`",
         "format": "date-time"
-      },
-      "edition": {
-        "title": "Zoho CRM Edition",
-        "type": "string",
-        "description": "Choose your Edition of Zoho CRM to determine API Concurrency Limits",
-        "enum": ["Free", "Standard", "Professional", "Enterprise", "Ultimate"],
-        "default": "Free"
       }
     }
   },
@@ -74,7 +66,8 @@
           { "scope": "ZohoCRM.settings.modules.READ" },
           { "scope": "ZohoCRM.settings.fields.READ" },
           { "scope": "ZohoCRM.modules.READ" },
-          { "scope": "ZohoCRM.modules.custom.READ" }
+          { "scope": "ZohoCRM.modules.custom.READ" },
+          { "scope": "ZohoCRM.org.READ" }
         ],
         "scopes_join_strategy": "comma",
         "consent_url": "https://accounts.zoho.{{ {'US': 'com', 'AU': 'com.au', 'EU': 'eu', 'IN': 'in', 'CN': 'com.cn', 'JP': 'jp'}[dc_region] }}/oauth/v2/auth?response_type=code&access_type=offline&prompt=consent&{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}",

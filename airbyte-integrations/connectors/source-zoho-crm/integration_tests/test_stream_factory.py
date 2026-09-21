@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 import requests
+from source_zoho_crm.api import ZohoAPI
 from source_zoho_crm.streams import IncrementalZohoCrmStream, ZohoStreamFactory
 
 
@@ -109,3 +110,10 @@ def test_stream_factory(request_sniffer, config):
         if status == 204:
             unexpected_stream_names.add(module)
     assert expected_stream_names - unexpected_stream_names == stream_names
+
+
+def test_detect_edition_live(config):
+    api = ZohoAPI(config)
+    edition = api._detect_edition()
+    assert edition is None or edition in ZohoAPI._CONCURRENCY_API_LIMITS
+    assert api.max_concurrent_requests in ZohoAPI._CONCURRENCY_API_LIMITS.values()

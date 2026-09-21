@@ -4,7 +4,7 @@
 
 import logging
 from types import MappingProxyType
-from typing import Any, List, Mapping, MutableMapping, Tuple
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlsplit, urlunsplit
 
 import requests
@@ -38,10 +38,12 @@ class ZohoAPI:
     )
     _API_ENV_TO_URL_PREFIX = MappingProxyType({"production": "", "developer": "developer", "sandbox": "sandbox"})
     _CONCURRENCY_API_LIMITS = MappingProxyType({"Free": 5, "Standard": 10, "Professional": 15, "Enterprise": 20, "Ultimate": 25})
+    _DEFAULT_CONCURRENCY = 5
 
     def __init__(self, config: Mapping[str, Any]):
         self.config = config
         self._authenticator = None
+        self._max_concurrent_requests: Optional[int] = None
 
     @property
     def authenticator(self) -> ZohoOauth2Authenticator:
@@ -58,7 +60,42 @@ class ZohoAPI:
 
     @property
     def max_concurrent_requests(self) -> int:
-        return self._CONCURRENCY_API_LIMITS[self.config["edition"]]
+        if self._max_concurrent_requests is None:
+            edition = self._detect_edition()
+            if edition is None:
+                logger.warning(f"Falling back to the default concurrency limit of {self._DEFAULT_CONCURRENCY}")
+                self._max_concurrent_requests = self._DEFAULT_CONCURRENCY
+            else:
+                self._max_concurrent_requests = self._CONCURRENCY_API_LIMITS[edition]
+                logger.info(f"Detected Zoho CRM edition {edition}, concurrency limit {self._max_concurrent_requests}")
+        return self._max_concurrent_requests
+
+    def _detect_edition(self) -> Optional[str]:
+        """Returns the edition key from `_CONCURRENCY_API_LIMITS` for this org, or None if it cannot be determined."""
+        try:
+            response = requests.get(url=f"{self.api_url}/crm/v2/org", headers=self.authenticator.get_auth_header())
+            response.raise_for_status()
+            license_details = response.json()["org"][0].get("license_details") or {}
+        except requests.exceptions.HTTPError as exc:
+            logger.warning(f"Could not detect Zoho CRM edition: {exc.response.content} [HTTP status {exc.response.status_code}]")
+            return None
+        except requests.exceptions.RequestException as exc:
+            logger.warning(f"Could not detect Zoho CRM edition: {exc}")
+            return None
+        except (ValueError, KeyError, IndexError, TypeError, AttributeError) as exc:
+            logger.warning(f"Could not detect Zoho CRM edition: unexpected response format ({exc!r})")
+            return None
+        edition = license_details.get("paid_type") or license_details.get("trial_type")
+        if not edition and license_details.get("paid") is False:
+            edition = "free"
+        if not isinstance(edition, str):
+            logger.warning("Could not detect Zoho CRM edition: no edition in license details")
+            return None
+        for known in self._CONCURRENCY_API_LIMITS:
+            if edition.strip().lower() == known.lower():
+                return known
+        logger.warning(f"Could not detect Zoho CRM edition: unrecognized edition {edition!r}")
+        return None
 
     @property
     def api_url(self) -> str:
