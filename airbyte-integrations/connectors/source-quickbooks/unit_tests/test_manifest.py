@@ -14,6 +14,10 @@ import jinja2
 import pytest
 import yaml
 
+from airbyte_cdk.sources.declarative.concurrent_declarative_source import (
+    ConcurrentDeclarativeSource,
+)
+
 
 MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 
@@ -127,10 +131,6 @@ def test_every_authenticator_classifies_refresh_token_rejection(manifest):
 
 def _migrated(manifest, config):
     """Run the manifest's spec.config_normalization_rules against a config dict."""
-    from airbyte_cdk.sources.declarative.concurrent_declarative_source import (
-        ConcurrentDeclarativeSource,
-    )
-
     source = ConcurrentDeclarativeSource(source_config=manifest, config=config, catalog=None, state=None)
     return source._migrate_and_transform_config(None, dict(config))
 
