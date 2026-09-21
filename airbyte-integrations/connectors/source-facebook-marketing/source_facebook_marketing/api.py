@@ -55,6 +55,9 @@ class MyFacebookAdsApi(FacebookAdsApi):
     # cumulative quota-block wait of the current block episode; kept on the instance so it survives
     # @backoff_policy re-entering `call()`, reset by the next successful call
     _quota_block_wait_elapsed: timedelta = timedelta()
+    # the connection check turns this off: the platform kills a check job that stays silent for 9 minutes,
+    # so waiting out a rate limit there only replaces the connector's error with a platform timeout
+    pause_on_rate_limit: bool = True
 
     @dataclass
     class Throttle:
@@ -139,7 +142,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
         return usage, pause_interval
 
     def _pause_if_usage_high(self, usage, pause_interval):
-        if usage >= self.MIN_RATE:
+        if self.pause_on_rate_limit and usage >= self.MIN_RATE:
             sleep_time = self._compute_pause_interval(usage=usage, pause_interval=pause_interval)
             logger.warning(f"Facebook API Utilization is too high ({usage})%, pausing for {sleep_time}")
             sleep(sleep_time.total_seconds())
@@ -225,6 +228,8 @@ class MyFacebookAdsApi(FacebookAdsApi):
             try:
                 response = super().call(method, path, params, headers, files, url_override, api_version)
             except FacebookRequestError as exc:
+                if not self.pause_on_rate_limit:
+                    raise
                 if self._is_quota_block_error(exc):
                     # Handled and retried here, without raising, so the wait isn't counted against
                     # @backoff_policy's max_tries -- a quota block can outlast that budget. Once the

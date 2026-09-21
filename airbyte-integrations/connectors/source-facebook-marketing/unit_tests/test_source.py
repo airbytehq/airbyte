@@ -83,6 +83,13 @@ class TestSourceFacebookMarketing:
         assert ok
         assert not error_msg
 
+    def test_check_connection_disables_rate_limit_pauses(self, api, config, logger_mock, fb_marketing):
+        """The platform kills a check job that stays silent for 9 minutes, so the check must not wait out rate limits."""
+        ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
+
+        assert ok and not error_msg
+        assert api.return_value.api.pause_on_rate_limit is False
+
     def test_check_connection_future_date_range(self, api, config, logger_mock, fb_marketing):
         config["start_date"] = "2219-10-10T00:00:00"
         config["end_date"] = "2219-10-11T00:00:00"

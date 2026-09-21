@@ -235,20 +235,21 @@ class TestMyFacebookAdsApi:
                 {
                     "123": [
                         {
-                            "type": "ads_insights",
-                            "call_count": 10,
-                            "total_cputime": 5,
-                            "total_time": 5,
-                            "estimated_time_to_regain_access": 0,
-                        },
-                        {
                             "type": "ads_management",
                             "call_count": 100,
                             "total_cputime": 20,
                             "total_time": 20,
+                            "estimated_time_to_regain_access": 0,
+                        },
+                        {
+                            "type": "ads_insights",
+                            "call_count": 10,
+                            "total_cputime": 5,
+                            "total_time": 5,
                             "estimated_time_to_regain_access": 19,
                         },
-                    ]
+                    ],
+                    "456": None,
                 }
             )
         }
@@ -338,6 +339,14 @@ class TestMyFacebookAdsApi:
         assert fb_api._handle_quota_block_error(exc) == timedelta(seconds=100)
 
         source_facebook_marketing.api.sleep.assert_called_once_with(100.0)
+
+    def test__pause_if_usage_high_is_a_noop_when_pausing_disabled(self, mocker, fb_api):
+        fb_api.pause_on_rate_limit = False
+        mocker.patch.object(source_facebook_marketing.api, "sleep")
+
+        fb_api._pause_if_usage_high(usage=100, pause_interval=timedelta(minutes=5))
+
+        source_facebook_marketing.api.sleep.assert_not_called()
 
     def test__handle_failed_call_rate_limit_applies_generic_pause(self, mocker, fb_api):
         headers = {"x-ad-account-usage": json.dumps({"acc_id_util_pct": 96})}
@@ -466,6 +475,21 @@ class TestMyFacebookAdsApi:
             source_facebook_marketing.api.MyFacebookAdsApi.call.__wrapped__(fb_api, method="GET", path=("act_123", "ads"), params={})
 
         mock_handle_failed.assert_not_called()
+
+    def test_call_reraises_immediately_when_pausing_disabled(self, mocker, fb_api):
+        """The connection check turns pausing off: a quota block must surface at once instead of
+        sleeping into the platform's 9-minute check timeout."""
+        fb_api.pause_on_rate_limit = False
+        headers = {"x-ad-account-usage": json.dumps({"acc_id_util_pct": 100, "reset_time_duration": 100})}
+        quota_error = self._make_error(17, 2446079, headers=headers)
+        mock_super_call = mocker.patch.object(FacebookAdsApi, "call", side_effect=[quota_error] * 2)
+        mocker.patch.object(source_facebook_marketing.api, "sleep")
+
+        with pytest.raises(FacebookRequestError):
+            source_facebook_marketing.api.MyFacebookAdsApi.call.__wrapped__(fb_api, method="GET", path=("act_123", "ads"), params={})
+
+        assert mock_super_call.call_count == 1
+        source_facebook_marketing.api.sleep.assert_not_called()
 
     def test_find_account(self, api, account_id, requests_mock):
         requests_mock.register_uri(
