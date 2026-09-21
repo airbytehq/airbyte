@@ -130,12 +130,30 @@ definitions:
       name: events
       primary_key:
         - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('start_date') or '2000-01-01T00:00:00.000000Z', '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: calendars/{{ config['calendarid'] }}/events
           http_method: GET
+          request_parameters:
+            showDeleted: "true"
+            maxResults: "2500"
+            singleEvents: "false"
+            # Empty string is dropped by the CDK. The sentinel start_datetime means
+            # "no bound": only a saved cursor or a configured start_date sends updatedMin.
+            updatedMin: "{{ stream_slice['start_time'] if stream_slice['start_time'] > '2001-01-01' else '' }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -152,6 +170,12 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get('nextPageToken') }}"
             stop_condition: "{{ response.get('nextPageToken') is not defined }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - calendar_id
+              value: "{{ config['calendarid'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -167,6 +191,66 @@ definitions:
       refresh_token: "{{ config['credentials']['refresh_token'] }}"
       refresh_request_body: {}
       token_refresh_endpoint: https://oauth2.googleapis.com/token
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 5
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 401
+              action: FAIL
+              failure_type: config_error
+              error_message: "Google rejected the OAuth credentials for the Calendar API."
+            - type: HttpResponseFilter
+              predicate: "{{ 'rateLimitExceeded' in response.get('error', {}) | string or 'userRateLimitExceeded' in response.get('error', {}) | string }}"
+              action: RATE_LIMITED
+            - type: HttpResponseFilter
+              http_codes:
+                - 403
+              action: FAIL
+              failure_type: config_error
+              error_message: "The authorized Google account lacks access to the configured calendar or the Calendar API is disabled."
+            - type: HttpResponseFilter
+              http_codes:
+                - 404
+              action: FAIL
+              failure_type: config_error
+              error_message: "The calendar configured in \"Calendar Id\" was not found by the Google Calendar API."
+            - type: HttpResponseFilter
+              http_codes:
+                - 410
+              action: FAIL
+              failure_type: system_error
+              error_message: "The saved sync position for the events stream is older than Google Calendar permits."
+            - type: HttpResponseFilter
+              http_codes:
+                - 429
+              action: RATE_LIMITED
+            - type: HttpResponseFilter
+              http_codes:
+                - 500
+                - 502
+                - 503
+                - 504
+              action: RETRY
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 10
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 500
+          interval: PT1M
+      matchers: []
 
 streams:
   - $ref: "#/definitions/streams/colors"
@@ -247,6 +331,21 @@ spec:
         type: string
         order: 1
         title: Calendar Id
+        description: The ID of the calendar to sync events from, found in the calendar's settings in Google Calendar. Use 'primary' for the primary calendar.
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        description: Sync events modified on or after this date. When unset, the first sync fetches all events and later incremental syncs only fetch events updated since the saved cursor. Google only accepts dates within roughly the last 30 days.
+      num_workers:
+        type: integer
+        order: 3
+        title: Number of concurrent workers
+        description: The number of worker threads used to fetch data concurrently.
+        minimum: 1
+        maximum: 10
+        default: 3
     additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0
@@ -1123,6 +1222,10 @@ schemas:
               type:
                 - string
                 - "null"
+      calendar_id:
+        type:
+          - string
+          - "null"
       attendees:
         type:
           - array
