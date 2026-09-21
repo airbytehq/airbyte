@@ -184,7 +184,7 @@ def test_pagination_follows_link_header(rate_limit_mock_response, requests_mock)
 def test_inaccessible_repository_is_skipped(sleep_mock, status_code, body, expected_log, rate_limit_mock_response, requests_mock, caplog):
     """Legacy warned and continued on 404/403/409, and on a 410 naming a disabled feature, for a
     single repository (streams.py `GithubStreamABC.read_records` and
-    `errors_handlers.py::is_gone_with_feature_disabled`). One unreadable repository must not fail
+    the legacy `is_gone_with_feature_disabled`). One unreadable repository must not fail
     the stream or drop the repositories that follow it, and the skip must leave a trace in the log.
     """
     config = _config("ghost/deleted-repo", "docker/compose")
@@ -233,7 +233,7 @@ def test_unexpected_410_fails_fast(sleep_mock, rate_limit_mock_response, request
     ("status_code", "message"),
     [
         # Legacy required `status_code == 410` before it looked at the message at all
-        # (errors_handlers.py::is_gone_with_feature_disabled). The declarative predicate cannot see
+        # (the legacy `is_gone_with_feature_disabled`). The declarative predicate cannot see
         # the status code, so it names the features instead. These messages mention something being
         # disabled but no such feature, and so must not reach the IGNORE path.
         (401, {"message": "Your account is disabled"}),
