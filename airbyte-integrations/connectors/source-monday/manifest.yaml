@@ -515,8 +515,11 @@ spec:
           - scope: assets:read
           - scope: tags:read
           - scope: teams:read
-        # PKCE (S256) is mandatory on the new flow; the random `state` doubles as the code_verifier
-        consent_url: https://auth.monday.com/oauth2/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}&code_challenge={{ state_value | codechallengeS256 }}&code_challenge_method=S256&subdomain={{subdomain}}
+        # PKCE (S256) is mandatory on the new flow; the random `state` doubles as the code_verifier.
+        # force_install_if_needed: accounts that do not own the Airbyte app must have it installed before they can
+        # authorize it; this makes monday prompt the admin to install it instead of rejecting the request
+        # (https://developer.monday.com/apps/changelog/upgraded-friction-free-oauth-flow)
+        consent_url: https://auth.monday.com/oauth2/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}&code_challenge={{ state_value | codechallengeS256 }}&code_challenge_method=S256&force_install_if_needed=true&subdomain={{subdomain}}
         # code_verifier length per RFC 7636 section 4.1
         state:
           min: 43

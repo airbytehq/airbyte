@@ -25,6 +25,7 @@ def test_oauth_connector_input_specification_declares_pkce_flow():
         "{{state_param}}",
         "code_challenge={{ state_value | codechallengeS256 }}",
         "code_challenge_method=S256",
+        "force_install_if_needed=true",
         "subdomain={{subdomain}}",
     ):
         assert placeholder in connector_input.consent_url
