@@ -219,6 +219,45 @@ class TestMyFacebookAdsApi:
         assert usage == expected_usage
         assert isinstance(usage, (int, float))
 
+    def test__parse_call_rate_header_reads_ad_account_reset_time(self, fb_api):
+        headers = {
+            "x-ad-account-usage": json.dumps({"acc_id_util_pct": 100, "reset_time_duration": 100, "ads_api_access_tier": "standard_access"})
+        }
+
+        usage, pause_interval = fb_api._parse_call_rate_header(headers)
+
+        assert usage == 100
+        assert pause_interval == timedelta(seconds=100)
+
+    def test__parse_call_rate_header_takes_the_worst_business_use_case_entry(self, fb_api):
+        headers = {
+            "x-business-use-case-usage": json.dumps(
+                {
+                    "123": [
+                        {
+                            "type": "ads_insights",
+                            "call_count": 10,
+                            "total_cputime": 5,
+                            "total_time": 5,
+                            "estimated_time_to_regain_access": 0,
+                        },
+                        {
+                            "type": "ads_management",
+                            "call_count": 100,
+                            "total_cputime": 20,
+                            "total_time": 20,
+                            "estimated_time_to_regain_access": 19,
+                        },
+                    ]
+                }
+            )
+        }
+
+        usage, pause_interval = fb_api._parse_call_rate_header(headers)
+
+        assert usage == 100
+        assert pause_interval == timedelta(minutes=19)
+
     def test_update_insights_throttle_limit_casts_string_values(self, fb_api, mocker):
         mock_response = mocker.Mock()
         mock_response.headers.return_value = {"x-fb-ads-insights-throttle": '{"app_id_util_pct": "55.5", "acc_id_util_pct": "30"}'}
@@ -290,6 +329,15 @@ class TestMyFacebookAdsApi:
         assert fb_api._handle_quota_block_error(exc) == fb_api.MAX_PAUSE_INTERVAL
 
         source_facebook_marketing.api.sleep.assert_called_once_with(fb_api.MAX_PAUSE_INTERVAL.total_seconds())
+
+    def test__handle_quota_block_error_uses_ad_account_reset_time_when_no_business_estimate(self, mocker, fb_api):
+        headers = {"x-ad-account-usage": json.dumps({"acc_id_util_pct": 100, "reset_time_duration": 100})}
+        exc = self._make_error(17, 2446079, headers=headers)
+        mocker.patch.object(source_facebook_marketing.api, "sleep")
+
+        assert fb_api._handle_quota_block_error(exc) == timedelta(seconds=100)
+
+        source_facebook_marketing.api.sleep.assert_called_once_with(100.0)
 
     def test__handle_failed_call_rate_limit_applies_generic_pause(self, mocker, fb_api):
         headers = {"x-ad-account-usage": json.dumps({"acc_id_util_pct": 96})}

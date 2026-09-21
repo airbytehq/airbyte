@@ -82,6 +82,8 @@ class MyFacebookAdsApi(FacebookAdsApi):
         if usage_header_ad_account:
             usage_header_ad_account_loaded = json.loads(usage_header_ad_account)
             usage = max(usage, float(usage_header_ad_account_loaded.get("acc_id_util_pct", 0)))
+            # seconds until the ad-account score resets - the wait hint for the account-level limit
+            pause_interval = max(pause_interval, timedelta(seconds=float(usage_header_ad_account_loaded.get("reset_time_duration", 0))))
 
         if usage_header_app:
             usage_header_app_loaded = json.loads(usage_header_app)
@@ -95,17 +97,18 @@ class MyFacebookAdsApi(FacebookAdsApi):
         if usage_header_business:
             usage_header_business_loaded = json.loads(usage_header_business)
             for business_object_id in usage_header_business_loaded:
-                usage_limits = usage_header_business_loaded.get(business_object_id)[0]
-                usage = max(
-                    usage,
-                    float(usage_limits.get("call_count", 0)),
-                    float(usage_limits.get("total_cputime", 0)),
-                    float(usage_limits.get("total_time", 0)),
-                )
-                pause_interval = max(
-                    pause_interval,
-                    timedelta(minutes=usage_limits.get("estimated_time_to_regain_access", 0)),
-                )
+                # one entry per rate-limit type (ads_management, ads_insights, ...): take the worst of them
+                for usage_limits in usage_header_business_loaded.get(business_object_id) or []:
+                    usage = max(
+                        usage,
+                        float(usage_limits.get("call_count", 0)),
+                        float(usage_limits.get("total_cputime", 0)),
+                        float(usage_limits.get("total_time", 0)),
+                    )
+                    pause_interval = max(
+                        pause_interval,
+                        timedelta(minutes=usage_limits.get("estimated_time_to_regain_access", 0)),
+                    )
 
         return usage, pause_interval
 
