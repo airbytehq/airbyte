@@ -20,7 +20,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from source_github.source import SourceGithub
 
 from airbyte_cdk.models import (
     AirbyteStateBlob,
@@ -35,6 +34,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+
+from .utils import make_source
 
 
 MIGRATED_STREAMS = ["commits", "contributor_activity", "workflow_runs", "workflow_jobs"]
@@ -75,7 +76,7 @@ def _catalog(*stream_names):
 def _read_messages(config, *stream_names, state=None):
     shutil.rmtree(os.environ["REQUEST_CACHE_PATH"], ignore_errors=True)
     catalog = _catalog(*stream_names)
-    source = SourceGithub(config=dict(config), catalog=catalog, state=state)
+    source = make_source(config=dict(config), catalog=catalog, state=state)
     messages, error = [], None
     try:
         for message in source.read(logging.getLogger("airbyte"), dict(config), catalog, state or []):
@@ -141,7 +142,7 @@ def _run(run_id, created_at, updated_at, repository=_REPO):
 def test_streams_are_served_by_the_manifest_only(rate_limit_mock_response, requests_mock):
     config = _config(_REPO)
     _mock_repository_resolution(requests_mock, _REPO)
-    source = SourceGithub(config=dict(config), catalog=None, state=None)
+    source = make_source(config=dict(config), catalog=None, state=None)
 
     discovered = {stream.name: stream for stream in source.discover(logging.getLogger("airbyte"), dict(config)).streams}
 
@@ -606,7 +607,7 @@ def test_workflow_jobs_legacy_state_is_migrated(rate_limit_mock_response, reques
 def test_workflow_jobs_legacy_state_picks_the_earliest_instant():
     """The global cursor must be the earliest instant across repositories, not the smallest string:
     with offsets, text order and time order differ."""
-    from source_github.components import WorkflowJobsLegacyStateMigration
+    from components import WorkflowJobsLegacyStateMigration
 
     migration = WorkflowJobsLegacyStateMigration(config={}, parameters={})
     legacy = {"org/a": {"completed_at": "2022-09-02T10:00:00+02:00"}, "org/b": {"completed_at": "2022-09-02T09:00:00Z"}}

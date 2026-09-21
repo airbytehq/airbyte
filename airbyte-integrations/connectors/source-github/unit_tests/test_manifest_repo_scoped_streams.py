@@ -15,7 +15,6 @@ import logging
 from unittest.mock import patch
 
 import pytest
-from source_github.source import SourceGithub
 
 from airbyte_cdk.models import (
     AirbyteStream,
@@ -25,6 +24,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+
+from .utils import make_source
 
 
 # (stream name, endpoint segment under repos/{repository}/, primary key)
@@ -59,7 +60,7 @@ def _catalog(*stream_names):
 def _read_messages(config, *stream_names):
     """Return (messages, error); the caller decides what to assert on."""
     catalog = _catalog(*stream_names)
-    source = SourceGithub(config=dict(config), catalog=catalog, state=[])
+    source = make_source(config=dict(config), catalog=catalog, state=[])
     messages, error = [], None
     try:
         # Appended one at a time so the messages emitted before a failure are still available.
@@ -124,7 +125,7 @@ def test_stream_primary_key_matches_legacy(stream_name, endpoint, primary_key):
     """The primary keys the Python classes declared must survive the migration, otherwise
     existing destinations would start deduplicating on a different key."""
     config = _config("airbytehq/airbyte")
-    source = SourceGithub(config=config)
+    source = make_source(config=config)
     manifest_streams = {stream.name: stream for stream in source.streams(config=config)}
 
     airbyte_stream = manifest_streams[stream_name].as_airbyte_stream()
@@ -139,7 +140,7 @@ def test_streams_are_served_by_the_manifest_only(rate_limit_mock_response, reque
     _mock_repository_resolution(requests_mock, "airbytehq/airbyte")
     requests_mock.get("https://api.github.com/repos/airbytehq/airbyte/branches", json=[{"name": "master"}])
 
-    source = SourceGithub(config=dict(config))
+    source = make_source(config=dict(config))
     migrated = {name for name, _, _ in MIGRATED_STREAMS}
 
     discovered = [stream.name for stream in source.discover(logging.getLogger("airbyte"), dict(config)).streams]

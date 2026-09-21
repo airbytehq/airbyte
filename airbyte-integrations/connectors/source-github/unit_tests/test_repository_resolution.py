@@ -7,9 +7,11 @@ import time
 from unittest.mock import patch
 
 import pytest
-from source_github.source import SourceGithub
 
+from airbyte_cdk.models import Status
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+from .utils import make_source, resolve_repositories_and_organizations
 
 
 def _mock_rate_limit(requests_mock, api_url="https://api.github.com"):
@@ -17,18 +19,25 @@ def _mock_rate_limit(requests_mock, api_url="https://api.github.com"):
     requests_mock.get(f"{api_url}/rate_limit", json={"resources": {"core": dict(quota), "graphql": dict(quota)}})
 
 
+def _check(config):
+    """`check` is `CheckStream` on `branches` with `config_overrides.max_waiting_time: 1`
+    (see the manifest's `check` component). Returns (ok, message)."""
+    status = make_source(config=dict(config)).check(logging.getLogger("airbyte"), dict(config))
+    return status.status == Status.SUCCEEDED, status.message
+
+
 def _resolve(config):
-    """Run repository resolution the way `check_connection` does: config
+    """Run repository resolution the way `check` does: config
     normalization first, then enumeration of the manifest's partition routers."""
-    source = SourceGithub(config=dict(config))
-    return source._resolve_repositories_and_organizations(source._config)
+    source = make_source(config=dict(config))
+    return resolve_repositories_and_organizations(source, source._config)
 
 
 def test_check_connection_still_fails_when_every_explicit_repository_is_forbidden(requests_mock):
     """`repository_stats` skips a 403 rather than failing, so that one SAML-protected repository
     does not take the healthy ones down with it (`resolve_explicit_repository_error_handler`).
     That must not cost `check` its ability to reject a token that can read nothing: with every
-    entry skipped the resolved list is empty, which `check_connection` already reports."""
+    entry skipped the resolved list is empty, which `check` already reports."""
     _mock_rate_limit(requests_mock)
     requests_mock.get(
         "https://api.github.com/repos/saml/protected-repo",
@@ -37,10 +46,10 @@ def test_check_connection_still_fails_when_every_explicit_repository_is_forbidde
     )
     config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["saml/protected-repo"]}
 
-    ok, message = SourceGithub(config=dict(config)).check_connection(logging.getLogger("airbyte"), dict(config))
+    ok, message = _check(config)
 
     assert ok is False
-    assert "couldn't be found" in message
+    assert "no stream slices were found" in message
 
 
 def test_check_connection_fails_fast_when_quota_exhausted(requests_mock):
@@ -52,13 +61,8 @@ def test_check_connection_fails_fast_when_quota_exhausted(requests_mock):
         "https://api.github.com/rate_limit",
         json={"resources": {"core": dict(exhausted), "graphql": dict(exhausted)}},
     )
-    source = SourceGithub(config={"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]})
-
     with patch("time.sleep") as sleep_mock:
-        ok, message = source.check_connection(
-            logging.getLogger("airbyte"),
-            {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]},
-        )
+        ok, message = _check({"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]})
 
     assert ok is False
     assert "Rate limit is exceeded for all provided tokens." in message
@@ -78,10 +82,10 @@ def test_check_connection_fails_fast_when_the_server_reports_a_rate_limit(reques
         json={"message": "API rate limit exceeded for user ID 1."},
     )
     config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]}
-    source = SourceGithub(config=dict(config))
+    source = make_source(config=dict(config))
 
     with patch("time.sleep") as sleep_mock:
-        ok, message = source.check_connection(logging.getLogger("airbyte"), dict(config))
+        ok, message = _check(dict(config))
 
     assert ok is False
     assert "rate limit" in message.lower()
@@ -189,10 +193,11 @@ def test_check_retries_a_transient_error_instead_of_reporting_a_rate_limit(reque
             {"json": [{"id": 1, "full_name": "org/repo", "owner": {"login": "org"}}]},
         ],
     )
+    requests_mock.get("https://api.github.com/repos/org/repo/branches", json=[{"name": "main"}])
     config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]}
 
     with patch("time.sleep"):
-        ok, message = SourceGithub(config=dict(config)).check_connection(logging.getLogger("airbyte"), dict(config))
+        ok, message = _check(config)
 
     assert (ok, message) == (True, None)
     assert listing.call_count == 2
@@ -211,7 +216,7 @@ def test_check_still_fails_fast_when_the_server_reports_a_rate_limit_after_the_r
     config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]}
 
     with patch("time.sleep") as sleep_mock:
-        ok, message = SourceGithub(config=dict(config)).check_connection(logging.getLogger("airbyte"), dict(config))
+        ok, message = _check(config)
 
     assert ok is False
     assert "rate limit" in message.lower()
@@ -255,7 +260,7 @@ def test_every_num_workers_the_spec_allows_builds(requests_mock, num_workers):
         "num_workers": num_workers,
     }
 
-    source = SourceGithub(config=dict(config))
+    source = make_source(config=dict(config))
 
     assert source.spec(logging.getLogger("airbyte")).connectionSpecification["properties"]["num_workers"]["default"] == 4
 
@@ -307,7 +312,7 @@ def test_every_max_waiting_time_the_spec_allows_builds(requests_mock, max_waitin
     the two backoff caps — and CDK 7.28.1 resolves the caps when the strategy is constructed, so a
     value one of them cannot render fails every command rather than one retry. Null is the case
     that bit: it renders as an empty string, so `config.get('max_waiting_time', 120)` produced
-    "PTM" and the source would not build. Zero must keep working too, since `check_connection`
+    "PTM" and the source would not build. Zero must keep working too, since `check`
     passes it deliberately.
     """
     quota = {"remaining": 5000, "reset": int(time.time()) + 3600, "limit": 5000}
@@ -322,7 +327,7 @@ def test_every_max_waiting_time_the_spec_allows_builds(requests_mock, max_waitin
         **max_waiting_time_config,
     }
 
-    source = SourceGithub(config=dict(config))
+    source = make_source(config=dict(config))
     streams = source.streams(config)
 
     # Building at all is the assertion: every manifest stream shares the authenticator and the

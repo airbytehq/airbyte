@@ -21,7 +21,6 @@ one this group actually hits — is re-asserted here.
 import logging
 
 import pytest
-from source_github.source import SourceGithub
 
 from airbyte_cdk.models import (
     AirbyteStateBlob,
@@ -36,6 +35,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+
+from .utils import make_source
 
 
 # (stream name, endpoint under repos/{repository}/, cursor field, query params beyond per_page)
@@ -93,7 +94,7 @@ def _catalog(*stream_names):
 
 def _read_messages(config, *stream_names, state=None):
     catalog = _catalog(*stream_names)
-    source = SourceGithub(config=dict(config), catalog=catalog, state=state)
+    source = make_source(config=dict(config), catalog=catalog, state=state)
     messages, error = [], None
     try:
         # Appended one at a time so the messages emitted before a failure are still available.
@@ -233,7 +234,7 @@ def test_request_shape_matches_legacy(stream_name, endpoint, cursor_field, param
 def test_primary_key_and_cursor_match_legacy(stream_name, endpoint, cursor_field, params, rate_limit_mock_response, requests_mock):
     config = _config("docker/compose")
     _mock_repository_resolution(requests_mock, "docker/compose")
-    source = SourceGithub(config=dict(config), catalog=None, state=None)
+    source = make_source(config=dict(config), catalog=None, state=None)
 
     (stream,) = [stream for stream in source.discover(logging.getLogger("airbyte"), dict(config)).streams if stream.name == stream_name]
 
@@ -247,7 +248,7 @@ def test_streams_are_served_by_the_manifest_only(rate_limit_mock_response, reque
     Step 7 group, so the Python list must not return them or the catalog would list them twice."""
     config = _config("docker/compose")
     _mock_repository_resolution(requests_mock, "docker/compose")
-    source = SourceGithub(config=dict(config), catalog=None, state=None)
+    source = make_source(config=dict(config), catalog=None, state=None)
 
     discovered = [stream.name for stream in source.discover(logging.getLogger("airbyte"), dict(config)).streams]
 

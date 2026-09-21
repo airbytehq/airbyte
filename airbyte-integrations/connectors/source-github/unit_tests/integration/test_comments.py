@@ -3,14 +3,13 @@
 import json
 from unittest import TestCase
 
-from source_github import SourceGithub
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
+from ..utils import make_source
 from .config import ConfigBuilder
 
 
@@ -75,7 +74,7 @@ class CommentsTest(TestCase):
             HttpResponse(json.dumps(find_template("comments", __file__)), 200),
         )
 
-        source = SourceGithub(config=_CONFIG)
+        source = make_source(config=_CONFIG)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 1

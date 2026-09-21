@@ -772,6 +772,32 @@ class ConfigNormalization(ConfigTransformation):
             config["branches"] = set(filter(None, config["branch"].split(" ")))
 
 
+class MigrateStringToArray(ConfigTransformation):
+    """Legacy (<1.4.6) `repository`/`branch` were space-separated strings; the CDK writes the
+    migrated config back and emits a CONNECTOR_CONFIG control message when this changes it.
+    The legacy key is kept so a downgrade still finds it."""
+
+    migrate_from_key: str
+    migrate_to_key: str
+
+    def __init__(self, **kwargs: Any) -> None:
+        pass
+
+    def transform(self, config: MutableMapping[str, Any]) -> None:
+        if self.migrate_from_key in config and self.migrate_to_key not in config:
+            config[self.migrate_to_key] = sorted(set(filter(None, config[self.migrate_from_key].split(" "))))
+
+
+class MigrateRepository(MigrateStringToArray):
+    migrate_from_key = "repository"
+    migrate_to_key = "repositories"
+
+
+class MigrateBranch(MigrateStringToArray):
+    migrate_from_key = "branch"
+    migrate_to_key = "branches"
+
+
 class ApiUrlValidationStrategy(ValidationStrategy):
     """Validate `api_url` scheme and host, rejecting plain `http` on Cloud."""
 

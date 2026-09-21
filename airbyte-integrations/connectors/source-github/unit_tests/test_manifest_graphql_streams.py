@@ -14,7 +14,6 @@ import json
 import logging
 
 import pytest
-from source_github.source import SourceGithub
 
 from airbyte_cdk.models import (
     AirbyteStream,
@@ -24,6 +23,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+
+from .utils import make_source
 
 
 GRAPHQL_URL = "https://api.github.com/graphql"
@@ -91,7 +92,7 @@ def _mock_repository_resolution(requests_mock):
 
 def _read_messages(config, stream_name):
     catalog = _catalog(stream_name)
-    source = SourceGithub(config=dict(config), catalog=catalog, state=[])
+    source = make_source(config=dict(config), catalog=catalog, state=[])
     messages, error = [], None
     try:
         for message in source.read(logging.getLogger("airbyte"), dict(config), catalog, []):

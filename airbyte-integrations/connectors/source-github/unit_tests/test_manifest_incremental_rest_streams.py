@@ -21,7 +21,6 @@ from unittest.mock import patch
 from urllib.parse import parse_qs, urlparse
 
 import pytest
-from source_github.source import SourceGithub
 
 from airbyte_cdk.models import (
     AirbyteStateBlob,
@@ -36,6 +35,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+
+from .utils import make_source
 
 
 # (stream name, endpoint segment under repos/{repository}/)
@@ -72,7 +73,7 @@ def _catalog(*stream_names):
 
 def _read_messages(config, *stream_names, state=None):
     catalog = _catalog(*stream_names)
-    source = SourceGithub(config=dict(config), catalog=catalog, state=state)
+    source = make_source(config=dict(config), catalog=catalog, state=state)
     messages, error = [], None
     try:
         # Appended one at a time so the messages emitted before a failure are still available.
@@ -486,7 +487,7 @@ def test_stream_primary_key_and_sync_modes_match_legacy(stream_name, endpoint):
     """`GithubStreamABC.primary_key = "id"` and `cursor_field = "updated_at"`. Changing either
     would make existing destinations deduplicate on a different key."""
     config = _config("docker/compose")
-    source = SourceGithub(config=config)
+    source = make_source(config=config)
     manifest_streams = {stream.name: stream for stream in source.streams(config=config)}
 
     airbyte_stream = manifest_streams[stream_name].as_airbyte_stream()
@@ -503,7 +504,7 @@ def test_streams_are_served_by_the_manifest_only(rate_limit_mock_response, reque
     requests_mock.get("https://api.github.com/repos/docker/compose/branches", json=[{"name": "master"}])
 
     migrated = {name for name, _ in MIGRATED_STREAMS}
-    discovered = [stream.name for stream in SourceGithub(config=dict(config)).discover(logging.getLogger("airbyte"), dict(config)).streams]
+    discovered = [stream.name for stream in make_source(config=dict(config)).discover(logging.getLogger("airbyte"), dict(config)).streams]
     for name in migrated:
         assert discovered.count(name) == 1
 

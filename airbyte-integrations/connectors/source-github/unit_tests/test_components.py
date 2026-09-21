@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-"""Unit tests for the custom low-code components in `source_github.components`.
+"""Unit tests for the custom low-code components in `components.py` (loaded as `source_declarative_manifest.components`).
 
 The pagination strategies are tested directly rather than through a read because the property
 that matters most is not observable from a single request: all traversal state lives in the
@@ -15,7 +15,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from source_github.components import (
+from components import (
     DeepNestedGraphQLPaginationStrategy,
     DeepNestedGraphQLRecordExtractor,
     NestedGraphQLPaginationStrategy,

@@ -9,7 +9,6 @@ from unittest.mock import patch
 import pytest
 import requests
 from freezegun import freeze_time
-from source_github import SourceGithub
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth.rate_limited_multiple_token import (
@@ -18,14 +17,14 @@ from airbyte_cdk.sources.declarative.auth.rate_limited_multiple_token import (
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
-from .utils import ProbeStream, read_full_refresh
+from .utils import ProbeStream, _get_access_token, get_authenticator, make_source, read_full_refresh, resolve_repositories_and_organizations
 
 
 def _source_and_authenticator(tokens: str, **config_overrides):
     """Build a source and the shared authenticator its manifest streams use."""
     config = {"access_token": tokens, "repositories": ["org/repo"], **config_overrides}
-    source = SourceGithub(catalog=None, config=config, state=None)
-    return source, source._get_authenticator(config)
+    source = make_source(catalog=None, config=config, state=None)
+    return source, get_authenticator(source, config)
 
 
 def _remaining(authenticator, token, quota="rest"):
@@ -58,19 +57,19 @@ def test_multiple_tokens(rate_limit_mock_response):
         pytest.param({"credentials": {"personal_access_token": "pat-token"}}, "pat-token", id="personal_access_token_last"),
     ],
 )
-def test_token_precedence_matches_get_access_token(credentials_config, expected_token, rate_limit_mock_response):
-    """The manifest's `tokens` expression and `SourceGithub.get_access_token` must pick the same
+def test_token_precedence_matches_legacy(credentials_config, expected_token, rate_limit_mock_response):
+    """The manifest's `tokens` expression and the token-precedence helper must pick the same
     token when more than one config key is populated, or the manifest streams would authenticate
     as one identity while the repository-resolution requests authenticate as another — and the
     shared quota counters would be tracking the wrong token. Only exercised when the keys *coexist*: a config
     with a single key cannot tell a correct precedence chain from a broken one."""
     config = {"repositories": ["org/repo"], **credentials_config}
-    source = SourceGithub(catalog=None, config=config, state=None)
+    source = make_source(catalog=None, config=config, state=None)
 
-    authenticator = source._get_authenticator(config)
+    authenticator = get_authenticator(source, config)
 
     assert list(authenticator._tokens) == [expected_token]
-    assert SourceGithub.get_access_token(config)[1] == expected_token, "manifest and Python paths disagree on the token"
+    assert _get_access_token(config) == expected_token, "manifest and legacy precedence disagree on the token"
 
 
 def test_comma_separated_tokens_are_split_and_the_first_one_signs(rate_limit_mock_response):
@@ -97,15 +96,15 @@ def test_authenticator_instance_is_shared_with_manifest_streams(rate_limit_mock_
     which is what makes a single instance possible — this test is what keeps it that way.
     """
     config = {"access_token": "token1,token2", "repositories": ["org/repo"], "api_url": "https://api.github.com"}
-    source = SourceGithub(catalog=None, config=config, state=None)
+    source = make_source(catalog=None, config=config, state=None)
 
     manifest_stream = source.streams(config)[0]
     manifest_authenticator = manifest_stream._stream_partition_generator._partition_factory._retriever.requester.authenticator
 
     requests_mock.get("https://api.github.com/repos/org/repo", json={"full_name": "org/repo", "organization": {"login": "org"}})
-    source._resolve_repositories_and_organizations(config)
+    resolve_repositories_and_organizations(source, config)
 
-    assert source._get_authenticator(config) is manifest_authenticator
+    assert get_authenticator(source, config) is manifest_authenticator
     assert len(source._constructor._rate_limited_authenticators) == 1
 
 
@@ -113,12 +112,12 @@ def test_quota_is_charged_once_across_repository_resolution_and_probe_stream(rat
     """Requests made while resolving repositories (manifest components) and requests made by a
     probe stream draw down one counter, not two."""
     config = {"access_token": "token1", "repositories": ["org/repo"], "api_url": "https://api.github.com"}
-    source = SourceGithub(catalog=None, config=config, state=None)
+    source = make_source(catalog=None, config=config, state=None)
     requests_mock.get("https://api.github.com/repos/org/repo", json={"full_name": "org/repo", "organization": {"login": "org"}})
     requests_mock.get("https://api.github.com/repos/org/repo/probe_stream", json=[{"id": 1}])
 
-    source._resolve_repositories_and_organizations(config)
-    authenticator = source._get_authenticator(config)
+    resolve_repositories_and_organizations(source, config)
+    authenticator = get_authenticator(source, config)
     after_resolution = _remaining(authenticator, "token1")
 
     list(read_full_refresh(ProbeStream(authenticator=authenticator, repositories=["org/repo"], page_size_for_large_streams=10)))

@@ -6,24 +6,40 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Migration to manifest-only (complete)
 
-Every stream now lives in `source_github/manifest.yaml` (tracking issue:
-airbytehq/airbyte-internal-issues#16492). Step 9 moved the last six — the GraphQL streams — and
-deleted the Python stream layer (`streams.py`, `errors_handlers.py`, `backoff_strategies.py`),
-and Step 10 removed the hybrid routing and the `AbstractSource` base: `SourceGithub` is a plain
-`YamlDeclarativeSource`. What remains in `source.py` is `check`/`check_connection`,
-repository/organization resolution (`_resolve_repositories_and_organizations`),
-`get_access_token` and `_get_authenticator`; `components.py` holds the custom components the
-manifest names by `class_name`.
+The connector is now fully manifest-only (tracking issue:
+airbytehq/airbyte-internal-issues#16492): `manifest.yaml` and `components.py` at the connector
+root, `language:manifest-only` in `metadata.yaml`, and no Python package — Step 9 moved the
+last six (the GraphQL) streams into the manifest, and Step 10 deleted `source_github/`,
+`main.py` and the root `pyproject.toml`. The connector runs on the `source-declarative-manifest`
+base image, where `components.py` is loaded as `source_declarative_manifest.components` — every
+`class_name:` in the manifest uses that module path, and `unit_tests/conftest.py` puts the
+connector root on `sys.path` so the same imports work under `components` locally.
 
-Config normalization and validation live in the manifest `spec.config_normalization_rules`,
-backed by `components.ConfigNormalization` (default/normalize `api_url`, convert the legacy
-`repository`/`branch` strings to collections) and `components.ApiUrlValidationStrategy`. The
-CDK runs the transform at construction on `self._config` and the validations in `streams()`,
-so `read`/`discover` get a config error; `check_connection` calls both on its own config
-argument because the entrypoint hands `check` the raw file config.
+`unit_tests/` is a self-contained poetry project (`unit_tests/pyproject.toml`,
+`package-mode = false`); run the suite exactly as CI does: `cd unit_tests && poetry install
+--no-root && poetry run pytest`. Helpers live in `unit_tests/utils.py`: `make_source` builds
+the `YamlDeclarativeSource` on `manifest.yaml`, and `resolve_repositories_and_organizations` /
+`get_authenticator` are test-side ports of the connector's former resolution/authenticator
+methods.
 
-- `source_github/manifest.yaml` — every stream, with every schema inline
-  (`InlineSchemaLoader`). `source_github/schemas/` is gone; there is no `JsonFileSchemaLoader`
+`check` is declarative too: `CheckStream` on `branches` with
+`config_overrides.max_waiting_time: 1`. `branches` slices on `repository_partition_router`,
+so `check` runs the same repository resolution the streams do — a config whose repos resolve
+to nothing fails with "no stream slices were found" — and then reads one page of
+`repos/{repo}/branches`. The `max_waiting_time` override is the interactive check's fail-fast
+budget (see the comment on the `check` component in `manifest.yaml`).
+
+Config normalization, validation and the legacy config migrations live in the manifest
+`spec.config_normalization_rules`: `config_migrations` runs
+`components.MigrateRepository`/`MigrateBranch` (1.4.6 space-separated strings → lists, emitting
+CONNECTOR_CONFIG), `transformations` runs `components.ConfigNormalization` (default/normalize
+`api_url`, convert the legacy strings when the list keys are absent), and `validations` runs
+`components.ApiUrlValidationStrategy` on `api_url`. The CDK runs migrations+transformations at
+construction on `self._config` and the validations in `streams()`, so `read`/`discover`/`check`
+get a config error.
+
+- `manifest.yaml` — every stream, with every schema inline
+  (`InlineSchemaLoader`). There is no `schemas/` directory; there is no `JsonFileSchemaLoader`
   left, including for `issue_timeline_events`, whose shared `base_event` definition is expanded
   at all 23 uses (~6,900 lines) because a manifest schema cannot express the reference.
   **No `$ref` may appear inside an inline schema.** A relative one (`user.json`) is left as a
@@ -86,9 +102,10 @@ Things worth knowing before touching either half:
   stream, not through it.
 - Repository/organization resolution lives in the manifest (`repositories_resolver` and
   `repository_stats`, unioned by `repository_partition_router` /
-  `organization_resolution_partition_router`). `SourceGithub` enumerates those same routers to
-  decide whether a config resolves to anything at all. See the organization-router section
-  below; the two org routers are not interchangeable.
+  `organization_resolution_partition_router`). `check` (`CheckStream` on `branches`) drives
+  those same routers to decide whether a config resolves to anything at all, and
+  `unit_tests/utils.py::resolve_repositories_and_organizations` enumerates them for the tests.
+  See the organization-router section below; the two org routers are not interchangeable.
 - Error contract differs per stream group and is expressed by two composed error handlers in
   the manifest: `strict_access_error_handler` (403 fails — repo listing and resolution, which
   is what makes `check` surface bad token scopes) and `skip_inaccessible_error_handler`
@@ -163,22 +180,22 @@ Things worth knowing before touching either half:
 - When migrating a stream, check `unit_tests/integration/test_<stream>.py` for tests that assert
   `SubstreamResumableFullRefreshCursor` state (`__ab_full_refresh_sync_complete`): declarative
   full-refresh streams emit a single terminal state message instead. Those tests also construct
-  `SourceGithub()` with no arguments and pass state only to `read()`; a declarative stream reads
-  its state at construction, so they have to build `SourceGithub(config=..., catalog=...,
+  `make_source()` with no arguments and pass state only to `read()`; a declarative stream reads
+  its state at construction, so they have to build `make_source(config=..., catalog=...,
   state=...)` or the state is silently ignored (`test_events.py` shows the adapted form). `test_assignees.py` also
   turned out to define the same test name twice, so only the second body ran — worth grepping
   for that in the other `integration/test_*.py` files before trusting their coverage.
 
 ## Authentication: one shared authenticator, always
 
-Every stream now comes from `manifest.yaml`, but the repository/organization resolution
-`source.py` performs still issues HTTP of its own, and it **must** use the same authenticator
+Every stream now comes from `manifest.yaml`, and the repository/organization resolution the
+routers perform issues HTTP too — all of it through the same authenticator
 instance the streams use. `RateLimitedMultipleTokenAuthenticator` tracks each token's remaining
 REST/GraphQL quota in local counters; two instances over the same tokens each believe they own
 the full budget, so the connector plans for twice the quota GitHub grants and overruns the rate
 limit.
 
-`SourceGithub._get_authenticator()` gets that instance by asking the manifest's component
+`unit_tests/utils.py::get_authenticator` gets that instance by asking the manifest's component
 factory for `definitions.requester_base.authenticator`. This reads like it constructs a new
 one but does not: `ModelToComponentFactory` caches these by resolved constructor arguments
 specifically so every stream shares one set of counters. The cache key is value-based, so pass
@@ -219,11 +236,11 @@ not interchangeable:
 - `organization_resolution_partition_router` derives orgs from response payloads —
   `owner/login` on the `orgs/{org}/repos` listing, `organization/login` on
   `repos/{owner}/{repo}`. Every org-scoped stream must slice on this one: the declarative
-  `organizations`/`teams`/`users` via `organization_scoped_retriever`. `SourceGithub`
-  enumerates the same router in `_resolve_repositories_and_organizations`. Its wildcard branch reads its parents through `repositories_resolver`, whose
+  `organizations`/`teams`/`users` via `organization_scoped_retriever`; `check` and the tests'
+  `resolve_repositories_and_organizations` enumerate the same router. Its wildcard branch reads its parents through `repositories_resolver`, whose
   `record_filter` is `wildcard_repository_filter`, so an organization whose wildcard matched no
   repository is not a partition either — that is why the declarative streams need no equivalent
-  of the `repository_owners` filter `SourceGithub` applies by hand.
+  of the `repository_owners` filter the test helper applies by hand.
 
 The asymmetric `parent_key`s are load-bearing, not an inconsistency to tidy: *list org repos*
 returns `owner` but no `organization`, while *get a repository* returns both, so using
