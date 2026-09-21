@@ -123,6 +123,8 @@ def test_max_concurrent_requests_defaults_to_free_without_paid_type(mocker, requ
     (
         json.dumps({"org": [{"license_details": {"paid": True, "paid_type": "platinum"}}]}).encode(),
         json.dumps({"org": [{}]}).encode(),
+        json.dumps({"org": [{"license_details": "enterprise"}]}).encode(),
+        json.dumps({"org": [{"license_details": ["enterprise"]}]}).encode(),
         json.dumps({"org": []}).encode(),
         b"not json",
     ),

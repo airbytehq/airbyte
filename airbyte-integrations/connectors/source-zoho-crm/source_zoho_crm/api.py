@@ -76,6 +76,8 @@ class ZohoAPI:
             response = requests.get(url=f"{self.api_url}/crm/v2/org", headers=self.authenticator.get_auth_header())
             response.raise_for_status()
             license_details = response.json()["org"][0].get("license_details") or {}
+            if not isinstance(license_details, dict):
+                raise TypeError(f"license_details is {type(license_details).__name__}, expected object")
         except requests.exceptions.HTTPError as exc:
             logger.warning(f"Could not detect Zoho CRM edition: {exc.response.content} [HTTP status {exc.response.status_code}]")
             return None
