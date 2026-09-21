@@ -133,7 +133,7 @@ def test_stream_primary_key_matches_legacy(stream_name, path, injects_organizati
     """All three declared `id`; changing it would re-key existing destinations."""
     config = _config("airbytehq/airbyte")
     source = SourceGithub(config=config)
-    manifest_streams = {stream.name: stream for stream in super(SourceGithub, source).streams(config=config)}
+    manifest_streams = {stream.name: stream for stream in source.streams(config=config)}
 
     assert manifest_streams[stream_name]._primary_key == ["id"]
 

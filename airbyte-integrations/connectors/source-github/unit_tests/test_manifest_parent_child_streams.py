@@ -260,10 +260,8 @@ def test_streams_are_served_by_the_manifest_only(rate_limit_mock_response, reque
     requests_mock.get(f"{_API}/repos/{_REPO}/branches", json=[{"name": "master"}])
     source = SourceGithub(config=dict(config), catalog=None, state=None)
 
-    python_names = {stream.name for stream in source.streams(dict(config))}
     discovered = source.discover(logging.getLogger("airbyte"), dict(config)).streams
 
-    assert not python_names & set(MIGRATED_STREAMS)
     assert set(MIGRATED_STREAMS) <= {stream.name for stream in discovered}
     assert len(discovered) == len({stream.name for stream in discovered})
     by_name = {stream.name: stream for stream in discovered}

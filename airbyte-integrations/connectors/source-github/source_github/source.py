@@ -2,20 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-from os import getenv
-from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
-from urllib.parse import urlparse
+from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import (
-    AirbyteCatalog,
     AirbyteConnectionStatus,
-    AirbyteMessage,
-    AirbyteStateMessage,
     ConfiguredAirbyteCatalog,
     FailureType,
     Status,
 )
-from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     RateLimitedMultipleTokenAuthenticator as RateLimitedMultipleTokenAuthenticatorModel,
@@ -25,15 +19,12 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 )
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
-from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from . import constants
 
 
-class SourceGithub(YamlDeclarativeSource, AbstractSource):
-    continue_sync_on_stream_failure = True
-
+class SourceGithub(YamlDeclarativeSource):
     def __init__(
         self,
         catalog: Optional[ConfiguredAirbyteCatalog] = None,
@@ -48,63 +39,10 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             return AirbyteConnectionStatus(status=Status.FAILED, message=repr(error))
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
-    def read(
-        self,
-        logger: logging.Logger,
-        config: Mapping[str, Any],
-        catalog: ConfiguredAirbyteCatalog,
-        state: Optional[List[AirbyteStateMessage]] = None,
-    ) -> Iterator[AirbyteMessage]:
-        """Route manifest streams to `ConcurrentDeclarativeSource` and Python streams to `AbstractSource`.
-
-        CDK v7 removed the `_group_streams` mechanism that CDK v6 had. This override
-        replicates that behavior: manifest-backed `AbstractStream` objects are read
-        concurrently, while regular Python `Stream` objects are read through
-        `AbstractSource.read()`.
-
-        The config is validated and transformed up front so that manifest streams see
-        normalized keys (legacy `repository`/`branch` converted to arrays, `api_url`
-        defaulted). Repository/organization resolution for the Python streams happens
-        lazily inside `streams()` by enumerating the manifest's shared partition
-        routers, so manifest-only catalogs skip it entirely. As streams are migrated
-        from Python to the manifest, they automatically move from the synchronous to
-        the concurrent path.
-        """
-        effective_config = self._validate_and_transform_config(self._config or config)
-        self._sync_manifest_config(effective_config)
-        concurrent_streams = super().streams(config=effective_config)
-        concurrent_stream_names = {stream.name for stream in concurrent_streams}
-
-        concurrent_catalog = ConfiguredAirbyteCatalog(streams=[s for s in catalog.streams if s.stream.name in concurrent_stream_names])
-        if concurrent_catalog.streams:
-            selected = self._select_streams(streams=concurrent_streams, configured_catalog=concurrent_catalog)
-            if selected:
-                yield from self._concurrent_source.read(selected)
-
-        synchronous_catalog = ConfiguredAirbyteCatalog(streams=[s for s in catalog.streams if s.stream.name not in concurrent_stream_names])
-        if synchronous_catalog.streams:
-            # Pass effective_config (not the raw config) so streams() sees the
-            # normalized keys (repositories array, api_url default) when
-            # AbstractSource.read re-enters it.
-            yield from AbstractSource.read(self, logger, effective_config, synchronous_catalog, state)
-
-    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
-        """Return the union of Python `Stream` objects and manifest-backed streams.
-
-        `ConcurrentDeclarativeSource.discover()` only reports manifest streams, so this
-        override adds the Python streams from `SourceGithub.streams()`. As streams move
-        into the manifest they leave the Python list and are reported via
-        `super().streams()`, keeping the discovered catalog complete throughout the migration.
-        """
-        effective_config = self._config or config
-        streams = [stream.as_airbyte_stream() for stream in self.streams(config=effective_config)]
-        streams += [stream.as_airbyte_stream() for stream in super().streams(config=effective_config)]
-        return AirbyteCatalog(streams=streams)
-
     def _resolve_repositories_and_organizations(self, config: Mapping[str, Any]) -> Tuple[List[str], List[str]]:
         """Resolve wildcard patterns and explicit repos by enumerating the manifest's
         partition routers — the same components manifest streams slice on at read
-        time, so repo-scoped Python streams see the same repository list.
+        time, so the resolution sees the same repository list.
 
         Wildcard patterns (`org/*`, `org/prefix*`) expand via `repositories_resolver`;
         explicit `org/repo` entries validate via `repository_stats`; entries that 404
@@ -168,8 +106,8 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         raise Exception("Invalid config format")
 
     def _get_authenticator(self, config: Mapping[str, Any]) -> DeclarativeAuthenticator:
-        """Return the manifest's `RateLimitedMultipleTokenAuthenticator` so the Python streams
-        charge the same per-token quota counters as the declarative ones.
+        """Return the manifest's `RateLimitedMultipleTokenAuthenticator` so the repository
+        resolution requests charge the same per-token quota counters as the streams.
 
         This does NOT build a second authenticator, even though it reads like it: the CDK's
         `ModelToComponentFactory` caches `RateLimitedMultipleTokenAuthenticator` instances in
@@ -181,79 +119,16 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
 
         Because the cache key is value-based, a *differently resolved* config yields a
         different instance. Two consequences worth knowing:
-          - `config` must be the transformed config (normalized `api_url`), so this is called
-            after `_validate_and_transform_config`;
+          - `config` must be normalized — the config the source was constructed with, or one
+            run through `_spec_component.transform_config` — so `api_url` is defaulted;
           - `check_connection` intentionally resolves with `max_waiting_time: 0`, which is a
-            separate instance by design — `check` builds no Python streams.
+            separate instance by design.
         """
         return self._constructor.create_component(
             model_type=RateLimitedMultipleTokenAuthenticatorModel,
             component_definition=self.resolved_manifest["definitions"]["requester_base"]["authenticator"],
             config=config,
         )
-
-    def _sync_manifest_config(self, config: Mapping[str, Any]) -> None:
-        """Push the transformed config into `self._config`, which manifest components read.
-
-        `ConcurrentDeclarativeSource.streams()` ignores its `config` argument and interpolates
-        from `self._config` (concurrent_declarative_source.py), so a config normalized here —
-        `api_url` defaulted, legacy `repository`/`branch` converted to arrays — would otherwise
-        never reach the manifest streams. Both entry points that transform the config call
-        this, so the two copies of the assignment cannot drift apart.
-
-        TODO: drop once the CDK lets a source hand `streams()` its own config.
-        """
-        if isinstance(self._config, dict):
-            self._config.update(config)
-
-    def _validate_and_transform_config(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        config = self._ensure_default_values(config)
-        config = self._validate_repositories(config)
-        config = self._validate_branches(config)
-        return config
-
-    def _ensure_default_values(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        # `not config.get(...)` rather than `setdefault`: the key can be present and null or
-        # empty — null via the API or Terraform, empty because the spec tells users to "leave it
-        # empty to use GitHub" — and both used to reach `urlparse` as a non-string, crashing with
-        # an unhandled TypeError/AttributeError where every other bad `api_url` gets an
-        # actionable config error.
-        if not config.get("api_url"):
-            config["api_url"] = "https://api.github.com"
-        if not config["api_url"].endswith("/"):
-            config["api_url"] = config["api_url"] + "/"
-        api_url_parsed = urlparse(config["api_url"])
-
-        if not api_url_parsed.scheme.startswith("http"):
-            message = "Please enter a full url for `API URL` field starting with `http`"
-        elif api_url_parsed.scheme == "http" and not self._is_http_allowed():
-            message = "HTTP connection is insecure and is not allowed in this environment. Please use `https` instead."
-        elif not api_url_parsed.netloc:
-            message = "Please provide a correct API URL."
-        else:
-            return config
-
-        raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
-
-    def _validate_repositories(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        if config.get("repositories"):
-            pass
-        elif config.get("repository"):
-            config["repositories"] = set(filter(None, config["repository"].split(" ")))
-
-        return config
-
-    def _validate_branches(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        if config.get("branches"):
-            pass
-        elif config.get("branch"):
-            config["branches"] = set(filter(None, config["branch"].split(" ")))
-
-        return config
-
-    @staticmethod
-    def _is_http_allowed() -> bool:
-        return getenv("DEPLOYMENT_MODE", "").upper() != "CLOUD"
 
     def user_friendly_error_message(self, message: str) -> str:
         # The two 404 branches this helper used to carry — "Repo name X is unknown" and
@@ -271,7 +146,11 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         return user_message
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        config = self._validate_and_transform_config(config)
+        # `check` is handed the raw file config, so apply the manifest spec's normalization
+        # and validation here — the same rules read/discover get from the spec.
+        config = dict(config)
+        self._spec_component.transform_config(config)
+        self._spec_component.validate_config(config)
         # `check` is interactive and must answer in seconds, so it resolves with the smallest
         # budget the spec allows. This replaces the deleted `exit_on_rate_limit = True if
         # is_check_connection else False`: "PT1M" makes
@@ -305,30 +184,3 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             message = repr(e)
             user_message = self.user_friendly_error_message(message)
             return False, user_message or message
-
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """No stream is implemented in Python any more; every one lives in the manifest.
-
-        The method stays because `discover()` calls it and because the repository resolution
-        below is what turns an unusable repositories/organizations config into a config error
-        rather than an empty catalog.
-        """
-        config = self._validate_and_transform_config(config)
-
-        organizations, repositories = self._resolve_repositories_and_organizations(config)
-
-        if not any((organizations, repositories)):
-            user_message = (
-                "No streams available. Looks like your config for repositories or organizations is not valid."
-                " Please, check your permissions, names of repositories and organizations."
-                " Needed scopes: repo, read:org, read:repo_hook, read:user, read:discussion, workflow."
-            )
-            raise AirbyteTracedException(
-                internal_message="No streams available. Please check permissions",
-                message=user_message,
-                failure_type=FailureType.config_error,
-            )
-
-        self._sync_manifest_config(config)
-
-        return []

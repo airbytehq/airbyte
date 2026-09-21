@@ -143,10 +143,8 @@ def test_streams_are_served_by_the_manifest_only(rate_limit_mock_response, reque
     _mock_repository_resolution(requests_mock, _REPO)
     source = SourceGithub(config=dict(config), catalog=None, state=None)
 
-    python_names = {stream.name for stream in source.streams(dict(config))}
     discovered = {stream.name: stream for stream in source.discover(logging.getLogger("airbyte"), dict(config)).streams}
 
-    assert not python_names & set(MIGRATED_STREAMS)
     assert set(MIGRATED_STREAMS) <= set(discovered)
     assert discovered["commits"].source_defined_primary_key == [["sha"]] and discovered["commits"].default_cursor_field == ["created_at"]
     assert discovered["workflow_runs"].default_cursor_field == ["updated_at"]
@@ -595,9 +593,9 @@ def test_workflow_jobs_legacy_state_is_migrated(rate_limit_mock_response, reques
 
     assert error is None
     assert sorted(record["id"] for record in records) == [4, 5]
-    assert _requested(requests_mock, "/jobs") == [
-        "/repos/org/repo/actions/runs/1/jobs?per_page=100&filter=all"
-    ], "run 2 predates the migrated parent cursor"
+    assert _requested(requests_mock, "/jobs") == ["/repos/org/repo/actions/runs/1/jobs?per_page=100&filter=all"], (
+        "run 2 predates the migrated parent cursor"
+    )
     assert [request for request in requests_mock.request_history if request.path.endswith("/actions/runs")][-1].headers[
         "X-Airbyte-Window-Start"
     ] == "2022-09-02T09:10:00Z"
