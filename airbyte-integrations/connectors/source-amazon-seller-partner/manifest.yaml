@@ -3942,6 +3942,11 @@ schemas:
         type:
         - 'null'
         - string
+      order-item-id:
+        description: Unique identifier for the order item on Amazon platform
+        type:
+        - 'null'
+        - string
       purchase-date:
         description: Timestamp of the order purchase date
         type:
@@ -4119,6 +4124,11 @@ schemas:
       merchant-order-id:
         description: The unique identifier for the merchant's order.
         type: string
+      order-item-id:
+        description: The unique identifier for the Amazon order item.
+        type:
+        - 'null'
+        - string
       purchase-date:
         description: The date and time of the order purchase.
         type:
