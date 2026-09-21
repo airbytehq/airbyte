@@ -202,6 +202,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.24 | 2026-09-21 | Pending | Preserve thread parent checkpoints on restart and skip archived channels the bot cannot join |
 | 3.2.23 | 2026-09-15 | [86208](https://github.com/airbytehq/airbyte/pull/86208) | Update dependencies |
 | 3.2.22 | 2026-09-08 | [85654](https://github.com/airbytehq/airbyte/pull/85654) | Update dependencies |
 | 3.2.21 | 2026-08-27 | [83796](https://github.com/airbytehq/airbyte/pull/83796) | Fix sync failure when the optional `channel_filter` config field is not set |
