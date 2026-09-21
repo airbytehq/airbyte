@@ -104,13 +104,13 @@ def _resolve_page_size(page_size: Any, config: Config) -> Optional[int]:
     except (TypeError, ValueError):
         raise AirbyteTracedException(
             internal_message=f"page_size_for_large_streams resolved to {page_size!r}, which is not a whole number",
-            message=f'"Page size for large streams" (page_size_for_large_streams) must be a whole number. Got {page_size!r}.',
+            message=f'"Page size for large streams" (page_size_for_large_streams) must be a whole number. ' f"Got {page_size!r}.",
             failure_type=FailureType.config_error,
         )
     if resolved < 1:
         raise AirbyteTracedException(
             internal_message=f"page_size_for_large_streams resolved to {resolved}, which is not strictly positive",
-            message=f'"Page size for large streams" (page_size_for_large_streams) must be at least 1. Got {resolved}.',
+            message=f'"Page size for large streams" (page_size_for_large_streams) must be at least 1. ' f"Got {resolved}.",
             failure_type=FailureType.config_error,
         )
     return resolved

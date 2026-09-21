@@ -18,7 +18,7 @@ def _mock_rate_limit(requests_mock, api_url="https://api.github.com"):
 
 
 def _resolve(config):
-    """Run repository resolution the way `check_connection`/`streams()` do: config
+    """Run repository resolution the way `check_connection` does: config
     normalization first, then enumeration of the manifest's partition routers."""
     source = SourceGithub(config=dict(config))
     return source._resolve_repositories_and_organizations(source._config)

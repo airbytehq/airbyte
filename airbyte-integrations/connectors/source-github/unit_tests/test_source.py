@@ -83,7 +83,7 @@ def test_api_url_slash_normalization_keeps_python_and_manifest_urls_consistent(a
     """The manifest concatenates after `.rstrip('/')`, but Python streams `urljoin` their
     `url_base` with a relative path — which silently drops the last path segment of a GHES
     base URL lacking a trailing slash (`.../api/v3` + `repos/...` -> `.../api/repos/...`).
-    `_ensure_default_values` must normalize the slash so both halves resolve the same base."""
+    `ConfigNormalization` must normalize the slash so both halves resolve the same base."""
     config = {"access_token": "test_token", "repository": "org/repo", "api_url": api_url}
     source = SourceGithub(config=dict(config))
     config = source._config
