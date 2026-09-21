@@ -275,6 +275,7 @@ spec:
         oneOf:
           - title: Authenticate via Google (OAuth)
             type: object
+            description: Sign in with Google using Airbyte's OAuth app (Cloud).
             required:
               - auth_type
               - client_id
@@ -300,7 +301,7 @@ spec:
                 title: Refresh Token
                 description: Refresh token obtained from the Google OAuth consent flow.
                 airbyte_secret: true
-          - title: Refresh token (manual)
+          - title: Authenticate with custom app (client ID / secret)
             type: object
             required:
               - auth_type
@@ -315,17 +316,17 @@ spec:
               client_id:
                 type: string
                 title: Client ID
-                description: The OAuth 2.0 client ID from your Google Cloud project.
+                description: The OAuth 2.0 client ID from your own Google Cloud OAuth app.
                 airbyte_secret: true
               client_secret:
                 type: string
                 title: Client Secret
-                description: The OAuth 2.0 client secret from your Google Cloud project.
+                description: The OAuth 2.0 client secret from your own Google Cloud OAuth app.
                 airbyte_secret: true
               refresh_token:
                 type: string
                 title: Refresh Token
-                description: Refresh token obtained from a Google OAuth consent flow with the calendar.readonly scope.
+                description: Refresh token obtained from your own Google Cloud OAuth app with the calendar.readonly scope.
                 airbyte_secret: true
       calendarid:
         type: string
@@ -393,7 +394,7 @@ spec:
     type: ConfigNormalizationRules
     config_migrations:
       - type: ConfigMigration
-        description: Move flat OAuth credentials under `credentials`
+        description: Move flat OAuth credentials under `credentials` as the custom-app option
         transformations:
           - type: ConfigAddFields
             condition: "{{ 'client_refresh_token_2' in config }}"
@@ -402,7 +403,7 @@ spec:
                 path:
                   - credentials
                   - auth_type
-                value: "oauth2.0"
+                value: "manual"
               - type: AddedFieldDefinition
                 path:
                   - credentials
