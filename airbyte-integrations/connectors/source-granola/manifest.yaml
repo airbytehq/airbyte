@@ -110,9 +110,6 @@ definitions:
           # Granola refuses to return oversized transcripts inline and answers 413
           # TRANSCRIPT_TOO_LARGE. Skip the note here instead of failing the sync; the
           # full transcript is available from the note_transcripts stream.
-          # A local `response_filters` list replaces the referenced handler's list
-          # entirely, so the shared filters are re-declared here alongside the
-          # stream-specific one rather than relying on a merge.
           error_handler:
             $ref: "#/definitions/base_error_handler"
             response_filters:
@@ -159,9 +156,6 @@ definitions:
           # A note listed by the parent stream can be deleted, unshared, or fall out of
           # the API key's scope before its transcript partition runs, and Granola answers
           # 404 on this path. Skip that note instead of failing every remaining transcript.
-          # A local `response_filters` list replaces the referenced handler's list
-          # entirely, so the shared filters are re-declared here alongside the
-          # stream-specific one rather than relying on a merge.
           error_handler:
             $ref: "#/definitions/base_error_handler"
             response_filters:
@@ -295,6 +289,9 @@ definitions:
         schema:
           $ref: "#/schemas/deleted_notes"
 
+  # A stream-level `response_filters` list replaces the referenced handler's list
+  # rather than merging with it, so every handler lists these shared filters
+  # explicitly before its stream-specific ones.
   response_filters:
     invalid_api_key:
       type: HttpResponseFilter
