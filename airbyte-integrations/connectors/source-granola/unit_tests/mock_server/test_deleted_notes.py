@@ -82,6 +82,32 @@ class TestDeletedNotes(TestCase):
         http_mocker.assert_number_of_calls(second_page, 1)
 
     @HttpMocker()
+    def test_null_data_yields_null_note_id(self, http_mocker: HttpMocker):
+        """An event with `data: null` is still emitted (without a note_id) instead of failing the transformation."""
+        occurred_after, occurred_before = _SLICE
+        event = {**_audit_event("aud_1", "unused"), "data": None}
+        http_mocker.get(_audit_request(occurred_after, occurred_before), _audit_response([event]))
+
+        output = _read_deleted_notes()
+
+        assert output.errors == []
+        assert [message.record.data.get("note_id") for message in output.records] == [None]
+
+    @HttpMocker()
+    def test_401_is_a_config_error_naming_the_audit_api_key(self, http_mocker: HttpMocker):
+        occurred_after, occurred_before = _SLICE
+        http_mocker.get(
+            _audit_request(occurred_after, occurred_before),
+            HttpResponse(body=json.dumps({"error": {"code": "INVALID_API_KEY"}}), status_code=401),
+        )
+
+        output = _read_deleted_notes()
+
+        config_errors = [message.trace.error for message in output.errors if message.trace.error.failure_type == FailureType.config_error]
+        assert config_errors
+        assert any("Audit API key" in (error.message or "") for error in config_errors)
+
+    @HttpMocker()
     def test_request_carries_action_bounds_and_page_size(self, http_mocker: HttpMocker):
         """The single slice is sent as occurred_after/occurred_before with the documented max page size."""
         occurred_after, occurred_before = _SLICE

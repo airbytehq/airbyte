@@ -225,7 +225,7 @@ definitions:
           error_handler:
             $ref: "#/definitions/base_error_handler"
             response_filters:
-              - $ref: "#/definitions/response_filters/invalid_api_key"
+              - $ref: "#/definitions/response_filters/invalid_audit_api_key"
               - $ref: "#/definitions/response_filters/rate_limited"
               - $ref: "#/definitions/response_filters/server_error"
               - type: HttpResponseFilter
@@ -260,7 +260,7 @@ definitions:
           fields:
             - path:
                 - note_id
-              value: "{{ record.get('data', {}).get('documentId') }}"
+              value: "{{ (record.get('data') or {}).get('documentId') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: occurred_at
@@ -303,6 +303,18 @@ definitions:
       error_message: >-
         Granola rejected the API key. Create a new key in the Granola desktop app
         (Settings > Connectors > API keys) and update the connector configuration.
+    invalid_audit_api_key:
+      type: HttpResponseFilter
+      http_codes:
+        - 401
+        - 403
+      action: FAIL
+      failure_type: config_error
+      error_message: >-
+        Granola rejected the Audit API key used by the deleted_notes stream. Ask a
+        workspace admin to create a new Audit API key (Settings > Connectors >
+        Audit API keys) and enter it in the Audit API key field, or deselect the
+        deleted_notes stream.
     rate_limited:
       type: HttpResponseFilter
       http_codes:
