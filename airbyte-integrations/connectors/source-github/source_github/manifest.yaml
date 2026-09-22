@@ -17756,10 +17756,16 @@ definitions:
     # this message with nothing left to lower. A more recent start date is deliberately not
     # suggested: these streams filter client-side, so it would not make GitHub's per-page query
     # any cheaper.
+    #
+    # This one message is shared by all six GraphQL streams, but the setting it names governs
+    # only the two the legacy code marked `large_stream`. Naming the split matters more than
+    # brevity here: the other four start from a fixed 100, and a user who lowers the setting
+    # after reading this would otherwise watch it change nothing.
     failure_message: >-
-      The page size the connector starts from is "Page size for large streams"
-      (page_size_for_large_streams) in the source configuration; a lower value makes each
-      GraphQL query cheaper, if it is not already at its minimum of 1.
+      `releases` and `pull_request_stats` start from "Page size for large streams"
+      (page_size_for_large_streams) in the source configuration, and a lower value makes each of
+      their GraphQL queries cheaper, if it is not already at its minimum of 1. The other GraphQL
+      streams start from a fixed page size of 100 that this setting does not govern.
 
   graphql_paginator:
     type: DefaultPaginator

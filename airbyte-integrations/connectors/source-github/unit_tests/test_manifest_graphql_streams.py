@@ -457,9 +457,10 @@ def test_persistent_gateway_timeout_fails_the_stream_instead_of_looping(page_siz
     assert page_size_reduction_waits == [10, 20, 30, 10, 20, 30]
     assert _trace_error_messages(messages) == [
         "The source keeps rejecting pages of stream releases at the smallest page size the connector is allowed to "
-        'request (1 records per page). The page size the connector starts from is "Page size for large streams" '
-        "(page_size_for_large_streams) in the source configuration; a lower value makes each GraphQL query cheaper, "
-        "if it is not already at its minimum of 1."
+        'request (1 records per page). `releases` and `pull_request_stats` start from "Page size for large streams" '
+        "(page_size_for_large_streams) in the source configuration, and a lower value makes each of their GraphQL "
+        "queries cheaper, if it is not already at its minimum of 1. The other GraphQL streams start from a fixed "
+        "page size of 100 that this setting does not govern."
     ]
 
 
