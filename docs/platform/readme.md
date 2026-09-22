@@ -73,7 +73,7 @@ Airbyte's data replication platform is available as a self-managed, hybrid, or f
 
 <Grid columns="2">
 
-<CardWithIcon title="Standard" description="A cloud solution that provides a fully managed experience for data replication. Focus on moving data while Airbyte manages the infrastructure. Free 30-day trial." ctaText="Sign up" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
+<CardWithIcon title="Standard" description="A cloud solution that provides a fully managed experience for data replication. Focus on moving data while Airbyte manages the infrastructure. Free 14-day trial." ctaText="Sign up" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
 
 <CardWithIcon title="Plus" description="A self-serve upgrade with everything in Standard, plus more frequent syncs, more workspaces, single sign on, and premium support. Choose the number of credits that fits your usage." ctaText="Sign up" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
 

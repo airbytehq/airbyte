@@ -45,7 +45,7 @@ To compare plans and pricing, see [Airbyte's pricing page](https://airbyte.com/p
 
 ## Start a trial
 
-To begin a trial of Airbyte Cloud, head to [cloud.airbyte.com/signup](https://cloud.airbyte.com/signup). Your trial begins after your first successful sync. Trials last 30 days or when you use 400 trial credits, whichever occurs first.
+To begin a trial of Airbyte Cloud, head to [cloud.airbyte.com/signup](https://cloud.airbyte.com/signup). Your trial begins after your first successful sync. Trials last 14 days or when you use 400 trial credits, whichever occurs first.
 
 If you need additional trial credits or time to evaluate Airbyte, please reach out to Airbyte's [Sales team](https://airbyte.com/company/talk-to-sales).
 
