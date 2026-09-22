@@ -52,6 +52,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.component1
 import kotlin.collections.component2
 import org.apache.kafka.connect.source.SourceRecord
@@ -68,6 +69,7 @@ class PostgresSourceDebeziumOperations(
 
     private val log = KotlinLogging.logger {}
     private val cdcConfig: CdcIncrementalConfiguration by lazy { config.cdc!! }
+    private val nonArrayValueWarnedFields: MutableSet<String> = ConcurrentHashMap.newKeySet()
 
     companion object {
         const val STATE = "state"
@@ -235,18 +237,32 @@ class PostgresSourceDebeziumOperations(
             if (field.type is ArrayFieldType<*>) {
                 val rawArray = data[field.id]
                 mappedValue =
-                    if (rawArray == null || rawArray is NullNode) null
-                    else {
-                        Jsons.arrayNode().also { arr ->
-                            (rawArray as ArrayNode).forEach {
-                                val mappingResult =
-                                    mapValue(it, (field.type as ArrayFieldType<*>).elementFieldType)
-                                arr.add(mappingResult.getOrNull())
-                                if (mappingResult.isFailure) {
-                                    changes[EmittedField(field.id, field.type)] =
-                                        FieldValueChange.DESERIALIZATION_FAILURE_PARTIAL
+                    when {
+                        rawArray == null || rawArray is NullNode -> null
+                        rawArray is ArrayNode ->
+                            Jsons.arrayNode().also { arr ->
+                                rawArray.forEach {
+                                    val mappingResult =
+                                        mapValue(
+                                            it,
+                                            (field.type as ArrayFieldType<*>).elementFieldType
+                                        )
+                                    arr.add(mappingResult.getOrNull())
+                                    if (mappingResult.isFailure) {
+                                        changes[EmittedField(field.id, field.type)] =
+                                            FieldValueChange.DESERIALIZATION_FAILURE_PARTIAL
+                                    }
                                 }
                             }
+                        else -> {
+                            if (nonArrayValueWarnedFields.add(field.id)) {
+                                log.warn {
+                                    "Field '${field.id}' in stream '${stream.label}' is an array type but Debezium emitted a ${rawArray.nodeType} value; emitting null for this field and recording a deserialization failure. Further occurrences for this field will not be logged."
+                                }
+                            }
+                            changes[EmittedField(field.id, field.type)] =
+                                FieldValueChange.DESERIALIZATION_FAILURE_TOTAL
+                            null
                         }
                     }
             } else {
