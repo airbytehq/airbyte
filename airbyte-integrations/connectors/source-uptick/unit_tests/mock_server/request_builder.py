@@ -64,6 +64,7 @@ class UptickRequestBuilder:
         stream: str,
         page: int = 1,
         updatedsince: str = START_DATE,
+        token: str = ACCESS_TOKEN,
     ) -> HttpRequest:
         model, fields = cls.FIELDS[stream]
         query_params: dict[str, Any] = {
@@ -77,7 +78,7 @@ class UptickRequestBuilder:
         return HttpRequest(
             url=f"{cls.BASE_URL}/api/v2.15/{stream}/",
             query_params=query_params,
-            headers={"Authorization": f"Bearer {cls.ACCESS_TOKEN}"},
+            headers={"Authorization": f"Bearer {token}"},
         )
 
     @classmethod

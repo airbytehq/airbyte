@@ -1,18 +1,18 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
-"""Guards the 401/403 response filters shared by every stream via
+"""Guards the 403 response filter shared by every stream via
 `definitions.linked.HttpRequester.error_handler` in `manifest.yaml`.
 
-401 and 403 responses must fail immediately as `config_error` with the connector's own message and
-without retrying: the OAuth authenticator already refreshes tokens proactively on `expires_in`, and
-a rejected token retried through the shared exponential backoff takes minutes to fail.
+403 responses fail immediately as `config_error` with the connector's own message and without
+retrying. 401 behaviour is split: bad credentials fail on the token endpoint as `config_error`,
+while a 401 on a stream request refreshes the token and retries — both cases are covered in
+`mock_server/test_error_handling.py`.
 `task_profitability` is used because it has no record transformations, and it is the endpoint that returns 403 in production for users
 without the Intelligence-report permission.
 """
 
 from unittest.mock import patch
 
-import pytest
 from conftest import base_config, get_source
 
 from airbyte_cdk.models import FailureType, SyncMode
@@ -47,15 +47,9 @@ def _assert_single_config_error(errors: list, message: str) -> None:
     assert stream_errors[0].failure_type == FailureType.config_error
 
 
-@pytest.mark.parametrize(
-    "status_code,response_body,message",
-    [
-        pytest.param(401, '{"detail": "expired"}', "HTTP 401: Uptick rejected the client credentials or user login.", id="401"),
-        pytest.param(403, '{"detail": "denied"}', "HTTP 403: Uptick user lacks permission for the requested endpoint.", id="403"),
-    ],
-)
-def test_auth_errors_fail_fast_as_config_error(status_code: int, response_body: str, message: str) -> None:
-    record_count, errors, sleeps, http_mocker, token_request, stream_request = _read_stream(status_code, response_body)
+def test_403_fails_fast_as_config_error() -> None:
+    record_count, errors, sleeps, http_mocker, token_request, stream_request = _read_stream(403, '{"detail": "denied"}')
+    message = "HTTP 403: Uptick user lacks permission for the requested endpoint."
 
     assert record_count == 0
     _assert_single_config_error(errors, message)

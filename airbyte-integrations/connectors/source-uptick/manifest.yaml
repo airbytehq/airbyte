@@ -20,6 +20,14 @@ definitions:
         refresh_request_body:
           username: '{{ config["username"] }}'
           password: '{{ config["password"] }}'
+        # Bad credentials surface on the token endpoint, not on stream requests:
+        #   wrong username/password -> 400 {"error": "invalid_grant", "error_description": "Invalid credentials given."}
+        #   wrong client_secret     -> 401 {"error": "invalid_client"}
+        # Matching them here makes the token request itself fail as `config_error` before any stream
+        # request is issued, so bad credentials fail in one round trip instead of being retried.
+        refresh_token_error_status_codes: [400, 401]
+        refresh_token_error_key: error
+        refresh_token_error_values: [invalid_grant, invalid_client]
       error_handler:
         type: DefaultErrorHandler
         max_retries: 5
@@ -29,11 +37,17 @@ definitions:
             max_waiting_time_in_seconds: 1800
           - type: ExponentialBackoffStrategy
         response_filters:
+          # A 401 on a stream request cannot be a bad credential (those fail on the token endpoint,
+          # see the authenticator above). Uptick returns the same body for an expired, revoked or
+          # missing token: {"errors": {"detail": "Authentication credentials were not provided."}}.
+          # Tokens live 10 h, so this is an expired/revoked token mid-sync: refresh it and retry
+          # the request. If the refresh itself fails (password rotated mid-sync) the retries are
+          # exhausted through the shared backoff and the attempt fails as `config_error`.
           - type: HttpResponseFilter
             http_codes: [401]
-            action: FAIL
+            action: REFRESH_TOKEN_THEN_RETRY
             failure_type: config_error
-            error_message: "HTTP 401: Uptick rejected the client credentials or user login."
+            error_message: "HTTP 401: Uptick rejected the access token."
           - type: HttpResponseFilter
             http_codes: [403]
             action: FAIL
