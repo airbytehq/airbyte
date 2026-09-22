@@ -762,7 +762,7 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
         **kwargs,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         if self.market_driven_shipping_enabled:
-            self.logger.info(
+            self.logger.warning(
                 f"Stream `{self.name}`: the shop uses market-driven shipping, `deliveryProfiles` no longer reflects its live shipping settings. "
                 "Use the `market_countries` stream instead. No records will be emitted."
             )

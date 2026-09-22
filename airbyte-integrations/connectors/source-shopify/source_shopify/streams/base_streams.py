@@ -957,8 +957,14 @@ class FullRefreshShopifyGraphQlBulkStream(ShopifyStream):
             json={"query": ShopFeatures().get()},
             request_kwargs={},
         )
-        data = response.json().get("data") or {}
+        json_response = response.json()
+        data = json_response.get("data") or {}
         features = (data.get("shop") or {}).get("features") or {}
+        if "marketDrivenShipping" not in features:
+            self.logger.warning(
+                f"Stream `{self.name}`: could not read `shop.features.marketDrivenShipping`, assuming the shop uses legacy "
+                f"delivery profiles. Response: {json_response.get('errors') or json_response}"
+            )
         return bool(features.get("marketDrivenShipping", False))
 
     def request_body_json(

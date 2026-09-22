@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import logging
 from typing import Any, Mapping, Optional
 from unittest.mock import patch
 
@@ -230,3 +231,15 @@ def test_market_driven_shipping_flag_is_fetched_once_and_defaults_to_false(reque
     assert requests_mock.last_request.json() == {
         "query": "query ShopFeatures {\n  shop {\n    features {\n      marketDrivenShipping\n    }\n  }\n}"
     }
+
+
+def test_market_driven_shipping_flag_warns_on_graphql_error(requests_mock, auth_config, caplog):
+    requests_mock.post(
+        "https://test-shop.myshopify.com/admin/api/2026-07/graphql.json",
+        json={"errors": [{"message": "Field 'marketDrivenShipping' doesn't exist on type 'ShopFeatures'"}]},
+    )
+    stream = MarketCountries(auth_config)
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        assert stream.market_driven_shipping_enabled is False
+    assert "could not read `shop.features.marketDrivenShipping`" in caplog.text
+    assert "Field 'marketDrivenShipping' doesn't exist" in caplog.text
