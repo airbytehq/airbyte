@@ -195,7 +195,10 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 decompressed_stream = DecompressedStream(s3_file_object, file)
                 result = ZipContentReader(decompressed_stream, encoding)
             else:
-                result = smart_open.open(s3_uri, transport_params=params, mode=mode.value, encoding=encoding)
+                open_kwargs = {"transport_params": params, "mode": mode.value, "encoding": encoding}
+                if mode.value == "r":
+                    open_kwargs["newline"] = ""
+                result = smart_open.open(s3_uri, **open_kwargs)
         except OSError:
             logger.warning(
                 f"We don't have access to {file.uri}. The file appears to have become unreachable during sync."
