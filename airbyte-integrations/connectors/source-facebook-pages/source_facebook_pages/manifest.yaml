@@ -7,54 +7,106 @@ definitions:
   selector:
     extractor:
       field_path: ["data"]
+  # The response filters are named so that post_insights can reuse every one of them while answering
+  # "Please reduce the amount of data you're asking for" with a smaller page instead of an error.
+  # Order is preserved: DefaultErrorHandler stops at the first filter that matches.
+  app_not_approved_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    error_message_contains: This application has not been approved to use this API
+    failure_type: config_error
+    error_message: The application used to create the Facebook access token has not been approved to use this API. Possibly, some of the requested fields require additional scopes/permissions. The Airbyte OAuth App is being in process of requesting needed scopes. In the meantime, we suggest you use your own access token with the necessary permissions. Please, visit https://docs.airbyte.com/integrations/sources/facebook-pages#creating-your-own-oauth-app for more info about your own OAuth App.
+
+  deprecated_field_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    error_message_contains: Tried accessing nonexisting field
+    failure_type: config_error
+    error_message: Request contains invalid/deprecated field.
+
+  # Meta rejects a request whose response would be too large to assemble. On a stream that cannot shrink
+  # its page - no paginator, or field chunking that has already emitted part of the page - there is
+  # nothing to retry, so the sync stops and the user is told to lower page_size.
+  data_too_large_fail_filter:
+    type: HttpResponseFilter
+    error_message_contains: Please reduce the amount of data you're asking for, then retry your request
+    action: FAIL
+    failure_type: config_error
+    error_message: Facebook API response data exceeds the request limit.
+
+  # On post_insights, which paginates and requests its fields in one chunk, the same response is
+  # answered by re-requesting the same page with a smaller `limit`, which is what the user used to
+  # have to do by hand through `page_size`.
+  data_too_large_reduce_filter:
+    type: HttpResponseFilter
+    error_message_contains: Please reduce the amount of data you're asking for, then retry your request
+    action: REDUCE_PAGE_SIZE
+    failure_type: transient_error
+    error_message: Facebook API response data exceeds the request limit. Retrying the same page with a smaller page size.
+
+  # Meta rejects the whole Insights request when any single requested metric is
+  # invalid. This is permanent, so it must not fall through to the blanket 400 filter
+  # below, which would otherwise hide the API's own message.
+  invalid_insights_metric_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    error_message_contains: must be a valid insights metric
+    failure_type: system_error
+    error_message: >-
+      Facebook rejected one or more of the Insights metrics this connector requested, so the
+      entire request failed. This usually means Meta deprecated a metric that the connector
+      still asks for. Upgrade to the latest connector version; if you are already on the
+      latest version, please report it at https://github.com/airbytehq/airbyte/issues. Facebook
+      returned: {{ response.get('error', {}).get('message', '') }}
+
+  # Facebook reports rate limits and temporary errors with HTTP 400 as well, so they must be
+  # matched before the blanket 400 filter. Filter conditions are OR-ed, so no http_codes here.
+  # Codes: https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
+  transient_error_filter:
+    type: HttpResponseFilter
+    predicate: >-
+      {{ response.get('error', {}).get('is_transient', false)
+         or response.get('error', {}).get('code') in [1, 2, 4, 17, 32, 613, 80000, 80001, 80002, 80003, 80004, 80005, 80006, 80008] }}
+    action: RETRY
+    failure_type: transient_error
+    error_message: >-
+      Facebook API request hit a rate limit or temporary error.
+      Facebook returned: {{ response.get('error', {}).get('message', '') }}
+
+  bad_request_filter:
+    type: HttpResponseFilter
+    http_codes: [400]
+    action: FAIL
+    failure_type: config_error
+    error_message: >-
+      Facebook API request contains invalid Page fields, metrics, or permissions.
+      Facebook returned: {{ response.get('error', {}).get('message', '') }}
+
+  base_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - $ref: "#/definitions/app_not_approved_filter"
+      - $ref: "#/definitions/deprecated_field_filter"
+      - $ref: "#/definitions/data_too_large_fail_filter"
+      - $ref: "#/definitions/invalid_insights_metric_filter"
+      - $ref: "#/definitions/transient_error_filter"
+      - $ref: "#/definitions/bad_request_filter"
+
+  paginated_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - $ref: "#/definitions/app_not_approved_filter"
+      - $ref: "#/definitions/deprecated_field_filter"
+      - $ref: "#/definitions/data_too_large_reduce_filter"
+      - $ref: "#/definitions/invalid_insights_metric_filter"
+      - $ref: "#/definitions/transient_error_filter"
+      - $ref: "#/definitions/bad_request_filter"
+
   requester:
     url_base: "https://graph.facebook.com/v24.0"
     http_method: "GET"
     error_handler:
-      type: DefaultErrorHandler
-      response_filters:
-        - action: FAIL
-          error_message_contains: This application has not been approved to use this API
-          failure_type: config_error
-          error_message: The application used to create the Facebook access token has not been approved to use this API. Possibly, some of the requested fields require additional scopes/permissions. The Airbyte OAuth App is being in process of requesting needed scopes. In the meantime, we suggest you use your own access token with the necessary permissions. Please, visit https://docs.airbyte.com/integrations/sources/facebook-pages#creating-your-own-oauth-app for more info about your own OAuth App.
-        - action: FAIL
-          error_message_contains: Tried accessing nonexisting field
-          failure_type: config_error
-          error_message: Request contains invalid/deprecated field.
-        - error_message_contains: Please reduce the amount of data you're asking for, then retry your request
-          action: FAIL
-          failure_type: config_error
-          error_message: Facebook API response data exceeds the request limit.
-        # Meta rejects the whole Insights request when any single requested metric is
-        # invalid. This is permanent, so it must not fall through to the blanket 400 filter
-        # below, which would otherwise hide the API's own message.
-        - action: FAIL
-          error_message_contains: must be a valid insights metric
-          failure_type: system_error
-          error_message: >-
-            Facebook rejected one or more of the Insights metrics this connector requested, so the
-            entire request failed. This usually means Meta deprecated a metric that the connector
-            still asks for. Upgrade to the latest connector version; if you are already on the
-            latest version, please report it at https://github.com/airbytehq/airbyte/issues. Facebook
-            returned: {{ response.get('error', {}).get('message', '') }}
-        # Facebook reports rate limits and temporary errors with HTTP 400 as well, so they must be
-        # matched before the blanket 400 filter. Filter conditions are OR-ed, so no http_codes here.
-        # Codes: https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
-        - predicate: >-
-            {{ response.get('error', {}).get('is_transient', false)
-               or response.get('error', {}).get('code') in [1, 2, 4, 17, 32, 613, 80000, 80001, 80002, 80003, 80004, 80005, 80006, 80008] }}
-          action: RETRY
-          failure_type: transient_error
-          error_message: >-
-            Facebook API request hit a rate limit or temporary error.
-            Facebook returned: {{ response.get('error', {}).get('message', '') }}
-        - http_codes: [400]
-          action: FAIL
-          failure_type: config_error
-          error_message: >-
-            Facebook API request contains invalid Page fields, metrics, or permissions.
-            Facebook returned: {{ response.get('error', {}).get('message', '') }}
-
+      $ref: "#/definitions/base_error_handler"
     authenticator:
       type: CustomAuthenticator
       class_name: source_facebook_pages.components.AuthenticatorFacebookPageAccessToken
@@ -306,6 +358,9 @@ definitions:
         request_parameters:
           fields: "#/definitions/page_query_properties"
 
+  # `post` cannot use PageSizeReduction: it chunks its field list into several requests per page, so
+  # records from the earlier chunks are already emitted by the time a later chunk is rejected, and
+  # re-requesting that page at a smaller size would emit them twice. It keeps the FAIL filter.
   post_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -329,6 +384,18 @@ definitions:
       path: "/{{ config['page_id'] }}/feed"
     retriever:
       $ref: "#/definitions/retriever"
+      page_size_reduction:
+        type: PageSizeReduction
+        reduction_factor: 2
+        minimum_page_size: 1
+        # 100 posts per page reaches a page of 1 in 7 halvings. A single post carrying many fields or
+        # Insights metrics can be enough to breach the limit on its own, so the floor has to be reachable.
+        max_attempts: 7
+        # NEVER: a page size the API accepted is kept for the rest of the stream. Restoring page_size after
+        # every page would pay the rejected request again on each one.
+        reset_policy: NEVER
+        failure_message: >-
+          If this keeps happening, deselect some fields on this stream so that each post carries less data.
       paginator:
         $ref: "#/definitions/facebook_post_paginator"
       record_selector:
@@ -337,6 +404,8 @@ definitions:
           field_path: ["data", "*", "insights", "data", "*"]
       requester:
         $ref: "#/definitions/requester"
+        error_handler:
+          $ref: "#/definitions/paginated_error_handler"
         request_parameters:
           fields: |
             {{ 
