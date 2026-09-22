@@ -17757,10 +17757,12 @@ definitions:
       inject_into: body_json
       field_path: ["variables", "after"]
 
-  # `page_size_for_large_streams` is deprecated but still honored, and the legacy default of
-  # 10 is preserved deliberately: this migration is meant to be behavior-preserving, and
-  # `REDUCE_PAGE_SIZE` is the safety net rather than a licence to raise the default. Raising
-  # it is a separate, measurable change.
+  # Applies to `releases` and `pull_request_stats` only -- the two streams the legacy code
+  # marked `large_stream = True`. `page_size_for_large_streams` is deprecated but still
+  # honored, and the legacy default of 10 is preserved deliberately: this migration is meant
+  # to be behavior-preserving, and `REDUCE_PAGE_SIZE` is the safety net rather than a licence
+  # to raise the default. Raising it is a separate, measurable change. Every other GraphQL
+  # stream was never a `large_stream` and keeps constants.DEFAULT_PAGE_SIZE (100).
   graphql_large_stream_page_size: "{{ config['page_size_for_large_streams'] if config.get('page_size_for_large_streams') is not none else 10 }}"
 
   releases_stream:
@@ -18740,7 +18742,8 @@ definitions:
           list_connection: "pullRequests"
           drilldown_field: "pullRequest"
           child_connection: "reviews"
-          page_size: "{{ config['page_size_for_large_streams'] if config.get('page_size_for_large_streams') is not none else 10 }}"
+          # Not a `large_stream` in the legacy code, so it keeps constants.DEFAULT_PAGE_SIZE.
+          page_size: 100
       partition_router:
         $ref: "#/definitions/repository_partition_router"
     transformations:
@@ -19006,7 +19009,8 @@ definitions:
           list_connection: "issues"
           drilldown_field: "issue"
           child_connection: "reactions"
-          page_size: "{{ config['page_size_for_large_streams'] if config.get('page_size_for_large_streams') is not none else 10 }}"
+          # Not a `large_stream` in the legacy code, so it keeps constants.DEFAULT_PAGE_SIZE.
+          page_size: 100
       partition_router:
         $ref: "#/definitions/repository_partition_router"
     incremental_sync:
@@ -19284,7 +19288,8 @@ definitions:
         pagination_strategy:
           type: CustomPaginationStrategy
           class_name: source_github.components.DeepNestedGraphQLPaginationStrategy
-          page_size: "{{ config['page_size_for_large_streams'] if config.get('page_size_for_large_streams') is not none else 10 }}"
+          # Not a `large_stream` in the legacy code, so it keeps constants.DEFAULT_PAGE_SIZE.
+          page_size: 100
       partition_router:
         $ref: "#/definitions/repository_partition_router"
     incremental_sync:

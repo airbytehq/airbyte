@@ -808,7 +808,7 @@ def test_reviews_reduces_the_page_size_on_gateway_timeout(rate_limit_mock_respon
 
     assert error is None
     assert len(records) == 1
-    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [10, 5]
+    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [100, 50]
 
 
 # --- IssueReactions (two-level traversal) ---------------------------------------------------
@@ -1078,7 +1078,7 @@ def test_pull_request_comment_reactions_keeps_owner_and_name_on_the_listing_cont
         "owner": REPOSITORY.split("/")[0],
         "name": REPOSITORY.split("/")[1],
         "after": "LIST_CUR",
-        "first": 10,
+        "first": 100,
     }
 
 
@@ -1096,4 +1096,28 @@ def test_pull_request_comment_reactions_reduces_the_page_size_on_gateway_timeout
 
     assert error is None
     assert records == []
-    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [10, 5]
+    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [100, 50]
+
+
+# --- Default page size ------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "stream_name, envelope",
+    [
+        pytest.param("reviews", lambda: _reviews_listing([]), id="reviews"),
+        pytest.param("issue_reactions", lambda: _issues_listing([]), id="issue_reactions"),
+        pytest.param("pull_request_comment_reactions", lambda: _deep_listing([]), id="pull_request_comment_reactions"),
+    ],
+)
+def test_non_large_graphql_streams_use_the_default_page_size(stream_name, envelope, rate_limit_mock_response, requests_mock):
+    """Only `releases` and `pull_request_stats` were `large_stream = True` in the legacy code.
+    Every other GraphQL stream ran at constants.DEFAULT_PAGE_SIZE and ignored the deprecated
+    `page_size_for_large_streams` knob, so migrating them at 10 was a 10x increase in GraphQL
+    requests -- against the same resolver deadline that makes those requests fail."""
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(GRAPHQL_URL, json=envelope())
+
+    _read(_config(page_size_for_large_streams=10), stream_name)
+
+    assert _variables(_graphql_requests(requests_mock)[0])["first"] == 100
