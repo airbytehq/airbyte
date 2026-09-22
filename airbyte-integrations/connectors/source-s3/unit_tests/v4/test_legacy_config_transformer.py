@@ -134,6 +134,7 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "escape_char": "$",
                 "encoding": "ansi",
                 "double_quote": False,
+                "newlines_in_values": True,
                 "null_values": ["NULL", "NONE"],
                 "true_values": ["yes", "y"],
                 "false_values": ["no", "n"],
@@ -161,6 +162,7 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "quote_char": "^",
                 "encoding": "utf8",
                 "double_quote": True,
+                "newlines_in_values": False,
                 "null_values": [
                     "",
                     "#N/A",
@@ -198,6 +200,7 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "quote_char": '"',
                 "encoding": "utf8",
                 "double_quote": True,
+                "newlines_in_values": False,
                 "null_values": [
                     "",
                     "#N/A",
@@ -264,6 +267,7 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "quote_char": '"',
                 "encoding": "utf8",
                 "double_quote": True,
+                "newlines_in_values": False,
                 "null_values": [
                     "",
                     "#N/A",
@@ -312,6 +316,7 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "quote_char": '"',
                 "encoding": "utf8",
                 "double_quote": True,
+                "newlines_in_values": False,
                 "null_values": [
                     "",
                     "#N/A",
@@ -361,6 +366,7 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "escape_char": "$",
                 "encoding": "ansi",
                 "double_quote": False,
+                "newlines_in_values": True,
                 "null_values": ["NULL", "NONE"],
                 "true_values": ["yes", "y"],
                 "false_values": ["no", "n"],

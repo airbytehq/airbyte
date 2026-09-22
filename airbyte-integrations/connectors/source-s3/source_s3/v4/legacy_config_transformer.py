@@ -80,6 +80,7 @@ class LegacyConfigTransformer:
                 "delimiter": format_options.delimiter,
                 "quote_char": format_options.quote_char,
                 "double_quote": format_options.double_quote,
+                "newlines_in_values": format_options.newlines_in_values,
                 # values taken from https://github.com/apache/arrow/blob/43c05c56b37daa93e76b94bc3e6952d56d1ea3f2/cpp/src/arrow/csv/options.cc#L41-L45
                 "null_values": additional_reader_options.pop(
                     "null_values",
