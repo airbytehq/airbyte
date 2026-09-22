@@ -362,7 +362,7 @@ def test_non_retryable_4xx_fails() -> None:
         assert output.records == []
         assert output.get_stream_statuses(_RETRY_STREAM)[-1].name == "INCOMPLETE"
         assert output.errors
-        assert output.get_formatted_error_message()
+        assert "HTTP 403: Uptick user lacks permission for the requested endpoint." in output.get_formatted_error_message()
         http_mocker.assert_number_of_calls(first_page, 1)
 
 
