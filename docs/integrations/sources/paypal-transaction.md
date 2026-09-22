@@ -266,7 +266,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                      |
+| Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
 | 2.6.50 | 2026-09-22 | [TODO](https://github.com/airbytehq/airbyte/pull/TODO) | Replace the `transactions` stream's custom `DateWindowSplittingRetriever`/`ResultSetTooLargeErrorHandler` components with the CDK's declarative `request_window_reduction` feature; no observable behavior change |
 | 2.6.50 | 2026-09-22 | [86765](https://github.com/airbytehq/airbyte/pull/86765) | Update dependencies |
