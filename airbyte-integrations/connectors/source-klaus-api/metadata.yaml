@@ -42,7 +42,7 @@ data:
       #           alias: airbyte-connector-testing-secret-store
     - language:manifest-only
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.61.6@sha256:a86098c6af1cf9d0b4484f33c973981a4d4f16740924ce9325b01ee4c8ca33df
   externalDocumentationUrls:
     - title: Klaus API documentation
       url: https://help.klausapp.com/en/articles/2911907-klaus-api
