@@ -96,6 +96,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 3.0.0 | 2026-09-14 | [85170](https://github.com/airbytehq/airbyte/pull/85170) | Move OAuth to Monday's OAuth 2.1 flow (PKCE, new token endpoint, rotating refresh tokens); prompt the admin to install the Airbyte app during authorization; OAuth sources must be re-authenticated before 2026-10-01 |
+| 2.5.22 | 2026-09-22 | [86707](https://github.com/airbytehq/airbyte/pull/86707) | Update dependencies |
 | 2.5.21 | 2026-09-15 | [86149](https://github.com/airbytehq/airbyte/pull/86149) | Update dependencies |
 | 2.5.20 | 2026-09-08 | [85557](https://github.com/airbytehq/airbyte/pull/85557) | Update dependencies |
 | 2.5.19 | 2026-08-18 | [84675](https://github.com/airbytehq/airbyte/pull/84675) | Update dependencies |
