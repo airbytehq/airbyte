@@ -459,6 +459,26 @@ To resolve this:
 2. For each of **Campaign Statuses**, **AdSet Statuses**, and **Ad Statuses**, select all statuses you want to include. At minimum, add `ARCHIVED` alongside the active statuses.
 3. Trigger a Full Refresh sync to re-fetch the complete dataset.
 
+### Syncs pause for minutes or fail with rate limit errors
+
+Meta enforces [rate limits](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/) per app, per ad account, and per business use case. The connector reads the `x-app-usage`, `x-ad-account-usage`, and `x-business-use-case-usage` response headers after every call and slows down before Meta blocks the account:
+
+- At 85% utilization or higher, the connector pauses for at least 2 minutes.
+- At 95% utilization or higher, the connector pauses for at least 10 minutes.
+- If the headers include a longer reset estimate, the connector waits for that instead.
+
+These pauses appear in the sync logs as `Facebook API Utilization is too high`. They are expected and do not fail the sync.
+
+If Meta has already blocked the ad account, the API returns error code 17 with subcode 2446079 (`Ad Account Has Too Many API Calls`). Since version 6.1.2, the connector treats this as a quota block rather than a transient error: it waits for the reset time Meta reports (capped at 10 minutes per attempt, and 10 minutes when no estimate is provided), retries, and repeats for up to 1 hour of total waiting before failing the sync. The logs show `Facebook API quota block` with the remaining wait budget. Other rate limit error codes (for example, 4, 613, and 80000 to 80008) are retried with the connector's standard backoff.
+
+The connection check does not wait out rate limits. If you test the connection while the account is rate limited, the check fails immediately with the rate limit error. Wait for the limit to reset and test again.
+
+To reduce how often you hit these limits:
+
+- Request Advanced Access for your app (Airbyte Open Source only). See [Request Increased Rate Limits](#5-request-increased-rate-limits).
+- Stagger the schedules of connections that use the same access token or ad account.
+- Sync fewer streams, or disable fields you don't need in the connection's schema tab.
+
 ### Missing data for 7-day and 28-day view-through attribution windows
 
 Starting January 12, 2026, Meta removed support for the 7-day view-through (`7d_view`) and 28-day view-through (`28d_view`) attribution windows in the Ads Insights API. In v4.1.3, these attribution windows were removed from request parameters for `ads_insights` and Ads Insights Reports streams. In v5.0.0, the `7d_view` and `28d_view` columns were also removed from stream schemas. Data previously returned for these windows is no longer available. For more information, see Meta's [2025 Out-Of-Cycle Changes](https://developers.facebook.com/docs/marketing-api/out-of-cycle-changes/occ-2025/).
@@ -527,7 +547,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.1.2 | 2026-09-21 | [86315](https://github.com/airbytehq/airbyte/pull/86315) | Fix ad-account quota errors (code 17/2446079) being retried as transient failures: read rate-limit headers on failed calls and wait out the block (API-provided reset estimate when present, 10-minute re-checks otherwise, up to 1 hour); read every business-use-case entry and the ad-account reset time from the rate-limit headers; the connection check fails fast instead of waiting |
+| 6.1.2 | 2026-09-22 | [86315](https://github.com/airbytehq/airbyte/pull/86315) | Fix ad-account quota errors (code 17/2446079) being retried as transient failures: read rate-limit headers on failed calls and wait out the block (API-provided reset estimate when present, 10-minute re-checks otherwise, up to 1 hour); read every business-use-case entry and the ad-account reset time from the rate-limit headers; the connection check fails fast instead of waiting |
 | 6.1.1 | 2026-08-25 | [74266](https://github.com/airbytehq/airbyte/pull/74266) | Add opt-in `Include Engaged View` setting that requests the `1d_ev` action attribution window |
 | 6.1.0 | 2026-08-12 | [83704](https://github.com/airbytehq/airbyte/pull/83704) | Add incremental sync support to the ad_creatives_from_ads stream |
 | 6.0.2 | 2026-06-30 | [81331](https://github.com/airbytehq/airbyte/pull/81331) | Hide legacy top-level `access_token` field from UI to prevent Chrome autofill from corrupting OAuth tokens |
