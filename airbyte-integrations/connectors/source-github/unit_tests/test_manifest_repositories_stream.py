@@ -193,7 +193,8 @@ def test_secondary_rate_limit_without_retry_after_is_retried(sleep_mock, rate_li
 
 @patch("time.sleep")
 def test_exhausted_quota_error_without_retry_after_is_retried(sleep_mock, rate_limit_mock_response, requests_mock):
-    """Legacy retried any non-200 carrying `X-RateLimit-Remaining: 0` (errors_handlers.py), which is
+    """Legacy retried any non-200 carrying `X-RateLimit-Remaining: 0` (the Python error handler,
+    removed in 2.7.0), which is
     also the fallback GitHub's docs prescribe when `Retry-After` is absent. Such a 403 must be waited
     out even when its message matches neither documented rate-limit wording."""
     config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}
@@ -293,7 +294,7 @@ def test_primary_rate_limit_rotates_instead_of_waiting_out_the_reset(sleep_mock,
 @patch("time.sleep")
 def test_rate_limit_backoff_respects_min_wait(sleep_mock, rate_limit_mock_response, requests_mock):
     """A reset timestamp already in the past must still back off for the 60s floor the legacy
-    strategy enforced (backoff_strategies.py:26), not retry immediately against a quota that
+    strategy enforced, not retry immediately against a quota that
     has not refilled."""
     config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}
     requests_mock.get(
@@ -372,6 +373,29 @@ def test_plain_403_fails_stream(rate_limit_mock_response, requests_mock):
     assert "GitHub denied access (HTTP 403)" in guidance
     assert "repo, read:org, read:user, read:project, workflow" in guidance, "the curated scope list must survive"
     assert "SAML SSO" in guidance
+
+
+def test_403_mentioning_a_disabled_feature_still_fails_stream(rate_limit_mock_response, requests_mock):
+    """The repository listing must fail on 403 whatever the message says.
+
+    `disabled_feature_skip_filter` is deliberately absent from `strict_access_error_handler`: it
+    would run ahead of `forbidden_fail_filter`, so a 403 whose wording mentions a disabled feature
+    would be IGNOREd and `check` would report success for a token with bad scopes.
+    """
+    config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}
+    requests_mock.get(
+        "https://api.github.com/orgs/docker/repos",
+        status_code=403,
+        json={"message": "Issues are disabled for this repo."},
+    )
+
+    records, statuses, error = _read(config)
+
+    assert records == []
+    assert error is not None
+    assert "403" in str(error)
+    guidance = " ".join(_error_messages(config))
+    assert "GitHub denied access (HTTP 403)" in guidance
 
 
 def test_401_fails_fast_without_retrying(rate_limit_mock_response, requests_mock):

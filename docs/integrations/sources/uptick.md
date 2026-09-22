@@ -168,6 +168,12 @@ Every stream except `task_profitability` reads a pinned Uptick endpoint under `/
 
 Each stream requests a fixed list of fields using Uptick's sparse fieldsets, so a stream carries a curated subset of what the endpoint can return rather than every field. Fields that Uptick adds later show up only after the connector is updated. Uptick keeps roughly three minor API versions live at a time and retires the oldest, so connector releases that move to a newer minor version can add, rename, or remove fields. The [Uptick API patch notes](https://support.uptickhq.com/en/articles/6728314-uptick-api-overview-and-patch-notes) list what changed in each version.
 
+### Attribute values
+
+Uptick returns each record as a JSON:API object with an `attributes` block. The connector copies every attribute to the top level of the record without changing its value, and also keeps the original `attributes` object. Monetary and other decimal fields arrive as strings with the precision Uptick sends, such as `"10.00"`, and attributes that Uptick returns as `null` land as `null` in your destination.
+
+Before version 1.2.0, the connector re-rendered each attribute through a template, which reformatted decimal strings (`"10.00"` became `"10.0"`) and turned `null` into the string `"None"`. If you filter or join on those fields downstream, check for both representations in data synced before you upgraded.
+
 ### Relationship fields
 
 Uptick returns related records in a JSON:API `relationships` object. The connector flattens each relationship into a scalar `<relationship>_id` column, such as `client_id` on `clientcontacts` or `property_id` on `propertycontacts`. Use these columns to join streams in your destination.
@@ -181,6 +187,8 @@ Prompt data spans three streams, and Uptick reworked its prompt model in API v2.
 ### Incremental sync
 
 For streams that support incremental sync, the connector uses each record's `updated` timestamp as the cursor and fetches only records changed since the last sync through the Uptick API's `updatedsince` filter. Streams that support only full refresh are re-read in full on every sync.
+
+The `servicegroups` and `accreditationtypes` endpoints ignore the `updatedsince` filter and always return every row. For these two streams, the connector requests the full table on every sync and then drops records whose `updated` value is older than the saved cursor before emitting them. Sync time and API usage for these streams don't shrink in incremental mode, but from version 1.2.0 the connector no longer re-emits unchanged rows on every incremental sync.
 
 Airbyte still offers incremental sync in the UI for the streams marked `❌ (no soft delete)`, because the connector defines the `updated` cursor for every stream. Avoid it for those streams: their Uptick endpoints don't report deletions, so an incremental sync keeps records in your destination after they're deleted in Uptick. Sync them in full refresh mode instead.
 
@@ -199,6 +207,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 1.2.1 | 2026-09-22 | [86843](https://github.com/airbytehq/airbyte/pull/86843) | Update dependencies |
+| 1.2.0 | 2026-09-21 | [86363](https://github.com/airbytehq/airbyte/pull/86363) | Emit attribute values verbatim (preserve decimal strings and nulls) and allow null on attribute fields; `servicegroups`/`accreditationtypes` now honour incremental state client-side (Uptick ignores `updatedsince`) — previously every sync re-emitted the full table, so append-only destinations will see fewer duplicate rows per sync |
+| 1.1.3 | 2026-09-15 | [86280](https://github.com/airbytehq/airbyte/pull/86280) | Update dependencies |
+| 1.1.2 | 2026-09-08 | [85702](https://github.com/airbytehq/airbyte/pull/85702) | Update dependencies |
 | 1.1.1 | 2026-08-18 | [84790](https://github.com/airbytehq/airbyte/pull/84790) | Update dependencies |
 | 1.1.0 | 2026-08-12 | [83710](https://github.com/airbytehq/airbyte/pull/83710) | Add 6 new streams (clientcontacts, propertycontacts, promptquestions, promptanswergroups, promptanswers, majorservices), add fields to the clients, properties, invoices, defectquotes, servicequotes, users, and purchaseorders streams, and make relationship field extraction null-safe |
 | 1.0.3 | 2026-08-11 | [84162](https://github.com/airbytehq/airbyte/pull/84162) | Update dependencies |

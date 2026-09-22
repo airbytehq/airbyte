@@ -2519,62 +2519,6 @@ Classes
     `url: Any`
     :   Permalink URL to view the task in ClickUp
 
-<a id="TasksApiSearchParams"></a>
-
-`TasksApiSearchParams(*args, **kwargs)`
-:   Parameters for tasks.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `assignees: list[str]`
-    :   The type of the None singleton.
-
-    `custom_fields: list[dict[str, typing.Any]]`
-    :   The type of the None singleton.
-
-    `date_created_gt: int`
-    :   The type of the None singleton.
-
-    `date_created_lt: int`
-    :   The type of the None singleton.
-
-    `date_updated_gt: int`
-    :   The type of the None singleton.
-
-    `date_updated_lt: int`
-    :   The type of the None singleton.
-
-    `due_date_gt: int`
-    :   The type of the None singleton.
-
-    `due_date_lt: int`
-    :   The type of the None singleton.
-
-    `include_closed: bool`
-    :   The type of the None singleton.
-
-    `page: int`
-    :   The type of the None singleton.
-
-    `priority: int`
-    :   The type of the None singleton.
-
-    `search: str`
-    :   The type of the None singleton.
-
-    `statuses: list[str]`
-    :   The type of the None singleton.
-
-    `tags: list[str]`
-    :   The type of the None singleton.
-
-    `team_id: str`
-    :   The type of the None singleton.
-
 <a id="TasksArrayContainsCondition"></a>
 
 `TasksArrayContainsCondition(*args, **kwargs)`
@@ -2907,6 +2851,62 @@ Classes
 
     `url: str | None`
     :   Permalink URL to view the task in ClickUp
+
+<a id="TasksSearchParams"></a>
+
+`TasksSearchParams(*args, **kwargs)`
+:   Parameters for tasks.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `assignees: list[str]`
+    :   The type of the None singleton.
+
+    `custom_fields: list[dict[str, typing.Any]]`
+    :   The type of the None singleton.
+
+    `date_created_gt: int`
+    :   The type of the None singleton.
+
+    `date_created_lt: int`
+    :   The type of the None singleton.
+
+    `date_updated_gt: int`
+    :   The type of the None singleton.
+
+    `date_updated_lt: int`
+    :   The type of the None singleton.
+
+    `due_date_gt: int`
+    :   The type of the None singleton.
+
+    `due_date_lt: int`
+    :   The type of the None singleton.
+
+    `include_closed: bool`
+    :   The type of the None singleton.
+
+    `page: int`
+    :   The type of the None singleton.
+
+    `priority: int`
+    :   The type of the None singleton.
+
+    `search: str`
+    :   The type of the None singleton.
+
+    `statuses: list[str]`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+    `team_id: str`
+    :   The type of the None singleton.
 
 <a id="TasksSearchQuery"></a>
 

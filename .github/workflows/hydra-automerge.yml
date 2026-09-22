@@ -468,7 +468,7 @@ jobs:
               fi
             done
             if [[ "$scope_matched" == "false" ]]; then
-              echo ":x: No matching change scope detected."
+              echo ":x: This PR falls outside the low-risk change types that qualify for auto-merge (docs-only, comment-only, dependency version bump, metadata-only, net-new stream addition). A human reviewer needs to approve and merge it."
             fi
             if [[ -n "$footer_note" ]]; then
               echo ""
