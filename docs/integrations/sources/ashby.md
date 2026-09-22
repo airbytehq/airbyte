@@ -104,6 +104,8 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------|
+| 1.3.3 | 2026-09-22 | [86515](https://github.com/airbytehq/airbyte/pull/86515) | Update dependencies |
+| 1.3.2 | 2026-09-21 | [86501](https://github.com/airbytehq/airbyte/pull/86501) | chore(source-ashby): wire sandbox acceptance-test secret, mark offers/interview_stages empty, add mock server tests |
 | 1.3.1 | 2026-09-15 | [85974](https://github.com/airbytehq/airbyte/pull/85974) | Update dependencies |
 | 1.3.0 | 2026-09-09 | [85755](https://github.com/airbytehq/airbyte/pull/85755) | Add `application_feedback` stream; send the API key as the Basic auth username with a blank password per Ashby docs |
 | 1.2.1 | 2026-09-08 | [85402](https://github.com/airbytehq/airbyte/pull/85402) | Update dependencies |
