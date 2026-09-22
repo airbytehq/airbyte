@@ -69,7 +69,7 @@ data:
       6.0.0:
         message: "The primary key was removed from streams `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL`. These reports contain one row per order item and have no proven, reliably unique row identifier, so deduplicating on `amazon-order-id` dropped line items of multi-item orders. `Incremental | Append + Deduped` is no longer available for these streams. Refresh the source schema after upgrading. If you synced these streams with `Incremental | Append + Deduped`, switch them to `Incremental | Append` and clear them to reload the missing rows (clearing deletes destination data; see the migration guide). Other sync modes need no further action. See https://docs.airbyte.com/integrations/sources/amazon-seller-partner-migrations#upgrading-to-600"
         upgradeDeadline: "2026-10-07"
-        deadlineAction: "auto_upgrade"
+        deadlineAction: "disable"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
