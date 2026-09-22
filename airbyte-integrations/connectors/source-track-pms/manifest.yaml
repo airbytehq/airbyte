@@ -19749,7 +19749,7 @@ streams:
         request_headers:
           $ref: "#/definitions/linked/HttpRequester/request_headers"
         request_parameters:
-          size: "20"
+          size: "50"
           scroll: "{{ next_page_token['next_page_token'] if next_page_token else '1' }}"
       record_selector:
         type: RecordSelector
