@@ -138,6 +138,8 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - Full Refresh
 - Incremental
 
+The `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` reports contain one row per order item and have no proven, reliably unique row identifier, so they have no primary key and do not offer `Incremental | Append + Deduped`.
+
 ## Supported Streams
 
 - [Active Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)

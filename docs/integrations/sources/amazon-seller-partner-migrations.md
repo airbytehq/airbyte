@@ -1,3 +1,5 @@
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 # Amazon Seller Partner Migration Guide
 
 ## Upgrading to 6.0.0
@@ -6,13 +8,20 @@ The primary key has been removed from the `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDE
 
 These Amazon flat-file reports contain one row per order item, so the previous primary key (`amazon-order-id`) is not unique: when these streams were synced with `Incremental | Append + Deduped`, the destination collapsed all line items of a multi-item order into a single row, silently dropping data. No column or combination of columns in these reports has been proven to be reliably unique per row, so the streams now have no primary key.
 
-After upgrading:
+After upgrading, refresh the source schema for your connection. Then:
 
-1. Refresh the source schema for your connection.
-2. Reset (clear) the `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` streams.
-3. Select `Incremental | Append` (or `Full Refresh | Overwrite`) as the sync mode for these streams. `Incremental | Append + Deduped` is no longer available for them.
+**If either stream used `Incremental | Append + Deduped`**, your destination table is missing line items and must be reloaded:
 
-If you need per-order deduplication, deduplicate downstream on the full set of item-level columns rather than on `amazon-order-id`.
+:::danger
+Clearing a stream deletes its data in the destination. Amazon only supplies order reports for orders less than two years old, and the connector only requests data from your **Replication Start Date** onward, so rows older than that cannot be re-synced. Take a snapshot or backup of the two destination tables before clearing if you need that history.
+:::
+
+1. Change the sync mode of `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` to `Incremental | Append` (or `Full Refresh | Overwrite`). `Incremental | Append + Deduped` is no longer offered for these streams.
+2. Clear both streams and run a sync.
+
+**If these streams used `Incremental | Append`, `Full Refresh | Append`, or `Full Refresh | Overwrite`**, no further action is required. Your existing rows are complete; do not clear the streams.
+
+**Downstream impact.** After the reload, these tables contain one row per order *item*, not one row per order. Update SQL, dbt models, and dashboards that count rows as orders or that assume `amazon-order-id` is unique (for example, use `COUNT(DISTINCT "amazon-order-id")` for order counts, and group by `amazon-order-id` before summing item-level amounts). If you use a lookback window, deduplicate downstream on the full row or on `_airbyte_extracted_at`, since the destination no longer deduplicates for you.
 
 ## Upgrading to 5.0.0
 
@@ -153,3 +162,7 @@ Customers, who have the following streams, will have to disable them:
 - `GET_FBA_FULFILLMENT_INVENTORY_RECEIPTS_DATA`
 - `GET_FBA_FULFILLMENT_INVENTORY_SUMMARY_DATA`
 - `GET_FBA_FULFILLMENT_MONTHLY_INVENTORY_DATA`
+
+## Connector upgrade guide
+
+<MigrationGuide />
