@@ -180,6 +180,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.18 | 2026-09-22 | [86854](https://github.com/airbytehq/airbyte/pull/86854) | Update dependencies |
 | 5.1.17 | 2026-09-21 | [79183](https://github.com/airbytehq/airbyte/pull/79183) | Classify TikTok API error code 40001 (PERMISSION_ERROR) as config_error instead of system_error |
 | 5.1.16 | 2026-09-15 | [86277](https://github.com/airbytehq/airbyte/pull/86277) | Update dependencies |
 | 5.1.15 | 2026-09-11 | [85796](https://github.com/airbytehq/airbyte/pull/85796) | Stop enabling production-only streams for legacy configs with an empty `secret` |
