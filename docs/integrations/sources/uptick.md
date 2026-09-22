@@ -195,7 +195,7 @@ Airbyte still offers incremental sync in the UI for the streams marked `❌ (no 
 
 ## Rate limits
 
-Uptick enforces rate limits and reasonable-use guidelines on its API but does not publish a numeric limit; the connector's 60 requests per minute cap below is a conservative Airbyte-chosen value. When Uptick throttles a request, the connector reads the `Retry-After` response header and waits the indicated time before retrying, for up to five attempts. Waits longer than 30 minutes fail the sync with a rate-limit error instead of blocking. The connector also caps itself at 60 requests per minute across all streams and runs `num_workers` concurrent requests (default 3, maximum 10); raise `num_workers` for faster syncs on tenants that tolerate it, or lower it if you see throttling. To stay within these limits, sync only the streams and fields you need and schedule syncs no more frequently than your reporting requires.
+Uptick enforces rate limits and reasonable-use guidelines on its API but does not publish a numeric limit; the connector's 60 requests per minute cap below is a conservative Airbyte-chosen value. When Uptick throttles a request, the connector reads the `Retry-After` response header and waits the indicated time before retrying, for up to six attempts. Waits of 30 minutes or longer fail that stream with a rate-limit error instead of blocking. The connector also caps itself at 60 requests per minute across all streams and runs `num_workers` concurrent requests (default 3, maximum 10); raise `num_workers` for faster syncs on tenants that tolerate it, or lower it if you see throttling. To stay within these limits, sync only the streams and fields you need and schedule syncs no more frequently than your reporting requires.
 
 ## IP allow list
 

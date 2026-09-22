@@ -1,5 +1,5 @@
 ---
-version: 6.60.5
+version: 7.30.0
 type: DeclarativeSource
 description: Extract data from Uptick (field service management software).
 check:
@@ -25,6 +25,8 @@ definitions:
         #   wrong client_secret     -> 401 {"error": "invalid_client"}
         # Matching them here makes the token request itself fail as `config_error` before any stream
         # request is issued, so bad credentials fail in one round trip instead of being retried.
+        # Note: these three fields replace the CDK defaults ((400,), "error", (invalid_grant, invalid_permissions))
+        # rather than extend them; 400/invalid_grant restates the default, 401/invalid_client is the addition.
         refresh_token_error_status_codes: [400, 401]
         refresh_token_error_key: error
         refresh_token_error_values: [invalid_grant, invalid_client]
@@ -43,6 +45,8 @@ definitions:
           # Tokens live 10 h, so this is an expired/revoked token mid-sync: refresh it and retry
           # the request. If the refresh itself fails (password rotated mid-sync) the retries are
           # exhausted through the shared backoff and the attempt fails as `config_error`.
+          # failure_type below is only applied by the CDK when action is FAIL; with REFRESH_TOKEN_THEN_RETRY the
+          # exhausted-retries classification comes from the CDK's default 401 mapping, which is also config_error.
           - type: HttpResponseFilter
             http_codes: [401]
             action: REFRESH_TOKEN_THEN_RETRY
@@ -134,6 +138,7 @@ spec:
     properties:
       base_url:
         type: string
+        minLength: 1
         description: Root URL of the Uptick workspace, for example https://demo-fire.onuptick.com. Only the host is used; the scheme and trailing slash are normalized.
         order: 0
         title: Base Url

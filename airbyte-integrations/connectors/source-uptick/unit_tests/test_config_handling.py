@@ -28,7 +28,7 @@ _DEFAULT_CONCURRENCY = 3
         pytest.param("https://demo.onuptick.com/api/v2.15/", "https://demo.onuptick.com", id="path_stripped"),
         pytest.param("demo.onuptick.com", "https://demo.onuptick.com", id="bare_host"),
         pytest.param("", "", id="empty_left_for_spec_validation"),
-        pytest.param("   ", "   ", id="whitespace_only_left_for_spec_validation"),
+        pytest.param("   ", "   ", id="whitespace_only_left_unnormalized"),
         pytest.param(None, None, id="null_left_for_spec_validation"),
         pytest.param(42, 42, id="non_string_left_for_spec_validation"),
     ],

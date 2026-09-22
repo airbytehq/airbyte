@@ -309,7 +309,7 @@ def test_retries_on_transient_errors(status_code: int) -> None:
                 HttpResponse(
                     body="",
                     status_code=status_code,
-                    headers={"Retry-After": "0"},
+                    headers={"Retry-After": "0", "ratelimit-remaining": "60"},
                 ),
                 _response([_record(_RETRY_STREAM, 1)]),
             ],

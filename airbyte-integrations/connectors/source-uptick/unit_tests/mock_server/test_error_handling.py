@@ -152,14 +152,18 @@ def test_401_with_failed_refresh_exhausts_retries_as_config_error() -> None:
 def test_429_waits_for_retry_after_then_succeeds() -> None:
     output, sleeps, http_mocker = _read_with_responses(
         [
-            HttpResponse(body='{"detail": "throttled"}', status_code=429, headers={"Retry-After": "7"}),
+            HttpResponse(
+                body='{"detail": "throttled"}',
+                status_code=429,
+                headers={"Retry-After": "123", "ratelimit-remaining": "60"},
+            ),
             _ok_page(1),
         ]
     )
 
     assert output.errors == []
     assert [message.record.data["id"] for message in output.records] == [1]
-    assert sleeps and max(sleeps) >= 7, f"Retry-After was not honoured: {sleeps}"
+    assert sleeps and max(sleeps) >= 123, f"Retry-After was not honoured: {sleeps}"
     http_mocker.assert_number_of_calls(_PAGE_REQUEST, 2)
 
 
