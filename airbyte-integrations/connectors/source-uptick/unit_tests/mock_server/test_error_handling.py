@@ -36,6 +36,12 @@ _401_MESSAGE = "HTTP 401: Uptick rejected the access token."
 _403_MESSAGE = "HTTP 403: Uptick user lacks permission for the requested endpoint."
 _RETRY_AFTER_CAP_SECONDS = 1800
 _PAGE_REQUEST = UptickRequestBuilder.collection(_STREAM)
+# Uptick does not send rate-limit headers. The mocked 429s carry this CDK-default header so the
+# `api_budget` window stays open: on CDK 7.30.0 a 429 without it reports `available_calls == 0`,
+# which fills the 60/min window, and with `time.sleep` patched the window never drains, so the
+# retry raises `CallRateLimitHit` instead of exercising `Retry-After`. The real post-429 budget
+# cool-down (up to 60 s on top of `Retry-After`) is therefore not covered by these tests.
+_KEEP_BUDGET_OPEN = {"ratelimit-remaining": "60"}
 
 
 def _ok_page(record_id: int) -> HttpResponse:
@@ -155,7 +161,7 @@ def test_429_waits_for_retry_after_then_succeeds() -> None:
             HttpResponse(
                 body='{"detail": "throttled"}',
                 status_code=429,
-                headers={"Retry-After": "123", "ratelimit-remaining": "60"},
+                headers={"Retry-After": "123", **_KEEP_BUDGET_OPEN},
             ),
             _ok_page(1),
         ]
