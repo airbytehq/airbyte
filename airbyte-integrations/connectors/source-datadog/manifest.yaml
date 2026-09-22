@@ -134,6 +134,19 @@ definitions:
           http_method: GET
           request_headers:
             DD-APPLICATION-KEY: "{{ config['application_key'] }}"
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-RateLimit-Reset
+              - type: ExponentialBackoffStrategy
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Datadog incidents API rate limit exceeded. Retrying after the rate limit reset period.
         record_selector:
           type: RecordSelector
           extractor:
@@ -146,8 +159,13 @@ definitions:
             type: RequestOption
             field_name: page[offset]
             inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: >-
               {{ response.get("meta", {}).get("pagination",
               {}).get("next_offset", {}) }}
