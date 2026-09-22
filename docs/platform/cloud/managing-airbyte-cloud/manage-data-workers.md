@@ -141,7 +141,7 @@ If you can, it's preferable to optimize Airbyte by rescheduling connections outs
 
 ### Buy more data workers
 
-If you've tried to optimize scheduling and still need more data workers, contact your Airbyte representative or [talk to sales](https://www.airbyte.com/talk-to-sales). New data workers are added to your default region. You can then [move them](#move-capacity-between-regions) to wherever you need them.
+If you've tried to optimize scheduling and still need more data workers, contact your Airbyte representative or [talk to sales](https://www.airbyte.com/talk-to-sales). Once the new data workers are added to your organization, you can [move them](#move-capacity-between-regions) to whichever region needs them.
 
 ## On-demand capacity
 
