@@ -14,22 +14,40 @@ Vendor evidence, re-verified 2026-08-12:
 
 Revisit this if Granola publishes an OAuth application model for the public API.
 
+The `deleted_notes` stream additionally accepts an optional `audit_api_key` config field (also `airbyte_secret: true`): `GET /v1/audit` is Enterprise-only and authenticates with a dedicated Audit API key created by a workspace admin, so `audit_requester` uses `{{ config.get('audit_api_key') or config['api_key'] }}` and falls back to the notes key when the field is blank.
+
+## HTTP error handling
+
+`base_error_handler` maps shared HTTP failures, and every stream's error handler lists the same shared filters by `$ref` plus its stream-specific one. A local `response_filters` list next to `$ref` replaces the referenced list wholesale (`evaluated_ref | evaluated_dict`), so putting the shared filters only on `base_error_handler` would silently drop them from `detailed_notes`, `note_transcripts`, and `deleted_notes`, which each define their own list.
+
+- `401`/`403` → `FAIL` with `failure_type: config_error`, naming the API key.
+- `429` → `RATE_LIMITED`; backoff honors `Retry-After` up to 60 seconds, then exponential backoff with factor 5, `max_retries: 5`.
+- `500`/`502`/`503`/`504` → `RETRY` with `failure_type: system_error`.
+- `413` on `detailed_notes` and `404` on `note_transcripts` → `IGNORE` (see Oversized Transcripts).
+- `404` on `deleted_notes` → `FAIL` with `config_error`, because a notes key cannot read `/v1/audit`.
+
+## Deletions
+
+The `deleted_notes` stream reads `GET /v1/audit` filtered to `action=document.hard_deleted`. The Audit API is Enterprise-only, needs a separate Audit API key created by a workspace admin, and retains events for one year. Each record is an audit event; a `AddFields` transformation lifts `data.documentId` to a top-level `note_id`. The stream is incremental on `occurred_at` with a single slice (no `step`: the CDK requires `step` and `cursor_granularity` together, so both are omitted).
+
 ## Oversized Transcripts
 
 `GET /v1/notes/{note_id}?include=transcript` answers `413` with `code: TRANSCRIPT_TOO_LARGE` when a transcript exceeds the size Granola returns inline. `detailed_notes` maps 413 to `IGNORE` so the note is skipped instead of retried and failed. The CDK emits the filter's `error_message` at INFO, not WARN (`HttpClient._handle_error_resolution` in `airbyte_cdk/sources/streams/http/http_client.py`), so the skip is invisible to log filters set above INFO, and the whole note record is dropped from `detailed_notes` — not just its transcript. The `note_transcripts` stream replicates those transcripts from the paged `GET /v1/notes/{note_id}/transcript` endpoint (`page_size` max 100, `cursor`/`hasMore` pagination), and maps that endpoint's documented 404 to `IGNORE` so a note deleted or unshared mid-sync does not fail the stream. `note_transcripts` emits one record per transcript segment with the parent `note_id` added by an `AddFields` transformation, and has no primary key because segments carry no stable identifier.
 
 ## Incremental Stream Considerations
 
-The Granola API connector has 3 streams: `notes` (incremental with `created_at` cursor), `detailed_notes` and `note_transcripts` (children of notes via `SubstreamPartitionRouter`). No FR parent streams remain.
+The Granola API connector has 4 streams: `notes` (incremental with `created_at` cursor), `deleted_notes` (incremental with `occurred_at` cursor over `GET /v1/audit`), and `detailed_notes` and `note_transcripts` (children of notes via `SubstreamPartitionRouter`). No FR parent streams remain.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|
 | notes | medium | top-level parent | created_at | created_at | incremental |  |
 | detailed_notes | medium | child | none | none | deferred_child |  |
 | note_transcripts | medium | child | none | none | deferred_child |  |
+| deleted_notes | low | top-level | occurred_at | occurred_after/occurred_before | incremental | Audit API, Enterprise only, 1-year retention |
 
 The `notes` cursor slices on second-granular date-times (`%Y-%m-%dT%H:%M:%SZ` with `cursor_granularity: PT1S`) because the API's `created_before=<date>` excludes that whole day, which used to drop notes created on a slice boundary date. `cursor_datetime_formats` retains `%Y-%m-%d` so date-only state from earlier versions still parses.
 
 ### Future incremental stream candidates
 
 - **Child streams (2 streams):** `detailed_notes`, `note_transcripts` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.
+- **`deleted_notes`** has no step: audit retention is one year, so a single slice covers the whole window. If volume ever justifies slicing, set `step` and `cursor_granularity` together — the CDK rejects one without the other.

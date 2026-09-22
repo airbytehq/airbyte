@@ -65,6 +65,7 @@ The Granola source connector supports the following streams:
 | `notes` | Incremental | `id` |
 | `detailed_notes` | Full refresh | `id` |
 | `note_transcripts` | Full refresh | None |
+| `deleted_notes` | Incremental | `id` |
 
 ### Notes
 
@@ -92,6 +93,20 @@ The stream has no primary key, so records are appended rather than deduplicated.
 
 If Granola no longer returns a transcript for a note that the `notes` stream listed, such as a note deleted or unshared mid-sync, the API responds with `404` and the connector skips that note instead of failing the stream.
 
+### Deleted notes
+
+The `deleted_notes` stream retrieves note deletion events from the [`GET /v1/audit`](https://docs.granola.ai/api-reference/list-audit-events) endpoint, filtered to `document.hard_deleted` actions. Each record is an audit event — its `note_id` field carries the ID of the deleted note — not the note content itself.
+
+This stream has extra prerequisites:
+
+- It requires a Granola **Enterprise** plan.
+- It authenticates with an **Audit API key**, which only a workspace administrator can create in the Granola desktop app under **Settings > Connectors > Audit API keys**. Enter it in the connector's **Audit API key** field. If you leave the field empty, the connector uses your regular API key, which returns a 404 on this endpoint.
+- Granola retains audit events for one year, so syncs can't recover deletions older than that.
+
+If you don't have an Audit API key, deselect the `deleted_notes` stream; the other streams work without it.
+
+The stream is incremental on `occurred_at`, the time the deletion happened, and syncs the full retention window in a single request range.
+
 ### Data access by key type
 
 The set of notes the connector can read depends on the key you configure:
@@ -114,6 +129,8 @@ The Granola API enforces rate limits. Depending on the key's access scope, limit
 | Sustained rate | 5 requests per second (300/minute) |
 
 The connector throttles itself to the documented burst limit of 25 requests per 5 seconds. If Granola still returns `429 Too Many Requests`, or a `5xx` server error, the connector retries the request up to 5 times. It waits for the interval in the `Retry-After` response header when Granola sends one, up to 60 seconds, and otherwise backs off exponentially.
+
+A `401` or `403` response means Granola rejected the API key. These fail fast as a configuration error naming the key, so check that the key is still valid and has the scopes you expect, or create a new one in the Granola desktop app.
 
 ## Troubleshooting
 
@@ -142,6 +159,7 @@ For programmatic configuration, use these parameter names:
 | Field | Required | Description |
 | :--- | :---: | :--- |
 | `api_key` | Yes | Granola API key. Use a personal API key for notes your own account can read, or a workspace API key for the workspace's shared notes. |
+| `audit_api_key` | No | Granola Audit API key, used only by the `deleted_notes` stream. Enterprise plans only; created by a workspace admin. Falls back to `api_key` when empty. |
 | `start_date` | No | Earliest note creation date to replicate, in `YYYY-MM-DD` format. Defaults to two years before the sync runs. |
 
 ## Changelog
@@ -151,6 +169,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.4.0 | 2026-09-22 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add deleted_notes stream, map 401/403 to config errors, add heartbeat timeout, acceptance tests, and fix icon dimensions |
 | 0.3.3 | 2026-09-22 | [86667](https://github.com/airbytehq/airbyte/pull/86667) | Update dependencies |
 | 0.3.2 | 2026-09-15 | [86082](https://github.com/airbytehq/airbyte/pull/86082) | Update dependencies |
 | 0.3.1 | 2026-09-08 | [85516](https://github.com/airbytehq/airbyte/pull/85516) | Update dependencies |
