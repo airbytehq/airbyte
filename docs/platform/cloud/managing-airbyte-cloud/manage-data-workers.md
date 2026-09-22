@@ -41,9 +41,9 @@ From the navigation bar, click **Organization settings** > **Usage**. This page 
 
 ## Manage region capacity
 
-The **Region capacity** table lists your contracted total and, for each region, its current allocation and peak usage.
+The **Region capacity** table lists your contracted total and, for each region, its current allocation and its peak usage against that allocation. Regions your organization can use but hasn't allocated capacity to show **0.0 DW**.
 
-![Region capacity table showing contracted data workers, each region's allocation, its peak usage, and controls to move capacity between regions](assets/data-worker-usage.png)
+![Region capacity table showing contracted data workers, each region's allocation, its peak usage, and - and + buttons to move capacity between regions](assets/data-worker-region-capacity.png)
 
 ### Move capacity between regions
 
@@ -71,17 +71,21 @@ If you need capacity in a new region quickly and the source region is busy, expe
 
 ## How to interpret the usage chart
 
-The chart shows daily maximum concurrent data worker usage, from all workspaces in a region, over a period of time. Each bar represents one day. The chart stacks all workspaces in that region so you can see which workspace uses the most data workers each day. A horizontal **Contracted capacity** line shows the region's current allocation.
+The **Peak data worker usage** chart shows maximum concurrent data worker usage, from all workspaces in one region, over a period of time. Each bar represents one interval in the selected time range, for example one day. The chart stacks all workspaces in that region so you can see which workspace uses the most data workers. A dashed **Contracted capacity** line shows the region's current allocation.
 
-Hover on a day to see more details about it.
+![Chart showing peak data worker usage in one region over a quarter, with a dashed Contracted capacity line](assets/data-worker-usage.png)
+
+Hover on a bar to see more details about it.
 
 Usage that came from on-demand capacity isn't shown separately. If a connection with on-demand capacity ran when the region was full, the bar for that day can rise above the **Contracted capacity** line. To see which connections use on-demand capacity, filter the Connections page by the [Burst tag](#on-demand-capacity).
 
 ## Filter the chart
 
-- To change the region, click the region dropdown in the chart's upper left corner and choose a different region.
+- To change the region, click the region dropdown above the chart and choose a different region. The chart's header shows that region's current capacity.
 
-- To change the date range, click the date dropdown in the chart's upper right corner and choose a new date range.
+- To change the time range, click **1D**, **1W**, **1M**, **1Q**, or **1Y**.
+
+- To overlay the preceding period of the same length, turn on **Compare to previous period**.
 
 ## Workspace-level data worker usage
 
