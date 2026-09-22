@@ -17849,10 +17849,11 @@ definitions:
         $ref: "#/definitions/graphql_paginator"
         pagination_strategy:
           type: CursorPagination
+          page_size:
+            $ref: "#/definitions/graphql_large_stream_page_size"
           # `repository` is null when the token cannot see the repo, so every hop is
           # null-guarded; a bare `response.data.repository.releases` would raise instead of
           # ending the partition cleanly.
-          page_size: "{{ config['page_size_for_large_streams'] if config.get('page_size_for_large_streams') is not none else 10 }}"
           cursor_value: "{{ ((((response.get('data') or {}).get('repository') or {}).get('releases') or {}).get('pageInfo') or {}).get('endCursor') }}"
           stop_condition: "{{ not ((((response.get('data') or {}).get('repository') or {}).get('releases') or {}).get('pageInfo') or {}).get('hasNextPage') }}"
       partition_router:
@@ -18454,7 +18455,8 @@ definitions:
         $ref: "#/definitions/graphql_paginator"
         pagination_strategy:
           type: CursorPagination
-          page_size: "{{ config['page_size_for_large_streams'] if config.get('page_size_for_large_streams') is not none else 10 }}"
+          page_size:
+            $ref: "#/definitions/graphql_large_stream_page_size"
           cursor_value: "{{ ((((response.get('data') or {}).get('repository') or {}).get('pullRequests') or {}).get('pageInfo') or {}).get('endCursor') }}"
           stop_condition: "{{ not ((((response.get('data') or {}).get('repository') or {}).get('pullRequests') or {}).get('pageInfo') or {}).get('hasNextPage') }}"
       partition_router:
