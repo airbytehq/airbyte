@@ -4,7 +4,7 @@
 
 The primary key has been removed from the `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` streams.
 
-These Amazon flat-file reports contain one row per order item, but the report does not include a unique order-item identifier. The previous primary key (`amazon-order-id`) is therefore not unique: when these streams were synced with `Incremental | Append + Deduped`, the destination collapsed all line items of a multi-item order into a single row, silently dropping data. No combination of the available columns is guaranteed to be unique, so the streams now have no primary key.
+These Amazon flat-file reports contain one row per order item, so the previous primary key (`amazon-order-id`) is not unique: when these streams were synced with `Incremental | Append + Deduped`, the destination collapsed all line items of a multi-item order into a single row, silently dropping data. No column or combination of columns in these reports has been proven to be reliably unique per row, so the streams now have no primary key.
 
 After upgrading:
 

@@ -563,8 +563,8 @@ def test_stream_slice_dates(config, expected_start_base, expected_end_base, stre
 )
 def test_flat_file_all_orders_streams_have_no_primary_key(connector_config_without_start_date, stream_name):
     """
-    These reports are one row per order item, and the report does not expose a unique item identifier, so
-    `amazon-order-id` alone is not unique. Declaring it as a primary key makes destination dedup collapse
+    These reports are one row per order item, so `amazon-order-id` alone is not unique, and no other column has
+    been proven to be a reliably unique row identifier. Declaring a primary key makes destination dedup collapse
     multi-item orders into a single row (silent data loss), so the streams must not declare any primary key.
     """
     streams = get_source(connector_config_without_start_date).streams(connector_config_without_start_date)
