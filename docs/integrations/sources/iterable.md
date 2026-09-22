@@ -134,6 +134,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.2 | 2026-09-22 | [78762](https://github.com/airbytehq/airbyte/pull/78762) | Update dependencies |
 | 1.0.1 | 2026-09-16 | [78129](https://github.com/airbytehq/airbyte/pull/78129) | Improve the error message for Iterable Export API response closures after retries. |
 | 1.0.0 | 2026-08-25 | [79635](https://github.com/airbytehq/airbyte/pull/79635) | 🚨 Breaking: Restructure `users` stream schema - standard Iterable fields stay top-level, custom fields move to a `data` object, `itblInternal` flattened to dotted keys, timestamp values (`signupDate`, `profileUpdatedAt`, `itblInternal` document timestamps) normalized to RFC3339 to match their `timestamp_with_timezone` typing, added `itblUserId`, `whatsAppPhoneNumber`, `city`, `region`. See the [migration guide](/integrations/sources/iterable-migrations). |
 | 0.7.2 | 2026-05-07 | [74702](https://github.com/airbytehq/airbyte/pull/74702) | Add optional `Region` parameter to support Iterable's EU data center |
