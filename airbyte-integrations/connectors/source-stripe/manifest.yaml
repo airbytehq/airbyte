@@ -1468,6 +1468,8 @@ definitions:
           requester:
             $ref: "#/definitions/base_requester"
             path: events
+            request_parameters:
+              types[]: '{{["invoice.created", "invoice.deleted", "invoice.updated"]}}'
           record_selector:
             type: RecordSelector
             extractor:
@@ -1482,12 +1484,27 @@ definitions:
                   - lines
                   - data
                 remain_original_record: true
+                truncation_indicator_path:
+                  - data
+                  - object
+                  - lines
+                  - has_more
+                truncated_list_retriever:
+                  type: SimpleRetriever
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    path: invoices/{{ stream_slice['parent_record']['data']['object']['id'] }}/lines
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    $ref: "#/definitions/base_paginator"
             transform_before_filtering: true
           paginator:
             $ref: "#/definitions/base_paginator"
-          $parameters:
-            request_parameters:
-              types[]: '{{["invoice.created", "invoice.deleted", "invoice.updated"]}}'
         schema_loader:
           type: InlineSchemaLoader
           schema:
