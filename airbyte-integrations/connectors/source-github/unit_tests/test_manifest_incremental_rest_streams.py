@@ -381,8 +381,8 @@ def test_issues_sends_the_legacy_base_params(rate_limit_mock_response, requests_
 @pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
 def test_reaction_counts_are_renamed(stream_name, endpoint, rate_limit_mock_response, requests_mock):
     """`GithubStream.transform` renamed `+1`/`-1` to `plus_one`/`minus_one` and popped the
-    originals. `schemas/shared/reactions.json` declares only the renamed keys, so dropping the
-    rename would lose both counts."""
+    originals. The inline `reactions` schema declares only the renamed keys, so dropping
+    the rename would lose both counts."""
     config = _config("docker/compose")
     _mock_repository_resolution(requests_mock, "docker/compose")
     requests_mock.get(

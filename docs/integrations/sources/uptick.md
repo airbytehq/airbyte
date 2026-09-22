@@ -208,7 +208,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
-| 1.3.0 | 2026-09-21 | [86356](https://github.com/airbytehq/airbyte/pull/86356) | Add error classification, request budget, concurrency, HTTPS normalization, and certification metadata |
+| 1.3.0 | 2026-09-22 | [86356](https://github.com/airbytehq/airbyte/pull/86356) | Add error classification, request budget, concurrency, HTTPS normalization, and certification metadata |
+| 1.2.1 | 2026-09-22 | [86843](https://github.com/airbytehq/airbyte/pull/86843) | Update dependencies |
 | 1.2.0 | 2026-09-21 | [86363](https://github.com/airbytehq/airbyte/pull/86363) | Emit attribute values verbatim (preserve decimal strings and nulls) and allow null on attribute fields; `servicegroups`/`accreditationtypes` now honour incremental state client-side (Uptick ignores `updatedsince`) — previously every sync re-emitted the full table, so append-only destinations will see fewer duplicate rows per sync |
 | 1.1.3 | 2026-09-15 | [86280](https://github.com/airbytehq/airbyte/pull/86280) | Update dependencies |
 | 1.1.2 | 2026-09-08 | [85702](https://github.com/airbytehq/airbyte/pull/85702) | Update dependencies |
