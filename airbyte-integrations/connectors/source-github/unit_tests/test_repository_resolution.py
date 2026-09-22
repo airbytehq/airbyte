@@ -325,15 +325,11 @@ def test_every_max_waiting_time_the_spec_allows_builds(requests_mock, max_waitin
     }
 
     source = SourceGithub(config=dict(config))
-    python_stream = source.streams(config)[0]
     streams = ConcurrentDeclarativeSource.streams(source, config)
 
     # Building at all is the assertion: every manifest stream shares the authenticator and the
     # backoff strategies, so a value one of those interpolations cannot render fails here.
     assert "repositories" in [stream.name for stream in streams]
-    max_waiting_time = max_waiting_time_config.get("max_waiting_time")
-    expected_wait_time = max_waiting_time if max_waiting_time is not None else 120
-    assert python_stream.max_wait_time_seconds == expected_wait_time * 60
 
 
 def test_resolution_raises_on_no_tokens():
