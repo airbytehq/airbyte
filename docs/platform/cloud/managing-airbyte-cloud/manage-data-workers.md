@@ -65,10 +65,6 @@ Moving capacity changes each region's limit, not the syncs already running. Airb
 
 - **In the region you moved capacity to**, the extra capacity is available right away. Syncs already queued there recheck for capacity about once per minute and start as soon as they find room.
 
-:::tip
-If you need capacity in a new region quickly and the source region is busy, expect the source region to run over its new allocation for a while. Move capacity during a quiet period for the source region when you can.
-:::
-
 ## How to interpret the usage chart
 
 The **Peak data worker usage** chart shows maximum concurrent data worker usage, from all workspaces in one region, over a period of time. Each bar represents one interval in the selected time range, for example one day. The chart stacks all workspaces in that region so you can see which workspace uses the most data workers. A dashed **Contracted capacity** line shows the region's current allocation.
