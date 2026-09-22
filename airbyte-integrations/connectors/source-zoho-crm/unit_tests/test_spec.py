@@ -60,14 +60,16 @@ def test_consent_url_requests_offline_access():
 
 def test_scopes_cover_connector_endpoints_and_join_with_comma():
     """The connector calls `/settings/modules`, `/settings/fields` and the record endpoint of every module,
-    including custom ones. Zoho documents a read scope per settings sub-resource and per module group and
-    has no bare `ZohoCRM.settings.READ`; scopes are separated with commas."""
+    including custom ones, and `/crm/v2/org` to detect the Zoho CRM edition. Zoho documents a read scope per
+    settings sub-resource and per module group and has no bare `ZohoCRM.settings.READ`; scopes are separated
+    with commas."""
     scopes = {entry["scope"] for entry in CONNECTOR_INPUT["scopes"]}
     assert scopes == {
         "ZohoCRM.settings.modules.READ",
         "ZohoCRM.settings.fields.READ",
         "ZohoCRM.modules.READ",
         "ZohoCRM.modules.custom.READ",
+        "ZohoCRM.org.READ",
     }
     assert CONNECTOR_INPUT["scopes_join_strategy"] == "comma"
 
@@ -89,3 +91,10 @@ def test_oauth_paths_exist_in_connection_spec():
 def test_extract_output_is_refresh_token_only():
     """Zoho's token response is exchanged for a long-lived refresh token; nothing else persists."""
     assert CONNECTOR_INPUT["extract_output"] == ["refresh_token"]
+
+
+def test_edition_is_not_a_config_field():
+    assert "edition" not in CONNECTION_PROPERTIES
+    assert "edition" not in SPEC["connectionSpecification"]["required"]
+    assert "max_concurrent_requests" in CONNECTION_PROPERTIES
+    assert "max_concurrent_requests" not in SPEC["connectionSpecification"]["required"]
