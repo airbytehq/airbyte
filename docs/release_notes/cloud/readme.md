@@ -2,6 +2,16 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## September 22, 2026
+
+Connections
+
+- Airbyte now warns you that a connection is at risk of being turned off as soon as it has either failed on every sync for 4 days or failed 20 times in a row, whichever comes first. Previously, both conditions had to be true before the warning was sent, so connections that sync once a day could fail for weeks before you heard about it.
+
+Platform
+
+- If your organization is on a capacity-based plan (Pro or Enterprise Flex), the workspace Usage page now shows how much data worker capacity is allocated to the workspace's region, next to the region name.
+
 ## September 17, 2026
 
 Platform
