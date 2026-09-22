@@ -20,7 +20,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b7a89e51-b4b0-464c-99e4-e1820d8f5c15
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/source-app-store-connect
   githubIssueLabel: source-app-store-connect
   icon: icon.svg
