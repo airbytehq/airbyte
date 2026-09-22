@@ -17,6 +17,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, List, Mapping
 
 import requests_mock
+from source_posthog import SourcePosthog
 
 from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
@@ -25,7 +26,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from source_posthog import SourcePosthog
+
 
 logger = logging.getLogger("airbyte")
 
@@ -57,10 +58,7 @@ def _records(page_index: int, count: int) -> List[Mapping[str, Any]]:
 
 
 def _next_url(page_index: int) -> str:
-    return (
-        f"{BASE_URL}/api/projects/{PROJECT_ID}/events"
-        f"?after=SLICE_START&before=PAGE_BOUNDARY_{page_index}&limit={PAGE_SIZE}"
-    )
+    return f"{BASE_URL}/api/projects/{PROJECT_ID}/events?after=SLICE_START&before=PAGE_BOUNDARY_{page_index}&limit={PAGE_SIZE}"
 
 
 class _PosthogMock:
