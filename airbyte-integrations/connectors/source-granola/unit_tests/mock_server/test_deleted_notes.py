@@ -47,11 +47,7 @@ def _audit_event(event_id: str, note_id: str, occurred_at: str = "2026-01-10T10:
 
 
 def _audit_request(occurred_after: str, occurred_before: str, cursor: Optional[str] = None) -> HttpRequest:
-    builder = (
-        GranolaRequestBuilder.audit_endpoint()
-        .with_occurred_after(occurred_after)
-        .with_occurred_before(occurred_before)
-    )
+    builder = GranolaRequestBuilder.audit_endpoint().with_occurred_after(occurred_after).with_occurred_before(occurred_before)
     if cursor:
         builder.with_cursor(cursor)
     return builder.build()
@@ -113,11 +109,7 @@ class TestDeletedNotes(TestCase):
         output = read(get_source(config=config), config=config, catalog=catalog, state=StateBuilder().build())
 
         assert output.errors != []
-        config_errors = [
-            message.trace.error
-            for message in output.errors
-            if message.trace.error.failure_type == FailureType.config_error
-        ]
+        config_errors = [message.trace.error for message in output.errors if message.trace.error.failure_type == FailureType.config_error]
         assert config_errors
         assert any("Audit API key" in (error.message or "") for error in config_errors)
 
@@ -134,10 +126,7 @@ class TestNotesErrorHandling(TestCase):
 
     def _assert_unauthorized_is_config_error(self, status_code: int, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            GranolaRequestBuilder.notes_endpoint()
-            .with_created_after(_START_DATE + "T00:00:00Z")
-            .with_created_before(_NOW)
-            .build(),
+            GranolaRequestBuilder.notes_endpoint().with_created_after(_START_DATE + "T00:00:00Z").with_created_before(_NOW).build(),
             HttpResponse(body=json.dumps({"error": {"code": "INVALID_API_KEY"}}), status_code=status_code),
         )
 
@@ -146,10 +135,6 @@ class TestNotesErrorHandling(TestCase):
         output = read(get_source(config=config), config=config, catalog=catalog, state=StateBuilder().build())
 
         assert output.errors != []
-        config_errors = [
-            message.trace.error
-            for message in output.errors
-            if message.trace.error.failure_type == FailureType.config_error
-        ]
+        config_errors = [message.trace.error for message in output.errors if message.trace.error.failure_type == FailureType.config_error]
         assert config_errors
         assert any("API key" in (error.message or "") for error in config_errors)
