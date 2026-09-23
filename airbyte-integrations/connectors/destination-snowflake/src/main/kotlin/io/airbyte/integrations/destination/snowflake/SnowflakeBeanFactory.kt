@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
 import io.airbyte.integrations.destination.snowflake.copy.DisabledSnowflakeS3Copy
 import io.airbyte.integrations.destination.snowflake.copy.EnabledSnowflakeS3Copy
-import io.airbyte.integrations.destination.snowflake.copy.S3CopyConfiguration
+import io.airbyte.cdk.fusion.FusionConfiguration
 import io.airbyte.integrations.destination.snowflake.copy.SnowflakeS3Copy
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
@@ -66,12 +66,9 @@ class SnowflakeBeanFactory {
     fun snowflakeS3Copy(
         columnManager: io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager,
         snowflakeConfiguration: SnowflakeConfiguration,
-        specFactory: SnowflakeMigratingConfigurationSpecificationSupplier,
         configuredCatalog: ConfiguredAirbyteCatalog,
     ): SnowflakeS3Copy {
-        val injectedSpecification = specFactory.get()
-        return S3CopyConfiguration.fromEnvironment(
-                injectedSpecification,
+        return FusionConfiguration.fromEnvironment(
                 System.getenv(),
             )
             ?.let {

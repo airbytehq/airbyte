@@ -3,6 +3,9 @@
  */
 package io.airbyte.integrations.destination.snowflake.copy
 
+import io.airbyte.cdk.fusion.FusionConfiguration
+import io.airbyte.cdk.fusion.FusionUploader
+
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -223,7 +226,7 @@ class SnowflakeStreamCompletionTest {
         val uploader = FakeUploader()
         val copy =
             EnabledSnowflakeS3Copy(
-                S3CopyConfiguration(
+                FusionConfiguration(
                     "role",
                     "bucket",
                     "us-west-2",
@@ -231,7 +234,9 @@ class SnowflakeStreamCompletionTest {
                     UUID(0, 2),
                     UUID(0, 3),
                     "fusion",
-                    null
+                    null,
+                    UUID(0, 1),
+                    UUID(0, 5),
                 ),
                 SnowflakeColumnManager(configuration),
                 configuration,
@@ -239,7 +244,7 @@ class SnowflakeStreamCompletionTest {
                 configuredCatalog,
             )
     }
-    private class FakeUploader : SnowflakeCopyUploader {
+    private class FakeUploader : FusionUploader {
         val keys = mutableListOf<String>()
         val json = mutableMapOf<String, String>()
         var markerResult: CompletableFuture<*> = CompletableFuture.completedFuture(Unit)

@@ -10,8 +10,6 @@ airbyteBulkConnector {
     toolkits = listOf("load-csv")
 }
 
-val awsSdkVersion = "2.46.0"
-
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-Xlint:-this-escape")
 }
@@ -43,11 +41,7 @@ val junitPlatformVersion = "1.13.4"
 val snowflakeJdbcThinVersion = "3.26.1"
 
 dependencies {
-    implementation(platform("software.amazon.awssdk:bom:$awsSdkVersion"))
-    implementation("software.amazon.awssdk:s3")
-    implementation("software.amazon.awssdk:sts")
-    implementation("software.amazon.awssdk:netty-nio-client")
-    implementation("software.amazon.awssdk:url-connection-client")
+    implementation(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-fusion"))
     implementation("net.snowflake:snowflake-jdbc-thin:$snowflakeJdbcThinVersion")
     implementation("com.zaxxer:HikariCP:$hikariCpVersion")
     implementation("com.google.guava:guava:32.1.1-jre")

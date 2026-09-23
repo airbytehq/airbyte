@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.destination.snowflake.copy
 
+import io.airbyte.cdk.fusion.FusionConfiguration
+import io.airbyte.cdk.fusion.FusionPaths
+
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.util.Jsons
 import io.mockk.every
@@ -17,7 +20,7 @@ class S3CopyMetadataTest {
     @Test
     fun `schemas and batch headers carry the same full run identity`() {
         val config =
-            S3CopyConfiguration(
+            FusionConfiguration(
                 "role",
                 "bucket",
                 "region",
@@ -42,7 +45,7 @@ class S3CopyMetadataTest {
                 every { mappedDescriptor } returns
                     DestinationStream.Descriptor("analytics", "ORDERS")
             }
-        val path = S3CopyPaths.run(config, stream.unmappedName, runId, epochSeconds)
+        val path = FusionPaths.run(config, stream.unmappedName, runId, epochSeconds)
         val context =
             CsvCopyContext(
                 "stream-hash",
@@ -55,7 +58,7 @@ class S3CopyMetadataTest {
                 epochSeconds
             )
         val schema =
-            metadata.schema(stream, mapOf("columns" to emptyMap<String, Any>()), "schema-hash")
+            metadata.schema(stream, mapOf("columns" to emptyMap<String, Any>(), "source_schema" to emptyMap<String, Any>(), "primary_key" to emptyList<Any>(), "cursor" to emptyList<String>()), "schema-hash")
         val complete = metadata.streamComplete(stream)
         val batchId = UUID(0, 7)
         val headers = metadata.batch(context, 19, batchId)

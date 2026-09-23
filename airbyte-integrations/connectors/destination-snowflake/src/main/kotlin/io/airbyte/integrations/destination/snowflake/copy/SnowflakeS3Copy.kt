@@ -4,6 +4,12 @@
 
 package io.airbyte.integrations.destination.snowflake.copy
 
+import io.airbyte.cdk.fusion.FusionConfiguration
+import io.airbyte.cdk.fusion.FusionSchema
+import io.airbyte.cdk.fusion.FusionPaths
+import io.airbyte.cdk.fusion.FusionUploader
+import io.airbyte.cdk.fusion.S3FusionUploader
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
@@ -62,10 +68,10 @@ object DisabledSnowflakeS3Copy : SnowflakeS3Copy {
     justification = "Kotlin coroutine resume stubs pass null placeholders for saved arguments",
 )
 class EnabledSnowflakeS3Copy(
-    private val config: S3CopyConfiguration,
+    private val config: FusionConfiguration,
     private val columnManager: SnowflakeColumnManager,
     private val snowflakeConfiguration: SnowflakeConfiguration,
-    private val uploader: SnowflakeCopyUploader = S3CsvUploader(config),
+    private val uploader: FusionUploader = S3FusionUploader(config),
     private val configuredCatalog: ConfiguredAirbyteCatalog? = null,
 ) : SnowflakeS3Copy {
     private val epochSeconds = Instant.now().epochSecond
@@ -96,7 +102,7 @@ class EnabledSnowflakeS3Copy(
         }
         val runPaths =
             catalog.streams.associateWith { stream ->
-                S3CopyPaths.run(config, stream.unmappedName, runId, epochSeconds)
+                FusionPaths.run(config, stream.unmappedName, runId, epochSeconds)
             }
         catalog.streams.forEach { stream ->
             val schema = descriptor(stream)
@@ -159,7 +165,7 @@ class EnabledSnowflakeS3Copy(
     private fun putJson(key: String, value: Any) {
         uploader.uploadJson(Jsons.writeValueAsBytes(value), key).get()
     }
-    private fun descriptor(stream: DestinationStream): Map<String, Any> {
+    private fun descriptor(stream: DestinationStream): Map<String, Any?> {
         val columns = LinkedHashMap<String, Any>()
         columnManager.getMetaColumns().forEach { (n, t) ->
             columns[n] = mapOf("type" to t.type, "nullable" to t.nullable)
@@ -174,18 +180,15 @@ class EnabledSnowflakeS3Copy(
                 it.stream.namespace == stream.unmappedNamespace &&
                     it.stream.name == stream.unmappedName
             }
-        val primaryKey = configured?.primaryKey.orEmpty()
-        val cursor = configured?.cursorField.orEmpty()
-        // Preserve the input JSON Schema, including annotations lost by CDK type conversion.
-        // Raw mode changes finalSchema, but retains the source fields in inputSchema.
-        val sourceSchema =
-            configured?.stream?.jsonSchema
-                ?: AirbyteTypeToJsonSchema()
-                    .convert(ObjectType(LinkedHashMap(stream.tableSchema.columnSchema.inputSchema)))
-        return mapOf(
-            "source_schema" to sourceSchema,
-            "primary_key" to primaryKey,
-            "cursor" to cursor,
+        val sourceDescriptor =
+            configured?.let { FusionSchema.fromConfiguredStream(Jsons.valueToTree(it)) }
+                ?: mapOf(
+                    "source_schema" to AirbyteTypeToJsonSchema()
+                        .convert(ObjectType(LinkedHashMap(stream.tableSchema.columnSchema.inputSchema))),
+                    "primary_key" to emptyList<List<String>>(),
+                    "cursor" to emptyList<String>(),
+                )
+        return sourceDescriptor + mapOf(
             "contract_version" to 1,
             "connector" to "destination-snowflake",
             "format" to "snowflake-load-csv-gzip-v1",
