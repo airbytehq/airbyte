@@ -182,9 +182,16 @@ Shopify is moving merchant shipping configuration from delivery profiles to [Mar
 The connector checks `shop.features.marketDrivenShipping` at the start of each sync:
 
 - Shops on legacy shipping: `Countries` syncs as before; `Market Countries` emits no records.
-- Shops on market-driven shipping: `Countries` keeps emitting the snapshot of the shipping configuration as it was at migration time (and logs a warning), so previously synced data is not wiped; `Market Countries` emits one record per market and country, with the market's current shipping options.
+- Shops on market-driven shipping: `Countries` keeps emitting the snapshot of the shipping configuration as it was at migration time (and logs a warning), so previously synced data is not wiped; `Market Countries` emits one record per market region — a whole country or a country subdivision such as a US state — with the market's current shipping options.
 
-`Market Countries` requires the `read_markets` scope. If your custom app does not have it, the stream is not available in the catalog. When a shop migrates to market-driven shipping, enable the `Market Countries` stream on your connection to receive current shipping data; `Countries` no longer reflects changes made by the merchant.
+Shopify migrates shops between October 1, 2026 and July 1, 2027, so both stream behaviors coexist during that period. Nothing changes in your connection automatically and no global switch is required: keep `Countries` if you need the legacy snapshot, and enable `Market Countries` for shops that have migrated.
+
+### Enabling Market Countries for a migrated shop
+
+1. Make sure the connector has the `read_markets` scope. With **OAuth2.0**, re-authenticate the source on its Settings page. With **API password**, add `read_markets` to your custom app's Admin API scopes and save the source again. Without the scope, the stream is not in the catalog and the source logs a warning at `check` and `discover` time.
+2. Refresh the source schema on the connection so `Market Countries` appears in the stream list.
+3. Enable the `Market Countries` stream. You can leave `Countries` enabled; it continues to hold the last legacy snapshot.
+4. Run a sync and check that `market_countries` contains one record per market region (`market_handle`, `code`, `subdivision_code`, `shipping_options`). On a shop that has not migrated yet, the stream stays empty until Shopify migrates the shop; no action is needed.
 
 ## Capturing deleted records
 

@@ -2,9 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import json
+import logging
 import math
+import re
 from unittest.mock import MagicMock, patch
 
+import jsonschema
 import pytest
 import requests
 from source_shopify.auth import ShopifyAuthenticator
@@ -51,6 +54,9 @@ from source_shopify.streams.streams import (
 )
 from source_shopify.utils import ShopifyWrongShopNameError
 
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
+from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
 from airbyte_cdk.utils import AirbyteTracedException
 
 from .conftest import records_per_slice
@@ -603,9 +609,7 @@ def test_countries_parse_response(config, countries_response_data, countries_exp
 def test_market_countries_request_body_json(config):
     config["shop"] = "test-store"
     stream = MarketCountries(config)
-    stream._page_cursor = "market_cursor"
-    stream._sub_page_cursor = "regions_cursor"
-    request_body = stream.request_body_json(stream_state={})
+    request_body = stream.request_body_json(stream_state={}, next_page_token={"cursor": "market_cursor", "sub_cursor": "regions_cursor"})
 
     expected_request_body = {
         "query": """query MarketCountriesList {
@@ -630,12 +634,22 @@ def test_market_countries_request_body_json(config):
             after: "regions_cursor"
           ) {
             nodes {
+              __typename
               ... on MarketRegionCountry {
                 id
                 name
                 code
                 currency {
                   currency_code: currencyCode
+                }
+              }
+              ... on MarketRegionSubdivision {
+                id
+                name
+                code
+                country {
+                  code
+                  name
                 }
               }
             }
@@ -682,21 +696,29 @@ def test_market_countries_request_body_json(config):
     assert request_body == expected_request_body
 
 
-def _markets_response(markets_has_next: bool, regions_has_next: bool) -> dict:
+def _markets_response(
+    markets_has_next: bool,
+    regions_has_next: bool,
+    market_id: str = "gid://shopify/Market/1",
+    regions: list = (),
+    markets_cursor: str = "market_cursor",
+    regions_cursor: str = "regions_cursor",
+) -> dict:
     return {
         "data": {
             "markets": {
-                "pageInfo": {"hasNextPage": markets_has_next, "endCursor": "market_cursor"},
+                "pageInfo": {"hasNextPage": markets_has_next, "endCursor": markets_cursor},
                 "nodes": [
                     {
+                        "id": market_id,
                         "conditions": {
                             "regionsCondition": {
                                 "regions": {
-                                    "nodes": [],
-                                    "pageInfo": {"hasNextPage": regions_has_next, "endCursor": "regions_cursor"},
+                                    "nodes": list(regions),
+                                    "pageInfo": {"hasNextPage": regions_has_next, "endCursor": regions_cursor},
                                 }
                             }
-                        }
+                        },
                     }
                 ],
             }
@@ -730,6 +752,62 @@ def test_market_countries_next_page_token(config, response_data, expected_token)
     assert stream.next_page_token(response) == expected_token
 
 
+def _market_region_country(region_id: int, code: str) -> dict:
+    return {"__typename": "MarketRegionCountry", "id": f"gid://shopify/MarketRegionCountry/{region_id}", "name": code, "code": code}
+
+
+def _query_cursors(query: str) -> tuple:
+    markets_cursor = re.search(r'markets\(\s*first: 1\s*after: "([^"]+)"', query)
+    regions_cursor = re.search(r'regions\(\s*first: 250\s*after: "([^"]+)"', query)
+    return (markets_cursor and markets_cursor.group(1), regions_cursor and regions_cursor.group(1))
+
+
+def test_market_countries_resumes_from_checkpointed_cursors(requests_mock, config):
+    """
+    A fresh stream instance must honor the cursors handed back by the CDK (resumable full refresh):
+    the market cursor is kept while paging the regions of the same market, and the regions cursor
+    is dropped when moving on to the next market.
+    """
+    responses_by_cursors = {
+        # resumed mid-way: 2nd page of regions of market 2
+        ("m1", "r1"): _markets_response(True, True, "gid://shopify/Market/2", [_market_region_country(21, "DE")], "m1", "r2"),
+        ("m1", "r2"): _markets_response(True, False, "gid://shopify/Market/2", [_market_region_country(22, "FR")], "m1", "r2"),
+        ("m1", None): _markets_response(False, False, "gid://shopify/Market/3", [_market_region_country(31, "CA")]),
+    }
+    seen_cursors = []
+
+    def graphql_callback(request, context):
+        query = request.json()["query"]
+        if query.startswith("query ShopFeatures"):
+            return {"data": {"shop": {"features": {"marketDrivenShipping": True}}}}
+        cursors = _query_cursors(query)
+        seen_cursors.append(cursors)
+        return responses_by_cursors[cursors]
+
+    requests_mock.post("https://test-shop.myshopify.com/admin/api/2026-07/graphql.json", json=graphql_callback)
+
+    stream = MarketCountries(config)
+    stream.state = {"cursor": "m1", "sub_cursor": "r1"}
+    configured_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name=stream.name, json_schema=stream.get_json_schema(), supported_sync_modes=[SyncMode.full_refresh]),
+        sync_mode=SyncMode.full_refresh,
+        destination_sync_mode=DestinationSyncMode.overwrite,
+    )
+    records = [
+        message
+        for message in stream.read(configured_stream, logging.getLogger("airbyte"), DebugSliceLogger(), {}, None, InternalConfig())
+        if isinstance(message, dict)
+    ]
+
+    assert seen_cursors == [("m1", "r1"), ("m1", "r2"), ("m1", None)]
+    assert stream.state == {"__ab_full_refresh_sync_complete": True}
+    assert [record["id"] for record in records] == [
+        "gid://shopify/MarketRegionCountry/21",
+        "gid://shopify/MarketRegionCountry/22",
+        "gid://shopify/MarketRegionCountry/31",
+    ]
+
+
 def test_market_countries_parse_response(config):
     stream = MarketCountries(config)
     response = MagicMock(status_code=requests.codes.OK)
@@ -749,18 +827,34 @@ def test_market_countries_parse_response(config):
                                 "regions": {
                                     "nodes": [
                                         {
+                                            "__typename": "MarketRegionCountry",
                                             "id": "gid://shopify/MarketRegionCountry/1",
                                             "name": "Germany",
                                             "code": "DE",
                                             "currency": {"currency_code": "EUR"},
                                         },
-                                        # non-country region resolves to an empty inline fragment
-                                        {},
+                                        # region type not covered by the query's inline fragments
+                                        {"__typename": "MarketRegionFuture"},
                                         {
+                                            "__typename": "MarketRegionCountry",
                                             "id": "gid://shopify/MarketRegionCountry/2",
                                             "name": "France",
                                             "code": "FR",
                                             "currency": {"currency_code": "EUR"},
+                                        },
+                                        {
+                                            "__typename": "MarketRegionSubdivision",
+                                            "id": "gid://shopify/MarketRegionSubdivision/3",
+                                            "name": "Corsica",
+                                            "code": "20R",
+                                            "country": {"code": "FR", "name": "France"},
+                                        },
+                                        {
+                                            "__typename": "MarketRegionSubdivision",
+                                            "id": "gid://shopify/MarketRegionSubdivision/4",
+                                            "name": "Bavaria",
+                                            "code": "BY",
+                                            "country": {"code": "DE", "name": "Germany"},
                                         },
                                     ],
                                     "pageInfo": {"hasNextPage": False, "endCursor": None},
@@ -829,7 +923,72 @@ def test_market_countries_parse_response(config):
         "shipping_options": expected_shipping_options,
         "shop_url": "test-shop",
     }
-    assert list(stream.parse_response(response)) == [
-        {"id": 1, "name": "Germany", "code": "DE", "currency_code": "EUR", **market_fields},
-        {"id": 2, "name": "France", "code": "FR", "currency_code": "EUR", **market_fields},
+    no_subdivision = {"subdivision_name": None, "subdivision_code": None}
+    records = list(stream.parse_response(response))
+    assert records == [
+        {
+            "id": "gid://shopify/MarketRegionCountry/1",
+            "name": "Germany",
+            "code": "DE",
+            "currency_code": "EUR",
+            **no_subdivision,
+            **market_fields,
+        },
+        {
+            "id": "gid://shopify/MarketRegionCountry/2",
+            "name": "France",
+            "code": "FR",
+            "currency_code": "EUR",
+            **no_subdivision,
+            **market_fields,
+        },
+        {
+            "id": "gid://shopify/MarketRegionSubdivision/3",
+            "name": "France",
+            "code": "FR",
+            "subdivision_name": "Corsica",
+            "subdivision_code": "20R",
+            "currency_code": None,
+            **market_fields,
+        },
+        {
+            "id": "gid://shopify/MarketRegionSubdivision/4",
+            "name": "Germany",
+            "code": "DE",
+            "subdivision_name": "Bavaria",
+            "subdivision_code": "BY",
+            "currency_code": None,
+            **market_fields,
+        },
     ]
+    schema = stream.get_json_schema()
+    for record in records:
+        jsonschema.validate(record, schema)
+
+
+def test_market_countries_parse_response_subdivision_only_market(config):
+    """A market limited to a single US state has no `MarketRegionCountry` node at all."""
+    stream = MarketCountries(config)
+    response = MagicMock(status_code=requests.codes.OK)
+    response.json.return_value = _markets_response(
+        False,
+        False,
+        "gid://shopify/Market/7",
+        [
+            {
+                "__typename": "MarketRegionSubdivision",
+                "id": "gid://shopify/MarketRegionSubdivision/70",
+                "name": "California",
+                "code": "CA",
+                "country": {"code": "US", "name": "United States"},
+            }
+        ],
+    )
+    records = list(stream.parse_response(response))
+    assert len(records) == 1
+    assert records[0]["id"] == "gid://shopify/MarketRegionSubdivision/70"
+    assert (records[0]["code"], records[0]["name"]) == ("US", "United States")
+    assert (records[0]["subdivision_code"], records[0]["subdivision_name"]) == ("CA", "California")
+    assert records[0]["currency_code"] is None
+    assert records[0]["market_id"] == 7
+    jsonschema.validate(records[0], stream.get_json_schema())

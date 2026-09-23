@@ -3575,12 +3575,22 @@ class MarketCountry(DeliveryZoneList):
                 first: 250
               ) {
                 nodes {
+                  __typename
                   ... on MarketRegionCountry {
                     id
                     name
                     code
                     currency {
                       currency_code: currencyCode
+                    }
+                  }
+                  ... on MarketRegionSubdivision {
+                    id
+                    name
+                    code
+                    country {
+                      code
+                      name
                     }
                   }
                 }
@@ -3642,11 +3652,21 @@ class MarketCountry(DeliveryZoneList):
             cursor = '"' + self.regions_cursor + '"'
             regions_arguments.append(Argument(name="after", value=cursor))
 
-        country_fields: List[Field] = [
-            "id",
-            "name",
-            "code",
-            Field(name="currency", fields=[Field(name="currencyCode", alias="currency_code")]),
+        region_fields: List[Field] = [
+            "__typename",
+            InlineFragment(
+                type="MarketRegionCountry",
+                fields=[
+                    "id",
+                    "name",
+                    "code",
+                    Field(name="currency", fields=[Field(name="currencyCode", alias="currency_code")]),
+                ],
+            ),
+            InlineFragment(
+                type="MarketRegionSubdivision",
+                fields=["id", "name", "code", Field(name="country", fields=["code", "name"])],
+            ),
         ]
         option_definition_fields: List[Field] = [
             "__typename",
@@ -3684,10 +3704,7 @@ class MarketCountry(DeliveryZoneList):
                                         name="regions",
                                         arguments=regions_arguments,
                                         fields=[
-                                            Field(
-                                                name="nodes",
-                                                fields=[InlineFragment(type="MarketRegionCountry", fields=country_fields)],
-                                            ),
+                                            Field(name="nodes", fields=region_fields),
                                             Field(name="pageInfo", fields=["hasNextPage", "endCursor"]),
                                         ],
                                     ),

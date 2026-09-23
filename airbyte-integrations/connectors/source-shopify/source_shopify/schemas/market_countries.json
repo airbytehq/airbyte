@@ -3,19 +3,27 @@
   "additionalProperties": true,
   "properties": {
     "id": {
-      "description": "Unique identifier of the country within the market (MarketRegionCountry).",
-      "type": ["null", "integer"]
+      "description": "Global ID of the market region, e.g. gid://shopify/MarketRegionCountry/123 for a whole country or gid://shopify/MarketRegionSubdivision/456 for a country subdivision (state, province).",
+      "type": ["null", "string"]
     },
     "name": {
-      "description": "Name of the country.",
+      "description": "Name of the country. For a subdivision region, the name of the country the subdivision belongs to.",
       "type": ["null", "string"]
     },
     "code": {
-      "description": "ISO country code.",
+      "description": "ISO country code. For a subdivision region, the code of the country the subdivision belongs to.",
+      "type": ["null", "string"]
+    },
+    "subdivision_name": {
+      "description": "Name of the subdivision (state, province) when the market region is a subdivision, null for whole-country regions.",
+      "type": ["null", "string"]
+    },
+    "subdivision_code": {
+      "description": "Code of the subdivision (e.g. CA for California) when the market region is a subdivision, null for whole-country regions.",
       "type": ["null", "string"]
     },
     "currency_code": {
-      "description": "Currency used for this country given the market settings.",
+      "description": "Currency used for this country given the market settings. Null for subdivision regions.",
       "type": ["null", "string"]
     },
     "market_id": {

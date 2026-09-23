@@ -850,7 +850,8 @@ class MarketCountries(FullRefreshShopifyGraphQlBulkStream):
     """
     Countries a shop ships to, sourced from Markets (`Market.conditions.regionsCondition.regions`)
     together with the market's shipping configuration (`Market.delivery.shipping`).
-    Emits one record per (market, country) and only for shops with `marketDrivenShipping` enabled,
+    Emits one record per market region (a whole country or a country subdivision, e.g. a US state)
+    and only for shops with `marketDrivenShipping` enabled,
     where the legacy `deliveryProfiles` used by the `countries` stream returns a frozen snapshot.
     https://shopify.dev/docs/api/admin-graphql/latest/queries/markets
     """
@@ -911,6 +912,9 @@ class MarketCountries(FullRefreshShopifyGraphQlBulkStream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
+        token = next_page_token or {}
+        self._page_cursor = token.get("cursor")
+        self._sub_page_cursor = token.get("sub_cursor")
         return {"query": self.query(regions_cursor=self._sub_page_cursor).get(query_args={"cursor": self._page_cursor})}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -920,10 +924,10 @@ class MarketCountries(FullRefreshShopifyGraphQlBulkStream):
             shipping_options = [
                 self._process_shipping_option(option) for option in (shipping.get("option_definitions") or {}).get("nodes") or []
             ]
-            for country in (regions_condition.get("regions") or {}).get("nodes") or []:
-                # `regions` may contain non-country regions, which resolve to an empty inline fragment
-                if country.get("id"):
-                    yield self._transformer.transform(self._process_country(country, market, shipping, shipping_options))
+            for region in (regions_condition.get("regions") or {}).get("nodes") or []:
+                # region types not covered by the query's inline fragments resolve to `__typename` only
+                if region.get("id"):
+                    yield self._transformer.transform(self._process_region(region, market, shipping, shipping_options))
 
     @staticmethod
     def _gid_to_int(gid: str) -> int:
@@ -940,18 +944,23 @@ class MarketCountries(FullRefreshShopifyGraphQlBulkStream):
             "free_delivery_minimum_value": option.get("free_delivery_minimum_value"),
         }
 
-    def _process_country(
+    def _process_region(
         self,
-        country: Mapping[str, Any],
+        region: Mapping[str, Any],
         market: Mapping[str, Any],
         shipping: Mapping[str, Any],
         shipping_options: List[Mapping[str, Any]],
     ) -> Mapping[str, Any]:
+        is_subdivision = region.get("__typename") == "MarketRegionSubdivision"
+        country = (region.get("country") or {}) if is_subdivision else region
         return {
-            "id": self._gid_to_int(country["id"]),
+            # full GID: `MarketRegionCountry` and `MarketRegionSubdivision` ids live in different namespaces
+            "id": region["id"],
             "name": country.get("name"),
             "code": country.get("code"),
-            "currency_code": (country.get("currency") or {}).get("currency_code"),
+            "subdivision_name": region.get("name") if is_subdivision else None,
+            "subdivision_code": region.get("code") if is_subdivision else None,
+            "currency_code": (region.get("currency") or {}).get("currency_code"),
             "market_id": self._gid_to_int(market["id"]),
             "market_name": market.get("name"),
             "market_handle": market.get("handle"),
