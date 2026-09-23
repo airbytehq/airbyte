@@ -3,10 +3,6 @@
  */
 package io.airbyte.integrations.destination.bigquery.copy
 
-import io.airbyte.cdk.load.util.Jsons
-import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
-import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfigurationFactory
-import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import java.util.UUID
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -110,12 +106,6 @@ class S3CopyConfigurationTest {
     private val idNames =
         listOf("ORGANIZATION_ID", "WORKSPACE_ID", "SOURCE_ID", "CONNECTION_ID", "DESTINATION_ID")
 
-    private fun runtimeConfig(json: String = "{}"): BigqueryConfiguration =
-        BigqueryConfigurationFactory()
-            .makeWithoutExceptionHandling(
-                Jsons.treeToValue(Jsons.readTree(json), BigquerySpecification::class.java)
-            )
-
     private fun ids(config: S3CopyConfiguration): List<UUID> =
         listOf(
             config.organizationId,
@@ -157,101 +147,4 @@ class S3CopyConfigurationTest {
         )
     }
 
-    @Test
-    fun `preview forces route and preserves environment credentials and optional IDs`() {
-        val env =
-            enabled +
-                mapOf(
-                    "AIRBYTE_S3_COPY_ENABLED" to "false",
-                    "AIRBYTE_S3_COPY_PREFIX" to "ignored",
-                    "AIRBYTE_S3_COPY_EXTERNAL_ID" to "external",
-                    "AWS_SESSION_TOKEN" to "test-session-token",
-                )
-        val preview = S3CopyConfiguration.previewEnvironment(runtimeConfig(), env)
-        assertEquals("test-session-token", preview["AWS_SESSION_TOKEN"])
-        assertEquals("false", env["AIRBYTE_S3_COPY_ENABLED"])
-        val config = S3CopyConfiguration.fromEnvironment(preview)!!
-        assertEquals("airbyte-fusion-context-store", config.bucket)
-        assertEquals("us-west-2", config.region)
-        assertEquals("arn:aws:iam::506572016262:role/fusion-snowflake-sync-copy", config.roleArn)
-        assertEquals("fusion", config.prefix)
-        assertEquals("external", config.externalId)
-        assertEquals(idNames.map { UUID.fromString(enabled["AIRBYTE_$it"]) }, ids(config))
-        assertNull(
-            S3CopyConfiguration.fromEnvironment(preview + ("AIRBYTE_S3_COPY_ENABLED" to "false"))
-        )
-    }
-
-    @Test
-    fun `spec IDs pass through runtime factory and override even invalid environment IDs`() {
-        val values = idNames.mapIndexed { index, _ -> "ABCDEFAB-CDEF-4ABC-8DEF-ABCDEFABCDE$index" }
-        val json =
-            idNames.zip(values).joinToString(",", "{", "}") { (name, value) ->
-                "\"${name.lowercase()}\":\"$value\""
-            }
-        val runtime = runtimeConfig(json)
-        assertEquals(
-            values,
-            listOf(
-                runtime.organizationId,
-                runtime.workspaceId,
-                runtime.sourceId,
-                runtime.connectionId,
-                runtime.destinationId
-            )
-        )
-        val env = enabled + idNames.associate { "AIRBYTE_$it" to "invalid" }
-        val config =
-            S3CopyConfiguration.fromEnvironment(
-                S3CopyConfiguration.previewEnvironment(runtime, env)
-            )!!
-        assertEquals(values.map(UUID::fromString), ids(config))
-    }
-
-    @Test
-    fun `omitted and explicit null config IDs fall back to environment then zero`() {
-        val nullJson = idNames.joinToString(",", "{", "}") { "\"${it.lowercase()}\":null" }
-        for (json in listOf("{}", nullJson)) {
-            val runtime = runtimeConfig(json)
-            assertEquals(
-                List<String?>(5) { null },
-                listOf(
-                    runtime.organizationId,
-                    runtime.workspaceId,
-                    runtime.sourceId,
-                    runtime.connectionId,
-                    runtime.destinationId
-                )
-            )
-            val env = mapOf("AIRBYTE_SOURCE_ID" to enabled.getValue("AIRBYTE_SOURCE_ID"))
-            val config =
-                S3CopyConfiguration.fromEnvironment(
-                    S3CopyConfiguration.previewEnvironment(runtime, env)
-                )!!
-            assertEquals(
-                listOf(
-                    UUID(0, 0),
-                    UUID(0, 0),
-                    UUID.fromString(env.getValue("AIRBYTE_SOURCE_ID")),
-                    UUID(0, 0),
-                    UUID(0, 0)
-                ),
-                ids(config)
-            )
-        }
-    }
-
-    @Test
-    fun `invalid supplied config IDs fail instead of falling back to valid environment IDs`() {
-        idNames.forEach { name ->
-            for (value in listOf("", " ", "1-1-1-1-1", "invalid")) {
-                val runtime = runtimeConfig("{\"${name.lowercase()}\":\"$value\"}")
-                assertThrows(IllegalStateException::class.java) {
-                    S3CopyConfiguration.fromEnvironment(
-                        S3CopyConfiguration.previewEnvironment(runtime, enabled)
-                    )
-                }
-            }
-        }
-    }
 }

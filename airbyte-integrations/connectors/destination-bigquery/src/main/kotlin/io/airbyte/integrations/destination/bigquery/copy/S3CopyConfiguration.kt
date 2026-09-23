@@ -3,7 +3,6 @@
  */
 package io.airbyte.integrations.destination.bigquery.copy
 
-import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import java.util.UUID
 
 /**
@@ -22,33 +21,6 @@ data class S3CopyConfiguration(
     val destinationId: UUID = UUID(0, 0),
 ) {
     companion object {
-        /**
-         * TEMPORARY: force the preview route at the write factory boundary. Runtime config IDs
-         * override environment IDs; absent IDs are parsed as the zero UUID.
-         */
-        fun previewEnvironment(
-            config: BigqueryConfiguration,
-            env: Map<String, String> = System.getenv(),
-        ): Map<String, String> =
-            env +
-                mapOf(
-                    "AIRBYTE_S3_COPY_ENABLED" to "true",
-                    "AIRBYTE_S3_COPY_BUCKET" to "airbyte-fusion-context-store",
-                    "AIRBYTE_S3_COPY_REGION" to "us-west-2",
-                    "AIRBYTE_S3_COPY_ROLE_ARN" to
-                        "arn:aws:iam::506572016262:role/fusion-snowflake-sync-copy",
-                    "AIRBYTE_S3_COPY_PREFIX" to "fusion",
-                ) +
-                listOf(
-                        "AIRBYTE_ORGANIZATION_ID" to config.organizationId,
-                        "AIRBYTE_WORKSPACE_ID" to config.workspaceId,
-                        "AIRBYTE_SOURCE_ID" to config.sourceId,
-                        "AIRBYTE_CONNECTION_ID" to config.connectionId,
-                        "AIRBYTE_DESTINATION_ID" to config.destinationId,
-                    )
-                    .mapNotNull { (key, value) -> value?.let { key to it } }
-                    .toMap()
-
         /** Pure parsing: enablement defaults to false and all five routing IDs are optional. */
         fun fromEnvironment(env: Map<String, String> = System.getenv()): S3CopyConfiguration? {
             when (env["AIRBYTE_S3_COPY_ENABLED"] ?: "false") {

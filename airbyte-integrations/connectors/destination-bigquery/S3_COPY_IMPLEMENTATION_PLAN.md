@@ -1,10 +1,9 @@
 # BigQuery load-input copies for Fusion
 
 Status: GCS staging and batched standard inserts are implemented on
-`johnny/bigquery-fusion-batched-inserts`. This temporary preview forces copying on for writes to
-`airbyte-fusion-context-store` in `us-west-2` through
-`arn:aws:iam::506572016262:role/fusion-snowflake-sync-copy`. Bootstrap AWS credentials are not embedded. The sections below describe the implementation contract
-and rollout requirements.
+`johnny/bigquery-fusion-batched-inserts`. Copying is controlled by the platform environment;
+customer configuration contains no Fusion routing fields. The sections below describe the
+implementation contract and rollout requirements.
 Reviewed September 10, 2026 against the BigQuery files at repository baseline `aa28ceeac4e`.
 The connector uses CDK `1.0.25`, `core = 'load'`, and `useLegacyTaskLoader = true`, with
 `legacy-task-load-gcs`, `legacy-task-load-db`, and `legacy-task-load-s3` toolkits.
@@ -48,9 +47,9 @@ create duplicate rows/objects. Final merge, swap, or truncation can still fail a
 Retain successful archive objects and completion markers across errors, retries, refreshes, and CDC
 deletes. Do not parse CDC rows into S3 deletions or delete a failed run's prefix.
 
-Do not change customer BigQuery configuration, ingestion thresholds, formatter semantics, the
-CDK version. The five temporary optional routing fields below are the only specification additions. Do not migrate BigQuery to the new dataflow engine as
-part of this work. A shared toolkit extraction from Snowflake is also unnecessary for v1.
+Do not change customer BigQuery configuration, ingestion thresholds, or formatter semantics.
+Do not migrate BigQuery to the new dataflow engine as part of this work. Common Fusion routing,
+configuration, and metadata are being integrated with the shared CDK toolkit.
 
 Enabled writes support both loading strategies. Silently skipping the archive would violate opt-in.
 `spec`, `check`, and disabled writes must continue to work with either strategy and no AWS configuration.
@@ -61,18 +60,16 @@ Use the agreed Fusion contract:
 
 ```text
 fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/
-  connections/<connection_uuid>/destinations/<destination_uuid>/syncs/runs/<epoch_seconds>/<run_uuid>/
-    streams/<escaped_stream_name>/
+  connections/<connection_uuid>/destinations/<destination_uuid>/syncs/streams/<escaped_stream_name>/
+    runs/<epoch_seconds>/<run_uuid>/
       schema.json
       batches/<batch_uuid>.csv.gz  # GCS staging
       batches/<batch_uuid>.jsonl   # batched standard inserts
       batches/stream_complete.json
 ```
 
-The prefix defaults to `fusion` and is forced to that value in this preview. Five optional advanced
-connector config fields (`organization_id`, `workspace_id`, `source_id`, `connection_id`, and
-`destination_id`) override the corresponding standard `AIRBYTE_*_ID` environment values. Each
-missing value defaults to `00000000-0000-0000-0000-000000000000` for temporary preview testing.
+The prefix defaults to `fusion`. Routing uses only standard `AIRBYTE_*_ID` environment values.
+No connector config fields override platform routing or enablement.
 Values must be canonical UUIDs; uppercase input is normalized. A process captures one Unix epoch
 in seconds and generates one run UUID, shared across all streams;
 each completed GCS object or standard-insert loader batch gets one batch UUID reused throughout that archive transfer's retries.
@@ -129,19 +126,13 @@ never count CSV lines, since quoted records can contain newlines.
 | `AIRBYTE_S3_COPY_BUCKET` | Required archive bucket |
 | `AIRBYTE_S3_COPY_REGION` | Required S3/STS region |
 | `AIRBYTE_S3_COPY_ROLE_ARN` | Required target role |
-| `AIRBYTE_ORGANIZATION_ID` | Optional canonical UUID; config `organization_id` overrides |
-| `AIRBYTE_WORKSPACE_ID` | Optional canonical UUID; config `workspace_id` overrides |
-| `AIRBYTE_SOURCE_ID` | Optional canonical UUID; config `source_id` overrides |
-| `AIRBYTE_CONNECTION_ID` | Optional canonical UUID; config `connection_id` overrides |
-| `AIRBYTE_DESTINATION_ID` | Optional canonical UUID; config `destination_id` overrides |
+| `AIRBYTE_ORGANIZATION_ID` | Canonical UUID from the platform environment |
+| `AIRBYTE_WORKSPACE_ID` | Canonical UUID from the platform environment |
+| `AIRBYTE_SOURCE_ID` | Canonical UUID from the platform environment |
+| `AIRBYTE_CONNECTION_ID` | Canonical UUID from the platform environment |
+| `AIRBYTE_DESTINATION_ID` | Canonical UUID from the platform environment |
 | `AIRBYTE_S3_COPY_PREFIX` | Default `fusion`; trim surrounding slashes; reject empty |
 | `AIRBYTE_S3_COPY_EXTERNAL_ID` | Optional STS external ID |
-
-The table describes the underlying parser. This preview forces enablement, bucket, region, role,
-and prefix as described above. The IAM role has only `s3:PutObject` and
-`s3:AbortMultipartUpload` on `arn:aws:s3:::airbyte-fusion-context-store/fusion/*`.
-The bucket blocks all public access, uses SSE-S3, and aborts incomplete multipart uploads after
-one day, without expiring completed objects.
 
 Check operation and enablement before binding enabled-only fields or constructing AWS clients.
 Latch the configuration for the process. Validate all routing, supported generation combinations,
@@ -281,7 +272,8 @@ Local HTTP tests exercise the real SDK/Netty multipart protocol, including parti
 
 ## 6. Schema descriptor
 
-Always include `layout.source_schema`, for raw and typed tables and every input format. Preserve
+Always include top-level `source_schema`, `primary_key`, `cursor`, and `generation_id`.
+Retain `layout.source_schema` for the load-layout hash, for raw and typed tables and every input format. Preserve
 the matching configured stream's original JSON Schema, including nested types, annotations, and
 constraints. Only reconstruct it from the CDK source type when no configured schema is available.
 The source schema participates in `schema_id` independently of the physical batch column layout.
@@ -383,7 +375,7 @@ Deterministic connector tests must cover:
 5. Descriptors: real header ordinals versus mapped fields, raw CSV versus final raw schema,
    source/target primary key and cursor mapping, null namespace, escaped names, schema hash
    stability across runs, and layout changes changing the hash.
-6. Disabled/spec/check: no AWS construction, no extra GCS GET/spool, optional preview config ID fields.
+6. Disabled/spec/check: no AWS construction, no extra GCS GET/spool, no Fusion config ID fields.
    Include checker-internal write operations and both enabled load strategies.
 7. Lifetime and pressure: four copies max across socket partitions, metadata concurrency bounded,
    cancellation before/while reading, a cancelled future with an active reader, drained readers
