@@ -177,7 +177,8 @@ def test_nested_config_missing_optional_fields(manifest):
     assert "credentials" not in migrated
 
 
-def test_flat_config_is_untouched(manifest):
+def test_flat_config_only_gains_auth_type(manifest):
+    """A 4.0.0-era flat config predates the `auth_type` discriminator; nothing else about it changes."""
     flat = {
         "client_id": "cid",
         "client_secret": "cs",
@@ -186,7 +187,73 @@ def test_flat_config_is_untouched(manifest):
         "start_date": "2024-01-01T00:00:00Z",
         "sandbox": True,
     }
+    assert _migrated(manifest, flat) == {**flat, "auth_type": "oauth2.0"}
+
+
+def test_migration_sets_auth_type_when_absent(manifest):
+    """`auth_type` is the spec's discriminator; a pre-4.0.0 config carries none."""
+    nested = {
+        "start_date": "2024-01-01T00:00:00Z",
+        "credentials": {"client_id": "cid", "client_secret": "cs", "refresh_token": "rt", "realm_id": "123"},
+    }
+    assert _migrated(manifest, nested)["auth_type"] == "oauth2.0"
+
+
+def test_migration_keeps_an_existing_auth_type(manifest):
+    flat = {
+        "client_id": "cid",
+        "client_secret": "cs",
+        "refresh_token": "rt",
+        "realm_id": "123",
+        "start_date": "2024-01-01T00:00:00Z",
+        "auth_type": "oauth2.0",
+    }
     assert _migrated(manifest, flat) == flat
+
+
+def test_hybrid_config_keeps_root_values(manifest):
+    """A half-migrated config must not be overwritten by the stale nested copy."""
+    hybrid = {
+        "client_id": "root-cid",
+        "refresh_token": "root-rt",
+        "start_date": "2024-01-01T00:00:00Z",
+        "credentials": {
+            "client_id": "stale-cid",
+            "client_secret": "nested-cs",
+            "refresh_token": "stale-rt",
+            "realm_id": "123",
+        },
+    }
+    migrated = _migrated(manifest, hybrid)
+    assert migrated["client_id"] == "root-cid"
+    assert migrated["refresh_token"] == "root-rt"
+    assert migrated["client_secret"] == "nested-cs"
+    assert migrated["realm_id"] == "123"
+    assert "credentials" not in migrated
+
+
+def test_null_credentials_is_dropped_without_writing_empty_fields(manifest):
+    config = {
+        "client_id": "cid",
+        "client_secret": "cs",
+        "refresh_token": "rt",
+        "realm_id": "123",
+        "start_date": "2024-01-01T00:00:00Z",
+        "credentials": None,
+    }
+    migrated = _migrated(manifest, config)
+    assert migrated["client_id"] == "cid"
+    assert migrated.get("access_token") in (None, "")
+    assert "access_token" not in migrated
+
+
+def test_realm_id_stays_a_string_when_stored_as_a_number(manifest):
+    """`realm_id` is declared `type: string`; an int would fail spec validation after migration."""
+    nested = {
+        "start_date": "2024-01-01T00:00:00Z",
+        "credentials": {"client_id": "cid", "client_secret": "cs", "refresh_token": "rt", "realm_id": 4620816365288779920},
+    }
+    assert _migrated(manifest, nested)["realm_id"] == "4620816365288779920"
 
 
 def test_advanced_auth_is_legacy_oauth_flow(manifest):

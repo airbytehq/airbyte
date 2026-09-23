@@ -9,6 +9,8 @@ api_budget:
   policies:
   - type: MovingWindowCallRatePolicy
     rates:
+    - limit: 10
+      interval: PT1S
     - limit: 500
       interval: PT1M
     matchers: []
@@ -304,7 +306,7 @@ definitions:
               stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
               }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
               + ":" + stream_slice.start_time[-2:] }}'
-               ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+              ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
               (config.max_results or '200') | int }}
           request_headers:
@@ -1459,8 +1461,7 @@ definitions:
           http_method: GET
           request_parameters:
             query: >-
-              SELECT * FROM CompanyInfo MAXRESULTS {{ (config.max_results
-              or '200') | int }}
+              SELECT * FROM CompanyInfo
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -1619,7 +1620,7 @@ definitions:
               stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
               }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
               + ":" + stream_slice.start_time[-2:] }}'
-               ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+              ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
               (config.max_results or '200') | int }}
           request_headers:
@@ -3672,7 +3673,7 @@ definitions:
               stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
               }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
               + ":" + stream_slice.start_time[-2:] }}'
-               ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+              ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
               (config.max_results or '200') | int }}
           request_headers:
@@ -5337,8 +5338,7 @@ definitions:
           http_method: GET
           request_parameters:
             query: >-
-              SELECT * FROM Preferences MAXRESULTS {{ (config.max_results
-              or '200') | int }}
+              SELECT * FROM Preferences
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
@@ -6694,7 +6694,7 @@ definitions:
               stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
               }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
               + ":" + stream_slice.start_time[-2:] }}'
-               ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+              ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
               (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
               (config.max_results or '200') | int }}
           request_headers:
@@ -9117,7 +9117,7 @@ streams:
           stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
           }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
           + ":" + stream_slice.start_time[-2:] }}'
-           ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+          ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
           (config.max_results or '200') | int }}
       request_headers:
@@ -10272,8 +10272,7 @@ streams:
       http_method: GET
       request_parameters:
         query: >-
-          SELECT * FROM CompanyInfo MAXRESULTS {{ (config.max_results
-          or '200') | int }}
+          SELECT * FROM CompanyInfo
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -10431,7 +10430,7 @@ streams:
           stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
           }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
           + ":" + stream_slice.start_time[-2:] }}'
-           ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+          ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
           (config.max_results or '200') | int }}
       request_headers:
@@ -12484,7 +12483,7 @@ streams:
           stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
           }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
           + ":" + stream_slice.start_time[-2:] }}'
-           ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+          ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
           (config.max_results or '200') | int }}
       request_headers:
@@ -14149,8 +14148,7 @@ streams:
       http_method: GET
       request_parameters:
         query: >-
-          SELECT * FROM Preferences MAXRESULTS {{ (config.max_results
-          or '200') | int }}
+          SELECT * FROM Preferences
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
@@ -15505,7 +15503,7 @@ streams:
           stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
           }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
           + ":" + stream_slice.start_time[-2:] }}'
-           ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+          ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
           (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
           (config.max_results or '200') | int }}
       request_headers:
@@ -17688,27 +17686,34 @@ spec:
             fields:
               - type: AddedFieldDefinition
                 path: ["client_id"]
-                value: "{{ config.get('credentials', {}).get('client_id') }}"
+                value: "{{ config.get('client_id') or (config.get('credentials') or {}).get('client_id') }}"
                 value_type: string
               - type: AddedFieldDefinition
                 path: ["client_secret"]
-                value: "{{ config.get('credentials', {}).get('client_secret') }}"
+                value: "{{ config.get('client_secret') or (config.get('credentials') or {}).get('client_secret') }}"
                 value_type: string
               - type: AddedFieldDefinition
                 path: ["refresh_token"]
-                value: "{{ config.get('credentials', {}).get('refresh_token') }}"
+                value: "{{ config.get('refresh_token') or (config.get('credentials') or {}).get('refresh_token') }}"
                 value_type: string
               - type: AddedFieldDefinition
                 path: ["realm_id"]
-                value: "{{ config.get('credentials', {}).get('realm_id') }}"
+                value: "{{ config.get('realm_id') or (config.get('credentials') or {}).get('realm_id') }}"
                 value_type: string
               - type: AddedFieldDefinition
                 path: ["access_token"]
-                value: "{{ config.get('credentials', {}).get('access_token') }}"
+                value: "{{ config.get('access_token') or (config.get('credentials') or {}).get('access_token') }}"
                 value_type: string
               - type: AddedFieldDefinition
                 path: ["token_expiry_date"]
-                value: "{{ config.get('credentials', {}).get('token_expiry_date') }}"
+                value: "{{ config.get('token_expiry_date') or (config.get('credentials') or {}).get('token_expiry_date') }}"
+                value_type: string
+          - type: ConfigAddFields
+            condition: "{{ config.get('auth_type') is none }}"
+            fields:
+              - type: AddedFieldDefinition
+                path: ["auth_type"]
+                value: "oauth2.0"
                 value_type: string
           - type: ConfigRemoveFields
             condition: "{{ config.get('credentials') is mapping }}"
@@ -17795,6 +17800,17 @@ spec:
         title: Sandbox
         default: false
         description: Determines whether to use the sandbox or production environment.
+      max_results:
+        type: integer
+        order: 9
+        title: Page Size
+        default: 200
+        minimum: 1
+        maximum: 1000
+        description: >-
+          Number of records requested per query page (Intuit's `MAXRESULTS`).
+          Raising it reduces the number of requests on companies with long
+          histories; 1,000 is the maximum Intuit accepts.
     additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0

@@ -52,9 +52,11 @@ data:
         message:
           "The config no longer has a nested credentials field, while the config
           fields remain the same, they are now at the root level instead of being
-          nested inside a credentials object You will need to repopulate the config
-          fields to make the connector work again. This is done to fix the refresh
-          token issue where it wasn't getting updated after 24 hours."
+          nested inside a credentials object. This is done to fix the refresh
+          token issue where it wasn't getting updated after 24 hours. Connections
+          created before 4.0.0 had to repopulate the config fields; since 4.2.0 the
+          connector migrates a nested `credentials` config to the root-level fields
+          automatically, so no manual repopulation is needed."
         upgradeDeadline: "2025-02-15"
   documentationUrl: https://docs.airbyte.com/integrations/sources/quickbooks
   tags:

@@ -27,10 +27,14 @@ This page contains the setup guide and reference information for the QuickBooks 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **QuickBooks** from the Source type dropdown and enter a name for this connector.
-4. Click **Authenticate your QuickBooks account** and complete the Intuit consent flow. Airbyte captures the company (Realm ID) you select automatically.
+4. Enter your **Client ID**, **Client Secret**, **Refresh Token** and **Realm ID** from the Intuit app you created above.
 5. **Start date** - The date starting from which you'd like to replicate data.
 6. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
 7. Click **Set up source**.
+
+:::note
+An **Authenticate your QuickBooks account** button (the Intuit consent flow, which also captures the Realm ID for you) is available on Cloud only once this connector version is rolled out there. Until then, enter the credentials above.
+:::
 
 <!-- /env:cloud -->
 
@@ -46,6 +50,7 @@ This page contains the setup guide and reference information for the QuickBooks 
 6. **Realm ID** - The Labeled [Company ID](https://developer.intuit.com/app/developer/qbo/docs/learn/learn-basic-field-definitions#realm-id) you'd like to replicate data for streams.
 7. **Start date** - The date starting from which you'd like to replicate data.
 8. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
+9. **Page Size** (optional) - Records requested per query page (Intuit's `MAXRESULTS`, default 200, maximum 1,000).
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -133,7 +138,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version       | Date         | Pull Request                                               | Subject                                                                                                                                                                                                                                                                                                                                                                                                  |
 | ------------- | ------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.2.0         | 2026-08-31   | [85216](https://github.com/airbytehq/airbyte/pull/85216)   | Certification: actionable error handling for Intuit fault codes and rejected refresh tokens, SDM 7.30.0 bump, rate-limit budget and stream concurrency, automatic migration of pre-4.0.0 nested credentials configs, Cloud OAuth via advanced_auth, and six new streams (company_info, preferences, exchange_rates, reimburse_charges, attachables, credit_card_payments; first two full refresh)        |
+| 4.2.0         | 2026-08-31   | [85216](https://github.com/airbytehq/airbyte/pull/85216)   | Certification: actionable error handling for Intuit fault codes and rejected refresh tokens, SDM 7.30.0 bump, rate-limit budget and stream concurrency, automatic migration of pre-4.0.0 nested credentials configs, Cloud OAuth via advanced_auth, a configurable Page Size, and six new streams (company_info, preferences, exchange_rates, reimburse_charges, attachables, credit_card_payments; first two full refresh)        |
 | 4.1.8         | 2025-05-24   | [60468](https://github.com/airbytehq/airbyte/pull/60468)   | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                      |
 | 4.1.7         | 2025-05-10   | [60170](https://github.com/airbytehq/airbyte/pull/60170)   | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                      |
 | 4.1.6         | 2025-05-03   | [59500](https://github.com/airbytehq/airbyte/pull/59500)   | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                      |

@@ -16,6 +16,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from freezegun import freeze_time
 
 from airbyte_cdk.models import (
     AirbyteStateType,
@@ -248,3 +249,175 @@ def test_nested_legacy_config_is_migrated_and_read(manifest):
     assert output.errors == []
     assert len(output.records) == 1
     assert output.records[0].record.data["Id"] == "1"
+
+
+FROZEN_NOW = "2026-03-15T12:00:00+00:00"
+WINDOW_START = "2026-03-14T00:00:00+00:00"
+WINDOW_END = "2026-03-15T12:00:00+00:00"
+
+
+def _frozen_config(**overrides) -> dict:
+    config = _flat_config()
+    config["start_date"] = "2026-03-14T00:00:00Z"
+    config.update(overrides)
+    return config
+
+
+def _incremental_query(entity: str, start_position: int, max_results: int = 200) -> str:
+    return (
+        f"SELECT * FROM {entity} "
+        f"WHERE Metadata.LastUpdatedTime > '{WINDOW_START}' "
+        f"AND Metadata.LastUpdatedTime <= '{WINDOW_END}' "
+        "AND Active IN (true, false) "
+        "ORDER BY Metadata.LastUpdatedTime ASC "
+        f"STARTPOSITION {start_position} MAXRESULTS {max_results}"
+    )
+
+
+def _page(entity: str, first_id: int, count: int) -> HttpResponse:
+    records = [
+        {
+            "Id": str(first_id + offset),
+            "MetaData": {
+                "CreateTime": "2026-03-14T01:00:00-08:00",
+                "LastUpdatedTime": "2026-03-14T02:00:00-08:00",
+            },
+        }
+        for offset in range(count)
+    ]
+    return HttpResponse(
+        body=json.dumps({"QueryResponse": {entity: records}, "time": "2026-03-15T12:00:00.000-08:00"}),
+        status_code=200,
+    )
+
+
+@freeze_time(FROZEN_NOW)
+def test_incremental_stream_paginates_with_explicit_queries(manifest):
+    """5 + 5 + 2 records over three pages: STARTPOSITION advances by the page size and the read stops on the short page."""
+    config = _frozen_config()
+    first = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 1)})
+    second = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 6)})
+    third = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 11)})
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(first, _page("Account", 1, 5))
+        http_mocker.get(second, _page("Account", 6, 5))
+        http_mocker.get(third, _page("Account", 11, 2))
+
+        output = read(_source(config, manifest), config=config, catalog=_catalog("accounts"), state=None)
+
+        http_mocker.assert_number_of_calls(first, 1)
+        http_mocker.assert_number_of_calls(second, 1)
+        http_mocker.assert_number_of_calls(third, 1)
+
+    assert output.errors == []
+    assert len(output.records) == 12
+    assert [record.record.data["Id"] for record in output.records] == [str(i) for i in range(1, 13)]
+
+
+@freeze_time(FROZEN_NOW)
+def test_max_results_is_configurable(manifest):
+    config = _frozen_config(max_results=1000)
+    request = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 1, max_results=1000)})
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request, _page("Account", 1, 2))
+
+        output = read(_source(config, manifest), config=config, catalog=_catalog("accounts"), state=None)
+
+        http_mocker.assert_number_of_calls(request, 1)
+
+    assert len(output.records) == 2
+
+
+@freeze_time(FROZEN_NOW)
+@pytest.mark.parametrize("stream_name,entity", [("company_info", "CompanyInfo"), ("preferences", "Preferences")])
+def test_full_refresh_streams_query_without_window_or_paging(stream_name: str, entity: str, manifest):
+    """Single-row entities are read with a bare `SELECT *`: no window, no `Active` clause, no MAXRESULTS."""
+    config = _frozen_config()
+    request = HttpRequest(QUERY_URL, query_params={"query": f"SELECT * FROM {entity}"})
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request, _page(entity, 1, 1))
+
+        output = read(_source(config, manifest), config=config, catalog=_catalog(stream_name), state=None)
+
+        http_mocker.assert_number_of_calls(request, 1)
+
+    assert output.errors == []
+    assert len(output.records) == 1
+
+
+@freeze_time(FROZEN_NOW)
+@pytest.mark.parametrize(
+    "stream_name,entity",
+    [("exchange_rates", "ExchangeRate"), ("attachables", "Attachable")],
+)
+def test_streams_without_active_field_omit_the_active_clause(stream_name: str, entity: str, manifest):
+    """Intuit answers `Active IN (true, false)` with an `Invalid query` fault on these entities."""
+    config = _frozen_config()
+    query = (
+        f"SELECT * FROM {entity} "
+        f"WHERE Metadata.LastUpdatedTime > '{WINDOW_START}' "
+        f"AND Metadata.LastUpdatedTime <= '{WINDOW_END}' "
+        "ORDER BY Metadata.LastUpdatedTime ASC "
+        "STARTPOSITION 1 MAXRESULTS 200"
+    )
+    request = HttpRequest(QUERY_URL, query_params={"query": query})
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request, _page(entity, 1, 1))
+
+        output = read(_source(config, manifest), config=config, catalog=_catalog(stream_name), state=None)
+
+        http_mocker.assert_number_of_calls(request, 1)
+
+    assert output.errors == []
+    assert len(output.records) == 1
+
+
+@freeze_time(FROZEN_NOW)
+def test_expired_access_token_is_refreshed_and_rotation_is_persisted(manifest):
+    """Intuit rotates the refresh token on every exchange; the new pair must reach the platform as a control message."""
+    config = _frozen_config(access_token="stale-access-token", token_expiry_date="2020-01-01T00:00:00Z")
+    token_request = HttpRequest(
+        TOKEN_URL,
+        body=(
+            "grant_type=refresh_token"
+            f"&client_id={config['client_id']}"
+            f"&client_secret={config['client_secret']}"
+            f"&refresh_token={config['refresh_token']}"
+        ),
+    )
+    query_request = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 1)})
+
+    with HttpMocker() as http_mocker:
+        http_mocker.post(
+            token_request,
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "access_token": "rotated-access-token",
+                        "refresh_token": "rotated-refresh-token",
+                        "expires_in": 3600,
+                        "x_refresh_token_expires_in": 8726400,
+                        "token_type": "bearer",
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+        http_mocker.get(query_request, _page("Account", 1, 1))
+
+        output = read(_source(config, manifest), config=config, catalog=_catalog("accounts"), state=None)
+
+        http_mocker.assert_number_of_calls(token_request, 1)
+
+    assert output.errors == []
+    assert len(output.records) == 1
+
+    controls = [message.control for message in output._messages if message.type == Type.CONTROL]
+    assert controls, "the rotated refresh token was not emitted as a CONNECTOR_CONFIG control message"
+    emitted = controls[-1].connectorConfig.config
+    assert emitted["refresh_token"] == "rotated-refresh-token"
+    assert emitted["access_token"] == "rotated-access-token"

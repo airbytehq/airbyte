@@ -24,55 +24,55 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         empty_streams:
           - name: attachables
-            bypass_reason: "The sandbox company has no Attachable records"
+            bypass_reason: "The CI sandbox company returns no Attachable records for the configured start date."
           - name: bill_payments
-            bypass_reason: "The sandbox company has no BillPayment records"
+            bypass_reason: "The CI sandbox company returns no BillPayment records for the configured start date. The 5 bill_payments records in `integration_tests/expected_records.jsonl` were captured in 2023 from a different sandbox company and are not asserted against."
           - name: bills
-            bypass_reason: "The sandbox company has no Bill records"
+            bypass_reason: "The CI sandbox company returns no Bill records for the configured start date. The 5 bills records in `integration_tests/expected_records.jsonl` were captured in 2023 from a different sandbox company and are not asserted against."
           - name: budgets
-            bypass_reason: "The sandbox company has no Budget records"
+            bypass_reason: "The CI sandbox company returns no Budget records for the configured start date."
           - name: classes
-            bypass_reason: "The sandbox company has no Class records"
+            bypass_reason: "The CI sandbox company returns no Class records for the configured start date."
           - name: credit_card_payments
-            bypass_reason: "The sandbox company has no CreditCardPaymentTxn records"
+            bypass_reason: "The CI sandbox company returns no CreditCardPaymentTxn records for the configured start date."
           - name: credit_memos
-            bypass_reason: "The sandbox company has no CreditMemo records"
+            bypass_reason: "The CI sandbox company returns no CreditMemo records for the configured start date. The single credit_memos record in `integration_tests/expected_records.jsonl` was captured in 2023 from a different sandbox company and is not asserted against."
           - name: departments
-            bypass_reason: "The sandbox company has no Department records"
+            bypass_reason: "The CI sandbox company returns no Department records for the configured start date."
           - name: employees
-            bypass_reason: "The sandbox company has no Employee records"
+            bypass_reason: "The CI sandbox company returns no Employee records for the configured start date. The 2 employees records in `integration_tests/expected_records.jsonl` were captured in 2023 from a different sandbox company and are not asserted against."
           - name: items
-            bypass_reason: "The sandbox company has no Item records"
+            bypass_reason: "The CI sandbox company returns no Item records for the configured start date. The 5 items records in `integration_tests/expected_records.jsonl` were captured in 2023 from a different sandbox company and are not asserted against."
           - name: journal_entries
-            bypass_reason: "The sandbox company has no JournalEntry records"
+            bypass_reason: "The CI sandbox company returns no JournalEntry records for the configured start date. The 3 journal_entries records in `integration_tests/expected_records.jsonl` were captured in 2023 from a different sandbox company and are not asserted against."
           - name: payment_methods
-            bypass_reason: "The sandbox company has no PaymentMethod records"
+            bypass_reason: "The CI sandbox company returns no PaymentMethod records for the configured start date. The 5 payment_methods records in `integration_tests/expected_records.jsonl` were captured in 2023 from a different sandbox company and are not asserted against."
           - name: payments
-            bypass_reason: "The sandbox company has no Payment records"
+            bypass_reason: "The CI sandbox company returns no Payment records for the configured start date. The 5 payments records in `integration_tests/expected_records.jsonl` were captured in 2023 from a different sandbox company and are not asserted against."
           - name: purchase_orders
-            bypass_reason: "The sandbox company has no PurchaseOrder records"
+            bypass_reason: "The CI sandbox company returns no PurchaseOrder records for the configured start date. The 3 purchase_orders records in `integration_tests/expected_records.jsonl` were captured in 2023 from a different sandbox company and are not asserted against."
           - name: purchases
-            bypass_reason: "The sandbox company has no Purchase records"
+            bypass_reason: "The CI sandbox company returns no Purchase records for the configured start date. The 5 purchases records in `integration_tests/expected_records.jsonl` were captured in 2023 from a different sandbox company and are not asserted against."
           - name: refund_receipts
-            bypass_reason: "The sandbox company has no RefundReceipt records"
+            bypass_reason: "The CI sandbox company returns no RefundReceipt records for the configured start date. The single refund_receipts record in `integration_tests/expected_records.jsonl` was captured in 2023 from a different sandbox company and is not asserted against."
           - name: sales_receipts
-            bypass_reason: "The sandbox company has no SalesReceipt records"
+            bypass_reason: "The CI sandbox company returns no SalesReceipt records for the configured start date. The 4 sales_receipts records in `integration_tests/expected_records.jsonl` were captured in 2023 from a different sandbox company and are not asserted against."
           - name: tax_agencies
-            bypass_reason: "The sandbox company has no TaxAgency records"
+            bypass_reason: "The CI sandbox company returns no TaxAgency records for the configured start date. The 2 tax_agencies records in `integration_tests/expected_records.jsonl` were captured in 2023 from a different sandbox company and are not asserted against."
           - name: tax_codes
-            bypass_reason: "The sandbox company has no TaxCode records"
+            bypass_reason: "The CI sandbox company returns no TaxCode records for the configured start date. The 2 tax_codes records in `integration_tests/expected_records.jsonl` were captured in 2023 from a different sandbox company and are not asserted against."
           - name: tax_rates
-            bypass_reason: "The sandbox company has no TaxRate records"
+            bypass_reason: "The CI sandbox company returns no TaxRate records for the configured start date. The 3 tax_rates records in `integration_tests/expected_records.jsonl` were captured in 2023 from a different sandbox company and are not asserted against."
           - name: terms
-            bypass_reason: "The sandbox company has no Term records"
+            bypass_reason: "The CI sandbox company returns no Term records for the configured start date. The 5 terms records in `integration_tests/expected_records.jsonl` were captured in 2023 from a different sandbox company and are not asserted against."
           - name: time_activities
-            bypass_reason: "The sandbox company has no TimeActivity records"
+            bypass_reason: "The CI sandbox company returns no TimeActivity records for the configured start date. The 5 time_activities records in `integration_tests/expected_records.jsonl` were captured in 2023 from a different sandbox company and are not asserted against."
           - name: transfers
-            bypass_reason: "The sandbox company has no Transfer records"
+            bypass_reason: "The CI sandbox company returns no Transfer records for the configured start date."
           - name: vendor_credits
-            bypass_reason: "The sandbox company has no VendorCredit records"
+            bypass_reason: "The CI sandbox company returns no VendorCredit records for the configured start date."
           - name: vendors
-            bypass_reason: "The sandbox company has no Vendor records"
+            bypass_reason: "The CI sandbox company returns no Vendor records for the configured start date."
   incremental:
     tests:
       - config_path: "secrets/config.json"
