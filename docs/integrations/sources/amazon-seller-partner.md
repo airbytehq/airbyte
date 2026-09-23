@@ -254,7 +254,7 @@ Amazon reports data in the vendor retail analytics reports (Vendor Sales, Vendor
 
 ### Data availability lag for vendor retail analytics reports
 
-Amazon publishes the vendor retail analytics reports (Vendor Sales, Vendor Traffic, and Net Pure Product Margin) [72 hours after the close of the period they cover](https://developer-docs.amazon/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports). Asking for a day it has not published yet makes the report fail with `The report data for the requested date range is not yet available`, which fails the whole stream rather than skipping that one day.
+Amazon publishes the vendor retail analytics reports (Vendor Sales, Vendor Traffic, and Net Pure Product Margin) [72 hours after the close of the period they cover](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports). Asking for a day it has not published yet makes the report fail with `The report data for the requested date range is not yet available`, which fails the whole stream rather than skipping that one day.
 
 From 5.10.8, these three streams stop four calendar days short of the present instead of syncing up to the moment the sync runs. Nothing is lost — each day is picked up by the first sync that runs after Amazon publishes it — but expect the most recent three to four days to be missing at any given time. If you set an explicit **End Date**, it is used as-is and this holdback is not applied, so a date range ending inside the last four days can still fail.
 

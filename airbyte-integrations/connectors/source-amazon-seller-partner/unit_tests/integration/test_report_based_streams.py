@@ -1370,7 +1370,7 @@ class TestSalesAndTrafficReportRequestBody:
 class TestVendorAnalyticsAvailabilityHoldback:
     """
     Amazon publishes the vendor retail analytics reports "72 hours after the close of the period"
-    (https://developer-docs.amazon/sp-api/docs/report-type-values-analytics). Requesting a day it
+    (https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics). Requesting a day it
     has not published yet makes the report FATAL with "The report data for the requested date range
     is not yet available", which fails the stream rather than skipping the day, so the cursor holds
     the newest requested day four calendar days back — a slice for day D closes at D 23:59:59 and is
