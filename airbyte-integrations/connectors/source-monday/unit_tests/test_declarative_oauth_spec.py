@@ -71,4 +71,7 @@ def test_oauth_output_is_persisted_into_credentials():
     oauth_option = next(
         option for option in _SPEC.connectionSpecification["properties"]["credentials"]["oneOf"] if option["title"] == "OAuth2.0"
     )
-    assert "refresh_token" in oauth_option["required"]
+    # refresh_token stays optional so legacy (pre-3.0.0) OAuth configs validate and can be migrated at runtime
+    assert "access_token" in oauth_option["required"]
+    assert "refresh_token" not in oauth_option["required"]
+    assert "refresh_token" in oauth_option["properties"]

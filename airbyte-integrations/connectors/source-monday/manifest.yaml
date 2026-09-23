@@ -12,28 +12,33 @@ definitions:
         - "{{ parameters['name'] }}"
 
   oauth_authenticator:
-    # https://developer.monday.com/apps/docs/oauth
-    type: OAuthAuthenticator
-    client_id: "{{ config['credentials']['client_id'] }}"
-    client_secret: "{{ config['credentials']['client_secret'] }}"
-    refresh_token: "{{ config['credentials']['refresh_token'] }}"
-    grant_type: refresh_token
-    token_refresh_endpoint: https://auth.monday.com/oauth_ms/oauth/token
-    # surface Monday's token-endpoint rejections as a re-authenticate config error instead of a system error
-    refresh_token_error_status_codes: [400, 401]
-    refresh_token_error_key: error
-    refresh_token_error_values: [invalid_grant, invalid_client, invalid_token, invalid_request]
-    refresh_token_updater:
-      refresh_token_name: refresh_token
-      access_token_config_path:
-        - credentials
-        - access_token
-      token_expiry_date_config_path:
-        - credentials
-        - token_expiry_date
-      refresh_token_config_path:
-        - credentials
-        - refresh_token
+    # Wraps the OAuth 2.1 refresh-token authenticator; legacy (pre-3.0.0) credentials without a refresh_token are
+    # first exchanged through Monday's one-time migration endpoint, see MondayOAuthAuthenticator.
+    type: CustomAuthenticator
+    class_name: "source_declarative_manifest.components.MondayOAuthAuthenticator"
+    oauth:
+      # https://developer.monday.com/apps/docs/oauth
+      type: OAuthAuthenticator
+      client_id: "{{ config['credentials']['client_id'] }}"
+      client_secret: "{{ config['credentials']['client_secret'] }}"
+      refresh_token: "{{ config['credentials'].get('refresh_token', '') }}"
+      grant_type: refresh_token
+      token_refresh_endpoint: https://auth.monday.com/oauth_ms/oauth/token
+      # surface Monday's token-endpoint rejections as a re-authenticate config error instead of a system error
+      refresh_token_error_status_codes: [400, 401]
+      refresh_token_error_key: error
+      refresh_token_error_values: [invalid_grant, invalid_client, invalid_token, invalid_request]
+      refresh_token_updater:
+        refresh_token_name: refresh_token
+        access_token_config_path:
+          - credentials
+          - access_token
+        token_expiry_date_config_path:
+          - credentials
+          - token_expiry_date
+        refresh_token_config_path:
+          - credentials
+          - refresh_token
 
   bearer_authenticator:
     type: BearerAuthenticator
@@ -400,7 +405,6 @@ spec:
               - client_id
               - client_secret
               - access_token
-              - refresh_token
             properties:
               subdomain:
                 type: string
@@ -430,7 +434,7 @@ spec:
               refresh_token:
                 type: string
                 title: Refresh Token
-                description: Refresh Token used to obtain new access tokens when the current one expires.
+                description: Refresh Token used to obtain new access tokens when the current one expires. Left empty for sources authorized before version 3.0.0; the connector then migrates the legacy access token to the new OAuth flow on its next run.
                 airbyte_secret: true
               token_expiry_date:
                 type: string

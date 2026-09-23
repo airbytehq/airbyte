@@ -4,15 +4,18 @@
 
 import json
 import logging
+import threading
 from dataclasses import InitVar, dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import partial
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
+from typing import Any, ClassVar, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
 import dpath
 import requests
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
+from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
@@ -25,9 +28,117 @@ from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSc
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 from airbyte_cdk.sources.types import Record
+from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 logger = logging.getLogger("airbyte")
+
+
+@dataclass
+class MondayOAuthAuthenticator(DeclarativeAuthenticator):
+    """
+    OAuth 2.1 authenticator that first migrates legacy OAuth credentials.
+
+    Sources authorized before connector 3.0.0 hold a non-expiring legacy access token and no refresh token. Monday
+    exposes a one-time, temporary migration endpoint that exchanges such a token for an OAuth 2.1 access/refresh
+    token pair without user consent (https://developer.monday.com/apps/docs/migrating-to-the-new-oauth-flow#6-migrate-legacy-api-tokens).
+    When the config has no refresh token, the migration is attempted once, the resulting pair is persisted through
+    a config control message, and the request is then delegated to the regular refresh-token authenticator. Any
+    migration failure surfaces as a config error asking the user to re-authenticate.
+    """
+
+    config: Mapping[str, Any]
+    oauth: DeclarativeSingleUseRefreshTokenOauth2Authenticator
+    migration_endpoint: str = "https://auth.monday.com/oauth_ms/oauth/migrate"
+
+    REAUTHENTICATE_MESSAGE = (
+        "This Monday source was authorized with Monday's legacy OAuth flow and its credentials could not be migrated "
+        "automatically to the new OAuth flow. Re-authenticate this source in its settings to continue syncing."
+    )
+    _migration_lock: ClassVar[threading.Lock] = threading.Lock()
+
+    @property
+    def auth_header(self) -> str:
+        return "Authorization"
+
+    @property
+    def token(self) -> str:
+        self._migrate_legacy_token_if_needed()
+        return f"Bearer {self.oauth.get_access_token()}"
+
+    def get_auth_header(self) -> Mapping[str, Any]:
+        self._migrate_legacy_token_if_needed()
+        return self.oauth.get_auth_header()
+
+    def _migrate_legacy_token_if_needed(self) -> None:
+        if self.oauth.get_refresh_token():
+            return
+        with self._migration_lock:
+            if self.oauth.get_refresh_token():
+                return
+            access_token, refresh_token, expires_in = self._migrate_legacy_token()
+            add_to_secrets(access_token)
+            add_to_secrets(refresh_token)
+            self.oauth.access_token = access_token
+            self.oauth.set_refresh_token(refresh_token)
+            self.oauth.set_token_expiry_date(ab_datetime_now() + timedelta(seconds=expires_in))
+            self.oauth._emit_control_message()
+            logger.info("Migrated legacy Monday OAuth credentials to the new OAuth flow.")
+
+    def _migrate_legacy_token(self) -> tuple[str, str, int]:
+        credentials = self.config.get("credentials", {})
+        legacy_access_token = credentials.get("access_token")
+        if not legacy_access_token:
+            raise AirbyteTracedException(
+                internal_message="OAuth credentials have neither an access token nor a refresh token.",
+                message=self.REAUTHENTICATE_MESSAGE,
+                failure_type=FailureType.config_error,
+            )
+        try:
+            response = requests.post(
+                self.migration_endpoint,
+                json={
+                    "api_token": legacy_access_token,
+                    "client_id": credentials.get("client_id"),
+                    "client_secret": credentials.get("client_secret"),
+                },
+                headers={"Content-Type": "application/json"},
+            )
+        except requests.exceptions.RequestException as exception:
+            raise AirbyteTracedException(
+                internal_message=f"Legacy Monday OAuth token migration request failed: {exception}",
+                message="Could not reach Monday's OAuth migration endpoint. The sync will be retried.",
+                failure_type=FailureType.transient_error,
+                exception=exception,
+            ) from exception
+
+        if response.status_code == 429 or response.status_code >= 500:
+            raise AirbyteTracedException(
+                internal_message=f"Legacy Monday OAuth token migration returned HTTP {response.status_code}: {response.text}",
+                message="Monday's OAuth migration endpoint is rate limited or unavailable. The sync will be retried.",
+                failure_type=FailureType.transient_error,
+            )
+
+        body = self._parse_json_body(response)
+        access_token, refresh_token = body.get("access_token"), body.get("refresh_token")
+        if not response.ok or not access_token or not refresh_token:
+            provider_error = body.get("error_description") or body.get("error") or body.get("message") or response.text
+            raise AirbyteTracedException(
+                internal_message=f"Legacy Monday OAuth token migration rejected with HTTP {response.status_code}: {provider_error}",
+                message=f"{self.REAUTHENTICATE_MESSAGE} Monday responded: {provider_error}",
+                failure_type=FailureType.config_error,
+            )
+        return access_token, refresh_token, int(body.get("expires_in") or 3600)
+
+    @staticmethod
+    def _parse_json_body(response: requests.Response) -> Mapping[str, Any]:
+        try:
+            body = response.json()
+        except ValueError:
+            return {}
+        return body if isinstance(body, Mapping) else {}
 
 
 @dataclass

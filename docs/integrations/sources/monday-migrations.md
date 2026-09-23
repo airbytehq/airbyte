@@ -14,11 +14,11 @@ Only sources that use the **OAuth2.0** authorization method. Sources that use a 
 
 ### Migration steps
 
-1. Upgrade the connector to version 3.0.0. From this point the OAuth2.0 source does not sync until step 2 is done: its configuration fails validation because it has no refresh token yet.
-2. Open the affected Monday source in Airbyte and click **Authenticate your Monday account** to re-authenticate. This issues a new access token and refresh token through the new endpoint. If the Airbyte app is not installed on your Monday.com account (for example because it was removed), Monday.com asks an account admin to install it before showing the consent screen, so have an admin run this step.
-3. Save the source and verify the connection succeeds.
+1. Upgrade the connector to version 3.0.0 **before October 1, 2026**.
+2. Run the connection test or a sync. On its first run, the connector exchanges the existing legacy access token for a new access token and refresh token through Monday.com's [token migration endpoint](https://developer.monday.com/apps/docs/migrating-to-the-new-oauth-flow#6-migrate-legacy-api-tokens) and stores them in the source configuration. No re-authentication is needed when this succeeds.
+3. If the run fails with an error asking you to re-authenticate, open the source in Airbyte and click **Authenticate your Monday account**. This issues a new access token and refresh token through the new endpoint. If the Airbyte app is not installed on your Monday.com account (for example because it was removed), Monday.com asks an account admin to install it before showing the consent screen, so have an admin run this step.
 
-Do the upgrade first and re-authenticate right after it: re-authenticating on a version earlier than 3.0.0 still uses the legacy flow and issues a token that stops working on October 1, 2026. Complete both steps before that date. On October 1, 2026 sources still on an earlier version are upgraded automatically, and their OAuth2.0 configurations stop syncing until re-authenticated.
+The automatic migration is best-effort and only works while the legacy access token is still valid, so upgrade and run the source before October 1, 2026. Monday.com describes the migration endpoint as temporary and rate limited; when it rejects the token (expired or revoked token, Airbyte app removed from the account, migration disabled) the source needs the manual re-authentication from step 3. Re-authenticating on a version earlier than 3.0.0 still uses the legacy flow and issues a token that stops working on October 1, 2026. On October 1, 2026 sources still on an earlier version are upgraded automatically, and OAuth2.0 configurations whose legacy token was not migrated stop syncing until re-authenticated.
 
 ## Upgrading to 2.0.0
 
