@@ -1477,6 +1477,19 @@ class TestFatalReportErrorSurfacing:
 
     @freezegun.freeze_time(NOW.isoformat(), tick=True)
     @HttpMocker()
+    def test_given_gzipped_error_document_without_compression_metadata_when_read_then_reason_decoded(self, http_mocker: HttpMocker) -> None:
+        """The documents endpoint may omit compressionAlgorithm while the payload is still gzip."""
+        gzipped_body = gzip.compress(json.dumps({"errorDetails": self._AMAZON_REPORT_OPTIONS_REASON}).encode("utf-8"))
+        self._mock_fatal_flow(http_mocker, gzipped_body, attempts=1)
+
+        output = self._read(self._STREAM_NAME, config().with_failed_retry_wait_time_in_seconds(1))
+
+        message = next(error.trace.error.message for error in output.errors if error.trace.error.message.startswith("Amazon rejected"))
+        assert self._AMAZON_REPORT_OPTIONS_REASON in message
+        assert any(error.trace.error.failure_type == FailureType.config_error for error in output.errors)
+
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
     def test_given_fatal_report_options_error_without_names_when_read_then_documented_options_named(self, http_mocker: HttpMocker) -> None:
         """When Amazon's reason names no options, fall back to the documented list for the report type."""
         amazon_reason = "Error in report request: a required reportOption is missing."
