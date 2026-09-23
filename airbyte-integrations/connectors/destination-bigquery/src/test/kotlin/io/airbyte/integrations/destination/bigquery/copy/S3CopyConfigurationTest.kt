@@ -29,77 +29,33 @@ class S3CopyConfigurationTest {
     }
 
     @Test
-    fun `enablement accepts only literal true or false`() {
-        listOf("", "TRUE", "False", "1", "yes", " true ").forEach { value ->
-            assertThrows(IllegalStateException::class.java) {
-                S3CopyConfiguration.fromEnvironment(enabled + ("AIRBYTE_S3_COPY_ENABLED" to value))
-            }
-        }
-    }
-
-    @Test
-    fun `enabled requires bucket region and role`() {
-        listOf("AIRBYTE_S3_COPY_BUCKET", "AIRBYTE_S3_COPY_REGION", "AIRBYTE_S3_COPY_ROLE_ARN")
-            .forEach { key ->
-                assertThrows(IllegalStateException::class.java) {
-                    S3CopyConfiguration.fromEnvironment(enabled - key)
-                }
-                listOf("", " ", " value ").forEach { value ->
-                    assertThrows(IllegalStateException::class.java) {
-                        S3CopyConfiguration.fromEnvironment(enabled + (key to value))
-                    }
-                }
-            }
-    }
-
-    @Test
-    fun `routing rejects shortened malformed blank and padded UUIDs`() {
-        idNames.forEach { suffix ->
-            listOf("1-1-1-1-1", "not-a-uuid", "", " ", " 11111111-1111-4111-8111-111111111111 ")
-                .forEach { value ->
-                    val exception =
-                        assertThrows(IllegalStateException::class.java) {
-                            S3CopyConfiguration.fromEnvironment(
-                                enabled + ("AIRBYTE_$suffix" to value)
-                            )
-                        }
-                    assertTrue(exception.message!!.contains("canonical"))
-                }
-        }
-    }
-
-    @Test
-    fun `prefix defaults normalizes slashes and rejects empty`() {
-        val config = S3CopyConfiguration.fromEnvironment(enabled)!!
-        assertEquals("fusion", config.prefix)
+    fun `platform routing and assume role credentials use shared configuration`() {
+        val config =
+            S3CopyConfiguration.fromEnvironment(
+                enabled +
+                    mapOf(
+                        "AWS_ASSUME_ROLE_EXTERNAL_ID" to "external",
+                        "AWS_ASSUME_ROLE_ACCESS_KEY_ID" to "bootstrap-access",
+                        "AWS_ASSUME_ROLE_SECRET_ACCESS_KEY" to "bootstrap-secret",
+                    )
+            )!!
         assertEquals("archive-bucket", config.bucket)
-        assertEquals(enabled["AIRBYTE_CONNECTION_ID"], config.connectionId.toString())
-        assertNull(config.externalId)
-        assertEquals(
-            "other/nested",
-            S3CopyConfiguration.fromEnvironment(
-                    enabled + ("AIRBYTE_S3_COPY_PREFIX" to "//other/nested///")
-                )!!
-                .prefix,
-        )
-        listOf("", "/", "///", " ").forEach { value ->
-            assertThrows(IllegalStateException::class.java) {
-                S3CopyConfiguration.fromEnvironment(enabled + ("AIRBYTE_S3_COPY_PREFIX" to value))
-            }
-        }
+        assertEquals("us-east-1", config.region)
+        assertEquals("fusion", config.prefix)
+        assertEquals("external", config.externalId)
+        assertEquals("bootstrap-access", config.accessKeyId)
+        assertEquals("bootstrap-secret", config.secretAccessKey)
+        assertEquals(idNames.map { UUID.fromString(enabled["AIRBYTE_$it"]) }, ids(config))
     }
 
     @Test
-    fun `external ID is optional but nonblank when supplied`() {
-        assertEquals(
-            "external",
-            S3CopyConfiguration.fromEnvironment(
-                    enabled + ("AIRBYTE_S3_COPY_EXTERNAL_ID" to "external")
-                )!!
-                .externalId,
-        )
-        assertThrows(IllegalStateException::class.java) {
-            S3CopyConfiguration.fromEnvironment(enabled + ("AIRBYTE_S3_COPY_EXTERNAL_ID" to ""))
+    fun `enabled write rejects missing platform identity before creating archive`() {
+        idNames.forEach { name ->
+            assertThrows(io.airbyte.cdk.SystemErrorException::class.java) {
+                BigqueryS3CopyFactory.createForOperation("write", enabled - "AIRBYTE_$name") {
+                    error("Archive must not be constructed for invalid platform configuration")
+                }
+            }
         }
     }
 
@@ -114,37 +70,4 @@ class S3CopyConfigurationTest {
             config.connectionId,
             config.destinationId
         )
-
-    @Test
-    fun `all routing IDs are optional and independently default to zero`() {
-        val withoutIds = enabled - idNames.map { "AIRBYTE_$it" }.toSet()
-        assertEquals(List(5) { UUID(0, 0) }, ids(S3CopyConfiguration.fromEnvironment(withoutIds)!!))
-        idNames.forEachIndexed { index, name ->
-            val actual = ids(S3CopyConfiguration.fromEnvironment(enabled - "AIRBYTE_$name")!!)
-            assertEquals(UUID(0, 0), actual[index])
-            actual.forEachIndexed { otherIndex, id ->
-                if (otherIndex != index)
-                    assertEquals(UUID.fromString(enabled["AIRBYTE_${idNames[otherIndex]}"]), id)
-            }
-        }
-    }
-
-    @Test
-    fun `legacy copy-specific identity aliases are ignored`() {
-        val env =
-            (enabled - idNames.map { "AIRBYTE_$it" }.toSet()) +
-                idNames.associate { "AIRBYTE_S3_COPY_$it" to UUID(0, 99).toString() }
-        assertEquals(List(5) { UUID(0, 0) }, ids(S3CopyConfiguration.fromEnvironment(env)!!))
-    }
-
-    @Test
-    fun `uppercase canonical UUIDs normalize for every routing ID`() {
-        val upper = "ABCDEFAB-CDEF-4ABC-8DEF-ABCDEFABCDEF"
-        val env = enabled + idNames.associate { "AIRBYTE_$it" to upper }
-        assertEquals(
-            List(5) { upper.lowercase() },
-            ids(S3CopyConfiguration.fromEnvironment(env)!!).map(UUID::toString)
-        )
-    }
-
 }

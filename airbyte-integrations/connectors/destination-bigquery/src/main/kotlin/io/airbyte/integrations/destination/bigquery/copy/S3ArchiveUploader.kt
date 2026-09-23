@@ -39,8 +39,10 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import org.reactivestreams.Subscriber
 import org.reactivestreams.Subscription
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.core.async.AsyncRequestBody
 import software.amazon.awssdk.core.async.AsyncRequestBodySplitConfiguration
 import software.amazon.awssdk.core.async.CloseableAsyncRequestBody
@@ -279,7 +281,16 @@ internal constructor(
         private fun createClients(config: S3CopyConfiguration): Clients {
             val resources = mutableListOf<AutoCloseable>()
             try {
-                val base = DefaultCredentialsProvider.builder().build().also { resources.add(it) }
+                val accessKeyId = config.accessKeyId
+                val secretAccessKey = config.secretAccessKey
+                val base =
+                    if (accessKeyId != null && secretAccessKey != null) {
+                        StaticCredentialsProvider.create(
+                            AwsBasicCredentials.create(accessKeyId, secretAccessKey)
+                        )
+                    } else {
+                        DefaultCredentialsProvider.builder().build().also { resources.add(it) }
+                    }
                 val region = Region.of(config.region)
                 val sts =
                     StsClient.builder()

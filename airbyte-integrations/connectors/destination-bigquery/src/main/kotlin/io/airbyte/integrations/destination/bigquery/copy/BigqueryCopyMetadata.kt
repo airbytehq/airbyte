@@ -7,6 +7,9 @@ package io.airbyte.integrations.destination.bigquery.copy
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.cloud.bigquery.Field
+import io.airbyte.cdk.fusion.FusionMetadata
+import io.airbyte.cdk.fusion.FusionPaths
+import io.airbyte.cdk.fusion.FusionSchema
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.config.DataChannelFormat
@@ -37,6 +40,7 @@ class BigqueryCopyMetadata(
     val epochSeconds: Long = Instant.now().epochSecond,
 ) {
     private val mapper = ObjectMapper()
+    private val sharedMetadata = FusionMetadata(config, runId, epochSeconds)
     private val raw = bigqueryConfiguration.legacyRawTablesOnly
     private val gcs = bigqueryConfiguration.loadingMethod is GcsStagingConfiguration
     private val formatVersion = if (gcs) FORMAT_VERSION else STANDARD_INSERT_FORMAT_VERSION
@@ -137,6 +141,12 @@ class BigqueryCopyMetadata(
                     it.stream.name == stream.unmappedName
             }
                 ?: stream.asProtocolObject()
+        val configuredTree = mapper.valueToTree<JsonNode>(configured)
+        (configuredTree["stream"] as com.fasterxml.jackson.databind.node.ObjectNode).set<JsonNode>(
+            "json_schema",
+            configured.stream.jsonSchema ?: AirbyteTypeToJsonSchema().convert(stream.schema),
+        )
+        val sourceMetadata = FusionSchema.fromConfiguredStream(configuredTree)
         val primaryKey = configured.primaryKey.orEmpty()
         val cursor = configured.cursorField.orEmpty()
         val layout =
@@ -152,9 +162,7 @@ class BigqueryCopyMetadata(
                 (if (gcs) "csv" to csvDescriptor() else "ndjson" to ndjsonDescriptor()),
                 "columns" to columns,
                 // Keep annotations and constraints from the original input catalog.
-                "source_schema" to
-                    (configured.stream.jsonSchema
-                        ?: AirbyteTypeToJsonSchema().convert(stream.schema)),
+                "source_schema" to sourceMetadata.getValue("source_schema"),
                 "import_type" to configured.destinationSyncMode.name,
                 "primary_key" to primaryKey,
                 "primary_key_mapping" to primaryKey.map(::pathMapping),
@@ -204,9 +212,6 @@ class BigqueryCopyMetadata(
         val result =
             identity(stream) +
                 mapOf(
-                    "source_schema" to layout.getValue("source_schema"),
-                    "primary_key" to primaryKey,
-                    "cursor" to cursor,
                     "format_version" to formatVersion,
                     "connector_version" to
                         (System.getenv("AIRBYTE_CONNECTOR_VERSION")
@@ -227,7 +232,12 @@ class BigqueryCopyMetadata(
                         "input_record_count_meaning" to
                             "Successful formatter-byte appends to the standard insert archive batch"
                     )
-        return result + ("schema_id" to schemaId(result))
+        return sharedMetadata.schema(
+            result + sourceMetadata,
+            schemaId(result),
+            stream.generationId,
+            stream.syncId
+        )
     }
 
     /** SHA-256 of canonical layout JSON: object keys sorted recursively, array order preserved. */
@@ -253,22 +263,13 @@ class BigqueryCopyMetadata(
 
     fun runPath(stream: DestinationStream): String {
         require(epochSeconds >= 0) { "Fusion run epoch must not be negative" }
-        val path =
-            "${config.prefix}/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/streams/${escape(stream.unmappedName)}/runs/$epochSeconds/$runId"
-        // Include the longest supported batch suffix when checking S3's UTF-8 key limit.
-        require("$path/batches/${UUID(0, 0)}.csv.gz".toByteArray(Charsets.UTF_8).size <= 1024) {
-            "Fusion S3 object key exceeds 1024 UTF-8 bytes"
-        }
-        return path
+        return FusionPaths.run(config, stream.unmappedName, runId, epochSeconds).removeSuffix("/")
     }
 
     /** Catalog syncId is the platform job ID, independent of the random archive run ID. */
     fun streamComplete(stream: DestinationStream): Map<String, Any> {
         validateGeneration(stream)
-        return mapOf<String, Any>("job_id" to stream.syncId) +
-            if (stream.minimumGenerationId > 0)
-                mapOf("min_generation_id" to stream.minimumGenerationId)
-            else emptyMap()
+        return sharedMetadata.streamComplete(stream.syncId, stream.minimumGenerationId)
     }
 
     private fun identity(stream: DestinationStream): Map<String, Any?> =
@@ -411,23 +412,6 @@ class BigqueryCopyMetadata(
                 }
             else -> node
         }
-
-    private fun escape(name: String): String {
-        require(name.isNotEmpty()) { "Archive stream name must not be empty" }
-        return name.toByteArray(Charsets.UTF_8).joinToString("") { byte ->
-            val value = byte.toInt() and 0xff
-            val char = value.toChar()
-            if (
-                char in 'a'..'z' ||
-                    char in 'A'..'Z' ||
-                    char in '0'..'9' ||
-                    char in "-_~" ||
-                    (char == '.' && name != "." && name != "..")
-            )
-                char.toString()
-            else "%%%02X".format(value)
-        }
-    }
 
     companion object {
         const val FORMAT_VERSION = "bigquery-gcs-load-csv-gzip-v1"

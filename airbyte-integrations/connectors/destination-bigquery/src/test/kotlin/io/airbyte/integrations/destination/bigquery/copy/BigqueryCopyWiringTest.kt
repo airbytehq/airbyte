@@ -110,9 +110,10 @@ class BigqueryCopyWiringTest {
                 put("AIRBYTE_S3_COPY_BUCKET", "platform-archive")
                 put("AIRBYTE_S3_COPY_REGION", "us-east-1")
                 put("AIRBYTE_S3_COPY_ROLE_ARN", "arn:aws:iam::123456789012:role/archive")
-                listOf("ORGANIZATION", "WORKSPACE", "SOURCE", "CONNECTION", "DESTINATION").forEachIndexed { index, name ->
-                    put("AIRBYTE_${name}_ID", "ABCDEFAB-CDEF-4ABC-8DEF-ABCDEFABCDE$index")
-                }
+                listOf("ORGANIZATION", "WORKSPACE", "SOURCE", "CONNECTION", "DESTINATION")
+                    .forEachIndexed { index, name ->
+                        put("AIRBYTE_${name}_ID", "ABCDEFAB-CDEF-4ABC-8DEF-ABCDEFABCDE$index")
+                    }
             }
             put("AWS_EC2_METADATA_DISABLED", "true")
         }
@@ -152,9 +153,12 @@ object BigqueryCopyWiringProbe {
                         registerConnectorInputs(context, gcs, raw)
                         context.start()
                         if (args.single() == "disabled") {
-                            assertSame(DisabledBigqueryS3Copy, context.getBean(BigqueryS3Copy::class.java))
+                            assertSame(
+                                DisabledBigqueryS3Copy,
+                                context.getBean(BigqueryS3Copy::class.java)
+                            )
                             assertInstanceOf(
-                                FreeingAnnotatingCheckpointConsumer::class.java,
+                                BigqueryCopyCheckpointConsumer::class.java,
                                 context.getBean(CheckpointManager::class.java).outputConsumer,
                             )
                             return@use

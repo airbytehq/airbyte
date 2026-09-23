@@ -52,7 +52,7 @@ class BigqueryS3CopyFactory {
             val config =
                 try {
                     S3CopyConfiguration.fromEnvironment(environment)
-                } catch (e: IllegalStateException) {
+                } catch (e: RuntimeException) {
                     throw SystemErrorException(
                         "Invalid internal Fusion S3 archive configuration: ${e.message}",
                         e,

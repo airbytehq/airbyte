@@ -211,12 +211,16 @@ class BigqueryCopyMetadataCheckpointTest {
         private val archive =
             EnabledBigqueryS3Copy(
                 S3CopyConfiguration(
-                    "archive",
-                    "us-east-2",
-                    "arn:aws:iam::123456789012:role/archive",
-                    UUID.randomUUID(),
-                    UUID.randomUUID(),
-                    UUID.randomUUID(),
+                    bucket = "archive",
+                    region = "us-east-2",
+                    roleArn = "arn:aws:iam::123456789012:role/archive",
+                    connectionId = UUID.randomUUID(),
+                    workspaceId = UUID.randomUUID(),
+                    sourceId = UUID.randomUUID(),
+                    organizationId = UUID.randomUUID(),
+                    destinationId = UUID.randomUUID(),
+                    prefix = "fusion",
+                    externalId = null,
                 ),
                 configuration,
                 metadata,

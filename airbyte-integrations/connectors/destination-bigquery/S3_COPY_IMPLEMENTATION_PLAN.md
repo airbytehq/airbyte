@@ -7,6 +7,12 @@ implementation contract and rollout requirements.
 Reviewed September 10, 2026 against the BigQuery files at repository baseline `aa28ceeac4e`.
 The connector uses CDK `1.0.25`, `core = 'load'`, and `useLegacyTaskLoader = true`, with
 `legacy-task-load-gcs`, `legacy-task-load-db`, and `legacy-task-load-s3` toolkits.
+The connector additionally depends on the source project `bulk-cdk-toolkit-fusion` from
+`johnny/fusion-copy-cdk`, without changing its legacy core CDK version. Shared configuration,
+paths, source-schema extraction, and schema/completion metadata are used directly. BigQuery
+retains its bounded multipart uploader because its cancellation contract proves file readers
+have stopped before releasing or deleting a spool; the common asynchronous uploader does not
+currently expose that guarantee. Both use the same platform assume-role configuration.
 
 ## 1. Load strategies
 
@@ -126,13 +132,13 @@ never count CSV lines, since quoted records can contain newlines.
 | `AIRBYTE_S3_COPY_BUCKET` | Required archive bucket |
 | `AIRBYTE_S3_COPY_REGION` | Required S3/STS region |
 | `AIRBYTE_S3_COPY_ROLE_ARN` | Required target role |
-| `AIRBYTE_ORGANIZATION_ID` | Canonical UUID from the platform environment |
-| `AIRBYTE_WORKSPACE_ID` | Canonical UUID from the platform environment |
-| `AIRBYTE_SOURCE_ID` | Canonical UUID from the platform environment |
-| `AIRBYTE_CONNECTION_ID` | Canonical UUID from the platform environment |
-| `AIRBYTE_DESTINATION_ID` | Canonical UUID from the platform environment |
+| `AIRBYTE_ORGANIZATION_ID` | Required canonical UUID from the platform environment |
+| `AIRBYTE_WORKSPACE_ID` | Required canonical UUID from the platform environment |
+| `AIRBYTE_SOURCE_ID` | Required canonical UUID from the platform environment |
+| `AIRBYTE_CONNECTION_ID` | Required canonical UUID from the platform environment |
+| `AIRBYTE_DESTINATION_ID` | Required canonical UUID from the platform environment |
 | `AIRBYTE_S3_COPY_PREFIX` | Default `fusion`; trim surrounding slashes; reject empty |
-| `AIRBYTE_S3_COPY_EXTERNAL_ID` | Optional STS external ID |
+| `AWS_ASSUME_ROLE_EXTERNAL_ID` | Optional STS external ID |
 
 Check operation and enablement before binding enabled-only fields or constructing AWS clients.
 Latch the configuration for the process. Validate all routing, supported generation combinations,
@@ -140,7 +146,8 @@ and supported strategy before records are consumed. A malformed enabled configur
 write as an internal destination failure, not invalid customer Google credentials.
 
 Use a dedicated Java AWS SDK v2 client with a pinned BOM starting at `2.46.0`, regional STS,
-`DefaultCredentialsProvider.builder().build()`, and a refreshing assume-role provider. Set
+paired `AWS_ASSUME_ROLE_ACCESS_KEY_ID` / `AWS_ASSUME_ROLE_SECRET_ACCESS_KEY` when supplied
+(or the default AWS credentials chain when absent), and a refreshing assume-role provider. Set
 asynchronous credential refresh, explicit Netty S3 and URL-connection STS transports, finite
 standard retries (three total attempts), and explicit timeouts. Choose modern retry APIs; verify
 with warnings treated as errors locally via an opt-in command, without changing repository-wide

@@ -113,8 +113,6 @@ class BigquerySpecification : ConfigurationSpecification() {
     @get:JsonProperty("raw_data_dataset")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8}""")
     val internalTableDataset: String? = null
-
-
 }
 
 @JsonTypeInfo(

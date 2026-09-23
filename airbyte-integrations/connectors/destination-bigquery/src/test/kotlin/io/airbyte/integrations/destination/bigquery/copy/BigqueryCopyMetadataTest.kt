@@ -807,7 +807,9 @@ class BigqueryCopyMetadataTest {
             )
             .forEach { (name, escaped) ->
                 assertTrue(
-                    metadata.runPath(stream.copy(unmappedName = name)).endsWith("/streams/$escaped/runs/$epochSeconds/$runId")
+                    metadata
+                        .runPath(stream.copy(unmappedName = name))
+                        .endsWith("/streams/$escaped/runs/$epochSeconds/$runId")
                 )
             }
         assertThrows(IllegalArgumentException::class.java) {
@@ -821,7 +823,18 @@ class BigqueryCopyMetadataTest {
         val original = metadata(stream)
         val changed =
             BigqueryCopyMetadata(
-                config.copy(organizationId = UUID.randomUUID(), destinationId = UUID.randomUUID()),
+                S3CopyConfiguration(
+                    bucket = config.bucket,
+                    region = config.region,
+                    roleArn = config.roleArn,
+                    connectionId = config.connectionId,
+                    workspaceId = config.workspaceId,
+                    sourceId = config.sourceId,
+                    organizationId = UUID.randomUUID(),
+                    destinationId = UUID.randomUUID(),
+                    prefix = config.prefix,
+                    externalId = config.externalId,
+                ),
                 bigquery(),
                 names(stream),
                 UUID.randomUUID(),
@@ -845,7 +858,7 @@ class BigqueryCopyMetadataTest {
     fun `full batch keys enforce the S3 byte limit after escaping`() {
         val stream = stream().copy(unmappedName = "a")
         val metadata = metadata(stream)
-        val suffix = "/batches/${UUID(0, 0)}.csv.gz"
+        val suffix = "/batches/${UUID(0, 0)}.jsonl.gz"
         val overhead = (metadata.runPath(stream) + suffix).toByteArray(Charsets.UTF_8).size - 1
         val maximum = stream.copy(unmappedName = "a".repeat(1024 - overhead))
         assertEquals(1024, (metadata.runPath(maximum) + suffix).toByteArray(Charsets.UTF_8).size)
