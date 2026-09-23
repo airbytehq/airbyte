@@ -16400,10 +16400,8 @@ definitions:
       requester:
         $ref: "#/definitions/repository_scoped_requester"
         path: "repos/{{ stream_partition.repository }}/actions/runs"
-        # The slice start is what `WorkflowRunsPaginationStrategy` stops on; GitHub ignores the header.
         request_headers:
           User-Agent: "PostmanRuntime/7.28.0"
-          X-Airbyte-Window-Start: "{{ stream_slice['start_time'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -16416,9 +16414,19 @@ definitions:
           inject_into: request_parameter
           field_name: "page"
         pagination_strategy:
-          type: CustomPaginationStrategy
-          class_name: source_github.components.WorkflowRunsPaginationStrategy
+          type: CursorPagination
           cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", "") | regex_search("[?&]page=([0-9]+)") }}'
+          # Runs are listed newest-created first and can be re-run for 32 days, so once the page's
+          # oldest run was created more than 32 days before the slice start, nothing further can have
+          # been updated since: stop there, as the legacy `WorkflowRuns.read_records` did. This reads
+          # the raw page rather than `last_record`, which is what survived the client-side `updated_at`
+          # filter. Every operand of the `and` is a comparison, so a missing value renders `False`;
+          # a bare `None` would read as true to `InterpolatedBoolean` and end the pagination.
+          stop_condition: >-
+            {%- set runs = (response.get('workflow_runs') if response is mapping else none) or [] -%}
+            {%- set oldest = runs[-1].get('created_at') if runs and runs[-1] is mapping else none -%}
+            {{ oldest is not none and stream_interval.get('start_time') is not none
+               and str_to_datetime(oldest) < str_to_datetime(stream_interval['start_time']) - duration('P32D') }}
     incremental_sync:
       $ref: "#/definitions/client_side_filtered_cursor"
     state_migrations:

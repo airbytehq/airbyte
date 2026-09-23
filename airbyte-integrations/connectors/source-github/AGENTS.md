@@ -58,10 +58,13 @@ Things worth knowing before touching either half:
 - Step 8 patterns worth knowing before touching those four streams:
   - `workflow_runs` cannot use `is_data_feed`: runs are listed by `created_at` while the cursor is
     `updated_at`, and a re-run of an old run appears deep in the list. Legacy stopped at the first
-    run created more than 32 days before the cursor; `components.WorkflowRunsPaginationStrategy`
-    does the same from the raw page, reading the slice start from the `X-Airbyte-Window-Start`
-    request header (the paginator only sees records that survived the client-side filter, and
-    GitHub ignores the header). Do not replace this with GitHub's `created` filter: it caps the
+    run created more than 32 days before the cursor; the `CursorPagination` `stop_condition` does
+    the same from the raw page (`response`, not `last_record`, which only holds what survived the
+    client-side filter), comparing it with `stream_interval['start_time']`. The paginator has had
+    the slice in its interpolation context since airbytehq/airbyte-python-cdk#1166; before that a
+    custom strategy read the slice start back from a request header. Keep every operand of the
+    condition a comparison: a bare `None` reads as true to `InterpolatedBoolean` and would stop
+    pagination on a malformed page. Do not replace this with GitHub's `created` filter: it caps the
     result set at 1,000 runs, so a busy repository would silently lose runs. `lookback_window`
     would not do either: it moves the request window but `ConcurrentCursor.should_be_synced` still
     compares against the un-shifted start.
