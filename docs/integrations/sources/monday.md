@@ -93,7 +93,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.5.22 | 2026-09-16 | [80930](https://github.com/airbytehq/airbyte/pull/80930) | Handle null `data` in Monday.com GraphQL API error responses to prevent sync crashes |
+| 2.5.23 | 2026-09-16 | [80930](https://github.com/airbytehq/airbyte/pull/80930) | Handle null `data` in Monday.com GraphQL API error responses to prevent sync crashes |
+| 2.5.22 | 2026-09-22 | [86707](https://github.com/airbytehq/airbyte/pull/86707) | Update dependencies |
 | 2.5.21 | 2026-09-15 | [86149](https://github.com/airbytehq/airbyte/pull/86149) | Update dependencies |
 | 2.5.20 | 2026-09-08 | [85557](https://github.com/airbytehq/airbyte/pull/85557) | Update dependencies |
 | 2.5.19 | 2026-08-18 | [84675](https://github.com/airbytehq/airbyte/pull/84675) | Update dependencies |
