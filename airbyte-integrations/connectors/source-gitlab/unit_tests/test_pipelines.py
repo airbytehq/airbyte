@@ -2,9 +2,14 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+from unittest.mock import Mock
 from urllib.parse import parse_qs, urlparse
 
-from .conftest import BASE_CONFIG, GROUPS_LIST_URL, get_source, get_stream_by_name
+from airbyte_cdk import YamlDeclarativeSource
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.state_builder import StateBuilder
+
+from .conftest import _YAML_FILE_PATH, BASE_CONFIG, GROUPS_LIST_URL, get_source, get_stream_by_name
 
 
 CONFIG = BASE_CONFIG | {"projects_list": ["p_1", "p_2"], "start_date": "2026-06-01T00:00:00Z"}
@@ -37,9 +42,13 @@ def _mock_pipelines(requests_mock):
             )
 
 
-def _read_records(requests_mock, stream_name):
+def _read_records(requests_mock, stream_name, state=None):
     _mock_pipelines(requests_mock)
-    source = get_source(config=CONFIG)
+    if state is None:
+        source = get_source(config=CONFIG)
+    else:
+        source = YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), config=CONFIG, state=state, catalog=CatalogBuilder().build())
+        source.write_config = Mock()
     migrated_config = source.configure(config=CONFIG, temp_dir="/not/a/real/path")
     stream = get_stream_by_name(source=source, stream_name=stream_name, config=migrated_config)
 
@@ -51,6 +60,35 @@ def _read_records(requests_mock, stream_name):
 
 def _pipelines_requests(requests_mock):
     return [request for request in requests_mock.request_history if urlparse(request.url).path.endswith("/pipelines")]
+
+
+def test_pipelines_migrates_per_project_state_to_default_source_partition(requests_mock):
+    legacy_state = (
+        StateBuilder()
+        .with_stream_state(
+            "pipelines",
+            {
+                "states": [
+                    {"partition": {"id": "p_1"}, "cursor": {"updated_at": "2026-08-01T00:00:00Z"}},
+                    {"partition": {"id": "p_2"}, "cursor": {"updated_at": "2026-08-15T00:00:00Z"}},
+                ]
+            },
+        )
+        .build()
+    )
+
+    _read_records(requests_mock, "pipelines", state=legacy_state)
+
+    requests = sorted(
+        (urlparse(request.url).path, _source_param(request), parse_qs(urlparse(request.url).query)["updated_after"][0])
+        for request in _pipelines_requests(requests_mock)
+    )
+    assert requests == [
+        ("/api/v4/projects/p_1/pipelines", "<absent>", "2026-08-01T00:00:00Z"),
+        ("/api/v4/projects/p_1/pipelines", "parent_pipeline", "2026-06-01T00:00:00Z"),
+        ("/api/v4/projects/p_2/pipelines", "<absent>", "2026-08-15T00:00:00Z"),
+        ("/api/v4/projects/p_2/pipelines", "parent_pipeline", "2026-06-01T00:00:00Z"),
+    ]
 
 
 def test_pipelines_reads_regular_and_child_pipelines(requests_mock):
