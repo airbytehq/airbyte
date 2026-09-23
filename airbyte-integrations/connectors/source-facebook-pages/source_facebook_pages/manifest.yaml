@@ -21,10 +21,17 @@ definitions:
           error_message_contains: Tried accessing nonexisting field
           failure_type: config_error
           error_message: Request contains invalid/deprecated field.
+        # Meta returns this intermittently (error code 1, often with HTTP 500) when a response is
+        # too large to build in time, so it is retried rather than failed.
         - error_message_contains: Please reduce the amount of data you're asking for, then retry your request
-          action: FAIL
-          failure_type: config_error
-          error_message: Facebook API response data exceeds the request limit.
+          action: RETRY
+          failure_type: transient_error
+          error_message: >-
+            Facebook could not return the requested data because the response was too large or
+            timed out (Facebook error: "Please reduce the amount of data you're asking for, then
+            retry your request"). Airbyte retried the request several times without success. Lower
+            the Page Size option in the source settings or deselect unneeded fields in the
+            connection's Schema tab, then retry the sync.
         # Meta rejects the whole Insights request when any single requested metric is
         # invalid. This is permanent, so it must not fall through to the blanket 400 filter
         # below, which would otherwise hide the API's own message.
