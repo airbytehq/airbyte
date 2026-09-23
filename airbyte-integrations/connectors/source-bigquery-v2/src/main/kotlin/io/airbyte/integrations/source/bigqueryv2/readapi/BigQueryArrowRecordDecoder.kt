@@ -362,13 +362,18 @@ object BigQueryArrowValues {
             is TimeStampMilliVector -> 1_000L
             is TimeStampMicroVector -> 1_000_000L
             is TimeStampNanoVector -> 1_000_000_000L
-            else ->
-                when ((vector.field.type as ArrowType.Timestamp).unit) {
+            else -> {
+                // Bind to a non-null type: the Java getter returns a platform type, and an
+                // exhaustive `when` over it warns about a missing null branch under -Werror.
+                val unit: org.apache.arrow.vector.types.TimeUnit =
+                    (vector.field.type as ArrowType.Timestamp).unit
+                when (unit) {
                     org.apache.arrow.vector.types.TimeUnit.SECOND -> 1L
                     org.apache.arrow.vector.types.TimeUnit.MILLISECOND -> 1_000L
                     org.apache.arrow.vector.types.TimeUnit.MICROSECOND -> 1_000_000L
                     org.apache.arrow.vector.types.TimeUnit.NANOSECOND -> 1_000_000_000L
                 }
+            }
         }
 
     private fun epochSeconds(vector: TimeStampVector, row: Int): Long =

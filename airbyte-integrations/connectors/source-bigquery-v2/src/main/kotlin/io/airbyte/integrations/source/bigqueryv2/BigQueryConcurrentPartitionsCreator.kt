@@ -168,7 +168,7 @@ class BigQueryConcurrentPartitionsCreator(
     private fun applyFetchSize(facts: BigQueryTableTypes.TableFacts?) {
         if (streamState.fetchSize != null) return
         val numBytes: Long = facts?.numBytes ?: return
-        val numRows: Long = facts?.numRows ?: return
+        val numRows: Long = facts.numRows ?: return
         if (numRows <= 0L) return
         val averageRowBytes: Long = (numBytes / numRows).coerceAtLeast(1L)
         streamState.fetchSize =
