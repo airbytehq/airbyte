@@ -653,6 +653,7 @@ class ReportCreationRequester(HttpRequester):
         requested_start = body_json.get("dataStartTime", "") if body_json else ""
         requested_end = body_json.get("dataEndTime", "") if body_json else ""
         requested_marketplace_ids = body_json.get("marketplaceIds", []) if body_json else []
+        requested_report_options = body_json.get("reportOptions") if body_json else None
 
         if report_type:
             existing_report = self._find_existing_report(
@@ -662,6 +663,7 @@ class ReportCreationRequester(HttpRequester):
                 requested_start=requested_start,
                 requested_end=requested_end,
                 requested_marketplace_ids=requested_marketplace_ids,
+                requested_report_options=requested_report_options,
             )
             if existing_report is not None:
                 return existing_report
@@ -734,9 +736,10 @@ class ReportCreationRequester(HttpRequester):
         requested_start: str,
         requested_end: str,
         requested_marketplace_ids: List[str],
+        requested_report_options: Optional[Mapping[str, Any]] = None,
     ) -> Optional[requests.Response]:
         """
-        Find an existing report matching the given reportType, date range, and marketplaceIds.
+        Find an existing report matching the given reportType, date range, marketplaceIds, and reportOptions.
         Returns a synthetic Response wrapping the first matching report if found, or None.
 
         The API returns reports sorted by createdTime descending (newest first), and we
@@ -759,6 +762,9 @@ class ReportCreationRequester(HttpRequester):
 
         for report in reports:
             if not self._date_ranges_match(requested_start, requested_end, report):
+                continue
+
+            if not self._report_options_match(requested_report_options, report):
                 continue
 
             if not self._is_report_fresh(report, report_type):
@@ -832,6 +838,11 @@ class ReportCreationRequester(HttpRequester):
                 pass  # If we can't parse createdTime, don't skip — still usable
 
         return True
+
+    @staticmethod
+    def _report_options_match(requested_report_options: Optional[Mapping[str, Any]], report: Dict[str, Any]) -> bool:
+        """Amazon echoes the reportOptions a report was created with; a report created with different options is a different report."""
+        return dict(requested_report_options or {}) == dict(report.get("reportOptions") or {})
 
     @staticmethod
     def _date_ranges_match(
