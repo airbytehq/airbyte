@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.bigquery.copy
 
 import com.google.cloud.bigquery.BigQuery
 import io.airbyte.cdk.Operation
+import io.airbyte.cdk.fusion.FusionConfiguration
 import io.airbyte.cdk.load.check.DestinationCheckerSync
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
@@ -63,15 +64,16 @@ class BigqueryCopyWiringTest {
     }
 
     @Test
-    fun `temporary preview write enables archive despite disabled environment`() {
-        runProbe("write", "false")
+    fun `disabled write does not construct archive with invalid environment`() {
+        runProbe("disabled", "false")
     }
 
-    /**
-     * Isolate the process environment while other connector tests run in parallel. The temporary
-     * preview override must enable writes even when the environment disables copying, while
-     * spec/check must still ignore archive configuration.
-     */
+    @Test
+    fun `enabled write uses environment routing`() {
+        runProbe("write", "true")
+    }
+
+    /** Isolate the process environment while connector tests run in parallel. */
     private fun runProbe(scenario: String, enabled: String) {
         val classpath =
             (System.getProperty("java.class.path").split(File.pathSeparator) +
@@ -103,7 +105,15 @@ class BigqueryCopyWiringTest {
             put("AIRBYTE_S3_COPY_ENABLED", enabled)
             put("AIRBYTE_S3_COPY_ROLE_ARN", "invalid-enabled-only-field")
             listOf("ORGANIZATION", "WORKSPACE", "SOURCE", "CONNECTION", "DESTINATION").forEach {
-                put("AIRBYTE_${it}_ID", "invalid-environment-id")
+                put(
+                    "AIRBYTE_${it}_ID",
+                    if (enabled == "true") UUID(0, 42).toString() else "invalid-environment-id"
+                )
+            }
+            if (enabled == "true") {
+                put("AIRBYTE_S3_COPY_BUCKET", "platform-bucket")
+                put("AIRBYTE_S3_COPY_REGION", "us-east-2")
+                put("AIRBYTE_S3_COPY_ROLE_ARN", "arn:aws:iam::123456789012:role/platform")
             }
             put("AWS_EC2_METADATA_DISABLED", "true")
         }
@@ -124,11 +134,6 @@ class BigqueryCopyWiringTest {
  * Runs only in the subprocess above, with real Micronaut factory definitions and CLI properties.
  */
 object BigqueryCopyWiringProbe {
-    private val routingIds =
-        listOf("organization", "workspace", "source", "connection", "destination")
-            .mapIndexed { index, name -> name to "ABCDEFAB-CDEF-4ABC-8DEF-ABCDEFABCDE$index" }
-            .toMap()
-
     @JvmStatic
     fun main(args: Array<String>) {
         if (args.single() == "nonwrite") {
@@ -142,6 +147,17 @@ object BigqueryCopyWiringProbe {
                     context("write").use { context ->
                         registerConnectorInputs(context, gcs, raw)
                         context.start()
+                        if (args.single() == "disabled") {
+                            assertSame(
+                                DisabledBigqueryS3Copy,
+                                context.getBean(BigqueryS3Copy::class.java)
+                            )
+                            assertInstanceOf(
+                                BigqueryCopyCheckpointConsumer::class.java,
+                                context.getBean(CheckpointManager::class.java).outputConsumer
+                            )
+                            return@use
+                        }
                         val copy =
                             assertInstanceOf(
                                 EnabledBigqueryS3Copy::class.java,
@@ -151,10 +167,10 @@ object BigqueryCopyWiringProbe {
                         val archiveConfig =
                             EnabledBigqueryS3Copy::class.java.getDeclaredField("config").let {
                                 it.isAccessible = true
-                                it.get(copy) as S3CopyConfiguration
+                                it.get(copy) as FusionConfiguration
                             }
                         assertEquals(
-                            routingIds.values.map(UUID::fromString),
+                            List(5) { UUID(0, 42) },
                             listOf(
                                 archiveConfig.organizationId,
                                 archiveConfig.workspaceId,
@@ -163,8 +179,8 @@ object BigqueryCopyWiringProbe {
                                 archiveConfig.destinationId
                             ),
                         )
-                        assertEquals("airbyte-fusion-context-store", archiveConfig.bucket)
-                        assertEquals("us-west-2", archiveConfig.region)
+                        assertEquals("platform-bucket", archiveConfig.bucket)
+                        assertEquals("us-east-2", archiveConfig.region)
                         assertInstanceOf(
                             BigqueryCopyWriter::class.java,
                             context.getBean(DestinationWriter::class.java),
@@ -210,7 +226,7 @@ object BigqueryCopyWiringProbe {
 
     private fun checkInternalWrite(gcs: Boolean, raw: Boolean) {
         context("check").use { context ->
-            val config = registerConnectorInputs(context, gcs, raw, invalidIds = true)
+            val config = registerConnectorInputs(context, gcs, raw)
             val launcher = mockk<DestinationTaskLauncher>(relaxed = true)
             val sync = mockk<SyncManager>()
             coEvery { sync.awaitDestinationResult() } returns DestinationSuccess
@@ -250,7 +266,6 @@ object BigqueryCopyWiringProbe {
         context: ApplicationContext,
         gcs: Boolean,
         raw: Boolean,
-        invalidIds: Boolean = false,
     ): BigqueryConfiguration {
         val json =
             com.fasterxml.jackson.databind.ObjectMapper().createObjectNode().apply {
@@ -260,9 +275,6 @@ object BigqueryCopyWiringProbe {
                 put("dataset_id", "dataset")
                 put("raw_data_dataset", "internal")
                 put("disable_type_dedupe", raw)
-                routingIds.forEach { (name, value) ->
-                    put("${name}_id", if (invalidIds) "invalid-config-id" else value)
-                }
             }
         val spec = Jsons.treeToValue(json, BigquerySpecification::class.java)
         val config =

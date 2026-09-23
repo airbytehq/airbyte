@@ -4,6 +4,7 @@
 package io.airbyte.integrations.destination.bigquery.copy
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.fusion.FusionConfiguration
 import java.io.FilterInputStream
 import java.io.InputStream
 import java.nio.ByteBuffer
@@ -39,8 +40,10 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import org.reactivestreams.Subscriber
 import org.reactivestreams.Subscription
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.core.async.AsyncRequestBody
 import software.amazon.awssdk.core.async.AsyncRequestBodySplitConfiguration
 import software.amazon.awssdk.core.async.CloseableAsyncRequestBody
@@ -99,7 +102,7 @@ internal constructor(
     installShutdownHook: Boolean = false,
 ) : ArchiveUploader {
     private constructor(
-        config: S3CopyConfiguration,
+        config: FusionConfiguration,
         clients: Clients,
     ) : this(
         config.bucket,
@@ -110,7 +113,7 @@ internal constructor(
     )
 
     constructor(
-        configuration: S3CopyConfiguration
+        configuration: FusionConfiguration
     ) : this(configuration, createClients(configuration))
 
     private val lock = Any()
@@ -276,10 +279,17 @@ internal constructor(
                 .apiCallTimeout(Duration.ofMinutes(7))
                 .build()
 
-        private fun createClients(config: S3CopyConfiguration): Clients {
+        private fun createClients(config: FusionConfiguration): Clients {
             val resources = mutableListOf<AutoCloseable>()
             try {
-                val base = DefaultCredentialsProvider.builder().build().also { resources.add(it) }
+                val base =
+                    if (config.accessKeyId != null && config.secretAccessKey != null) {
+                        StaticCredentialsProvider.create(
+                            AwsBasicCredentials.create(config.accessKeyId, config.secretAccessKey)
+                        )
+                    } else {
+                        DefaultCredentialsProvider.builder().build().also { resources.add(it) }
+                    }
                 val region = Region.of(config.region)
                 val sts =
                     StsClient.builder()

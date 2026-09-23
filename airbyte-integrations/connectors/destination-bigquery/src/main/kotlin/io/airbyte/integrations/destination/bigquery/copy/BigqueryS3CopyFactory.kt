@@ -3,6 +3,7 @@ package io.airbyte.integrations.destination.bigquery.copy
 
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.SystemErrorException
+import io.airbyte.cdk.fusion.FusionConfiguration
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogByDescriptor
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
@@ -46,13 +47,13 @@ class BigqueryS3CopyFactory {
         internal fun createForOperation(
             operation: String,
             environment: Map<String, String> = System.getenv(),
-            enabledFactory: (S3CopyConfiguration) -> BigqueryS3Copy,
+            enabledFactory: (FusionConfiguration) -> BigqueryS3Copy,
         ): BigqueryS3Copy {
             if (operation != "write") return DisabledBigqueryS3Copy
             val config =
                 try {
-                    S3CopyConfiguration.fromEnvironment(environment)
-                } catch (e: IllegalStateException) {
+                    FusionConfiguration.fromEnvironment(environment)
+                } catch (e: RuntimeException) {
                     throw SystemErrorException(
                         "Invalid internal Fusion S3 archive configuration: ${e.message}",
                         e,

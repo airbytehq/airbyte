@@ -3,6 +3,8 @@ package io.airbyte.integrations.destination.bigquery.copy
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.SystemErrorException
+import io.airbyte.cdk.fusion.FusionConfiguration
+import io.airbyte.cdk.fusion.FusionMetadata
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.gcs.GcsBlob
@@ -84,7 +86,7 @@ object DisabledBigqueryS3Copy : BigqueryS3Copy {
     justification = "Kotlin coroutine resume stubs pass null placeholders for saved arguments",
 )
 class EnabledBigqueryS3Copy(
-    private val config: S3CopyConfiguration,
+    private val config: FusionConfiguration,
     private val bigqueryConfiguration: BigqueryConfiguration,
     private val metadata: BigqueryCopyMetadata,
     private val runId: UUID,
@@ -256,22 +258,17 @@ class EnabledBigqueryS3Copy(
                             path,
                             key,
                             "application/gzip",
-                            mapOf(
-                                "format-version" to "1",
-                                "organization-id" to config.organizationId.toString(),
-                                "workspace-id" to config.workspaceId.toString(),
-                                "source-id" to config.sourceId.toString(),
-                                "connection-id" to config.connectionId.toString(),
-                                "destination-id" to config.destinationId.toString(),
-                                "stream-key" to context.streamKey,
-                                "generation-id" to context.generationId.toString(),
-                                "sync-id" to context.syncId.toString(),
-                                "run-id" to runId.toString(),
-                                "epoch-seconds" to context.epochSeconds.toString(),
-                                "batch-id" to batchId.toString(),
-                                "schema-id" to context.schemaId,
-                                "loaded-record-count" to loadedRecordCount.toString(),
-                            ),
+                            FusionMetadata(config, runId, context.epochSeconds)
+                                .batch(
+                                    context.streamKey,
+                                    context.generationId,
+                                    context.syncId,
+                                    context.schemaId,
+                                    loadedRecordCount,
+                                    batchId,
+                                )
+                                .minus("record-count") +
+                                ("loaded-record-count" to loadedRecordCount.toString()),
                         )
                         copiedObjects.incrementAndGet()
                         copiedBytes.addAndGet(bytes)

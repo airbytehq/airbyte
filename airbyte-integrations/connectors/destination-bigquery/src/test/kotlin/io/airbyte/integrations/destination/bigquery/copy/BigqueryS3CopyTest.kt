@@ -2,6 +2,7 @@
 package io.airbyte.integrations.destination.bigquery.copy
 
 import io.airbyte.cdk.SystemErrorException
+import io.airbyte.cdk.fusion.FusionConfiguration
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -52,7 +53,7 @@ class BigqueryS3CopyTest {
 
     @Test
     fun `disabled writes and all nonwrite operations ignore enabled-only configuration`() {
-        val enabledFactory = mockk<(S3CopyConfiguration) -> BigqueryS3Copy>()
+        val enabledFactory = mockk<(FusionConfiguration) -> BigqueryS3Copy>()
         for (operation in listOf("spec", "check", "discover")) {
             assertSame(
                 DisabledBigqueryS3Copy,
@@ -84,9 +85,13 @@ class BigqueryS3CopyTest {
                 "AIRBYTE_S3_COPY_ROLE_ARN" to "arn:aws:iam::123456789012:role/platform",
                 "AIRBYTE_S3_COPY_PREFIX" to "platform-prefix",
                 "AIRBYTE_SOURCE_ID" to UUID(0, 42).toString(),
+                "AIRBYTE_ORGANIZATION_ID" to UUID(0, 43).toString(),
+                "AIRBYTE_WORKSPACE_ID" to UUID(0, 44).toString(),
+                "AIRBYTE_CONNECTION_ID" to UUID(0, 45).toString(),
+                "AIRBYTE_DESTINATION_ID" to UUID(0, 46).toString(),
             )
         val archive = mockk<BigqueryS3Copy>()
-        var captured: S3CopyConfiguration? = null
+        var captured: FusionConfiguration? = null
         assertSame(
             archive,
             BigqueryS3CopyFactory.createForOperation("write", env) {
@@ -94,7 +99,10 @@ class BigqueryS3CopyTest {
                 archive
             }
         )
-        assertEquals(S3CopyConfiguration.fromEnvironment(env), captured)
+        assertEquals("platform-bucket", captured!!.bucket)
+        assertEquals("us-east-2", captured!!.region)
+        assertEquals("platform-prefix", captured!!.prefix)
+        assertEquals(UUID(0, 42), captured!!.sourceId)
         assertSame(
             DisabledBigqueryS3Copy,
             BigqueryS3CopyFactory.createForOperation(
@@ -476,13 +484,17 @@ class BigqueryS3CopyTest {
 
     private inner class Fixture(minimumGeneration: Long = 0) {
         val config =
-            S3CopyConfiguration(
-                "archive",
-                "us-east-2",
-                "arn:aws:iam::123456789012:role/archive",
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                UUID.randomUUID(),
+            FusionConfiguration(
+                bucket = "archive",
+                region = "us-east-2",
+                roleArn = "arn:aws:iam::123456789012:role/archive",
+                workspaceId = UUID.randomUUID(),
+                sourceId = UUID.randomUUID(),
+                connectionId = UUID.randomUUID(),
+                organizationId = UUID.randomUUID(),
+                destinationId = UUID.randomUUID(),
+                prefix = "fusion",
+                externalId = null,
             )
         val configuration = mockk<BigqueryConfiguration>()
         val runId = UUID.randomUUID()

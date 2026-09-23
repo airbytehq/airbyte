@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.bigquery.copy
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.Operation
+import io.airbyte.cdk.fusion.FusionConfiguration
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -210,13 +211,17 @@ class BigqueryCopyMetadataCheckpointTest {
             }
         private val archive =
             EnabledBigqueryS3Copy(
-                S3CopyConfiguration(
-                    "archive",
-                    "us-east-2",
-                    "arn:aws:iam::123456789012:role/archive",
-                    UUID.randomUUID(),
-                    UUID.randomUUID(),
-                    UUID.randomUUID(),
+                FusionConfiguration(
+                    bucket = "archive",
+                    region = "us-east-2",
+                    roleArn = "arn:aws:iam::123456789012:role/archive",
+                    workspaceId = UUID.randomUUID(),
+                    sourceId = UUID.randomUUID(),
+                    connectionId = UUID.randomUUID(),
+                    organizationId = UUID.randomUUID(),
+                    destinationId = UUID.randomUUID(),
+                    prefix = "fusion",
+                    externalId = null,
                 ),
                 configuration,
                 metadata,

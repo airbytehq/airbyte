@@ -7,7 +7,8 @@ there are no connector configuration overrides. The sections below describe the 
 and rollout requirements.
 Reviewed September 10, 2026 against the BigQuery files at repository baseline `aa28ceeac4e`.
 The connector uses CDK `1.0.25`, `core = 'load'`, and `useLegacyTaskLoader = true`, with
-`legacy-task-load-gcs`, `legacy-task-load-db`, and `legacy-task-load-s3` toolkits.
+`legacy-task-load-gcs`, `legacy-task-load-db`, and `legacy-task-load-s3` toolkits, plus an explicit
+project dependency on `bulk-cdk-toolkit-fusion` built from this branch during prerelease publishing.
 
 ## 1. Start with GCS staging
 
@@ -48,7 +49,8 @@ deletes. Do not parse CDC rows into S3 deletions or delete a failed run's prefix
 
 Do not change customer BigQuery configuration, ingestion thresholds, or formatter semantics.
 Do not migrate BigQuery to the new dataflow engine as part of this work. Common archive configuration,
-paths, schema helpers, and uploader are being extracted into a shared CDK toolkit.
+paths, and schema/metadata helpers come from the shared Fusion CDK toolkit. The connector retains
+its hardened uploader to prove all file readers have stopped before deleting local spool files.
 
 When copying is enabled with batched standard inserts, fail setup with a clear internal unsupported
 strategy error. Silently skipping the archive would violate opt-in. `spec`, `check`, and disabled
@@ -68,7 +70,7 @@ fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<so
 ```
 
 The prefix defaults to `fusion`. Routing uses only the standard `AIRBYTE_*_ID` environment values.
-Each missing value defaults to `00000000-0000-0000-0000-000000000000`.
+All five identity UUIDs are required when copying is enabled.
 Values must be canonical UUIDs; uppercase input is normalized. A process captures one Unix epoch
 in seconds and generates one run UUID, shared across all streams;
 each completed GCS object gets one batch UUID reused throughout that archive transfer's retries.
@@ -129,13 +131,14 @@ CSV layout and mappings remain under `layout`; the schema ID hashes that layout 
 | `AIRBYTE_S3_COPY_BUCKET` | Required archive bucket |
 | `AIRBYTE_S3_COPY_REGION` | Required S3/STS region |
 | `AIRBYTE_S3_COPY_ROLE_ARN` | Required target role |
-| `AIRBYTE_ORGANIZATION_ID` | Optional canonical UUID; defaults to zero |
-| `AIRBYTE_WORKSPACE_ID` | Optional canonical UUID; defaults to zero |
-| `AIRBYTE_SOURCE_ID` | Optional canonical UUID; defaults to zero |
-| `AIRBYTE_CONNECTION_ID` | Optional canonical UUID; defaults to zero |
-| `AIRBYTE_DESTINATION_ID` | Optional canonical UUID; defaults to zero |
+| `AIRBYTE_ORGANIZATION_ID` | Required canonical UUID |
+| `AIRBYTE_WORKSPACE_ID` | Required canonical UUID |
+| `AIRBYTE_SOURCE_ID` | Required canonical UUID |
+| `AIRBYTE_CONNECTION_ID` | Required canonical UUID |
+| `AIRBYTE_DESTINATION_ID` | Required canonical UUID |
 | `AIRBYTE_S3_COPY_PREFIX` | Default `fusion`; trim surrounding slashes; reject empty |
-| `AIRBYTE_S3_COPY_EXTERNAL_ID` | Optional STS external ID |
+| `AWS_ASSUME_ROLE_EXTERNAL_ID` | Optional STS external ID |
+| `AWS_ASSUME_ROLE_ACCESS_KEY_ID` / `AWS_ASSUME_ROLE_SECRET_ACCESS_KEY` | Paired STS bootstrap credentials; otherwise use the ambient AWS credential chain |
 
 Enablement, bucket, region, role, prefix, and routing IDs are never forced by the connector.
 

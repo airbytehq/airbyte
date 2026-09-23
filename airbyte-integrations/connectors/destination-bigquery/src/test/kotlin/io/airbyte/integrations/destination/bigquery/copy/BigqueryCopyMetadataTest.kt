@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.bigquery.copy
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
+import io.airbyte.cdk.fusion.FusionConfiguration
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
@@ -70,7 +71,7 @@ class BigqueryCopyMetadataTest {
     private val epochSeconds = 1750000000L
     private val runId = UUID.fromString("11111111-1111-1111-1111-111111111111")
     private val config =
-        S3CopyConfiguration(
+        FusionConfiguration(
             roleArn = "arn:aws:iam::123456789012:role/archive",
             bucket = "archive",
             region = "us-east-1",
@@ -535,7 +536,18 @@ class BigqueryCopyMetadataTest {
         val original = metadata(stream)
         val changed =
             BigqueryCopyMetadata(
-                config.copy(organizationId = UUID.randomUUID(), destinationId = UUID.randomUUID()),
+                FusionConfiguration(
+                    roleArn = config.roleArn,
+                    bucket = config.bucket,
+                    region = config.region,
+                    connectionId = config.connectionId,
+                    workspaceId = config.workspaceId,
+                    sourceId = config.sourceId,
+                    prefix = config.prefix,
+                    externalId = config.externalId,
+                    organizationId = UUID.randomUUID(),
+                    destinationId = UUID.randomUUID(),
+                ),
                 bigquery(),
                 names(stream),
                 UUID.randomUUID(),
@@ -559,7 +571,7 @@ class BigqueryCopyMetadataTest {
     fun `full batch keys enforce the S3 byte limit after escaping`() {
         val stream = stream().copy(unmappedName = "a")
         val metadata = metadata(stream)
-        val suffix = "/batches/${UUID(0, 0)}.csv.gz"
+        val suffix = "/batches/${UUID(0, 0)}.jsonl.gz"
         val overhead = (metadata.runPath(stream) + suffix).toByteArray(Charsets.UTF_8).size - 1
         val maximum = stream.copy(unmappedName = "a".repeat(1024 - overhead))
         assertEquals(1024, (metadata.runPath(maximum) + suffix).toByteArray(Charsets.UTF_8).size)
