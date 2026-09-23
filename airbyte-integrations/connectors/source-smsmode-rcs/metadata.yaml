@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-smsmode-rcs
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.1@sha256:f71ff70e2761f634c080233f6d718bb4bcf96fa310351d56e98ba58d43ab1c9f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.30.0@sha256:a249dd191ff2b4e5a7c6fd3749395d4a2f5beee988165ebabfacb17199e5b378
   connectorSubtype: api
   connectorType: source
   definitionId: 4f9c377f-a5a5-4979-a8b0-66ef044b691d
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/source-smsmode-rcs
   githubIssueLabel: source-smsmode-rcs
   icon: icon.svg
