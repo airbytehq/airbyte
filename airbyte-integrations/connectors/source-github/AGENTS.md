@@ -255,15 +255,11 @@ The GitHub REST and GraphQL APIs support `since` parameter on many list endpoint
   not by the filters alone. GitHub reports GraphQL failures in the body — on a 200 and on a
   502/504 alike — so the body predicates and the status matchers compete for the same responses
   and `DefaultErrorHandler` stops at the first one that matches. Three rules hold:
-  `graphql_reduce_page_size_filter` matches both the 502/504 statuses and any body carrying
-  `errors`, and it is last of the body filters because that predicate closes over everything the
-  others have not claimed; `graphql_body_rate_limited_filter` and
-  `graphql_body_not_found_skip_filter` must therefore sit **above** it, or a spent quota is
-  answered by shrinking the page and an unreadable repository is walked down to the floor and
-  failed instead of being skipped like a REST 404; and all of the body filters must precede
-  `success_filter`, which classifies every 200 as a success. Matching the status alone is the
-  bug this ordering exists to prevent: GitHub reports a resolver timeout as an HTTP 200 with
-  `errors` at least as often as it reports it as a 502/504.
+  `graphql_reduce_page_size_filter` (502/504) must sit **above** `graphql_body_error_filter`, or a
+  query timeout reported with an `errors` body is retried at the same page size and the reduction
+  never happens; `graphql_body_not_found_skip_filter` must sit above it too, or an unreadable
+  repository is retried until the attempts run out instead of being skipped like a REST 404; and
+  all of the body filters must precede `success_filter`, which classifies every 200 as a success.
   Assert a new GraphQL error behavior with both body shapes — `{"message": ...}` and
   `{"errors": [...]}` — on the status you care about; a fixture with an empty body passes whatever
   the order is.

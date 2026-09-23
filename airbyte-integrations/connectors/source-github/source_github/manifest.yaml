@@ -17720,16 +17720,16 @@ definitions:
     error_handler:
       $ref: "#/definitions/graphql_error_handler"
 
-  # Halving on every rejected page, floored at 1. The floor is what ends the loop, not
-  # Which of the two ends the loop depends on where the stream starts, and the two page sizes
-  # here land on either side of that. From `graphql_large_stream_page_size` (10) the sequence is
-  # 10 -> 5 -> 2 -> 1: three reductions, the floor is reached, and the retries below take over.
-  # From 100 -- `reviews`, `issue_reactions`, `pull_request_comment_reactions` and `projects_v2`
-  # -- it is 100 -> 50 -> 25 -> 12 -> 6 -> 3, and the sixth reduction is one past `max_attempts`,
-  # so those streams fail at a page size of 3 and never reach the floor or its retries. Raising
-  # the budget to 6 would let them; that is a deliberate change to how long a stuck partition
-  # holds a sync open, so it is not made here, but no comment or message below may assume the
-  # floor was reached.
+  # Halving on every rejected page, floored at 1. The loop ends either at the floor or on
+  # `max_attempts`, and which of the two ends it depends on where the stream starts: the two
+  # page sizes here land on either side of that. From `graphql_large_stream_page_size` (10)
+  # the sequence is 10 -> 5 -> 2 -> 1: three reductions, the floor is reached, and the retries
+  # below take over. From 100 -- `reviews`, `issue_reactions`, `pull_request_comment_reactions`
+  # and `projects_v2` -- it is 100 -> 50 -> 25 -> 12 -> 6 -> 3, and the sixth reduction is one
+  # past `max_attempts`, so those streams fail at a page size of 3 and never reach the floor or
+  # its retries. Raising the budget to 6 would let them; that is a deliberate change to how
+  # long a stuck partition holds a sync open, so it is not made here, but no comment or message
+  # below may assume the floor was reached.
   # `reset_policy: NEVER` keeps the reduced size for the rest of the partition:
   # restoring it after each good page re-triggers the timeout on the next page, which is the
   # ineffective behavior the legacy handler had. The size is local to one `_read_pages` call,
@@ -17754,9 +17754,9 @@ definitions:
     # any other stream of this connector gets.
     backoff_seconds: 10
     retries_at_minimum_page_size: 3
-    # Appended to the CDK's terminal message once the reductions and the retries at the floor
-    # run out. The CDK only knows that GitHub rejected every page size it asked for; the
-    # remediation is connector-specific.
+    # Appended to the CDK's terminal message once the reduction budget or the retries at the
+    # floor run out, whichever the stream hits first. The CDK only knows that GitHub rejected
+    # every page size it asked for; the remediation is connector-specific.
     #
     # There is no page-size setting to point the user at: the sizes are fixed in this manifest.
     # The message also cannot name the smallest page that was tried, because that differs per
