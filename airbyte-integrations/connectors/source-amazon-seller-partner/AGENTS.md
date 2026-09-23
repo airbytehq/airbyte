@@ -125,6 +125,32 @@ day-aligned, and the full-refresh snapshot and forecast streams (`GET_VENDOR_INV
 `GET_VENDOR_FORECASTING_FRESH_REPORT`, `GET_VENDOR_FORECASTING_RETAIL_REPORT`) have no cursor and
 intentionally send no window at all.
 
+## 8. Vendor retail analytics streams must hold back four days
+
+Amazon publishes the vendor retail analytics reports "72 hours after the close of the period" for the
+`DAY` reportPeriod
+(https://developer-docs.amazon/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports).
+Requesting a day it has not published yet makes the report `FATAL` with "The report data for the requested
+date range is not yet available". That is a partial failure per slice, not a skip, so before 5.10.8 every
+sync failed on its newest day and a long-running connection hit the platform's 20-partial-failure limit while
+most of its data had loaded.
+
+The three vendor analytics cursors (Vendor Sales, Vendor Traffic, Net Pure Product Margin) therefore end at
+`now_utc() - duration('P4D')`. Four, not three: a slice for day D closes at D 23:59:59 and is published 72
+hours after *that*, so a three-day holdback is only safe for a sync that starts at midnight UTC. The cursor's
+end bound is exclusive, so the newest day actually requested is four to five days back depending on the time
+of day.
+
+An explicitly configured `replication_end_date` is used as-is with no holdback, matching the pre-migration
+Python connector where `availability_sla_days` only ever moved the "now" bound. Do not apply the holdback to
+`GET_VENDOR_INVENTORY_REPORT` (a full-refresh snapshot with no cursor), `GET_VENDOR_REAL_TIME_INVENTORY_REPORT`
+(published five minutes after each hour closes) or to the seller `GET_SALES_AND_TRAFFIC_REPORT` streams,
+which Amazon publishes on a different schedule.
+
+A known limitation: the day-aligned window assumes `reportPeriod: DAY`. A connection that configures `WEEK`
+or `MONTH` gets a one-day window that contradicts the configured period, since Amazon expects Sunday- or
+month-aligned bounds for those. This is not handled.
+
 ## Incremental Stream Considerations
 
 The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 8 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.

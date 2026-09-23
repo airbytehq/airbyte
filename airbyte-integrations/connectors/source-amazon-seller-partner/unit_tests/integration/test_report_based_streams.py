@@ -1367,6 +1367,126 @@ class TestSalesAndTrafficReportRequestBody:
 
 
 @freezegun.freeze_time(NOW.isoformat())
+class TestVendorAnalyticsAvailabilityHoldback:
+    """
+    Amazon publishes the vendor retail analytics reports "72 hours after the close of the period"
+    (https://developer-docs.amazon/sp-api/docs/report-type-values-analytics). Requesting a day it
+    has not published yet makes the report FATAL with "The report data for the requested date range
+    is not yet available", which fails the stream rather than skipping the day, so the cursor holds
+    the newest requested day four calendar days back — a slice for day D closes at D 23:59:59 and is
+    published 72h after that, so four days is the smallest holdback that is safe at any time of day.
+
+    Every assertion here is a byte-exact create-report matcher: HttpMocker fails an unmatched
+    request, so a day requested inside the holdback window fails the test rather than passing
+    silently.
+    """
+
+    _VENDOR_STREAMS = (
+        "GET_VENDOR_SALES_REPORT",
+        "GET_VENDOR_TRAFFIC_REPORT",
+        "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+    )
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_.with_account_type("Vendor"),
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+        )
+
+    @staticmethod
+    def _mock_report_flow(http_mocker: HttpMocker, stream_name: str, days: List[str]) -> None:
+        """Mock one full create/poll/download cycle per expected day, keyed by a byte-exact body."""
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), [_get_reports_response()] * len(days))
+        for index, day in enumerate(days):
+            report_id = f"{_REPORT_ID}_{index}"
+            document_id = f"{_REPORT_DOCUMENT_ID}_{index}"
+            download_url = f"{_DOCUMENT_DOWNLOAD_URL}/{index}"
+            body = {
+                "reportType": stream_name,
+                "dataStartTime": f"{day}T00:00:00Z",
+                "dataEndTime": f"{day}T23:59:59Z",
+                "marketplaceIds": [MARKETPLACE_ID],
+            }
+            http_mocker.post(
+                _create_report_request(stream_name).with_body(json.dumps(body)).build(),
+                _create_report_response(report_id),
+            )
+            http_mocker.get(
+                _check_report_status_request(report_id).build(),
+                _check_report_status_response(stream_name, report_document_id=document_id),
+            )
+            http_mocker.get(
+                _get_document_download_url_request(document_id).build(),
+                _get_document_download_url_response(download_url, document_id),
+            )
+            http_mocker.get(
+                _download_document_request(download_url).build(),
+                _download_document_response(stream_name, data_format="json"),
+            )
+
+    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
+    @HttpMocker()
+    def test_given_no_end_date_when_read_then_newest_requested_day_is_four_days_back(
+        self, stream_name: str, http_mocker: HttpMocker
+    ) -> None:
+        """
+        NOW is 2024-06-01T00:00:00Z, so the cursor's end bound is 2024-05-28T00:00:00Z. The bound is
+        exclusive, so the newest day requested is 2024-05-27 — published 2024-05-30T23:59:59Z, well
+        inside NOW.
+
+        2024-05-28 onwards is deliberately not mocked: requesting any of those days is the bug this
+        guards against.
+        """
+        self._mock_report_flow(http_mocker, stream_name, days=["2024-05-26", "2024-05-27"])
+
+        output = self._read(stream_name, config().without_end_date().with_start_date(pendulum.datetime(2024, 5, 26)))
+
+        assert len(output.records) == 2 * DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+        # Records alone are not enough: an unmocked day fails its own job and leaves the mocked
+        # days' records in place, so the error check is what actually pins the requested day set.
+        assert not output.errors
+
+    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
+    @HttpMocker()
+    def test_given_start_date_inside_holdback_window_when_read_then_no_report_requested(
+        self, stream_name: str, http_mocker: HttpMocker
+    ) -> None:
+        """
+        A start date newer than the holdback bound yields no slices rather than a failure.
+
+        No endpoint at all is mocked — not even the token refresh — so the read is only clean if it
+        makes no HTTP call whatsoever.
+        """
+        http_mocker.clear_all_matchers()
+
+        output = self._read(stream_name, config().without_end_date().with_start_date(pendulum.datetime(2024, 5, 30)))
+
+        assert output.records == []
+        assert not output.errors
+
+    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
+    @HttpMocker()
+    def test_given_explicit_end_date_when_read_then_holdback_not_applied(self, stream_name: str, http_mocker: HttpMocker) -> None:
+        """
+        An explicitly configured replication_end_date is honoured as-is, matching the pre-migration
+        Python connector where availability_sla_days only ever moved the "now" bound. 2024-05-31 is
+        inside the holdback window, so it is only requested because the config asked for it.
+        """
+        self._mock_report_flow(http_mocker, stream_name, days=["2024-05-31"])
+
+        output = self._read(
+            stream_name,
+            config().with_start_date(pendulum.datetime(2024, 5, 31)).with_end_date(pendulum.datetime(2024, 6, 1)),
+        )
+
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+
+@freezegun.freeze_time(NOW.isoformat())
 class TestVendorJsonReportsFullRefresh:
     """Tests for vendor JSON report streams: Traffic, Net Pure Product Margin, and Real-Time Inventory."""
 

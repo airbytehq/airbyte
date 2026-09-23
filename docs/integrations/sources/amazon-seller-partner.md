@@ -252,6 +252,14 @@ Earlier versions sent the wrong window on some of these streams, in two differen
 
 Amazon reports data in the vendor retail analytics reports (Vendor Sales, Vendor Inventory, Vendor Traffic, Net Pure Product Margin, Rapid Retail Analytics Inventory, and Vendor Forecasting) in Pacific Standard Time, regardless of your location or the marketplace's local time zone. Airbyte requests these reports using UTC date boundaries, so daily records can appear shifted if you compare them against a local-time report from Vendor Central.
 
+### Data availability lag for vendor retail analytics reports
+
+Amazon publishes the vendor retail analytics reports (Vendor Sales, Vendor Traffic, and Net Pure Product Margin) [72 hours after the close of the period they cover](https://developer-docs.amazon/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports). Asking for a day it has not published yet makes the report fail with `The report data for the requested date range is not yet available`, which fails the whole stream rather than skipping that one day.
+
+From 5.10.8, these three streams stop four calendar days short of the present instead of syncing up to the moment the sync runs. Nothing is lost — each day is picked up by the first sync that runs after Amazon publishes it — but expect the most recent three to four days to be missing at any given time. If you set an explicit **End Date**, it is used as-is and this holdback is not applied, so a date range ending inside the last four days can still fail.
+
+Before 5.10.8, every sync of these streams failed on its newest day. Because a sync is marked failed after 20 partial failures, a long-running connection could be marked failed even though most of its data had loaded.
+
 <HideInUI>
 
 ### Entity-Relationship Diagram (ERD)
@@ -483,6 +491,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.10.8 | 2026-09-23 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Stop requesting vendor retail analytics days Amazon has not published yet by holding the Vendor Sales, Vendor Traffic and Net Pure Product Margin cursors four days back |
 | 5.10.5 | 2026-09-22 | [86512](https://github.com/airbytehq/airbyte/pull/86512) | Update dependencies |
 | 5.10.4 | 2026-09-21 | [86322](https://github.com/airbytehq/airbyte/pull/86322) | Add `order-item-id` to `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` schemas |
 | 5.10.3 | 2026-09-15 | [85942](https://github.com/airbytehq/airbyte/pull/85942) | Update dependencies |
