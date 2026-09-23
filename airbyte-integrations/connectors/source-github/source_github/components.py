@@ -316,56 +316,6 @@ class NestedGraphQLPaginationStrategy(PaginationStrategy):
             pending.append([node.get("number"), child["pageInfo"]["endCursor"]])
 
 
-@dataclass
-class NestedGraphQLRecordExtractor(RecordExtractor):
-    """Extract child records from either shape a two-level GraphQL traversal can return.
-
-    The listing query nests the child connection under every parent node:
-
-        data.repository.<list_connection>.nodes[*].<child_connection>.nodes[*]
-
-    the drill-down query returns a single parent:
-
-        data.repository.<drilldown_field>.<child_connection>.nodes[*]
-
-    A `DpathExtractor` can express either path but not both, and the records also need fields
-    that only exist on the parent node (`reviews.pull_request_url` comes from the pull
-    request's `url`), which a path-based extractor cannot reach at all. `parent_fields` maps a
-    field on the parent node to the field name to copy it into.
-    """
-
-    config: Config
-    parameters: InitVar[Mapping[str, Any]]
-    list_connection: str = ""
-    drilldown_field: str = ""
-    child_connection: str = ""
-    parent_fields: Optional[Mapping[str, str]] = None
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        for field in ("list_connection", "drilldown_field", "child_connection"):
-            if not getattr(self, field):
-                raise ValueError(f"NestedGraphQLRecordExtractor requires `{field}`")
-
-    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
-        repository = (response.json().get("data") or {}).get("repository")
-        if not repository:
-            # GitHub answers 200 with a null repository when the token cannot see it.
-            return
-        repository_name = f"{(repository.get('owner') or {}).get('login')}/{repository.get('name')}"
-        if self.list_connection in repository:
-            parents = ((repository[self.list_connection] or {}).get("nodes")) or []
-        else:
-            parent = repository.get(self.drilldown_field)
-            parents = [parent] if parent else []
-        for parent in parents:
-            children = ((parent.get(self.child_connection) or {}).get("nodes")) or []
-            for record in children:
-                record["repository"] = repository_name
-                for source, destination in (self.parent_fields or {}).items():
-                    record[destination] = parent.get(source)
-                yield record
-
-
 # Depth-first order for the four-level reaction traversal: the deepest pending connection is
 # always drilled into first, so a comment's reactions are finished before the next pull
 # request is opened. Ported from `graphql.CursorStorage`, which built the same ordering out of
@@ -509,64 +459,6 @@ class DeepNestedGraphQLPaginationStrategy(PaginationStrategy):
         node_id = None if typename == "PullRequest" else node.get("node_id")
         pending.append([_REACTION_TRAVERSAL_PRIORITY[typename], sequence, typename, page_info.get("endCursor"), node_id])
         return sequence + 1
-
-    @staticmethod
-    def _nodes(node: Mapping[str, Any], connection: str) -> Iterable[Mapping[str, Any]]:
-        return ((node.get(connection) or {}).get("nodes")) or []
-
-
-@dataclass
-class DeepNestedGraphQLRecordExtractor(RecordExtractor):
-    """Extract reaction records from any of the four roots the traversal can return.
-
-    Ported from `streams.PullRequestCommentReactions.parse_response`. Each reaction is stamped
-    with its repository and the id of the comment it belongs to; `user.type` is set because the
-    legacy record carried it and the GraphQL `user` field here is not a union.
-    """
-
-    config: Config
-    parameters: InitVar[Mapping[str, Any]]
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        pass
-
-    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
-        data = response.json().get("data") or {}
-
-        repository = data.get("repository")
-        if repository:
-            for pull_request in self._nodes(repository, "pullRequests"):
-                yield from self._from_pull_request(pull_request, repository)
-
-        node = data.get("node")
-        if node:
-            # The drill-down documents select the repository alongside the node, so the record
-            # can still be stamped with it.
-            repository = node.get("repository") or {}
-            typename = node.get("__typename")
-            if typename == "PullRequest":
-                yield from self._from_pull_request(node, repository)
-            elif typename == "PullRequestReview":
-                yield from self._from_review(node, repository)
-            elif typename == "PullRequestReviewComment":
-                yield from self._from_comment(node, repository)
-
-    def _from_pull_request(self, pull_request: Mapping[str, Any], repository: Mapping[str, Any]):
-        for review in self._nodes(pull_request, "reviews"):
-            yield from self._from_review(review, repository)
-
-    def _from_review(self, review: Mapping[str, Any], repository: Mapping[str, Any]):
-        for comment in self._nodes(review, "comments"):
-            yield from self._from_comment(comment, repository)
-
-    def _from_comment(self, comment: Mapping[str, Any], repository: Mapping[str, Any]):
-        repository_name = f"{(repository.get('owner') or {}).get('login')}/{repository.get('name')}"
-        for reaction in self._nodes(comment, "reactions"):
-            reaction["repository"] = repository_name
-            reaction["comment_id"] = comment.get("id")
-            if reaction.get("user"):
-                reaction["user"]["type"] = "User"
-            yield reaction
 
     @staticmethod
     def _nodes(node: Mapping[str, Any], connection: str) -> Iterable[Mapping[str, Any]]:
