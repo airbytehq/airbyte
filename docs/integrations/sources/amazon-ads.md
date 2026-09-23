@@ -222,7 +222,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 9.2.4 | 2026-09-22 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Retry 429 (honouring Retry-After) and 5xx responses on report creation and polling endpoints |
+| 9.2.4 | 2026-09-22 | [86938](https://github.com/airbytehq/airbyte/pull/86938) | Retry 429 (honouring Retry-After) and 5xx responses on report creation and polling endpoints |
 | 9.2.3 | 2026-09-22 | [86539](https://github.com/airbytehq/airbyte/pull/86539) | Update dependencies |
 | 9.2.2 | 2026-09-15 | [85934](https://github.com/airbytehq/airbyte/pull/85934) | Update dependencies |
 | 9.2.1 | 2026-09-08 | [84485](https://github.com/airbytehq/airbyte/pull/84485) | Update dependencies |
