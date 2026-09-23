@@ -122,7 +122,9 @@ missing window is invisible — either the sync succeeds and returns records lab
 report did not cover, or Amazon rejects the request outright. `GET_VENDOR_INVENTORY_REPORT` was the
 second case: it sent no window at all, and Amazon failed every report with `dataStartTime and
 dataEndTime must be supplied`, so the stream returned no records for the entire low-code era. It now
-declares the same daily cursor and day-aligned window as its siblings.
+declares the same daily cursor and day-aligned window as its siblings, and like the other vendor
+retail analytics reports its cursor ends four days back so it never requests a day Amazon has not
+published yet.
 
 Two deliberate exceptions remain: streams whose window is multi-day or monthly (for example
 `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`) set the window explicitly but not day-aligned, and the

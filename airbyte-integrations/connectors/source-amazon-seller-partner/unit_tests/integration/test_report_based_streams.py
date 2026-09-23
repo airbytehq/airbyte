@@ -1692,6 +1692,40 @@ class TestVendorJsonReportsIncremental:
         assert output.most_recent_state.stream_state.__dict__[cursor_field] == "2023-01-29T23:59:59Z"
 
 
+class TestVendorInventoryAvailabilityHoldback:
+    """
+    GET_VENDOR_INVENTORY_REPORT is published on the same ~72h-after-close schedule as the other
+    vendor retail analytics reports, so its cursor ends four days back too: NOW is
+    2024-06-01T00:00:00Z, making the exclusive end bound 2024-05-28T00:00:00Z.
+    """
+
+    _STREAM_NAME = "GET_VENDOR_INVENTORY_REPORT"
+
+    @staticmethod
+    def _read(config_: ConfigBuilder) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_.with_account_type("Vendor"),
+            stream_name="GET_VENDOR_INVENTORY_REPORT",
+            sync_mode=SyncMode.incremental,
+        )
+
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
+    def test_given_start_date_inside_holdback_window_when_read_then_no_report_requested(self, http_mocker: HttpMocker) -> None:
+        """
+        A start date newer than the holdback bound yields no slices rather than a failure.
+
+        No endpoint at all is mocked — not even the token refresh — so the read is only clean if it
+        makes no HTTP call whatsoever.
+        """
+        http_mocker.clear_all_matchers()
+
+        output = self._read(config().without_end_date().with_start_date(pendulum.datetime(2024, 5, 30)))
+
+        assert output.records == []
+        assert not output.errors
+
+
 @freezegun.freeze_time(NOW.isoformat())
 class TestReportOptions:
     """Tests that report_options_list config entries are reflected in the POST /reports request body."""

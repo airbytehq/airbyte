@@ -3308,7 +3308,11 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
+          # Amazon publishes the vendor retail analytics reports ~72h after the close of the
+          # period, and asking for an unpublished day makes the report FATAL, so the cursor ends
+          # four days back (a day D closes at D 23:59:59 and is published 72h after that). An
+          # explicit replication_end_date is used as-is.
+          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc() - duration('P4D'), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         $ref: "#/definitions/basic_async_retriever"
