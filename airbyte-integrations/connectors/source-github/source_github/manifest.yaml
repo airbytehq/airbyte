@@ -17721,9 +17721,15 @@ definitions:
       $ref: "#/definitions/graphql_error_handler"
 
   # Halving on every rejected page, floored at 1. The floor is what ends the loop, not
-  # `max_attempts`: from `graphql_large_stream_page_size` (10) the sequence is 10 -> 5 -> 2 -> 1,
-  # three reductions, and then the floor retries below. `max_attempts` would only bind from a
-  # page size of 32 up, which no stream here starts at; it is kept as a bound in case one does.
+  # Which of the two ends the loop depends on where the stream starts, and the two page sizes
+  # here land on either side of that. From `graphql_large_stream_page_size` (10) the sequence is
+  # 10 -> 5 -> 2 -> 1: three reductions, the floor is reached, and the retries below take over.
+  # From 100 -- `reviews`, `issue_reactions`, `pull_request_comment_reactions` and `projects_v2`
+  # -- it is 100 -> 50 -> 25 -> 12 -> 6 -> 3, and the sixth reduction is one past `max_attempts`,
+  # so those streams fail at a page size of 3 and never reach the floor or its retries. Raising
+  # the budget to 6 would let them; that is a deliberate change to how long a stuck partition
+  # holds a sync open, so it is not made here, but no comment or message below may assume the
+  # floor was reached.
   # `reset_policy: NEVER` keeps the reduced size for the rest of the partition:
   # restoring it after each good page re-triggers the timeout on the next page, which is the
   # ineffective behavior the legacy handler had. The size is local to one `_read_pages` call,
@@ -17752,17 +17758,17 @@ definitions:
     # run out. The CDK only knows that GitHub rejected every page size it asked for; the
     # remediation is connector-specific.
     #
-    # There is no page-size setting to point the user at: the sizes are fixed in this manifest,
-    # and by the time this message is reached the ladder has already walked down to a single
-    # record per page and retried there. So the message says what that rules out — the query is
-    # not too large — and names the two things left that a user can act on. A more recent start
-    # date is deliberately not among them: these streams filter client-side, so it would not
-    # make GitHub's per-page query any cheaper.
+    # There is no page-size setting to point the user at: the sizes are fixed in this manifest.
+    # The message also cannot name the smallest page that was tried, because that differs per
+    # stream — the CDK's own sentence, which this one is appended to, already states it. So this
+    # says only that shrinking the page has been exhausted, and names the two things left that a
+    # user can act on. A more recent start date is deliberately not among them: these streams
+    # filter client-side, so it would not make GitHub's per-page query any cheaper.
     failure_message: >-
-      GitHub could not resolve this query even when the connector asked for a single record per
-      page, so the page size is not what it is rejecting. This is usually a transient condition
-      on GitHub's side and the next sync succeeds; if one repository fails this way on every
-      attempt, removing it from the source configuration lets the others sync.
+      GitHub kept rejecting this query at every page size the connector asked for, so a smaller
+      page is not what it is waiting for. This is usually a transient condition on GitHub's side
+      and the next sync succeeds; if one repository fails this way on every attempt, removing it
+      from the source configuration lets the others sync.
 
   graphql_paginator:
     type: DefaultPaginator

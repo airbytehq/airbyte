@@ -27,6 +27,8 @@ from airbyte_cdk.models import (
 
 
 GRAPHQL_URL = "https://api.github.com/graphql"
+# `graphql_page_size_reduction.minimum_page_size`.
+_MINIMUM_GRAPHQL_PAGE_SIZE = 1
 REPOSITORY = "airbytehq/airbyte"
 
 _TOKEN_CONFIG = {"credentials": {"personal_access_token": "token"}}
@@ -415,11 +417,37 @@ def test_persistent_gateway_timeout_fails_the_stream_instead_of_looping(page_siz
     assert page_size_reduction_waits == [10, 20, 30, 10, 20, 30]
     assert _trace_error_messages(messages) == [
         "The source keeps rejecting pages of stream releases at the smallest page size the connector is allowed to "
-        "request (1 records per page). GitHub could not resolve this query even when the connector asked for a "
-        "single record per page, so the page size is not what it is rejecting. This is usually a transient "
-        "condition on GitHub's side and the next sync succeeds; if one repository fails this way on every attempt, "
-        "removing it from the source configuration lets the others sync."
+        "request (1 records per page). GitHub kept rejecting this query at every page size the connector asked "
+        "for, so a smaller page is not what it is waiting for. This is usually a transient condition on GitHub's "
+        "side and the next sync succeeds; if one repository fails this way on every attempt, removing it from the "
+        "source configuration lets the others sync."
     ]
+
+
+def test_a_stream_starting_at_a_hundred_exhausts_max_attempts_before_reaching_the_floor(
+    page_size_reduction_waits, rate_limit_mock_response, requests_mock
+):
+    """The other end of the reduction ladder, and the reason no message here may claim the
+    floor was reached.
+
+    `releases` starts at 10 and walks down to `minimum_page_size`, so its retries at the floor
+    are what end the read. A stream starting at 100 never gets there: `max_attempts: 5` is
+    spent one reduction earlier, so the smallest page it ever asks for is 3 and
+    `retries_at_minimum_page_size` never applies. Raising the budget to 6 would close the gap;
+    until something does, this is the behaviour, and the failure message is worded for both."""
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(GRAPHQL_URL, status_code=504, json={"message": "Gateway Timeout"})
+
+    messages, error = _read_messages(_config(), "reviews")
+
+    assert error is not None
+    assert _records(messages) == []
+    sizes = [_variables(request)["first"] for request in _graphql_requests(requests_mock)]
+    assert sizes == [100, 50, 25, 12, 6, 3]
+    # No repeat of the smallest size: the budget runs out on the reduction that would have
+    # produced 1, so the floor retries never happen.
+    assert sizes[-1] != _MINIMUM_GRAPHQL_PAGE_SIZE
+    assert page_size_reduction_waits == [10, 20, 30, 40, 50]
 
 
 def test_graphql_body_errors_are_retried_instead_of_ending_the_partition(rate_limit_mock_response, requests_mock):
