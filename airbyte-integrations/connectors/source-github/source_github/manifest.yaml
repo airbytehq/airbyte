@@ -17669,6 +17669,37 @@ definitions:
     action: RATE_LIMITED
     error_message: "GitHub GraphQL rate limit hit. Waiting for the rate limit window to reset before retrying."
 
+  # GitHub reports a query whose result set is too large to resolve as an HTTP 200: `data` comes
+  # back populated, every leaf it gave up on is null, and `errors` carries one
+  # `RESOURCE_LIMITS_EXCEEDED` entry per leaf, each scoped by `path`. The status says nothing, so
+  # only the body identifies it.
+  #
+  # Reducing the page size is the remedy that matches the cause. The limit counts the nodes the
+  # query asks GitHub to resolve, and `first` multiplies through every nested connection below
+  # it, so halving the page halves the count. This is also why the page cannot be taken as a
+  # success: `data` looks complete, but the records in it carry null fields wherever the limit
+  # was hit, so accepting it writes records that are silently missing values.
+  #
+  # Matched on `type` rather than on the message, and narrowly: it is the one body error this
+  # connector has evidence for, and a broader predicate would also take shapes a smaller page
+  # cannot help -- an `INTERNAL` error scoped to a single unresolvable node stays unresolvable at
+  # every page size, so reducing for it only walks to the smallest page the budget allows and
+  # fails there, discarding the nodes GitHub did resolve. Those keep the plain retry below.
+  # `errors` is not always a list of objects -- the legacy test for this used
+  # `{"errors": "not found"}` -- so `selectattr('type', 'defined')` guards the lookup.
+  graphql_resource_limit_reduce_filter:
+    type: HttpResponseFilter
+    predicate: >-
+      {{ response is mapping and ((response.get('errors') or [])
+         | selectattr('type', 'defined')
+         | selectattr('type', 'equalto', 'RESOURCE_LIMITS_EXCEEDED')
+         | list | length) > 0 }}
+    action: REDUCE_PAGE_SIZE
+    failure_type: transient_error
+    error_message: >-
+      GitHub could not resolve the GraphQL query within its resource limits. Retrying the same
+      page with a smaller page size.
+
   graphql_body_error_filter:
     type: HttpResponseFilter
     predicate: "{{ response is mapping and ((response.get('errors') or []) | length) > 0 }}"
@@ -17703,6 +17734,7 @@ definitions:
       - $ref: "#/definitions/graphql_body_rate_limited_filter"
       - $ref: "#/definitions/graphql_reduce_page_size_filter"
       - $ref: "#/definitions/graphql_body_not_found_skip_filter"
+      - $ref: "#/definitions/graphql_resource_limit_reduce_filter"
       - $ref: "#/definitions/graphql_body_error_filter"
       - $ref: "#/definitions/success_filter"
       - $ref: "#/definitions/retry_after_rate_limit_filter"

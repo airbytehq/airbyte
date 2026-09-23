@@ -1110,6 +1110,100 @@ def test_pull_request_comment_reactions_reduces_the_page_size_on_gateway_timeout
     assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [100, 50]
 
 
+def _resource_limit_errors(*leaf_fields):
+    """`errors` as GitHub sends them: one entry per leaf the query ran out of budget for.
+
+    The `type`, `message` and `path` are verbatim from a production response."""
+    return [
+        {
+            "type": "RESOURCE_LIMITS_EXCEEDED",
+            "path": ["repository", "pullRequests", "nodes", 7, "reviews", "nodes", 0, "comments", "nodes", index, "reactions", "nodes", 0, "user", field],
+            "locations": [{"line": 45, "column": 23}],
+            "message": "Resource limits for this query exceeded.",
+        }
+        for index, field in enumerate(leaf_fields)
+    ]
+
+
+def _reaction_missing_its_user():
+    """A reaction as it comes back inside a resource-limited page: present, but with the
+    fields the limit cut off left null."""
+    reaction = _reaction_node("REA_1", 301)
+    reaction["user"] = {"type": "User", "node_id": None, "id": None, "login": None}
+    return reaction
+
+
+def test_a_resource_limit_in_the_body_reduces_the_page_size(rate_limit_mock_response, requests_mock):
+    """The shape this filter exists for, as production sends it.
+
+    GitHub answers 200 with `data` fully populated -- the repository resolved, the pull requests
+    came back, `hasNextPage` was true with a usable cursor -- and an `errors` entry per leaf it
+    gave up on. Nothing about the status or the envelope marks it as a failure, so a handler
+    that reads only the status consumes it as a good page and writes the records with their
+    user fields missing."""
+    _mock_repository_resolution(requests_mock)
+    limited = _deep_listing(
+        [_pr_with_reviews("PR_1", [_pr_review("PRR_1", 11, [_pr_comment("PRRC_1", 21, [_reaction_missing_its_user()])])])],
+        has_next_page=True,
+        end_cursor="DENSE_CUR",
+    )
+    limited["errors"] = _resource_limit_errors("html_url", "node_id")
+    resolved = _deep_listing(
+        [_pr_with_reviews("PR_1", [_pr_review("PRR_1", 11, [_pr_comment("PRRC_1", 21, [_reaction_node("REA_1", 301)])])])]
+    )
+    requests_mock.post(GRAPHQL_URL, [{"json": limited}, {"json": resolved}])
+
+    records, error = _read(_config(), "pull_request_comment_reactions")
+
+    assert error is None
+    # The halved page is the one that is kept, so the record has its user.
+    assert [record["id"] for record in records] == [301]
+    assert records[0]["user"]["login"] == "octocat"
+    requests = _graphql_requests(requests_mock)
+    assert [_variables(request)["first"] for request in requests] == [100, 50]
+    # The same page is asked for again rather than paged past.
+    assert not any("after" in _variables(request) for request in requests)
+
+
+def test_a_body_error_that_is_not_a_resource_limit_is_retried_rather_than_reduced(rate_limit_mock_response, requests_mock):
+    """The narrowness of the predicate is the point.
+
+    An `INTERNAL` error scoped to one node is not a page-size problem: with cursor pagination a
+    smaller page shifts the window, the same node is reached again at every size, and reducing
+    only walks down the ladder and fails -- throwing away the nodes GitHub did resolve. Those
+    keep the plain retry the connector has always given them."""
+    _mock_repository_resolution(requests_mock)
+    internal = _deep_listing([])
+    internal["errors"] = [
+        {
+            "type": "INTERNAL",
+            "path": ["repository", "pullRequests", "nodes", 1],
+            "message": "Something went wrong while executing your query.",
+        }
+    ]
+    requests_mock.post(GRAPHQL_URL, [{"json": internal}, {"json": _deep_listing([])}])
+
+    records, error = _read(_config(), "pull_request_comment_reactions")
+
+    assert error is None
+    assert records == []
+    # Same page size on the retry: no reduction was applied.
+    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [100, 100]
+
+
+def test_a_non_list_errors_body_does_not_break_the_resource_limit_predicate(rate_limit_mock_response, requests_mock):
+    """`errors` is not always a list of objects. The predicate has to survive that rather than
+    raise in the middle of a sync, which is what `selectattr('type', 'defined')` is guarding."""
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(GRAPHQL_URL, [{"json": {"errors": "not found"}}, {"json": _deep_listing([])}])
+
+    records, error = _read(_config(), "pull_request_comment_reactions")
+
+    assert error is None
+    assert records == []
+    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [100, 100]
+
+
 # --- Default page size ------------------------------------------------------------------
 
 
