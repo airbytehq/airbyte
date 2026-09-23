@@ -77,15 +77,15 @@ def _extract_database_id_from_node_id(node_id: Optional[str]) -> Optional[int]:
 def _resolve_page_size(page_size: Any, config: Config) -> Optional[int]:
     """Interpolate and coerce a page size supplied to a custom component.
 
-    A custom component's fields are handed over uninterpolated, so a manifest value like
-    `"{{ config['page_size_for_large_streams'] }}"` arrives as that literal string. The CDK
+    A custom component's fields are handed over uninterpolated, so a manifest value written as
+    an interpolated string arrives as that literal string rather than as a number. The CDK
     reduces the page size arithmetically, so it has to be an int by the time it is returned
     from `get_page_size`.
 
-    `page_size_for_large_streams` left the spec in 1.0.1 but is still honored, so a value that
-    is not a whole number can still arrive from the API, Terraform or an embedded config
-    without a form to validate it. Coercing it with a bare `int()` would surface as a
-    `ValueError` from the middle of a sync, so it is reported as the configuration error it is.
+    Every page size in this manifest is a literal today, so the coercion below is a guard
+    rather than a path a user's configuration can reach. It is kept because these strategies
+    are where a future page size expression would arrive, and coercing with a bare `int()`
+    would surface as a `ValueError` from the middle of a sync rather than as a stated failure.
     """
     if page_size is None:
         return None
@@ -97,14 +97,14 @@ def _resolve_page_size(page_size: Any, config: Config) -> Optional[int]:
         resolved = int(page_size)
     except (TypeError, ValueError):
         raise AirbyteTracedException(
-            internal_message=f"page_size_for_large_streams resolved to {page_size!r}, which is not a whole number",
-            message=f'"Page size for large streams" (page_size_for_large_streams) must be a whole number. ' f"Got {page_size!r}.",
+            internal_message=f"page size resolved to {page_size!r}, which is not a whole number",
+            message=f"The page size this stream requests must be a whole number. Got {page_size!r}.",
             failure_type=FailureType.config_error,
         )
     if resolved < 1:
         raise AirbyteTracedException(
-            internal_message=f"page_size_for_large_streams resolved to {resolved}, which is not strictly positive",
-            message=f'"Page size for large streams" (page_size_for_large_streams) must be at least 1. ' f"Got {resolved}.",
+            internal_message=f"page size resolved to {resolved}, which is not strictly positive",
+            message=f"The page size this stream requests must be at least 1. Got {resolved}.",
             failure_type=FailureType.config_error,
         )
     return resolved

@@ -23,7 +23,22 @@ definitions:
     {{ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | list | length) == 0
        or record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
 
-  large_stream_page_size: "{{ config.get('page_size_for_large_streams') or 10 }}"
+  # `constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM` — the per-page size of the four REST streams
+  # the legacy code marked `large_stream = True`: `pull_requests`, `comments`, `issues` and
+  # `review_comments`. Every other REST stream sends `constants.DEFAULT_PAGE_SIZE` (100).
+  #
+  # The value is written out rather than read from `page_size_for_large_streams`, which was
+  # removed from the spec in 1.0.1 and cannot be set from the UI since. What the legacy code
+  # produced for a config without that key is 10, so 10 is what this reproduces. A config that
+  # still carries the key through the API or Terraform no longer steers these streams — see
+  # `graphql_large_stream_page_size` for the same note on the GraphQL side.
+  #
+  # Whether 10 is the right number is a separate question with evidence on both sides: it costs
+  # roughly 10x the requests and several times the wall clock of `per_page=100`, and it was
+  # introduced to stop a 502 storm on `pull_requests` against a very large organization, which
+  # later secondary-rate-limit handling may since have addressed on its own. Raising it is a
+  # deliberate, measurable change and not part of restoring the migration's fidelity.
+  large_stream_page_size: "10"
 
   requester_base:
     type: HttpRequester
@@ -115,7 +130,8 @@ definitions:
     http_method: GET
     request_parameters:
       # constants.DEFAULT_PAGE_SIZE — none of these streams was a `large_stream`, so the
-      # deprecated `page_size_for_large_streams` config never applied to them.
+      # reduced page size never applied to them. See `large_stream_page_size` for the streams
+      # that did carry it.
       per_page: "100"
     error_handler:
       $ref: "#/definitions/skip_inaccessible_error_handler"
@@ -17619,6 +17635,21 @@ definitions:
   # matches nothing there and the status match carries it. `errors` is not always a list of
   # objects -- the legacy test for this used `{"errors": "not found"}` -- so the predicate only
   # asks whether it is non-empty.
+  # `HttpResponseFilter` ORs its `http_codes` with its `predicate`, so this matches a 502/504 by
+  # status and a body carrying `errors` by predicate. GitHub reports a query it could not finish
+  # both ways: as the 502/504, and as an HTTP 200 whose `data` is null with the query abandoned.
+  # Matching on status alone left that second form retrying the same oversized page until the
+  # attempts ran out.
+  #
+  # The predicate is deliberately broader than those two, because `errors` is not always a list
+  # of objects and a narrower one would miss shapes it cannot anticipate. That breadth also means
+  # it currently takes a response this action cannot help: a partial response, where `data` is
+  # populated and an `errors` entry of `type: INTERNAL` is scoped by `path` to one unresolvable
+  # node. A smaller page does not make that node resolvable -- with cursor pagination the window
+  # only shifts, and the node is reached again at every size down to 1 -- so the ladder walks to
+  # the floor and fails, discarding the nodes GitHub did resolve. Handling that shape means
+  # treating the page as a partial success ahead of this filter, and deciding what happens to the
+  # record that is skipped; it is not in this change.
   graphql_reduce_page_size_filter:
     type: HttpResponseFilter
     http_codes: [502, 504]
@@ -17719,10 +17750,10 @@ definitions:
     error_handler:
       $ref: "#/definitions/graphql_error_handler"
 
-  # Halving on every 502/504, floored at 1. At the default page size of 10 the floor is what
-  # ends the loop, not `max_attempts`: the sequence is 10 -> 5 -> 2 -> 1, three reductions, and
-  # then the floor retries below. `max_attempts` only binds from a configured page size of 32
-  # up, and is kept as the bound for those.
+  # Halving on every rejected page, floored at 1. The floor is what ends the loop, not
+  # `max_attempts`: from `graphql_large_stream_page_size` (10) the sequence is 10 -> 5 -> 2 -> 1,
+  # three reductions, and then the floor retries below. `max_attempts` would only bind from a
+  # page size of 32 up, which no stream here starts at; it is kept as a bound in case one does.
   # `reset_policy: NEVER` keeps the reduced size for the rest of the partition:
   # restoring it after each good page re-triggers the timeout on the next page, which is the
   # ineffective behavior the legacy handler had. The size is local to one `_read_pages` call,
@@ -17741,31 +17772,27 @@ definitions:
     #
     # `backoff_seconds` is multiplied by the attempt number, and `retries_at_minimum_page_size`
     # re-issues the page unchanged once there is nothing left to halve, where waiting is the
-    # only thing left to try. From the default page size of 10 that gives 10 -> 5 -> 2 -> 1 and
-    # then three attempts at 1, seven requests over about two minutes; a source configured with
-    # a page size of 1, which has no reduction to make at all, still gets four requests over a
-    # minute instead of failing on the first 502.
+    # only thing left to try. From a page size of 10 that gives 10 -> 5 -> 2 -> 1 and then three
+    # attempts at 1: seven requests over about two minutes. Without the retries at the floor a
+    # stream that reached 1 would fail on its next rejected page, which is fewer attempts than
+    # any other stream of this connector gets.
     backoff_seconds: 10
     retries_at_minimum_page_size: 3
     # Appended to the CDK's terminal message once the reductions and the retries at the floor
     # run out. The CDK only knows that GitHub rejected every page size it asked for; the
-    # remediation is connector-specific. `page_size_for_large_streams` was dropped from the spec
-    # in 1.0.1 but is still honored, so the sentence names both the old form title and the
-    # config key an API user would set. It states what the setting does rather than telling the
-    # user to lower it, because a source already configured with a page size of 1 or 2 reaches
-    # this message with nothing left to lower. A more recent start date is deliberately not
-    # suggested: these streams filter client-side, so it would not make GitHub's per-page query
-    # any cheaper.
+    # remediation is connector-specific.
     #
-    # This one message is shared by all six GraphQL streams, but the setting it names governs
-    # only the two the legacy code marked `large_stream`. Naming the split matters more than
-    # brevity here: the other four start from a fixed 100, and a user who lowers the setting
-    # after reading this would otherwise watch it change nothing.
+    # There is no page-size setting to point the user at: the sizes are fixed in this manifest,
+    # and by the time this message is reached the ladder has already walked down to a single
+    # record per page and retried there. So the message says what that rules out — the query is
+    # not too large — and names the two things left that a user can act on. A more recent start
+    # date is deliberately not among them: these streams filter client-side, so it would not
+    # make GitHub's per-page query any cheaper.
     failure_message: >-
-      `releases` and `pull_request_stats` start from "Page size for large streams"
-      (page_size_for_large_streams) in the source configuration, and a lower value makes each of
-      their GraphQL queries cheaper, if it is not already at its minimum of 1. The other GraphQL
-      streams start from a fixed page size of 100 that this setting does not govern.
+      GitHub could not resolve this query even when the connector asked for a single record per
+      page, so the page size is not what it is rejecting. This is usually a transient condition
+      on GitHub's side and the next sync succeeds; if one repository fails this way on every
+      attempt, removing it from the source configuration lets the others sync.
 
   graphql_paginator:
     type: DefaultPaginator
@@ -17779,12 +17806,17 @@ definitions:
       field_path: ["variables", "after"]
 
   # Applies to `releases` and `pull_request_stats` only -- the two streams the legacy code
-  # marked `large_stream = True`. `page_size_for_large_streams` is deprecated but still
-  # honored, and the legacy default of 10 is preserved deliberately: this migration is meant
-  # to be behavior-preserving, and `REDUCE_PAGE_SIZE` is the safety net rather than a licence
-  # to raise the default. Raising it is a separate, measurable change. Every other GraphQL
-  # stream was never a `large_stream` and keeps constants.DEFAULT_PAGE_SIZE (100).
-  graphql_large_stream_page_size: "{{ config['page_size_for_large_streams'] if config.get('page_size_for_large_streams') is not none else 10 }}"
+  # marked `large_stream = True`. The legacy default of 10 is preserved deliberately: this
+  # migration is meant to be behavior-preserving, and `REDUCE_PAGE_SIZE` is the safety net
+  # rather than a licence to raise the default. Raising it is a separate, measurable change.
+  # Every other GraphQL stream was never a `large_stream` and keeps
+  # constants.DEFAULT_PAGE_SIZE (100).
+  #
+  # Written out rather than read from `page_size_for_large_streams`, for the reasons on
+  # `large_stream_page_size` above. The GraphQL side has the stronger claim to the number:
+  # `releases` materializes `description` and `descriptionHTML` per node, and `first=100`
+  # still reproduces a 502 in about 11 seconds against nodejs/node today.
+  graphql_large_stream_page_size: 10
 
   releases_stream:
     # API docs: https://docs.github.com/en/graphql/reference/objects#release
@@ -19293,7 +19325,7 @@ definitions:
               # presence of a token: the listing paginates too (`typename: PullRequest` re-roots
               # at the listing, with no node id), and dropping the variables on its second page
               # made GitHub answer `data: null`, so the stream stopped after the first page and
-              # only the newest `page_size_for_large_streams` pull requests were ever scanned.
+              # only the newest `graphql_large_stream_page_size` pull requests were ever scanned.
               owner: "{{ None if next_page_token and next_page_token['next_page_token']['typename'] != 'PullRequest' else stream_partition.repository.split('/')[0] }}"
               name: "{{ None if next_page_token and next_page_token['next_page_token']['typename'] != 'PullRequest' else stream_partition.repository.split('/')[1] }}"
               after: "{{ next_page_token['next_page_token']['after'] if next_page_token else None }}"

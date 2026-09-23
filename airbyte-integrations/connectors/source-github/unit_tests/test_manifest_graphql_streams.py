@@ -457,35 +457,11 @@ def test_persistent_gateway_timeout_fails_the_stream_instead_of_looping(page_siz
     assert page_size_reduction_waits == [10, 20, 30, 10, 20, 30]
     assert _trace_error_messages(messages) == [
         "The source keeps rejecting pages of stream releases at the smallest page size the connector is allowed to "
-        'request (1 records per page). `releases` and `pull_request_stats` start from "Page size for large streams" '
-        "(page_size_for_large_streams) in the source configuration, and a lower value makes each of their GraphQL "
-        "queries cheaper, if it is not already at its minimum of 1. The other GraphQL streams start from a fixed "
-        "page size of 100 that this setting does not govern."
+        "request (1 records per page). GitHub could not resolve this query even when the connector asked for a "
+        "single record per page, so the page size is not what it is rejecting. This is usually a transient "
+        "condition on GitHub's side and the next sync succeeds; if one repository fails this way on every attempt, "
+        "removing it from the source configuration lets the others sync."
     ]
-
-
-def test_a_source_configured_with_a_page_size_of_one_still_retries_a_gateway_timeout(
-    page_size_reduction_waits, rate_limit_mock_response, requests_mock
-):
-    """There is nothing to halve at a page size of 1, so `retries_at_minimum_page_size` is the
-    whole budget. Without it such a source failed on the first 502 - fewer attempts than every
-    other stream of this connector gets, and these are exactly the users the legacy timeout
-    message pushed toward a page size of 1."""
-    _mock_repository_resolution(requests_mock)
-    requests_mock.post(
-        GRAPHQL_URL,
-        [
-            {"status_code": 502, "json": {"message": "Bad Gateway"}},
-            {"json": _repository_envelope("releases", [_release_node()])},
-        ],
-    )
-
-    records, error = _read(_config(page_size_for_large_streams=1), "releases")
-
-    assert error is None
-    assert len(records) == 1
-    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [1, 1]
-    assert page_size_reduction_waits == [10]
 
 
 def test_graphql_body_errors_are_retried_instead_of_ending_the_partition(rate_limit_mock_response, requests_mock):
@@ -536,8 +512,14 @@ def test_persistent_graphql_body_errors_fail_the_stream(page_size_reduction_wait
     )
 
 
-def test_page_size_for_large_streams_config_is_still_honored(rate_limit_mock_response, requests_mock):
-    """The deprecated knob keeps working; reduction starts from whatever it set."""
+def test_page_size_for_large_streams_config_is_inert(rate_limit_mock_response, requests_mock):
+    """The deprecated knob no longer changes the page size, and reduction starts from the
+    connector's own value rather than from whatever the config carried.
+
+    `page_size_for_large_streams` left the spec in 1.0.1, so a config still setting it was
+    built through the API or Terraform. Honoring it meant one key steering both the REST
+    streams and these two, in opposite directions: raising it for REST throughput pushed
+    `releases` back into the resolver timeouts this reduction ladder exists to survive."""
     _mock_repository_resolution(requests_mock)
     requests_mock.post(
         GRAPHQL_URL,
@@ -549,7 +531,7 @@ def test_page_size_for_large_streams_config_is_still_honored(rate_limit_mock_res
 
     _read(_config(page_size_for_large_streams=40), "releases")
 
-    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [40, 20]
+    assert [_variables(request)["first"] for request in _graphql_requests(requests_mock)] == [10, 5]
 
 
 # --- ProjectsV2 --------------------------------------------------------------------------
@@ -583,7 +565,7 @@ def test_projects_v2_uses_the_default_page_size(rate_limit_mock_response, reques
     _mock_repository_resolution(requests_mock)
     requests_mock.post(GRAPHQL_URL, json=_repository_envelope("projectsV2", []))
 
-    _read(_config(page_size_for_large_streams=10), "projects_v2")
+    _read(_config(), "projects_v2")
 
     assert _variables(_graphql_requests(requests_mock)[0])["first"] == 100
 
@@ -1163,12 +1145,12 @@ def test_pull_request_comment_reactions_reduces_the_page_size_on_gateway_timeout
 )
 def test_non_large_graphql_streams_use_the_default_page_size(stream_name, envelope, rate_limit_mock_response, requests_mock):
     """Only `releases` and `pull_request_stats` were `large_stream = True` in the legacy code.
-    Every other GraphQL stream ran at constants.DEFAULT_PAGE_SIZE and ignored the deprecated
-    `page_size_for_large_streams` knob, so migrating them at 10 was a 10x increase in GraphQL
-    requests -- against the same resolver deadline that makes those requests fail."""
+    Every other GraphQL stream ran at constants.DEFAULT_PAGE_SIZE, so migrating them at 10 was
+    a 10x increase in GraphQL requests -- against the same resolver deadline that makes those
+    requests fail."""
     _mock_repository_resolution(requests_mock)
     requests_mock.post(GRAPHQL_URL, json=envelope())
 
-    _read(_config(page_size_for_large_streams=10), stream_name)
+    _read(_config(), stream_name)
 
     assert _variables(_graphql_requests(requests_mock)[0])["first"] == 100
