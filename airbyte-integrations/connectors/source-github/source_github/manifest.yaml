@@ -18723,8 +18723,8 @@ definitions:
           # The listing document nests the reviews under every pull request; the drill-down
           # document returns the single pull request whose reviews overflowed. A response
           # carries one of the two paths, so the union yields the reviews of whichever came
-          # back. Each pull request is expanded into its reviews, keeping the pull request
-          # under `original_record` for the transformations to copy `url` from.
+          # back. Each pull request is expanded into its reviews, copying the pull
+          # request's `url` onto every review as `pull_request_url`.
           type: CombinedExtractor
           mode: union
           extractors:
@@ -18733,13 +18733,19 @@ definitions:
               record_expander:
                 type: RecordExpander
                 expand_records_from_field: ["reviews", "nodes"]
-                remain_original_record: true
+                parent_fields:
+                  - type: ParentFieldPath
+                    parent_path: ["url"]
+                    record_path: ["pull_request_url"]
             - type: DpathExtractor
               field_path: ["data", "repository", "pullRequest"]
               record_expander:
                 type: RecordExpander
                 expand_records_from_field: ["reviews", "nodes"]
-                remain_original_record: true
+                parent_fields:
+                  - type: ParentFieldPath
+                    parent_path: ["url"]
+                    record_path: ["pull_request_url"]
       paginator:
         type: DefaultPaginator
         # No `page_token_option`: the token is a traversal state object, not a value to inject.
@@ -18762,11 +18768,6 @@ definitions:
         fields:
           - path: ["repository"]
             value: "{{ stream_partition.repository }}"
-          - path: ["pull_request_url"]
-            value: "{{ record['original_record']['url'] }}"
-      - type: RemoveFields
-        field_pointers:
-          - ["original_record"]
       - type: AddFields
         # `commit_id` replaced the nested `commit { oid }` in the REST-shaped record.
         condition: "{{ record.get('commit') }}"
@@ -19012,8 +19013,8 @@ definitions:
           # The listing document nests the reactions under every issue; the drill-down
           # document returns the single issue whose reactions overflowed. A response
           # carries one of the two paths, so the union yields the reactions of whichever came
-          # back. Each issue is expanded into its reactions, keeping the issue
-          # under `original_record` for the transformations to copy `number` from.
+          # back. Each issue is expanded into its reactions, copying the
+          # issue's `number` onto every reaction as `issue_number`.
           type: CombinedExtractor
           mode: union
           extractors:
@@ -19022,13 +19023,19 @@ definitions:
               record_expander:
                 type: RecordExpander
                 expand_records_from_field: ["reactions", "nodes"]
-                remain_original_record: true
+                parent_fields:
+                  - type: ParentFieldPath
+                    parent_path: ["number"]
+                    record_path: ["issue_number"]
             - type: DpathExtractor
               field_path: ["data", "repository", "issue"]
               record_expander:
                 type: RecordExpander
                 expand_records_from_field: ["reactions", "nodes"]
-                remain_original_record: true
+                parent_fields:
+                  - type: ParentFieldPath
+                    parent_path: ["number"]
+                    record_path: ["issue_number"]
       paginator:
         type: DefaultPaginator
         # No `page_token_option`: the token is a traversal state object, not a value to inject.
@@ -19051,11 +19058,6 @@ definitions:
         fields:
           - path: ["repository"]
             value: "{{ stream_partition.repository }}"
-          - path: ["issue_number"]
-            value: "{{ record['original_record']['number'] }}"
-      - type: RemoveFields
-        field_pointers:
-          - ["original_record"]
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "created_at"
@@ -19324,8 +19326,8 @@ definitions:
           # four paths: the repository listing, or a `node` that is a pull request, a review or the
           # comment itself. The documents select only the connections of their own root type, so
           # the paths of the other roots are absent and the union yields the comments' reactions
-          # from whichever root came back. Each comment is expanded into its reactions, keeping the
-          # comment under `original_record` for the transformations to copy its `id` from.
+          # from whichever root came back. Each comment is expanded into its reactions, copying the
+          # comment's `id` onto every reaction as `comment_id`.
           type: CombinedExtractor
           mode: union
           extractors:
@@ -19334,25 +19336,37 @@ definitions:
               record_expander:
                 type: RecordExpander
                 expand_records_from_field: ["reactions", "nodes"]
-                remain_original_record: true
+                parent_fields:
+                  - type: ParentFieldPath
+                    parent_path: ["id"]
+                    record_path: ["comment_id"]
             - type: DpathExtractor
               field_path: ["data", "node", "reviews", "nodes", "*", "comments", "nodes", "*"]
               record_expander:
                 type: RecordExpander
                 expand_records_from_field: ["reactions", "nodes"]
-                remain_original_record: true
+                parent_fields:
+                  - type: ParentFieldPath
+                    parent_path: ["id"]
+                    record_path: ["comment_id"]
             - type: DpathExtractor
               field_path: ["data", "node", "comments", "nodes", "*"]
               record_expander:
                 type: RecordExpander
                 expand_records_from_field: ["reactions", "nodes"]
-                remain_original_record: true
+                parent_fields:
+                  - type: ParentFieldPath
+                    parent_path: ["id"]
+                    record_path: ["comment_id"]
             - type: DpathExtractor
               field_path: ["data", "node"]
               record_expander:
                 type: RecordExpander
                 expand_records_from_field: ["reactions", "nodes"]
-                remain_original_record: true
+                parent_fields:
+                  - type: ParentFieldPath
+                    parent_path: ["id"]
+                    record_path: ["comment_id"]
       paginator:
         type: DefaultPaginator
         page_size_option:
@@ -19370,11 +19384,6 @@ definitions:
         fields:
           - path: ["repository"]
             value: "{{ stream_partition.repository }}"
-          - path: ["comment_id"]
-            value: "{{ record['original_record']['id'] }}"
-      - type: RemoveFields
-        field_pointers:
-          - ["original_record"]
       - type: AddFields
         # The legacy record carried `user.type`, and `user` is not a union in these documents.
         condition: "{{ record.get('user') }}"
