@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Airbyte CDK standard connector tests (spec / check / discover / read contract).
 
 The scenarios below run in-process against the fake HANA, so they never need a real server.
@@ -8,10 +10,10 @@ acceptance-test-config.yml stays free for the regular acceptance tests against a
 from pathlib import Path
 
 import pytest
+from source_sap_hana import SourceSapHana
+
 from airbyte_cdk.test.models import ConnectorTestScenario
 from airbyte_cdk.test.standard_tests import SourceTestSuiteBase
-
-from source_sap_hana import SourceSapHana
 
 
 @pytest.fixture(autouse=True)

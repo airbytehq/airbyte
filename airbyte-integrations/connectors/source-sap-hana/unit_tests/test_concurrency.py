@@ -1,13 +1,15 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 import itertools
 import threading
 import time
 
 import pytest
-from airbyte_cdk.models import AirbyteStreamStatus, SyncMode, Type
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-
 from source_sap_hana import SourceSapHana
 from source_sap_hana.concurrency import interleave
+
+from airbyte_cdk.models import AirbyteStreamStatus, SyncMode, Type
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .test_source import ACDOCA_COLUMNS, ACDOCA_ROWS, configured_catalog
 

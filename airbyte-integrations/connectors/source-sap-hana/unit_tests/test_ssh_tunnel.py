@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """SSH tunnel tests against a real in-process paramiko SSH server that forwards to a local echo server."""
 
 from __future__ import annotations
@@ -9,10 +11,11 @@ import threading
 
 import paramiko
 import pytest
+from source_sap_hana import SourceSapHana
+from source_sap_hana.ssh_tunnel import SshTunnel, TunnelConfig, host_key_fingerprint, load_private_key
+
 from airbyte_cdk.models import Status
 
-from source_sap_hana import SourceSapHana
-from source_sap_hana.ssh_tunnel import SshTunnel, TunnelConfig, load_private_key
 
 logger = logging.getLogger("airbyte")
 HOST_KEY = paramiko.RSAKey.generate(1024)
@@ -134,16 +137,17 @@ def _roundtrip(port: int, payload: bytes) -> bytes:
         return received
 
 
-def password_tunnel(ssh: SshServer, password: str = "secret") -> TunnelConfig:
-    return TunnelConfig.from_mapping(
-        {
-            "tunnel_method": "SSH_PASSWORD_AUTH",
-            "tunnel_host": "127.0.0.1",
-            "tunnel_port": ssh.port,
-            "tunnel_user": "tunnel",
-            "tunnel_user_password": password,
-        }
-    )
+def password_tunnel(ssh: SshServer, password: str = "secret", fingerprint: str | None = None) -> TunnelConfig:
+    raw = {
+        "tunnel_method": "SSH_PASSWORD_AUTH",
+        "tunnel_host": "127.0.0.1",
+        "tunnel_port": ssh.port,
+        "tunnel_user": "tunnel",
+        "tunnel_user_password": password,
+    }
+    if fingerprint is not None:
+        raw["tunnel_host_key_fingerprint"] = fingerprint
+    return TunnelConfig.from_mapping(raw)
 
 
 def test_no_tunnel():
@@ -222,3 +226,26 @@ def test_source_routes_hana_through_tunnel(ssh, echo, hana, config):
     assert kwargs["address"] == "127.0.0.1"
     assert kwargs["port"] != config["port"]
     assert kwargs["sslHostNameInCertificate"] == "hana.example.com"
+
+
+def test_pinned_host_key_is_accepted(ssh, echo):
+    with SshTunnel(password_tunnel(ssh, fingerprint=host_key_fingerprint(HOST_KEY)), "127.0.0.1", echo.port, logger) as tunnel:
+        assert _roundtrip(tunnel.local_port, b"pinned") == b"pinned"
+
+
+def test_host_key_mismatch_is_rejected(ssh, echo):
+    wrong = host_key_fingerprint(paramiko.RSAKey.generate(1024))
+    with pytest.raises(paramiko.SSHException, match="host key mismatch"):
+        SshTunnel(password_tunnel(ssh, fingerprint=wrong), "127.0.0.1", echo.port, logger).start()
+
+
+def test_unpinned_host_key_is_logged(ssh, echo, caplog):
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        with SshTunnel(password_tunnel(ssh), "127.0.0.1", echo.port, logger):
+            pass
+    assert host_key_fingerprint(HOST_KEY) in caplog.text
+
+
+def test_fingerprint_matches_openssh_format():
+    fingerprint = host_key_fingerprint(HOST_KEY)
+    assert fingerprint.startswith("SHA256:") and not fingerprint.endswith("=") and len(fingerprint) == 50

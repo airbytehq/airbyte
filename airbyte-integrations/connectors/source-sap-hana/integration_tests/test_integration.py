@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Smoke tests against a real SAP HANA instance.
 
 Put a real config in secrets/config.json (see sample_config.json), then:
@@ -14,9 +16,10 @@ from itertools import islice
 from pathlib import Path
 
 import pytest
+from source_sap_hana import SourceSapHana
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode, Type
 
-from source_sap_hana import SourceSapHana
 
 CONFIG_PATH = Path(__file__).parent.parent / "secrets" / "config.json"
 
@@ -101,7 +104,6 @@ def test_every_stream_matches_its_schema(config, catalog):
 def test_resumable_full_refresh_reconciles_with_count(config, catalog):
     """Reads a whole (small) table with tiny pages and checks nothing is skipped or duplicated across pages."""
     from hdbcli import dbapi
-
     from source_sap_hana.client import HanaClient, qualified_name
     from source_sap_hana.config import HanaConfig
 

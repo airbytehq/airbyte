@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Reads a single configured stream from SAP HANA.
 
 Three read strategies:
@@ -12,6 +14,7 @@ Three read strategies:
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import time
 from collections.abc import Callable, Iterator, Mapping, Sequence
@@ -33,6 +36,7 @@ from airbyte_cdk.models import (
 from .client import HanaClient, describe_error, is_retryable, qualified_name, quote_identifier
 from .discovery import DiscoveredTable
 from .type_mapping import CURSOR_TYPES, ValueConverter, cursor_param_parser
+
 
 # Same markers the Airbyte CDK emits at the end of full refresh streams.
 NO_CURSOR_STATE = {"__ab_no_cursor_state_message": True}
@@ -256,10 +260,8 @@ class StreamReader:
             finally:
                 cursor.close()
         finally:
-            try:
+            with contextlib.suppress(Exception):  # the connection may already be dead after a network error
                 conn.close()
-            except Exception:  # noqa: BLE001
-                pass
 
     def _base_select(self, table: DiscoveredTable, columns: Sequence[str]) -> str:
         return f"SELECT {', '.join(quote_identifier(c) for c in columns)} FROM {qualified_name(table.schema, table.name)}"

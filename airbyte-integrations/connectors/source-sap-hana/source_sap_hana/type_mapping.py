@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Mapping between SAP HANA SQL types, Airbyte JSON schema types and Python values."""
 
 from __future__ import annotations
@@ -7,6 +9,7 @@ import datetime as dt
 from collections.abc import Callable
 from decimal import Decimal
 from typing import Any
+
 
 INTEGER_TYPES = frozenset({"TINYINT", "SMALLINT", "INTEGER", "BIGINT"})
 DECIMAL_TYPES = frozenset({"DECIMAL", "SMALLDECIMAL"})

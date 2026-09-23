@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Typed view over the connector configuration (see spec.json)."""
 
 from __future__ import annotations

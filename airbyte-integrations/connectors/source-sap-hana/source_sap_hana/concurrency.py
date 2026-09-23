@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Runs several message generators on worker threads and interleaves their output into one iterator."""
 
 from __future__ import annotations
@@ -7,6 +9,7 @@ import threading
 from collections.abc import Callable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from typing import TypeVar
+
 
 T = TypeVar("T")
 
@@ -37,7 +40,7 @@ def interleave(producers: list[Callable[[], Iterator[T]]], max_workers: int, buf
             for item in producer():
                 if not put(item):
                     return
-        except BaseException as error:  # noqa: BLE001 - re-raised in the consumer thread
+        except Exception as error:  # noqa: BLE001 - re-raised in the consumer thread
             put(_Failure(error))
         finally:
             put(_DONE)

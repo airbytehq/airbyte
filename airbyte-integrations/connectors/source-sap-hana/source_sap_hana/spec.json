@@ -4,13 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "SAP HANA Source Spec",
     "type": "object",
-    "required": [
-      "host",
-      "port",
-      "username",
-      "password",
-      "schemas"
-    ],
+    "required": ["host", "port", "username", "password", "schemas"],
     "additionalProperties": true,
     "properties": {
       "host": {
@@ -26,10 +20,7 @@
         "minimum": 1,
         "maximum": 65535,
         "default": 30015,
-        "examples": [
-          "30015",
-          "30041"
-        ],
+        "examples": ["30015", "30041"],
         "order": 1
       },
       "database_name": {
@@ -59,9 +50,7 @@
         },
         "minItems": 1,
         "uniqueItems": true,
-        "examples": [
-          "SAPHANADB"
-        ],
+        "examples": ["SAPHANADB"],
         "order": 5
       },
       "table_name_patterns": {
@@ -71,10 +60,7 @@
         "items": {
           "type": "string"
         },
-        "examples": [
-          "ACDOCA",
-          "CSK%"
-        ],
+        "examples": ["ACDOCA", "CSK%"],
         "order": 6
       },
       "stream_settings": {
@@ -83,37 +69,28 @@
         "type": "array",
         "items": {
           "type": "object",
-          "required": [
-            "stream"
-          ],
+          "required": ["stream"],
           "additionalProperties": false,
           "properties": {
             "stream": {
               "title": "Stream",
               "description": "Table or view name, optionally schema-qualified (SCHEMA.TABLE).",
               "type": "string",
-              "examples": [
-                "ACDOCA",
-                "SAPHANADB.ACDOCA"
-              ],
+              "examples": ["ACDOCA", "SAPHANADB.ACDOCA"],
               "order": 0
             },
             "condition": {
               "title": "Row Filter (SQL)",
               "description": "Boolean SAP HANA SQL expression inserted as WHERE (condition) in every sync mode. ';' is not allowed.",
               "type": "string",
-              "examples": [
-                "RCLNT = '100' AND GJAHR >= '2025'"
-              ],
+              "examples": ["RCLNT = '100' AND GJAHR >= '2025'"],
               "order": 1
             },
             "cursor_field": {
               "title": "Default Cursor Field",
               "description": "Column proposed as incremental cursor, and used when a client requests incremental without choosing one.",
               "type": "string",
-              "examples": [
-                "TIMESTAMP"
-              ],
+              "examples": ["TIMESTAMP"],
               "order": 2
             },
             "primary_key": {
@@ -124,14 +101,7 @@
                 "type": "string"
               },
               "examples": [
-                [
-                  "RCLNT",
-                  "RLDNR",
-                  "RBUKRS",
-                  "GJAHR",
-                  "BELNR",
-                  "DOCLN"
-                ]
+                ["RCLNT", "RLDNR", "RBUKRS", "GJAHR", "BELNR", "DOCLN"]
               ],
               "order": 3
             }
@@ -179,9 +149,7 @@
         "title": "Additional Connection Properties",
         "description": "Additional hdbcli connection properties as key=value pairs separated by ';' (e.g. 'communicationTimeout=0;reconnect=TRUE').",
         "type": "string",
-        "examples": [
-          "communicationTimeout=0;reconnect=TRUE"
-        ],
+        "examples": ["communicationTimeout=0;reconnect=TRUE"],
         "order": 13
       },
       "tunnel_method": {
@@ -191,9 +159,7 @@
         "oneOf": [
           {
             "title": "No Tunnel",
-            "required": [
-              "tunnel_method"
-            ],
+            "required": ["tunnel_method"],
             "properties": {
               "tunnel_method": {
                 "description": "No ssh tunnel needed to connect to database",
@@ -232,9 +198,7 @@
                 "minimum": 0,
                 "maximum": 65536,
                 "default": 22,
-                "examples": [
-                  "22"
-                ],
+                "examples": ["22"],
                 "order": 2
               },
               "tunnel_user": {
@@ -250,6 +214,15 @@
                 "airbyte_secret": true,
                 "multiline": true,
                 "order": 4
+              },
+              "tunnel_host_key_fingerprint": {
+                "title": "Bastion Host Key Fingerprint",
+                "description": "Optional SHA256 fingerprint of the jump server's SSH host key (output of `ssh-keygen -lf`, e.g. SHA256:MOyNgc...). When set, the tunnel refuses any other key. When empty, the key is accepted and its fingerprint is logged.",
+                "type": "string",
+                "examples": [
+                  "SHA256:MOyNgcFhMwSNN5EribY31l102sXrsK0qL9l844kiUIo"
+                ],
+                "order": 5
               }
             }
           },
@@ -282,9 +255,7 @@
                 "minimum": 0,
                 "maximum": 65536,
                 "default": 22,
-                "examples": [
-                  "22"
-                ],
+                "examples": ["22"],
                 "order": 2
               },
               "tunnel_user": {
@@ -299,6 +270,15 @@
                 "type": "string",
                 "airbyte_secret": true,
                 "order": 4
+              },
+              "tunnel_host_key_fingerprint": {
+                "title": "Bastion Host Key Fingerprint",
+                "description": "Optional SHA256 fingerprint of the jump server's SSH host key (output of `ssh-keygen -lf`, e.g. SHA256:MOyNgc...). When set, the tunnel refuses any other key. When empty, the key is accepted and its fingerprint is logged.",
+                "type": "string",
+                "examples": [
+                  "SHA256:MOyNgcFhMwSNN5EribY31l102sXrsK0qL9l844kiUIo"
+                ],
+                "order": 5
               }
             }
           }
@@ -369,10 +349,7 @@
         "title": "Decimal Handling",
         "description": "How DECIMAL / SMALLDECIMAL values are emitted. 'number' is the most convenient; 'string' preserves full precision for values with more than 15 significant digits.",
         "type": "string",
-        "enum": [
-          "number",
-          "string"
-        ],
+        "enum": ["number", "string"],
         "default": "number",
         "order": 22
       },

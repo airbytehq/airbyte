@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Catalog discovery from the SAP HANA SYS catalog views."""
 
 from __future__ import annotations

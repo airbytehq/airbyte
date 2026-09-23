@@ -1,6 +1,7 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 import pytest
 from hdbcli import dbapi
-
 from source_sap_hana.client import HanaClient, is_retryable, qualified_name
 from source_sap_hana.config import HanaConfig, StreamSettings, parse_connection_properties, parse_stream_settings
 

@@ -1,8 +1,9 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 import datetime as dt
 from decimal import Decimal
 
 import pytest
-
 from source_sap_hana.type_mapping import ValueConverter, cursor_param_parser, json_schema_for
 
 

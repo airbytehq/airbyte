@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Airbyte source connector for SAP HANA."""
 
 from __future__ import annotations
@@ -9,6 +11,8 @@ from contextlib import contextmanager
 from dataclasses import replace
 from functools import partial
 from typing import Any
+
+from hdbcli import dbapi
 
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -31,7 +35,6 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources import Source
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from hdbcli import dbapi
 
 from .client import INVALID_TABLE_NAME, HanaClient, describe_error, qualified_name
 from .concurrency import interleave
@@ -40,6 +43,7 @@ from .discovery import CatalogDiscoverer, DiscoveredTable, StreamSettingsError
 from .reader import StreamReader
 from .ssh_tunnel import SshTunnel, TunnelConfig
 from .type_mapping import ValueConverter
+
 
 StreamKey = tuple[str | None, str]  # (namespace, name)
 

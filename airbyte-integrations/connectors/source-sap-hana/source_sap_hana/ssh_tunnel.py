@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """SSH tunnel (local port forwarding) used when HANA is only reachable through a bastion host.
 
 Implemented directly on paramiko: a local listening socket on 127.0.0.1 forwards every accepted
@@ -8,6 +10,9 @@ reconnect logic also covers tunnel failures.
 
 from __future__ import annotations
 
+import base64
+import contextlib
+import hashlib
 import io
 import logging
 import select
@@ -18,6 +23,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import paramiko
+
 
 NO_TUNNEL = "NO_TUNNEL"
 SSH_KEY_AUTH = "SSH_KEY_AUTH"
@@ -32,6 +38,7 @@ class TunnelConfig:
     user: str = ""
     ssh_key: str | None = None
     password: str | None = None
+    host_key_fingerprint: str | None = None
 
     @classmethod
     def from_mapping(cls, raw: Mapping[str, Any] | None) -> TunnelConfig | None:
@@ -56,6 +63,7 @@ class TunnelConfig:
             user=raw["tunnel_user"],
             ssh_key=raw.get("ssh_key"),
             password=raw.get("tunnel_user_password"),
+            host_key_fingerprint=(raw.get("tunnel_host_key_fingerprint") or "").strip() or None,
         )
 
 
@@ -68,6 +76,36 @@ def load_private_key(text: str) -> paramiko.PKey:
         except (paramiko.SSHException, ValueError) as error:
             errors.append(f"{key_class.__name__}: {error}")
     raise ValueError("Unable to parse the SSH private key (" + "; ".join(errors) + ")")
+
+
+def host_key_fingerprint(key: paramiko.PKey) -> str:
+    """OpenSSH-style SHA256 fingerprint, as printed by `ssh-keygen -lf` (e.g. SHA256:MOyN...)."""
+    return "SHA256:" + base64.b64encode(hashlib.sha256(key.asbytes()).digest()).decode().rstrip("=")
+
+
+class FingerprintPolicy(paramiko.MissingHostKeyPolicy):
+    """Verifies the bastion host key against a configured SHA256 fingerprint.
+
+    Without a configured fingerprint the key is trusted on first use, like Airbyte's other database
+    connectors do, but its fingerprint is logged so it can be pinned via `tunnel_host_key_fingerprint`.
+    """
+
+    def __init__(self, expected: str | None, logger: logging.Logger):
+        self.expected = expected
+        self.logger = logger
+
+    def missing_host_key(self, client: paramiko.SSHClient, hostname: str, key: paramiko.PKey) -> None:
+        fingerprint = host_key_fingerprint(key)
+        if self.expected is None:
+            self.logger.warning(
+                f"SSH tunnel: accepting unverified {key.get_name()} host key {fingerprint} for {hostname}; "
+                "set tunnel_host_key_fingerprint to pin it"
+            )
+            return
+        if fingerprint != self.expected:
+            raise paramiko.SSHException(
+                f"SSH tunnel: host key mismatch for {hostname}: server presented {fingerprint}, expected {self.expected}"
+            )
 
 
 class SshTunnel:
@@ -112,10 +150,9 @@ class SshTunnel:
         """Closes the tunnel and waits for its threads, so nothing writes to stderr during interpreter shutdown."""
         self._closed.set()
         if self._server is not None:
-            try:
+            # The listening socket may already be closed; there is nothing left to release then.
+            with contextlib.suppress(OSError):
                 self._server.close()
-            except OSError:
-                pass
         for thread in self._threads:
             thread.join(timeout=5)
         with self._lock:
@@ -142,8 +179,7 @@ class SshTunnel:
                 self.logger.warning("SSH tunnel transport lost, reconnecting to the bastion host")
                 self._client.close()
             client = paramiko.SSHClient()
-            # Like Airbyte's own database connectors, the bastion host key is not pinned.
-            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            client.set_missing_host_key_policy(FingerprintPolicy(self.config.host_key_fingerprint, self.logger))
             client.connect(
                 hostname=self.config.host,
                 port=self.config.port,
@@ -206,6 +242,7 @@ class SshTunnel:
                         break
                     local.sendall(data)
         except OSError:
+            # Either side closed the connection: nothing to forward any more, clean up below.
             pass
         finally:
             channel.close()

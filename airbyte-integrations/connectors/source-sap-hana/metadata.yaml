@@ -11,7 +11,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 46b365dc-ad8e-4be7-b110-787433476a2a
-  dockerImageTag: 0.4.1
+  dockerImageTag: 0.4.2
   dockerRepository: airbyte/source-sap-hana
   documentationUrl: https://docs.airbyte.com/integrations/sources/sap-hana
   githubIssueLabel: source-sap-hana

@@ -1,6 +1,10 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 from typing import Any
 
 import pytest
+from source_sap_hana import SourceSapHana
+
 from airbyte_cdk.models import (
     AirbyteStateBlob,
     AirbyteStateMessage,
@@ -17,7 +21,6 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-from source_sap_hana import SourceSapHana
 
 ACDOCA_COLUMNS = [("RCLNT", "NVARCHAR"), ("BELNR", "NVARCHAR"), ("DOCLN", "NVARCHAR"), ("HSL", "DECIMAL"), ("TIMESTAMP", "DECIMAL")]
 ACDOCA_ROWS = [

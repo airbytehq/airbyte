@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """SSH tunnel against a real HANA: starts a throwaway OpenSSH bastion in Docker and routes the connector through it.
 
     uv run pytest integration_tests -m integration -k tunnel -s
@@ -14,9 +16,10 @@ from pathlib import Path
 
 import paramiko
 import pytest
+from source_sap_hana import SourceSapHana
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode, Type
 
-from source_sap_hana import SourceSapHana
 
 CONFIG_PATH = Path(__file__).parent.parent / "secrets" / "config.json"
 BASTION_IMAGE = "panubo/sshd:latest"

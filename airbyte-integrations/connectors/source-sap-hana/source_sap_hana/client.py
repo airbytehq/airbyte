@@ -1,7 +1,10 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Thin wrapper around hdbcli: connection handling, retry classification, identifier quoting."""
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import time
 from collections.abc import Callable, Iterator, Sequence
@@ -11,6 +14,7 @@ from typing import Any, TypeVar
 from hdbcli import dbapi
 
 from .config import HanaConfig
+
 
 T = TypeVar("T")
 
@@ -89,10 +93,8 @@ class HanaClient:
         try:
             yield conn
         finally:
-            try:
+            with contextlib.suppress(Exception):  # closing a dead connection must never mask the real error
                 conn.close()
-            except Exception:  # noqa: BLE001 - closing a dead connection must never mask the real error
-                pass
 
     def with_retries(self, fn: Callable[[], T], what: str) -> T:
         attempt = 0

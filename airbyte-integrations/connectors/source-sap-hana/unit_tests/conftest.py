@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Test fixtures: a fake SAP HANA backed by SQLite.
 
 SQLite can ATTACH databases under the names SYS and SAPHANADB, so the connector's real SQL
@@ -14,6 +16,7 @@ from typing import Any
 
 import pytest
 from hdbcli import dbapi
+
 
 pytest_plugins = ["airbyte_cdk.test.standard_tests.pytest_hooks"]
 
