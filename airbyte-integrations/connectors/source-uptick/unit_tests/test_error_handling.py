@@ -4,9 +4,8 @@
 `definitions.linked.HttpRequester.error_handler` in `manifest.yaml`.
 
 403 responses fail immediately as `config_error` with the connector's own message and without
-retrying. 401 also fails fast as `config_error`: bad credentials fail on the token endpoint,
-and a 401 on a stream request (expired, revoked or rotated credentials) fails the stream
-without a token refresh — both cases are covered in
+retrying. 401 behaviour is split: bad credentials fail on the token endpoint as `config_error`,
+while a 401 on a stream request refreshes the token and retries — both cases are covered in
 `mock_server/test_error_handling.py`.
 `task_profitability` is used because it has no record transformations, and it is the endpoint that returns 403 in production for users
 without the Intelligence-report permission.

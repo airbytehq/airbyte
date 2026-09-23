@@ -41,15 +41,18 @@ definitions:
             max_waiting_time_in_seconds: 1800
           - type: ExponentialBackoffStrategy
         response_filters:
-          # Bad credentials already failed on the token endpoint (refresh_token_error_* above), so a
-          # 401 here is an expired or revoked token, or a password rotated mid-sync — Uptick returns
-          # the same body for all of them: {"errors": {"detail": "Authentication credentials were not
-          # provided."}}. Fail fast with a single request instead of refreshing the token in place:
-          # the CDK re-drives a failed refresh through the backoff loop (~6 logins per stream), and
-          # repeated failed logins can trigger Uptick's automatic account lockout.
+          # A 401 on a stream request cannot be a bad credential (those fail on the token endpoint,
+          # see the authenticator above). Uptick returns the same body for an expired, revoked or
+          # missing token: {"errors": {"detail": "Authentication credentials were not provided."}}.
+          # Tokens live 10 h, so this is an expired/revoked token mid-sync: refresh it and retry
+          # the request. If the refresh itself fails (password rotated mid-sync) the retries are
+          # exhausted through the shared backoff and the attempt fails as `config_error`.
+          # failure_type below is only applied by the CDK when action is FAIL; with REFRESH_TOKEN_THEN_RETRY the
+          # exhausted-retries classification comes from the CDK's default 401 mapping, which is also config_error.
+          # TODO(cdk): bounded failed-refresh retries rely on airbyte-cdk >= <version shipping https://github.com/airbytehq/airbyte-python-cdk/pull/1173>; bump the pin once released.
           - type: HttpResponseFilter
             http_codes: [401]
-            action: FAIL
+            action: REFRESH_TOKEN_THEN_RETRY
             failure_type: config_error
             error_message: "HTTP 401: Uptick rejected the access token."
           - type: HttpResponseFilter
