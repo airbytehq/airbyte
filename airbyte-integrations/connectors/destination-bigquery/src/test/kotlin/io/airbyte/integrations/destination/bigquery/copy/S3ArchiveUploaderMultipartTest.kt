@@ -19,8 +19,10 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -119,6 +121,54 @@ class S3ArchiveUploaderMultipartTest {
         }
     }
 
+    @Test
+    fun `large multipart upload bounds outstanding parts while S3 applies backpressure`() =
+        runBlocking {
+            FakeS3(failPermanently = false, holdParts = true, failOnce = false).use { server ->
+                val path = directory.resolve("large.jsonl")
+                // Seventeen parts exceed the 16-connection HTTP pool. The old 65 MiB fixture only
+                // produced five parts and could not exercise connection acquisition starvation.
+                val line = "{\"data\":\"${"x".repeat(8179)}\"}\n".toByteArray()
+                assertEquals(8191, line.size)
+                Files.newOutputStream(path).buffered().use { output ->
+                    repeat((16 * S3ArchiveUploader.PART_SIZE / line.size + 1).toInt()) {
+                        output.write(line)
+                    }
+                }
+                val expected = partDigests(path)
+                assertEquals(17, expected.size)
+                val uploader = uploader(server)
+                server.allowCompletion.countDown()
+                val operation = async {
+                    uploader.upload(path, "fusion/large.jsonl", "application/x-ndjson")
+                }
+                try {
+                    withContext(Dispatchers.IO) {
+                        assertTrue(server.twoPartsStarted.await(10, TimeUnit.SECONDS))
+                        assertFalse(
+                            server.thirdPartStarted.await(1, TimeUnit.SECONDS),
+                            "More than two parts were scheduled before any part completed",
+                        )
+                    }
+                    assertFalse(operation.isCompleted)
+                    server.allowParts.countDown()
+                    withTimeout(30_000) { operation.await() }
+                    assertEquals(17, server.partsInCompletion.get())
+                    assertEquals(17, server.attempts.size)
+                    assertTrue(server.attempts.values.all { it.get() == 1 })
+                    expected.forEach { (part, hash) ->
+                        assertArrayEquals(hash, server.digests.getValue(part).single())
+                    }
+                    assertEquals(0, server.aborts.get())
+                    Files.delete(path)
+                } finally {
+                    server.allowParts.countDown()
+                    operation.cancelAndJoin()
+                    uploader.close()
+                }
+            }
+        }
+
     private fun uploader(server: FakeS3): S3ArchiveUploader {
         val credentials =
             StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test"))
@@ -162,14 +212,19 @@ class S3ArchiveUploaderMultipartTest {
     private class FakeS3(
         private val failPermanently: Boolean,
         private val failBeforeConsumption: Boolean = false,
+        private val holdParts: Boolean = false,
+        private val failOnce: Boolean = true,
     ) : AutoCloseable {
-        private val workers = Executors.newFixedThreadPool(4)
+        private val workers = Executors.newFixedThreadPool(16)
         private val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         val port: Int
             get() = server.address.port
 
         val digests = ConcurrentHashMap<Int, MutableList<ByteArray>>()
         val attempts = ConcurrentHashMap<Int, AtomicInteger>()
+        val twoPartsStarted = CountDownLatch(2)
+        val thirdPartStarted = CountDownLatch(3)
+        val allowParts = CountDownLatch(if (holdParts) 1 else 0)
         val creates = AtomicInteger()
         val aborts = AtomicInteger()
         val partsInCompletion = AtomicInteger()
@@ -215,6 +270,9 @@ class S3ArchiveUploaderMultipartTest {
                 }
                 exchange.requestMethod == "PUT" && "partNumber" in query -> {
                     val part = query.getValue("partNumber").toInt()
+                    twoPartsStarted.countDown()
+                    thirdPartStarted.countDown()
+                    check(allowParts.await(30, TimeUnit.SECONDS))
                     val attempt =
                         attempts.computeIfAbsent(part) { AtomicInteger() }.incrementAndGet()
                     if (part == 2 && attempt == 1 && failBeforeConsumption) {
@@ -232,7 +290,7 @@ class S3ArchiveUploaderMultipartTest {
                             java.util.Collections.synchronizedList(mutableListOf())
                         }
                         .add(hash)
-                    if (part == 2 && (failPermanently || attempt == 1)) {
+                    if (part == 2 && (failPermanently || (failOnce && attempt == 1))) {
                         val code = if (failPermanently) 400 else 503
                         val error = if (failPermanently) "InvalidRequest" else "SlowDown"
                         reply(
@@ -307,6 +365,7 @@ class S3ArchiveUploaderMultipartTest {
 
         override fun close() {
             allowCompletion.countDown()
+            allowParts.countDown()
             server.stop(0)
             workers.shutdownNow()
             check(workers.awaitTermination(5, TimeUnit.SECONDS))
