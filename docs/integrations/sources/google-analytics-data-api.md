@@ -332,6 +332,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.11.3 | 2026-09-22 | [86919](https://github.com/airbytehq/airbyte/pull/86919) | Promoted release candidate to GA |
+| 2.11.3-rc.1 | 2026-09-15 | [83188](https://github.com/airbytehq/airbyte/pull/83188) | Reports with more than 100,000 rows per slice are now fully paginated instead of being silently truncated. Report rows are now returned in a deterministic order (sorted by every configured dimension), so pages cannot overlap or skip rows while paginating. |
 | 2.11.2 | 2026-09-15 | [84599](https://github.com/airbytehq/airbyte/pull/84599) | Update dependencies |
 | 2.11.1 | 2026-09-09 | [85797](https://github.com/airbytehq/airbyte/pull/85797) | Stop inferring the credentials `auth_type` from empty `client_id` / `credentials_json` values |
 | 2.11.0 | 2026-09-09 | [85761](https://github.com/airbytehq/airbyte/pull/85761) | Promoted release candidate to GA |

@@ -29,18 +29,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from . import constants
-from .streams import (
-    Commits,
-    ContributorActivity,
-    IssueReactions,
-    ProjectsV2,
-    PullRequestCommentReactions,
-    PullRequestStats,
-    Releases,
-    Reviews,
-    WorkflowJobs,
-    WorkflowRuns,
-)
 
 
 class SourceGithub(YamlDeclarativeSource, AbstractSource):
@@ -319,10 +307,13 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             return False, user_message or message
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        """No stream is implemented in Python any more; every one lives in the manifest.
+
+        The method stays because `discover()` calls it and because the repository resolution
+        below is what turns an unusable repositories/organizations config into a config error
+        rather than an empty catalog.
+        """
         config = self._validate_and_transform_config(config)
-        # Resolved after the transform so the authenticator's `quota_status_url` is built from
-        # the normalized `api_url` — see `_get_authenticator` on why that matters for sharing.
-        authenticator = self._get_authenticator(config)
 
         organizations, repositories = self._resolve_repositories_and_organizations(config)
 
@@ -338,37 +329,6 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
                 failure_type=FailureType.config_error,
             )
 
-        # This parameter is deprecated and in future will be used sane default, page_size: 10
-        page_size = config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
-        access_token_type, _ = self.get_access_token(config)
-        max_wait_time_seconds = (config["max_waiting_time"] if config.get("max_waiting_time") is not None else 120) * 60
-        start_date = config.get("start_date")
-
-        repository_args = {
-            "authenticator": authenticator,
-            "api_url": config.get("api_url"),
-            "repositories": repositories,
-            "page_size_for_large_streams": page_size,
-            "access_token_type": access_token_type,
-            "max_wait_time_seconds": max_wait_time_seconds,
-        }
-        repository_args_with_start_date = {**repository_args, "start_date": start_date}
-
-        workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
-
         self._sync_manifest_config(config)
 
-        python_streams = [
-            Commits(**repository_args_with_start_date, branches_to_pull=config.get("branches", [])),
-            ContributorActivity(**repository_args),
-            IssueReactions(**repository_args_with_start_date),
-            PullRequestCommentReactions(**repository_args_with_start_date),
-            PullRequestStats(**repository_args_with_start_date),
-            ProjectsV2(**repository_args_with_start_date),
-            Releases(**repository_args_with_start_date),
-            Reviews(**repository_args_with_start_date),
-            workflow_runs_stream,
-            WorkflowJobs(parent=workflow_runs_stream, **repository_args_with_start_date),
-        ]
-
-        return python_streams
+        return []

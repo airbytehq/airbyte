@@ -18,7 +18,7 @@ For Sentry SaaS, you can create an organization-wide token with a Sentry [intern
 2. Select **Sentry**.
 3. For **Authentication Tokens**, enter your Sentry authentication token.
 4. For **Host Name**, keep `sentry.io` for Sentry SaaS, or enter the hostname of your self-hosted Sentry server without `https://` or a path. You can also use your Sentry SaaS [region-specific domain](https://docs.sentry.io/api/#choosing-the-right-api-base-domain), such as `us.sentry.io`, `us2.sentry.io`, or `de.sentry.io`.
-5. For **Organization**, enter the organization slug.
+5. For **Organization**, enter the organization slug. Use the slug from your Sentry URL, such as `my-org` in `https://my-org.sentry.io`, not the display name.
 6. For **Project**, enter the project slug. This setting determines which project the `events`, `issues`, and `project_detail` streams sync. Organization-level streams aren't limited to this project.
 7. Optionally, for **Number of concurrent workers**, enter a value from 1 through 20. The default is 5.
 8. Leave **Discover Event Fields** empty. None of the connector's streams read this setting.
@@ -95,6 +95,17 @@ Sentry applies request and concurrency limits per caller and endpoint. The limit
 
 Sentry marks the project-scoped issues endpoint that the `issues` stream uses as deprecated, and recommends the organization-level issues endpoint instead. The endpoint still returns data, and Sentry's [API deprecation policy](https://develop.sentry.dev/backend/api/deprecation-policy/) requires advance notice before removal. Version 1.0.0 made the equivalent switch for the `projects` stream after Sentry deprecated the legacy projects endpoint.
 
+### Organization or project not found
+
+If setup or a sync fails with the error `Sentry organization or project is missing or invalid.`, Sentry returned HTTP 404 for a request. Check the following:
+
+- **Organization** and **Project** contain the slugs, not display names. Slugs are lowercase and use hyphens instead of spaces.
+- The project belongs to the configured organization.
+- **Host Name** matches the region or self-hosted server where the organization lives. For example, an organization on `de.sentry.io` returns 404 when you query `us.sentry.io`.
+- The token was issued for that organization. An internal integration token only works for the organization that owns the integration.
+
+Airbyte rejects empty or whitespace-only values for **Organization** and **Project** before contacting Sentry.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -106,6 +117,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.11 | 2026-09-22 | [86799](https://github.com/airbytehq/airbyte/pull/86799) | Update dependencies |
+| 1.0.10 | 2026-09-16 | [78108](https://github.com/airbytehq/airbyte/pull/78108) | Improve Sentry configuration validation and 404 error messaging. |
 | 1.0.9 | 2026-09-15 | [86225](https://github.com/airbytehq/airbyte/pull/86225) | Update dependencies |
 | 1.0.8 | 2026-09-08 | [85631](https://github.com/airbytehq/airbyte/pull/85631) | Update dependencies |
 | 1.0.7 | 2026-08-18 | [84735](https://github.com/airbytehq/airbyte/pull/84735) | Update dependencies |
