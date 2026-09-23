@@ -1367,6 +1367,124 @@ class TestSalesAndTrafficReportRequestBody:
 
 
 @freezegun.freeze_time(NOW.isoformat())
+class TestVendorReportOptionsForwarding:
+    """
+    The four vendor retail analytics streams declare their own request_body_json, which replaces
+    rather than merges with the shared creation_requester, so configured Report Options used to be
+    validated and then dropped (issue #77617).
+
+    They now forward configured options, and - critically - still send no reportOptions key at all
+    when nothing is configured, so the request body for an unconfigured connection is unchanged.
+    The connector supplies no defaults of its own for these reports.
+    """
+
+    _VENDOR_STREAMS = (
+        "GET_VENDOR_SALES_REPORT",
+        "GET_VENDOR_INVENTORY_REPORT",
+        "GET_VENDOR_TRAFFIC_REPORT",
+        "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+    )
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_.with_account_type("Vendor"),
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+        )
+
+    @staticmethod
+    def _expected_body(stream_name: str, report_options: Optional[dict]) -> dict:
+        # GET_VENDOR_INVENTORY_REPORT is a full-refresh snapshot: its request body carries no date
+        # window. The other three send the day-aligned window derived from the slice.
+        body = {"reportType": stream_name}
+        if stream_name != "GET_VENDOR_INVENTORY_REPORT":
+            body["dataStartTime"] = "2023-01-01T00:00:00Z"
+            body["dataEndTime"] = "2023-01-01T23:59:59Z"
+        body["marketplaceIds"] = [MARKETPLACE_ID]
+        if report_options is not None:
+            body["reportOptions"] = report_options
+        return body
+
+    def _mock_report_flow(self, http_mocker: HttpMocker, stream_name: str, body: dict) -> None:
+        http_mocker.clear_all_matchers()
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+        mock_auth(http_mocker)
+        # The byte-exact body matcher is the assertion: an unexpected or missing reportOptions
+        # key means no matcher matches and the read produces no records.
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(body)).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format="json"),
+        )
+
+    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
+    @HttpMocker()
+    def test_given_no_report_options_configured_when_read_then_report_options_omitted(
+        self, stream_name: str, http_mocker: HttpMocker
+    ) -> None:
+        """No configured options means no reportOptions key - the connector invents no defaults."""
+        self._mock_report_flow(http_mocker, stream_name, self._expected_body(stream_name, None))
+
+        output = self._read(stream_name, config().with_end_date(pendulum.datetime(2023, 1, 2)))
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
+    @HttpMocker()
+    def test_given_report_options_configured_when_read_then_options_sent(self, stream_name: str, http_mocker: HttpMocker) -> None:
+        """Configured options are forwarded verbatim, including reportPeriod."""
+        configured_options = {
+            "reportPeriod": "WEEK",
+            "distributorView": "SOURCING",
+            "sellingProgram": "FRESH",
+        }
+        self._mock_report_flow(http_mocker, stream_name, self._expected_body(stream_name, configured_options))
+
+        report_options = [
+            {
+                "report_name": stream_name,
+                "stream_name": stream_name,
+                "options_list": [{"option_name": name, "option_value": value} for name, value in configured_options.items()],
+            }
+        ]
+        output = self._read(
+            stream_name,
+            config().with_report_options_list(report_options).with_end_date(pendulum.datetime(2023, 1, 2)),
+        )
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @HttpMocker()
+    def test_given_report_options_for_other_stream_when_read_then_options_not_sent(self, http_mocker: HttpMocker) -> None:
+        """Options configured for another stream must not leak into this stream's request body."""
+        stream_name = "GET_VENDOR_SALES_REPORT"
+        self._mock_report_flow(http_mocker, stream_name, self._expected_body(stream_name, None))
+
+        report_options = [
+            {
+                "report_name": "GET_VENDOR_TRAFFIC_REPORT",
+                "stream_name": "GET_VENDOR_TRAFFIC_REPORT",
+                "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}],
+            }
+        ]
+        output = self._read(
+            stream_name,
+            config().with_report_options_list(report_options).with_end_date(pendulum.datetime(2023, 1, 2)),
+        )
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+
+@freezegun.freeze_time(NOW.isoformat())
 class TestVendorJsonReportsFullRefresh:
     """Tests for vendor JSON report streams: Traffic, Net Pure Product Margin, and Real-Time Inventory."""
 

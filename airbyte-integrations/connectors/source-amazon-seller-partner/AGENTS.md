@@ -125,6 +125,24 @@ day-aligned, and the full-refresh snapshot and forecast streams (`GET_VENDOR_INV
 `GET_VENDOR_FORECASTING_FRESH_REPORT`, `GET_VENDOR_FORECASTING_RETAIL_REPORT`) have no cursor and
 intentionally send no window at all.
 
+## 8. Vendor retail analytics reports forward report options but supply no defaults
+
+Amazon documents `reportPeriod`, `distributorView`, and `sellingProgram` as required for the vendor sales and
+inventory reports, and `reportPeriod` for traffic and net pure product margin. Real-time inventory has no
+documented options.
+
+Because each of these streams declares its own `request_body_json`, which replaces rather than merges with
+the shared requester's body, configured options used to be validated and then silently dropped
+(issue #77617). Each stream's `request_body_json` now references the single `report_options_from_config`
+Jinja block that `creation_requester_with_report_options` also references, so the option matching rules
+exist in exactly one place. Each stream supplies only its `report_type` via `$parameters`.
+
+Do not add default values for these options. Amazon does not reject a request that omits them - it applies its
+own account-specific defaults - so hardcoding `MANUFACTURING`/`RETAIL` or a fixed `reportPeriod` would silently
+change which numbers existing connections receive, with no error and no schema change to signal it. The block
+ends in `{{ opts if opts else None }}` so an unconfigured connection sends no `reportOptions` key at all and its
+request body is byte-identical to previous versions.
+
 ## Incremental Stream Considerations
 
 The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 8 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.
