@@ -444,7 +444,7 @@ be copied as a production-ready implementation.
 
 Batched inserts use a `bigquery-load-ndjson-v1` descriptor and uncompressed `batches/<uuid>.jsonl`
 objects. `accept()` formats each record once and tees the exact UTF-8 byte array, including the
-existing platform line separator, into an owned local spool before passing those bytes to BigQuery.
+existing platform line separator, into a streaming S3 session before passing those bytes to BigQuery.
 Preserve the 15 MiB in-memory/write-channel transition and existing CDK batch boundaries. Both
 buffer flushes and direct channel writes must drain partial writes; zero progress fails instead of
 silently discarding a suffix or spinning forever.
@@ -455,39 +455,39 @@ claiming CSV headers, quoting, or null-marker behavior. Raw JSON uses the actual
 raw CSV's special string representations do not apply. The format contract participates in the
 canonical layout hash so consumers cannot reuse a CSV parser for an NDJSON run.
 
-Each loader owns one lazy spool; no file exists before its first record. Each append opens and
-closes its file descriptor. Spool bytes are capped at 1 GiB per batch and 4 GiB across all active
-standard-insert batches in the process. These are uncompressed bytes. Reserving bytes fails
-immediately at the limit; it must never wait for another unfinished batch to finish. A batch with
-zero records produces no data object, but setup still writes schema and any generation cutoff.
-The service tracks all incomplete spools and closes them during teardown.
+Each loader owns a streaming S3 session. Completed, immutable part files start uploading during
+`accept()`, alongside BigQuery writes; the connector no longer waits for the BigQuery job to finish
+before sending the batch to S3. Rolling part files provide replayable bytes for SDK retries without
+holding an entire batch in heap or reopening a file for every record. Backpressure bounds outstanding
+parts rather than occupying an upload permit for the lifetime of a batch: an interleaved stream must
+not have to finish before another stream can progress. Parts are 16 MiB, with at most two outstanding
+per session and eight uploading across the process. A shared 4 GiB disk budget also covers retained
+files; completed parts release their reservations after reader drain and deletion.
 
-Only completed-file transfers acquire the existing four process-wide upload slots. Holding a slot
-through `accept()` would deadlock interleaved streams or socket partitions that cannot reach their
-flush boundary. Complete the BigQuery load, require zero bad records, then upload the frozen spool
-and await final S3 completion before `finish()` returns. `input-record-count` counts successful
-formatter-byte appends; `loaded-record-count` remains BigQuery's reported output count. Batch UUID,
-key, and metadata are stable across SDK retries. Run UUID and routing rules are unchanged.
+At the existing CDK batch boundary, `seal()` starts the final partial part and object completion before
+BigQuery channel close and load-job waiting. A small batch uploads its only part at this boundary; an empty
+batch produces no data object. `finish()` still requires BigQuery DONE with no errors/bad records, a
+matching input/output record count, and successful S3 object completion before returning to the CDK.
+The 15 MiB BigQuery write-channel transition and CDK flush cadence are unchanged.
 
-Abandoned batches and failed/cancelled loads remove their spools. Closing a batch concurrently with
-an active upload must defer unlinking until the upload's reader-drain outcome is known. A failure
-indicating an active reader retains the spool and its disk reservation, poisons the archive service,
-and prevents further work. Deletion failures also retain the reservation. Preserve primary failures
-when cleanup fails. No covering checkpoint is emitted after a failed or unfinished composite batch;
-there is no transaction or rollback of an already successful BigQuery load.
+S3 fixes multipart user metadata at initiation, when final row counts are not yet known. Streaming
+standard-insert objects therefore omit `input-record-count` and `loaded-record-count` user metadata;
+actual counts remain in the successful archive log and are checked before acknowledgement. All routing,
+generation, batch, and schema metadata remain attached. GCS completed-file metadata is unchanged. Do
+not add a second object copy just to rewrite counts: that would add I/O and duplicate creation events.
 
-Validation covers exact NDJSON bytes and target metadata, raw/direct and JSON/protobuf formatters,
-buffer transition and partial writes, empty refreshes, aggregate/per-batch limits, interleaved
-batches, close/cancel races, and actual legacy pipeline checkpoint gating for standard inserts.
-Validation completed for this phase: 220 connector unit tests (including both formatters and both
-table modes), SpotBugs, and strict Kotlin compilation using a local Gradle init script. Six live/spec
-checks passed: direct standard inserts via JSON/STDIO and protobuf/socket, raw JSON standard inserts,
-empty truncate refresh, and both unchanged spec snapshots. Separate S3 inspection verified five run
-descriptors, four NDJSON batches with matching input/loaded counts, canonical schema hashes, and one
-empty run containing schema/cutoff only. Live tests used environment-only settings under a validation
-prefix; a local bypass of unrelated historical test-dataset cleanup was removed afterward. Raw
-protobuf is covered deterministically, not by this live smoke suite. Production-scale throughput,
-spool budgets, and long-duration credential refresh remain rollout validation requirements.
+Closing or failing a session cancels outstanding work and aborts unfinished multipart uploads. Part
+files may be deleted only after their readers stop; unproven reader shutdown retains the files and
+poisons the uploader. Primary failures survive cleanup errors. Since the two systems are not
+transactional, an S3 object may finish before a subsequently failed BigQuery job. Such a batch never
+acknowledges state or produces a successful stream-complete marker; consumers must tolerate retries.
+
+Validation covers exact NDJSON bytes, raw/direct and JSON/protobuf formatters, the BigQuery buffer
+transition and partial writes, multipart progress before batch close, bounded outstanding requests,
+empty batches, failures/cancellation/reader cleanup, and existing pipeline checkpoint gating. Previous
+live smoke tests exercised the older completed-file implementation; they do not establish streaming
+throughput or memory behavior. Compare enabled/disabled production-impact runs using the new preview
+before drawing performance conclusions.
 
 ## 11. Later CDK extraction
 

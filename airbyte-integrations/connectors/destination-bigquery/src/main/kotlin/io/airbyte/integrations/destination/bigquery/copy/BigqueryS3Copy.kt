@@ -85,7 +85,7 @@ object DisabledBigqueryS3Copy : BigqueryS3Copy {
     override fun close() = Unit
 }
 
-/** One process owns one run and four transfer slots, including socket partitions. */
+/** One process owns one run. GCS file transfers and streaming S3 parts have bounded concurrency. */
 @SuppressFBWarnings(
     value = ["NP_NONNULL_PARAM_VIOLATION"],
     justification = "Kotlin coroutine resume stubs pass null placeholders for saved arguments",
@@ -99,8 +99,6 @@ class EnabledBigqueryS3Copy(
     private val spooler: GcsArchiveSpooler = GcsArchiveSpooler(),
     private val spoolDirectory: Path? = null,
     private val operationTimeoutMillis: Long = 30 * 60 * 1000L,
-    standardInsertMaxBatchBytes: Long = 1L shl 30,
-    standardInsertMaxTotalBytes: Long = 4L shl 30,
 ) : BigqueryS3Copy {
     private val log = KotlinLogging.logger {}
     private val resources = Any()
@@ -135,20 +133,6 @@ class EnabledBigqueryS3Copy(
     private val copiedBytes = AtomicLong()
     private val failures = AtomicLong()
     private val retainedBytes = AtomicLong()
-    private val standardInsertSpools =
-        StandardInsertSpoolManager(
-            directory = spoolDirectory,
-            maxBatchBytes = standardInsertMaxBatchBytes,
-            maxTotalBytes = standardInsertMaxTotalBytes,
-            hasActiveReader = ::hasActiveReader,
-            onRetained = { path, failure ->
-                poisoned.set(true)
-                retainedBytes.addAndGet(runCatching { Files.size(path) }.getOrDefault(0))
-                log.error(failure) {
-                    "Fusion archive retaining standard insert spool $path and disabling further transfers"
-                }
-            },
-        )
     @Volatile private var contexts: Map<DestinationStream.Descriptor, BigqueryCopyContext>? = null
     private val shutdownHook = Thread({ close() }, "bigquery-fusion-shutdown")
 
@@ -260,36 +244,86 @@ class EnabledBigqueryS3Copy(
         check(contexts?.values?.contains(context) == true) { "Unknown Fusion run context" }
         val batchId = UUID.randomUUID()
         val key = "${context.runPath}/batches/$batchId.jsonl"
-        return standardInsertSpools.create { path, inputRecordCount, loadedRecordCount ->
-            val started = System.nanoTime()
-            try {
-                withTimeout(operationTimeoutMillis) {
-                    slots.withPermit {
-                        checkHealthy()
-                        val bytes = Files.size(path)
+        // S3 multipart metadata is fixed at initiation; final input/loaded counts are logged
+        // after both writes succeed rather than guessed or added through a second object copy.
+        val transfer =
+            uploader.startStreaming(
+                key,
+                "application/x-ndjson",
+                batchMetadata(context, batchId),
+                spoolDirectory,
+            )
+        return object : StandardInsertArchiveBatch {
+            private var inputRecords = 0L
+            private var bytes = 0L
+            private val started = System.nanoTime()
+            private val failed = AtomicBoolean()
+            private var completed = false
+
+            private fun fail(t: Throwable): Throwable {
+                if (failed.compareAndSet(false, true)) {
+                    failures.incrementAndGet()
+                    poisoned.set(true)
+                    log.error(t) {
+                        "Fusion S3 archive failed: run=$runId batch=$batchId key=$key; batch cannot complete"
+                    }
+                }
+                return archiveFailure("Fusion S3 archive failed for run=$runId batch=$batchId", t)
+            }
+
+            override fun append(bytes: ByteArray) {
+                try {
+                    checkHealthy()
+                    transfer.append(bytes)
+                    inputRecords++
+                    this.bytes += bytes.size
+                    if (inputRecords == 1L) {
                         log.info {
-                            "Fusion S3 archive started: run=$runId batch=$batchId key=$key bytes=$bytes input_records=$inputRecordCount loaded_records=$loadedRecordCount slot_wait_ms=${(System.nanoTime() - started) / 1_000_000}"
+                            "Fusion S3 streaming archive started: run=$runId batch=$batchId key=$key"
                         }
-                        uploader.upload(
-                            path,
-                            key,
-                            "application/x-ndjson",
-                            batchMetadata(context, batchId, loadedRecordCount) +
-                                ("input-record-count" to inputRecordCount.toString()),
-                        )
+                    }
+                } catch (t: Throwable) {
+                    throw fail(t)
+                }
+            }
+
+            override fun seal() {
+                try {
+                    checkHealthy()
+                    transfer.seal()
+                } catch (t: Throwable) {
+                    throw fail(t)
+                }
+            }
+
+            override suspend fun complete(loadedRecordCount: Long) {
+                if (completed) return
+                try {
+                    checkHealthy()
+                    check(loadedRecordCount == inputRecords) {
+                        "BigQuery loaded $loadedRecordCount records but Fusion received $inputRecords"
+                    }
+                    withTimeout(operationTimeoutMillis) { transfer.finish() }
+                    checkHealthy()
+                    completed = true
+                    if (inputRecords > 0) {
                         copiedObjects.incrementAndGet()
                         copiedBytes.addAndGet(bytes)
                         log.info {
-                            "Fusion S3 archive complete: run=$runId batch=$batchId key=$key bytes=$bytes input_records=$inputRecordCount loaded_records=$loadedRecordCount duration_ms=${(System.nanoTime() - started) / 1_000_000}"
+                            "Fusion S3 archive complete: run=$runId batch=$batchId key=$key bytes=$bytes input_records=$inputRecords loaded_records=$loadedRecordCount duration_ms=${(System.nanoTime() - started) / 1_000_000}"
                         }
                     }
+                } catch (t: Throwable) {
+                    throw fail(t)
                 }
-            } catch (t: Throwable) {
-                failures.incrementAndGet()
-                log.error(t) {
-                    "Fusion S3 archive failed: run=$runId batch=$batchId key=$key; batch cannot complete"
+            }
+
+            override fun close() {
+                try {
+                    transfer.close()
+                } catch (t: Throwable) {
+                    throw fail(t)
                 }
-                throw archiveFailure("Fusion S3 archive failed for run=$runId batch=$batchId", t)
             }
         }
     }
@@ -297,7 +331,7 @@ class EnabledBigqueryS3Copy(
     private fun batchMetadata(
         context: BigqueryCopyContext,
         batchId: UUID,
-        loadedRecordCount: Long,
+        loadedRecordCount: Long? = null,
     ): Map<String, String> =
         mapOf(
             "format-version" to "1",
@@ -313,8 +347,7 @@ class EnabledBigqueryS3Copy(
             "epoch-seconds" to context.epochSeconds.toString(),
             "batch-id" to batchId.toString(),
             "schema-id" to context.schemaId,
-            "loaded-record-count" to loadedRecordCount.toString(),
-        )
+        ) + (loadedRecordCount?.let { mapOf("loaded-record-count" to it.toString()) } ?: emptyMap())
 
     override suspend fun copyCompletedGcsObject(
         storageClient: GcsClient,
@@ -442,7 +475,6 @@ class EnabledBigqueryS3Copy(
                     else if (first !== error) first.addSuppressed(error)
                 }
             }
-            closeResource { standardInsertSpools.close() }
             closeResource { spooler.close() }
             closeResource { synchronized(resources) { uploaderInstance }?.close() }
             runCatching { Runtime.getRuntime().removeShutdownHook(shutdownHook) }

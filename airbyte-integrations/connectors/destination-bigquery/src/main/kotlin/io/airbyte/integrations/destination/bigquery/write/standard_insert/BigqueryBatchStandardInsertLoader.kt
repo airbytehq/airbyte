@@ -110,6 +110,11 @@ class BigqueryBatchStandardInsertsLoader(
         check(!closed) { "BigQuery standard insert loader is closed" }
         try {
             currentCoroutineContext().ensureActive()
+            // Parts have already been uploading while records were written. Start the final
+            // partial part/object now, in parallel with the final buffered BigQuery write,
+            // channel close, and load-job completion.
+            // complete() below is the durability barrier for both destinations before CDK ACKs.
+            archiveBatch?.seal()
             if (!this::writer.isInitialized) {
                 switchToWriteChannel()
             }
