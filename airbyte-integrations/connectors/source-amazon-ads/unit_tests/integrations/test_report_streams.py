@@ -210,7 +210,9 @@ class TestDisplayReportStreams:
         with patch("time.sleep", return_value=None):
             output = self._read(config, "sponsored_brands_v3_report_stream", SyncMode.incremental)
 
-        polling_calls = [r for r in requests_mock.request_history if r.method == "GET" and r.url.endswith(f"/reporting/reports/{report_id}")]
+        polling_calls = [
+            r for r in requests_mock.request_history if r.method == "GET" and r.url.endswith(f"/reporting/reports/{report_id}")
+        ]
         assert len(polling_calls) == 2
         assert len(output.records) == 1
 
