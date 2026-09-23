@@ -65,20 +65,53 @@ def _pipelines_requests(requests_mock):
     return [request for request in requests_mock.request_history if urlparse(request.url).path.endswith("/pipelines")]
 
 
-def test_pipelines_migrates_per_project_state_to_default_source_partition(requests_mock):
-    legacy_state = (
-        StateBuilder()
-        .with_stream_state(
-            "pipelines",
+LEGACY_PIPELINES_STATE = {
+    "use_global_cursor": False,
+    "state": {"updated_at": "2026-08-15T00:00:00Z"},
+    "states": [
+        {"partition": {"id": 11, "parent_slice": {"id": "p_1"}}, "cursor": {"updated_at": "2026-08-01T00:00:00Z"}},
+        {"partition": {"id": 22, "parent_slice": {"id": "p_2"}}, "cursor": {"updated_at": "2026-08-15T00:00:00Z"}},
+    ],
+}
+
+
+def test_pipelines_state_migration_adds_explicit_source_partitions():
+    # Imported lazily: test_config_migrations patches `airbyte_cdk.utils.is_cloud_environment`, which
+    # only takes effect if `components` has not been imported before the patch is applied.
+    from components import PipelinesSourcePartitionStateMigration
+
+    migration = PipelinesSourcePartitionStateMigration(config=CONFIG)
+
+    assert migration.should_migrate(LEGACY_PIPELINES_STATE)
+    migrated = migration.migrate(LEGACY_PIPELINES_STATE)
+
+    assert migrated == {
+        "use_global_cursor": False,
+        "state": {"updated_at": "2026-08-15T00:00:00Z"},
+        "states": [
             {
-                "states": [
-                    {"partition": {"id": 11, "parent_slice": {"id": "p_1"}}, "cursor": {"updated_at": "2026-08-01T00:00:00Z"}},
-                    {"partition": {"id": 22, "parent_slice": {"id": "p_2"}}, "cursor": {"updated_at": "2026-08-15T00:00:00Z"}},
-                ]
+                "partition": {"id": 11, "parent_slice": {"id": "p_1"}, "pipeline_source": "default"},
+                "cursor": {"updated_at": "2026-08-01T00:00:00Z"},
             },
-        )
-        .build()
-    )
+            {
+                "partition": {"id": 11, "parent_slice": {"id": "p_1"}, "pipeline_source": "parent_pipeline"},
+                "cursor": {"updated_at": "2026-06-01T00:00:00Z"},
+            },
+            {
+                "partition": {"id": 22, "parent_slice": {"id": "p_2"}, "pipeline_source": "default"},
+                "cursor": {"updated_at": "2026-08-15T00:00:00Z"},
+            },
+            {
+                "partition": {"id": 22, "parent_slice": {"id": "p_2"}, "pipeline_source": "parent_pipeline"},
+                "cursor": {"updated_at": "2026-06-01T00:00:00Z"},
+            },
+        ],
+    }
+    assert not migration.should_migrate(migrated)
+
+
+def test_pipelines_migrates_per_project_state_to_default_source_partition(requests_mock):
+    legacy_state = StateBuilder().with_stream_state("pipelines", LEGACY_PIPELINES_STATE).build()
 
     _read_records(requests_mock, "pipelines", state=legacy_state)
 

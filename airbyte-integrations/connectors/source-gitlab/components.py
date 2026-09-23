@@ -40,12 +40,15 @@ class ValidateApiUrl(ValidationStrategy):
         return True, scheme, host
 
 
+@dataclass
 class PipelinesSourcePartitionStateMigration(StateMigration):
     """Re-keys per-project `pipelines` state to the (project, pipeline_source) partitions.
 
-    Only the `default` partition inherits the old cursor: `parent_pipeline` (child pipelines) was
-    never read before, so it is left without state to backfill from `start_date`.
+    The `default` partition inherits the old cursor. `parent_pipeline` (child pipelines) was never
+    read before, so it gets an explicit cursor at the configured `start_date` to backfill from.
     """
+
+    config: Mapping[str, Any]
 
     @staticmethod
     def _is_legacy(partition_state: Mapping[str, Any]) -> bool:
@@ -55,10 +58,14 @@ class PipelinesSourcePartitionStateMigration(StateMigration):
         return any(self._is_legacy(s) for s in stream_state.get("states", []))
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        states = [
-            {**s, "partition": {**s["partition"], "pipeline_source": "default"}} if self._is_legacy(s) else s
-            for s in stream_state["states"]
-        ]
+        start_cursor = {"updated_at": self.config.get("start_date", "2014-01-01T00:00:00Z")}
+        states = []
+        for s in stream_state["states"]:
+            if not self._is_legacy(s):
+                states.append(s)
+                continue
+            states.append({**s, "partition": {**s["partition"], "pipeline_source": "default"}})
+            states.append({"partition": {**s["partition"], "pipeline_source": "parent_pipeline"}, "cursor": start_cursor})
         return {**stream_state, "states": states}
 
 
