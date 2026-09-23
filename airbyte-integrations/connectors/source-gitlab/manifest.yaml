@@ -779,6 +779,35 @@ definitions:
       schema:
         $ref: "#/schemas/jobs"
 
+  pipeline_trigger_jobs_stream:
+    name: "pipeline_trigger_jobs"
+    $ref: "#/definitions/base_projects_child_stream"
+    retriever: "#/definitions/pipelines_child_streams_retriever"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["project_id"]
+            value: "{{ stream_slice.parent_slice.id }}"
+          - type: AddedFieldDefinition
+            path: ["user_id"]
+            value: "{{ (record.get('user') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["pipeline_id"]
+            value: "{{ (record.get('pipeline') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["downstream_pipeline_id"]
+            value: "{{ (record.get('downstream_pipeline') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["commit_id"]
+            value: "{{ (record.get('commit') or {}).get('id') }}"
+    $parameters:
+      path: "projects/{{ stream_slice.parent_slice.id }}/pipelines/{{ stream_slice.id }}/bridges"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/pipeline_trigger_jobs"
+
   # Incremental streams
   commits_stream:
     name: "commits"
@@ -870,9 +899,21 @@ definitions:
       schema:
         $ref: "#/schemas/merge_requests"
 
+  # GET /projects/:id/pipelines excludes child pipelines unless `source=parent_pipeline`
+  # is passed, and that filter returns only child pipelines, so each project is read twice.
   pipelines_stream:
     name: "pipelines"
     $ref: "#/definitions/base_projects_incremental_child_stream"
+    retriever:
+      $ref: "#/definitions/projects_streams_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters: "{{ {'source': 'parent_pipeline'} if stream_slice.pipeline_source == 'parent_pipeline' else {} }}"
+      partition_router:
+        - $ref: "#/definitions/projects_streams_retriever/partition_router"
+        - type: ListPartitionRouter
+          cursor_field: "pipeline_source"
+          values: ["default", "parent_pipeline"]
     $parameters:
       path: "projects/{{ stream_slice.id }}/pipelines"
     schema_loader:
@@ -969,6 +1010,7 @@ streams:
   - "#/definitions/pipelines_stream"
   - "#/definitions/pipelines_extended_stream"
   - "#/definitions/jobs_stream"
+  - "#/definitions/pipeline_trigger_jobs_stream"
 
 check:
   type: CheckStream
@@ -3303,6 +3345,150 @@ schemas:
             type:
             - 'null'
             - boolean
+  pipeline_trigger_jobs:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        description: Unique identifier for the trigger (bridge) job.
+        type:
+        - 'null'
+        - integer
+      status:
+        description: Current status of the trigger job.
+        type:
+        - 'null'
+        - string
+      stage:
+        description: Stage to which the trigger job belongs in the pipeline.
+        type:
+        - 'null'
+        - string
+      name:
+        description: Name of the trigger job.
+        type:
+        - 'null'
+        - string
+      ref:
+        description: Reference or branch for which the trigger job was run.
+        type:
+        - 'null'
+        - string
+      tag:
+        description: Indicates if the trigger job is tagged.
+        type:
+        - 'null'
+        - boolean
+      coverage:
+        description: Code coverage reported by the trigger job.
+        type:
+        - 'null'
+        - number
+        - string
+      allow_failure:
+        description: Specifies if the trigger job is allowed to fail.
+        type:
+        - 'null'
+        - boolean
+      created_at:
+        description: Date and time when the trigger job was created.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      started_at:
+        description: Date and time when the trigger job started.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      finished_at:
+        description: Date and time when the trigger job finished.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      erased_at:
+        description: Date and time when the trigger job was erased.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      duration:
+        description: Duration of the trigger job execution.
+        type:
+        - 'null'
+        - number
+      queued_duration:
+        description: Duration for which the trigger job was in the queue.
+        type:
+        - 'null'
+        - number
+      failure_reason:
+        description: Reason for trigger job failure, if applicable.
+        type:
+        - 'null'
+        - string
+      web_url:
+        description: URL to access the trigger job details on the web platform.
+        type:
+        - 'null'
+        - string
+      user:
+        description: Details of the user who triggered the job.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      user_id:
+        description: ID of the user who triggered the job.
+        type:
+        - 'null'
+        - integer
+      pipeline:
+        description: Details of the upstream pipeline that contains the trigger job.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      pipeline_id:
+        description: ID of the upstream pipeline that contains the trigger job.
+        type:
+        - 'null'
+        - integer
+      downstream_pipeline:
+        description: Details of the child (downstream) pipeline created by the trigger job.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      downstream_pipeline_id:
+        description: ID of the child (downstream) pipeline created by the trigger job.
+        type:
+        - 'null'
+        - integer
+      commit:
+        description: Details of the commit associated with the trigger job.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      commit_id:
+        description: ID of the commit associated with the trigger job.
+        type:
+        - 'null'
+        - string
+      project_id:
+        description: ID of the project to which the trigger job belongs.
+        type:
+        - 'null'
+        - integer
+      project:
+        description: Details of the project to which the trigger job belongs.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
   merge_request_commits:
     $schema: https://json-schema.org/draft-07/schema#
     type: object

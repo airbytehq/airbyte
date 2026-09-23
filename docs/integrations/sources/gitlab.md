@@ -104,7 +104,8 @@ This connector outputs the following streams:
 - [Jobs](https://docs.gitlab.com/api/jobs/) (child of Pipelines — one request per pipeline)
 - [Merge Request Commits](https://docs.gitlab.com/api/merge_requests/) (child of Merge Requests — one request per merge request)
 - [Merge Requests](https://docs.gitlab.com/api/merge_requests/) (Incremental)
-- [Pipelines](https://docs.gitlab.com/api/pipelines/) (Incremental)
+- [Pipelines](https://docs.gitlab.com/api/pipelines/) (Incremental; includes child pipelines, which GitLab only returns when queried with `source=parent_pipeline`)
+- [Pipeline Trigger Jobs](https://docs.gitlab.com/api/jobs/#list-pipeline-trigger-jobs) (bridge jobs that trigger downstream pipelines, child of Pipelines — one request per pipeline)
 - [Pipelines Extended](https://docs.gitlab.com/api/pipelines/) (detailed per-pipeline info, child of Pipelines)
 - [Project Labels](https://docs.gitlab.com/api/labels/)
 - [Project Members](https://docs.gitlab.com/api/members/)
@@ -166,6 +167,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.41 | 2026-09-23 | [PR_PLACEHOLDER](https://github.com/airbytehq/airbyte/pull/PR_PLACEHOLDER) | Include child pipelines in the `pipelines` stream (and therefore `pipelines_extended` and `jobs`) and add the `pipeline_trigger_jobs` stream |
 | 4.4.40 | 2026-09-22 | [86599](https://github.com/airbytehq/airbyte/pull/86599) | Update dependencies |
 | 4.4.39 | 2026-09-15 | [86063](https://github.com/airbytehq/airbyte/pull/86063) | Update dependencies |
 | 4.4.38 | 2026-09-08 | [85485](https://github.com/airbytehq/airbyte/pull/85485) | Update dependencies |
