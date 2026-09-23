@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres.cdc
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.NullNode
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.CommonMetaField
@@ -51,19 +52,19 @@ class PostgresSourceDebeziumOperationsTest {
             configuredCursor = null,
         )
 
-    private fun recordValue(loadType: com.fasterxml.jackson.databind.JsonNode) =
+    private fun recordValue(loadType: JsonNode) =
         DebeziumRecordValue(
             Jsons.objectNode().apply {
-                set<com.fasterxml.jackson.databind.JsonNode>("before", NullNode.getInstance())
-                set<com.fasterxml.jackson.databind.JsonNode>(
+                set<JsonNode>("before", NullNode.getInstance())
+                set<JsonNode>(
                     "after",
                     Jsons.objectNode().apply {
                         put("id", 1)
                         put("name", "foo")
-                        set<com.fasterxml.jackson.databind.JsonNode>("load_type", loadType)
+                        set<JsonNode>("load_type", loadType)
                     },
                 )
-                set<com.fasterxml.jackson.databind.JsonNode>(
+                set<JsonNode>(
                     "source",
                     Jsons.objectNode().apply {
                         put("ts_ms", 1758580000000L)
