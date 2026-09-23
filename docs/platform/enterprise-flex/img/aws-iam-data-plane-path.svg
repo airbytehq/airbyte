@@ -27,5 +27,5 @@
   <text x="640" y="155" text-anchor="end">3. Read secret</text>
   <line x1="560" y1="215" x2="200" y2="215" stroke="#333" stroke-width="2" marker-end="url(#b)"/>
   <text x="380" y="205" text-anchor="middle">4. Connector reads or writes data</text>
-  <text x="380" y="280" text-anchor="middle" fill="#555">Data plane credentials (clientId and clientSecret) authenticate the pod to Airbyte and are not part of this path.</text>
+  <text x="380" y="280" text-anchor="middle" fill="#555">Data plane credentials (clientId and clientSecret) authenticate your data plane deployment to Airbyte and are not part of this path.</text>
 </svg>
