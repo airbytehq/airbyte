@@ -188,7 +188,7 @@ Shopify migrates shops between October 1, 2026 and July 1, 2027, so both stream 
 
 ### Enabling Market Countries for a migrated shop
 
-1. Make sure the connector has the `read_markets` scope. With **OAuth2.0**, re-authenticate the source on its Settings page. With **API password**, add `read_markets` to your custom app's Admin API scopes and save the source again. Without the scope, the stream is not in the catalog and the source logs a warning at `check` and `discover` time.
+1. Make sure the connector has the `read_markets` scope. With **OAuth2.0**, re-authenticate the source on its Settings page. With **API password**, add `read_markets` to your custom app's Admin API scopes and save the source again. Without the scope, the stream is not in the catalog and the source logs a warning when the schema is discovered.
 2. Refresh the source schema on the connection so `Market Countries` appears in the stream list.
 3. Enable the `Market Countries` stream. You can leave `Countries` enabled; it continues to hold the last legacy snapshot.
 4. Run a sync and check that `market_countries` contains one record per market region (`market_handle`, `code`, `subdivision_code`, `shipping_options`). On a shop that has not migrated yet, the stream stays empty until Shopify migrates the shop; no action is needed.

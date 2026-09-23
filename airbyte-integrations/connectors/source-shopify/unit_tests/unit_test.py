@@ -233,13 +233,35 @@ def test_market_driven_shipping_flag_is_fetched_once_and_defaults_to_false(reque
     }
 
 
-def test_market_driven_shipping_flag_warns_on_graphql_error(requests_mock, auth_config, caplog):
-    requests_mock.post(
-        "https://test-shop.myshopify.com/admin/api/2026-07/graphql.json",
-        json={"errors": [{"message": "Field 'marketDrivenShipping' doesn't exist on type 'ShopFeatures'"}]},
-    )
+@pytest.mark.parametrize(
+    "response",
+    [
+        pytest.param(
+            {"errors": [{"message": "Field 'marketDrivenShipping' doesn't exist on type 'ShopFeatures'"}]},
+            id="errors_without_data",
+        ),
+        pytest.param(
+            {
+                "data": {"shop": {"features": {"marketDrivenShipping": None}}},
+                "errors": [{"message": "Field 'marketDrivenShipping' doesn't exist on type 'ShopFeatures'"}],
+            },
+            id="partial_data_with_null_flag_and_errors",
+        ),
+        pytest.param(
+            {
+                "data": {"shop": {"features": {"marketDrivenShipping": True}}},
+                "errors": [{"message": "Field 'marketDrivenShipping' doesn't exist on type 'ShopFeatures'"}],
+            },
+            id="flag_true_but_errors_present",
+        ),
+        pytest.param({"data": {"shop": {"features": {"marketDrivenShipping": None}}}}, id="null_flag_without_errors"),
+    ],
+)
+def test_market_driven_shipping_flag_warns_when_unreadable(requests_mock, auth_config, caplog, response):
+    requests_mock.post("https://test-shop.myshopify.com/admin/api/2026-07/graphql.json", json=response)
     stream = MarketCountries(auth_config)
     with caplog.at_level(logging.WARNING, logger="airbyte"):
         assert stream.market_driven_shipping_enabled is False
     assert "could not read `shop.features.marketDrivenShipping`" in caplog.text
-    assert "Field 'marketDrivenShipping' doesn't exist" in caplog.text
+    if response.get("errors"):
+        assert "Field 'marketDrivenShipping' doesn't exist" in caplog.text
