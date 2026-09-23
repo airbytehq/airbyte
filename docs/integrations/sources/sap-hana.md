@@ -120,6 +120,6 @@ Resumable full refresh and incremental streams continue from their last checkpoi
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------|:-------------|:--------|
-| 0.4.1   | 2026-09-23 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Initial community release: resumable full refresh, cursor-based incremental, per-stream settings, SSH tunnel, concurrent streams |
+| 0.4.1   | 2026-09-23 | [86928](https://github.com/airbytehq/airbyte/pull/86928) | Initial community release: resumable full refresh, cursor-based incremental, per-stream settings, SSH tunnel, concurrent streams |
 
 </details>
