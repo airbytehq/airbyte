@@ -238,7 +238,7 @@ class PostgresSourceDebeziumOperations(
                 val rawArray = data[field.id]
                 mappedValue =
                     when {
-                        rawArray == null || rawArray is NullNode -> null
+                        rawArray == null || rawArray is NullNode -> NullNode.getInstance()
                         rawArray is ArrayNode ->
                             Jsons.arrayNode().also { arr ->
                                 rawArray.forEach {
@@ -262,7 +262,7 @@ class PostgresSourceDebeziumOperations(
                             }
                             changes[EmittedField(field.id, field.type)] =
                                 FieldValueChange.DESERIALIZATION_FAILURE_TOTAL
-                            null
+                            NullNode.getInstance()
                         }
                     }
             } else {

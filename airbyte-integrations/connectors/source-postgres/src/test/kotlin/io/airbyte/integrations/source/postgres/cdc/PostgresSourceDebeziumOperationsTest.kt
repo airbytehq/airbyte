@@ -23,6 +23,7 @@ import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguratio
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.mockk.mockk
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -92,6 +93,8 @@ class PostgresSourceDebeziumOperationsTest {
         )
         assertTrue(result.data.containsKey("id"))
         assertTrue(result.data.containsKey("name"))
+        assertTrue(result.data.containsKey("load_type"))
+        assertNull(result.data["load_type"]!!.fieldValue)
         assertTrue(result.data.containsKey(CommonMetaField.CDC_UPDATED_AT.id))
     }
 
@@ -111,5 +114,7 @@ class PostgresSourceDebeziumOperationsTest {
     fun `array field with null debezium value is skipped`() {
         val result = operations.deserializeRecord(key, recordValue(NullNode.getInstance()), stream)
         assertTrue(result.changes.isEmpty())
+        assertTrue(result.data.containsKey("load_type"))
+        assertNull(result.data["load_type"]!!.fieldValue)
     }
 }
