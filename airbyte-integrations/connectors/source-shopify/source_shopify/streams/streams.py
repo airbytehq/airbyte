@@ -763,10 +763,9 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         if self.market_driven_shipping_enabled:
             self.logger.warning(
-                f"Stream `{self.name}`: the shop uses market-driven shipping, `deliveryProfiles` no longer reflects its live shipping settings. "
-                "Use the `market_countries` stream instead. No records will be emitted."
+                f"Stream `{self.name}`: the shop uses market-driven shipping, `deliveryProfiles` is a snapshot frozen at migration time "
+                "and no longer reflects the live shipping settings. Use the `market_countries` stream for current data."
             )
-            return
         for stream_slice in super().stream_slices(stream_state=stream_state, **kwargs):
             parent = stream_slice.get("parent", {})
             profile_location_groups = parent.get("profile_location_groups", [])

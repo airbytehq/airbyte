@@ -185,26 +185,26 @@ def mock_shop_features(requests_mock, market_driven_shipping: bool) -> None:
 
 
 @pytest.mark.parametrize(
-    "market_driven_shipping, expected_slices",
+    "market_driven_shipping, expect_warning",
     [
-        pytest.param(
-            False, [{"parent": {"profile_location_groups": [{"locationGroup": {"id": "123"}}]}}], id="legacy_shop_reads_delivery_profiles"
-        ),
-        pytest.param(True, [], id="market_driven_shop_emits_nothing"),
+        pytest.param(False, False, id="legacy_shop_reads_delivery_profiles"),
+        pytest.param(True, True, id="market_driven_shop_still_reads_delivery_profiles_and_warns"),
     ],
 )
-def test_countries_stream_slices_gated_by_market_driven_shipping(
-    mocker, requests_mock, auth_config, market_driven_shipping, expected_slices
+def test_countries_stream_slices_not_gated_by_market_driven_shipping(
+    mocker, requests_mock, auth_config, caplog, market_driven_shipping, expect_warning
 ):
+    """
+    `countries` keeps emitting the `deliveryProfiles` snapshot on migrated shops (so existing destination
+    data is not wiped by an empty full refresh) and only warns that the data is frozen.
+    """
     mock_shop_features(requests_mock, market_driven_shipping)
-    parent_slices = mocker.patch(
-        "source_shopify.streams.streams.HttpSubStream.stream_slices",
-        return_value=iter([{"parent": {"profile_location_groups": [{"locationGroup": {"id": "123"}}]}}]),
-    )
+    parent_slices = [{"parent": {"profile_location_groups": [{"locationGroup": {"id": "123"}}]}}]
+    mocker.patch("source_shopify.streams.streams.HttpSubStream.stream_slices", return_value=iter(parent_slices))
     stream = Countries(parent=mocker.MagicMock(), config=auth_config)
-    assert list(stream.stream_slices()) == expected_slices
-    # the parent `deliveryProfiles` stream is not read at all for market-driven shops
-    assert parent_slices.called is not market_driven_shipping
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        assert list(stream.stream_slices()) == parent_slices
+    assert ("snapshot frozen at migration time" in caplog.text) is expect_warning
 
 
 @pytest.mark.parametrize(
