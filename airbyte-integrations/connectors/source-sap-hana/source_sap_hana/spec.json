@@ -1,0 +1,388 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/sap-hana",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "SAP HANA Source Spec",
+    "type": "object",
+    "required": [
+      "host",
+      "port",
+      "username",
+      "password",
+      "schemas"
+    ],
+    "additionalProperties": true,
+    "properties": {
+      "host": {
+        "title": "Host",
+        "description": "Hostname or IP address of the SAP HANA server.",
+        "type": "string",
+        "order": 0
+      },
+      "port": {
+        "title": "Port",
+        "description": "SQL port of the SAP HANA instance (3<instance>15 for single-tenant / SYSTEMDB, 3<instance>41+ for tenant databases).",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 65535,
+        "default": 30015,
+        "examples": [
+          "30015",
+          "30041"
+        ],
+        "order": 1
+      },
+      "database_name": {
+        "title": "Tenant Database Name",
+        "description": "Optional. Name of the tenant database to connect to on a multi-tenant (MDC) system when connecting through the SYSTEMDB port.",
+        "type": "string",
+        "order": 2
+      },
+      "username": {
+        "title": "Username",
+        "description": "Database user. It needs SELECT privileges on the replicated tables and read access to the SYS catalog views.",
+        "type": "string",
+        "order": 3
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 4
+      },
+      "schemas": {
+        "title": "Schemas",
+        "description": "Schemas to discover tables from (e.g. SAPHANADB). Names are case-sensitive.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 1,
+        "uniqueItems": true,
+        "examples": [
+          "SAPHANADB"
+        ],
+        "order": 5
+      },
+      "table_name_patterns": {
+        "title": "Table Name Patterns",
+        "description": "Optional list of SQL LIKE patterns restricting which tables/views are discovered (e.g. ACDOCA, CSK%, MAR_). SAP ERP schemas contain 100k+ tables, so restricting discovery is strongly recommended.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "examples": [
+          "ACDOCA",
+          "CSK%"
+        ],
+        "order": 6
+      },
+      "stream_settings": {
+        "title": "Stream Settings",
+        "description": "Optional per-table settings. Use SCHEMA.TABLE to target a single schema; a bare TABLE applies to every schema.",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "stream"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "stream": {
+              "title": "Stream",
+              "description": "Table or view name, optionally schema-qualified (SCHEMA.TABLE).",
+              "type": "string",
+              "examples": [
+                "ACDOCA",
+                "SAPHANADB.ACDOCA"
+              ],
+              "order": 0
+            },
+            "condition": {
+              "title": "Row Filter (SQL)",
+              "description": "Boolean SAP HANA SQL expression inserted as WHERE (condition) in every sync mode. ';' is not allowed.",
+              "type": "string",
+              "examples": [
+                "RCLNT = '100' AND GJAHR >= '2025'"
+              ],
+              "order": 1
+            },
+            "cursor_field": {
+              "title": "Default Cursor Field",
+              "description": "Column proposed as incremental cursor, and used when a client requests incremental without choosing one.",
+              "type": "string",
+              "examples": [
+                "TIMESTAMP"
+              ],
+              "order": 2
+            },
+            "primary_key": {
+              "title": "Primary Key Override",
+              "description": "Columns identifying a row, for tables without a primary key constraint in the catalog (e.g. ACDOCA). Enables dedup and resumable full refresh. The columns must be unique together.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "examples": [
+                [
+                  "RCLNT",
+                  "RLDNR",
+                  "RBUKRS",
+                  "GJAHR",
+                  "BELNR",
+                  "DOCLN"
+                ]
+              ],
+              "order": 3
+            }
+          }
+        },
+        "order": 7
+      },
+      "include_views": {
+        "title": "Include Views",
+        "description": "Also expose views (including calculation views published as SQL views) as streams.",
+        "type": "boolean",
+        "default": false,
+        "order": 8
+      },
+      "encrypt": {
+        "title": "Encrypt Connection (TLS)",
+        "description": "Encrypt the connection using TLS. Required for SAP HANA Cloud.",
+        "type": "boolean",
+        "default": false,
+        "order": 9
+      },
+      "ssl_validate_certificate": {
+        "title": "Validate Server Certificate",
+        "description": "Validate the server TLS certificate. Only used when encryption is enabled.",
+        "type": "boolean",
+        "default": true,
+        "order": 10
+      },
+      "ssl_trust_store": {
+        "title": "Trust Store (PEM)",
+        "description": "Optional PEM-encoded CA certificate(s) used to validate the server certificate.",
+        "type": "string",
+        "multiline": true,
+        "airbyte_secret": true,
+        "order": 11
+      },
+      "compress": {
+        "title": "Compress Network Traffic",
+        "description": "Enable SAP HANA protocol compression. Typically doubles throughput over VPN/WAN links at the cost of some HANA CPU; disable it on fast local networks if HANA CPU is the bottleneck.",
+        "type": "boolean",
+        "default": true,
+        "order": 12
+      },
+      "connection_properties": {
+        "title": "Additional Connection Properties",
+        "description": "Additional hdbcli connection properties as key=value pairs separated by ';' (e.g. 'communicationTimeout=0;reconnect=TRUE').",
+        "type": "string",
+        "examples": [
+          "communicationTimeout=0;reconnect=TRUE"
+        ],
+        "order": 13
+      },
+      "tunnel_method": {
+        "type": "object",
+        "title": "SSH Tunnel Method",
+        "description": "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
+        "oneOf": [
+          {
+            "title": "No Tunnel",
+            "required": [
+              "tunnel_method"
+            ],
+            "properties": {
+              "tunnel_method": {
+                "description": "No ssh tunnel needed to connect to database",
+                "type": "string",
+                "const": "NO_TUNNEL",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "SSH Key Authentication",
+            "required": [
+              "tunnel_method",
+              "tunnel_host",
+              "tunnel_port",
+              "tunnel_user",
+              "ssh_key"
+            ],
+            "properties": {
+              "tunnel_method": {
+                "description": "Connect through a jump server tunnel host using username and ssh key",
+                "type": "string",
+                "const": "SSH_KEY_AUTH",
+                "order": 0
+              },
+              "tunnel_host": {
+                "title": "SSH Tunnel Jump Server Host",
+                "description": "Hostname of the jump server host that allows inbound ssh tunnel.",
+                "type": "string",
+                "order": 1
+              },
+              "tunnel_port": {
+                "title": "SSH Connection Port",
+                "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65536,
+                "default": 22,
+                "examples": [
+                  "22"
+                ],
+                "order": 2
+              },
+              "tunnel_user": {
+                "title": "SSH Login Username",
+                "description": "OS-level username for logging into the jump server host.",
+                "type": "string",
+                "order": 3
+              },
+              "ssh_key": {
+                "title": "SSH Private Key",
+                "description": "OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa ). Ed25519 and ECDSA keys are also supported.",
+                "type": "string",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 4
+              }
+            }
+          },
+          {
+            "title": "Password Authentication",
+            "required": [
+              "tunnel_method",
+              "tunnel_host",
+              "tunnel_port",
+              "tunnel_user",
+              "tunnel_user_password"
+            ],
+            "properties": {
+              "tunnel_method": {
+                "description": "Connect through a jump server tunnel host using username and password authentication",
+                "type": "string",
+                "const": "SSH_PASSWORD_AUTH",
+                "order": 0
+              },
+              "tunnel_host": {
+                "title": "SSH Tunnel Jump Server Host",
+                "description": "Hostname of the jump server host that allows inbound ssh tunnel.",
+                "type": "string",
+                "order": 1
+              },
+              "tunnel_port": {
+                "title": "SSH Connection Port",
+                "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65536,
+                "default": 22,
+                "examples": [
+                  "22"
+                ],
+                "order": 2
+              },
+              "tunnel_user": {
+                "title": "SSH Login Username",
+                "description": "OS-level username for logging into the jump server host",
+                "type": "string",
+                "order": 3
+              },
+              "tunnel_user_password": {
+                "title": "Password",
+                "description": "OS-level password for logging into the jump server host",
+                "type": "string",
+                "airbyte_secret": true,
+                "order": 4
+              }
+            }
+          }
+        ],
+        "order": 14
+      },
+      "fetch_size": {
+        "title": "Fetch Size",
+        "description": "Number of rows fetched from HANA per round-trip. Rows are streamed, never fully loaded in memory.",
+        "type": "integer",
+        "minimum": 100,
+        "maximum": 1000000,
+        "default": 10000,
+        "order": 15
+      },
+      "resumable_full_refresh": {
+        "title": "Resumable Full Refresh",
+        "description": "For tables with a primary key, read full refreshes in pages ordered by the primary key and checkpoint after every page, so an interrupted sync resumes where it stopped instead of starting over. Tables without a primary key are always read with a single query.",
+        "type": "boolean",
+        "default": true,
+        "order": 16
+      },
+      "full_refresh_page_size": {
+        "title": "Full Refresh Page Size",
+        "description": "Rows per page in resumable full refresh.",
+        "type": "integer",
+        "minimum": 1000,
+        "maximum": 10000000,
+        "default": 100000,
+        "order": 17
+      },
+      "max_concurrent_streams": {
+        "title": "Max Concurrent Streams",
+        "description": "Number of streams read in parallel, each on its own HANA connection. Keep 1 on systems that struggle under load; 2-4 usually speeds up syncs of many tables.",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 16,
+        "default": 1,
+        "order": 18
+      },
+      "checkpoint_interval": {
+        "title": "Checkpoint Interval",
+        "description": "Minimum number of records between two state checkpoints in incremental syncs.",
+        "type": "integer",
+        "minimum": 1,
+        "default": 10000,
+        "order": 19
+      },
+      "max_retries": {
+        "title": "Max Retries",
+        "description": "How many times to reconnect after a lost connection before failing a stream. Incremental streams resume from the last checkpointed cursor value.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100,
+        "default": 5,
+        "order": 20
+      },
+      "retry_wait_seconds": {
+        "title": "Retry Wait (seconds)",
+        "description": "Seconds to wait before reconnecting after a lost connection.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 3600,
+        "default": 30,
+        "order": 21
+      },
+      "decimal_handling": {
+        "title": "Decimal Handling",
+        "description": "How DECIMAL / SMALLDECIMAL values are emitted. 'number' is the most convenient; 'string' preserves full precision for values with more than 15 significant digits.",
+        "type": "string",
+        "enum": [
+          "number",
+          "string"
+        ],
+        "default": "number",
+        "order": 22
+      },
+      "strip_nul_characters": {
+        "title": "Strip NUL Characters",
+        "description": "Remove NUL (0x00) characters from string values. SAP text tables (e.g. MAKT) occasionally contain them and most destinations (e.g. PostgreSQL) reject them.",
+        "type": "boolean",
+        "default": true,
+        "order": 23
+      }
+    }
+  }
+}

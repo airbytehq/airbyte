@@ -1,0 +1,33 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  allowedHosts:
+    hosts:
+      - ${host}
+      - ${tunnel_method.tunnel_host}
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+  connectorSubtype: database
+  connectorType: source
+  definitionId: 46b365dc-ad8e-4be7-b110-787433476a2a
+  dockerImageTag: 0.4.1
+  dockerRepository: airbyte/source-sap-hana
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sap-hana
+  githubIssueLabel: source-sap-hana
+  icon: icon.svg
+  license: MIT
+  name: SAP HANA (Community)
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+metadataSpecVersion: "1.0"
