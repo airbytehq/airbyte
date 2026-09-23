@@ -51,11 +51,11 @@ This guide uses more than one ID and credential. They are not interchangeable.
 
 | Value | Where it comes from | What it is for | Where it goes |
 | --- | --- | --- | --- |
-| Application client ID and client secret | An Airbyte application you create in the UI | Obtains the administrative API token (`$TOKEN`) you use to create regions and data planes | Your API client only. Never put it in the cluster. |
+| Application client ID and client secret | An Airbyte application you create in the UI | Obtains the administrative API token (`$TOKEN`) you use to create regions and data planes | Your API client only. Do not use this pair as the data plane credentials. |
 | `dataplaneId` | Response from `POST /v1/dataplanes` in step 2 | Identifies the data plane in the API | Keep it for reference. It is not a credential. |
 | Data plane `clientId` and `clientSecret` | The same response from step 2 | Lets your deployment authenticate to Airbyte and receive work | The `DATA_PLANE_CLIENT_ID` and `DATA_PLANE_CLIENT_SECRET` keys of the Kubernetes Secret in step 3, referenced by `dataPlane.clientIdSecretKey` and `dataPlane.clientSecretSecretKey` in step 4 |
 | Secrets role | An IAM role you create in your AWS account | Holds the Secrets Manager permissions. When your storage is registered with `auth_type: IAM_ROLE`, both the control plane and your pods assume it with the stored external ID | The storage configuration you send to Airbyte. It is not set in Helm. |
-| Connector credentials | You, when you check or save a source or destination | Let connectors log in to your sources and destinations | Written by the control plane to AWS Secrets Manager. Pods read them at run time. They never appear in Helm values. |
+| Connector credentials | The administrator or authentication service of each source or destination | Let connectors log in to your sources and destinations | Written by the control plane to your configured secret store when you check or save a connector, and read by pods at run time. Do not use them as data plane client credentials. |
 | Secrets manager access keys | Your cloud account | Lets the environment-configured data plane client read connector credentials with access key authentication | The `AWS_SECRET_MANAGER_*` keys of the Kubernetes Secret in step 3, referenced by the `secretsManager` block in step 4 |
 | Pod's AWS identity | The Kubernetes service account of the data plane pods and the IAM trust you configure for it | Lets data plane pods call AWS as an IAM role without access keys | Your cluster and IAM configuration. The `secretsManager` block does not create this identity. |
 | Object storage credentials | Your cloud account | Logs and job state | The `storage` block in step 4 |
@@ -515,14 +515,14 @@ The Helm `secretsManager` values in this guide configure a different layer: the 
 
 Trust answers who may assume the secrets role. Permissions answer what the secrets role may do once assumed. Both must be right, for both callers.
 
-The trust policy on the secrets role needs one statement per caller.
+The secrets role must trust both callers. Separate statements can make each caller and its conditions easier to review. A single statement may also list both principals.
 
 - Airbyte control plane: before you create the role, obtain the approved Airbyte principal ARN and external ID from your Airbyte contact. Allow that principal, with a condition that `sts:ExternalId` equals that external ID exactly. AWS compares the external ID as an exact string. Whitespace or case differences fail.
 - Workload role: allow the workload role ARN as a principal, with the same `sts:ExternalId` condition. For registered `IAM_ROLE` storage, your pods send the stored external ID on every assumption, exactly as the control plane does. When the trust policy names the workload role ARN directly and both roles are in the same account, that trust statement alone can grant the assumption, subject to boundaries, service control policies, session policies, and explicit denies. If the roles are in different accounts, or the trust policy names the account rather than the role, the workload role's own identity policy must also allow `sts:AssumeRole` on the secrets role ARN.
 
-Role ARN values are case sensitive when a role is assumed. Copy them exactly, including any path segment such as `role/service/`.
+Role names in IAM policy ARN values are case sensitive. Copy the full role ARN exactly, including any path such as `role/service/`.
 
-The identity policy on the secrets role grants the Secrets Manager actions. A request succeeds only if every applicable policy allows it.
+The identity policy on the secrets role grants the Secrets Manager actions. Evaluate the effective permissions for the exact request: identity and resource policies can grant access, while applicable boundaries, service control policies, session policies, and explicit denies can restrict it.
 
 - Permissions boundaries limit permissions. They never grant them. A boundary on the secrets role, on the workload role, or on the Airbyte-side caller can block an action that an identity policy allows.
 - Service control policies and session policies also limit permissions.
@@ -536,20 +536,22 @@ AWS documentation for the exact semantics: [permissions boundaries](https://docs
 
 Each checkpoint proves the specific operation that ran, and nothing more. Record which operation succeeded.
 
-1. **Check and save a connector.** Saving proves the control plane wrote the connector secret. A connection check can also run a workload on your data plane, which reads the secret and authenticates to the source or destination. Note whether the check ran before or after the save, and whether it ran on your data plane.
-2. **Run a small sync.** This proves a data plane pod read the secret and the connector moved data. Use one stream with a small number of records.
+1. **Check and save a connector.** Record whether new credential values were persisted and whether the check workload retrieved credentials and authenticated to the source or destination. Saving an edit that leaves existing credentials masked may preserve references without writing new secret values. Record where the check ran.
+2. **Run a small sync.** Record the selected stream, job result, and record counts. A reported successful job does not by itself prove the intended data arrived.
 3. **Confirm records in the destination.** Query the destination directly and compare the count with the source. Only this checkpoint proves data arrived.
 
-A sync that reports success with no destination records is a connector or destination question, not a secret storage question.
+For a successful job with no destination records, inspect stream selection, source data, sync mode, destination visibility, and job logs. Do not rule out secret storage or authentication problems unless the expected connector path was exercised.
 
 ### Common errors
 
-| Symptom | Likely cause | What to check |
+Start from the denied request and the caller that made it, not from the UI symptom alone.
+
+| Symptom | Where to look first | What to check |
 | --- | --- | --- |
-| Check or save fails with an access denied error from AWS | The control plane cannot assume the secrets role or cannot write to Secrets Manager. | The control plane trust statement and external ID, the secrets role identity policy, permissions boundaries, service control policies. |
-| Check passes but the sync fails while starting the connector | The pod cannot read the secret. | The service account annotation on the data plane pods, the workload role trust statement on the secrets role, the workload role's `sts:AssumeRole` permission, or the access keys if you use them. Confirm the data plane `secretsManager` block matches the storage registered with Airbyte. |
-| `AccessDenied` on `sts:AssumeRole` even though the trust policy looks right | Exact string mismatch, or a boundary or session policy on the caller. | Role ARN, path, and case. External ID value. Boundaries on both the caller and the secrets role. |
-| Access denied on `secretsmanager:GetSecretValue` for a secret that exists | A tag or resource condition does not match the secret. | The condition keys in the identity and resource policies, and the tags on the secret. |
+| Check or save fails with an AWS access denied error | The AWS error text and job logs: which caller made the request (control plane or pod), and which action was denied (`sts:AssumeRole`, a Secrets Manager action, a KMS action, or source or destination authentication). | Identify the caller and the denied action before changing any policy. Then follow the matching row below. |
+| Check passes but the sync fails while starting the connector | The new workload's error, the identity the pod actually used, and which storage configuration the request used. | Trace whether the failing request used registered storage or the environment-configured `secretsManager` values, then check that path: the service account annotation and workload role for pod identity, or the access keys. Do not assume the pod could not read a secret until the error shows it. |
+| `AccessDenied` on `sts:AssumeRole` | The secrets role trust policy and the caller's effective permission. | Role ARN, path, and case. External ID value. The caller's identity policy, permissions boundary, service control policies, and session policy. The secrets role's own permissions boundary applies to the later Secrets Manager or KMS request, not to this assumption. |
+| Access denied on `secretsmanager:GetSecretValue` for a secret that exists | The exact secret ARN and region, and the assumed identity in the error. | The secrets role identity policy and any resource policy on the secret, including tag and resource conditions, the KMS key policy and `kms:Decrypt` permission, and applicable boundaries or explicit denies. |
 | A new connector fails after the storage configuration was changed | The workspace now points at a storage the callers cannot reach. | Which storage the workspace uses, and whether both callers can reach the new storage. |
 
 ### Evidence to send to support
