@@ -2179,6 +2179,61 @@ definitions:
       from_object: ""
       to_object: ""
 
+  # Error handler shared by every request made on behalf of a custom object association stream: the association
+  # batch read as well as the parent `/crm/v3/objects/{from_object}/search` request. Both return 400 when the
+  # configured object identifier is not a fullyQualifiedName (`p_...`) or objectTypeId (`2-...`).
+  # Same as base_error_handler except for the custom-object-specific 400 and 403 messages.
+  custom_object_association_error_handler:
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.HubspotErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+    response_filters:
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes:
+          - 429
+        error_message: >-
+          HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 502
+          - 503
+        error_message: >-
+          HubSpot server error (5xx). Retrying with exponential backoff...
+      - type: HttpResponseFilter
+        action: REFRESH_TOKEN_THEN_RETRY
+        http_codes:
+          - 401
+        error_message: >-
+          Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot."
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 530
+        error_message: >-
+          The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 400
+        error_message: >-
+          Custom object identifier in 'from_object' or 'to_object' is not a valid HubSpot
+          fullyQualifiedName (for example 'p_my_custom_object') or objectTypeId (for example '2-12345').
+          You can find your custom object identifiers in HubSpot Settings or via the /crm/v3/schemas API.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 403
+        error_message: >-
+          Access denied (403). Credentials lack the read scope for the object in 'from_object' or 'to_object'
+          ('crm.objects.custom.read' for custom objects, or the standard object's read scope such as 'crm.objects.deals.read').
+
   # Custom object association stream - extends base_association_stream with error handling for invalid custom object names
   base_custom_object_association_stream:
     $ref: "#/definitions/base_association_stream"
@@ -2187,41 +2242,27 @@ definitions:
       requester:
         $ref: "#/definitions/base_association_stream/retriever/requester"
         error_handler:
-          type: DefaultErrorHandler
-          backoff_strategies:
-            - type: WaitTimeFromHeader
-              header: Retry-After
-            - type: ExponentialBackoffStrategy
-          response_filters:
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
-                - 429
-              error_message: >-
-                HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
-                - 502
-                - 503
-              error_message: >-
-                HubSpot server error (5xx). Retrying with exponential backoff...
-            - type: HttpResponseFilter
-              action: FAIL
-              http_codes:
-                - 400
-              error_message: >-
-                Bad request (400). The custom object name provided in the configuration is invalid.
-                Please verify that 'from_object' and 'to_object' values are correct custom object
-                identifiers (e.g., the fullyQualifiedName like 'p_my_custom_object' or the objectTypeId like '2-12345').
-                You can find your custom object identifiers in HubSpot Settings or via the /crm/v3/schemas API.
-            - type: HttpResponseFilter
-              action: FAIL
-              http_codes:
-                - 403
-              error_message: >-
-                Access denied (403). The authenticated user does not have permissions to access the custom object associations.
-                Ensure the 'crm.objects.custom.read' scope is granted for your OAuth or Private App credentials.
+          $ref: "#/definitions/custom_object_association_error_handler"
+      partition_router:
+        $ref: "#/definitions/base_association_stream/retriever/partition_router"
+        underlying_partition_router:
+          $ref: "#/definitions/base_association_stream/retriever/partition_router/underlying_partition_router"
+          parent_stream_configs:
+            - stream:
+                $ref: "#/definitions/base_crm_search_incremental_parent_stream"
+                $parameters:
+                  entity: from_object_name
+                  cursor_filter_property_field: hs_lastmodifieddate
+                name: stream_name
+                retriever:
+                  $ref: "#/definitions/base_crm_search_incremental_parent_stream/retriever"
+                  requester:
+                    $ref: "#/definitions/base_crm_search_incremental_parent_stream/retriever/requester"
+                    error_handler:
+                      $ref: "#/definitions/custom_object_association_error_handler"
+              parent_key: id
+              partition_field: id
+              incremental_dependency: true
 
   properties_stream:
     type: DeclarativeStream
@@ -6181,6 +6222,11 @@ schemas:
             type:
               - "null"
               - string
+          isAbVariation:
+            description: Whether this email is the variation of an A/B test.
+            type:
+              - "null"
+              - boolean
       updatedById:
         type:
           - "null"
@@ -6772,6 +6818,11 @@ schemas:
               type:
                 - "null"
                 - string
+            primary:
+              description: Whether this team is the owner's primary team.
+              type:
+                - "null"
+                - boolean
 
   owners_archived:
     $schema: http://json-schema.org/schema#
@@ -6852,6 +6903,11 @@ schemas:
               type:
                 - "null"
                 - string
+            primary:
+              description: Whether this team is the owner's primary team.
+              type:
+                - "null"
+                - boolean
 
   users:
     $schema: http://json-schema.org/schema#

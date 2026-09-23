@@ -8,14 +8,14 @@ The Monday connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search) |
-| Boards | [List](#boards-list), [Get](#boards-get), [Context Store Search](#boards-context-store-search), [Semantic Search](#boards-semantic-search) |
-| Items | [List](#items-list), [Get](#items-get), [Context Store Search](#items-context-store-search), [Semantic Search](#items-semantic-search) |
-| Teams | [List](#teams-list), [Get](#teams-get), [Context Store Search](#teams-context-store-search) |
-| Tags | [List](#tags-list), [Context Store Search](#tags-context-store-search) |
-| Updates | [List](#updates-list), [Get](#updates-get), [Context Store Search](#updates-context-store-search), [Semantic Search](#updates-semantic-search) |
-| Workspaces | [List](#workspaces-list), [Get](#workspaces-get), [Context Store Search](#workspaces-context-store-search) |
-| Activity Logs | [List](#activity-logs-list), [Context Store Search](#activity-logs-context-store-search) |
+| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search), [Context Store SQL Query](#users-context-store-sql-query) |
+| Boards | [List](#boards-list), [Get](#boards-get), [Context Store Search](#boards-context-store-search), [Context Store SQL Query](#boards-context-store-sql-query), [Semantic Search](#boards-semantic-search) |
+| Items | [List](#items-list), [Get](#items-get), [Context Store Search](#items-context-store-search), [Context Store SQL Query](#items-context-store-sql-query), [Semantic Search](#items-semantic-search) |
+| Teams | [List](#teams-list), [Get](#teams-get), [Context Store Search](#teams-context-store-search), [Context Store SQL Query](#teams-context-store-sql-query) |
+| Tags | [List](#tags-list), [Context Store Search](#tags-context-store-search), [Context Store SQL Query](#tags-context-store-sql-query) |
+| Updates | [List](#updates-list), [Get](#updates-get), [Context Store Search](#updates-context-store-search), [Context Store SQL Query](#updates-context-store-sql-query), [Semantic Search](#updates-semantic-search) |
+| Workspaces | [List](#workspaces-list), [Get](#workspaces-get), [Context Store Search](#workspaces-context-store-search), [Context Store SQL Query](#workspaces-context-store-sql-query) |
+| Activity Logs | [List](#activity-logs-list), [Context Store Search](#activity-logs-context-store-search), [Context Store SQL Query](#activity-logs-context-store-sql-query) |
 
 ## Users
 
@@ -190,7 +190,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -238,6 +238,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].title` | `string` | User's job title |
 | `data[].url` | `string` | User's Monday.com profile URL |
 | `data[].utc_hours_diff` | `number` | UTC hours difference for the user's timezone (Float under API 2026-07) |
+
+</details>
+
+### Users Context Store SQL Query
+
+Run a SQL query against users records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "users",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await monday.users.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -406,7 +469,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -468,6 +531,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].updates` | `array` | Board updates |
 | `data[].views` | `array` | Board views |
 | `data[].workspace` | `object` | Workspace the board belongs to |
+
+</details>
+
+### Boards Context Store SQL Query
+
+Run a SQL query against boards records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "boards",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await monday.boards.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "boards",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -731,7 +857,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -781,6 +907,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].updated_at` | `string` | When the item was last updated |
 | `data[].updated_at_int` | `integer` | When the item was last updated (Unix timestamp) |
 | `data[].updates` | `array` | Item updates |
+
+</details>
+
+### Items Context Store SQL Query
+
+Run a SQL query against items records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "items",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await monday.items.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "items",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1025,7 +1214,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1055,6 +1244,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].name` | `string` | Team name |
 | `data[].picture_url` | `string` | Team picture URL |
 | `data[].users` | `array` | Team members |
+
+</details>
+
+### Teams Context Store SQL Query
+
+Run a SQL query against teams records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "teams",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await monday.teams.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "teams",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1160,7 +1412,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1188,6 +1440,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].color` | `string` | Tag color |
 | `data[].id` | `string` | Unique tag identifier |
 | `data[].name` | `string` | Tag name |
+
+</details>
+
+### Tags Context Store SQL Query
+
+Run a SQL query against tags records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "tags",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await monday.tags.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tags",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1355,7 +1670,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1395,6 +1710,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].replies` | `array` | Replies to this update -- the threaded discussion beneath it, where the substance of a Monday conversation usually lives. Each reply's plain text is semantically indexed as its own unit; the parent update's text is appended as context. |
 | `data[].text_body` | `string` | Update body as plain text -- the human comment posted on a Monday item. Semantically searchable. Empty for image-only updates, which therefore produce no embedding. |
 | `data[].updated_at` | `string` | When the update was last modified |
+
+</details>
+
+### Updates Context Store SQL Query
+
+Run a SQL query against updates records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "updates",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await monday.updates.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "updates",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1652,7 +2030,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1698,6 +2076,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].team_owners_subscribers` | `array` | Team owner subscribers |
 | `data[].teams_subscribers` | `array` | Team subscribers |
 | `data[].users_subscribers` | `array` | User subscribers |
+
+</details>
+
+### Workspaces Context Store SQL Query
+
+Run a SQL query against workspaces records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "workspaces",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await monday.workspaces.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "workspaces",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1820,7 +2261,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1860,6 +2301,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].id` | `string` | Unique activity log identifier |
 | `data[].pulse_id` | `integer` | Item (pulse) ID the activity belongs to |
 | `data[].user_id` | `string` | ID of the user who performed the action |
+
+</details>
+
+### Activity Logs Context Store SQL Query
+
+Run a SQL query against activity logs records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "activity_logs",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await monday.activity_logs.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "activity_logs",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 

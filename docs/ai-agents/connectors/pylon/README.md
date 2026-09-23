@@ -49,21 +49,21 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Issues | [List](./REFERENCE.md#issues-list), [Create](./REFERENCE.md#issues-create), [Get](./REFERENCE.md#issues-get), [Update](./REFERENCE.md#issues-update), [Delete](./REFERENCE.md#issues-delete), [Context Store Search](./REFERENCE.md#issues-context-store-search) |
+| Issues | [List](./REFERENCE.md#issues-list), [Create](./REFERENCE.md#issues-create), [Get](./REFERENCE.md#issues-get), [Update](./REFERENCE.md#issues-update), [Delete](./REFERENCE.md#issues-delete), [Context Store Search](./REFERENCE.md#issues-context-store-search), [Context Store SQL Query](./REFERENCE.md#issues-context-store-sql-query) |
 | Issue Replies | [Create](./REFERENCE.md#issue-replies-create) |
 | Issue Assignments | [Update](./REFERENCE.md#issue-assignments-update) |
 | Issue Statuses | [Update](./REFERENCE.md#issue-statuses-update) |
 | Messages | [List](./REFERENCE.md#messages-list) |
 | Issue Notes | [Create](./REFERENCE.md#issue-notes-create) |
 | Issue Threads | [Create](./REFERENCE.md#issue-threads-create) |
-| Accounts | [List](./REFERENCE.md#accounts-list), [Create](./REFERENCE.md#accounts-create), [Get](./REFERENCE.md#accounts-get), [Update](./REFERENCE.md#accounts-update), [Context Store Search](./REFERENCE.md#accounts-context-store-search) |
-| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
-| Teams | [List](./REFERENCE.md#teams-list), [Create](./REFERENCE.md#teams-create), [Get](./REFERENCE.md#teams-get), [Update](./REFERENCE.md#teams-update), [Context Store Search](./REFERENCE.md#teams-context-store-search) |
-| Tags | [List](./REFERENCE.md#tags-list), [Create](./REFERENCE.md#tags-create), [Get](./REFERENCE.md#tags-get), [Update](./REFERENCE.md#tags-update), [Context Store Search](./REFERENCE.md#tags-context-store-search) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Custom Fields | [List](./REFERENCE.md#custom-fields-list), [Get](./REFERENCE.md#custom-fields-get), [Context Store Search](./REFERENCE.md#custom-fields-context-store-search) |
-| Ticket Forms | [List](./REFERENCE.md#ticket-forms-list), [Context Store Search](./REFERENCE.md#ticket-forms-context-store-search) |
-| User Roles | [List](./REFERENCE.md#user-roles-list), [Context Store Search](./REFERENCE.md#user-roles-context-store-search) |
+| Accounts | [List](./REFERENCE.md#accounts-list), [Create](./REFERENCE.md#accounts-create), [Get](./REFERENCE.md#accounts-get), [Update](./REFERENCE.md#accounts-update), [Context Store Search](./REFERENCE.md#accounts-context-store-search), [Context Store SQL Query](./REFERENCE.md#accounts-context-store-sql-query) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [Context Store Search](./REFERENCE.md#contacts-context-store-search), [Context Store SQL Query](./REFERENCE.md#contacts-context-store-sql-query) |
+| Teams | [List](./REFERENCE.md#teams-list), [Create](./REFERENCE.md#teams-create), [Get](./REFERENCE.md#teams-get), [Update](./REFERENCE.md#teams-update), [Context Store Search](./REFERENCE.md#teams-context-store-search), [Context Store SQL Query](./REFERENCE.md#teams-context-store-sql-query) |
+| Tags | [List](./REFERENCE.md#tags-list), [Create](./REFERENCE.md#tags-create), [Get](./REFERENCE.md#tags-get), [Update](./REFERENCE.md#tags-update), [Context Store Search](./REFERENCE.md#tags-context-store-search), [Context Store SQL Query](./REFERENCE.md#tags-context-store-sql-query) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
+| Custom Fields | [List](./REFERENCE.md#custom-fields-list), [Get](./REFERENCE.md#custom-fields-get), [Context Store Search](./REFERENCE.md#custom-fields-context-store-search), [Context Store SQL Query](./REFERENCE.md#custom-fields-context-store-sql-query) |
+| Ticket Forms | [List](./REFERENCE.md#ticket-forms-list), [Context Store Search](./REFERENCE.md#ticket-forms-context-store-search), [Context Store SQL Query](./REFERENCE.md#ticket-forms-context-store-sql-query) |
+| User Roles | [List](./REFERENCE.md#user-roles-list), [Context Store Search](./REFERENCE.md#user-roles-context-store-search), [Context Store SQL Query](./REFERENCE.md#user-roles-context-store-sql-query) |
 | Tasks | [Create](./REFERENCE.md#tasks-create), [Update](./REFERENCE.md#tasks-update) |
 | Projects | [Create](./REFERENCE.md#projects-create), [Update](./REFERENCE.md#projects-update) |
 | Milestones | [Create](./REFERENCE.md#milestones-create), [Update](./REFERENCE.md#milestones-update) |
@@ -151,6 +151,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -218,9 +222,91 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `PylonConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.pylon import PylonConnector
+
+connector = connect("pylon", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@PylonConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="pylon_inspect",
+    docs_tool="pylon_read_docs",
+)
+async def pylon_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@PylonConnector.agent_tool(framework="pydantic_ai")
+async def pylon_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@PylonConnector.agent_tool(framework="pydantic_ai")
+async def pylon_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.pylon import PylonConnector
+
+connector = connect("pylon", workspace_name="<your_workspace_name>")
+
+@PylonConnector.agent_tool(
+    inspect_tool="pylon_inspect",
+    docs_tool="pylon_read_docs",
+)
+async def pylon_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@PylonConnector.agent_tool()
+async def pylon_inspect():
+    return await connector.inspect_connector()
+
+@PylonConnector.agent_tool()
+async def pylon_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (pylon_inspect, pylon_read_docs, pylon_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `PylonConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `PylonConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `PylonConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -407,6 +493,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -490,9 +580,99 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `PylonConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.pylon import PylonConnector
+from airbyte_agent_sdk.connectors.pylon.models import PylonAuthConfig
+
+connector = PylonConnector(
+    auth_config=PylonAuthConfig(
+        api_token="<Your Pylon API token. Only admin users can create API tokens.>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@PylonConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="pylon_inspect",
+    docs_tool="pylon_read_docs",
+)
+async def pylon_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@PylonConnector.agent_tool(framework="pydantic_ai")
+async def pylon_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@PylonConnector.agent_tool(framework="pydantic_ai")
+async def pylon_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.pylon import PylonConnector
+from airbyte_agent_sdk.connectors.pylon.models import PylonAuthConfig
+
+connector = PylonConnector(
+    auth_config=PylonAuthConfig(
+        api_token="<Your Pylon API token. Only admin users can create API tokens.>"
+    )
+)
+
+@PylonConnector.agent_tool(
+    inspect_tool="pylon_inspect",
+    docs_tool="pylon_read_docs",
+)
+async def pylon_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@PylonConnector.agent_tool()
+async def pylon_inspect():
+    return await connector.inspect_connector()
+
+@PylonConnector.agent_tool()
+async def pylon_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (pylon_inspect, pylon_read_docs, pylon_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `PylonConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `PylonConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `PylonConnector.agent_tool` above.
 
 **Pydantic AI**
 

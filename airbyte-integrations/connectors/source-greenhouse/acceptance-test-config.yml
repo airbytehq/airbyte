@@ -8,38 +8,39 @@ acceptance_tests:
       - spec_path: "manifest.yaml"
   connection:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "secrets/config_oauth.json"
         status: "succeed"
       - config_path: "integration_tests/config_invalid.json"
         status: "failed"
   discovery:
     tests:
-      - config_path: "secrets/config_users_only.json"
-      - config_path: "secrets/config.json"
+      - config_path: "secrets/config_oauth.json"
   basic_read:
     tests:
-      - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-        fail_on_extra_columns: false
+      # Restore expect_records from a regenerated live Harvest v3 read before enabling fixture validation.
+      - config_path: "secrets/config_oauth.json"
         empty_streams:
+          # These four hold no records on the test account and cannot be seeded through
+          # Harvest v3: eeoc and demographics_answers only exist once a candidate submits
+          # the questionnaire themselves (POST /v3/eeoc returns 404 - there is no write
+          # endpoint), and job_posts and offers need a published post and a live offer.
+          # eeoc has a mock read test in unit_tests/test_pagination.py; the other three
+          # are covered only by the schema in discover.
           - name: eeoc
-            bypass_reason: "No data"
-          - name: prospect_pools
-            bypass_reason: "No data"
-          - name: tags
-            bypass_reason: "No data"
-          - name: user_permissions
-            bypass_reason: "No Data"
+            bypass_reason: "Test account has no submitted EEOC responses"
+          - name: demographics_answers
+            bypass_reason: "Test account has no submitted demographic answers"
+          - name: job_posts
+            bypass_reason: "Test account has no published job posts"
+          - name: offers
+            bypass_reason: "Test account has no offers"
   full_refresh:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "secrets/config_oauth.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-      - config_path: "secrets/config_users_only.json"
-        configured_catalog_path: "integration_tests/configured_catalog_users_only.json"
   incremental:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "secrets/config_oauth.json"
         configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"

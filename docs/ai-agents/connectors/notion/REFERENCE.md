@@ -8,11 +8,11 @@ The Notion connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search) |
-| Pages | [List](#pages-list), [Create](#pages-create), [Get](#pages-get), [Update](#pages-update), [Context Store Search](#pages-context-store-search) |
-| Data Sources | [List](#data-sources-list), [Get](#data-sources-get), [Update](#data-sources-update), [Context Store Search](#data-sources-context-store-search) |
-| Blocks | [List](#blocks-list), [Create](#blocks-create), [Get](#blocks-get), [Update](#blocks-update), [Context Store Search](#blocks-context-store-search) |
-| Comments | [List](#comments-list), [Create](#comments-create), [Context Store Search](#comments-context-store-search), [Semantic Search](#comments-semantic-search) |
+| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search), [Context Store SQL Query](#users-context-store-sql-query) |
+| Pages | [List](#pages-list), [Create](#pages-create), [Get](#pages-get), [Update](#pages-update), [Context Store Search](#pages-context-store-search), [Context Store SQL Query](#pages-context-store-sql-query) |
+| Data Sources | [List](#data-sources-list), [Get](#data-sources-get), [Update](#data-sources-update), [Context Store Search](#data-sources-context-store-search), [Context Store SQL Query](#data-sources-context-store-sql-query) |
+| Blocks | [List](#blocks-list), [Create](#blocks-create), [Get](#blocks-get), [Update](#blocks-update), [Context Store Search](#blocks-context-store-search), [Context Store SQL Query](#blocks-context-store-sql-query) |
+| Comments | [List](#comments-list), [Create](#comments-create), [Context Store Search](#comments-context-store-search), [Context Store SQL Query](#comments-context-store-sql-query), [Semantic Search](#comments-semantic-search) |
 
 ## Users
 
@@ -203,7 +203,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -239,6 +239,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].object` | `object` | Always user |
 | `data[].person` | `object` | Person-specific data |
 | `data[].type` | `object` | Type of user (person or bot) |
+
+</details>
+
+### Users Context Store SQL Query
+
+Run a SQL query against users records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "users",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await notion.users.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -645,7 +708,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -695,6 +758,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].properties` | `array` | Custom properties associated with the page. |
 | `data[].public_url` | `string` | Publicly accessible URL of the page. |
 | `data[].url` | `string` | URL of the page within the service. |
+
+</details>
+
+### Pages Context Store SQL Query
+
+Run a SQL query against pages records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "pages",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await notion.pages.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "pages",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1086,7 +1212,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1142,6 +1268,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].public_url` | `string` | Public URL to access the data source. |
 | `data[].title` | `array` | Title or name of the data source. |
 | `data[].url` | `string` | URL or reference to access the data source. |
+
+</details>
+
+### Data Sources Context Store SQL Query
+
+Run a SQL query against data sources records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "data_sources",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await notion.data_sources.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "data_sources",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -2199,7 +2388,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -2305,6 +2494,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].type` | `object` | The type of the block. |
 | `data[].unsupported` | `object` | Represents an unsupported block. |
 | `data[].video` | `object` | Represents a video block. |
+
+</details>
+
+### Blocks Context Store SQL Query
+
+Run a SQL query against blocks records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "blocks",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await notion.blocks.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "blocks",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -2538,7 +2790,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -2576,6 +2828,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].object` | `string` | Always comment. |
 | `data[].parent` | `object` | Parent of the comment. |
 | `data[].rich_text` | `array` | Content of the comment as rich text. |
+
+</details>
+
+### Comments Context Store SQL Query
+
+Run a SQL query against comments records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "comments",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await notion.comments.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "comments",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 

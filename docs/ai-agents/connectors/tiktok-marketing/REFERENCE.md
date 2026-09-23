@@ -8,21 +8,21 @@ The Tiktok-Marketing connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Advertisers | [List](#advertisers-list), [Context Store Search](#advertisers-context-store-search) |
-| Campaigns | [List](#campaigns-list), [Context Store Search](#campaigns-context-store-search) |
-| Ad Groups | [List](#ad-groups-list), [Context Store Search](#ad-groups-context-store-search) |
-| Ads | [List](#ads-list), [Context Store Search](#ads-context-store-search), [Semantic Search](#ads-semantic-search) |
-| Audiences | [List](#audiences-list), [Context Store Search](#audiences-context-store-search) |
-| Creative Assets Images | [List](#creative-assets-images-list), [Context Store Search](#creative-assets-images-context-store-search) |
-| Creative Assets Videos | [List](#creative-assets-videos-list), [Context Store Search](#creative-assets-videos-context-store-search) |
-| Spark Ads | [List](#spark-ads-list), [Context Store Search](#spark-ads-context-store-search) |
+| Advertisers | [List](#advertisers-list), [Context Store Search](#advertisers-context-store-search), [Context Store SQL Query](#advertisers-context-store-sql-query) |
+| Campaigns | [List](#campaigns-list), [Context Store Search](#campaigns-context-store-search), [Context Store SQL Query](#campaigns-context-store-sql-query) |
+| Ad Groups | [List](#ad-groups-list), [Context Store Search](#ad-groups-context-store-search), [Context Store SQL Query](#ad-groups-context-store-sql-query) |
+| Ads | [List](#ads-list), [Context Store Search](#ads-context-store-search), [Context Store SQL Query](#ads-context-store-sql-query), [Semantic Search](#ads-semantic-search) |
+| Audiences | [List](#audiences-list), [Context Store Search](#audiences-context-store-search), [Context Store SQL Query](#audiences-context-store-sql-query) |
+| Creative Assets Images | [List](#creative-assets-images-list), [Context Store Search](#creative-assets-images-context-store-search), [Context Store SQL Query](#creative-assets-images-context-store-sql-query) |
+| Creative Assets Videos | [List](#creative-assets-videos-list), [Context Store Search](#creative-assets-videos-context-store-search), [Context Store SQL Query](#creative-assets-videos-context-store-sql-query) |
+| Spark Ads | [List](#spark-ads-list), [Context Store Search](#spark-ads-context-store-search), [Context Store SQL Query](#spark-ads-context-store-sql-query) |
 | Catalogs | [List](#catalogs-list) |
-| Advertisers Reports Daily | [List](#advertisers-reports-daily-list), [Context Store Search](#advertisers-reports-daily-context-store-search) |
-| Campaigns Reports Daily | [List](#campaigns-reports-daily-list), [Context Store Search](#campaigns-reports-daily-context-store-search) |
-| Ad Groups Reports Daily | [List](#ad-groups-reports-daily-list), [Context Store Search](#ad-groups-reports-daily-context-store-search) |
-| Ads Reports Daily | [List](#ads-reports-daily-list), [Context Store Search](#ads-reports-daily-context-store-search) |
-| Ads Reports Hourly | [List](#ads-reports-hourly-list), [Context Store Search](#ads-reports-hourly-context-store-search) |
-| Ads Reports Lifetime | [List](#ads-reports-lifetime-list), [Context Store Search](#ads-reports-lifetime-context-store-search) |
+| Advertisers Reports Daily | [List](#advertisers-reports-daily-list), [Context Store Search](#advertisers-reports-daily-context-store-search), [Context Store SQL Query](#advertisers-reports-daily-context-store-sql-query) |
+| Campaigns Reports Daily | [List](#campaigns-reports-daily-list), [Context Store Search](#campaigns-reports-daily-context-store-search), [Context Store SQL Query](#campaigns-reports-daily-context-store-sql-query) |
+| Ad Groups Reports Daily | [List](#ad-groups-reports-daily-list), [Context Store Search](#ad-groups-reports-daily-context-store-search), [Context Store SQL Query](#ad-groups-reports-daily-context-store-sql-query) |
+| Ads Reports Daily | [List](#ads-reports-daily-list), [Context Store Search](#ads-reports-daily-context-store-search), [Context Store SQL Query](#ads-reports-daily-context-store-sql-query) |
+| Ads Reports Hourly | [List](#ads-reports-hourly-list), [Context Store Search](#ads-reports-hourly-context-store-search), [Context Store SQL Query](#ads-reports-hourly-context-store-sql-query) |
+| Ads Reports Lifetime | [List](#ads-reports-lifetime-list), [Context Store Search](#ads-reports-lifetime-context-store-search), [Context Store SQL Query](#ads-reports-lifetime-context-store-sql-query) |
 
 ## Advertisers
 
@@ -174,7 +174,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -254,6 +254,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].status` | `string` | The current status of the advertiser's account. |
 | `data[].telephone_number` | `string` | The telephone number of the advertiser. |
 | `data[].timezone` | `string` | The timezone setting for the advertiser's activities. |
+
+</details>
+
+### Advertisers Context Store SQL Query
+
+Run a SQL query against advertisers records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "advertisers",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.advertisers.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "advertisers",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -407,7 +470,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -475,6 +538,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].roas_bid` | `number` | Return on ad spend goal set for the campaign |
 | `data[].secondary_status` | `string` | Additional status information of the campaign |
 | `data[].split_test_variable` | `string` | Variable being tested in a split test campaign |
+
+</details>
+
+### Campaigns Context Store SQL Query
+
+Run a SQL query against campaigns records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "campaigns",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.campaigns.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "campaigns",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -695,7 +821,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -743,6 +869,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].placement_type` | `string` | The type of ad placement |
 | `data[].promotion_type` | `string` | The type of promotion |
 | `data[].secondary_status` | `string` | The secondary status of the ad group |
+
+</details>
+
+### Ad Groups Context Store SQL Query
+
+Run a SQL query against ad groups records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ad_groups",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ad_groups.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_groups",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -916,7 +1105,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -968,6 +1157,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].operation_status` | `string` | The operational status of the ad |
 | `data[].secondary_status` | `string` | The secondary status of the ad |
 | `data[].video_id` | `string` | The unique identifier of the video |
+
+</details>
+
+### Ads Context Store SQL Query
+
+Run a SQL query against ads records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ads.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1198,7 +1450,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1234,6 +1486,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].is_valid` | `boolean` | Flag indicating if the audience data is valid |
 | `data[].name` | `string` | Name of the audience |
 | `data[].shared` | `boolean` | Flag indicating if the audience is shared |
+
+</details>
+
+### Audiences Context Store SQL Query
+
+Run a SQL query against audiences records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "audiences",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.audiences.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "audiences",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1371,7 +1686,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1411,6 +1726,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].modify_time` | `string` | The timestamp when the image was last modified. |
 | `data[].size` | `integer` | The size of the image file. |
 | `data[].width` | `integer` | The width dimension of the image. |
+
+</details>
+
+### Creative Assets Images Context Store SQL Query
+
+Run a SQL query against creative assets images records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "creative_assets_images",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.creative_assets_images.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "creative_assets_images",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1555,7 +1933,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1597,6 +1975,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].video_cover_url` | `string` | URL for the cover image of the video. |
 | `data[].video_id` | `string` | ID of the video. |
 | `data[].width` | `integer` | Width of the video in pixels. |
+
+</details>
+
+### Creative Assets Videos Context Store SQL Query
+
+Run a SQL query against creative assets videos records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "creative_assets_videos",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.creative_assets_videos.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "creative_assets_videos",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1725,7 +2166,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1755,6 +2196,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].user_info` | `object` | Information about the TikTok account including tiktok_name, identity_id, and identity_type. |
 | `data[].auth_info` | `object` | Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status. |
 | `data[].video_info` | `object` | Video post details including duration, preview_url, poster_url, height, width, and size. |
+
+</details>
+
+### Spark Ads Context Store SQL Query
+
+Run a SQL query against spark ads records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "spark_ads",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.spark_ads.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "spark_ads",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -2017,7 +2521,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -2101,6 +2605,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].real_time_app_install` | `number` | Real-time app installations. |
 | `data[].real_time_app_install_cost` | `number` | Cost of real-time app installations. |
 | `data[].app_install` | `number` | Number of app installations. |
+
+</details>
+
+### Advertisers Reports Daily Context Store SQL Query
+
+Run a SQL query against advertisers reports daily records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "advertisers_reports_daily",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.advertisers_reports_daily.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "advertisers_reports_daily",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -2283,7 +2850,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -2365,6 +2932,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].real_time_app_install` | `number` | Real-time app installations. |
 | `data[].real_time_app_install_cost` | `number` | Cost of real-time app installations. |
 | `data[].app_install` | `number` | Number of app installations. |
+
+</details>
+
+### Campaigns Reports Daily Context Store SQL Query
+
+Run a SQL query against campaigns reports daily records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "campaigns_reports_daily",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.campaigns_reports_daily.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "campaigns_reports_daily",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -2565,7 +3195,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -2683,6 +3313,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].real_time_app_install` | `number` | Real-time app installations. |
 | `data[].real_time_app_install_cost` | `number` | Cost of real-time app installations. |
 | `data[].app_install` | `number` | Number of app installations. |
+
+</details>
+
+### Ad Groups Reports Daily Context Store SQL Query
+
+Run a SQL query against ad groups reports daily records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ad_groups_reports_daily",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ad_groups_reports_daily.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_groups_reports_daily",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -2886,7 +3579,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -3010,6 +3703,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].real_time_app_install` | `number` | Real-time app installations. |
 | `data[].real_time_app_install_cost` | `number` | Cost of real-time app installations. |
 | `data[].app_install` | `number` | Number of app installations. |
+
+</details>
+
+### Ads Reports Daily Context Store SQL Query
+
+Run a SQL query against ads reports daily records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads_reports_daily",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ads_reports_daily.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads_reports_daily",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -3213,7 +3969,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -3337,6 +4093,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].real_time_app_install` | `number` | Real-time app installations. |
 | `data[].real_time_app_install_cost` | `number` | Cost of real-time app installations. |
 | `data[].app_install` | `number` | Number of app installations. |
+
+</details>
+
+### Ads Reports Hourly Context Store SQL Query
+
+Run a SQL query against ads reports hourly records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads_reports_hourly",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ads_reports_hourly.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads_reports_hourly",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -3539,7 +4358,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -3661,6 +4480,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].real_time_app_install` | `number` | Real-time app installations. |
 | `data[].real_time_app_install_cost` | `number` | Cost of real-time app installations. |
 | `data[].app_install` | `number` | Number of app installations. |
+
+</details>
+
+### Ads Reports Lifetime Context Store SQL Query
+
+Run a SQL query against ads reports lifetime records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads_reports_lifetime",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ads_reports_lifetime.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads_reports_lifetime",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 

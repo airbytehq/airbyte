@@ -8,17 +8,17 @@ The Twilio connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Accounts | [List](#accounts-list), [Get](#accounts-get), [Context Store Search](#accounts-context-store-search) |
-| Calls | [List](#calls-list), [Create](#calls-create), [Get](#calls-get), [Context Store Search](#calls-context-store-search) |
-| Messages | [List](#messages-list), [Create](#messages-create), [Get](#messages-get), [Context Store Search](#messages-context-store-search), [Semantic Search](#messages-semantic-search) |
-| Incoming Phone Numbers | [List](#incoming-phone-numbers-list), [Create](#incoming-phone-numbers-create), [Get](#incoming-phone-numbers-get), [Context Store Search](#incoming-phone-numbers-context-store-search) |
-| Recordings | [List](#recordings-list), [Get](#recordings-get), [Context Store Search](#recordings-context-store-search) |
-| Conferences | [List](#conferences-list), [Get](#conferences-get), [Context Store Search](#conferences-context-store-search) |
-| Usage Records | [List](#usage-records-list), [Context Store Search](#usage-records-context-store-search) |
-| Addresses | [List](#addresses-list), [Get](#addresses-get), [Context Store Search](#addresses-context-store-search) |
-| Queues | [List](#queues-list), [Get](#queues-get), [Context Store Search](#queues-context-store-search) |
-| Transcriptions | [List](#transcriptions-list), [Get](#transcriptions-get), [Context Store Search](#transcriptions-context-store-search) |
-| Outgoing Caller Ids | [List](#outgoing-caller-ids-list), [Get](#outgoing-caller-ids-get), [Context Store Search](#outgoing-caller-ids-context-store-search) |
+| Accounts | [List](#accounts-list), [Get](#accounts-get), [Context Store Search](#accounts-context-store-search), [Context Store SQL Query](#accounts-context-store-sql-query) |
+| Calls | [List](#calls-list), [Create](#calls-create), [Get](#calls-get), [Context Store Search](#calls-context-store-search), [Context Store SQL Query](#calls-context-store-sql-query) |
+| Messages | [List](#messages-list), [Create](#messages-create), [Get](#messages-get), [Context Store Search](#messages-context-store-search), [Context Store SQL Query](#messages-context-store-sql-query), [Semantic Search](#messages-semantic-search) |
+| Incoming Phone Numbers | [List](#incoming-phone-numbers-list), [Create](#incoming-phone-numbers-create), [Get](#incoming-phone-numbers-get), [Context Store Search](#incoming-phone-numbers-context-store-search), [Context Store SQL Query](#incoming-phone-numbers-context-store-sql-query) |
+| Recordings | [List](#recordings-list), [Get](#recordings-get), [Context Store Search](#recordings-context-store-search), [Context Store SQL Query](#recordings-context-store-sql-query) |
+| Conferences | [List](#conferences-list), [Get](#conferences-get), [Context Store Search](#conferences-context-store-search), [Context Store SQL Query](#conferences-context-store-sql-query) |
+| Usage Records | [List](#usage-records-list), [Context Store Search](#usage-records-context-store-search), [Context Store SQL Query](#usage-records-context-store-sql-query) |
+| Addresses | [List](#addresses-list), [Get](#addresses-get), [Context Store Search](#addresses-context-store-search), [Context Store SQL Query](#addresses-context-store-sql-query) |
+| Queues | [List](#queues-list), [Get](#queues-get), [Context Store Search](#queues-context-store-search), [Context Store SQL Query](#queues-context-store-sql-query) |
+| Transcriptions | [List](#transcriptions-list), [Get](#transcriptions-get), [Context Store Search](#transcriptions-context-store-search), [Context Store SQL Query](#transcriptions-context-store-sql-query) |
+| Outgoing Caller Ids | [List](#outgoing-caller-ids-list), [Get](#outgoing-caller-ids-get), [Context Store Search](#outgoing-caller-ids-context-store-search), [Context Store SQL Query](#outgoing-caller-ids-context-store-sql-query) |
 
 ## Accounts
 
@@ -214,7 +214,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -252,6 +252,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].date_created` | `string` | The timestamp when the account was created |
 | `data[].date_updated` | `string` | The timestamp when the account was last updated |
 | `data[].uri` | `string` | The URI for accessing the account resource |
+
+</details>
+
+### Accounts Context Store SQL Query
+
+Run a SQL query against accounts records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "accounts",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await twilio.accounts.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "accounts",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -584,7 +647,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -632,6 +695,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].end_time` | `string` | The date and time when the call ended |
 | `data[].date_created` | `string` | The date and time when the call record was created |
 | `data[].date_updated` | `string` | The date and time when the call record was last updated |
+
+</details>
+
+### Calls Context Store SQL Query
+
+Run a SQL query against calls records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "calls",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await twilio.calls.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "calls",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -943,7 +1069,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -995,6 +1121,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].error_message` | `string` | The error message description if the message failed |
 | `data[].num_segments` | `string` | The number of message segments |
 | `data[].num_media` | `string` | The number of media files included in the message |
+
+</details>
+
+### Messages Context Store SQL Query
+
+Run a SQL query against messages records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "messages",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await twilio.messages.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "messages",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1444,7 +1633,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1482,6 +1671,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].capabilities` | `object` | Capabilities of this phone number |
 | `data[].date_created` | `string` | When the phone number was created |
 | `data[].date_updated` | `string` | When the phone number was last updated |
+
+</details>
+
+### Incoming Phone Numbers Context Store SQL Query
+
+Run a SQL query against incoming phone numbers records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "incoming_phone_numbers",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await twilio.incoming_phone_numbers.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "incoming_phone_numbers",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1710,7 +1962,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1752,6 +2004,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].price_unit` | `string` | The currency unit |
 | `data[].date_created` | `string` | When the recording was created |
 | `data[].start_time` | `string` | When the recording started |
+
+</details>
+
+### Recordings Context Store SQL Query
+
+Run a SQL query against recordings records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "recordings",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await twilio.recordings.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "recordings",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1966,7 +2281,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -2002,6 +2317,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].region` | `string` | The region where the conference is hosted |
 | `data[].date_created` | `string` | When the conference was created |
 | `data[].date_updated` | `string` | When the conference was last updated |
+
+</details>
+
+### Conferences Context Store SQL Query
+
+Run a SQL query against conferences records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "conferences",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await twilio.conferences.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "conferences",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -2143,7 +2521,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -2187,6 +2565,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].price_unit` | `string` | The currency unit |
 | `data[].start_date` | `string` | The start date of the usage period |
 | `data[].end_date` | `string` | The end date of the usage period |
+
+</details>
+
+### Usage Records Context Store SQL Query
+
+Run a SQL query against usage records records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "usage_records",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await twilio.usage_records.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "usage_records",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -2409,7 +2850,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -2453,6 +2894,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].iso_country` | `string` | The ISO 3166-1 alpha-2 country code |
 | `data[].validated` | `boolean` | Whether the address has been validated |
 | `data[].verified` | `boolean` | Whether the address has been verified |
+
+</details>
+
+### Addresses Context Store SQL Query
+
+Run a SQL query against addresses records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "addresses",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await twilio.addresses.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "addresses",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -2663,7 +3167,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -2701,6 +3205,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].average_wait_time` | `integer` | Average wait time in seconds |
 | `data[].date_created` | `string` | When the queue was created |
 | `data[].date_updated` | `string` | When the queue was last updated |
+
+</details>
+
+### Queues Context Store SQL Query
+
+Run a SQL query against queues records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "queues",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await twilio.queues.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "queues",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -2917,7 +3484,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -2957,6 +3524,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].price_unit` | `string` | The currency unit |
 | `data[].date_created` | `string` | When the transcription was created |
 | `data[].date_updated` | `string` | When the transcription was last updated |
+
+</details>
+
+### Transcriptions Context Store SQL Query
+
+Run a SQL query against transcriptions records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "transcriptions",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await twilio.transcriptions.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "transcriptions",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -3161,7 +3791,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -3195,6 +3825,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].friendly_name` | `string` | A friendly name |
 | `data[].date_created` | `string` | When the outgoing caller ID was created |
 | `data[].date_updated` | `string` | When the outgoing caller ID was last updated |
+
+</details>
+
+### Outgoing Caller Ids Context Store SQL Query
+
+Run a SQL query against outgoing caller ids records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "twilio",
+  "entity": "outgoing_caller_ids",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await twilio.outgoing_caller_ids.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "outgoing_caller_ids",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 

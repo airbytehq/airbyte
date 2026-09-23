@@ -8,27 +8,27 @@ The Linkedin-Ads connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Accounts | [List](#accounts-list), [Create](#accounts-create), [Get](#accounts-get), [Update](#accounts-update), [Delete](#accounts-delete), [Context Store Search](#accounts-context-store-search) |
-| Account Users | [List](#account-users-list), [Update](#account-users-update), [Create](#account-users-create), [Delete](#account-users-delete), [Context Store Search](#account-users-context-store-search) |
-| Campaigns | [List](#campaigns-list), [Create](#campaigns-create), [Get](#campaigns-get), [Update](#campaigns-update), [Delete](#campaigns-delete), [Context Store Search](#campaigns-context-store-search) |
-| Campaign Groups | [List](#campaign-groups-list), [Create](#campaign-groups-create), [Get](#campaign-groups-get), [Update](#campaign-groups-update), [Delete](#campaign-groups-delete), [Context Store Search](#campaign-groups-context-store-search) |
-| Creatives | [List](#creatives-list), [Create](#creatives-create), [Get](#creatives-get), [Update](#creatives-update), [Delete](#creatives-delete), [Context Store Search](#creatives-context-store-search) |
-| Conversions | [List](#conversions-list), [Create](#conversions-create), [Get](#conversions-get), [Update](#conversions-update), [Context Store Search](#conversions-context-store-search) |
+| Accounts | [List](#accounts-list), [Create](#accounts-create), [Get](#accounts-get), [Update](#accounts-update), [Delete](#accounts-delete), [Context Store Search](#accounts-context-store-search), [Context Store SQL Query](#accounts-context-store-sql-query) |
+| Account Users | [List](#account-users-list), [Update](#account-users-update), [Create](#account-users-create), [Delete](#account-users-delete), [Context Store Search](#account-users-context-store-search), [Context Store SQL Query](#account-users-context-store-sql-query) |
+| Campaigns | [List](#campaigns-list), [Create](#campaigns-create), [Get](#campaigns-get), [Update](#campaigns-update), [Delete](#campaigns-delete), [Context Store Search](#campaigns-context-store-search), [Context Store SQL Query](#campaigns-context-store-sql-query) |
+| Campaign Groups | [List](#campaign-groups-list), [Create](#campaign-groups-create), [Get](#campaign-groups-get), [Update](#campaign-groups-update), [Delete](#campaign-groups-delete), [Context Store Search](#campaign-groups-context-store-search), [Context Store SQL Query](#campaign-groups-context-store-sql-query) |
+| Creatives | [List](#creatives-list), [Create](#creatives-create), [Get](#creatives-get), [Update](#creatives-update), [Delete](#creatives-delete), [Context Store Search](#creatives-context-store-search), [Context Store SQL Query](#creatives-context-store-sql-query) |
+| Conversions | [List](#conversions-list), [Create](#conversions-create), [Get](#conversions-get), [Update](#conversions-update), [Context Store Search](#conversions-context-store-search), [Context Store SQL Query](#conversions-context-store-sql-query) |
 | Conversion Events | [Create](#conversion-events-create) |
 | Campaign Conversions | [Create](#campaign-conversions-create), [Delete](#campaign-conversions-delete) |
-| Ad Campaign Analytics | [List](#ad-campaign-analytics-list), [Context Store Search](#ad-campaign-analytics-context-store-search) |
-| Ad Creative Analytics | [List](#ad-creative-analytics-list), [Context Store Search](#ad-creative-analytics-context-store-search) |
-| Ad Impression Device Analytics | [List](#ad-impression-device-analytics-list), [Context Store Search](#ad-impression-device-analytics-context-store-search) |
-| Ad Member Company Analytics | [List](#ad-member-company-analytics-list), [Context Store Search](#ad-member-company-analytics-context-store-search) |
-| Ad Member Company Size Analytics | [List](#ad-member-company-size-analytics-list), [Context Store Search](#ad-member-company-size-analytics-context-store-search) |
-| Ad Member Country Analytics | [List](#ad-member-country-analytics-list), [Context Store Search](#ad-member-country-analytics-context-store-search) |
-| Ad Member Industry Analytics | [List](#ad-member-industry-analytics-list), [Context Store Search](#ad-member-industry-analytics-context-store-search) |
-| Ad Member Job Function Analytics | [List](#ad-member-job-function-analytics-list), [Context Store Search](#ad-member-job-function-analytics-context-store-search) |
-| Ad Member Job Title Analytics | [List](#ad-member-job-title-analytics-list), [Context Store Search](#ad-member-job-title-analytics-context-store-search) |
-| Ad Member Region Analytics | [List](#ad-member-region-analytics-list), [Context Store Search](#ad-member-region-analytics-context-store-search) |
-| Ad Member Seniority Analytics | [List](#ad-member-seniority-analytics-list), [Context Store Search](#ad-member-seniority-analytics-context-store-search) |
-| Lead Forms | [List](#lead-forms-list), [Context Store Search](#lead-forms-context-store-search) |
-| Lead Form Responses | [List](#lead-form-responses-list), [Context Store Search](#lead-form-responses-context-store-search) |
+| Ad Campaign Analytics | [List](#ad-campaign-analytics-list), [Context Store Search](#ad-campaign-analytics-context-store-search), [Context Store SQL Query](#ad-campaign-analytics-context-store-sql-query) |
+| Ad Creative Analytics | [List](#ad-creative-analytics-list), [Context Store Search](#ad-creative-analytics-context-store-search), [Context Store SQL Query](#ad-creative-analytics-context-store-sql-query) |
+| Ad Impression Device Analytics | [List](#ad-impression-device-analytics-list), [Context Store Search](#ad-impression-device-analytics-context-store-search), [Context Store SQL Query](#ad-impression-device-analytics-context-store-sql-query) |
+| Ad Member Company Analytics | [List](#ad-member-company-analytics-list), [Context Store Search](#ad-member-company-analytics-context-store-search), [Context Store SQL Query](#ad-member-company-analytics-context-store-sql-query) |
+| Ad Member Company Size Analytics | [List](#ad-member-company-size-analytics-list), [Context Store Search](#ad-member-company-size-analytics-context-store-search), [Context Store SQL Query](#ad-member-company-size-analytics-context-store-sql-query) |
+| Ad Member Country Analytics | [List](#ad-member-country-analytics-list), [Context Store Search](#ad-member-country-analytics-context-store-search), [Context Store SQL Query](#ad-member-country-analytics-context-store-sql-query) |
+| Ad Member Industry Analytics | [List](#ad-member-industry-analytics-list), [Context Store Search](#ad-member-industry-analytics-context-store-search), [Context Store SQL Query](#ad-member-industry-analytics-context-store-sql-query) |
+| Ad Member Job Function Analytics | [List](#ad-member-job-function-analytics-list), [Context Store Search](#ad-member-job-function-analytics-context-store-search), [Context Store SQL Query](#ad-member-job-function-analytics-context-store-sql-query) |
+| Ad Member Job Title Analytics | [List](#ad-member-job-title-analytics-list), [Context Store Search](#ad-member-job-title-analytics-context-store-search), [Context Store SQL Query](#ad-member-job-title-analytics-context-store-sql-query) |
+| Ad Member Region Analytics | [List](#ad-member-region-analytics-list), [Context Store Search](#ad-member-region-analytics-context-store-search), [Context Store SQL Query](#ad-member-region-analytics-context-store-sql-query) |
+| Ad Member Seniority Analytics | [List](#ad-member-seniority-analytics-list), [Context Store Search](#ad-member-seniority-analytics-context-store-search), [Context Store SQL Query](#ad-member-seniority-analytics-context-store-sql-query) |
+| Lead Forms | [List](#lead-forms-list), [Context Store Search](#lead-forms-context-store-search), [Context Store SQL Query](#lead-forms-context-store-sql-query) |
+| Lead Form Responses | [List](#lead-form-responses-list), [Context Store Search](#lead-form-responses-context-store-search), [Context Store SQL Query](#lead-form-responses-context-store-sql-query) |
 
 ## Accounts
 
@@ -412,7 +412,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -466,6 +466,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].currency` | `string` | The currency used for financial transactions in the account. |
 | `data[].id` | `integer` | The unique identifier for the account. |
 | `data[].status` | `string` | The status of the account. |
+
+</details>
+
+### Accounts Context Store SQL Query
+
+Run a SQL query against accounts records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "accounts",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.accounts.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "accounts",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -777,7 +840,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -809,6 +872,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].lastModified` | `string` | The date and time when the user account was last modified |
 | `data[].role` | `string` | The role assigned to the user in the account |
 | `data[].user` | `string` | The user details including name, email, etc. |
+
+</details>
+
+### Account Users Context Store SQL Query
+
+Run a SQL query against account users records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "account_users",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.account_users.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "account_users",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1280,7 +1406,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1358,6 +1484,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].format` | `string` | The format of the campaign. |
 | `data[].objectiveType` | `string` | The type of objective for the campaign. |
 | `data[].offsitePreferences` | `object` | Preferences related to offsite delivery. |
+
+</details>
+
+### Campaigns Context Store SQL Query
+
+Run a SQL query against campaigns records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "campaigns",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.campaigns.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "campaigns",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1782,7 +1971,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1828,6 +2017,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].account` | `string` | The account associated with the campaign group. |
 | `data[].status` | `string` | Current status of the campaign group. |
 | `data[].allowedCampaignTypes` | `array` | List of campaign types allowed for this campaign group. |
+
+</details>
+
+### Campaign Groups Context Store SQL Query
+
+Run a SQL query against campaign groups records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "campaign_groups",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.campaign_groups.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "campaign_groups",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -2230,7 +2482,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -2282,6 +2534,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].intendedStatus` | `string` | The intended status of the creative. |
 | `data[].account` | `string` | The account associated with the creative. |
 | `data[].leadgenCallToAction` | `object` | Call-to-action information for lead generation purposes. |
+
+</details>
+
+### Creatives Context Store SQL Query
+
+Run a SQL query against creatives records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "creatives",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.creatives.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "creatives",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -2678,7 +2993,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -2736,6 +3051,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].associatedCampaigns` | `array` | Campaigns associated with the conversion. |
 | `data[].urlMatchRuleExpression` | `array` | Expression used for matching URLs for attribution. |
 | `data[].urlRules` | `array` | Rules for URL matching in the conversion. |
+
+</details>
+
+### Conversions Context Store SQL Query
+
+Run a SQL query against conversions records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "conversions",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.conversions.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "conversions",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -3106,7 +3484,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -3329,6 +3707,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Ad Campaign Analytics Context Store SQL Query
+
+Run a SQL query against ad campaign analytics records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "ad_campaign_analytics",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.ad_campaign_analytics.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_campaign_analytics",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Ad Creative Analytics
 
 ### Ad Creative Analytics List
@@ -3515,7 +3956,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -3738,6 +4179,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Ad Creative Analytics Context Store SQL Query
+
+Run a SQL query against ad creative analytics records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "ad_creative_analytics",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.ad_creative_analytics.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_creative_analytics",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Ad Impression Device Analytics
 
 ### Ad Impression Device Analytics List
@@ -3924,7 +4428,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -4144,6 +4648,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].viralVideoViews` | `number` | Total views of videos in viral distribution of the ad. |
 | `data[].pivot` | `string` | Pivot dimension used for this analytics record |
 | `data[].sponsoredCampaign` | `string` | URN of the sponsored campaign this analytics record belongs to |
+
+</details>
+
+### Ad Impression Device Analytics Context Store SQL Query
+
+Run a SQL query against ad impression device analytics records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "ad_impression_device_analytics",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.ad_impression_device_analytics.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_impression_device_analytics",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -4333,7 +4900,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -4553,6 +5120,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].viralVideoViews` | `number` | Total views of videos in viral distribution of the ad. |
 | `data[].pivot` | `string` | Pivot dimension used for this analytics record |
 | `data[].sponsoredCampaign` | `string` | URN of the sponsored campaign this analytics record belongs to |
+
+</details>
+
+### Ad Member Company Analytics Context Store SQL Query
+
+Run a SQL query against ad member company analytics records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "ad_member_company_analytics",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.ad_member_company_analytics.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_member_company_analytics",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -4742,7 +5372,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -4962,6 +5592,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].viralVideoViews` | `number` | Total views of videos in viral distribution of the ad. |
 | `data[].pivot` | `string` | Pivot dimension used for this analytics record |
 | `data[].sponsoredCampaign` | `string` | URN of the sponsored campaign this analytics record belongs to |
+
+</details>
+
+### Ad Member Company Size Analytics Context Store SQL Query
+
+Run a SQL query against ad member company size analytics records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "ad_member_company_size_analytics",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.ad_member_company_size_analytics.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_member_company_size_analytics",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -5151,7 +5844,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -5371,6 +6064,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].viralVideoViews` | `number` | Total views of videos in viral distribution of the ad. |
 | `data[].pivot` | `string` | Pivot dimension used for this analytics record |
 | `data[].sponsoredCampaign` | `string` | URN of the sponsored campaign this analytics record belongs to |
+
+</details>
+
+### Ad Member Country Analytics Context Store SQL Query
+
+Run a SQL query against ad member country analytics records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "ad_member_country_analytics",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.ad_member_country_analytics.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_member_country_analytics",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -5560,7 +6316,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -5780,6 +6536,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].viralVideoViews` | `number` | Total views of videos in viral distribution of the ad. |
 | `data[].pivot` | `string` | Pivot dimension used for this analytics record |
 | `data[].sponsoredCampaign` | `string` | URN of the sponsored campaign this analytics record belongs to |
+
+</details>
+
+### Ad Member Industry Analytics Context Store SQL Query
+
+Run a SQL query against ad member industry analytics records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "ad_member_industry_analytics",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.ad_member_industry_analytics.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_member_industry_analytics",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -5969,7 +6788,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -6189,6 +7008,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].viralVideoViews` | `number` | Total views of videos in viral distribution of the ad. |
 | `data[].pivot` | `string` | Pivot dimension used for this analytics record |
 | `data[].sponsoredCampaign` | `string` | URN of the sponsored campaign this analytics record belongs to |
+
+</details>
+
+### Ad Member Job Function Analytics Context Store SQL Query
+
+Run a SQL query against ad member job function analytics records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "ad_member_job_function_analytics",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.ad_member_job_function_analytics.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_member_job_function_analytics",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -6378,7 +7260,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -6598,6 +7480,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].viralVideoViews` | `number` | Total views of videos in viral distribution of the ad. |
 | `data[].pivot` | `string` | Pivot dimension used for this analytics record |
 | `data[].sponsoredCampaign` | `string` | URN of the sponsored campaign this analytics record belongs to |
+
+</details>
+
+### Ad Member Job Title Analytics Context Store SQL Query
+
+Run a SQL query against ad member job title analytics records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "ad_member_job_title_analytics",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.ad_member_job_title_analytics.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_member_job_title_analytics",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -6787,7 +7732,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -7007,6 +7952,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].viralVideoViews` | `number` | Total views of videos in viral distribution of the ad. |
 | `data[].pivot` | `string` | Pivot dimension used for this analytics record |
 | `data[].sponsoredCampaign` | `string` | URN of the sponsored campaign this analytics record belongs to |
+
+</details>
+
+### Ad Member Region Analytics Context Store SQL Query
+
+Run a SQL query against ad member region analytics records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "ad_member_region_analytics",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.ad_member_region_analytics.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_member_region_analytics",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -7196,7 +8204,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -7419,6 +8427,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Ad Member Seniority Analytics Context Store SQL Query
+
+Run a SQL query against ad member seniority analytics records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "ad_member_seniority_analytics",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.ad_member_seniority_analytics.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_member_seniority_analytics",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Lead Forms
 
 ### Lead Forms List
@@ -7558,7 +8629,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -7624,6 +8695,69 @@ It will not be present if the form has not been reviewed by the review pipeline.
  |
 | `data[].versionId` | `integer` | The version ID of the form. This is a derived field and is generated on the server side. |
 | `data[].versionTag` | `string` | The number of times the form has been modified. |
+
+</details>
+
+### Lead Forms Context Store SQL Query
+
+Run a SQL query against lead forms records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "lead_forms",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.lead_forms.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "lead_forms",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -7773,7 +8907,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -7837,6 +8971,69 @@ organization is an URN of OrganizationUrn that indicates the company page of the
 For non-guest leads, the submitter field will still be included in the response and will provide the person's URN. Ex: "submitter": "urn:li:person:MpGcnvaU_p".	Yes
  |
 | `data[].versionedLeadGenFormUrn` | `string` | URN identifying which form this FormResponse belongs to. |
+
+</details>
+
+### Lead Form Responses Context Store SQL Query
+
+Run a SQL query against lead form responses records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "linkedin-ads",
+  "entity": "lead_form_responses",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await linkedin_ads.lead_form_responses.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "lead_form_responses",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
