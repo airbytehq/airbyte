@@ -153,6 +153,10 @@ def test_401_with_failed_refresh_exhausts_retries_as_config_error(virtual_clock:
         and _401_MESSAGE in error.message
     ]
     assert len(matching) == 1, f"expected exactly one config_error containing {_401_MESSAGE}, got {output.errors}"
+    # Today's CDK numbers; airbyte-python-cdk#1173 bounds this to 1 initial + 1 failed refresh, then fail — update with the pin bump.
+    http_mocker.assert_number_of_calls(_TOKEN_REQUEST, 7)
+    http_mocker.assert_number_of_calls(_PAGE_REQUEST, 6)
+    assert sum(virtual_clock) <= 400
 
 
 def test_429_waits_for_retry_after_then_succeeds(virtual_clock: list[float]) -> None:
