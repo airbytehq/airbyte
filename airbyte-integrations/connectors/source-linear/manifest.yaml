@@ -1735,6 +1735,13 @@ definitions:
           action: RETRY
           failure_type: transient_error
           error_message: "Linear returned a transient error; retrying."
+        # 4c · Unparsable / incomplete body. The CDK's response filter sees {} when the body is not valid JSON,
+        #      so a body with neither data nor errors means Linear (or the transport) returned a truncated page.
+        #      Retry it instead of letting pagination crash on the empty dict. Must stay before the catch-all.
+        - predicate: "{{ 'data' not in response and 'errors' not in response }}"
+          action: RETRY
+          failure_type: transient_error
+          error_message: "Linear returned an incomplete or unparsable response; retrying."
         # 5 · Catch-all for data-less GraphQL errors not classified above. Partial-success pages
         #     flow to the extractor; 408/429/5xx are handled by the status filters above.
         - predicate: "{{ 'errors' in response and response['errors'] and not (response.get('data') or {}).values() | select | list }}"
