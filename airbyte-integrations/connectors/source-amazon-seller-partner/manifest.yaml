@@ -3293,12 +3293,31 @@ definitions:
       type: DeclarativeStream
       name: GET_VENDOR_INVENTORY_REPORT
       primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: endDate
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P1D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             reportType: GET_VENDOR_INVENTORY_REPORT
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
+            dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
         download_decoder:
           type: CustomDecoder
@@ -3306,6 +3325,12 @@ definitions:
         download_extractor:
           type: DpathExtractor
           field_path: ["inventoryByAsin"]
+      transformations:
+        - type: AddFields
+          fields:
+            # Day-align the cursor value too, so destination dedup compares stable per-day values.
+            - path: ["endDate"]
+              value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
       schema_loader:
         type: InlineSchemaLoader
         schema:

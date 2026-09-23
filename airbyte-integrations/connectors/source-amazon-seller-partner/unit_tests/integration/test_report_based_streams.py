@@ -1532,6 +1532,17 @@ class TestVendorJsonReportsIncremental:
                 id="vendor_traffic_report",
             ),
             pytest.param(
+                "GET_VENDOR_INVENTORY_REPORT",
+                "endDate",
+                {
+                    "reportType": "GET_VENDOR_INVENTORY_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_inventory_report",
+            ),
+            pytest.param(
                 "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
                 "endDate",
                 {
@@ -1598,6 +1609,17 @@ class TestVendorJsonReportsIncremental:
                     "marketplaceIds": [MARKETPLACE_ID],
                 },
                 id="vendor_traffic_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_INVENTORY_REPORT",
+                "endDate",
+                {
+                    "reportType": "GET_VENDOR_INVENTORY_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_inventory_report",
             ),
             pytest.param(
                 "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
