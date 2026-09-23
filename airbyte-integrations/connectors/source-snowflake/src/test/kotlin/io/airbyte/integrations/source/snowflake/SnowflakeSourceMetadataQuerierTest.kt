@@ -34,9 +34,9 @@ import org.mockito.Mockito.`when`
  * Unit tests for the discover tolerance behavior of [SnowflakeSourceMetadataQuerier].
  *
  * These exercise the [SnowflakeSourceMetadataQuerier.fields] ->
- * [SnowflakeSourceMetadataQuerier.columnMetadata] -> queryColumnMetadata path against a mocked
- * JDBC [Connection]. The tests cover each tolerated vendor error code and SQLSTATE, the
- * unknown-is-fatal default, per-column fallback, and operation gating.
+ * [SnowflakeSourceMetadataQuerier.columnMetadata] -> queryColumnMetadata path against a mocked JDBC
+ * [Connection]. The tests cover each tolerated vendor error code and SQLSTATE, the unknown-is-fatal
+ * default, per-column fallback, and operation gating.
  */
 class SnowflakeSourceMetadataQuerierTest {
 
@@ -62,7 +62,7 @@ class SnowflakeSourceMetadataQuerierTest {
 
         // --- Fatal failures ---
 
-        //NETWORK_ERROR/IO_ERROR
+        // NETWORK_ERROR/IO_ERROR
         private const val SQLSTATE_DRIVER_NETWORK = "58030"
         private const val ERRORCODE_DRIVER_NETWORK = 200015
 
@@ -227,7 +227,10 @@ class SnowflakeSourceMetadataQuerierTest {
         val conn = mock(Connection::class.java)
         `when`(conn.metaData).thenReturn(dbmd)
         `when`(conn.createStatement()).thenReturn(stmt)
-        return Fixture(querierFor(conn, tolerateObjectLevelFailures = true, checkPrivileges = true), stmt)
+        return Fixture(
+            querierFor(conn, tolerateObjectLevelFailures = true, checkPrivileges = true),
+            stmt
+        )
     }
 
     private fun streamId(name: String): StreamIdentifier =
@@ -338,7 +341,8 @@ class SnowflakeSourceMetadataQuerierTest {
 
     @Test
     fun `object-unauthorized vendor code is tolerated even with a null sqlState`() {
-        // Pins the errorCode-2043 allowlist entry on its own, proves the probe ran and short-circuited.
+        // Pins the errorCode-2043 allowlist entry on its own, proves the probe ran and
+        // short-circuited.
         val fixture =
             fixtureWith(
                 SQLException(

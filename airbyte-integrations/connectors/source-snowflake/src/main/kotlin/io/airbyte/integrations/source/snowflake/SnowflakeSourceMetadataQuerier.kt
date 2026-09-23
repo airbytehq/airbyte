@@ -47,7 +47,8 @@ private val TOLERABLE_OBJECT_ERROR_CODES = setOf(2003, 2043, 2037, 2057)
 
 /**
  * SQLSTATE classes:
- * 1. 42601: view compilation/expansion failure, such as a view referencing an unset session variable.
+ * 1. 42601: view compilation/expansion failure, such as a view referencing an unset session
+ * variable.
  * 2. 42501: insufficient privileges to access the object or column.
  * 3. 02000: object does not exist or is not visible to the current user.
  */
@@ -59,8 +60,8 @@ private val TOLERABLE_OBJECT_SQLSTATES = setOf("42501", "42601", "02000")
  * Snowflake uses a standard three-level namespace: catalog.schema.table where catalog is the
  * database name, schema is the schema name.
  *
- * DISCOVER can tolerate known object-level failures, such as invalid views, and skip those
- * streams. CHECK and READ must surface these failures.
+ * DISCOVER can tolerate known object-level failures, such as invalid views, and skip those streams.
+ * CHECK and READ must surface these failures.
  */
 class SnowflakeSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
@@ -253,8 +254,7 @@ class SnowflakeSourceMetadataQuerier(
      * table/view. Everything else is treated as fatal.
      */
     private fun isTolerableObjectError(e: SQLException): Boolean =
-        e.errorCode in TOLERABLE_OBJECT_ERROR_CODES ||
-                e.sqlState in TOLERABLE_OBJECT_SQLSTATES
+        e.errorCode in TOLERABLE_OBJECT_ERROR_CODES || e.sqlState in TOLERABLE_OBJECT_SQLSTATES
 
     private fun isWholeObjectFailure(e: SQLException): Boolean =
         e.sqlState == "42601" || e.errorCode in TOLERABLE_OBJECT_ERROR_CODES
