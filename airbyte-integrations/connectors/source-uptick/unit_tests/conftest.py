@@ -2,6 +2,7 @@
 
 import os
 import sys
+import time
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -16,7 +17,8 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
-os.environ.setdefault("REQUEST_CACHE_PATH", "REQUEST_CACHE_PATH")
+REQUEST_CACHE_PATH = Path(__file__).parent / "REQUEST_CACHE_PATH"
+os.environ.setdefault("REQUEST_CACHE_PATH", str(REQUEST_CACHE_PATH))
 
 
 def _manifest_dir() -> Path:
@@ -61,8 +63,24 @@ def get_source(
 @pytest.fixture(autouse=True)
 def clear_cache_before_each_test():
     """Clear the HTTP request cache so cached responses do not leak between tests."""
-    cache_dir = Path(os.environ["REQUEST_CACHE_PATH"])
-    if cache_dir.is_dir():
-        for file_path in cache_dir.glob("*.sqlite"):
+    if REQUEST_CACHE_PATH.is_dir():
+        for file_path in REQUEST_CACHE_PATH.glob("*.sqlite"):
             file_path.unlink()
     yield
+
+
+@pytest.fixture
+def virtual_clock(monkeypatch: pytest.MonkeyPatch) -> list[float]:
+    """Record `time.sleep` calls and advance the pyrate_limiter clock by the same amount.
+
+    The api_budget's `MovingWindowCallRatePolicy` keeps a 60s in-memory window keyed on
+    `pyrate_limiter.clocks.time`; without the offset a mocked sleep never drains the window,
+    so a 429 (which reports `available_calls == 0` and fills the budget) would block the
+    retry forever instead of just for the real cool-down.
+    """
+    sleeps: list[float] = []
+    offset = [0.0]
+    real = time.time
+    monkeypatch.setattr("pyrate_limiter.clocks.time", lambda: real() + offset[0])
+    monkeypatch.setattr("time.sleep", lambda d: (sleeps.append(d), offset.__setitem__(0, offset[0] + d)))
+    return sleeps

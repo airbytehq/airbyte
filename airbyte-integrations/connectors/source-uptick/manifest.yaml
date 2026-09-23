@@ -36,6 +36,8 @@ definitions:
         backoff_strategies:
           - type: WaitTimeFromHeader
             header: Retry-After
+            # A pathological Retry-After must fail the stream with a rate-limit error instead of
+            # sleeping for hours.
             max_waiting_time_in_seconds: 1800
           - type: ExponentialBackoffStrategy
         response_filters:
@@ -139,6 +141,7 @@ spec:
       base_url:
         type: string
         minLength: 1
+        pattern: "\\S"
         description: Root URL of the Uptick workspace, for example https://demo-fire.onuptick.com. Only the host is used; the scheme and trailing slash are normalized.
         order: 0
         title: Base Url

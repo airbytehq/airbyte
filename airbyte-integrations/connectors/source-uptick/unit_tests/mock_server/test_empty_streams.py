@@ -2,7 +2,6 @@
 
 import json
 from typing import Any
-from unittest.mock import patch
 
 import pytest
 from unit_tests.conftest import get_source
@@ -299,7 +298,7 @@ def test_non_client_side_incremental_does_not_filter_old_records() -> None:
     "status_code",
     [pytest.param(429, id="429"), pytest.param(500, id="500")],
 )
-def test_retries_on_transient_errors(status_code: int) -> None:
+def test_retries_on_transient_errors(status_code: int, virtual_clock: list[float]) -> None:
     with HttpMocker() as http_mocker:
         _mock_token(http_mocker)
         first_page = UptickRequestBuilder.collection(_RETRY_STREAM)
@@ -309,22 +308,20 @@ def test_retries_on_transient_errors(status_code: int) -> None:
                 HttpResponse(
                     body="",
                     status_code=status_code,
-                    # Not an Uptick header; keeps the api_budget window open (see test_error_handling._KEEP_BUDGET_OPEN).
-                    headers={"Retry-After": "0", "ratelimit-remaining": "60"},
+                    headers={"Retry-After": "0"},
                 ),
                 _response([_record(_RETRY_STREAM, 1)]),
             ],
         )
 
-        with patch("time.sleep"):
-            output = _read(_RETRY_STREAM)
+        output = _read(_RETRY_STREAM)
 
         assert len(output.records) == 1
         assert output.errors == []
         http_mocker.assert_number_of_calls(first_page, 2)
 
 
-def test_fails_after_max_retries() -> None:
+def test_fails_after_max_retries(virtual_clock: list[float]) -> None:
     with HttpMocker() as http_mocker:
         _mock_token(http_mocker)
         first_page = UptickRequestBuilder.collection(_RETRY_STREAM)
@@ -340,8 +337,7 @@ def test_fails_after_max_retries() -> None:
             ],
         )
 
-        with patch("time.sleep"):
-            output = _read(_RETRY_STREAM)
+        output = _read(_RETRY_STREAM)
 
         assert output.records == []
         assert output.get_stream_statuses(_RETRY_STREAM)[-1].name == "INCOMPLETE"

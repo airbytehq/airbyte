@@ -1,17 +1,18 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 """Guards the shared `api_budget`, `concurrency_level`, and `Retry-After` wait cap in
-`manifest.yaml`: a single global moving-window budget, `num_workers` wiring into the
-concurrent source thread pool, and a `Retry-After` at the 1800s cap that stops the
-stream instead of waiting.
+`manifest.yaml`: a single global moving-window budget of 60 calls per minute, `num_workers`
+wiring into the resolved concurrency level, and a `Retry-After` at the 1800s cap that stops
+the stream instead of waiting.
 """
 
+import json
+
 import pytest
-import requests
 from conftest import base_config, get_source
 
 from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.sources.streams.call_rate import CallRateLimitHit, HttpAPIBudget, MovingWindowCallRatePolicy
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConcurrencyLevel as ConcurrencyLevelModel
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -23,39 +24,24 @@ _STREAM_NAME = "task_profitability"
 _TOKEN_REQUEST_BODY = "grant_type=password&client_id=client-id&client_secret=client-secret&username=user%40example.com&password=password"
 
 
-def _get_api_budget(config=None):
-    config = config or base_config()
-    source = get_source(config)
-    # The constructor's api budget is only populated once streams are built.
-    source.streams(config)
-    return source._constructor._api_budget
+def _service_group_page(record_id: int, next_url: str | None) -> HttpResponse:
+    record = {
+        "type": "ServiceGroup",
+        "id": record_id,
+        "attributes": {"created": "2026-01-01T00:00:00.000000+0000", "updated": "2026-01-02T00:00:00.000000+0000", "name": "g"},
+    }
+    return HttpResponse(body=json.dumps({"data": [record], "links": {"next": next_url}}), status_code=200)
 
 
-def _prepared(url):
-    return requests.Request("GET", url).prepare()
+def test_budget_policy_is_a_60_per_minute_moving_window() -> None:
+    api_budget = get_source(base_config()).resolved_manifest["api_budget"]
 
-
-def test_budget_policy_is_a_60_per_minute_moving_window():
-    api_budget = _get_api_budget()
-    assert isinstance(api_budget, HttpAPIBudget)
-
-    policies = api_budget._policies
+    policies = api_budget["policies"]
+    # One global MovingWindowCallRatePolicy: 60 calls per 60s window, empty matchers so every
+    # request on every stream counts against the same budget.
     assert len(policies) == 1
-    assert isinstance(policies[0], MovingWindowCallRatePolicy)
-
-    # Matchers are empty, so every request is throttled by the single global budget.
-    assert api_budget.get_matching_policy(_prepared(f"{_BASE_URL}/api/v2.15/tasks/")) is not None
-    assert api_budget.get_matching_policy(_prepared("https://example.com/x")) is not None
-
-
-def test_sixty_first_call_in_the_window_is_blocked():
-    api_budget = _get_api_budget()
-    for _ in range(60):
-        api_budget.acquire_call(_prepared(f"{_BASE_URL}/api/v2.15/tasks/"), block=False)
-
-    with pytest.raises(CallRateLimitHit) as limit_hit:
-        api_budget.acquire_call(_prepared(f"{_BASE_URL}/api/v2.15/tasks/"), block=False)
-    assert 0 < limit_hit.value.time_to_wait.total_seconds() <= 60
+    assert policies[0]["rates"] == [{"limit": 60, "interval": "PT1M"}]
+    assert policies[0]["matchers"] == []
 
 
 @pytest.mark.parametrize(
@@ -63,18 +49,42 @@ def test_sixty_first_call_in_the_window_is_blocked():
     [
         pytest.param({}, 3, id="default_num_workers"),
         pytest.param({"num_workers": 7}, 7, id="configured_num_workers"),
-        pytest.param({"num_workers": 10}, 10, id="max_num_workers"),
         pytest.param({"num_workers": 50}, 10, id="clamped_to_max_concurrency"),
-        pytest.param({"num_workers": 0}, 3, id="zero_falls_back_to_default"),
-        pytest.param({"num_workers": None}, 3, id="null_falls_back_to_default"),
-        pytest.param({"num_workers": True}, 3, id="boolean_falls_back_to_default"),
     ],
 )
-def test_concurrency_level_resolves_from_config(config_override, expected_workers):
+def test_concurrency_level_resolves_from_config(config_override, expected_workers) -> None:
     config = base_config(**config_override)
     source = get_source(config)
-    # The resolved concurrency level is the max_workers of the thread pool backing the concurrent source.
-    assert source._concurrent_source._threadpool._threadpool._max_workers == expected_workers
+    component = source._constructor.create_component(ConcurrencyLevelModel, source.resolved_manifest["concurrency_level"], source._config)
+
+    assert component.get_concurrency_level() == expected_workers
+
+
+def test_global_budget_throttles_past_60_calls_per_minute(virtual_clock: list[float]) -> None:
+    """61 pages of one stream must fit under the 60/min budget: the 61st acquire waits for the
+    first window slot to expire instead of raising CallRateLimitHit."""
+    page_request = HttpRequest(f"{_BASE_URL}/api/v2.15/servicegroups/", query_params=ANY_QUERY_PARAMS)
+    pages = [
+        _service_group_page(page_number, f"{_BASE_URL}/api/v2.15/servicegroups/?page={page_number + 1}" if page_number < 61 else None)
+        for page_number in range(1, 62)
+    ]
+
+    config = base_config()
+    catalog = CatalogBuilder().with_stream("servicegroups", SyncMode.full_refresh).build()
+    with HttpMocker() as http_mocker:
+        http_mocker.post(
+            HttpRequest(f"{_BASE_URL}/api/oauth2/token/", body=_TOKEN_REQUEST_BODY),
+            HttpResponse('{"access_token": "token", "expires_in": 3600}', 200),
+        )
+        http_mocker.get(page_request, pages)
+        output = read(get_source(config, catalog), config, catalog)
+
+    assert [message.record.data["id"] for message in output.records] == list(range(1, 62))
+    assert output.errors == []
+    http_mocker.assert_number_of_calls(page_request, 61)
+    # The budget blocks once 60 calls sit inside the 60s window; the observed cool-down is ~60s
+    # while the oldest call slides out of the moving window.
+    assert virtual_clock and sum(virtual_clock) >= 59, f"expected a ~60s budget wait for call 61, got {virtual_clock}"
 
 
 def test_retry_after_at_cap_terminates_instead_of_waiting(monkeypatch) -> None:

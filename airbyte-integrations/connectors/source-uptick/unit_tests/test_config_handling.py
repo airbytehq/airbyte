@@ -11,6 +11,7 @@ from typing import Any
 
 import pytest
 from conftest import base_config, get_source
+from jsonschema import ValidationError, validate
 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConcurrencyLevel as ConcurrencyLevelModel
 
@@ -73,3 +74,12 @@ def test_default_concurrency_when_num_workers_missing() -> None:
     component = source._constructor.create_component(ConcurrencyLevelModel, source.resolved_manifest["concurrency_level"], source._config)
 
     assert component.get_concurrency_level() == _DEFAULT_CONCURRENCY
+
+
+def test_base_url_spec_rejects_blank_values() -> None:
+    base_url_schema = get_source(base_config()).resolved_manifest["spec"]["connection_specification"]["properties"]["base_url"]
+
+    for blank in ("", "   "):
+        with pytest.raises(ValidationError):
+            validate(instance=blank, schema=base_url_schema)
+    validate(instance="https://demo.onuptick.com", schema=base_url_schema)

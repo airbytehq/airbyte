@@ -8,11 +8,17 @@
 issued; a 401 on a stream request is an expired or revoked token and triggers a refresh plus retry.
 Every JSON:API stream goes through the same `DefaultErrorHandler`, so a single collection stream is
 enough to lock in that split plus fail-fast `config_error` on 403, `Retry-After` honoured on 429,
-the 1800s `Retry-After` cap, and 5xx exhaustion surfacing as a non-config failure.
+the 1800s `Retry-After` cap, the exponential fallback when no `Retry-After` is sent, and 5xx
+exhaustion surfacing as a non-config failure.
+
+Tests that read records use the `virtual_clock` fixture: it records `time.sleep` calls and advances
+the `pyrate_limiter` clock by the same amount, so the `api_budget` moving window drains exactly as
+fast as real time would. A real 429 reports `available_calls == 0` to the budget, so the true cost
+of a retry is the `Retry-After` wait plus the remaining 60s budget cool-down; the fixture lets the
+tests observe both.
 """
 
 import json
-from unittest.mock import patch
 
 import pytest
 from unit_tests.conftest import get_source
@@ -36,12 +42,9 @@ _401_MESSAGE = "HTTP 401: Uptick rejected the access token."
 _403_MESSAGE = "HTTP 403: Uptick user lacks permission for the requested endpoint."
 _RETRY_AFTER_CAP_SECONDS = 1800
 _PAGE_REQUEST = UptickRequestBuilder.collection(_STREAM)
-# Uptick does not send rate-limit headers. The mocked 429s carry this CDK-default header so the
-# `api_budget` window stays open: on CDK 7.30.0 a 429 without it reports `available_calls == 0`,
-# which fills the 60/min window, and with `time.sleep` patched the window never drains, so the
-# retry raises `CallRateLimitHit` instead of exercising `Retry-After`. The real post-429 budget
-# cool-down (up to 60 s on top of `Retry-After`) is therefore not covered by these tests.
-_KEEP_BUDGET_OPEN = {"ratelimit-remaining": "60"}
+# ExponentialBackoffStrategy with the default factor of 5 waits 5 * 2**attempt_count; the first
+# retry has attempt_count == 1, so 10s. The retry wrapper sleeps backoff + 1s.
+_FIRST_EXPONENTIAL_SLEEP_SECONDS = 11
 
 
 def _ok_page(record_id: int) -> HttpResponse:
@@ -55,16 +58,14 @@ def _ok_page(record_id: int) -> HttpResponse:
 
 def _read_with_responses(
     responses: list[HttpResponse], token_responses: list[HttpResponse] | None = None
-) -> tuple[EntrypointOutput, list[float], HttpMocker]:
-    sleeps: list[float] = []
+) -> tuple[EntrypointOutput, HttpMocker]:
     config = ConfigBuilder().build()
     catalog = CatalogBuilder().with_stream(_STREAM, SyncMode.full_refresh).build()
     with HttpMocker() as http_mocker:
         http_mocker.post(_TOKEN_REQUEST, token_responses or [_TOKEN_RESPONSE])
         http_mocker.get(_PAGE_REQUEST, responses)
-        with patch("time.sleep", sleeps.append):
-            output = read(get_source(config=config), config=config, catalog=catalog, state=StateBuilder().build())
-    return output, sleeps, http_mocker
+        output = read(get_source(config=config), config=config, catalog=catalog, state=StateBuilder().build())
+    return output, http_mocker
 
 
 def _stream_errors(output: EntrypointOutput) -> list:
@@ -78,8 +79,8 @@ def _stream_errors(output: EntrypointOutput) -> list:
         pytest.param(401, '{"error": "invalid_client"}', id="invalid_client"),
     ],
 )
-def test_bad_credentials_fail_fast_on_token_request(status_code: int, body: str) -> None:
-    output, sleeps, http_mocker = _read_with_responses([_ok_page(1)], token_responses=[HttpResponse(body=body, status_code=status_code)])
+def test_bad_credentials_fail_fast_on_token_request(status_code: int, body: str, virtual_clock: list[float]) -> None:
+    output, http_mocker = _read_with_responses([_ok_page(1)], token_responses=[HttpResponse(body=body, status_code=status_code)])
 
     assert output.records == []
     assert output.get_stream_statuses(_STREAM)[-1].name == "INCOMPLETE"
@@ -89,25 +90,25 @@ def test_bad_credentials_fail_fast_on_token_request(status_code: int, body: str)
         if error.failure_type == FailureType.config_error and "Refresh token was rejected by the OAuth provider" in error.message
     ]
     assert len(matching) == 1, f"expected exactly one config_error from the token endpoint, got {output.errors}"
-    assert sleeps == []
+    assert virtual_clock == []
     http_mocker.assert_number_of_calls(_TOKEN_REQUEST, 1)
     http_mocker.assert_number_of_calls(_PAGE_REQUEST, 0)
 
 
-def test_403_fails_fast_without_retry() -> None:
-    output, sleeps, http_mocker = _read_with_responses([HttpResponse(body='{"detail": "nope"}', status_code=403)])
+def test_403_fails_fast_without_retry(virtual_clock: list[float]) -> None:
+    output, http_mocker = _read_with_responses([HttpResponse(body='{"detail": "nope"}', status_code=403)])
 
     assert output.records == []
     assert output.get_stream_statuses(_STREAM)[-1].name == "INCOMPLETE"
     matching = [error for error in _stream_errors(output) if error.message == _403_MESSAGE]
     assert len(matching) == 1, f"expected exactly one error with the connector message, got {output.errors}"
     assert matching[0].failure_type == FailureType.config_error
-    assert sleeps == []
+    assert virtual_clock == []
     http_mocker.assert_number_of_calls(_TOKEN_REQUEST, 1)
     http_mocker.assert_number_of_calls(_PAGE_REQUEST, 1)
 
 
-def test_401_on_stream_refreshes_token_then_retries() -> None:
+def test_401_on_stream_refreshes_token_then_retries(virtual_clock: list[float]) -> None:
     config = ConfigBuilder().build()
     catalog = CatalogBuilder().with_stream(_STREAM, SyncMode.full_refresh).build()
     refreshed_page_request = UptickRequestBuilder.collection(_STREAM, token="tok2")
@@ -124,8 +125,7 @@ def test_401_on_stream_refreshes_token_then_retries() -> None:
             [HttpResponse(body='{"errors": {"detail": "Authentication credentials were not provided."}}', status_code=401)],
         )
         http_mocker.get(refreshed_page_request, [_ok_page(1)])
-        with patch("time.sleep"):
-            output = read(get_source(config=config), config=config, catalog=catalog, state=StateBuilder().build())
+        output = read(get_source(config=config), config=config, catalog=catalog, state=StateBuilder().build())
 
     assert [message.record.data["id"] for message in output.records] == [1]
     assert output.errors == []
@@ -134,8 +134,8 @@ def test_401_on_stream_refreshes_token_then_retries() -> None:
     http_mocker.assert_number_of_calls(refreshed_page_request, 1)
 
 
-def test_401_with_failed_refresh_exhausts_retries_as_config_error() -> None:
-    output, _, http_mocker = _read_with_responses(
+def test_401_with_failed_refresh_exhausts_retries_as_config_error(virtual_clock: list[float]) -> None:
+    output, http_mocker = _read_with_responses(
         [HttpResponse(body='{"errors": {"detail": "Authentication credentials were not provided."}}', status_code=401) for _ in range(6)],
         token_responses=[
             _TOKEN_RESPONSE,
@@ -155,37 +155,53 @@ def test_401_with_failed_refresh_exhausts_retries_as_config_error() -> None:
     assert len(matching) == 1, f"expected exactly one config_error containing {_401_MESSAGE}, got {output.errors}"
 
 
-def test_429_waits_for_retry_after_then_succeeds() -> None:
-    output, sleeps, http_mocker = _read_with_responses(
+def test_429_waits_for_retry_after_then_succeeds(virtual_clock: list[float]) -> None:
+    output, http_mocker = _read_with_responses(
         [
-            HttpResponse(
-                body='{"detail": "throttled"}',
-                status_code=429,
-                headers={"Retry-After": "123", **_KEEP_BUDGET_OPEN},
-            ),
+            HttpResponse(body='{"detail": "throttled"}', status_code=429, headers={"Retry-After": "123"}),
             _ok_page(1),
         ]
     )
 
     assert output.errors == []
     assert [message.record.data["id"] for message in output.records] == [1]
-    assert sleeps and max(sleeps) >= 123, f"Retry-After was not honoured: {sleeps}"
+    # The CDK sleeps Retry-After + 1s. The 123s wait already exceeds the 60s budget window, so the
+    # post-429 budget cool-down only adds a ~0s acquire retry.
+    assert virtual_clock[0] == 124.0 and sum(virtual_clock[1:]) < 1, f"Retry-After was not honoured: {virtual_clock}"
     http_mocker.assert_number_of_calls(_PAGE_REQUEST, 2)
 
 
-def test_429_retry_after_at_cap_fails_instead_of_waiting() -> None:
-    output, sleeps, _ = _read_with_responses(
+def test_429_retry_after_at_cap_fails_instead_of_waiting(virtual_clock: list[float]) -> None:
+    output, _ = _read_with_responses(
         [HttpResponse(body='{"detail": "throttled"}', status_code=429, headers={"Retry-After": str(_RETRY_AFTER_CAP_SECONDS)})]
     )
 
     assert output.records == []
     assert output.get_stream_statuses(_STREAM)[-1].name == "INCOMPLETE"
     assert any(error.failure_type == FailureType.transient_error for error in _stream_errors(output)), output.errors
-    assert all(duration < _RETRY_AFTER_CAP_SECONDS for duration in sleeps), f"waited at or above the cap: {sleeps}"
+    assert all(duration < _RETRY_AFTER_CAP_SECONDS for duration in virtual_clock), f"waited at or above the cap: {virtual_clock}"
 
 
-def test_5xx_exhausts_retries_without_auth_message() -> None:
-    output, _, http_mocker = _read_with_responses([HttpResponse(body="", status_code=503, headers={"Retry-After": "0"}) for _ in range(6)])
+@pytest.mark.parametrize("status_code", [pytest.param(429, id="429"), pytest.param(503, id="503")])
+def test_transient_error_without_retry_after_uses_exponential_backoff(status_code: int, virtual_clock: list[float]) -> None:
+    output, http_mocker = _read_with_responses(
+        [
+            HttpResponse(body='{"detail": "throttled"}', status_code=status_code),
+            _ok_page(1),
+        ]
+    )
+
+    assert output.errors == []
+    assert [message.record.data["id"] for message in output.records] == [1]
+    # First sleep is the exponential backoff default (factor 5, attempt 1 -> 5*2 = 10, plus the 1s
+    # the retry wrapper adds). A 429 also marks the budget exhausted, so it adds a cool-down sleep
+    # for the rest of the 60s window (~49s after the 11s backoff).
+    assert virtual_clock[0] == _FIRST_EXPONENTIAL_SLEEP_SECONDS, f"exponential backoff was not used: {virtual_clock}"
+    http_mocker.assert_number_of_calls(_PAGE_REQUEST, 2)
+
+
+def test_5xx_exhausts_retries_without_auth_message(virtual_clock: list[float]) -> None:
+    output, http_mocker = _read_with_responses([HttpResponse(body="", status_code=503, headers={"Retry-After": "0"}) for _ in range(6)])
 
     assert output.records == []
     assert output.get_stream_statuses(_STREAM)[-1].name == "INCOMPLETE"
