@@ -326,7 +326,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| 0.5.37 | 2026-09-23 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Declare Unstructured Document Parser `content` field as semantic-search indexable (CDK prerelease) |
+| 0.5.37 | 2026-09-23 | [86924](https://github.com/airbytehq/airbyte/pull/86924) | Declare Unstructured Document Parser `content` field as semantic-search indexable (CDK prerelease) |
 | 0.5.36 | 2026-09-22 | [86653](https://github.com/airbytehq/airbyte/pull/86653) | Update dependencies |
 | 0.5.35 | 2026-09-15 | [86072](https://github.com/airbytehq/airbyte/pull/86072) | Update dependencies |
 | 0.5.34 | 2026-09-08 | [85518](https://github.com/airbytehq/airbyte/pull/85518) | Update dependencies |
