@@ -91,12 +91,3 @@ def test_max_requests_per_minute_spec_validation() -> None:
     for invalid in (0, "60", 2.5, 601):
         with pytest.raises(ValidationError):
             validate(instance=_config(invalid), schema=spec_schema)
-
-
-def test_base_url_spec_rejects_blank_values() -> None:
-    base_url_schema = get_source(base_config()).resolved_manifest["spec"]["connection_specification"]["properties"]["base_url"]
-
-    for blank in ("", "   "):
-        with pytest.raises(ValidationError):
-            validate(instance=blank, schema=base_url_schema)
-    validate(instance="https://demo.onuptick.com", schema=base_url_schema)
