@@ -38,21 +38,33 @@ import java.sql.Statement
 import kotlin.use
 
 /**
+ * Object error codes:
+ * 1. 2003 / 2043: "object does not exist or not authorized" (the same codes in application.yml)
+ * 2. 2037: failure during expansion of view
+ * 3. 2057: "view declared N column(s), but view query produces M column(s)"
+ */
+private val TOLERABLE_OBJECT_ERROR_CODES = setOf(2003, 2043, 2037, 2057)
+
+/**
+ * SQLSTATE classes:
+ * 1. 42601: view compilation/expansion failure, such as a view referencing an unset session variable.
+ * 2. 42501: insufficient privileges to access the object or column.
+ * 3. 02000: object does not exist or is not visible to the current user.
+ */
+private val TOLERABLE_OBJECT_SQLSTATES = setOf("42501", "42601", "02000")
+
+/**
  * Snowflake implementation of [MetadataQuerier].
  *
  * Snowflake uses a standard three-level namespace: catalog.schema.table where catalog is the
  * database name, schema is the schema name.
+ *
+ * DISCOVER can tolerate known object-level failures, such as invalid views, and skip those
+ * streams. CHECK and READ must surface these failures.
  */
 class SnowflakeSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
     val schema: String? = null,
-    /**
-     * When true (DISCOVER only), a column probe that fails with a known object-level error (e.g. an
-     * invalid view) yields an empty column list so the stream is skipped, instead of failing the
-     * whole operation. Must stay false for CHECK and READ: CHECK relies on a throwing [fields] to
-     * detect roles that cannot SELECT anything, and READ must fail loudly on a broken selected
-     * stream.
-     */
     val tolerateObjectLevelFailures: Boolean = false,
 ) : MetadataQuerier by base {
     private val log = KotlinLogging.logger {}
@@ -139,24 +151,27 @@ class SnowflakeSourceMetadataQuerier(
         }
     }
 
+    /**
+     * Verifies SELECT access via a LIMIT-0 probe when checkPrivileges is on. Returns a list of
+     * columns. Empty list means the stream should be skipped. Fatal probe errors propagate as
+     * RuntimeException.
+     */
     fun columnMetadata(table: TableName): List<ColumnMetadata> {
         val columnMetadata: List<ColumnMetadata> = memoizedColumnMetadata[table] ?: listOf()
         if (columnMetadata.isEmpty() || !base.config.checkPrivileges) {
             return columnMetadata
         }
         var wholeObjectFailure = false
-        val resultsFromSelectMany: List<ColumnMetadata>? =
-            queryColumnMetadata(base.conn, selectLimit0(table, columnMetadata.map { it.name })) {
-                e: SQLException ->
-                wholeObjectFailure = isWholeObjectFailure(e)
-            }
-        if (resultsFromSelectMany != null) {
-            return resultsFromSelectMany
+        val allColumnsProbe: List<ColumnMetadata>? =
+            queryColumnMetadata(
+                base.conn,
+                selectLimit0(table, columnMetadata.map { it.name }),
+                onToleratedFailure = { wholeObjectFailure = isWholeObjectFailure(it) },
+            )
+        if (allColumnsProbe != null) {
+            return allColumnsProbe
         }
         if (wholeObjectFailure) {
-            // The object itself is broken or missing (e.g. an invalid view whose definition no
-            // longer compiles): every per-column probe would fail identically, so don't issue
-            // them.
             return listOf()
         }
         log.info {
@@ -183,6 +198,10 @@ class SnowflakeSourceMetadataQuerier(
         return base.selectQueryGenerator.generate(querySpec.optimize()).sql
     }
 
+    /**
+     * Runs the LIMIT-0 probe [sql]. Returns null when the probe failed with a tolerated
+     * object-level error; rethrows everything else.
+     */
     private fun queryColumnMetadata(
         conn: Connection,
         sql: String,
@@ -216,30 +235,12 @@ class SnowflakeSourceMetadataQuerier(
                     }
                 }
             } catch (e: SQLException) {
-                // During DISCOVER, a column probe that fails for a known OBJECT-LEVEL reason must
-                // not fail the whole operation. Returning null re-enables the tolerance machinery
-                // in columnMetadata() (all-columns probe -> per-column probe -> empty fields) so a
-                // single broken/inaccessible view (declared columns no longer match its query
-                // body, or a view the role cannot SELECT) is skipped while the rest of the catalog
-                // is still discovered.
-                //
-                // Tolerance is an ALLOWLIST: only failures positively identified as object-level
-                // (compile errors, missing/unauthorized objects) are tolerated. Anything else —
-                // network failures (driver SQLSTATE 58030), expired auth/session tokens (driver
-                // reauth codes such as 390114, often SQLSTATE XX000), no-active-warehouse (401 /
-                // 57P03), timeouts, and unknown unknowns — re-throws, because those affect every
-                // stream and tolerating them would silently truncate or empty the catalog.
-                //
-                // Tolerance is also gated to the discover operation: CHECK relies on a throwing
-                // fields() to detect roles that cannot SELECT any table, and READ must fail
-                // loudly on a broken selected stream.
                 if (!tolerateObjectLevelFailures || !isTolerableObjectError(e)) {
                     throw RuntimeException("Column name discovery query failed: ${e.message}", e)
                 }
-                log.warn(e) {
-                    "Object-level failure during discover; this stream will be skipped and " +
-                        "omitted from the catalog. Failed query: $sql, " +
-                        "sqlState = '${e.sqlState ?: ""}', errorCode = ${e.errorCode}, ${e.message}"
+                log.debug(e) {
+                    "Tolerated object-level failure during discover. Failed query: $sql, " +
+                        "sqlState = '${e.sqlState ?: ""}', errorCode = ${e.errorCode}"
                 }
                 onToleratedFailure(e)
                 return null
@@ -249,31 +250,13 @@ class SnowflakeSourceMetadataQuerier(
 
     /**
      * Returns true only when [e] is positively identified as an OBJECT-LEVEL failure of the probed
-     * table/view — a definition that no longer compiles (SQLSTATE class '42', e.g. 42601), or an
-     * object that does not exist / is not authorized (SQLSTATE class '02' or vendor codes
-     * 2003/2043, per this connector's classifier in application.yml). Only these are safe to
-     * tolerate during discover by skipping the stream.
-     *
-     * Everything else is treated as fatal, INCLUDING unrecognized errors: infrastructure failures
-     * affect every stream, and the safe default for an unknown error is a loud failure, never a
-     * silently truncated catalog.
+     * table/view. Everything else is treated as fatal.
      */
-    fun isTolerableObjectError(e: SQLException): Boolean {
-        if (e.errorCode in TOLERABLE_OBJECT_ERROR_CODES) {
-            return true
-        }
-        val sqlStateClass: String = e.sqlState?.take(2) ?: return false
-        return sqlStateClass in TOLERABLE_OBJECT_SQLSTATE_CLASSES
-    }
+    private fun isTolerableObjectError(e: SQLException): Boolean =
+        e.errorCode in TOLERABLE_OBJECT_ERROR_CODES ||
+                e.sqlState in TOLERABLE_OBJECT_SQLSTATES
 
-    /**
-     * Returns true when a tolerated probe failure condemns the WHOLE object — its definition does
-     * not compile (SQLSTATE 42601, e.g. vendor code 2057 "view declared N columns but query
-     * produces M") or it does not exist / is not authorized (2003/2043). Every per-column probe
-     * would fail identically, so [columnMetadata] skips them. Other tolerated failures (e.g.
-     * column-scoped access policies) still fall through to per-column probing.
-     */
-    fun isWholeObjectFailure(e: SQLException): Boolean =
+    private fun isWholeObjectFailure(e: SQLException): Boolean =
         e.sqlState == "42601" || e.errorCode in TOLERABLE_OBJECT_ERROR_CODES
 
     fun <T> swallow(supplier: () -> T): T? {
@@ -418,23 +401,5 @@ class SnowflakeSourceMetadataQuerier(
         }
 
         val EXCLUDED_NAMESPACES = setOf("INFORMATION_SCHEMA", "SNOWFLAKE_SAMPLE_DATA", "UTIL_DB")
-
-        /**
-         * Snowflake vendor error codes positively identifying an OBJECT-LEVEL failure of the probed
-         * table/view: 2003 / 2043 "object does not exist or not authorized" (the same codes this
-         * connector's classifier in application.yml maps to a config error) and 2057 "view declared
-         * N column(s), but view query produces M column(s)". Used as a belt-and-braces complement
-         * to [TOLERABLE_OBJECT_SQLSTATE_CLASSES] for exceptions with no SQLSTATE.
-         */
-        val TOLERABLE_OBJECT_ERROR_CODES = setOf(2003, 2043, 2057)
-
-        /**
-         * SQLSTATE classes (first two chars) positively identifying an object-level failure: '42' =
-         * syntax error or access rule violation (view compile errors such as 42601, access denials
-         * such as 42501), '02' = no data (Snowflake's "object does not exist or not authorized").
-         * Anything outside this allowlist — connection ('08'), driver network ('58'), operator
-         * intervention ('57'), driver/internal ('XX'), and unknowns — is treated as fatal.
-         */
-        val TOLERABLE_OBJECT_SQLSTATE_CLASSES = setOf("42", "02")
     }
 }
