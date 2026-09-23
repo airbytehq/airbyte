@@ -139,6 +139,8 @@ spec:
     properties:
       base_url:
         type: string
+        minLength: 1
+        pattern: "\\S"
         description: Root URL of the Uptick workspace, for example https://demo-fire.onuptick.com. Only the host is used; the scheme and trailing slash are normalized.
         order: 0
         title: Base Url
