@@ -3479,10 +3479,11 @@ schemas:
         - 'null'
         - string
       project_id:
-        description: ID of the project to which the trigger job belongs.
+        description: ID or URL-encoded path of the project to which the trigger job belongs, as configured in the source.
         type:
         - 'null'
         - integer
+        - string
       project:
         description: Details of the project to which the trigger job belongs.
         type:
