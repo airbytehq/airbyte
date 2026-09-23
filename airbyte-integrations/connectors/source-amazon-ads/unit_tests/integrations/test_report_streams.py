@@ -161,9 +161,6 @@ class TestDisplayReportStreams:
     def test_given_429_then_202_on_report_creation_then_retries_and_returns_records(
         self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
     ):
-        """The creation requester previously had no 429 handling, so a throttled POST failed the
-        sync outright (and the retry's resubmission then surfaced as a 425 duplicate). The
-        RATE_LIMITED filter plus WaitTimeFromHeader must retry the POST instead."""
         report_id = "report-id-brands-v3-creation-429"
         download_url = f"https://advertising-api.amazon.com/reporting/reports/{report_id}/download"
         requests_mock.post(
@@ -192,8 +189,6 @@ class TestDisplayReportStreams:
     def test_given_429_then_200_on_report_polling_then_retries_and_returns_records(
         self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
     ):
-        """The polling requester only retried 401; a 429 during status checks failed the sync.
-        It must now retry under the same RATE_LIMITED + Retry-After handling."""
         report_id = "report-id-brands-v3-polling-429"
         download_url = f"https://advertising-api.amazon.com/reporting/reports/{report_id}/download"
         requests_mock.post(
