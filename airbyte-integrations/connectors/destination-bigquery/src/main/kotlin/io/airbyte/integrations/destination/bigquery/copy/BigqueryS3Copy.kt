@@ -266,10 +266,10 @@ class EnabledBigqueryS3Copy(
                 withTimeout(operationTimeoutMillis) {
                     slots.withPermit {
                         checkHealthy()
-                        log.info {
-                            "Fusion S3 archive started: run=$runId batch=$batchId key=$key slot_wait_ms=${(System.nanoTime() - started) / 1_000_000}"
-                        }
                         val bytes = Files.size(path)
+                        log.info {
+                            "Fusion S3 archive started: run=$runId batch=$batchId key=$key bytes=$bytes input_records=$inputRecordCount loaded_records=$loadedRecordCount slot_wait_ms=${(System.nanoTime() - started) / 1_000_000}"
+                        }
                         uploader.upload(
                             path,
                             key,
