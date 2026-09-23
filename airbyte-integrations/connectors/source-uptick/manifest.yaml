@@ -49,7 +49,12 @@ definitions:
           # exhausted through the shared backoff and the attempt fails as `config_error`.
           # failure_type below is only applied by the CDK when action is FAIL; with REFRESH_TOKEN_THEN_RETRY the
           # exhausted-retries classification comes from the CDK's default 401 mapping, which is also config_error.
-          # TODO(cdk): bounded failed-refresh retries rely on airbyte-cdk >= <version shipping https://github.com/airbytehq/airbyte-python-cdk/pull/1173>; bump the pin once released.
+          # Lockout risk: a failed refresh (password rotated mid-sync) is re-driven through the backoff
+          # loop (~6 failed logins per stream), and repeated failed logins can trigger Uptick's
+          # automatic account lockout. Fixed CDK-side by https://github.com/airbytehq/airbyte-python-cdk/pull/1173,
+          # so this connector must be pinned to a CDK release containing it before merge.
+          # TODO(cdk): once released, bump `version` here, `airbyte-cdk` in unit_tests/pyproject.toml,
+          # and the base image in metadata.yaml.
           - type: HttpResponseFilter
             http_codes: [401]
             action: REFRESH_TOKEN_THEN_RETRY
