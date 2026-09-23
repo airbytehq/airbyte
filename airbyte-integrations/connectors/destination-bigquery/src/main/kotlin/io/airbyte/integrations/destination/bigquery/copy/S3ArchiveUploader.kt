@@ -269,6 +269,11 @@ internal constructor(
                     it.thresholdInBytes(MULTIPART_THRESHOLD)
                         .minimumPartSizeInBytes(PART_SIZE)
                         .apiCallBufferSizeInBytes(2 * PART_SIZE)
+                        // Seekable ranges do not buffer entire parts, so the byte budget does
+                        // not bound SDK scheduling. Its default is 50 parts per upload, which
+                        // can starve our 16-connection pool while a single file reader drains.
+                        // Four upload slots x two parts leaves room for retries and control calls.
+                        .parallelConfiguration { parallel -> parallel.maxInFlightParts(2) }
                 }
 
         private fun clientOverrides(): ClientOverrideConfiguration =
