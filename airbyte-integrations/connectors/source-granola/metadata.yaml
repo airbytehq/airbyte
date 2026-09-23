@@ -29,7 +29,6 @@ data:
       - notes
       - detailed_notes
       - note_transcripts
-      - deleted_notes
   supportLevel: community
   tags:
     - cdk:low-code

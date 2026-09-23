@@ -122,6 +122,34 @@ class TestDeletedNotes(TestCase):
         http_mocker.assert_number_of_calls(request, 1)
 
     @HttpMocker()
+    def test_start_date_older_than_retention_is_clamped_to_364_days(self, http_mocker: HttpMocker):
+        """/v1/audit rejects occurred_after dates outside its one-year retention window, so older start dates are clamped."""
+        request = _audit_request("2025-01-16T00:00:00Z", _NOW)
+        http_mocker.get(request, _audit_response([]))
+
+        config = ConfigBuilder().with_audit_api_key("test-audit-key").with_start_date("2024-01-01").build()
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(get_source(config=config), config=config, catalog=catalog, state=StateBuilder().build())
+
+        assert output.errors == []
+        http_mocker.assert_number_of_calls(request, 1)
+
+    @HttpMocker()
+    def test_incremental_sync_looks_back_one_day_from_state(self, http_mocker: HttpMocker):
+        """Late-collected events can carry an occurred_at before the saved state, so the next sync re-reads one day."""
+        request = _audit_request("2026-01-09T10:00:00Z", _NOW)
+        http_mocker.get(request, _audit_response([_audit_event("aud_late", "note-late", occurred_at="2026-01-09T18:00:00Z")]))
+
+        config = ConfigBuilder().with_audit_api_key("test-audit-key").with_start_date(_START_DATE).build()
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"occurred_at": "2026-01-10T10:00:00Z"}).build()
+        output = read(get_source(config=config, state=state), config=config, catalog=catalog, state=state)
+
+        assert output.errors == []
+        assert [message.record.data["note_id"] for message in output.records] == ["note-late"]
+        http_mocker.assert_number_of_calls(request, 1)
+
+    @HttpMocker()
     def test_404_without_an_audit_key_is_a_config_error(self, http_mocker: HttpMocker):
         """A notes key gets 404 on /v1/audit; the stream fails with a config error naming the Audit API key."""
         occurred_after, occurred_before = _SLICE

@@ -261,6 +261,10 @@ definitions:
             - path:
                 - note_id
               value: "{{ (record.get('data') or {}).get('documentId') }}"
+      # /v1/audit rejects occurred_after dates outside its one-year retention window,
+      # so the start is clamped to 364 days ago. Events are returned in collected_at
+      # order and can be collected after they occurred, so the lookback re-reads a day
+      # of occurred_at to pick up late-collected deletions (deduplicated on `id`).
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: occurred_at
@@ -268,10 +272,12 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        lookback_window: P1D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
+          min_datetime: "{{ (now_utc() - duration('P364D')).strftime('%Y-%m-%d') }}"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter

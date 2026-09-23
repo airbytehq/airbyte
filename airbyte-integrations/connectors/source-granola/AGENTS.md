@@ -30,7 +30,7 @@ The `deleted_notes` stream additionally accepts an optional `audit_api_key` conf
 
 ## Deletions
 
-The `deleted_notes` stream reads `GET /v1/audit` filtered to `action=document.hard_deleted`. The Audit API is Enterprise-only, needs a separate Audit API key created by a workspace admin, and retains events for one year. Each record is an audit event; a `AddFields` transformation lifts `data.documentId` to a top-level `note_id`. The stream is incremental on `occurred_at` with a single slice (no `step`: the CDK requires `step` and `cursor_granularity` together, so both are omitted).
+The `deleted_notes` stream reads `GET /v1/audit` filtered to `action=document.hard_deleted`. The Audit API is Enterprise-only, needs a separate Audit API key created by a workspace admin, and retains events for one year. Each record is an audit event; a `AddFields` transformation lifts `data.documentId` to a top-level `note_id`. The stream is incremental on `occurred_at` with a single slice (no `step`: the CDK requires `step` and `cursor_granularity` together, so both are omitted). `start_datetime` has `min_datetime` set to 364 days ago because `/v1/audit` rejects `occurred_after` dates outside its one-year retention window, which the two-year `start_date` default would otherwise hit. Events are returned in `collected_at` order and can be collected after they occurred, so a `P1D` `lookback_window` re-reads the last day of `occurred_at` to pick up late-collected deletions; the `id` primary key deduplicates them. `deleted_notes` is not in `suggestedStreams` because it fails with a config error without an Audit API key.
 
 ## Oversized Transcripts
 

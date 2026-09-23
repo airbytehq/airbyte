@@ -105,7 +105,7 @@ This stream has extra prerequisites:
 
 If you don't have an Audit API key, deselect the `deleted_notes` stream; the other streams work without it.
 
-The stream is incremental on `occurred_at`, the time the deletion happened, and syncs the full retention window in a single request range.
+The stream is incremental on `occurred_at`, the time the deletion happened. The first sync starts at the later of `start_date` and one year ago, because Granola rejects earlier dates. Each incremental sync re-reads the previous day to catch deletions Granola records late, so use a deduplicating sync mode to avoid duplicate records. The stream isn't selected by default when you create a connection.
 
 ### Data access by key type
 
