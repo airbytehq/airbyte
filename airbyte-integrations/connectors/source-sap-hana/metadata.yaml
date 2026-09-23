@@ -24,6 +24,10 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-sap-hana
   supportLevel: community
   tags:
     - language:python
