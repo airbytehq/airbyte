@@ -146,8 +146,8 @@ With `IAM_ROLE`, two callers assume your secrets role independently: the Airbyte
 
 1. Create an IAM role for Airbyte secrets. This is your secrets role.
 2. Attach the `AirbyteSecretsManagerPolicy` (created in Step 1) to this role.
-3. Add a trust statement for the Airbyte control plane. Airbyte gives you the principal to trust and an external ID when you register the storage. Require that external ID with `sts:ExternalId`. AWS compares it as an exact string.
-4. Add a trust statement for the pods that run your syncs. When Airbyte runs your syncs, Airbyte provides this principal. On an Enterprise Flex data plane you run yourself, trust the IAM role behind the pod's AWS identity (for example, the role linked to the data plane Kubernetes service account). This statement does not use the external ID. If that role is in the same account as the secrets role, its own identity policy must also allow `sts:AssumeRole` on the secrets role ARN.
+3. Add a trust statement for the Airbyte control plane. Before setup, obtain the approved Airbyte principal ARN and external ID from your Airbyte contact. Allow that principal and require that external ID with `sts:ExternalId`. AWS compares it as an exact string.
+4. Add a trust statement for the pods that run your syncs. When Airbyte runs your syncs, Airbyte provides this principal. On an Enterprise Flex data plane you run yourself, trust the IAM role behind the pod's AWS identity (for example, the role linked to the data plane Kubernetes service account). Use the same `sts:ExternalId` condition: with `IAM_ROLE`, the pods send the stored external ID on every assumption, exactly as the control plane does. When the trust policy names that role ARN directly and both roles are in the same account, no separate allow in the caller's identity policy is needed, subject to boundaries, service control policies, session policies, and explicit denies. If the roles are in different accounts, or the trust policy names an account instead of a role, the caller's identity policy must also allow `sts:AssumeRole` on the secrets role ARN.
 5. Note the role ARN (for example, `arn:aws:iam::123456789012:role/AirbyteSecretsRole`) and the external ID. Role ARN values are case sensitive.
 
 Example trust policy with placeholders:
@@ -159,15 +159,16 @@ Example trust policy with placeholders:
     {
       "Sid": "AirbyteControlPlane",
       "Effect": "Allow",
-      "Principal": { "AWS": "<airbyte-principal-arn-provided-by-airbyte>" },
+      "Principal": { "AWS": "<airbyte-principal-arn-from-your-airbyte-contact>" },
       "Action": "sts:AssumeRole",
-      "Condition": { "StringEquals": { "sts:ExternalId": "<external-id-provided-by-airbyte>" } }
+      "Condition": { "StringEquals": { "sts:ExternalId": "<external-id-from-your-airbyte-contact>" } }
     },
     {
       "Sid": "SyncWorkloads",
       "Effect": "Allow",
       "Principal": { "AWS": "<workload-role-arn>" },
-      "Action": "sts:AssumeRole"
+      "Action": "sts:AssumeRole",
+      "Condition": { "StringEquals": { "sts:ExternalId": "<external-id-from-your-airbyte-contact>" } }
     }
   ]
 }
@@ -239,7 +240,7 @@ IAM Role Example:
 {
   "auth_type": "IAM_ROLE",
   "roleArn": "arn:aws:iam::123456789012:role/AirbyteSecretsRole",
-  "externalId": "<external-id-provided-by-airbyte>",
+  "externalId": "<external-id-from-your-airbyte-contact>",
   "awsRegion": "us-east-1",
   "tagKey": "AirbyteManaged"
 }

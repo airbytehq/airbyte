@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="300" viewBox="0 0 760 300" font-family="Helvetica, Arial, sans-serif" font-size="14">
+  <title>Data plane path: a data plane pod obtains its AWS identity through the workload role, assumes your secrets role with the same stored external ID, reads the connector secret from AWS Secrets Manager, and the connector then reads or writes data in your source or destination.</title>
+  <defs>
+    <marker id="b" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 z" fill="#333"/></marker>
+  </defs>
+  <rect x="20" y="55" width="180" height="60" rx="8" fill="#eef3ff" stroke="#3b5bdb"/>
+  <text x="110" y="80" text-anchor="middle" font-weight="bold">Data plane pod</text>
+  <text x="110" y="100" text-anchor="middle" fill="#555">on your cluster</text>
+  <rect x="290" y="55" width="180" height="60" rx="8" fill="#f3f0ff" stroke="#7048e8"/>
+  <text x="380" y="80" text-anchor="middle" font-weight="bold">Pod's AWS identity</text>
+  <text x="380" y="100" text-anchor="middle" fill="#555">workload role</text>
+  <rect x="560" y="55" width="180" height="60" rx="8" fill="#fff4e6" stroke="#e8590c"/>
+  <text x="650" y="80" text-anchor="middle" font-weight="bold">Secrets role</text>
+  <text x="650" y="100" text-anchor="middle" fill="#555">in your AWS account</text>
+  <rect x="560" y="185" width="180" height="60" rx="8" fill="#e6fcf5" stroke="#0ca678"/>
+  <text x="650" y="210" text-anchor="middle" font-weight="bold">AWS Secrets Manager</text>
+  <text x="650" y="230" text-anchor="middle" fill="#555">connector credentials</text>
+  <rect x="20" y="185" width="180" height="60" rx="8" fill="#fff9db" stroke="#f08c00"/>
+  <text x="110" y="210" text-anchor="middle" font-weight="bold">Source or destination</text>
+  <text x="110" y="230" text-anchor="middle" fill="#555">your data</text>
+  <line x1="200" y1="85" x2="290" y2="85" stroke="#333" stroke-width="2" marker-end="url(#b)"/>
+  <text x="245" y="40" text-anchor="middle">1. Obtain identity</text>
+  <line x1="470" y1="85" x2="560" y2="85" stroke="#333" stroke-width="2" marker-end="url(#b)"/>
+  <text x="515" y="40" text-anchor="middle">2. AssumeRole</text>
+  <text x="515" y="140" text-anchor="middle" fill="#555">same external ID</text>
+  <line x1="650" y1="115" x2="650" y2="185" stroke="#333" stroke-width="2" marker-end="url(#b)"/>
+  <text x="640" y="155" text-anchor="end">3. Read secret</text>
+  <line x1="560" y1="215" x2="200" y2="215" stroke="#333" stroke-width="2" marker-end="url(#b)"/>
+  <text x="380" y="205" text-anchor="middle">4. Connector reads or writes data</text>
+  <text x="380" y="280" text-anchor="middle" fill="#555">Data plane credentials (clientId and clientSecret) authenticate the pod to Airbyte and are not part of this path.</text>
+</svg>
