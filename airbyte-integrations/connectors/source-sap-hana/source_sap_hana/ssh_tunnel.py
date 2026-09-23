@@ -229,21 +229,20 @@ class SshTunnel:
                     return
         assert channel is not None
         try:
-            while not self._closed.is_set():
-                readable, _, _ = select.select([local, channel], [], [], 1.0)
-                if local in readable:
-                    data = local.recv(65536)
-                    if not data:
-                        break
-                    channel.sendall(data)
-                if channel in readable:
-                    data = channel.recv(65536)
-                    if not data:
-                        break
-                    local.sendall(data)
-        except OSError:
-            # Either side closed the connection: nothing to forward any more, clean up below.
-            pass
+            # OSError means either side closed the connection: stop forwarding and clean up below.
+            with contextlib.suppress(OSError):
+                while not self._closed.is_set():
+                    readable, _, _ = select.select([local, channel], [], [], 1.0)
+                    if local in readable:
+                        data = local.recv(65536)
+                        if not data:
+                            break
+                        channel.sendall(data)
+                    if channel in readable:
+                        data = channel.recv(65536)
+                        if not data:
+                            break
+                        local.sendall(data)
         finally:
             channel.close()
             local.close()
