@@ -22,6 +22,7 @@ To generate the OAuth credentials, go to **Control Panel > Uptick API** in your 
 | `username` | `string` | Email address for an Uptick user account with API access. | |
 | `password` | `string` | Password for the Uptick user account. | |
 | `num_workers` | `integer` | Number of concurrent requests. Higher values speed up syncs but increase the chance of Uptick rate limiting. Allowed range 1–10. | `3` |
+| `max_requests_per_minute` | `integer` | Global request budget shared by all streams and threads. Uptick publishes no numeric limit; 60 is a conservative default. Allowed range 1–600. | `60` |
 
 ## Streams
 
@@ -195,7 +196,7 @@ Airbyte still offers incremental sync in the UI for the streams marked `❌ (no 
 
 ## Rate limits
 
-Uptick enforces rate limits and reasonable-use guidelines on its API but does not publish a numeric limit; the connector's 60 requests per minute cap below is a conservative Airbyte-chosen value and is the throughput ceiling for the whole sync. If Uptick returns a `Retry-After` header the connector waits that long (up to 30 minutes; longer waits fail the stream with a rate-limit error), and otherwise backs off exponentially, for up to six attempts. The connector runs `num_workers` concurrent requests (default 3, maximum 10); a higher `num_workers` only helps while per-request latency exceeds `num_workers` seconds, because the 60 per minute cap still applies. To stay within these limits, sync only the streams and fields you need and schedule syncs no more frequently than your reporting requires.
+Uptick enforces rate limits and reasonable-use guidelines on its API but does not publish a numeric limit; the connector's `max_requests_per_minute` budget (default 60 requests per minute, a conservative Airbyte-chosen value shared by all streams and threads) is the throughput ceiling for the whole sync. Raise it only if Uptick confirms your workspace tolerates more. If Uptick returns a `Retry-After` header the connector waits that long (up to 30 minutes; longer waits fail the stream with a rate-limit error), and otherwise backs off exponentially, for up to six attempts. The connector runs `num_workers` concurrent requests (default 3, maximum 10); a higher `num_workers` only helps while per-request latency exceeds `num_workers` seconds, because the requests-per-minute budget still applies. To stay within these limits, sync only the streams and fields you need and schedule syncs no more frequently than your reporting requires.
 
 ## IP allow list
 
@@ -208,7 +209,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
-| 1.3.0 | 2026-09-22 | [86356](https://github.com/airbytehq/airbyte/pull/86356) | Refresh expired tokens, cap request rate at 60/min, and normalize base_url |
+| 1.3.0 | 2026-09-22 | [86356](https://github.com/airbytehq/airbyte/pull/86356) | Add configurable max_requests_per_minute budget (default 60/min), fail fast on stream 401, and normalize base_url |
 | 1.2.1 | 2026-09-22 | [86843](https://github.com/airbytehq/airbyte/pull/86843) | Update dependencies |
 | 1.2.0 | 2026-09-21 | [86363](https://github.com/airbytehq/airbyte/pull/86363) | Emit attribute values verbatim (preserve decimal strings and nulls) and allow null on attribute fields; `servicegroups`/`accreditationtypes` now honour incremental state client-side (Uptick ignores `updatedsince`) — previously every sync re-emitted the full table, so append-only destinations will see fewer duplicate rows per sync |
 | 1.1.3 | 2026-09-15 | [86280](https://github.com/airbytehq/airbyte/pull/86280) | Update dependencies |

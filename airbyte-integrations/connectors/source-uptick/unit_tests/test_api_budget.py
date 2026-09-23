@@ -1,9 +1,9 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 """Guards the shared `api_budget`, `concurrency_level`, and `Retry-After` wait cap in
-`manifest.yaml`: a single global moving-window budget of 60 calls per minute, `num_workers`
-wiring into the resolved concurrency level, and a `Retry-After` at the 1800s cap that stops
-the stream instead of waiting.
+`manifest.yaml`: a single global moving-window budget driven by `max_requests_per_minute`
+(default 60 calls per minute), `num_workers` wiring into the resolved concurrency level, and
+a `Retry-After` at the 1800s cap that stops the stream instead of waiting.
 """
 
 import json
@@ -13,6 +13,9 @@ from conftest import base_config, get_source
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConcurrencyLevel as ConcurrencyLevelModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    MovingWindowCallRatePolicy as MovingWindowCallRatePolicyModel,
+)
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -33,15 +36,26 @@ def _service_group_page(record_id: int, next_url: str | None) -> HttpResponse:
     return HttpResponse(body=json.dumps({"data": [record], "links": {"next": next_url}}), status_code=200)
 
 
-def test_budget_policy_is_a_60_per_minute_moving_window() -> None:
-    api_budget = get_source(base_config()).resolved_manifest["api_budget"]
+@pytest.mark.parametrize(
+    "config_override,expected_limit",
+    [
+        pytest.param({}, 60, id="default_max_requests_per_minute"),
+        pytest.param({"max_requests_per_minute": 120}, 120, id="configured_max_requests_per_minute"),
+    ],
+)
+def test_budget_policy_resolves_limit_from_config(config_override, expected_limit) -> None:
+    config = base_config(**config_override)
+    source = get_source(config)
 
+    api_budget = source.resolved_manifest["api_budget"]
     policies = api_budget["policies"]
-    # One global MovingWindowCallRatePolicy: 60 calls per 60s window, empty matchers so every
+    # One global MovingWindowCallRatePolicy: N calls per 60s window, empty matchers so every
     # request on every stream counts against the same budget.
     assert len(policies) == 1
-    assert policies[0]["rates"] == [{"limit": 60, "interval": "PT1M"}]
-    assert policies[0]["matchers"] == []
+    policy = source._constructor.create_component(MovingWindowCallRatePolicyModel, policies[0], source._config)
+    assert policy._bucket.rates[0].limit == expected_limit
+    assert policy._bucket.rates[0].interval == 60_000
+    assert policy._matchers == []
 
 
 @pytest.mark.parametrize(
@@ -85,6 +99,31 @@ def test_global_budget_throttles_past_60_calls_per_minute(virtual_clock: list[fl
     # The budget blocks once 60 calls sit inside the 60s window; the observed cool-down is ~60s
     # while the oldest call slides out of the moving window.
     assert virtual_clock and sum(virtual_clock) >= 59, f"expected a ~60s budget wait for call 61, got {virtual_clock}"
+
+
+def test_higher_configured_limit_does_not_wait_for_61_calls(virtual_clock: list[float]) -> None:
+    """With `max_requests_per_minute` raised to 120, the same 61-page read fits inside one
+    window: every page is served without a budget wait."""
+    page_request = HttpRequest(f"{_BASE_URL}/api/v2.15/servicegroups/", query_params=ANY_QUERY_PARAMS)
+    pages = [
+        _service_group_page(page_number, f"{_BASE_URL}/api/v2.15/servicegroups/?page={page_number + 1}" if page_number < 61 else None)
+        for page_number in range(1, 62)
+    ]
+
+    config = base_config(max_requests_per_minute=120)
+    catalog = CatalogBuilder().with_stream("servicegroups", SyncMode.full_refresh).build()
+    with HttpMocker() as http_mocker:
+        http_mocker.post(
+            HttpRequest(f"{_BASE_URL}/api/oauth2/token/", body=_TOKEN_REQUEST_BODY),
+            HttpResponse('{"access_token": "token", "expires_in": 3600}', 200),
+        )
+        http_mocker.get(page_request, pages)
+        output = read(get_source(config, catalog), config, catalog)
+
+    assert [message.record.data["id"] for message in output.records] == list(range(1, 62))
+    assert output.errors == []
+    http_mocker.assert_number_of_calls(page_request, 61)
+    assert virtual_clock == []
 
 
 def test_retry_after_at_cap_terminates_instead_of_waiting(monkeypatch) -> None:

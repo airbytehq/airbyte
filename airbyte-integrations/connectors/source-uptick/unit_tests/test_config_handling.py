@@ -17,6 +17,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 
 
 _DEFAULT_CONCURRENCY = 3
+_OMITTED = object()
 
 
 @pytest.mark.parametrize(
@@ -74,6 +75,22 @@ def test_default_concurrency_when_num_workers_missing() -> None:
     component = source._constructor.create_component(ConcurrencyLevelModel, source.resolved_manifest["concurrency_level"], source._config)
 
     assert component.get_concurrency_level() == _DEFAULT_CONCURRENCY
+
+
+def test_max_requests_per_minute_spec_validation() -> None:
+    spec_schema = get_source(base_config()).resolved_manifest["spec"]["connection_specification"]
+
+    def _config(value: Any) -> dict:
+        config = base_config()
+        if value is not _OMITTED:
+            config["max_requests_per_minute"] = value
+        return config
+
+    validate(instance=_config(_OMITTED), schema=spec_schema)
+    validate(instance=_config(60), schema=spec_schema)
+    for invalid in (0, "60", 2.5, 601):
+        with pytest.raises(ValidationError):
+            validate(instance=_config(invalid), schema=spec_schema)
 
 
 def test_base_url_spec_rejects_blank_values() -> None:

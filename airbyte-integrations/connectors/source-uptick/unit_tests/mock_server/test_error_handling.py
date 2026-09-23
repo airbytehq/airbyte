@@ -5,7 +5,9 @@
 
 401 is split in two: bad credentials are rejected by the token endpoint itself (400 `invalid_grant`,
 401 `invalid_client`) and fail as `config_error` in one round trip, before any stream request is
-issued; a 401 on a stream request is an expired or revoked token and triggers a refresh plus retry.
+issued; a 401 on a stream request is an expired or revoked token and fails fast as `config_error`
+with a single request — no token refresh, because a failed refresh is re-driven through the backoff
+loop and repeated failed logins can lock the Uptick account.
 Every JSON:API stream goes through the same `DefaultErrorHandler`, so a single collection stream is
 enough to lock in that split plus fail-fast `config_error` on 403, `Retry-After` honoured on 429,
 the 1800s `Retry-After` cap, the exponential fallback when no `Retry-After` is sent, and 5xx
@@ -108,51 +110,19 @@ def test_403_fails_fast_without_retry(virtual_clock: list[float]) -> None:
     http_mocker.assert_number_of_calls(_PAGE_REQUEST, 1)
 
 
-def test_401_on_stream_refreshes_token_then_retries(virtual_clock: list[float]) -> None:
-    config = ConfigBuilder().build()
-    catalog = CatalogBuilder().with_stream(_STREAM, SyncMode.full_refresh).build()
-    refreshed_page_request = UptickRequestBuilder.collection(_STREAM, token="tok2")
-    with HttpMocker() as http_mocker:
-        http_mocker.post(
-            _TOKEN_REQUEST,
-            [
-                HttpResponse(body=json.dumps({"access_token": "tok", "expires_in": 3600}), status_code=200),
-                HttpResponse(body=json.dumps({"access_token": "tok2", "expires_in": 3600}), status_code=200),
-            ],
-        )
-        http_mocker.get(
-            _PAGE_REQUEST,
-            [HttpResponse(body='{"errors": {"detail": "Authentication credentials were not provided."}}', status_code=401)],
-        )
-        http_mocker.get(refreshed_page_request, [_ok_page(1)])
-        output = read(get_source(config=config), config=config, catalog=catalog, state=StateBuilder().build())
-
-    assert [message.record.data["id"] for message in output.records] == [1]
-    assert output.errors == []
-    http_mocker.assert_number_of_calls(_TOKEN_REQUEST, 2)
-    http_mocker.assert_number_of_calls(_PAGE_REQUEST, 1)
-    http_mocker.assert_number_of_calls(refreshed_page_request, 1)
-
-
-def test_401_with_failed_refresh_exhausts_retries_as_config_error(virtual_clock: list[float]) -> None:
+def test_401_on_stream_fails_fast_without_refresh(virtual_clock: list[float]) -> None:
     output, http_mocker = _read_with_responses(
-        [HttpResponse(body='{"errors": {"detail": "Authentication credentials were not provided."}}', status_code=401) for _ in range(6)],
-        token_responses=[
-            _TOKEN_RESPONSE,
-            HttpResponse(body='{"error": "invalid_grant", "error_description": "Invalid credentials given."}', status_code=400),
-        ],
+        [HttpResponse(body='{"errors": {"detail": "Authentication credentials were not provided."}}', status_code=401)]
     )
 
     assert output.records == []
     assert output.get_stream_statuses(_STREAM)[-1].name == "INCOMPLETE"
-    matching = [
-        error
-        for error in _stream_errors(output)
-        if error.failure_type == FailureType.config_error
-        and "Exhausted available request attempts" in error.message
-        and _401_MESSAGE in error.message
-    ]
-    assert len(matching) == 1, f"expected exactly one config_error containing {_401_MESSAGE}, got {output.errors}"
+    matching = [error for error in _stream_errors(output) if error.message == _401_MESSAGE]
+    assert len(matching) == 1, f"expected exactly one error with the connector message, got {output.errors}"
+    assert matching[0].failure_type == FailureType.config_error
+    assert virtual_clock == []
+    http_mocker.assert_number_of_calls(_TOKEN_REQUEST, 1)
+    http_mocker.assert_number_of_calls(_PAGE_REQUEST, 1)
 
 
 def test_429_waits_for_retry_after_then_succeeds(virtual_clock: list[float]) -> None:
