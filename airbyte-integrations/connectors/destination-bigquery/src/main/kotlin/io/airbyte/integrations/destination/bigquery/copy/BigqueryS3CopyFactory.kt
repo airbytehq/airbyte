@@ -24,12 +24,7 @@ class BigqueryS3CopyFactory {
         configuredCatalog: ConfiguredAirbyteCatalog,
         @Named("dataChannelFormat") dataChannelFormat: DataChannelFormat,
     ): BigqueryS3Copy =
-        // TEMPORARY preview routing. Remove this override before merging.
-        // AWS bootstrap credentials must still be injected by the platform.
-        createForOperation(
-            operation,
-            S3CopyConfiguration.previewEnvironment(bigqueryConfiguration),
-        ) { config ->
+        createForOperation(operation) { config ->
             val runId = UUID.randomUUID()
             EnabledBigqueryS3Copy(
                 config,

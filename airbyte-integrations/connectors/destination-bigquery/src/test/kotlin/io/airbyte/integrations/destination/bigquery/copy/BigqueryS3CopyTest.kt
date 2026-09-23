@@ -75,6 +75,36 @@ class BigqueryS3CopyTest {
     }
 
     @Test
+    fun `write factory respects environment opt in and routing`() {
+        val env =
+            mapOf(
+                "AIRBYTE_S3_COPY_ENABLED" to "true",
+                "AIRBYTE_S3_COPY_BUCKET" to "platform-bucket",
+                "AIRBYTE_S3_COPY_REGION" to "us-east-2",
+                "AIRBYTE_S3_COPY_ROLE_ARN" to "arn:aws:iam::123456789012:role/platform",
+                "AIRBYTE_S3_COPY_PREFIX" to "platform-prefix",
+                "AIRBYTE_SOURCE_ID" to UUID(0, 42).toString(),
+            )
+        val archive = mockk<BigqueryS3Copy>()
+        var captured: S3CopyConfiguration? = null
+        assertSame(
+            archive,
+            BigqueryS3CopyFactory.createForOperation("write", env) {
+                captured = it
+                archive
+            }
+        )
+        assertEquals(S3CopyConfiguration.fromEnvironment(env), captured)
+        assertSame(
+            DisabledBigqueryS3Copy,
+            BigqueryS3CopyFactory.createForOperation(
+                "write",
+                env + ("AIRBYTE_S3_COPY_ENABLED" to "false")
+            ) { error("Disabled writes must not construct an uploader") }
+        )
+    }
+
+    @Test
     fun `zero row refresh writes schema at setup and completion after close`() = runBlocking {
         val fixture = Fixture(minimumGeneration = 5)
         fixture.archive.use { archive ->

@@ -456,7 +456,11 @@ class BigqueryCopyMetadataTest {
             val metadata =
                 BigqueryCopyMetadata(config, bigquery(raw), names(stream), runId, format, catalog)
             val descriptor = tree(metadata.descriptor(stream))
-            val sourceSchema = descriptor["layout"]["source_schema"]
+            val sourceSchema = descriptor["source_schema"]
+            assertEquals(descriptor["layout"]["source_schema"], sourceSchema)
+            assertEquals(descriptor["layout"]["primary_key"], descriptor["primary_key"])
+            assertEquals(descriptor["layout"]["cursor"], descriptor["cursor"])
+            assertEquals(stream.generationId, descriptor["generation_id"].asLong())
             assertEquals(
                 if (catalog == null) stream.asProtocolObject().stream.jsonSchema
                 else originalSchema,
@@ -488,7 +492,7 @@ class BigqueryCopyMetadataTest {
                 )
         val metadata = metadata(stream)
         val expected =
-            "fusion/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/runs/$epochSeconds/$runId/streams/MiX%2F%E9%9B%AA%25%20."
+            "fusion/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/streams/MiX%2F%E9%9B%AA%25%20./runs/$epochSeconds/$runId"
         assertEquals(expected, metadata.runPath(stream))
         val descriptor = tree(metadata.descriptor(stream))
         assertTrue(descriptor["original_stream"]["namespace"].isNull)
@@ -515,7 +519,9 @@ class BigqueryCopyMetadataTest {
             )
             .forEach { (name, escaped) ->
                 assertTrue(
-                    metadata.runPath(stream.copy(unmappedName = name)).endsWith("/streams/$escaped")
+                    metadata
+                        .runPath(stream.copy(unmappedName = name))
+                        .endsWith("/streams/$escaped/runs/$epochSeconds/$runId")
                 )
             }
         assertThrows(IllegalArgumentException::class.java) {
@@ -545,7 +551,7 @@ class BigqueryCopyMetadataTest {
         assertTrue(
             original
                 .runPath(stream.copy(unmappedName = "second"))
-                .contains("/runs/$epochSeconds/$runId/")
+                .endsWith("/runs/$epochSeconds/$runId")
         )
     }
 

@@ -162,6 +162,9 @@ class BigqueryCopyMetadata(
                             "dataset" to table.namespace,
                             "table" to table.name,
                         ),
+                    "source_schema" to layout.getValue("source_schema"),
+                    "primary_key" to primaryKey,
+                    "cursor" to cursor,
                     "layout" to layout,
                     "scope" to "load inputs; not final table publication or a final table snapshot",
                     "loaded_record_count_meaning" to "BigQuery load job outputRows",
@@ -193,7 +196,7 @@ class BigqueryCopyMetadata(
     fun runPath(stream: DestinationStream): String {
         require(epochSeconds >= 0) { "Fusion run epoch must not be negative" }
         val path =
-            "${config.prefix}/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/runs/$epochSeconds/$runId/streams/${escape(stream.unmappedName)}"
+            "${config.prefix}/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/streams/${escape(stream.unmappedName)}/runs/$epochSeconds/$runId"
         // Include the longest supported batch suffix when checking S3's UTF-8 key limit.
         require("$path/batches/${UUID(0, 0)}.csv.gz".toByteArray(Charsets.UTF_8).size <= 1024) {
             "Fusion S3 object key exceeds 1024 UTF-8 bytes"
