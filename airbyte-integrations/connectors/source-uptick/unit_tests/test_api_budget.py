@@ -7,15 +7,14 @@ a `Retry-After` at the 1800s cap that stops the stream instead of waiting.
 """
 
 import json
+from datetime import timedelta
 
 import pytest
 from conftest import base_config, get_source
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConcurrencyLevel as ConcurrencyLevelModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
-    MovingWindowCallRatePolicy as MovingWindowCallRatePolicyModel,
-)
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import Rate as RateModel
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -52,10 +51,11 @@ def test_budget_policy_resolves_limit_from_config(config_override, expected_limi
     # One global MovingWindowCallRatePolicy: N calls per 60s window, empty matchers so every
     # request on every stream counts against the same budget.
     assert len(policies) == 1
-    policy = source._constructor.create_component(MovingWindowCallRatePolicyModel, policies[0], source._config)
-    assert policy._bucket.rates[0].limit == expected_limit
-    assert policy._bucket.rates[0].interval == 60_000
-    assert policy._matchers == []
+    assert policies[0]["matchers"] == []
+    # The rates entry carries no `type` discriminator, so inject it for create_component.
+    rate = source._constructor.create_component(RateModel, {**policies[0]["rates"][0], "type": "Rate"}, source._config)
+    assert rate.limit == expected_limit
+    assert rate.interval == timedelta(minutes=1)
 
 
 @pytest.mark.parametrize(
