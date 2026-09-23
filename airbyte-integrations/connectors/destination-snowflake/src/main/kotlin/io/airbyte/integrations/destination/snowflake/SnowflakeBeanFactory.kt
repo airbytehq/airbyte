@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.snowflake
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.Operation
+import io.airbyte.cdk.fusion.FusionConfiguration
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
@@ -14,7 +15,6 @@ import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
 import io.airbyte.integrations.destination.snowflake.copy.DisabledSnowflakeS3Copy
 import io.airbyte.integrations.destination.snowflake.copy.EnabledSnowflakeS3Copy
-import io.airbyte.cdk.fusion.FusionConfiguration
 import io.airbyte.integrations.destination.snowflake.copy.SnowflakeS3Copy
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration

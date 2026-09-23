@@ -5,7 +5,6 @@ package io.airbyte.integrations.destination.snowflake.copy
 
 import io.airbyte.cdk.fusion.FusionConfiguration
 import io.airbyte.cdk.fusion.FusionUploader
-
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -87,7 +86,12 @@ class SnowflakeStreamCompletionTest {
         runBlocking {
             val configured =
                 ConfiguredAirbyteStream()
-                    .withStream(AirbyteStream().withName("Orders/日本").withNamespace("public"))
+                    .withStream(
+                        AirbyteStream()
+                            .withName("Orders/日本")
+                            .withNamespace("public")
+                            .withJsonSchema(Jsons.readTree("{}"))
+                    )
                     .withPrimaryKey(listOf(listOf("id"), listOf("nested", "key")))
                     .withCursorField(listOf("updated_at"))
             val fixture = Fixture(0, ConfiguredAirbyteCatalog().withStreams(listOf(configured)))

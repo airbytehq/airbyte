@@ -4,14 +4,13 @@
 
 package io.airbyte.integrations.destination.snowflake.copy
 
-import io.airbyte.cdk.fusion.FusionConfiguration
-import io.airbyte.cdk.fusion.FusionSchema
-import io.airbyte.cdk.fusion.FusionPaths
-import io.airbyte.cdk.fusion.FusionUploader
-import io.airbyte.cdk.fusion.S3FusionUploader
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.SystemErrorException
+import io.airbyte.cdk.fusion.FusionConfiguration
+import io.airbyte.cdk.fusion.FusionPaths
+import io.airbyte.cdk.fusion.FusionSchema
+import io.airbyte.cdk.fusion.FusionUploader
+import io.airbyte.cdk.fusion.S3FusionUploader
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectType
@@ -183,40 +182,46 @@ class EnabledSnowflakeS3Copy(
         val sourceDescriptor =
             configured?.let { FusionSchema.fromConfiguredStream(Jsons.valueToTree(it)) }
                 ?: mapOf(
-                    "source_schema" to AirbyteTypeToJsonSchema()
-                        .convert(ObjectType(LinkedHashMap(stream.tableSchema.columnSchema.inputSchema))),
+                    "source_schema" to
+                        AirbyteTypeToJsonSchema()
+                            .convert(
+                                ObjectType(
+                                    LinkedHashMap(stream.tableSchema.columnSchema.inputSchema)
+                                )
+                            ),
                     "primary_key" to emptyList<List<String>>(),
                     "cursor" to emptyList<String>(),
                 )
-        return sourceDescriptor + mapOf(
-            "contract_version" to 1,
-            "connector" to "destination-snowflake",
-            "format" to "snowflake-load-csv-gzip-v1",
-            "stream" to
-                mapOf("namespace" to stream.unmappedNamespace, "name" to stream.unmappedName),
-            "mapped_stream" to
-                mapOf(
-                    "namespace" to stream.mappedDescriptor.namespace,
-                    "name" to stream.mappedDescriptor.name
-                ),
-            "table" to
-                mapOf(
-                    "namespace" to stream.tableSchema.tableNames.finalTableName!!.namespace,
-                    "name" to stream.tableSchema.tableNames.finalTableName!!.name
-                ),
-            "mode" to if (snowflakeConfiguration.legacyRawTablesOnly) "raw" else "schema",
-            "columns" to columns,
-            "input_to_final" to stream.tableSchema.columnSchema.inputToFinalColumnNames,
-            "dialect" to
-                mapOf(
-                    "encoding" to "UTF-8",
-                    "separator" to ",",
-                    "quote" to "\"",
-                    "line_separator" to "LF",
-                    "header" to false,
-                    "compression" to "gzip"
-                )
-        )
+        return sourceDescriptor +
+            mapOf(
+                "contract_version" to 1,
+                "connector" to "destination-snowflake",
+                "format" to "snowflake-load-csv-gzip-v1",
+                "stream" to
+                    mapOf("namespace" to stream.unmappedNamespace, "name" to stream.unmappedName),
+                "mapped_stream" to
+                    mapOf(
+                        "namespace" to stream.mappedDescriptor.namespace,
+                        "name" to stream.mappedDescriptor.name
+                    ),
+                "table" to
+                    mapOf(
+                        "namespace" to stream.tableSchema.tableNames.finalTableName!!.namespace,
+                        "name" to stream.tableSchema.tableNames.finalTableName!!.name
+                    ),
+                "mode" to if (snowflakeConfiguration.legacyRawTablesOnly) "raw" else "schema",
+                "columns" to columns,
+                "input_to_final" to stream.tableSchema.columnSchema.inputToFinalColumnNames,
+                "dialect" to
+                    mapOf(
+                        "encoding" to "UTF-8",
+                        "separator" to ",",
+                        "quote" to "\"",
+                        "line_separator" to "LF",
+                        "header" to false,
+                        "compression" to "gzip"
+                    )
+            )
     }
     override fun close() {
         if (closed.compareAndSet(false, true)) {
