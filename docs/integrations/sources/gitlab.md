@@ -167,7 +167,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.4.41 | 2026-09-23 | [PR_PLACEHOLDER](https://github.com/airbytehq/airbyte/pull/PR_PLACEHOLDER) | Include child pipelines in the `pipelines` stream (and therefore `pipelines_extended` and `jobs`) and add the `pipeline_trigger_jobs` stream |
+| 4.4.41 | 2026-09-23 | [86933](https://github.com/airbytehq/airbyte/pull/86933) | Include child pipelines in the `pipelines` stream (and therefore `pipelines_extended` and `jobs`) and add the `pipeline_trigger_jobs` stream |
 | 4.4.40 | 2026-09-22 | [86599](https://github.com/airbytehq/airbyte/pull/86599) | Update dependencies |
 | 4.4.39 | 2026-09-15 | [86063](https://github.com/airbytehq/airbyte/pull/86063) | Update dependencies |
 | 4.4.38 | 2026-09-08 | [85485](https://github.com/airbytehq/airbyte/pull/85485) | Update dependencies |
