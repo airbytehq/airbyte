@@ -271,6 +271,8 @@ The **Report Options** setting takes a report type, a stream name, and a list of
 
 For the other report types the **Report Options** dropdown offers, the connector accepts your entries and validates them, but doesn't send them to Amazon. Those reports come back with Amazon's defaults. [Issue #77617](https://github.com/airbytehq/airbyte/issues/77617) tracks the remaining streams.
 
+If Amazon can't generate one of these reports, the sync now fails with Amazon's own explanation instead of a generic "async job failed" message. When that explanation points at report options, the error names the options Amazon expects for that report type so you can add them under **Report Options**.
+
 If you already had report options configured for either ledger stream before 5.9.3, they take effect as soon as you upgrade, and the records change shape: a summary view aggregated `DAILY` returns one row per day where it previously returned one per month, and a detailed view filtered by `eventType` returns fewer rows. Refresh the stream if you need history to match the new options.
 
 ### Report options the connector sets for you
@@ -483,6 +485,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.10.7 | 2026-09-23 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Surface Amazon's own explanation when a report fails with `FATAL` instead of a generic async-job error, and fail fast with a config error when the reason points at report options |
 | 5.10.5 | 2026-09-22 | [86512](https://github.com/airbytehq/airbyte/pull/86512) | Update dependencies |
 | 5.10.4 | 2026-09-21 | [86322](https://github.com/airbytehq/airbyte/pull/86322) | Add `order-item-id` to `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` schemas |
 | 5.10.3 | 2026-09-15 | [85942](https://github.com/airbytehq/airbyte/pull/85942) | Update dependencies |

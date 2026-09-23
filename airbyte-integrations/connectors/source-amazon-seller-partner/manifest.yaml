@@ -3534,7 +3534,10 @@ definitions:
                 default_backoff_time: 60
 
     polling_requester:
-      type: HttpRequester
+      # CustomRequester (not HttpRequester) so a FATAL report surfaces Amazon's own reason instead of
+      # the CDK's generic "Async job failed after exhausting all retry attempts." system error.
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.ReportPollingRequester
       path: reports/2021-06-30/reports/{{creation_response['reportId']}}
       url_base: "{{ config['endpoint'] }}"
       authenticator: "#/definitions/authenticator"

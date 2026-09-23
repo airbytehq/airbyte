@@ -1366,6 +1366,157 @@ class TestSalesAndTrafficReportRequestBody:
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
 
 
+class TestFatalReportErrorSurfacing:
+    """
+    A FATAL report means Amazon accepted createReport but could not produce the report, and the
+    reason lives in a separate error document. ReportPollingRequester fetches that document so the
+    reason reaches the user instead of the CDK's generic retry-exhausted message.
+    """
+
+    # A vendor analytics stream, so the FATAL path is exercised on exactly the streams the
+    # customer hit. The reads below pin a one-day window so there is a single slice and a single,
+    # fixed request body.
+    _STREAM_NAME = "GET_VENDOR_SALES_REPORT"
+    _SLICE_END_DATE = pendulum.datetime(2023, 1, 2)
+    _ERROR_DOCUMENT_ID = "fatal_error_document_id"
+    _ERROR_DOCUMENT_URL = "https://test.com/fatal-error-document"
+
+    # Amazon's verbatim wording, captured from a canary prerelease against the affected Vendor
+    # connection. Pinned because the marker matching depends on the exact phrasing: note
+    # "reportOption" is singular, and the "on GitHub" pointer refers to docs Amazon archived in 2024.
+    _AMAZON_REPORT_OPTIONS_REASON = (
+        "Error in report request: This report type requires the reportPeriod, distributorView, "
+        "sellingProgram reportOption to be specified. Please review the document for this report "
+        "type on GitHub, provide a value for this reportOption in your request, and try again."
+    )
+    _DOC_URL = "https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics"
+
+    @classmethod
+    def _read(cls, stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_.with_account_type("Vendor").with_end_date(cls._SLICE_END_DATE),
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+            expecting_exception=True,
+        )
+
+    def _mock_fatal_flow(
+        self,
+        http_mocker: HttpMocker,
+        error_document_body: Optional[str],
+        report_document_id: Optional[str] = _ERROR_DOCUMENT_ID,
+        attempts: int = 3,
+    ) -> None:
+        """
+        Mock a report that goes FATAL. tick=True advances time, so without_amz_date() is needed.
+
+        `attempts` is the number of times the CDK is expected to create the report: 3 for
+        _DEFAULT_MAX_JOB_RETRY when the failure is retried, and 1 when a config error aborts the
+        job loop on the first attempt.
+        """
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().without_amz_date().build(), [_get_reports_response()] * attempts)
+        create_body = json.dumps(
+            {
+                "reportType": self._STREAM_NAME,
+                "dataStartTime": "2023-01-01T00:00:00Z",
+                "dataEndTime": "2023-01-01T23:59:59Z",
+                "marketplaceIds": [MARKETPLACE_ID],
+            }
+        )
+        http_mocker.post(
+            _create_report_request(self._STREAM_NAME).with_body(create_body).without_amz_date().build(),
+            [_create_report_response(_REPORT_ID)] * attempts,
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).without_amz_date().build(),
+            [
+                _check_report_status_response(
+                    self._STREAM_NAME,
+                    processing_status=ReportProcessingStatus.FATAL,
+                    report_document_id=report_document_id,
+                )
+            ]
+            * attempts,
+        )
+        if report_document_id is not None:
+            http_mocker.get(
+                _get_document_download_url_request(report_document_id).without_amz_date().build(),
+                [_get_document_download_url_response(self._ERROR_DOCUMENT_URL, report_document_id)] * attempts,
+            )
+        if error_document_body is not None:
+            http_mocker.get(
+                _download_document_request(self._ERROR_DOCUMENT_URL).build(),
+                [HttpResponse(body=error_document_body, status_code=HTTPStatus.OK)] * attempts,
+            )
+
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
+    def test_given_fatal_report_options_error_when_read_then_config_error_quotes_amazon_once(self, http_mocker: HttpMocker) -> None:
+        """Amazon's real wording names the options itself, so the message must not restate them."""
+        # attempts=1: a config error is breaking, so the sync aborts without burning retries.
+        self._mock_fatal_flow(http_mocker, json.dumps({"errorDetails": self._AMAZON_REPORT_OPTIONS_REASON}), attempts=1)
+
+        output = self._read(self._STREAM_NAME, config().with_failed_retry_wait_time_in_seconds(1))
+
+        # Assert on our own message alone: output.errors also carries the CDK's combined
+        # "streams did not sync successfully" error, which re-embeds the same reason.
+        message = next(error.trace.error.message for error in output.errors if error.trace.error.message.startswith("Amazon rejected"))
+        assert self._AMAZON_REPORT_OPTIONS_REASON in message
+        assert any(error.trace.error.failure_type == FailureType.config_error for error in output.errors)
+        # Point the user at where to set the options, and past Amazon's retired GitHub reference.
+        assert "Report Options" in message
+        assert self._DOC_URL in message
+        assert "archived in 2024" in message
+        # Amazon already listed the options, so our own list must not be appended alongside it:
+        # each option name appears exactly once, inside Amazon's quote.
+        for option in ("reportPeriod", "distributorView", "sellingProgram"):
+            assert message.count(option) == 1, f"{option} restated alongside Amazon's own list"
+        assert "Amazon documents" not in message
+
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
+    def test_given_fatal_report_options_error_without_names_when_read_then_documented_options_named(self, http_mocker: HttpMocker) -> None:
+        """When Amazon's reason names no options, fall back to the documented list for the report type."""
+        amazon_reason = "Error in report request: a required reportOption is missing."
+        self._mock_fatal_flow(http_mocker, json.dumps({"errorDetails": amazon_reason}), attempts=1)
+
+        output = self._read(self._STREAM_NAME, config().with_failed_retry_wait_time_in_seconds(1))
+
+        error_messages = " ".join(error.trace.error.message for error in output.errors)
+        assert amazon_reason in error_messages
+        assert any(error.trace.error.failure_type == FailureType.config_error for error in output.errors)
+        assert "Amazon documents reportPeriod, distributorView, sellingProgram as required" in error_messages
+        # Amazon said nothing about GitHub here, so the archival note must not appear.
+        assert "archived in 2024" not in error_messages
+        assert self._DOC_URL in error_messages
+
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
+    def test_given_fatal_unrelated_error_when_read_then_reason_logged_and_not_config_error(self, http_mocker: HttpMocker) -> None:
+        """An unrelated FATAL reason is logged but must not be reported as a report-options problem."""
+        amazon_reason = "Report data is not yet available for the requested date range."
+        self._mock_fatal_flow(http_mocker, json.dumps({"errorDetails": amazon_reason}))
+
+        output = self._read(self._STREAM_NAME, config().with_failed_retry_wait_time_in_seconds(1))
+
+        assert_message_in_log_output(amazon_reason, output, log_level=Level.ERROR)
+        error_messages = " ".join(error.trace.error.message for error in output.errors)
+        assert "Add the options under Report Options" not in error_messages
+
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
+    def test_given_fatal_without_error_document_when_read_then_reported_without_reason(self, http_mocker: HttpMocker) -> None:
+        """A FATAL report with no reportDocumentId must not break the existing failure path."""
+        self._mock_fatal_flow(http_mocker, error_document_body=None, report_document_id=None)
+
+        output = self._read(self._STREAM_NAME, config().with_failed_retry_wait_time_in_seconds(1))
+
+        assert_message_in_log_output("without an error document explaining why", output, log_level=Level.ERROR)
+        assert output.errors
+
+
 @freezegun.freeze_time(NOW.isoformat())
 class TestVendorJsonReportsFullRefresh:
     """Tests for vendor JSON report streams: Traffic, Net Pure Product Margin, and Real-Time Inventory."""
