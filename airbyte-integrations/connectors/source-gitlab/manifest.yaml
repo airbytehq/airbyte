@@ -905,12 +905,12 @@ definitions:
     name: "pipelines"
     $ref: "#/definitions/base_projects_incremental_child_stream"
     retriever:
-      $ref: "#/definitions/projects_streams_retriever"
+      $ref: "#/definitions/projects_child_streams_retriever"
       requester:
         $ref: "#/definitions/requester"
         request_parameters: "{{ {'source': 'parent_pipeline'} if stream_slice.pipeline_source == 'parent_pipeline' else {} }}"
       partition_router:
-        - $ref: "#/definitions/projects_streams_retriever/partition_router"
+        - $ref: "#/definitions/projects_child_streams_retriever/partition_router"
         - type: ListPartitionRouter
           cursor_field: "pipeline_source"
           values: ["default", "parent_pipeline"]
@@ -3482,11 +3482,10 @@ schemas:
         - 'null'
         - string
       project_id:
-        description: ID or URL-encoded path of the project to which the trigger job belongs, as configured in the source.
+        description: ID of the project to which the trigger job belongs.
         type:
         - 'null'
         - integer
-        - string
       project:
         description: Details of the project to which the trigger job belongs.
         type:
