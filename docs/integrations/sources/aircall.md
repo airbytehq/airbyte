@@ -1,42 +1,33 @@
 # Aircall
 
-This page contains the setup guide and reference information for the [Aircall](https://developer.aircall.io/api-references/#rest-api) source
+This page contains the setup guide and reference information for the [Aircall](https://developer.aircall.io/api-references/#rest-api) source connector.
 
 ## Prerequisites
 
-Access Token (which acts as bearer token) is mandate for this connector to work, It could be seen at settings (ref - https://dashboard.aircall.io/integrations/api-keys).
+- An Aircall account. You need admin access to the Aircall Dashboard to create API keys.
+- An Aircall API key. Each key consists of an **API ID** and an **API token**. The connector authenticates with [HTTP Basic authentication](https://developer.aircall.io/api-references/#basic-auth-aircall-customers), using the API ID as the username and the API token as the password.
 
 ## Setup guide
 
-### Step 1: Set up Aircall connection
+### Step 1: Create an Aircall API key
 
-- Get an Aircall access token via settings (ref - https://dashboard.aircall.io/integrations/api-keys)
-- Setup params (All params are required)
-- Available params
-  - api_id: The auto generated id
-  - api_token: Seen at the Aircall settings (ref - https://dashboard.aircall.io/integrations/api-keys)
-  - start_date: Date filter for eligible streams, enter
+1. Log in to the [Aircall Dashboard](https://dashboard.aircall.io/) as an admin.
+2. Go to **Integrations & API** > [**API Keys**](https://dashboard.aircall.io/integrations/api-keys).
+3. Click **Add a new API key**.
+4. Copy the **API ID** and **API token**. Aircall doesn't store the token in plain text, so you can't view it again later. If you lose it, create a new key.
 
 ### Step 2: Set up the Aircall connector in Airbyte
 
-#### For Airbyte Cloud:
-
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Aircall connector and select **Aircall** from the Source type dropdown.
-4. Enter your `api_id, api_token and start_date`.
-5. Click **Set up source**.
-
-#### For Airbyte OSS:
-
-1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source.
-3. Enter your `api_id, api_token and start_date`.
-4. Click **Set up source**.
+1. In the Airbyte UI, click **Sources** in the left navigation bar, then click **New source**.
+2. Select **Aircall** from the list of sources.
+3. Enter a name for the source.
+4. Enter your **API ID** and **API Token**.
+5. For **Date-From Filter**, enter the earliest `created_at` timestamp to sync, in the format `YYYY-MM-DDTHH:mm:ss.SSSZ` (for example, `2022-03-01T00:00:00.000Z`). This filter only applies to the `numbers` and `teams` streams. All other streams ignore it and return all records.
+6. Click **Set up source**.
 
 ## Supported sync modes
 
-The Aircall source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Aircall source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |
@@ -46,25 +37,33 @@ The Aircall source connector supports the following [sync modes](https://docs.ai
 | SSL connection                | Yes        |
 | Namespaces                    | No         |
 
-## Supported Streams
+## Supported streams
 
-- calls
-- company
-- contacts
-- numbers
-- tags
-- user_availability
-- users (uses the Aircall User V2 API)
-- teams
-- webhooks
+| Stream              | Aircall endpoint                | Incremental | Notes                                                                                                              |
+| :------------------ | :------------------------------ | :---------- | :----------------------------------------------------------------------------------------------------------------- |
+| `calls`             | `GET /v1/calls`                 | No          | Aircall returns at most 10,000 calls through this endpoint, even with pagination.                                  |
+| `company`           | `GET /v1/company`               | No          | Returns a single record describing your Aircall company.                                                           |
+| `contacts`          | `GET /v1/contacts`              | No          | Returns shared contacts only. Aircall returns at most 10,000 contacts through this endpoint, even with pagination. |
+| `numbers`           | `GET /v1/numbers`               | Yes         | Cursor field is `created_at`. Filtered by **Date-From Filter**.                                                    |
+| `tags`              | `GET /v1/tags`                  | No          |                                                                                                                    |
+| `teams`             | `GET /v1/teams`                 | Yes         | Cursor field is `created_at`. Filtered by **Date-From Filter**.                                                    |
+| `user_availability` | `GET /v1/users/availabilities`  | No          | Returns the current availability of each user.                                                                     |
+| `users`             | `GET /v2/users`                 | No          | Uses the Aircall User V2 API. See [Users stream](#users-stream).                                                   |
+| `webhooks`          | `GET /v1/webhooks`              | No          |                                                                                                                    |
 
-## API method example
+Incremental streams use a 31-day lookback window, so each incremental sync re-reads records created in the 31 days before the last saved cursor value.
 
-GET https://api.aircall.io/v1/numbers
+### Users stream
+
+Starting with connector version 0.4.24, the `users` stream reads from the [Aircall User V2 API](https://developer.aircall.io/api-references/#user-v2-overview) instead of User V1, which Aircall is deprecating on September 30, 2026. The stream's fields are unchanged, with one exception: `direct_link` values now point to `/v2/users/{id}` instead of `/v1/users/{id}`. The V2 API doesn't return a `numbers` object on user records, but the connector never synced that object, so no columns are removed. No reset is required.
+
+Version 0.4.24 also added pagination to the `users` stream. Earlier versions returned only the first page of 20 users that Aircall returns by default. If your account has more than 20 users, the first sync after upgrading includes the users that were previously missing.
+
+The `user_availability` stream still uses the V1 `/users/availabilities` endpoint, which isn't part of Aircall's User V1 deprecation.
 
 ## Performance considerations
 
-Aircall [API reference](https://api.aircall.io/v1) has v1 at present. The connector as default uses v1.
+Aircall limits the Public API to [120 requests per minute per company](https://developer.aircall.io/api-references/#rate-limiting). This limit is shared across all API keys and integrations in your Aircall account. The connector requests 50 records per page to reduce the number of calls it makes. If you have other integrations that use the Aircall API heavily, you may hit this limit during large syncs.
 
 ## IP allow list
 
