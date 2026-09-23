@@ -10,9 +10,9 @@ import java.util.UUID
  *
  * AWS clients also read standard SDK settings directly from the process environment. For local
  * testing, injected AWS_ENDPOINT_URL (all services), AWS_ENDPOINT_URL_S3, and AWS_ENDPOINT_URL_STS
- * automatically configure client endpoints; they do not need fields or parsing here. Service-specific
- * endpoint variables take precedence over AWS_ENDPOINT_URL. Passing these settings only in the map
- * supplied to fromEnvironment does not configure the clients.
+ * automatically configure client endpoints; they do not need fields or parsing here.
+ * Service-specific endpoint variables take precedence over AWS_ENDPOINT_URL. Passing these settings
+ * only in the map supplied to fromEnvironment does not configure the clients.
  */
 class FusionConfiguration(
     val roleArn: String,
