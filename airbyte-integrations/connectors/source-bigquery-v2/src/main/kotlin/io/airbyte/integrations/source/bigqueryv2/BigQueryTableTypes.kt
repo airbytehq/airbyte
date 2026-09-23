@@ -7,8 +7,9 @@ import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Remembers the [TableDefinition.Type] of every table whose metadata was fetched during the current
- * operation, so that the query generator can tell tables from views.
+ * Remembers the [TableDefinition.Type] and the size of every table whose metadata was fetched
+ * during the current operation, so that the query generator can tell tables from views and the
+ * partition creators can size their work.
  *
  * `TABLESAMPLE` is only legal on base tables: BigQuery rejects it on views (and, per the message,
  * on anything else) with "TABLESAMPLE SYSTEM can only be applied directly to base tables."
@@ -18,17 +19,32 @@ import java.util.concurrent.ConcurrentHashMap
  */
 @Singleton
 class BigQueryTableTypes {
-    private val types = ConcurrentHashMap<StreamIdentifier, TableDefinition.Type>()
+    private val facts = ConcurrentHashMap<StreamIdentifier, TableFacts>()
+
+    /** What `tables.get` says about a table's kind and size. */
+    data class TableFacts(
+        val type: TableDefinition.Type?,
+        /** `numBytes` of the table (logical bytes), null when BigQuery does not report it. */
+        val numBytes: Long?,
+        /** `numRows` of the table, null when BigQuery does not report it. */
+        val numRows: Long?,
+    )
 
     fun register(streamID: StreamIdentifier, type: TableDefinition.Type?) {
-        if (type != null) types[streamID] = type
+        register(streamID, TableFacts(type, numBytes = null, numRows = null))
     }
 
-    fun typeOf(streamID: StreamIdentifier): TableDefinition.Type? = types[streamID]
+    fun register(streamID: StreamIdentifier, tableFacts: TableFacts) {
+        facts[streamID] = tableFacts
+    }
+
+    fun typeOf(streamID: StreamIdentifier): TableDefinition.Type? = facts[streamID]?.type
+
+    fun factsOf(streamID: StreamIdentifier): TableFacts? = facts[streamID]
 
     /** Whether `TABLESAMPLE SYSTEM` may be applied to this stream's source. */
     fun supportsTableSample(streamID: StreamIdentifier): Boolean =
-        when (types[streamID]) {
+        when (typeOf(streamID)) {
             null,
             TableDefinition.Type.TABLE -> true
             else -> false

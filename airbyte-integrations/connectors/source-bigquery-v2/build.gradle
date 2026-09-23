@@ -32,8 +32,18 @@ dependencies {
     // Native client, used for schema discovery (nested STRUCT/ARRAY fields and primary keys).
     // Same version as the one the JDBC driver above pulls in transitively.
     implementation 'com.google.cloud:google-cloud-bigquery:2.71.0'
+    // Storage Read API client (google-cloud-bigquerystorage 3.33.0) and Apache Arrow 17.0.0 come
+    // with the JDBC driver; the read path additionally needs Arrow's buffer decompression (LZ4
+    // through commons-compress, ZSTD through zstd-jni). Same Arrow version as the driver's.
+    implementation 'org.apache.arrow:arrow-compression:17.0.0'
 
     // ghcr.io/goccy/bigquery-emulator wrapper.
     testFixturesImplementation 'org.testcontainers:gcloud:1.21.4'
     testImplementation 'org.testcontainers:gcloud:1.21.4'
+}
+
+// Apache Arrow (Storage Read API read path) accesses java.nio.Buffer internals; the connector image
+// gets this flag from applicationDefaultJvmArgs above, the test JVM needs it too.
+tasks.withType(Test).configureEach {
+    jvmArgs '--add-opens=java.base/java.nio=ALL-UNNAMED'
 }

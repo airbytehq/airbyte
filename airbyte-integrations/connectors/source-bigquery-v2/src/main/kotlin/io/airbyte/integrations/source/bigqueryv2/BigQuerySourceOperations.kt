@@ -55,7 +55,10 @@ import io.micronaut.context.annotation.Primary
 import jakarta.inject.Inject
 import jakarta.inject.Provider
 import jakarta.inject.Singleton
+import java.time.Instant
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 /**
  * BigQuery flavour of the `extract-jdbc` toolkit hooks:
@@ -298,6 +301,60 @@ private constructor(
     }
 
     /**
+     * A query returning `APPROX_QUANTILES([pk], [numQuantiles])` of the (optionally [where]
+     * -bounded) table, one boundary value per row. The JDBC fallback's concurrent creator uses it
+     * to split a table into balanced key ranges without a full-table sample: `APPROX_QUANTILES`
+     * reads only the key column. The boundary column is rendered exactly as a normal read renders
+     * it ([selectSql]), so a DATE/DATETIME/TIME boundary comes back as the same string the read
+     * path emits and is usable verbatim as a `WHERE` bound (which the generator then binds as text
+     * and casts back, see [bindPlaceholder]). `APPROX_QUANTILES(x, n)` yields `n + 1` values (the
+     * min, `n - 1` interior boundaries and the max); the caller drops the extremes.
+     */
+    fun approxQuantilesQuery(
+        name: String,
+        namespace: String?,
+        pk: DataField,
+        numQuantiles: Int,
+        where: WhereNode,
+    ): SelectQuery {
+        val inner: String =
+            listOf(
+                    "SELECT APPROX_QUANTILES(${pk.sql()}, $numQuantiles)",
+                    "FROM ${tableReference(name, namespace)}",
+                    where.sql(),
+                )
+                .filter { it.isNotBlank() }
+                .joinToString(" ")
+        val sql = "SELECT ${pk.selectSql()} FROM UNNEST(($inner)) AS ${pk.sql()}"
+        return SelectQuery(sql, listOf(pk), where.bindings())
+    }
+
+    /**
+     * `MAX(cursor)` of the table as it was at [snapshotTime] (BigQuery time travel, `FOR
+     * SYSTEM_TIME AS OF`), rendered like the toolkit's cursor upper bound query so that the value
+     * comes back through the same getter and encoder as the JDBC cursor path's: the Storage Read
+     * API initial snapshot of an incremental stream reads the table at that same instant, and the
+     * value becomes the stream's cursor checkpoint. The literal is UTC with microseconds.
+     */
+    fun cursorUpperBoundAsOfQuery(
+        name: String,
+        namespace: String?,
+        cursor: DataField,
+        snapshotTime: Instant,
+    ): SelectQuery {
+        val max: String =
+            if (cursor.isReadAsText()) "CAST(MAX(${cursor.sql()}) AS STRING)"
+            else "MAX(${cursor.sql()})"
+        val sql =
+            "SELECT $max AS ${cursor.sql()} FROM ${tableReference(name, namespace)} " +
+                "FOR SYSTEM_TIME AS OF TIMESTAMP '${timestampLiteral(snapshotTime)}'"
+        return SelectQuery(sql, listOf(cursor), emptyList())
+    }
+
+    fun timestampLiteral(instant: Instant): String =
+        TIMESTAMP_LITERAL.format(instant.atOffset(ZoneOffset.UTC))
+
+    /**
      * `project.dataset.table`: the data project is always spelled out because the connection's
      * `ProjectId` is the job project, in which unqualified names would be resolved.
      */
@@ -306,6 +363,9 @@ private constructor(
         else "${dataProjectId().quoted()}.${namespace.quoted()}.${name.quoted()}"
 
     companion object {
+        private val TIMESTAMP_LITERAL: DateTimeFormatter =
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss.SSSSSS'+00'")
+
         /** Backtick quoting; a backtick inside an identifier is escaped with a backslash. */
         fun String.quoted(): String = "`" + replace("\\", "\\\\").replace("`", "\\`") + "`"
     }

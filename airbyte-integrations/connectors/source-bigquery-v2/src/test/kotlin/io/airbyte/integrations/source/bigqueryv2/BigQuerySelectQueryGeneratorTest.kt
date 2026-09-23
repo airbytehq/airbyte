@@ -260,4 +260,25 @@ class BigQuerySelectQueryGeneratorTest {
             otherProject.generate(SelectQuerySpec(SelectColumns(id), From("orders", "sales"))).sql,
         )
     }
+
+    @Test
+    fun testCursorUpperBoundAsOfQueryIsPinnedToTheSnapshotTime() {
+        val at = java.time.Instant.parse("2026-09-22T08:00:00.123456Z")
+        val native: SelectQuery = generator.cursorUpperBoundAsOfQuery("orders", "sales", id, at)
+        Assertions.assertEquals(
+            "SELECT MAX(`id`) AS `id` FROM `my-project`.`sales`.`orders` " +
+                "FOR SYSTEM_TIME AS OF TIMESTAMP '2026-09-22 08:00:00.123456+00'",
+            native.sql,
+        )
+        Assertions.assertEquals(listOf(id), native.columns)
+        Assertions.assertTrue(native.bindings.isEmpty())
+        // DATETIME (and DATE, TIME) maxima are read as text, like the toolkit's MAX query.
+        val localTs = EmittedField("local_ts", BigQueryDateTimeFieldType)
+        val text: SelectQuery = generator.cursorUpperBoundAsOfQuery("orders", "sales", localTs, at)
+        Assertions.assertEquals(
+            "SELECT CAST(MAX(`local_ts`) AS STRING) AS `local_ts` FROM `my-project`.`sales`.`orders` " +
+                "FOR SYSTEM_TIME AS OF TIMESTAMP '2026-09-22 08:00:00.123456+00'",
+            text.sql,
+        )
+    }
 }

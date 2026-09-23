@@ -3,6 +3,7 @@ package io.airbyte.integrations.source.bigqueryv2
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.source.bigqueryv2.readapi.BigQueryReadApiAvailability
 import java.security.KeyPairGenerator
 import java.util.Base64
 import org.junit.jupiter.api.AfterEach
@@ -59,6 +60,8 @@ class BigQuerySourceConfigurationFactoryTest {
                 "ProjectId" to "my-project",
                 "OAuthServiceAcctEmail" to "airbyte@my-project.iam.gserviceaccount.com",
                 "OAuthPvtKey" to PRIVATE_KEY_PEM,
+                // The Storage Read API is on by default, for the read path and for the driver.
+                "EnableHighThroughputAPI" to "1",
             ),
             config.jdbcProperties,
         )
@@ -68,9 +71,7 @@ class BigQuerySourceConfigurationFactoryTest {
         Assertions.assertFalse(config.checkPrivileges)
         Assertions.assertEquals(1, config.maxConcurrency)
         Assertions.assertNull(config.maxSnapshotReadDuration)
-        // The Storage Read API is opt-in; by default the driver uses the REST API.
-        Assertions.assertFalse(config.useStorageReadApi)
-        Assertions.assertFalse(config.jdbcProperties.containsKey("EnableHighThroughputAPI"))
+        Assertions.assertTrue(config.useStorageReadApi)
     }
 
     @Test
@@ -144,21 +145,50 @@ class BigQuerySourceConfigurationFactoryTest {
     }
 
     @Test
-    fun testStorageReadApiIsOffByDefaultAndTogglesTheDriverProperty() {
+    fun testStorageReadApiIsOnByDefaultAndTogglesTheDriverProperty() {
         val off: BigQuerySourceConfiguration = make(configJson(useStorageReadApi = false))
         Assertions.assertFalse(off.useStorageReadApi)
         Assertions.assertFalse(off.jdbcProperties.containsKey("EnableHighThroughputAPI"))
+
+        val default: BigQuerySourceConfiguration = make(configJson())
+        Assertions.assertTrue(default.useStorageReadApi)
+        Assertions.assertEquals("1", default.jdbcProperties["EnableHighThroughputAPI"])
 
         val on: BigQuerySourceConfiguration = make(configJson(useStorageReadApi = true))
         Assertions.assertTrue(on.useStorageReadApi)
         Assertions.assertEquals("1", on.jdbcProperties["EnableHighThroughputAPI"])
     }
 
+    /**
+     * The availability found by the READ's probe is consulted on every connection: once the Read
+     * API is marked unavailable (no Read Session User role), the driver stops asking for it too.
+     */
+    @Test
+    fun testStorageReadApiUnavailabilityRemovesTheDriverPropertyAtAccessTime() {
+        val availability = BigQueryReadApiAvailability()
+        val factory = BigQuerySourceConfigurationFactory(readApiAvailability = availability)
+        val config: BigQuerySourceConfiguration =
+            factory.make(
+                Jsons.readValue(
+                    configJson(useStorageReadApi = true),
+                    BigQuerySourceConfigurationSpecification::class.java
+                )
+            )
+        Assertions.assertTrue(config.useStorageReadApi)
+        Assertions.assertEquals("1", config.jdbcProperties["EnableHighThroughputAPI"])
+        availability.markUnavailable("no permission")
+        Assertions.assertTrue(config.useStorageReadApi)
+        Assertions.assertFalse(config.jdbcProperties.containsKey("EnableHighThroughputAPI"))
+        Assertions.assertTrue(config.toString().contains("readApiAvailable=false"))
+        availability.reset()
+        Assertions.assertEquals("1", config.jdbcProperties["EnableHighThroughputAPI"])
+    }
+
     @Test
     fun testStorageReadApiIsNotWiredAgainstTheEmulator() {
         System.setProperty(BigQueryEmulator.SYSTEM_PROPERTY, "http://localhost:9050")
         val config: BigQuerySourceConfiguration = make(configJson(useStorageReadApi = true))
-        // The emulator path is test-only and does not serve the Storage Read API.
+        // The emulator path is test-only; its Storage Read API is too partial to be used.
         Assertions.assertFalse(config.useStorageReadApi)
         Assertions.assertFalse(config.jdbcProperties.containsKey("EnableHighThroughputAPI"))
     }

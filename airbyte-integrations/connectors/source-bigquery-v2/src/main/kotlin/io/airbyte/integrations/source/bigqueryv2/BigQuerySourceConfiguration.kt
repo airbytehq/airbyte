@@ -13,6 +13,7 @@ import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.source.bigqueryv2.readapi.BigQueryReadApiAvailability
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Inject
@@ -44,9 +45,13 @@ data class BigQuerySourceConfiguration(
      */
     val jobProjectId: String,
     /**
-     * Whether query results are read through the BigQuery Storage Read API (the driver's
-     * `EnableHighThroughputAPI`). Much faster than the REST API on large tables; only applied
-     * against the real service (never the emulator).
+     * Whether tables are read through the BigQuery Storage Read API (`use_storage_read_api`, on by
+     * default): base tables through the connector's own Read API partitions and the results of the
+     * remaining queries through the JDBC driver's `EnableHighThroughputAPI`. Both need the BigQuery
+     * Read Session User role; when the READ finds it missing ([readApiAvailability]) the connector
+     * falls back to the standard query API for everything. Always false against the emulator, whose
+     * Storage Read API implementation is too partial to serve the connector (goccy 0.8.1: one read
+     * stream per session, non-standard batch layout, offsets ignored, crashes on REPEATED columns).
      */
     val useStorageReadApi: Boolean,
     /**
@@ -55,7 +60,8 @@ data class BigQuerySourceConfiguration(
      */
     val emulatorHost: String?,
     override val jdbcUrlFmt: String,
-    override val jdbcProperties: Map<String, String>,
+    /** The JDBC properties without the Read API toggle; see [jdbcProperties]. */
+    val baseJdbcProperties: Map<String, String>,
     override val maxConcurrency: Int,
     override val realHost: String,
     override val realPort: Int = DEFAULT_PORT,
@@ -65,7 +71,22 @@ data class BigQuerySourceConfiguration(
     override val sshTunnel: SshTunnelMethodConfiguration = SshNoTunnelMethod,
     override val sshConnectionOptions: SshConnectionOptions =
         SshConnectionOptions.fromAdditionalProperties(emptyMap()),
+    /** Whether the READ found the Storage Read API usable; shared with the read path. */
+    val readApiAvailability: BigQueryReadApiAvailability = BigQueryReadApiAvailability(),
 ) : JdbcSourceConfiguration {
+
+    /**
+     * Computed on every connection: the JDBC driver reads query results through the Storage Read
+     * API (`EnableHighThroughputAPI`) only while the API is enabled and available. It is never
+     * enabled against the emulator (see [useStorageReadApi]).
+     */
+    override val jdbcProperties: Map<String, String>
+        get() =
+            if (useStorageReadApi && readApiAvailability.isAvailable) {
+                baseJdbcProperties + (JDBC_ENABLE_HIGH_THROUGHPUT_API to "1")
+            } else {
+                baseJdbcProperties
+            }
 
     /** No CDC: READ produces per-stream state. */
     override val global: Boolean = false
@@ -84,7 +105,9 @@ data class BigQuerySourceConfiguration(
     /** Keeps the credentials out of logs. */
     override fun toString(): String =
         "BigQuerySourceConfiguration(projectId=$projectId, datasetId=$datasetId, " +
-            "jobProjectId=$jobProjectId, useStorageReadApi=$useStorageReadApi, emulatorHost=$emulatorHost, jdbcUrlFmt=$jdbcUrlFmt, " +
+            "jobProjectId=$jobProjectId, useStorageReadApi=$useStorageReadApi, " +
+            "readApiAvailable=${readApiAvailability.isAvailable}, emulatorHost=$emulatorHost, " +
+            "jdbcUrlFmt=$jdbcUrlFmt, " +
             "jdbcProperties=${jdbcProperties.keys}, maxConcurrency=$maxConcurrency, " +
             "checkpointTargetInterval=$checkpointTargetInterval)"
 
@@ -93,6 +116,8 @@ data class BigQuerySourceConfiguration(
         const val BIGQUERY_API_HOST = "www.googleapis.com"
         const val BIGQUERY_API_URL = "https://$BIGQUERY_API_HOST/bigquery/v2:$DEFAULT_PORT"
         val DEFAULT_CHECKPOINT_TARGET_INTERVAL: Duration = Duration.ofMinutes(15)
+        /** The driver property that fetches query results through the Storage Read API. */
+        const val JDBC_ENABLE_HIGH_THROUGHPUT_API = "EnableHighThroughputAPI"
     }
 }
 
@@ -103,6 +128,8 @@ constructor(
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String = STDIO.name,
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}")
     val socketPaths: List<String> = emptyList(),
+    /** Shared with the Read API read path, which marks the API unavailable when not permitted. */
+    val readApiAvailability: BigQueryReadApiAvailability = BigQueryReadApiAvailability(),
 ) :
     SourceConfigurationFactory<
         BigQuerySourceConfigurationSpecification, BigQuerySourceConfiguration> {
@@ -158,18 +185,17 @@ constructor(
         // The URL is logged by the CDK; secrets go into the JDBC properties instead. The driver's
         // ProjectId is the project that runs (and is billed for) the query jobs; the data project
         // only appears in the fully qualified table references of the generated SQL.
-        // The BigQuery Storage Read API (driver property EnableHighThroughputAPI) is only wired
-        // against the real service: the emulator path is test-only and does not serve it. The read
-        // still requires the JVM to be started with
-        // '--add-opens=java.base/java.nio=ALL-UNNAMED' (baked into the image's JVM args) so Apache
-        // Arrow can access direct memory.
+        // The Storage Read API is on by default: base tables are read through the connector's own
+        // Read API partitions, and the JDBC driver fetches the results of the remaining queries
+        // through it too (EnableHighThroughputAPI, added to the properties on every connection by
+        // BigQuerySourceConfiguration.jdbcProperties while the API is available). Never against the
+        // emulator (test-only), whose Storage Read API is too partial. Apache Arrow needs the JVM
+        // started with '--add-opens=java.base/java.nio=ALL-UNNAMED' (baked into the image's JVM
+        // args).
         val useStorageReadApi: Boolean =
-            (pojo.useStorageReadApi == true) && serviceAccountKey != null
+            (pojo.useStorageReadApi ?: true) && serviceAccountKey != null
 
         val jdbcProperties: MutableMap<String, String> = mutableMapOf("ProjectId" to jobProjectId)
-        if (useStorageReadApi) {
-            jdbcProperties["EnableHighThroughputAPI"] = "1"
-        }
         val readApiState: String = if (useStorageReadApi) "ENABLED" else "disabled"
         log.info {
             "BigQuery Storage Read API (high-throughput reads): $readApiState " +
@@ -204,9 +230,10 @@ constructor(
             useStorageReadApi = useStorageReadApi,
             emulatorHost = emulatorHost,
             jdbcUrlFmt = jdbcUrlFmt.replace("%", "%%"),
-            jdbcProperties = jdbcProperties,
+            baseJdbcProperties = jdbcProperties,
             maxConcurrency = maxConcurrency,
             realHost = realHost,
+            readApiAvailability = readApiAvailability,
         )
     }
 

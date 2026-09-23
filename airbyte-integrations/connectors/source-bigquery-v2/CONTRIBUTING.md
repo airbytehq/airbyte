@@ -129,33 +129,139 @@ encoder and decoder, including a fixture row compared with its JSON rendering;
 properties for the duration of the read) runs the emulator catalog once on STDIO and once over two
 sockets in each format, playing the destination, and checks records, states and statuses.
 
-## Read throughput: sequential reads and the Storage Read API
+## Read path: the Storage Read API, with the query API as fallback
 
-Each stream is read by a single ordered, resumable query (`application.yml` `mode: sequential`).
-Splitting one table into concurrent partitions is deliberately not done: on BigQuery there is no
-scan-free way to compute balanced boundaries (`TABLESAMPLE SYSTEM` samples storage blocks, so its
-boundaries cluster and one partition ends up with almost the whole table), and each partition query
-re-reads whole storage blocks, multiplying the bytes billed. Tables are still read in parallel with
-each other, bounded by `maxConcurrency`.
+Base tables in full refresh, and the initial snapshot of incremental streams, are read through the
+**BigQuery Storage Read API** directly
+(`readapi` package), not through SQL: the connector opens a *read session* on the table, BigQuery
+splits it into *read streams* (its own term for the parallel shards of a session; "stream" alone
+means an Airbyte stream, i.e. a table, everywhere in this connector), and one CDK partition reads
+one read stream from a row offset to its end. Read streams are read in parallel up to
+`max_db_connections` (one at a time on the STDIO channel unless the property is set). Rows arrive
+as Arrow batches (ZSTD-compressed by default), decoded by `BigQueryArrowRecordDecoder` into the
+same JVM values the JDBC path produces, so records and protobuf payloads are byte-identical on both
+paths (verified on the real service on every type, see below). Measured against
+`amplitude.event` (515 GiB, 275M rows, 51 columns) and `rodi_proto_type_test.users` (1.3 GB):
+one read stream streams at 100k+ rows/s from a laptop, 5.22M rows in 28 s, where REST paging took
+881 s and the toolkit's `ORDER BY pk LIMIT n` chunks needed a full scan plus a single-worker sort per
+chunk (836 s for 98,884 rows). Bytes are billed once, at the Read API rate, with no query slots.
 
-Throughput within a single query comes from the **BigQuery Storage Read API** instead, an opt-in
-`use_storage_read_api` spec property (default off). When set, the factory adds the driver property
-`EnableHighThroughputAPI=1`, and the driver streams query results as Apache Arrow batches over gRPC
-rather than paging JSON through REST. Measured on a 5.2M-row / 1.3 GB table, this took a sequential
-read from about 15 minutes to about 90 seconds; value fidelity is identical to the REST path across
-every type the connector emits.
+Eligibility (`BigQueryReadApiPartitionsCreatorFactory.make`; anything else returns null so the
+`extract-jdbc` factory takes the feed): `use_storage_read_api` on (the default), the READ's
+availability probe passed, the source is a base table (`TableDefinition.Type.TABLE`; the API does
+not serve views, external tables, materialized views or snapshots), the read is a whole-table
+one (`FULL_REFRESH`, or an `INCREMENTAL` stream with no cursor checkpoint yet whose cursor is one of
+the nine validated cursor types), and every column type is on `BigQueryReadApiEligibility`'s
+verified list (all of them today). Cursor deltas (a state with a non-empty `cursors`), a query API
+snapshot in progress, legacy state and the emulator stay on the query API; the factory answers
+`CreateNoPartitions` for a table it finished earlier in the same READ (the CDK asks again every
+round; without it the query API would re-read the boundary rows of the cursor).
 
-Two requirements:
+**Incremental initial snapshot** (`BigQueryReadApiSnapshotQueries`, `BigQueryReadApiSnapshotSpec`):
+the factory picks a snapshot time `T` = now − 2 s (truncated to microseconds), runs
+`SELECT MAX(cursor) FROM t FOR SYSTEM_TIME AS OF TIMESTAMP 'T'` through the JDBC `SelectQuerier`
+(same getter and encoder as the toolkit's cursor upper bound query, `CAST(MAX(..) AS STRING)` for
+the text temporals) and opens the read session with `table_modifiers.snapshot_time = T`, so the
+rows and the bound come from one table version. The state carries `bigquery_read_snapshot_time`
+and `bigquery_read_cursor_upper_bound {cursor, value}`; the terminal state is the toolkit's
+`DefaultJdbcStreamStateValue.cursorIncrementalCheckpoint`, `{"primary_key":{},"cursors":{"<cursor>":
+<max>}}`, byte-identical to what the query API's snapshot-with-cursor emits, so the next sync
+reads the deltas on the query API (`WHERE cursor >= <checkpoint> AND cursor <= MAX(cursor)`, the
+CDK's inclusive lower bound, which re-emits the boundary rows on both paths alike). An expired
+session is reopened at the same `T` (BigQuery time travel, 2 to 7 days depending on the dataset)
+so the stored bound stays valid; if BigQuery refuses, a new `T` and `MAX` are taken. A table with
+no cursor value is left to the query API. Verified 2026-09-22 on `users` (cursor `updated_at`
+DATETIME): 5,220,000 records identical to the query path, terminal state
+`{"primary_key":{},"cursors":{"updated_at":"2024-01-10T20:53:31.000000"}}` on both paths,
+delta continuation from either state reads 1 row (the boundary) on the query API, kill after 4
+states and resume completes with the same terminal state.
 
-- **JVM flag**: Arrow needs `--add-opens=java.base/java.nio=ALL-UNNAMED` on JDK 17+; without it the
-  read fails to initialize Arrow. It is baked into `applicationDefaultJvmArgs` in `build.gradle`, so
-  the image has it. If you run the connector another way, add it to `JAVA_OPTS`.
-- **Permission**: the service account needs the BigQuery Read Session User role
-  (`bigquery.readsessions.create`). Storage Read API usage is billed separately from query bytes.
+State and resume (`BigQueryReadApiState`), keys prefixed `bigquery_read_`:
 
-The property is wired only against the real service; the emulator path leaves it off. The driver
-falls back to the REST API automatically for small results (fewer than ~10,000 rows or a single
-page), so enabling it never hurts small tables.
+```json
+{"bigquery_read_session": {"name": "projects/p/locations/us/sessions/CAIS…",
+                           "expires_at": "2026-09-22T10:28:18Z",
+                           "bigquery_read_streams": ["projects/p/locations/us/sessions/CAIS…/streams/GgJq…", "…"]},
+ "bigquery_read_streams_completed_through": 11,
+ "bigquery_read_streams_complete": [13],
+ "bigquery_read_stream_offsets": {"12": 1300000},
+ "bigquery_read_snapshot_time": "2026-09-23T05:22:42.645204Z",
+ "bigquery_read_cursor_upper_bound": {"cursor": "updated_at", "value": "2024-01-10T20:53:31.000000"}}
+```
+
+(the last two keys only for the initial snapshot of an incremental stream)
+
+`bigquery_read_streams_completed_through` is the high watermark (every read stream up to that
+index is complete); above it, `bigquery_read_streams_complete` lists read streams finished out of
+order and `bigquery_read_stream_offsets` the row offset reached in the ones in flight. A shared
+per-table progress map is updated after every Arrow batch and snapshotted at every checkpoint, so
+any checkpoint describes the whole table. The CDK ends a reader at the checkpoint interval; the
+next round resumes each read stream at its offset. A retried attempt resumes the same session
+(stream names are server-side resources, readable from any process until the session expires 6
+hours after creation); an expired or unknown session starts the table over. The terminal state is
+the toolkit's `{"primary_key":{},"cursors":{}}`. Verified: `users` killed after 12 of 14 read
+streams (4,103,186 records) and resumed with the last state read the remaining 2 (1,116,814
+records), 5,220,000 distinct ids in the union, none read twice.
+
+Sizing and knobs (`application.yml`, `airbyte.connector.extract.bigquery.*`):
+`read-stream-target-bytes` (8 GiB: a table asks for `ceil(numBytes / target)` read streams,
+at least the concurrency, at most `max-read-streams` = 1,000; BigQuery may return fewer),
+`arrow-buffer-compression` (`ZSTD`, measured faster and cheaper in CPU than `LZ4_FRAME`, whose
+decoder is pure Java: 5.22M rows at concurrency 4 in 17 s vs 21 s, 96% vs 265% CPU; `NONE` took
+29 s on a ~50 MB/s link), `read-rows-idle-timeout-seconds`
+(600: a `ReadRows` call that delivers nothing for that long is failed and resumed by the next
+attempt). Testing hint: `-Dairbyte.connector.extract.bigquery.read-stream-target-bytes=67108864`
+in `JAVA_OPTS` gives many small read streams and frequent states.
+
+Fallback: the Read API needs the BigQuery Read Session User role
+(`bigquery.readsessions.create`, `bigquery.readsessions.getData`) on the job project. Before any
+feed starts, `BigQueryReadApiAvailabilityProbe` (run from the factory supplier's `get()`, which the
+CDK calls after the catalog validation and before the feeds) opens a one-column, one-read-stream
+session on the first base table of the catalog and reads one response; a `PERMISSION_DENIED`
+marks `BigQueryReadApiAvailability` unavailable for the whole READ with a WARN naming the role, the
+Read API factory declines every feed, and `BigQuerySourceConfiguration.jdbcProperties` (computed
+on every connection) stops adding the driver's `EnableHighThroughputAPI=1`, so the JDBC driver
+pages results through REST. Any other probe failure keeps the API on. Setting
+`use_storage_read_api: false` does the same without probing. A reader-time `PERMISSION_DENIED`
+becomes a `ConfigErrorException` naming the role; `NOT_FOUND`/`FAILED_PRECONDITION` (session gone)
+and other API errors become `TransientErrorException`s so the attempt is retried from the last
+state. The driver itself has an `UnsupportedHTAPIFallback` property (default true) for result
+sets its high-throughput path cannot serve; whether it also covers a missing permission was not
+tested (no permission-less service account available).
+
+For the feeds the Read API path declines, `application.yml` sets `mode: concurrent` for
+`extract-jdbc` (it was `sequential` until 2026-09-22): splittable partitions are read as bounded
+ranges (`WHERE pk > ? AND pk <= ?`, no `ORDER BY`) and unsplittable ones as a single query, whereas
+`sequential` issues `ORDER BY pk LIMIT n` chunks, which on BigQuery re-scan the table and sort it
+on one worker per chunk (measured 836 s for a 98,884-row chunk of a 515 GiB table) and never grow
+past one fetch size. `BigQueryConcurrentPartitionsCreator` (`@Primary`, overriding the toolkit's
+concurrent factory) replaces the skewed `TABLESAMPLE` boundaries: a base table with a single
+quantile-friendly primary key is split into `ceil(numBytes / fallback-partition-target-bytes)`
+ranges (default 32 GiB; `fallback-partition-target-rows`, default 50M, is used when the table does
+not report `numBytes`, e.g. the emulator), with boundaries from one `APPROX_QUANTILES` query over
+the key column (which reads only that column: 2.05 GiB / 2 s on a 515 GiB table). Composite keys,
+keyless tables and views are read by one query. Each range still scans the whole table on BigQuery
+unless it is clustered or partitioned on the key (measured 2026-09-22: an unclustered 10% id range
+read 100% of the bytes, an id-clustered table 10.9%), so the target size trades bytes billed for
+checkpoint granularity.
+
+Requirements common to both Arrow paths (the read path and the driver's `EnableHighThroughputAPI`):
+the JVM flag `--add-opens=java.base/java.nio=ALL-UNNAMED` (in `applicationDefaultJvmArgs` and in
+the test task), and `org.apache.arrow:arrow-compression` for LZ4/ZSTD buffers. Storage Read API
+usage is billed separately from query bytes.
+
+Value fidelity evidence (2026-09-22, `/tmp/bq-v2-perf/diff-records.py`, byte-exact JSON text of
+every record, order-independent): `rodi_arrow_fidelity.all_types` (18 columns: INT64, STRING,
+NUMERIC, BIGNUMERIC, FLOAT64, BOOL, BYTES, DATE, DATETIME, TIMESTAMP, TIME, GEOGRAPHY, JSON,
+INTERVAL, RANGE<DATE>, STRUCT with nested STRUCT/TIME, ARRAY<STRING>, ARRAY<STRUCT>; rows: every
+value set, all NULL, extremes) IDENTICAL; `purchases` (1,210,863 rows: STRING, TIMESTAMP, JSON,
+INT64, NUMERIC, NULLs) IDENTICAL against the REST path of the previous build and against the
+query API path of this build with the flag off; `users` (5,220,000 rows, DATETIME cursors,
+NUMERIC) see the diff in the PR. Unit tests build Arrow vectors of every type
+(`BigQueryArrowRecordDecoderTest`), including LZ4- and ZSTD-compressed batches. The emulator's
+Storage Read API (goccy 0.8.1) is too partial to test against (one read stream per session,
+non-standard batch layout, offsets ignored, crashes on REPEATED columns), so the read path is off
+in emulator mode and the emulator tests exercise the query API path.
 
 ## The BigQuery emulator
 
@@ -315,18 +421,16 @@ Everything above the emulator also passes on the real service; nothing is emulat
 | 1. `spec` + `check`               | Done: `BigQuerySourceConfigurationSpecification`, `BigQuerySourceConfiguration(Factory)`, `BigQueryClientFactory`, check queries and exception classifiers in `application.yml`; tests `BigQuerySourceSpecTest`, `BigQuerySourceConfigurationFactoryTest`, `BigQuerySourceCheckTest`                                                      |
 | 2. `discover`                     | Done: `BigQuerySourceMetadataQuerier` (native client, prefetch per dataset, `check` fetches one table), `BigQueryFieldTypes` (+ `BigQueryStructFieldType`/`BigQueryArrayFieldType`), `BigQuerySourceOperations.create()` renders nested schemas; snapshots `expected-catalog-single-dataset.json`, `expected-catalog-all-datasets.json`   |
 | 3. first `read` (stream statuses) | Done: `read` boots on the toolkit's `JdbcSequentialPartitionsCreatorFactory`/`DefaultJdbcSharedState`; `BigQuerySourceReadTest` checks `STARTED`/`COMPLETE` for populated, empty and view streams and `STARTED`/`INCOMPLETE` + config error for a missing one                                                                             |
-| 4. `read`                         | Done: full refresh, cursor incremental with checkpoint and resume, legacy state translation; verified against the real service for scalar types. Speed mode (socket data channel, JSONL and protobuf) tested on the emulator                                                                                                              |
-| 5. validation at scale            | Concurrency measured on the real service: parallel partitions help only with balanced boundaries, which `TABLESAMPLE` cannot give, so reads are `mode: sequential`; per-query throughput comes from the opt-in Storage Read API (`use_storage_read_api`, see "Read throughput" above). Terabyte-scale heap/kill-resume checks still to do |
+| 4. `read`                         | Done: base tables in full refresh through the Storage Read API read path (`readapi` package, read-stream checkpoints, resume, permission fallback); views, incremental and legacy state through `extract-jdbc` in `concurrent` mode; verified byte-identical against the query API on the real service for every type. Speed mode (socket data channel, JSONL and protobuf) tested on the emulator |
+| 5. validation at scale            | `amplitude.event` (515 GiB, 275M rows) read through the Read API path at concurrency 4 from a laptop, with kill-and-resume; numbers in the PR. The toolkit's `ORDER BY pk LIMIT n` chunks were measured as a full scan plus a single-worker sort per chunk (836 s for 98,884 rows), which motivated the read path                                                                       |
 
 How `read` is put together:
 
-- Partitions, readers, sampling, checkpointing and the emitted state shape are the `extract-jdbc`
-  defaults (`DefaultJdbcPartition*`, `DefaultJdbcStreamStateValue`: `{"primary_key": {...},
-"cursors": {...}}`). `application.yml` selects `mode: sequential` with sampling, so each stream is
-  read by a single ordered, resumable `SELECT` (one BigQuery job per table plus up to three small
-  sampling jobs); tables are read in parallel with each other up to `maxConcurrency`. In speed mode
-  `maxConcurrency` is the number of sockets (see "Speed mode" above). See "Read throughput" for why
-  within-stream partitioning is off and how the Storage Read API supplies per-query throughput.
+- Base tables in full refresh go through the Storage Read API read path (see "Read path" above).
+  Everything else uses the `extract-jdbc` defaults (`DefaultJdbcPartition*`,
+  `DefaultJdbcStreamStateValue`: `{"primary_key": {...}, "cursors": {...}}`) in `mode: concurrent`
+  with sampling; tables are read in parallel with each other up to `maxConcurrency`. In speed mode
+  `maxConcurrency` is the number of sockets (see "Speed mode" above).
 - `BigQueryJdbcPartitionFactory` (`@Primary`) wraps `DefaultJdbcPartitionFactory` and only steps
   in when the stream's state is in the legacy `source-bigquery` shape
   (`BigQueryLegacyStreamState`): the legacy cursor string is converted to the cursor column's
@@ -366,9 +470,9 @@ because the return value of "BigQueryTypeRegistry.convert(Object, Class)" is nul
   affected. The emulator fixture's `all_types` table has an all-NULL row (`id = 2`) so that the
   tests read every type's NULL path.
 
-Next: Stage 5 (terabyte-scale table, memory, checkpoint cadence, kill-and-resume, bytes billed vs
-legacy), a CDK fix or workaround for `_ab_*` columns, and a breaking-change evaluation of the
-deliberate deviations. The user-facing docs page is `docs/integrations/sources/bigquery-v2.md`.
+Next: the Read API path for the initial snapshot of incremental streams, a CDK fix or workaround
+for `_ab_*` columns, and a breaking-change evaluation of the deliberate deviations. The user-facing
+docs page is `docs/integrations/sources/bigquery-v2.md`.
 
 Scaling of `discover` without `dataset_id`: `BigQuerySourceMetadataQuerier` keeps one small
 `TableMetadata` (the mapped columns and the primary key) per fetched table, not the full `Table`

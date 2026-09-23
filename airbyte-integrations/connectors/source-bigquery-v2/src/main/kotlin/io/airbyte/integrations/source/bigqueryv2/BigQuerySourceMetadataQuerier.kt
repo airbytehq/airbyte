@@ -147,8 +147,12 @@ class BigQuerySourceMetadataQuerier(
         val tableId = TableId.of(config.projectId, streamID.namespace, streamID.name)
         log.info { "Fetching metadata of table $tableId." }
         val table: Table = bigquery.getTable(tableId) ?: return null
-        tableTypes.register(streamID, table.getDefinition<TableDefinition>()?.type)
-        return TableMetadata.from(table)
+        val metadata: TableMetadata = TableMetadata.from(table)
+        tableTypes.register(
+            streamID,
+            BigQueryTableTypes.TableFacts(metadata.type, metadata.numBytes, metadata.numRows),
+        )
+        return metadata
     }
 
     /**
@@ -162,11 +166,17 @@ class BigQuerySourceMetadataQuerier(
     internal data class TableMetadata(
         val fields: List<EmittedField>,
         val primaryKey: List<List<String>>,
+        /** Table, view, external table, ...; what the partition creators key their choices on. */
+        val type: TableDefinition.Type? = null,
+        /** Logical size in bytes, as reported by `tables.get` (null for views). */
+        val numBytes: Long? = null,
+        /** Row count, as reported by `tables.get` (null for views). */
+        val numRows: Long? = null,
     ) {
         companion object {
             fun from(table: TableInfo): TableMetadata {
-                val schemaFields: List<Field> =
-                    table.getDefinition<TableDefinition>().schema?.fields ?: emptyList()
+                val definition: TableDefinition = table.getDefinition<TableDefinition>()
+                val schemaFields: List<Field> = definition.schema?.fields ?: emptyList()
                 val primaryKeyColumns: List<String> =
                     table.tableConstraints?.primaryKey?.columns ?: emptyList()
                 return TableMetadata(
@@ -175,6 +185,9 @@ class BigQuerySourceMetadataQuerier(
                             EmittedField(it.name, BigQueryFieldTypes.fromField(it))
                         },
                     primaryKey = primaryKeyColumns.map { listOf(it) },
+                    type = definition.type,
+                    numBytes = table.numBytes,
+                    numRows = table.numRows?.toLong(),
                 )
             }
         }

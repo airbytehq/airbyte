@@ -58,7 +58,12 @@ object BigQueryEmulatorTestFixture {
         }
     }
 
-    /** Starts (once) and points the connector at the emulator. */
+    /**
+     * Starts (once) and points the connector at the emulator. The connector never uses the Storage
+     * Read API against it (the emulator's implementation is too partial, see
+     * `BigQuerySourceConfiguration.useStorageReadApi`), so every test here reads through the query
+     * API; the Read API read path is covered by unit tests and by real-service runs.
+     */
     fun start(): BigQueryEmulatorContainer {
         val started: BigQueryEmulatorContainer = container
         System.setProperty(BigQueryEmulator.SYSTEM_PROPERTY, started.emulatorHttpEndpoint)
@@ -79,12 +84,14 @@ object BigQueryEmulatorTestFixture {
         credentialsJson: String? = DUMMY_CREDENTIALS_JSON,
         jobProjectId: String? = null,
         maxDbConnections: Int? = null,
+        useStorageReadApi: Boolean? = null,
     ): BigQuerySourceConfigurationSpecification {
         val node = Jsons.objectNode().put("project_id", projectId)
         datasetId?.let { node.put("dataset_id", it) }
         credentialsJson?.let { node.put("credentials_json", it) }
         jobProjectId?.let { node.put("job_project_id", it) }
         maxDbConnections?.let { node.put("max_db_connections", it) }
+        useStorageReadApi?.let { node.put("use_storage_read_api", it) }
         return Jsons.readValue(
             Jsons.writeValueAsString(node),
             BigQuerySourceConfigurationSpecification::class.java,
