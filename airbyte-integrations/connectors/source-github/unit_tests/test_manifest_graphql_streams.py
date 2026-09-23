@@ -335,7 +335,10 @@ def test_gateway_timeout_refetches_the_same_page_with_a_halved_page_size(timeout
 @pytest.mark.parametrize("status_code", [502, 504])
 @pytest.mark.parametrize("timeout_body", _TIMEOUT_BODIES)
 def test_both_gateway_statuses_trigger_reduction(status_code, timeout_body, rate_limit_mock_response, requests_mock):
-    """Both gateway statuses reduce, whether or not the body carries `errors`."""
+    """The body shape matters as much as the status. A 502/504 whose body carries `errors` is
+    the shape GitHub uses for a query timeout, and it is also what `graphql_body_error_filter`
+    matches, so the two filters compete for it: the reduce filter has to win or the page is
+    re-sent at the same size."""
     _mock_repository_resolution(requests_mock)
     requests_mock.post(
         GRAPHQL_URL,
@@ -350,51 +353,6 @@ def test_both_gateway_statuses_trigger_reduction(status_code, timeout_body, rate
     assert error is None
     assert len(records) == 1
     assert _variables(_graphql_requests(requests_mock)[1])["first"] == 5
-
-
-def test_a_two_hundred_carrying_errors_reduces_the_page_size(rate_limit_mock_response, requests_mock):
-    """GitHub reports a resolver timeout as an HTTP 200 with `errors` in the body at least as
-    often as it reports it as a 502/504, and in production the 200 is the common one. A reduce
-    filter matching `http_codes` alone never sees that shape: the page was re-sent at the same
-    size until the attempts ran out and the stream failed, which is the failure this filter
-    exists to prevent."""
-    _mock_repository_resolution(requests_mock)
-    requests_mock.post(
-        GRAPHQL_URL,
-        [
-            {"json": {"errors": [{"message": "Something went wrong while executing your query."}]}},
-            {"json": _repository_envelope("releases", [_release_node()])},
-        ],
-    )
-
-    records, error = _read(_config(), "releases")
-
-    assert error is None
-    assert len(records) == 1
-    requests = _graphql_requests(requests_mock)
-    assert [_variables(request)["first"] for request in requests] == [10, 5]
-    # Same page, so no records were skipped over.
-    assert not any("after" in _variables(request) for request in requests)
-
-
-def test_a_body_error_on_an_unreadable_repository_is_skipped_rather_than_reduced(rate_limit_mock_response, requests_mock):
-    """`graphql_reduce_page_size_filter` closes over every body error, so it has to sit below
-    the NOT_FOUND/FORBIDDEN skip. An unreadable repository has nothing to reduce: shrinking its
-    page size would walk to the floor and fail the stream instead of skipping the repository and
-    syncing the rest."""
-    _mock_repository_resolution(requests_mock)
-    requests_mock.post(
-        GRAPHQL_URL,
-        json={"data": {"repository": None}, "errors": [{"type": "NOT_FOUND", "message": "Could not resolve to a Repository"}]},
-    )
-
-    records, error = _read(_config(), "releases")
-
-    assert error is None
-    assert records == []
-    requests = _graphql_requests(requests_mock)
-    assert len(requests) == 1, "the repository must be skipped on the first answer, not reduced"
-    assert _variables(requests[0])["first"] == 10
 
 
 def test_reduction_repeats_until_the_page_succeeds(rate_limit_mock_response, requests_mock):
@@ -490,10 +448,9 @@ def test_graphql_body_errors_are_retried_instead_of_ending_the_partition(rate_li
     assert len(_graphql_requests(requests_mock)) == 4
 
 
-def test_persistent_graphql_body_errors_fail_the_stream(page_size_reduction_waits, rate_limit_mock_response, requests_mock):
+def test_persistent_graphql_body_errors_fail_the_stream(rate_limit_mock_response, requests_mock):
     """The other half of the same guarantee: errors that never clear must surface as a failure
-    rather than as a short, successful sync. They now walk the reduction ladder down to the floor
-    and retry there before failing, rather than being retried at a fixed page size."""
+    rather than as a short, successful sync."""
     _mock_repository_resolution(requests_mock)
     requests_mock.post(GRAPHQL_URL, json={"errors": [{"message": "Something went wrong while executing your query."}]})
 
@@ -501,15 +458,8 @@ def test_persistent_graphql_body_errors_fail_the_stream(page_size_reduction_wait
 
     assert error is not None
     assert _records(messages) == []
-    page_sizes = [_variables(request)["first"] for request in _graphql_requests(requests_mock)]
-    assert page_sizes[:4] == [10, 5, 2, 1], "a body error must walk the ladder, not be re-sent at the same size"
-    assert page_sizes[4:] == [1, 1, 1], "and then retry at the floor before giving up"
-    # The surfaced failure is the reducer's, not the filter's `error_message`: once the ladder
-    # is exhausted the CDK reports that the floor was reached and points at the config knob.
-    assert any(
-        "at the smallest page size the connector is allowed to request" in message and "releases" in message
-        for message in _trace_error_messages(messages)
-    )
+    assert len(_graphql_requests(requests_mock)) > 1, "a body error must be retried, not consumed once and dropped"
+    assert any("GitHub GraphQL returned errors in the response body" in message for message in _trace_error_messages(messages))
 
 
 def test_page_size_for_large_streams_config_is_inert(rate_limit_mock_response, requests_mock):

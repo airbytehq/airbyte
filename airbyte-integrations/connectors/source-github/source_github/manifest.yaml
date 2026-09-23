@@ -17608,64 +17608,29 @@ definitions:
   # requester owning `variables.owner`/`variables.name` and the paginator owning
   # `variables.first`/`variables.after` compose without either clobbering the other.
 
-  # A GraphQL query too expensive to resolve inside GitHub's internal deadline is a statement
-  # about the size of *this* request, not a transient server fault, so retrying the identical
-  # query just burns the budget and times out again. The legacy Python handler
-  # (`GitHubGraphQLErrorHandler`) tried to halve `stream.page_size` and return RETRY, but
-  # HttpClient replays the same PreparedRequest and the oversized `first` was already
-  # serialized into the body, so the retry never benefited; only a later page saw the smaller
-  # size, and any non-502/504 response reset it. This action re-enters the fetch with a
-  # smaller `first`, which is the behavior that was intended.
-  #
-  # The status is not a reliable signal of that shape. GitHub reports a resolver timeout as a
-  # 502/504 *and* as an HTTP 200 whose body carries `errors`, and in production the 200 is the
-  # common one; a filter matching `http_codes` alone never sees it, so the page was re-sent at
-  # the same size until the attempts ran out. Hence both a status match and a body predicate.
-  #
-  # The predicate is deliberately broad rather than matched against GitHub's prose, which is
-  # not a stable interface. Every body error that should not be reduced is claimed by a filter
-  # above this one: `graphql_body_rate_limited_filter` takes RATE_LIMITED, where waiting rather
-  # than shrinking is the answer, and `graphql_body_not_found_skip_filter` takes the
-  # NOT_FOUND/FORBIDDEN repositories, which are skipped. What reaches here is a timeout, a
-  # node-limit breach, or an error whose shape this connector does not recognize -- reducing is
-  # right for the first two and harmless for the third, which still retries at the floor via
-  # `retries_at_minimum_page_size` and then fails the stream.
-  #
-  # `response` is `{}` when the body is not JSON (a real gateway 502 is HTML), so the predicate
-  # matches nothing there and the status match carries it. `errors` is not always a list of
-  # objects -- the legacy test for this used `{"errors": "not found"}` -- so the predicate only
-  # asks whether it is non-empty.
-  # `HttpResponseFilter` ORs its `http_codes` with its `predicate`, so this matches a 502/504 by
-  # status and a body carrying `errors` by predicate. GitHub reports a query it could not finish
-  # both ways: as the 502/504, and as an HTTP 200 whose `data` is null with the query abandoned.
-  # Matching on status alone left that second form retrying the same oversized page until the
-  # attempts ran out.
-  #
-  # The predicate is deliberately broader than those two, because `errors` is not always a list
-  # of objects and a narrower one would miss shapes it cannot anticipate. That breadth also means
-  # it currently takes a response this action cannot help: a partial response, where `data` is
-  # populated and an `errors` entry of `type: INTERNAL` is scoped by `path` to one unresolvable
-  # node. A smaller page does not make that node resolvable -- with cursor pagination the window
-  # only shifts, and the node is reached again at every size down to 1 -- so the ladder walks to
-  # the floor and fails, discarding the nodes GitHub did resolve. Handling that shape means
-  # treating the page as a partial success ahead of this filter, and deciding what happens to the
-  # record that is skipped; it is not in this change.
+  # GitHub answers 502/504 when a GraphQL query is too expensive to resolve inside its
+  # internal deadline — it is a statement about the size of *this* request, not a transient
+  # server fault, so retrying the identical query just burns the budget and times out again.
+  # The legacy Python handler (`GitHubGraphQLErrorHandler`) tried to halve
+  # `stream.page_size` and return RETRY, but HttpClient replays the same PreparedRequest and
+  # the oversized `first` was already serialized into the body, so the retry never benefited;
+  # only a later page saw the smaller size, and any non-502/504 response reset it. This action
+  # re-enters the fetch with a smaller `first`, which is the behavior that was intended.
   graphql_reduce_page_size_filter:
     type: HttpResponseFilter
     http_codes: [502, 504]
-    predicate: "{{ response is mapping and ((response.get('errors') or []) | length) > 0 }}"
     action: REDUCE_PAGE_SIZE
     failure_type: transient_error
     error_message: >-
-      GitHub GraphQL returned errors in the response body or could not resolve the query within
-      its deadline. Retrying the same page with a smaller page size.
+      GitHub could not resolve the GraphQL query within its deadline. Retrying the same page
+      with a smaller page size.
 
   # A repository the token cannot read is answered with HTTP 200, `data.repository: null` and
   # an `errors` entry whose `type` is NOT_FOUND (the repository does not exist, was renamed, or
   # the token's scopes/SSO hide it) or FORBIDDEN. `not_found_skip_filter` and
-  # `forbidden_skip_filter` match on status alone, so neither ever sees it, and
-  # `graphql_reduce_page_size_filter` below would shrink the page size for the same unreadable
-  # repository down to the floor and then fail the stream. Every other stream in this connector skips such a repository and syncs the
+  # `forbidden_skip_filter` match on status alone, so neither ever sees it, and the generic body
+  # filter below would retry the same unreadable repository until the attempts run out and then
+  # fail the stream. Every other stream in this connector skips such a repository and syncs the
   # rest, so these two GraphQL error types get the same treatment as the REST 404/403.
   # The `selectattr('type', 'defined')` guard is needed for the same reason as below: `errors`
   # is not always a list of objects.
@@ -17684,8 +17649,8 @@ definitions:
   # GitHub's GraphQL API reports most failures as HTTP 200 with an `errors` array in the body:
   # rate limiting (`errors[].type == "RATE_LIMITED"`), query timeouts ("Something went wrong
   # while executing your query") and node-limit breaches. `success_filter` matches on status
-  # alone and `DefaultErrorHandler` stops at the first matching filter, so the body filters must
-  # come before it. Without them a 200 carrying `errors` is consumed as an empty successful page:
+  # alone and `DefaultErrorHandler` stops at the first matching filter, so these two must come
+  # before it. Without them a 200 carrying `errors` is consumed as an empty successful page:
   # the extractor yields nothing, the paginator sees no next page, the partition ends early and
   # the sync is reported successful with part of the data missing and nothing in the logs. The
   # deleted `GitHubGraphQLErrorHandler` had both branches (`check_graphql_rate_limited` and the
@@ -17694,7 +17659,7 @@ definitions:
   # `errors` is not always a list of objects — the legacy test for this used
   # `{"errors": "not found"}` — so neither predicate may assume a shape. `selectattr` over a
   # string iterates its characters, none of which has a `type`, so the rate-limit predicate
-  # simply matches nothing there and `graphql_reduce_page_size_filter` picks the response up.
+  # simply matches nothing there and the generic filter below picks the response up.
   graphql_body_rate_limited_filter:
     type: HttpResponseFilter
     predicate: >-
@@ -17704,6 +17669,13 @@ definitions:
     action: RATE_LIMITED
     error_message: "GitHub GraphQL rate limit hit. Waiting for the rate limit window to reset before retrying."
 
+  graphql_body_error_filter:
+    type: HttpResponseFilter
+    predicate: "{{ response is mapping and ((response.get('errors') or []) | length) > 0 }}"
+    action: RETRY
+    failure_type: transient_error
+    error_message: "GitHub GraphQL returned errors in the response body. Retrying."
+
   graphql_error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
@@ -17712,15 +17684,12 @@ definitions:
       # `DefaultErrorHandler` stops at the first filter that matches, so the order here is the
       # whole contract. Three groups, in this order:
       #
-      # 1. The body predicates, which must outrank a status match, because a GraphQL failure
-      #    carries its reason in the body whatever the status is. Within the group they run
-      #    most specific first, since `graphql_reduce_page_size_filter` closes over every
-      #    remaining body error:
-      #      - the rate-limit filter first, because shrinking the page is the wrong answer to a
-      #        spent quota;
-      #      - then the NOT_FOUND/FORBIDDEN skip, because an unreadable repository has nothing
-      #        to reduce and must be skipped rather than shrunk down to the floor and failed;
-      #      - then the page-size reduction, which takes the rest.
+      # 1. The body-only predicates that must outrank a status match. A GraphQL failure carries
+      #    its reason in the body whatever the status is: a query timeout is reported as `errors`
+      #    on a 200 *and* on a 502/504, so `graphql_reduce_page_size_filter` has to sit above the
+      #    generic body filter or a timed-out page is retried at the same size instead of being
+      #    halved - the feature this stream group exists for. The rate-limit body filter stays on
+      #    top of it: a page size reduction is the wrong answer to a spent quota.
       # 2. `success_filter`, which the body filters must precede: it classifies every 200 as a
       #    success and would stop the chain. It cannot be dropped either - it is what keeps a 200
       #    carrying `Retry-After` from being read as a rate limit, so it still has to run for
@@ -17732,8 +17701,9 @@ definitions:
       # reduced rather than waited out. GitHub answers rate limits with 403/429, not 502, so that
       # combination is not a shape it sends.
       - $ref: "#/definitions/graphql_body_rate_limited_filter"
-      - $ref: "#/definitions/graphql_body_not_found_skip_filter"
       - $ref: "#/definitions/graphql_reduce_page_size_filter"
+      - $ref: "#/definitions/graphql_body_not_found_skip_filter"
+      - $ref: "#/definitions/graphql_body_error_filter"
       - $ref: "#/definitions/success_filter"
       - $ref: "#/definitions/retry_after_rate_limit_filter"
       - $ref: "#/definitions/primary_rate_limit_filter"
