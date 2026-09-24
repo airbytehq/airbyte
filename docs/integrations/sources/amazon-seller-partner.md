@@ -138,6 +138,8 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - Full Refresh
 - Incremental
 
+The `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` reports contain one row per order item and have no proven, reliably unique row identifier, so they have no primary key and do not offer `Incremental | Append + Deduped`.
+
 ## Supported Streams
 
 - [Active Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
@@ -481,8 +483,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
-|:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :----------- | :----------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 6.0.0 | 2026-09-24 | [85813](https://github.com/airbytehq/airbyte/pull/85813) | Remove primary key from `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` streams; these line-item reports have no proven, reliably unique identifier, so deduplicating on `amazon-order-id` dropped records |
+| 5.10.5 | 2026-09-22 | [86512](https://github.com/airbytehq/airbyte/pull/86512) | Update dependencies |
+| 5.10.4 | 2026-09-21 | [86322](https://github.com/airbytehq/airbyte/pull/86322) | Add `order-item-id` to `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` schemas |
+| 5.10.3 | 2026-09-15 | [85942](https://github.com/airbytehq/airbyte/pull/85942) | Update dependencies |
+| 5.10.2 | 2026-09-08 | [85388](https://github.com/airbytehq/airbyte/pull/85388) | Update dependencies |
 | 5.10.1 | 2026-08-25 | [84913](https://github.com/airbytehq/airbyte/pull/84913) | Send an explicit, day-aligned report window for the daily `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, and `GET_VENDOR_REAL_TIME_INVENTORY_REPORT` streams, fixing records that were labelled with a date the report did not actually cover |
 | 5.10.0 | 2026-08-24 | [76434](https://github.com/airbytehq/airbyte/pull/76434) | Add Fulfillment Inbound streams (FbaInboundShipments, FbaInboundShipmentItems) and Inbound API settings (`inbound_replication_mode`, `inbound_rolling_days`, `inbound_start_datetime`, `inbound_end_datetime`) |
 | 5.9.5 | 2026-08-18 | [84482](https://github.com/airbytehq/airbyte/pull/84482) | Update dependencies |

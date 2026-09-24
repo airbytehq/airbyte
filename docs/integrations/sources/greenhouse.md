@@ -4,10 +4,39 @@ This page contains the setup guide and reference information for the Greenhouse 
 
 ## Prerequisites
 
-Use OAuth 2.0 Authorization Code credentials for a Greenhouse Harvest v3 app. Greenhouse issues these credentials to partners on request: email partner-support@greenhouse.io to request a client ID and client secret and register your redirect URI. For Airbyte Cloud, use `https://cloud.airbyte.com/auth_flow`; for self-managed Airbyte, use `<your-airbyte-url>/auth_flow`. The authorization consent must grant these scopes:
+The connector reads the Greenhouse Harvest v3 API, which [supports two authentication methods](https://harvestdocs.greenhouse.io/docs/authentication). Choose the one that matches your Airbyte deployment and where your credential comes from.
 
+### OAuth
+
+OAuth (Authorization Code) authenticates through Airbyte's registered Greenhouse partner application. You don't create, request, or register a Greenhouse OAuth application of your own: Greenhouse issues partner credentials only to integration partners, not to Greenhouse customers, and Airbyte supplies the client ID and client secret during the consent flow. Because the consent flow relies on Airbyte's partner credentials, this method is available only in Airbyte Cloud.
+
+To set up the source with OAuth, you need:
+
+- An Airbyte Cloud workspace.
+- A Greenhouse user who is a Site Admin to approve the consent flow.
+
+### Client Credentials
+
+Client Credentials authenticates with a **Harvest V3 (OAuth)** custom integration credential that you create in Greenhouse. Use this method on self-managed Airbyte, or in Airbyte Cloud when you want to connect with your own credential instead of Airbyte's partner application.
+
+To set up the source with Client Credentials, you need:
+
+- Access to **Configure** > **Dev Center** > **API Credential Management** in Greenhouse. Click **Create new API credentials**, select **Harvest V3 (OAuth)**, save the credential, and then grant it the scopes listed below. Greenhouse gives you a client ID and a client secret; copy both into the source.
+- Optionally, the numeric Greenhouse user ID of a Site Admin. Greenhouse creates an integration service user for every custom credential, and by default the connector makes requests as that user, which can read every Harvest v3 list endpoint. Enter a user ID as the **Site Admin user ID** only if you want requests attributed to a specific person instead; Greenhouse denies the list endpoints to any user who isn't a Site Admin.
+
+### Scopes
+
+Both methods need the same scopes. With OAuth, the consent flow requests them; approve all of them. With Client Credentials, grant them to the credential in Greenhouse:
+
+- `harvest:application_stages:list`
 - `harvest:applications:list`
+- `harvest:applied_candidate_tags:list`
 - `harvest:approval_flows:list`
+- `harvest:approver_groups:list`
+- `harvest:approvers:list`
+- `harvest:attachments:list`
+- `harvest:candidate_educations:list`
+- `harvest:candidate_employments:list`
 - `harvest:candidate_tags:list`
 - `harvest:candidates:list`
 - `harvest:close_reasons:list`
@@ -20,46 +49,54 @@ Use OAuth 2.0 Authorization Code credentials for a Greenhouse Harvest v3 app. Gr
 - `harvest:departments:list`
 - `harvest:eeoc:list`
 - `harvest:email_templates:list`
+- `harvest:interview_kits:list`
+- `harvest:interviewer_tags:list`
+- `harvest:interviewers:list`
 - `harvest:interviews:list`
+- `harvest:job_hiring_managers:list`
 - `harvest:job_interview_stages:list`
+- `harvest:job_interviews:list`
+- `harvest:job_owners:list`
 - `harvest:job_posts:list`
 - `harvest:jobs:list`
 - `harvest:notes:list`
 - `harvest:offers:list`
 - `harvest:offices:list`
 - `harvest:openings:list`
+- `harvest:prospect_details:list`
+- `harvest:prospect_pool_stages:list`
 - `harvest:prospect_pools:list`
+- `harvest:referrers:list`
+- `harvest:rejection_details:list`
 - `harvest:rejection_reasons:list`
+- `harvest:scorecard_candidate_attributes:list`
+- `harvest:scorecard_questions:list`
 - `harvest:scorecards:list`
 - `harvest:sources:list`
+- `harvest:user_emails:list`
 - `harvest:user_job_permissions:list`
 - `harvest:user_roles:list`
 - `harvest:users:list`
 
-The Greenhouse user who approves the consent flow must be a Site Admin. Harvest v3 rejects requests to its list endpoints from any other user, and the connector fails the sync with a configuration error. A missing scope produces the same failure for the streams that depend on it, so grant every scope in the list unless you plan to leave the corresponding streams disabled. Grant `harvest:users:list` in every case: the connection check reads the `users` stream, so the source fails to set up without it even if you never sync that stream.
+Harvest v3 rejects requests to its list endpoints from any user who isn't a Site Admin or a custom integration's service user, and the connector fails the sync with a configuration error. A missing scope produces the same failure for the streams that depend on it, so grant every scope in the list unless you plan to leave the corresponding streams disabled. Grant `harvest:users:list` in every case: the connection check reads the `users` stream, so the source fails to set up without it even if you never sync that stream.
+
+With OAuth, Greenhouse ties the scopes to the refresh token it issued when you approved the consent flow. If you set up the source with OAuth before version 1.2.0, your token doesn't include the 20 scopes that version added, and enabling any of the [streams added in 1.2.0](#streams-added-in-120) fails with a `403` error until you open the source settings, click **Authenticate**, and approve the consent flow again. Streams you already sync keep working without re-authenticating.
 
 ## Set up the Greenhouse connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or open your self-managed Airbyte instance.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Greenhouse** from the Source type dropdown.
 4. Enter the name for the Greenhouse connector.
-5. Select **OAuth**, enter the **OAuth client ID** and **OAuth client secret**, then click **Authenticate** and complete the Greenhouse consent flow. Airbyte stores the resulting refresh token.
+5. Under **Authentication**, select **OAuth** or **Client Credentials**.
+   - For **OAuth** (Airbyte Cloud only), click **Authenticate**, sign in to Greenhouse as a Site Admin, and approve the requested scopes. Airbyte fills in its partner application's client ID and client secret and stores the resulting refresh token. You don't enter any Greenhouse credentials yourself.
+   - For **Client Credentials**, enter the custom integration credential's **Client ID** and **Client secret**. Leave **Site Admin user ID** blank unless you want the connector to make requests as a specific Site Admin instead of the credential's integration service user.
 6. Optionally enter a **Start date** in UTC using the format `YYYY-MM-DDTHH:MM:SSZ`. Records updated before this date will not be replicated. If omitted, the connector replicates all history.
 7. Optionally change **Number of concurrent threads**. The connector syncs with 2 threads by default and accepts 1 to 8. All threads share one Greenhouse rate limit, so raise this only if your Greenhouse account can absorb more API traffic, and lower it to 1 if syncs fail with rate-limit errors.
-8. If your deployment does not surface **Authenticate**, open the Greenhouse authorization URL with your client ID, registered redirect URI, and the scopes above, then exchange the returned code within one minute:
-   1. Open `https://auth.greenhouse.io/authorize?client_id=<client_id>&redirect_uri=<registered_redirect_uri>&response_type=code&state=<random>&scope=harvest%3Aapplications%3Alist%20harvest%3Aapproval_flows%3Alist%20harvest%3Acandidate_tags%3Alist%20harvest%3Acandidates%3Alist%20harvest%3Aclose_reasons%3Alist%20harvest%3Acustom_field_options%3Alist%20harvest%3Acustom_fields%3Alist%20harvest%3Ademographic_answer_options%3Alist%20harvest%3Ademographic_answers%3Alist%20harvest%3Ademographic_question_sets%3Alist%20harvest%3Ademographic_questions%3Alist%20harvest%3Adepartments%3Alist%20harvest%3Aeeoc%3Alist%20harvest%3Aemail_templates%3Alist%20harvest%3Ainterviews%3Alist%20harvest%3Ajob_interview_stages%3Alist%20harvest%3Ajob_posts%3Alist%20harvest%3Ajobs%3Alist%20harvest%3Anotes%3Alist%20harvest%3Aoffers%3Alist%20harvest%3Aoffices%3Alist%20harvest%3Aopenings%3Alist%20harvest%3Aprospect_pools%3Alist%20harvest%3Arejection_reasons%3Alist%20harvest%3Ascorecards%3Alist%20harvest%3Asources%3Alist%20harvest%3Auser_job_permissions%3Alist%20harvest%3Auser_roles%3Alist%20harvest%3Ausers%3Alist` in a browser and approve the request.
-   2. Exchange the `code` query parameter:
-
-      ```bash
-      curl -X POST 'https://auth.greenhouse.io/token?grant_type=authorization_code&code=<code>&redirect_uri=<registered_redirect_uri>' -u '<client_id>:<client_secret>' --data ''
-      ```
-
-   3. Copy `refresh_token` from the response into the **Refresh token** field.
-9. Click **Set up source**.
+8. Click **Set up source**.
 
 :::warning
-Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh. Set connections to sync more often than once a day. A connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings. See [Troubleshooting](#troubleshooting) for the error this produces.
+If you use OAuth, sync more often than once a day. Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh, so a connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings. See [Troubleshooting](#troubleshooting) for the error this produces. Client Credentials has no refresh token, so this doesn't apply to it.
 :::
 
 ## Supported sync modes
@@ -71,46 +108,90 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
+**Start date** filters the Greenhouse request, not the sync. Every stream the table below marks as incremental sends `updated_at=gte|<start date>` on each sync, including a sync you configure as Full refresh, so a full refresh of those streams returns only records updated on or after your start date. Leave **Start date** empty to replicate all history.
+
+Incremental streams re-read a one-hour lookback window before the saved cursor on each sync, so records updated shortly before the previous sync finished aren't missed. With Incremental - Append, this can produce duplicate records in your destination; use Incremental - Append + Deduped, if your destination supports it, to keep only the latest version of each record.
+
 ## Supported Streams
 
-The table lists the stream names as they appear in Airbyte, with the Harvest v3 endpoint each one reads. **Start date** applies only to the incremental streams. Full refresh streams always read everything the endpoint returns, and the five child streams pull parent IDs over your full Greenhouse history, so their coverage doesn't depend on **Start date** either. `demographics_answer_options`, `demographics_questions`, and `demographics_question_sets` are full refresh because Harvest v3 exposes no date filter on those endpoints.
+When you create a new connection, Airbyte enables 10 streams by default: `applications`, `candidates`, `jobs`, `job_posts`, `offers`, `interviews`, `scorecards`, `users`, `departments`, and `offices`. Enable any of the other streams in the connection's stream list.
+
+The table lists the stream names as they appear in Airbyte, with the Harvest v3 endpoint each one reads. **Start date** applies to every stream marked incremental here, in whichever sync mode you select it, and to no others. Only the four demographics question and answer-option streams are full refresh, because Harvest v3 exposes no date filter on `/v3/demographic_questions` or `/v3/demographic_answer_options`; they always read everything the endpoint returns, and the two child streams among them pull parent IDs over your full Greenhouse history, so their coverage doesn't depend on **Start date** either.
 
 | Stream | Sync mode | Notes |
 | :--- | :--- | :--- |
-| [`activity_feed`](https://harvestdocs.greenhouse.io/reference/get_v3-notes) | Full refresh | Notes for each candidate in `candidates` |
+| [`activity_feed`](https://harvestdocs.greenhouse.io/reference/get_v3-notes) | Incremental (`updated_at`) | Notes across all candidates |
+| [`application_stages`](https://harvestdocs.greenhouse.io/reference/get_v3-application-stages) | Incremental (`updated_at`) | Stage history per application, with time in stage. One row per application per stage entered |
 | [`applications`](https://harvestdocs.greenhouse.io/reference/get_v3-applications) | Incremental (`updated_at`) | |
-| [`approvals`](https://harvestdocs.greenhouse.io/reference/get_v3-approval-flows) | Full refresh | |
+| [`applied_candidate_tags`](https://harvestdocs.greenhouse.io/reference/get_v3-applied-candidate-tags) | Incremental (`updated_at`) | Candidate-to-tag assignments; `tags` on its own is only the dictionary |
+| [`approvals`](https://harvestdocs.greenhouse.io/reference/get_v3-approval-flows) | Incremental (`updated_at`) | |
+| [`approver_groups`](https://harvestdocs.greenhouse.io/reference/get_v3-approver-groups) | Incremental (`updated_at`) | The steps of an approval chain, per approval flow |
+| [`approvers`](https://harvestdocs.greenhouse.io/reference/get_v3-approvers) | Incremental (`updated_at`) | Individual approvers and their status within a group |
+| [`attachments`](https://harvestdocs.greenhouse.io/reference/get_v3-attachments) | Incremental (`updated_at`) | One file per application. `url` is a download link Greenhouse expires after seven days |
+| [`candidate_educations`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-educations) | Incremental (`updated_at`) | School, degree and discipline history per candidate |
+| [`candidate_employments`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-employments) | Incremental (`updated_at`) | Employer and title history per candidate |
 | [`candidates`](https://harvestdocs.greenhouse.io/reference/get_v3-candidates) | Incremental (`updated_at`) | |
-| [`close_reasons`](https://harvestdocs.greenhouse.io/reference/get_v3-close-reasons) | Full refresh | |
-| [`custom_field_options`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Full refresh | Every custom field option in the account |
-| [`custom_fields`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-fields) | Full refresh | |
-| [`degrees`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Full refresh | Custom field options for the `degree` field |
+| [`close_reasons`](https://harvestdocs.greenhouse.io/reference/get_v3-close-reasons) | Incremental (`updated_at`) | |
+| [`custom_field_options`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Incremental (`updated_at`) | Every custom field option in the account |
+| [`custom_fields`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-fields) | Incremental (`updated_at`) | |
+| [`degrees`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Incremental (`updated_at`) | Custom field options for the `degree` field |
 | [`demographics_answer_options`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answer-options) | Full refresh | |
 | [`demographics_answers`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answers) | Incremental (`updated_at`) | |
 | [`demographics_answers_answer_options`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answer-options) | Full refresh | Answer options for each question in `demographics_questions` |
-| [`demographics_question_sets`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-question-sets) | Full refresh | |
+| [`demographics_question_sets`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-question-sets) | Incremental (`updated_at`) | |
 | [`demographics_question_sets_questions`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-questions) | Full refresh | Questions in each set in `demographics_question_sets` |
 | [`demographics_questions`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-questions) | Full refresh | |
-| [`departments`](https://harvestdocs.greenhouse.io/reference/get_v3-departments) | Full refresh | |
-| [`disciplines`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Full refresh | Custom field options for the `discipline` field |
+| [`departments`](https://harvestdocs.greenhouse.io/reference/get_v3-departments) | Incremental (`updated_at`) | |
+| [`disciplines`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Incremental (`updated_at`) | Custom field options for the `discipline` field |
 | [`eeoc`](https://harvestdocs.greenhouse.io/reference/get_v3-eeoc) | Incremental (`submitted_at`) | |
 | [`email_templates`](https://harvestdocs.greenhouse.io/reference/get_v3-email-templates) | Incremental (`updated_at`) | |
+| [`interview_kits`](https://harvestdocs.greenhouse.io/reference/get_v3-interview-kits) | Incremental (`updated_at`) | Kit content per job interview. `exercises` is the live value and may contain HTML |
+| [`interviewer_tags`](https://harvestdocs.greenhouse.io/reference/get_v3-interviewer-tags) | Incremental (`updated_at`) | The interviewer tag dictionary |
+| [`interviewers`](https://harvestdocs.greenhouse.io/reference/get_v3-interviewers) | Incremental (`updated_at`) | One row per panel member on a scheduled interview |
 | [`interviews`](https://harvestdocs.greenhouse.io/reference/get_v3-interviews) | Incremental (`updated_at`) | |
+| [`job_hiring_managers`](https://harvestdocs.greenhouse.io/reference/get_v3-job-hiring-managers) | Incremental (`updated_at`) | One row per hiring manager on a job |
+| [`job_interviews`](https://harvestdocs.greenhouse.io/reference/get_v3-job-interviews) | Incremental (`updated_at`) | The interview plan for each job stage |
+| [`job_owners`](https://harvestdocs.greenhouse.io/reference/get_v3-job-owners) | Incremental (`updated_at`) | Recruiter, sourcer and coordinator per job, with a `responsible` flag |
 | [`job_posts`](https://harvestdocs.greenhouse.io/reference/get_v3-job-posts) | Incremental (`updated_at`) | Includes deleted posts |
 | [`job_stages`](https://harvestdocs.greenhouse.io/reference/get_v3-job-interview-stages) | Incremental (`updated_at`) | |
 | [`jobs`](https://harvestdocs.greenhouse.io/reference/get_v3-jobs) | Incremental (`updated_at`) | |
-| [`jobs_openings`](https://harvestdocs.greenhouse.io/reference/get_v3-openings) | Full refresh | Openings for each job in `jobs` |
+| [`jobs_openings`](https://harvestdocs.greenhouse.io/reference/get_v3-openings) | Incremental (`updated_at`) | Openings across all jobs |
 | [`offers`](https://harvestdocs.greenhouse.io/reference/get_v3-offers) | Incremental (`updated_at`) | |
-| [`offices`](https://harvestdocs.greenhouse.io/reference/get_v3-offices) | Full refresh | |
-| [`prospect_pools`](https://harvestdocs.greenhouse.io/reference/get_v3-prospect-pools) | Full refresh | |
-| [`rejection_reasons`](https://harvestdocs.greenhouse.io/reference/get_v3-rejection-reasons) | Full refresh | Includes the reasons Greenhouse ships with |
-| [`schools`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Full refresh | Custom field options for the `school_name` field |
+| [`offices`](https://harvestdocs.greenhouse.io/reference/get_v3-offices) | Incremental (`updated_at`) | |
+| [`prospect_details`](https://harvestdocs.greenhouse.io/reference/get_v3-prospect-details) | Incremental (`updated_at`) | Pool, stage and owner per prospect application |
+| [`prospect_pool_stages`](https://harvestdocs.greenhouse.io/reference/get_v3-prospect-pool-stages) | Incremental (`updated_at`) | The stage dictionary for each prospect pool |
+| [`prospect_pools`](https://harvestdocs.greenhouse.io/reference/get_v3-prospect-pools) | Incremental (`updated_at`) | |
+| [`referrers`](https://harvestdocs.greenhouse.io/reference/get_v3-referrers) | Incremental (`updated_at`) | Referral attribution per candidate |
+| [`rejection_details`](https://harvestdocs.greenhouse.io/reference/get_v3-rejection-details) | Incremental (`updated_at`) | Reason, rejecter and note per rejected application |
+| [`rejection_reasons`](https://harvestdocs.greenhouse.io/reference/get_v3-rejection-reasons) | Incremental (`updated_at`) | Includes the reasons Greenhouse ships with |
+| [`schools`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Incremental (`updated_at`) | Custom field options for the `school_name` field |
+| [`scorecard_candidate_attributes`](https://harvestdocs.greenhouse.io/reference/get_v3-scorecard-candidate-attributes) | Incremental (`updated_at`) | One row per rated attribute on each scorecard |
+| [`scorecard_questions`](https://harvestdocs.greenhouse.io/reference/get_v3-scorecard-questions) | Incremental (`updated_at`) | The question dictionary behind scorecards, defined per interview kit |
 | [`scorecards`](https://harvestdocs.greenhouse.io/reference/get_v3-scorecards) | Incremental (`updated_at`) | |
-| [`sources`](https://harvestdocs.greenhouse.io/reference/get_v3-sources) | Full refresh | |
-| [`tags`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-tags) | Full refresh | Candidate tags |
-| [`user_permissions`](https://harvestdocs.greenhouse.io/reference/get_v3-user-job-permissions) | Full refresh | Job permissions for each user in `users` |
-| [`user_roles`](https://harvestdocs.greenhouse.io/reference/get_v3-user-roles) | Full refresh | |
+| [`sources`](https://harvestdocs.greenhouse.io/reference/get_v3-sources) | Incremental (`updated_at`) | |
+| [`tags`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-tags) | Incremental (`updated_at`) | Candidate tags |
+| [`user_emails`](https://harvestdocs.greenhouse.io/reference/get_v3-user-emails) | Incremental (`updated_at`) | Every email address per user; `users.primary_email` is only one of them |
+| [`user_permissions`](https://harvestdocs.greenhouse.io/reference/get_v3-user-job-permissions) | Incremental (`updated_at`) | Job permissions across all users |
+| [`user_roles`](https://harvestdocs.greenhouse.io/reference/get_v3-user-roles) | Incremental (`updated_at`) | |
 | [`users`](https://harvestdocs.greenhouse.io/reference/get_v3-users) | Incremental (`updated_at`) | Includes integration service users |
+
+### Streams added in 1.2.0
+
+Version 1.2.0 added these 20 streams, all incremental on `updated_at`. They carry the detail that Harvest v1 embedded on its parent records and Harvest v3 serves from separate endpoints:
+
+`application_stages`, `applied_candidate_tags`, `approver_groups`, `approvers`, `attachments`, `candidate_educations`, `candidate_employments`, `interview_kits`, `interviewer_tags`, `interviewers`, `job_hiring_managers`, `job_interviews`, `job_owners`, `prospect_details`, `prospect_pool_stages`, `referrers`, `rejection_details`, `scorecard_candidate_attributes`, `scorecard_questions`, `user_emails`
+
+All 20 are disabled by default on new and existing connections. Each one needs its own Harvest v3 scope, so on a source you authorized before 1.2.0, re-run the consent flow before enabling any of them. See [Prerequisites](#prerequisites).
+
+### Streams that became incremental in 1.1.0
+
+These 18 streams were full refresh before 1.1.0 and are now incremental on `updated_at`:
+
+`activity_feed`, `approvals`, `close_reasons`, `custom_field_options`, `custom_fields`, `degrees`, `demographics_question_sets`, `departments`, `disciplines`, `jobs_openings`, `offices`, `prospect_pools`, `rejection_reasons`, `schools`, `sources`, `tags`, `user_permissions`, `user_roles`
+
+This isn't a breaking change. Schemas, primary keys, and your existing sync modes are unchanged, and there was no stream state to migrate, so no action is required and connections keep syncing.
+
+One behavior does change: **Start date** now applies to these 18 streams, in every sync mode. Earlier versions sent no date filter on them and read your full Greenhouse history whatever **Start date** said. If you have a start date set, these streams now return only records updated on or after it - on full refresh as well as incremental, because the filter is part of the Greenhouse request rather than something applied to the sync. On a **Full refresh | Overwrite** connection that also removes the older rows from the destination table, because each sync replaces the table with what it read; on append and append + deduped connections the existing rows stay put and simply stop being refreshed. Clear **Start date** if you want these streams to keep reading full history, then [refresh](https://docs.airbyte.com/operator-guides/refreshes) them.
 
 ## Performance considerations
 
@@ -125,23 +206,47 @@ The connector requests 500 records per page, the Harvest v3 maximum, and then fo
 - **`custom_field_options`** reads every custom field option in your account, which makes it a superset of `degrees`, `disciplines`, and `schools`. Those three streams read the same Greenhouse endpoint filtered to one field key and share the same primary keys, so enabling all four writes the same option rows to four destination tables. Enable only the ones you need.
 - **`users`** includes integration service users, which Greenhouse hides by default. Service accounts have no email address, so `primary_email` is empty for those records.
 - **`rejection_reasons`** includes the default reasons Greenhouse ships with, not only the ones your organization added.
+- **`attachments`** returns a `url` for each file that Greenhouse expires after seven days, and it may redirect to a fresh short-lived file URL on each request. A replicated `url` stops working a week after the sync that wrote it; re-sync the stream to get current links.
+- **`application_stages`** has one row per application per stage entered, so it holds several times as many rows as `applications`. Enable it only if you need funnel or time-in-stage analysis.
+- **`candidate_educations`** references schools, degrees and disciplines by custom field option id (`school_name_custom_field_option_id`, `degree_custom_field_option_id`, `discipline_custom_field_option_id`), not by name. Join to `schools`, `degrees`, and `disciplines` to resolve them.
+- **`interviewers`** has one row per panel member per interview, so an interview appears once for each attendee. `user_id` is empty for external attendees who match no Greenhouse user; their address is in `email` instead.
+- **`scorecard_candidate_attributes`** has one row per rated attribute per scorecard, so it holds many more rows than `scorecards`.
+- **`interview_kits.exercises`** carries the live Interview Prep content and may contain HTML. The `summary` and `instructions` fields on `job_interviews` are snapshots taken when the slot was first added and do not track later edits; use `exercises` for the current text.
+- **`user_emails`** lists every address on a user, while `users.primary_email` carries one. Integration service users have no address at all, so they have no rows here.
+- **`approvers.send_auto_reminder_at`** is a date (`YYYY-MM-DD`), not a timestamp, despite the `_at` suffix every other Harvest v3 field uses for timestamps.
+- **The 18 streams that became incremental in 1.1.0** now honor **Start date**, where before they always read full history. See [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110).
 
 ## Troubleshooting
 
 ### Sync fails with a configuration error asking you to re-authenticate
 
+This section covers OAuth. If you use Client Credentials, see [Client Credentials authentication fails](#client-credentials-authentication-fails).
+
 The connector can't renew its access token because Greenhouse rejected the refresh token. Starting with version 1.0.1, the connector reports this as a configuration error instead of a system error. The Greenhouse error code in the sync log tells you what to fix:
 
 - `invalid_grant`: the refresh token expired or was invalidated. This happens when the connection hasn't synced for more than about 24 hours, or when another tool used the same refresh token, which causes Greenhouse to issue a new one that Airbyte never receives. Open the source settings, click **Authenticate**, and complete the consent flow again to store a new refresh token. Run the consent flow separately for each Airbyte source; don't reuse one refresh token across sources or other tools.
-- `invalid_client` or `unauthorized_client`: the **OAuth client ID** or **OAuth client secret** is wrong, or the client isn't allowed to use the refresh token grant. Check the credentials Greenhouse issued for your Harvest v3 app and re-enter them in the source settings, then authenticate again.
+- `invalid_client` or `unauthorized_client`: Greenhouse rejected the partner application credentials Airbyte used for the refresh, or that application isn't allowed to use the refresh token grant. Open the source settings, click **Authenticate**, and complete the consent flow again. If the error persists, contact Airbyte support; there are no credentials for you to correct on your side.
+
+### Client Credentials authentication fails
+
+With Client Credentials the connector requests a new access token from Greenhouse with your client ID and secret, and there's no refresh token to renew. The error message still says the refresh token was rejected and asks you to re-authenticate, because it's shared with OAuth. Use the Greenhouse error code at the end of the message instead:
+
+- `invalid_client`: Greenhouse doesn't recognize the client ID and client secret. Check both values against the credential in **Configure** > **Dev Center** > **API Credential Management**, and make sure the credential hasn't been revoked.
+- `invalid_grant`: the **Site Admin user ID** doesn't match a Greenhouse user. Correct it, or leave it blank to make requests as the credential's integration service user.
 
 ### Sync fails with a `403` configuration error on a stream
 
-The authorizing user isn't a Site Admin, or the consent flow didn't include the scope for that stream. Compare the scopes in [Prerequisites](#prerequisites) with the ones you approved, then re-run the consent flow as a Site Admin.
+The authorizing user isn't a Site Admin, or the consent flow didn't include the scope for that stream. This is expected when you enable one of the [streams added in 1.2.0](#streams-added-in-120) on a source you authorized before that version. Compare the scopes in [Prerequisites](#prerequisites) with the ones you approved, then open the source settings, click **Authenticate**, and re-run the consent flow as a Site Admin. With Client Credentials, grant the missing scope to the credential in Greenhouse, and check that **Site Admin user ID** is blank or belongs to a Site Admin.
+
+### A stream returns fewer records after upgrading to 1.1.0
+
+1.1.0 made 18 streams incremental on `updated_at`, and **Start date** is applied as a Greenhouse query filter on those streams in every sync mode. If you have a start date set, records last updated before it are no longer returned - on incremental and full refresh alike. If the connection writes in **Full refresh | Overwrite**, those older rows are also deleted from the destination table on the first sync after the upgrade, so the gap shows up in your warehouse even though nothing failed. Earlier versions sent no date filter on these streams and ignored **Start date** for them entirely. [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110) lists them.
+
+To read full history again, clear **Start date** in your source settings, then [refresh](https://docs.airbyte.com/operator-guides/refreshes) the affected streams so the older records are written again.
 
 ## Migration from Harvest v1 before the v1/v2 sunset
 
-Version 1.0.0 migrates the 33 streams carried over from 0.8.1 from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream, for 34 streams in total, because Greenhouse has scheduled the end of support for Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication for every deployment and introduces an optional **Start date** that preserves the previous full-history behavior when omitted. We recommend creating a new connection on 1.0.0 rather than refreshing the existing one; see the [upgrade paths](./greenhouse-migrations.md#upgrade-paths) before upgrading.
+Version 1.0.0 migrates the 33 streams carried over from 0.8.1 from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream, for 34 streams in total, because Greenhouse has scheduled the end of support for Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication and introduces an optional **Start date** that preserves the previous full-history behavior when omitted. Version 1.3.0 added [Client Credentials](#client-credentials) so that self-managed deployments, which can't use the OAuth consent flow, can authenticate with a credential you create in Greenhouse. We recommend creating a new connection on 1.0.0 rather than refreshing the existing one; see the [upgrade paths](./greenhouse-migrations.md#upgrade-paths) before upgrading.
 
 ## IP allow list
 
@@ -154,6 +259,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.0 | 2026-09-24 | [85178](https://github.com/airbytehq/airbyte/pull/85178) | Add client-credentials authentication for Greenhouse custom integrations and self-managed deployments. |
+| 1.2.0 | 2026-09-21 | [86477](https://github.com/airbytehq/airbyte/pull/86477) | Add 20 Harvest v3 detail streams - see [Streams added in 1.2.0](#streams-added-in-120). The consent flow requests 20 new scopes; existing connections keep syncing unchanged, but enabling a new stream on a source authorized before 1.2.0 requires re-running the consent flow |
+| 1.1.0 | 2026-09-17 | [85841](https://github.com/airbytehq/airbyte/pull/85841) | Sync 18 previously full-refresh streams incrementally on `updated_at`. Not breaking, but **Start date** now applies to those 18 streams in every sync mode, including full refresh, where before they always read full history - see [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110). Also read `activity_feed`, `jobs_openings`, and `user_permissions` directly instead of once per 50 parents, and suggest 10 streams for new connections |
+| 1.0.3 | 2026-09-15 | [85507](https://github.com/airbytehq/airbyte/pull/85507) | Update dependencies |
+| 1.0.2 | 2026-09-02 | [85306](https://github.com/airbytehq/airbyte/pull/85306) | Clarify in the spec that OAuth credentials come from Airbyte's Greenhouse partner application and must not be requested from Greenhouse |
 | 1.0.1 | 2026-09-02 | [85300](https://github.com/airbytehq/airbyte/pull/85300) | Surface expired or rotated refresh tokens (`invalid_grant`) as a re-authenticate config error instead of a system error |
 | 1.0.0 | 2026-08-28 | [84846](https://github.com/airbytehq/airbyte/pull/84846) | Breaking migration from Harvest v1 to Harvest v3 with OAuth. See the [migration guide](https://docs.airbyte.com/integrations/sources/greenhouse-migrations). |
 | 0.8.1 | 2026-08-18 | [84641](https://github.com/airbytehq/airbyte/pull/84641) | Update dependencies |

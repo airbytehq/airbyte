@@ -110,7 +110,7 @@ This source is capable of syncing the following streams:
 - [Sponsored Products Targetings](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20targeting)
 - [Sponsored Brands Reports](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/overview) (Purchased Products, Campaigns, Ad Groups, Ads)
 - Sponsored Display Reports (Campaigns, Ad Groups, Product Ads, Targets, ASINs)
-- Sponsored Products Reports (Campaigns, Ad Groups, Keywords, Targets, Product Ads, ASINs Keywords, ASINs Targets)
+- Sponsored Products Reports (Campaigns, Ad Groups, Keywords, Targets, [Search Terms](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/search-term), Product Ads, ASINs Keywords, ASINs Targets)
 - [Attribution Reports](https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/) (Products, Performance by Ad Group, Performance by Campaign, Performance by Creative)
 
 :::note
@@ -190,15 +190,19 @@ Report generation can take up to three hours. For details, see the [Amazon Ads d
 
 ### Rate Limits
 
-The Amazon Ads API uses dynamic rate limiting that varies by region and system load. Rate limits are not publicly documented with specific numbers. For more details, see the [Amazon Ads API Rate Limiting documentation](https://advertising.amazon.com/API/docs/en-us/reference/concepts/rate-limiting).
+The Amazon Ads API uses dynamic rate limiting that varies by region and system load. Rate limits are not publicly documented with specific numbers. For report requests, the limit depends on the size of Amazon's report generation queue in your region, so you're more likely to be throttled during busy periods of the day. For more details, see the [Amazon Ads API Rate Limiting documentation](https://advertising.amazon.com/API/docs/en-us/reference/concepts/rate-limiting).
+
+**How the connector handles throttling:**
+
+When Amazon returns a 429 response, the connector waits for the number of seconds in the `Retry-After` header before retrying the request. This applies to the Sponsored Brands and Sponsored Display entity streams and to the report creation and status-polling requests of the report streams. Server errors (500, 502, 503, and 504) are also retried. As a result, throttling usually shows up as a slower sync rather than a failed one. If Amazon asks the connector to wait 15 minutes or longer, the connector stops the stream instead of waiting; rerun the sync later or during a less busy period.
 
 **Adjusting Concurrency Settings:**
 
 The **Number of concurrent threads** setting defaults to 14 and accepts values from 2 to 20.
 
-If you experience rate limiting errors (429 status codes) during syncs, decrease this setting to reduce the load on the API.
+If your syncs are slow because Amazon is throttling requests, or a stream stops because of throttling, decrease this setting to reduce the load on the API.
 
-If you need better sync performance and are not experiencing rate limiting errors, increase it to improve throughput.
+If you need better sync performance and are not experiencing throttling, increase it to improve throughput.
 
 ### Data type map
 
@@ -222,6 +226,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 9.2.4 | 2026-09-24 | [86938](https://github.com/airbytehq/airbyte/pull/86938) | Retry 429 (honoring Retry-After) and 5xx responses on report creation and polling endpoints |
+| 9.2.3 | 2026-09-22 | [86539](https://github.com/airbytehq/airbyte/pull/86539) | Update dependencies |
+| 9.2.2 | 2026-09-15 | [85934](https://github.com/airbytehq/airbyte/pull/85934) | Update dependencies |
+| 9.2.1 | 2026-09-08 | [84485](https://github.com/airbytehq/airbyte/pull/84485) | Update dependencies |
+| 9.2.0 | 2026-09-03 | [74367](https://github.com/airbytehq/airbyte/pull/74367) | Add Sponsored Products Search Terms report streams (summary and daily) using the `spSearchTerm` report type |
 | 9.1.1 | 2026-08-26 | [84981](https://github.com/airbytehq/airbyte/pull/84981) | Bump base image to source-declarative-manifest 7.28.2 |
 | 9.1.0 | 2026-08-20 | [83744](https://github.com/airbytehq/airbyte/pull/83744) | Add `sponsored_brands_ads` (`POST /sb/v4/ads/list`), `sponsored_brands_ads_report_stream`, and `sponsored_brands_ads_report_stream_daily`; request the full documented column set for the `sbCampaigns`, `sbAdGroup`, and `sbAds` report types, which restores the removed V2 `sponsored_brands_video_report_stream` video metrics in full on `sbCampaigns`, all but `viewClickThroughRate` (V2 `vctr`) on `sbAds`, and all but `viewClickThroughRate` and `viewableImpressions` on `sbAdGroup` — Amazon's report-type pages do not list those columns for those report types, and the V2 keyword grain has no V3 equivalent (see [Identifying Sponsored Brands Video campaigns](#identifying-sponsored-brands-video-campaigns)); add `goal`, `isMultiAdGroupsEnabled`, `kpi`, `siteRestrictions`, and `targetedPGDealId` to the `sponsored_brands_campaigns` schema; retry throttling and server errors on the entity streams instead of treating them as an empty page. All changes are additive — refresh the source schema in each connection to pick up the new fields. |
 | 9.0.7 | 2026-08-11 | [83379](https://github.com/airbytehq/airbyte/pull/83379) | Update dependencies |

@@ -8,17 +8,23 @@ Understanding the following limitations will help you more effectively manage Ai
 
 ## Standard plan limitations
 
-These limitations only apply to those using the Standard plan. If you upgrade to Plus, Pro, or Enterprise Flex, Airbyte removes these limitations.
+These limitations only apply to those using the Standard plan. Upgrading to a higher plan raises or removes them. See [Airbyte's pricing page](https://airbyte.com/pricing) to compare plans.
 
-- Max number of workspaces per user: 1. If you were a Cloud Standard customer before September 24, 2025, Airbyte has grandfathered you into its historical 3-workspace limit.
+- Max number of workspaces per organization: 1. If you were a Cloud Standard customer before September 24, 2025, Airbyte has grandfathered you into its historical 3-workspace limit.
 
 - Scheduled or cron syncs can run at most every 60 minutes.
+
+- Single sign-on (SSO) isn't available. If your Standard organization already uses SSO, you keep it as long as you remain a paying customer.
 
 ## Plus plan limitations
 
 These limitations only apply to those using the Plus plan. If you upgrade to Pro or Enterprise Flex, Airbyte removes these limitations.
 
+- Max number of workspaces per organization: 2.
+
 - Scheduled or cron syncs can run at most every 15 minutes.
+
+- SSO is available, but SCIM provisioning and role-based access control aren't.
 
 ## Cloud limitations for all plans
 
@@ -34,7 +40,7 @@ These limitations only apply to those using the Plus plan. If you upgrade to Pro
 
 Organizations on capacity-based plans (Pro, Enterprise Flex) have a contracted number of data workers. When all data workers are in use, additional syncs are queued until capacity becomes available. This is not a hard limit on the number of connections or syncs you can create, but a limit on concurrent sync execution.
 
-You can enable on-demand capacity for critical connections so they run even when committed capacity is exhausted. See [Monitor data worker usage](./manage-data-workers.md) for details.
+You can enable on-demand capacity for critical connections so they run even when committed capacity is exhausted. See [Manage and monitor data workers](./manage-data-workers.md) for details.
 
 \*\* The effective maximum size of the record may vary based per destination. Some destinations may
 fail to sync if a record cannot be stored, but Destinations which support
