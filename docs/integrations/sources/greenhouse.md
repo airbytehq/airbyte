@@ -67,7 +67,9 @@ Harvest v3 rejects requests to its list endpoints from any user who isn't a Site
 
 Greenhouse ties the scopes to the refresh token it issued when you approved the consent flow. If you set up the source before version 1.2.0, your token doesn't include the 20 scopes that version added, and enabling any of the [streams added in 1.2.0](#streams-added-in-120) fails with a `403` error until you open the source settings, click **Authenticate**, and approve the consent flow again. Streams you already sync keep working without re-authenticating.
 
-## Set up the Greenhouse connector in Airbyte
+## Setup guide
+
+### Set up the Greenhouse connector in Airbyte
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
@@ -79,7 +81,7 @@ Greenhouse ties the scopes to the refresh token it issued when you approved the 
 8. Click **Set up source**.
 
 :::warning
-Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh. Set connections to sync more often than once a day. A connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings. See [Troubleshooting](#troubleshooting) for the error this produces.
+Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh. Set connections to sync more often than once a day. A connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings. See [Sync fails with a configuration error asking you to re-authenticate](#sync-fails-with-a-configuration-error-asking-you-to-re-authenticate) for the error this produces.
 :::
 
 ## Supported sync modes
@@ -176,15 +178,22 @@ This isn't a breaking change. Schemas, primary keys, and your existing sync mode
 
 One behavior does change: **Start date** now applies to these 18 streams, in every sync mode. Earlier versions sent no date filter on them and read your full Greenhouse history whatever **Start date** said. If you have a start date set, these streams now return only records updated on or after it - on full refresh as well as incremental, because the filter is part of the Greenhouse request rather than something applied to the sync. On a **Full refresh | Overwrite** connection that also removes the older rows from the destination table, because each sync replaces the table with what it read; on append and append + deduped connections the existing rows stay put and simply stop being refreshed. Clear **Start date** if you want these streams to keep reading full history, then [refresh](https://docs.airbyte.com/operator-guides/refreshes) them.
 
-## Performance considerations
+### Performance considerations
 
 Greenhouse [rate limits](https://harvestdocs.greenhouse.io/docs/api-rate-limiting) Harvest v3 in fixed 30-second windows. Each response reports your remaining allowance in `X-RateLimit-Remaining` and the time the current window resets in `X-RateLimit-Reset`. Greenhouse doesn't publish a fixed request ceiling for Harvest v3, and it applies different allowances to custom and partner integrations, so the connector holds itself to a conservative 50 requests per window, tracks those headers, and waits for the `Retry-After` interval when Greenhouse returns `429`. Because every thread draws on the same window, syncing many streams at a high **Number of concurrent threads** is a common cause of rate-limit errors. Lower that value before [creating an issue](https://github.com/airbytehq/airbyte/issues) about rate limits.
 
 The connector requests 500 records per page, the Harvest v3 maximum, and then follows the cursor links Greenhouse returns, so large accounts still page through many requests per stream.
 
-## Limitations
+`application_stages` and `scorecard_candidate_attributes` are high-volume streams: `application_stages` has one row per application per stage entered, and `scorecard_candidate_attributes` has one row per rated attribute on each scorecard. Each holds several times as many rows as its parent stream, so each adds many requests to a sync and draws down the shared rate-limit window. Leave them disabled unless you need that detail.
 
-- **`job_posts`** includes job posts that were deleted in Greenhouse. Harvest v3 excludes deleted posts by default, and the connector requests both active and deleted posts. Filter on `active` downstream if you only want live posts.
+### Migration from Harvest v1
+
+Version 1.0.0 migrates the 33 streams carried over from 0.8.1 from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream, for 34 streams in total, because Greenhouse has scheduled the end of support for Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication for every deployment and introduces an optional **Start date** that preserves the previous full-history behavior when omitted. We recommend creating a new connection on 1.0.0 rather than refreshing the existing one; see the [upgrade paths](./greenhouse-migrations.md#upgrade-paths) before upgrading.
+
+## Limitations & Troubleshooting
+
+### Limitations
+
 - **`eeoc`** replicates on `submitted_at`. A correction to an EEOC response after submission doesn't change `submitted_at`, so incremental syncs never re-read it. Refresh the stream if you need corrections to land.
 - **`custom_field_options`** reads every custom field option in your account, which makes it a superset of `degrees`, `disciplines`, and `schools`. Those three streams read the same Greenhouse endpoint filtered to one field key and share the same primary keys, so enabling all four writes the same option rows to four destination tables. Enable only the ones you need.
 - **`users`** includes integration service users, which Greenhouse hides by default. Service accounts have no email address, so `primary_email` is empty for those records.
@@ -199,7 +208,16 @@ The connector requests 500 records per page, the Harvest v3 maximum, and then fo
 - **`approvers.send_auto_reminder_at`** is a date (`YYYY-MM-DD`), not a timestamp, despite the `_at` suffix every other Harvest v3 field uses for timestamps.
 - **The 18 streams that became incremental in 1.1.0** now honor **Start date**, where before they always read full history. See [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110).
 
-## Troubleshooting
+### Deletions
+
+Greenhouse Harvest v3 doesn't report deleted records. The connector replicates soft-deletes as a flag on the record:
+
+- `active` on `job_posts`. Harvest v3 leaves deleted posts out by default, so the connector requests both active and deleted posts. Filter on `active` downstream if you only want live posts.
+- `active` on `custom_fields`, `custom_field_options`, `degrees`, `disciplines`, `schools`, `demographics_question_sets`, `demographics_questions`, `demographics_question_sets_questions`, `demographics_answer_options`, `demographics_answers_answer_options`, and `prospect_pools`. Harvest v3 returns both active and inactive records on these streams.
+- `deactivated` on `users`. Deactivated users stay in the stream.
+- `active` on `job_stages`, `job_interviews`, and `scorecard_questions`. `false` means the stage, interview, or question was removed from the job's interview plan or the interview kit; Greenhouse keeps the record so historical data still resolves.
+
+Records that are permanently deleted in Greenhouse stay in your destination until you re-sync the stream in **Full Refresh - Overwrite**.
 
 ### Sync fails with a configuration error asking you to re-authenticate
 
@@ -217,10 +235,6 @@ The authorizing user isn't a Site Admin, or the consent flow didn't include the 
 1.1.0 made 18 streams incremental on `updated_at`, and **Start date** is applied as a Greenhouse query filter on those streams in every sync mode. If you have a start date set, records last updated before it are no longer returned - on incremental and full refresh alike. If the connection writes in **Full refresh | Overwrite**, those older rows are also deleted from the destination table on the first sync after the upgrade, so the gap shows up in your warehouse even though nothing failed. Earlier versions sent no date filter on these streams and ignored **Start date** for them entirely. [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110) lists them.
 
 To read full history again, clear **Start date** in your source settings, then [refresh](https://docs.airbyte.com/operator-guides/refreshes) the affected streams so the older records are written again.
-
-## Migration from Harvest v1 before the v1/v2 sunset
-
-Version 1.0.0 migrates the 33 streams carried over from 0.8.1 from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream, for 34 streams in total, because Greenhouse has scheduled the end of support for Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication for every deployment and introduces an optional **Start date** that preserves the previous full-history behavior when omitted. We recommend creating a new connection on 1.0.0 rather than refreshing the existing one; see the [upgrade paths](./greenhouse-migrations.md#upgrade-paths) before upgrading.
 
 ## IP allow list
 
