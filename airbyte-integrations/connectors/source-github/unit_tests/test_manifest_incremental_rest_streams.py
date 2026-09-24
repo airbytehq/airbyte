@@ -245,25 +245,24 @@ def test_legacy_state_migrates_to_per_partition_state(stream_name, endpoint, rat
     ]
 
 
+@pytest.mark.parametrize(
+    "page_size_config",
+    [
+        pytest.param({}, id="no_config"),
+        pytest.param({"page_size_for_large_streams": 42}, id="deprecated_key_present"),
+        pytest.param({"page_size_for_large_streams": None}, id="deprecated_key_null"),
+    ],
+)
 @pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
-def test_page_size_comes_from_page_size_for_large_streams(stream_name, endpoint, rate_limit_mock_response, requests_mock):
-    """All three were `large_stream = True`, so their `per_page` came from
-    `page_size_for_large_streams` — not the 100 the full-refresh group sends."""
-    config = _config("docker/compose", page_size_for_large_streams=42)
-    _mock_repository_resolution(requests_mock, "docker/compose")
-    requests_mock.get(f"https://api.github.com/repos/docker/compose/{endpoint}", json=[])
+def test_page_size_is_the_large_stream_page_size(stream_name, endpoint, page_size_config, rate_limit_mock_response, requests_mock):
+    """All three were `large_stream = True`, so their `per_page` is
+    `constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM` (10) rather than the 100 the full-refresh
+    group sends.
 
-    _, _, _, error = _read(config, stream_name)
-
-    assert error is None
-    assert [request.qs["per_page"] for request in _listings(requests_mock, endpoint)] == [["42"]]
-
-
-@pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
-def test_page_size_defaults_to_ten(stream_name, endpoint, rate_limit_mock_response, requests_mock):
-    """`constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM`. A present-but-null value must fall back
-    to it as well rather than reaching GitHub as `per_page=None`."""
-    config = _config("docker/compose", page_size_for_large_streams=None)
+    The deprecated `page_size_for_large_streams` no longer changes it. The key left the spec in
+    1.0.1, so a config still carrying it was set through the API or Terraform, and a null there
+    used to be the case that reached GitHub as `per_page=None`. Both are inert now."""
+    config = _config("docker/compose", **page_size_config)
     _mock_repository_resolution(requests_mock, "docker/compose")
     requests_mock.get(f"https://api.github.com/repos/docker/compose/{endpoint}", json=[])
 
@@ -363,7 +362,7 @@ def test_pagination_follows_next_link_with_after_cursor(stream_name, endpoint, r
 def test_issues_sends_the_legacy_base_params(rate_limit_mock_response, requests_mock):
     """`Issues.stream_base_params`. `state=all` is the load-bearing one: without it GitHub
     returns open issues only and every closed issue silently disappears from the stream."""
-    config = _config("docker/compose", page_size_for_large_streams=25)
+    config = _config("docker/compose")
     _mock_repository_resolution(requests_mock, "docker/compose")
     requests_mock.get("https://api.github.com/repos/docker/compose/issues", json=[])
 
@@ -376,7 +375,7 @@ def test_issues_sends_the_legacy_base_params(rate_limit_mock_response, requests_
     assert request.qs["direction"] == ["asc"]
     # Restating `request_parameters` on the stream replaces the requester's dict rather than
     # merging into it, so `per_page` has to be restated with it.
-    assert request.qs["per_page"] == ["25"]
+    assert request.qs["per_page"] == ["10"]
 
 
 @pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
@@ -511,12 +510,14 @@ def test_streams_are_served_by_the_manifest_only(rate_limit_mock_response, reque
 
 def test_comments_two_sync_parity_with_legacy(rate_limit_mock_response, requests_mock):
     """The scenario `test_stream_comments` used to drive through the Python `Comments` class:
-    two repositories, `page_size_for_large_streams = 2`, three linked pages on the second sync.
+    two repositories and three linked pages on the second sync. The legacy test shrank the page
+    size to 2 to get them; the pages here come from the mocked `link` headers instead, since the
+    page size is no longer configurable.
 
     Two syncs, and the first sync's state drives the second — the same shape the legacy test
     asserted, with one deliberate difference called out below.
     """
-    config = _config("organization/repository", "airbytehq/airbyte", page_size_for_large_streams=2)
+    config = _config("organization/repository", "airbytehq/airbyte")
     _mock_repository_resolution(requests_mock, *config["repositories"])
 
     # `updated_at` values per repository, ordered ascending, as GitHub serves them.
@@ -543,12 +544,12 @@ def test_comments_two_sync_parity_with_legacy(rate_limit_mock_response, requests
         url = f"https://api.github.com/repos/{repository}/issues/comments"
         second_sync_since = records[1]["updated_at"]
         # First sync: `since` is the config start date and GitHub answers one unlinked page.
-        requests_mock.get(f"{url}?per_page=2&since={_START_DATE}", json=records[0:2])
+        requests_mock.get(f"{url}?per_page=10&since={_START_DATE}", json=records[0:2])
         # Second sync: `since` is the cursor the first sync stored, and the listing is three
         # linked pages. GitHub's `since` is inclusive, so the boundary record comes back.
-        requests_mock.get(f"{url}?per_page=2&since={second_sync_since}", json=records[1:3], headers=_next_link(f"{url}?page=2"))
-        requests_mock.get(f"{url}?per_page=2&page=2&since={second_sync_since}", json=records[3:5], headers=_next_link(f"{url}?page=3"))
-        requests_mock.get(f"{url}?per_page=2&page=3&since={second_sync_since}", json=records[5:])
+        requests_mock.get(f"{url}?per_page=10&since={second_sync_since}", json=records[1:3], headers=_next_link(f"{url}?page=2"))
+        requests_mock.get(f"{url}?per_page=10&page=2&since={second_sync_since}", json=records[3:5], headers=_next_link(f"{url}?page=3"))
+        requests_mock.get(f"{url}?per_page=10&page=3&since={second_sync_since}", json=records[5:])
 
     records, statuses, states, error = _read(config, "comments")
 

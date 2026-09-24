@@ -23,7 +23,22 @@ definitions:
     {{ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | list | length) == 0
        or record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
 
-  large_stream_page_size: "{{ config.get('page_size_for_large_streams') or 10 }}"
+  # `constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM` — the per-page size of the four REST streams
+  # the legacy code marked `large_stream = True`: `pull_requests`, `comments`, `issues` and
+  # `review_comments`. Every other REST stream sends `constants.DEFAULT_PAGE_SIZE` (100).
+  #
+  # The value is written out rather than read from `page_size_for_large_streams`, which was
+  # removed from the spec in 1.0.1 and cannot be set from the UI since. What the legacy code
+  # produced for a config without that key is 10, so 10 is what this reproduces. A config that
+  # still carries the key through the API or Terraform no longer steers these streams — see
+  # `graphql_large_stream_page_size` for the same note on the GraphQL side.
+  #
+  # Whether 10 is the right number is a separate question with evidence on both sides: it costs
+  # roughly 10x the requests and several times the wall clock of `per_page=100`, and it was
+  # introduced to stop a 502 storm on `pull_requests` against a very large organization, which
+  # later secondary-rate-limit handling may since have addressed on its own. Raising it is a
+  # deliberate, measurable change and not part of restoring the migration's fidelity.
+  large_stream_page_size: "10"
 
   requester_base:
     type: HttpRequester
@@ -115,7 +130,8 @@ definitions:
     http_method: GET
     request_parameters:
       # constants.DEFAULT_PAGE_SIZE — none of these streams was a `large_stream`, so the
-      # deprecated `page_size_for_large_streams` config never applied to them.
+      # reduced page size never applied to them. See `large_stream_page_size` for the streams
+      # that did carry it.
       per_page: "100"
     error_handler:
       $ref: "#/definitions/skip_inaccessible_error_handler"
@@ -17717,10 +17733,16 @@ definitions:
     error_handler:
       $ref: "#/definitions/graphql_error_handler"
 
-  # Halving on every 502/504, floored at 1. At the default page size of 10 the floor is what
-  # ends the loop, not `max_attempts`: the sequence is 10 -> 5 -> 2 -> 1, three reductions, and
-  # then the floor retries below. `max_attempts` only binds from a configured page size of 32
-  # up, and is kept as the bound for those.
+  # Halving on every rejected page, floored at 1. The loop ends either at the floor or on
+  # `max_attempts`, and which of the two ends it depends on where the stream starts: the two
+  # page sizes here land on either side of that. From `graphql_large_stream_page_size` (10)
+  # the sequence is 10 -> 5 -> 2 -> 1: three reductions, the floor is reached, and the retries
+  # below take over. From 100 -- `reviews`, `issue_reactions`, `pull_request_comment_reactions`
+  # and `projects_v2` -- it is 100 -> 50 -> 25 -> 12 -> 6 -> 3, and the sixth reduction is one
+  # past `max_attempts`, so those streams fail at a page size of 3 and never reach the floor or
+  # its retries. Raising the budget to 6 would let them; that is a deliberate change to how
+  # long a stuck partition holds a sync open, so it is not made here, but no comment or message
+  # below may assume the floor was reached.
   # `reset_policy: NEVER` keeps the reduced size for the rest of the partition:
   # restoring it after each good page re-triggers the timeout on the next page, which is the
   # ineffective behavior the legacy handler had. The size is local to one `_read_pages` call,
@@ -17739,25 +17761,27 @@ definitions:
     #
     # `backoff_seconds` is multiplied by the attempt number, and `retries_at_minimum_page_size`
     # re-issues the page unchanged once there is nothing left to halve, where waiting is the
-    # only thing left to try. From the default page size of 10 that gives 10 -> 5 -> 2 -> 1 and
-    # then three attempts at 1, seven requests over about two minutes; a source configured with
-    # a page size of 1, which has no reduction to make at all, still gets four requests over a
-    # minute instead of failing on the first 502.
+    # only thing left to try. From a page size of 10 that gives 10 -> 5 -> 2 -> 1 and then three
+    # attempts at 1: seven requests over about two minutes. Without the retries at the floor a
+    # stream that reached 1 would fail on its next rejected page, which is fewer attempts than
+    # any other stream of this connector gets.
     backoff_seconds: 10
     retries_at_minimum_page_size: 3
-    # Appended to the CDK's terminal message once the reductions and the retries at the floor
-    # run out. The CDK only knows that GitHub rejected every page size it asked for; the
-    # remediation is connector-specific. `page_size_for_large_streams` was dropped from the spec
-    # in 1.0.1 but is still honored, so the sentence names both the old form title and the
-    # config key an API user would set. It states what the setting does rather than telling the
-    # user to lower it, because a source already configured with a page size of 1 or 2 reaches
-    # this message with nothing left to lower. A more recent start date is deliberately not
-    # suggested: these streams filter client-side, so it would not make GitHub's per-page query
-    # any cheaper.
+    # Appended to the CDK's terminal message once the reduction budget or the retries at the
+    # floor run out, whichever the stream hits first. The CDK only knows that GitHub rejected
+    # every page size it asked for; the remediation is connector-specific.
+    #
+    # There is no page-size setting to point the user at: the sizes are fixed in this manifest.
+    # The message also cannot name the smallest page that was tried, because that differs per
+    # stream — the CDK's own sentence, which this one is appended to, already states it. So this
+    # says only that shrinking the page has been exhausted, and names the two things left that a
+    # user can act on. A more recent start date is deliberately not among them: these streams
+    # filter client-side, so it would not make GitHub's per-page query any cheaper.
     failure_message: >-
-      The page size the connector starts from is "Page size for large streams"
-      (page_size_for_large_streams) in the source configuration; a lower value makes each
-      GraphQL query cheaper, if it is not already at its minimum of 1.
+      GitHub kept rejecting this query at every page size the connector asked for, so a smaller
+      page is not what it is waiting for. This is usually a transient condition on GitHub's side
+      and the next sync succeeds; if one repository fails this way on every attempt, removing it
+      from the source configuration lets the others sync.
 
   graphql_paginator:
     type: DefaultPaginator
@@ -17770,11 +17794,18 @@ definitions:
       inject_into: body_json
       field_path: ["variables", "after"]
 
-  # `page_size_for_large_streams` is deprecated but still honored, and the legacy default of
-  # 10 is preserved deliberately: this migration is meant to be behavior-preserving, and
-  # `REDUCE_PAGE_SIZE` is the safety net rather than a licence to raise the default. Raising
-  # it is a separate, measurable change.
-  graphql_large_stream_page_size: "{{ config['page_size_for_large_streams'] if config.get('page_size_for_large_streams') is not none else 10 }}"
+  # Applies to `releases` and `pull_request_stats` only -- the two streams the legacy code
+  # marked `large_stream = True`. The legacy default of 10 is preserved deliberately: this
+  # migration is meant to be behavior-preserving, and `REDUCE_PAGE_SIZE` is the safety net
+  # rather than a licence to raise the default. Raising it is a separate, measurable change.
+  # Every other GraphQL stream was never a `large_stream` and keeps
+  # constants.DEFAULT_PAGE_SIZE (100).
+  #
+  # Written out rather than read from `page_size_for_large_streams`, for the reasons on
+  # `large_stream_page_size` above. The GraphQL side has the stronger claim to the number:
+  # `releases` materializes `description` and `descriptionHTML` per node, and `first=100`
+  # still reproduces a 502 in about 11 seconds against nodejs/node today.
+  graphql_large_stream_page_size: 10
 
   releases_stream:
     # API docs: https://docs.github.com/en/graphql/reference/objects#release
@@ -17860,10 +17891,11 @@ definitions:
         $ref: "#/definitions/graphql_paginator"
         pagination_strategy:
           type: CursorPagination
+          page_size:
+            $ref: "#/definitions/graphql_large_stream_page_size"
           # `repository` is null when the token cannot see the repo, so every hop is
           # null-guarded; a bare `response.data.repository.releases` would raise instead of
           # ending the partition cleanly.
-          page_size: "{{ config['page_size_for_large_streams'] if config.get('page_size_for_large_streams') is not none else 10 }}"
           cursor_value: "{{ ((((response.get('data') or {}).get('repository') or {}).get('releases') or {}).get('pageInfo') or {}).get('endCursor') }}"
           stop_condition: "{{ not ((((response.get('data') or {}).get('repository') or {}).get('releases') or {}).get('pageInfo') or {}).get('hasNextPage') }}"
       partition_router:
@@ -18465,7 +18497,8 @@ definitions:
         $ref: "#/definitions/graphql_paginator"
         pagination_strategy:
           type: CursorPagination
-          page_size: "{{ config['page_size_for_large_streams'] if config.get('page_size_for_large_streams') is not none else 10 }}"
+          page_size:
+            $ref: "#/definitions/graphql_large_stream_page_size"
           cursor_value: "{{ ((((response.get('data') or {}).get('repository') or {}).get('pullRequests') or {}).get('pageInfo') or {}).get('endCursor') }}"
           stop_condition: "{{ not ((((response.get('data') or {}).get('repository') or {}).get('pullRequests') or {}).get('pageInfo') or {}).get('hasNextPage') }}"
       partition_router:
@@ -18753,7 +18786,8 @@ definitions:
           list_connection: "pullRequests"
           drilldown_field: "pullRequest"
           child_connection: "reviews"
-          page_size: "{{ config['page_size_for_large_streams'] if config.get('page_size_for_large_streams') is not none else 10 }}"
+          # Not a `large_stream` in the legacy code, so it keeps constants.DEFAULT_PAGE_SIZE.
+          page_size: 100
       partition_router:
         $ref: "#/definitions/repository_partition_router"
     transformations:
@@ -19019,7 +19053,8 @@ definitions:
           list_connection: "issues"
           drilldown_field: "issue"
           child_connection: "reactions"
-          page_size: "{{ config['page_size_for_large_streams'] if config.get('page_size_for_large_streams') is not none else 10 }}"
+          # Not a `large_stream` in the legacy code, so it keeps constants.DEFAULT_PAGE_SIZE.
+          page_size: 100
       partition_router:
         $ref: "#/definitions/repository_partition_router"
     incremental_sync:
@@ -19279,7 +19314,7 @@ definitions:
               # presence of a token: the listing paginates too (`typename: PullRequest` re-roots
               # at the listing, with no node id), and dropping the variables on its second page
               # made GitHub answer `data: null`, so the stream stopped after the first page and
-              # only the newest `page_size_for_large_streams` pull requests were ever scanned.
+              # only the newest `graphql_large_stream_page_size` pull requests were ever scanned.
               owner: "{{ None if next_page_token and next_page_token['next_page_token']['typename'] != 'PullRequest' else stream_partition.repository.split('/')[0] }}"
               name: "{{ None if next_page_token and next_page_token['next_page_token']['typename'] != 'PullRequest' else stream_partition.repository.split('/')[1] }}"
               after: "{{ next_page_token['next_page_token']['after'] if next_page_token else None }}"
@@ -19297,7 +19332,8 @@ definitions:
         pagination_strategy:
           type: CustomPaginationStrategy
           class_name: source_declarative_manifest.components.DeepNestedGraphQLPaginationStrategy
-          page_size: "{{ config['page_size_for_large_streams'] if config.get('page_size_for_large_streams') is not none else 10 }}"
+          # Not a `large_stream` in the legacy code, so it keeps constants.DEFAULT_PAGE_SIZE.
+          page_size: 100
       partition_router:
         $ref: "#/definitions/repository_partition_router"
     incremental_sync:
