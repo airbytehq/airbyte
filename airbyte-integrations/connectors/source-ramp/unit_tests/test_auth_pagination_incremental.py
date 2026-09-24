@@ -83,7 +83,9 @@ def _ramp_error(error_code: str, message: str) -> dict:
 
 
 def _config_errors(output) -> list:
-    return [t.trace.error for t in output.trace_messages if t.trace.error is not None and t.trace.error.failure_type == FailureType.config_error]
+    return [
+        t.trace.error for t in output.trace_messages if t.trace.error is not None and t.trace.error.failure_type == FailureType.config_error
+    ]
 
 
 def test_token_request():
@@ -219,8 +221,12 @@ def test_reimbursements_server_side_filter_and_directions():
 @pytest.mark.parametrize(
     "status_code, body, expected_fragment",
     [
-        pytest.param(400, _ramp_error("5006", "client_id is malformed, invalid length."), "client_id is malformed", id="malformed-client-id"),
-        pytest.param(401, _ramp_error("5001", "Client credentials not found or malformed."), "Client credentials not found", id="wrong-secret"),
+        pytest.param(
+            400, _ramp_error("5006", "client_id is malformed, invalid length."), "client_id is malformed", id="malformed-client-id"
+        ),
+        pytest.param(
+            401, _ramp_error("5001", "Client credentials not found or malformed."), "Client credentials not found", id="wrong-secret"
+        ),
     ],
 )
 def test_login_errors_are_config_errors(status_code, body, expected_fragment):
@@ -240,9 +246,15 @@ def test_login_errors_are_config_errors(status_code, body, expected_fragment):
 @pytest.mark.parametrize(
     "status_code, body, expected_fragment",
     [
-        pytest.param(403, _ramp_error("DEVELOPER_7100", "These scopes are not allowed for this token: cards:read"), "cards:read", id="missing-scope"),
-        pytest.param(404, _ramp_error("DEVELOPER_7002", "Access token with given access_token not found"), "access token", id="revoked-token-404"),
-        pytest.param(401, _ramp_error("DEVELOPER_7002", "Access token with given access_token not found"), "access token", id="revoked-token-401"),
+        pytest.param(
+            403, _ramp_error("DEVELOPER_7100", "These scopes are not allowed for this token: cards:read"), "cards:read", id="missing-scope"
+        ),
+        pytest.param(
+            404, _ramp_error("DEVELOPER_7002", "Access token with given access_token not found"), "access token", id="revoked-token-404"
+        ),
+        pytest.param(
+            401, _ramp_error("DEVELOPER_7002", "Access token with given access_token not found"), "access token", id="revoked-token-401"
+        ),
         pytest.param(401, {"error": {"message": "Unauthorized"}}, "credentials", id="generic-401"),
     ],
 )
