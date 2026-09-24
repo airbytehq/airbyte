@@ -171,7 +171,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
+| Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 4.4.41 | 2026-09-23 | [86933](https://github.com/airbytehq/airbyte/pull/86933) | Include child pipelines in the `pipelines` stream (and therefore `pipelines_extended` and `jobs`) and add the `pipeline_trigger_jobs` stream |
 | 4.4.40 | 2026-09-22 | [86599](https://github.com/airbytehq/airbyte/pull/86599) | Update dependencies |
