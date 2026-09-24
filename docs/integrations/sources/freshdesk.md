@@ -90,6 +90,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| 3.3.3 | 2026-09-22 | [86635](https://github.com/airbytehq/airbyte/pull/86635) | Update dependencies |
 | 3.3.2 | 2026-09-15 | [86061](https://github.com/airbytehq/airbyte/pull/86061) | Update dependencies |
 | 3.3.1 | 2026-09-08 | [85482](https://github.com/airbytehq/airbyte/pull/85482) | Update dependencies |
 | 3.3.0 | 2026-08-21 | [80306](https://github.com/airbytehq/airbyte/pull/80306) | Add the `ticket_activities` stream (requires the deprecated Freshdesk scheduled ticket activities export to be enabled on the account) |
