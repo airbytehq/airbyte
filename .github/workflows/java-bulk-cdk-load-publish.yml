@@ -9,6 +9,7 @@ on:
       - "airbyte-cdk/bulk/core/load/**"
       - "airbyte-cdk/bulk/toolkits/load-*/**"
       - "airbyte-cdk/bulk/toolkits/legacy-task-load*/**"
+      - "airbyte-cdk/bulk/toolkits/fusion/**"
   workflow_dispatch:
 
 permissions:

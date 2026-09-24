@@ -123,6 +123,7 @@ def loadProjects = [
     ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-parquet',
     ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-s3',
     ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-loader',
+    ':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-fusion',
 ]
 
 // Override base, extract, and load packages to use their own independent versions
