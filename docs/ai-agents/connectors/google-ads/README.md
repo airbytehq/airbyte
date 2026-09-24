@@ -42,13 +42,13 @@ This connector supports the following entities and actions. For more details, se
 | Entity | Actions |
 |--------|---------|
 | Accessible Customers | [List](./REFERENCE.md#accessible-customers-list) |
-| Accounts | [List](./REFERENCE.md#accounts-list), [Context Store Search](./REFERENCE.md#accounts-context-store-search) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Update](./REFERENCE.md#campaigns-update), [Context Store Search](./REFERENCE.md#campaigns-context-store-search) |
-| Ad Groups | [List](./REFERENCE.md#ad-groups-list), [Update](./REFERENCE.md#ad-groups-update), [Context Store Search](./REFERENCE.md#ad-groups-context-store-search) |
-| Ad Group Ads | [List](./REFERENCE.md#ad-group-ads-list), [Context Store Search](./REFERENCE.md#ad-group-ads-context-store-search) |
-| Campaign Labels | [List](./REFERENCE.md#campaign-labels-list), [Create](./REFERENCE.md#campaign-labels-create), [Context Store Search](./REFERENCE.md#campaign-labels-context-store-search) |
-| Ad Group Labels | [List](./REFERENCE.md#ad-group-labels-list), [Create](./REFERENCE.md#ad-group-labels-create), [Context Store Search](./REFERENCE.md#ad-group-labels-context-store-search) |
-| Ad Group Ad Labels | [List](./REFERENCE.md#ad-group-ad-labels-list), [Context Store Search](./REFERENCE.md#ad-group-ad-labels-context-store-search) |
+| Accounts | [List](./REFERENCE.md#accounts-list), [Context Store Search](./REFERENCE.md#accounts-context-store-search), [Context Store SQL Query](./REFERENCE.md#accounts-context-store-sql-query) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Update](./REFERENCE.md#campaigns-update), [Context Store Search](./REFERENCE.md#campaigns-context-store-search), [Context Store SQL Query](./REFERENCE.md#campaigns-context-store-sql-query) |
+| Ad Groups | [List](./REFERENCE.md#ad-groups-list), [Update](./REFERENCE.md#ad-groups-update), [Context Store Search](./REFERENCE.md#ad-groups-context-store-search), [Context Store SQL Query](./REFERENCE.md#ad-groups-context-store-sql-query) |
+| Ad Group Ads | [List](./REFERENCE.md#ad-group-ads-list), [Context Store Search](./REFERENCE.md#ad-group-ads-context-store-search), [Context Store SQL Query](./REFERENCE.md#ad-group-ads-context-store-sql-query) |
+| Campaign Labels | [List](./REFERENCE.md#campaign-labels-list), [Create](./REFERENCE.md#campaign-labels-create), [Context Store Search](./REFERENCE.md#campaign-labels-context-store-search), [Context Store SQL Query](./REFERENCE.md#campaign-labels-context-store-sql-query) |
+| Ad Group Labels | [List](./REFERENCE.md#ad-group-labels-list), [Create](./REFERENCE.md#ad-group-labels-create), [Context Store Search](./REFERENCE.md#ad-group-labels-context-store-search), [Context Store SQL Query](./REFERENCE.md#ad-group-labels-context-store-sql-query) |
+| Ad Group Ad Labels | [List](./REFERENCE.md#ad-group-ad-labels-list), [Context Store Search](./REFERENCE.md#ad-group-ad-labels-context-store-search), [Context Store SQL Query](./REFERENCE.md#ad-group-ad-labels-context-store-sql-query) |
 | Labels | [Create](./REFERENCE.md#labels-create) |
 
 
@@ -131,6 +131,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -198,9 +202,91 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `GoogleAdsConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_ads import GoogleAdsConnector
+
+connector = connect("google-ads", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@GoogleAdsConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="google_ads_inspect",
+    docs_tool="google_ads_read_docs",
+)
+async def google_ads_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@GoogleAdsConnector.agent_tool(framework="pydantic_ai")
+async def google_ads_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@GoogleAdsConnector.agent_tool(framework="pydantic_ai")
+async def google_ads_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_ads import GoogleAdsConnector
+
+connector = connect("google-ads", workspace_name="<your_workspace_name>")
+
+@GoogleAdsConnector.agent_tool(
+    inspect_tool="google_ads_inspect",
+    docs_tool="google_ads_read_docs",
+)
+async def google_ads_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@GoogleAdsConnector.agent_tool()
+async def google_ads_inspect():
+    return await connector.inspect_connector()
+
+@GoogleAdsConnector.agent_tool()
+async def google_ads_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (google_ads_inspect, google_ads_read_docs, google_ads_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `GoogleAdsConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `GoogleAdsConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `GoogleAdsConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -387,6 +473,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -482,9 +572,105 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `GoogleAdsConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.google_ads import GoogleAdsConnector
+from airbyte_agent_sdk.connectors.google_ads.models import GoogleAdsAuthConfig
+
+connector = GoogleAdsConnector(
+    auth_config=GoogleAdsAuthConfig(
+        client_id="<OAuth2 client ID from Google Cloud Console>",
+        client_secret="<OAuth2 client secret from Google Cloud Console>",
+        refresh_token="<OAuth2 refresh token>",
+        developer_token="<Google Ads API developer token>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@GoogleAdsConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="google_ads_inspect",
+    docs_tool="google_ads_read_docs",
+)
+async def google_ads_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@GoogleAdsConnector.agent_tool(framework="pydantic_ai")
+async def google_ads_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@GoogleAdsConnector.agent_tool(framework="pydantic_ai")
+async def google_ads_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.google_ads import GoogleAdsConnector
+from airbyte_agent_sdk.connectors.google_ads.models import GoogleAdsAuthConfig
+
+connector = GoogleAdsConnector(
+    auth_config=GoogleAdsAuthConfig(
+        client_id="<OAuth2 client ID from Google Cloud Console>",
+        client_secret="<OAuth2 client secret from Google Cloud Console>",
+        refresh_token="<OAuth2 refresh token>",
+        developer_token="<Google Ads API developer token>"
+    )
+)
+
+@GoogleAdsConnector.agent_tool(
+    inspect_tool="google_ads_inspect",
+    docs_tool="google_ads_read_docs",
+)
+async def google_ads_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@GoogleAdsConnector.agent_tool()
+async def google_ads_inspect():
+    return await connector.inspect_connector()
+
+@GoogleAdsConnector.agent_tool()
+async def google_ads_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (google_ads_inspect, google_ads_read_docs, google_ads_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `GoogleAdsConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `GoogleAdsConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `GoogleAdsConnector.agent_tool` above.
 
 **Pydantic AI**
 

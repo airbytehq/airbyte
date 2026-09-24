@@ -1,4 +1,4 @@
-version: 7.25.1
+version: 7.28.4
 
 type: DeclarativeSource
 
@@ -39,10 +39,35 @@ definitions:
     cursor_field: updated_at
     cursor_datetime_formats:
       - "%Y-%m-%dT%H:%M:%S.%_msZ"
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S.%_ms%z"
+      - "%Y-%m-%dT%H:%M:%S%z"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
     start_datetime:
       type: MinMaxDatetime
       datetime: "1970-01-01T00:00:00Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  # The cursor every incremental stream shares. Reference it with a bare $ref: a
+  # sibling key replaces the whole value it collides with, so overriding a nested
+  # block here would silently drop the rest of it.
+  # All four RFC 3339 spellings are accepted - millisecond or second precision,
+  # Z or a numeric offset. v3 documents the millisecond-Z form and all 107 examples
+  # in its spec use it, but no response schema pins a pattern, and an unparsed
+  # cursor value is silent: records still flow while state stays parked at
+  # start_date forever. Verified per spelling before and after adding these.
+  updated_at_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: updated_at
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%_msZ"
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S.%_ms%z"
+      - "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+    lookback_window: PT1H
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   streams:
     applications:
@@ -80,16 +105,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -126,16 +142,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -153,6 +160,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -170,6 +178,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -187,6 +197,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -204,6 +215,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -221,6 +234,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -238,6 +252,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -255,6 +271,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
             custom_field_key: "{{ 'degree' if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
@@ -273,6 +290,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -309,16 +328,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -451,6 +461,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -468,6 +479,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -513,6 +526,8 @@ definitions:
               partition_field: parent_id
               stream:
                 $ref: "#/definitions/streams/demographics_question_sets"
+                incremental_sync:
+                  $ref: "#/definitions/full_history_cursor"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -532,6 +547,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -549,6 +565,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -585,16 +603,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -612,7 +621,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            job_ids: "{{ stream_partition.parent_id | join(',') if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -628,22 +637,10 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
-        partition_router:
-          type: GroupingPartitionRouter
-          group_size: 50
-          deduplicate: true
-          underlying_partition_router:
-            type: SubstreamPartitionRouter
-            parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: parent_id
-              stream:
-                $ref: "#/definitions/streams/jobs"
-                incremental_sync:
-                  $ref: "#/definitions/full_history_cursor"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -680,16 +677,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -733,16 +721,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -779,16 +758,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -825,16 +795,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -852,6 +813,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
             include_defaults: "{{ 'true' if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
@@ -870,6 +832,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -910,16 +874,7 @@ definitions:
         schema:
           $ref: "#/schemas/scorecards"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
     sources:
       type: DeclarativeStream
       name: sources
@@ -933,6 +888,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -950,6 +906,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -987,16 +945,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1013,7 +962,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            candidate_ids: "{{ stream_partition.parent_id | join(',') if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1021,20 +970,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        partition_router:
-          type: GroupingPartitionRouter
-          group_size: 50
-          deduplicate: true
-          underlying_partition_router:
-            type: SubstreamPartitionRouter
-            parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: parent_id
-              stream:
-                $ref: "#/definitions/streams/candidates"
-                incremental_sync:
-                  $ref: "#/definitions/full_history_cursor"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -1048,6 +983,8 @@ definitions:
       name: activity_feed
       primary_key:
         - id
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1064,6 +1001,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1084,6 +1022,8 @@ definitions:
       name: approvals
       primary_key:
         - id
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1100,6 +1040,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
             custom_field_key: "{{ 'discipline' if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
@@ -1121,6 +1062,8 @@ definitions:
       name: disciplines
       primary_key:
         - id
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1137,6 +1080,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
             custom_field_key: "{{ 'school_name' if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
@@ -1158,6 +1102,8 @@ definitions:
       name: schools
       primary_key:
         - id
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1194,16 +1140,9 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
+        $ref: "#/definitions/updated_at_cursor"
+        # /v3/eeoc also accepts updated_at, but switching needs a StateMigration; see AGENTS.md.
         cursor_field: submitted_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1240,16 +1179,7 @@ definitions:
         decoder:
           type: JsonDecoder
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%_msZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
-        lookback_window: PT1H
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1267,6 +1197,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1284,6 +1215,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1301,6 +1234,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1318,6 +1252,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1334,6 +1270,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1354,6 +1291,8 @@ definitions:
       name: tags
       primary_key:
         - id
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1371,6 +1310,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1388,6 +1328,8 @@ definitions:
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1404,7 +1346,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            user_ids: "{{ stream_partition.parent_id | join(',') if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1412,20 +1354,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        partition_router:
-          type: GroupingPartitionRouter
-          group_size: 50
-          deduplicate: true
-          underlying_partition_router:
-            type: SubstreamPartitionRouter
-            parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: parent_id
-              stream:
-                $ref: "#/definitions/streams/users"
-                incremental_sync:
-                  $ref: "#/definitions/full_history_cursor"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -1439,10 +1367,752 @@ definitions:
       name: user_permissions
       primary_key:
         - id
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/user_permissions"
+    application_stages:
+      type: DeclarativeStream
+      name: application_stages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/application_stages
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/application_stages"
+    applied_candidate_tags:
+      type: DeclarativeStream
+      name: applied_candidate_tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/applied_candidate_tags
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/applied_candidate_tags"
+    attachments:
+      type: DeclarativeStream
+      name: attachments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/attachments
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/attachments"
+    candidate_educations:
+      type: DeclarativeStream
+      name: candidate_educations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/candidate_educations
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/candidate_educations"
+    candidate_employments:
+      type: DeclarativeStream
+      name: candidate_employments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/candidate_employments
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/candidate_employments"
+    prospect_details:
+      type: DeclarativeStream
+      name: prospect_details
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/prospect_details
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/prospect_details"
+    referrers:
+      type: DeclarativeStream
+      name: referrers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/referrers
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/referrers"
+    rejection_details:
+      type: DeclarativeStream
+      name: rejection_details
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/rejection_details
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/rejection_details"
+    interview_kits:
+      type: DeclarativeStream
+      name: interview_kits
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/interview_kits
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/interview_kits"
+    interviewer_tags:
+      type: DeclarativeStream
+      name: interviewer_tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/interviewer_tags
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/interviewer_tags"
+    interviewers:
+      type: DeclarativeStream
+      name: interviewers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/interviewers
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/interviewers"
+    job_interviews:
+      type: DeclarativeStream
+      name: job_interviews
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/job_interviews
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/job_interviews"
+    scorecard_candidate_attributes:
+      type: DeclarativeStream
+      name: scorecard_candidate_attributes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/scorecard_candidate_attributes
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/scorecard_candidate_attributes"
+    scorecard_questions:
+      type: DeclarativeStream
+      name: scorecard_questions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/scorecard_questions
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/scorecard_questions"
+    approver_groups:
+      type: DeclarativeStream
+      name: approver_groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/approver_groups
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/approver_groups"
+    approvers:
+      type: DeclarativeStream
+      name: approvers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/approvers
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/approvers"
+    job_hiring_managers:
+      type: DeclarativeStream
+      name: job_hiring_managers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/job_hiring_managers
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/job_hiring_managers"
+    job_owners:
+      type: DeclarativeStream
+      name: job_owners
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/job_owners
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/job_owners"
+    prospect_pool_stages:
+      type: DeclarativeStream
+      name: prospect_pool_stages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/prospect_pool_stages
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/prospect_pool_stages"
+    user_emails:
+      type: DeclarativeStream
+      name: user_emails
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/user_emails
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_emails"
   authenticators:
     authorization_code:
       type: OAuthAuthenticator
@@ -1460,10 +2130,11 @@ definitions:
       refresh_token_error_status_codes:
         - 400
         - 401
-      refresh_token_error_key: message
+      refresh_token_error_key: error
       refresh_token_error_values:
-        - Bad Request Params
-        - Unauthorized
+        - invalid_grant
+        - invalid_client
+        - unauthorized_client
       refresh_token_updater:
         refresh_token_name: refresh_token
         access_token_config_path:
@@ -1491,10 +2162,11 @@ definitions:
       refresh_token_error_status_codes:
         - 400
         - 401
-      refresh_token_error_key: message
+      refresh_token_error_key: error
       refresh_token_error_values:
-        - Bad Request Params
-        - Unauthorized
+        - invalid_grant
+        - invalid_client
+        - unauthorized_client
   base_requester:
     type: HttpRequester
     authenticator:
@@ -1543,6 +2215,26 @@ streams:
   - $ref: "#/definitions/streams/tags"
   - $ref: "#/definitions/streams/user_roles"
   - $ref: "#/definitions/streams/user_permissions"
+  - $ref: "#/definitions/streams/approver_groups"
+  - $ref: "#/definitions/streams/approvers"
+  - $ref: "#/definitions/streams/job_hiring_managers"
+  - $ref: "#/definitions/streams/job_owners"
+  - $ref: "#/definitions/streams/prospect_pool_stages"
+  - $ref: "#/definitions/streams/user_emails"
+  - $ref: "#/definitions/streams/interview_kits"
+  - $ref: "#/definitions/streams/interviewer_tags"
+  - $ref: "#/definitions/streams/interviewers"
+  - $ref: "#/definitions/streams/job_interviews"
+  - $ref: "#/definitions/streams/scorecard_candidate_attributes"
+  - $ref: "#/definitions/streams/scorecard_questions"
+  - $ref: "#/definitions/streams/application_stages"
+  - $ref: "#/definitions/streams/applied_candidate_tags"
+  - $ref: "#/definitions/streams/attachments"
+  - $ref: "#/definitions/streams/candidate_educations"
+  - $ref: "#/definitions/streams/candidate_employments"
+  - $ref: "#/definitions/streams/prospect_details"
+  - $ref: "#/definitions/streams/referrers"
+  - $ref: "#/definitions/streams/rejection_details"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -1578,7 +2270,7 @@ spec:
         order: 0
         oneOf:
           - title: OAuth
-            description: Authorize with Greenhouse and Airbyte manages the access and refresh tokens for you.
+            description: Click Authenticate and approve the Greenhouse consent flow as a Site Admin. Airbyte connects through its registered Greenhouse partner application and manages the access and refresh tokens for you; you don't need Greenhouse OAuth credentials of your own.
             type: object
             required:
               - auth_type
@@ -1593,13 +2285,13 @@ spec:
               client_id:
                 type: string
                 title: OAuth client ID
-                description: The client ID of your Greenhouse partner OAuth application.
+                description: Populated automatically by Airbyte from its registered Greenhouse partner application when you authorize above. Greenhouse issues Harvest v3 OAuth credentials only to partners, so you don't need to request or enter one.
                 airbyte_secret: true
                 order: 1
               client_secret:
                 type: string
                 title: OAuth client secret
-                description: The client secret of your Greenhouse partner OAuth application.
+                description: Populated automatically by Airbyte from its registered Greenhouse partner application when you authorize above. Greenhouse issues Harvest v3 OAuth credentials only to partners, so you don't need to request or enter one.
                 airbyte_secret: true
                 order: 2
               refresh_token:
@@ -1698,7 +2390,7 @@ spec:
         consent_url: >-
           https://auth.greenhouse.io/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&response_type=code&state={{state_value}}&{{scopes_param}}
         scope: >-
-          harvest:applications:list harvest:approval_flows:list harvest:candidate_tags:list harvest:candidates:list harvest:close_reasons:list harvest:custom_field_options:list harvest:custom_fields:list harvest:demographic_answer_options:list harvest:demographic_answers:list harvest:demographic_question_sets:list harvest:demographic_questions:list harvest:departments:list harvest:eeoc:list harvest:email_templates:list harvest:interviews:list harvest:job_interview_stages:list harvest:job_posts:list harvest:jobs:list harvest:notes:list harvest:offers:list harvest:offices:list harvest:openings:list harvest:prospect_pools:list harvest:rejection_reasons:list harvest:scorecards:list harvest:sources:list harvest:user_job_permissions:list harvest:user_roles:list harvest:users:list
+          harvest:application_stages:list harvest:applications:list harvest:applied_candidate_tags:list harvest:approval_flows:list harvest:approver_groups:list harvest:approvers:list harvest:attachments:list harvest:candidate_educations:list harvest:candidate_employments:list harvest:candidate_tags:list harvest:candidates:list harvest:close_reasons:list harvest:custom_field_options:list harvest:custom_fields:list harvest:demographic_answer_options:list harvest:demographic_answers:list harvest:demographic_question_sets:list harvest:demographic_questions:list harvest:departments:list harvest:eeoc:list harvest:email_templates:list harvest:interview_kits:list harvest:interviewer_tags:list harvest:interviewers:list harvest:interviews:list harvest:job_hiring_managers:list harvest:job_interview_stages:list harvest:job_interviews:list harvest:job_owners:list harvest:job_posts:list harvest:jobs:list harvest:notes:list harvest:offers:list harvest:offices:list harvest:openings:list harvest:prospect_details:list harvest:prospect_pool_stages:list harvest:prospect_pools:list harvest:referrers:list harvest:rejection_details:list harvest:rejection_reasons:list harvest:scorecard_candidate_attributes:list harvest:scorecard_questions:list harvest:scorecards:list harvest:sources:list harvest:user_emails:list harvest:user_job_permissions:list harvest:user_roles:list harvest:users:list
         access_token_url: https://auth.greenhouse.io/token
         access_token_headers:
           Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
@@ -1792,6 +2484,26 @@ metadata:
     tags: false
     user_roles: false
     user_permissions: false
+    application_stages: false
+    applied_candidate_tags: false
+    attachments: false
+    candidate_educations: false
+    candidate_employments: false
+    prospect_details: false
+    referrers: false
+    rejection_details: false
+    interview_kits: false
+    interviewer_tags: false
+    interviewers: false
+    job_interviews: false
+    scorecard_candidate_attributes: false
+    scorecard_questions: false
+    approver_groups: false
+    approvers: false
+    job_hiring_managers: false
+    job_owners: false
+    prospect_pool_stages: false
+    user_emails: false
   testedStreams:
     applications:
       streamHash: 7bd14e087c4f48d31249a151798c9ab00889959c
@@ -4327,3 +5039,996 @@ schemas:
         type:
         - 'null'
         - integer
+  application_stages:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      application_id:
+        description: Id of the application this stage entry belongs to.
+        type:
+        - 'null'
+        - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      current:
+        description: "`true` when this row represents the application's current interview stage; `false` for past stage entries in the candidate's history."
+        type:
+        - 'null'
+        - boolean
+      days_in_stage:
+        description: Whole number of calendar days the application has spent in this stage, computed as `exited_at - entered_at` for past stages and `now - entered_at` for the current stage.
+        type:
+        - 'null'
+        - integer
+      entered_at:
+        description: Timestamp the application entered this stage, in ISO 8601. `null` only for backfilled or partially recorded history.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      exited_at:
+        description: Timestamp the application left this stage, in ISO 8601. `null` while the application is still in this stage (the current stage entry).
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      job_interview_stage_id:
+        description: Id of the interview stage occupied during this entry. References a `/v3/job_interview_stages` row scoped to the application's job.
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  applied_candidate_tags:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      candidate_id:
+        description: Id of the candidate (person) the tag is applied to.
+        type:
+        - 'null'
+        - integer
+      candidate_tag_id:
+        description: Id of the tag in your organization's candidate-tag dictionary. References a `/v3/candidate_tags` row.
+        type:
+        - 'null'
+        - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  attachments:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      application_id:
+        description: Id of the application this attachment is associated with.
+        type:
+        - 'null'
+        - integer
+      candidate_id:
+        description: Id of the candidate (person) the attachment ultimately belongs to, resolved through the application. `null` if the application's candidate cannot be resolved.
+        type:
+        - 'null'
+        - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      filename:
+        description: Original filename of the uploaded document, including extension.
+        type:
+        - 'null'
+        - string
+      id:
+        type:
+        - 'null'
+        - integer
+      type:
+        description: Classification of the attachment. `resume`, `cover_letter`, and `take_home_test` are candidate-supplied documents; `offer_packet`, `offer_letter`, and `signed_offer_letter` are offer documents; `midfunnel_agreement` and `automated_agreement` are e-signed documents; `form_attachment` is generated by Greenhouse forms; `other` is a free-form bucket for any document that doesn't fit the above.
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      url:
+        description: "Time-limited download URL for the underlying file. The link may be served via a Greenhouse redirect endpoint that issues a fresh short-lived file URL on each request \u2014 HTTP clients should follow redirects when downloading. Links expire after seven days; refetch the attachment to obtain a fresh URL."
+        type:
+        - 'null'
+        - string
+  candidate_educations:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      candidate_id:
+        description: Id of the candidate (person) this education entry belongs to.
+        type:
+        - 'null'
+        - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      degree_custom_field_option_id:
+        description: Id of the custom-field option representing the degree (e.g. `Bachelor's`, `Master's`). Resolve the display name via `GET /v3/custom_field_options?ids=<id>`; the degree dictionary lives under the org's `degree` custom field.
+        type:
+        - 'null'
+        - integer
+      discipline_custom_field_option_id:
+        description: Id of the custom-field option representing the field of study (e.g. `Computer Science`). Resolve the display name via `GET /v3/custom_field_options?ids=<id>`; the discipline dictionary lives under the org's `discipline` custom field.
+        type:
+        - 'null'
+        - integer
+      end_at:
+        description: End date the education entry covers, in ISO 8601. `null` for in-progress education. Only the month and year are surfaced on the candidate profile.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      end_date_month:
+        description: Month component (1-12) of the education's end, when only month/year granularity is known.
+        type:
+        - 'null'
+        - integer
+      end_date_year:
+        description: Year component (e.g. `2018`) of the education's end, when only month/year granularity is known.
+        type:
+        - 'null'
+        - integer
+      id:
+        type:
+        - 'null'
+        - integer
+      latest:
+        description: "`true` when this is the candidate's most recent education (by `end_at`). Greenhouse maintains this flag automatically \u2014 at most one education per candidate has `latest: true`."
+        type:
+        - 'null'
+        - boolean
+      school_name_custom_field_option_id:
+        description: Id of the custom-field option representing the school. Resolve the display name via `GET /v3/custom_field_options?ids=<id>`; the school dictionary lives under the org's `school_name` custom field.
+        type:
+        - 'null'
+        - integer
+      start_at:
+        description: Start date the education entry covers, in ISO 8601. Only the month and year are surfaced on the candidate profile; any day/time component is stored but ignored by the Greenhouse UI.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      start_date_month:
+        description: Month component (1-12) of the education's start, when only month/year granularity is known.
+        type:
+        - 'null'
+        - integer
+      start_date_year:
+        description: Year component (e.g. `2014`) of the education's start, when only month/year granularity is known.
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  candidate_employments:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      candidate_id:
+        description: Id of the candidate (person) this employment entry belongs to.
+        type:
+        - 'null'
+        - integer
+      company_name:
+        description: Free-text name of the employer, as entered on the candidate's profile.
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      end_date:
+        description: End date of this employment, as an ISO 8601 date. `null` indicates the employment is current (ongoing). The Greenhouse UI displays only the month and year.
+        type:
+        - 'null'
+        - string
+        format: date
+      id:
+        type:
+        - 'null'
+        - integer
+      latest:
+        description: "`true` when this is the candidate's most recent employment. Greenhouse maintains this flag automatically \u2014 the current job (`end_date: null`) wins, otherwise the entry with the latest `end_date` \u2014 and at most one employment per candidate has `latest: true`. Mirrors the `company` and `title` shown on the parent candidate record."
+        type:
+        - 'null'
+        - boolean
+      start_date:
+        description: Start date of this employment, as an ISO 8601 date. The Greenhouse UI displays only the month and year.
+        type:
+        - 'null'
+        - string
+        format: date
+      title:
+        description: Free-text job title held at this employer.
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  prospect_details:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      application_id:
+        description: Id of the prospect application this record belongs to. Each prospect detail is attached to exactly one application; prospects are applications that have not yet been moved onto a job.
+        type:
+        - 'null'
+        - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      department_id:
+        description: Id of the department recorded on the prospect's prospective department (the department the prospect is being considered for), derived from the underlying application.
+        type:
+        - 'null'
+        - integer
+      id:
+        type:
+        - 'null'
+        - integer
+      office_id:
+        description: Id of the office recorded on the prospect's prospective department (the office the prospect is being considered for), derived from the underlying application.
+        type:
+        - 'null'
+        - integer
+      pool_id:
+        description: Id of the prospect pool the prospect currently sits in (`prospect_pools.id`). `null` when the prospect has been added to the CRM without being placed in a pool yet.
+        type:
+        - 'null'
+        - integer
+      pool_stage_id:
+        description: Id of the prospect pool stage the prospect currently sits in (`prospect_pool_stages.id`). `null` when the prospect has no current stage; when set, it is always a stage that belongs to `pool_id`.
+        type:
+        - 'null'
+        - integer
+      prospect_owner_id:
+        description: Id of the Greenhouse user designated as the owner of this prospect. `null` when the prospect is unowned.
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  referrers:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      name:
+        description: Display name of the referrer as it appears on the candidate's application under "Source & referrer" (the "Who Gets Credit" label). For employee referrals this is typically the referring user's name; for non-user referrers it is the name captured at referral time.
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      user_id:
+        description: "Id of the Greenhouse user this referrer maps to, when the referrer is an internal employee. `null` for referrers that are not Greenhouse users (e.g. external agency recruiters, social-share visitors, LinkedIn referrers) and for referrers whose underlying user has since been removed. This is not the same id space as `applications.referrer_id` \u2014 applications point at this referrer's `id`, not at `user_id`."
+        type:
+        - 'null'
+        - integer
+  rejection_details:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      application_id:
+        description: Id of the application this rejection record belongs to. Rejection details exist only for rejected applications; there is one record per rejected application.
+        type:
+        - 'null'
+        - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      question_custom_fields:
+        description: Org-defined rejection questions keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
+        type:
+        - 'null'
+        - object
+        additionalProperties:
+          type: object
+          properties:
+            name:
+              type:
+              - 'null'
+              - string
+            type:
+              type:
+              - 'null'
+              - string
+            value:
+              type:
+              - 'null'
+              - string
+              - number
+              - integer
+              - boolean
+              - object
+              - array
+      rejected_at:
+        description: Timestamp the application was rejected, in ISO 8601. `null` only for legacy or partially backfilled rejection records.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      rejected_by_id:
+        description: Id of the user who rejected the application. `null` for system-initiated rejections such as auto-rejection workflows.
+        type:
+        - 'null'
+        - integer
+      rejection_note_id:
+        description: "Id of the note created on the application capturing the free-text rejection message, or `null` when no note was entered. The note body itself is not returned here \u2014 fetch it through `/v3/notes/{id}`."
+        type:
+        - 'null'
+        - integer
+      rejection_reason_id:
+        description: Id of the rejection reason selected for the application. References a `/v3/rejection_reasons` row scoped to the organization. `null` when the application was rejected without a reason.
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  interview_kits:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      anonymize_candidate:
+        description: Whether the candidate's name and identifying details are hidden from graders on the scorecard for this slot. Only meaningful for take-home test slots; defaults to `false`.
+        type:
+        - 'null'
+        - boolean
+      anonymize_resumes:
+        description: Whether resumes are anonymized for reviewers at this slot. Only meaningful for Application Review and Hiring Manager Review slots and requires the organization to have resume anonymization enabled; defaults to `false`.
+        type:
+        - 'null'
+        - boolean
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      exercises:
+        description: "Current Interview Prep content surfaced to interviewers \u2014 instructions, exercises, and rubric notes for this slot on this job. Reflects edits made in the job's Interview Kit. If the kit has no override, falls back to the slot's default instructions; the `summary` and `instructions` fields on the `job_interviews` endpoint are static snapshots taken when the slot was first added and do not stay in sync with later edits, so use this field for the live value. May contain HTML."
+        type:
+        - 'null'
+        - string
+      id:
+        type:
+        - 'null'
+        - integer
+      job_id:
+        description: Id of the job this kit is configured on.
+        type:
+        - 'null'
+        - integer
+      job_interview_id:
+        description: Id of the `job_interview` slot this kit belongs to. Each slot on a job's interview plan has exactly one kit.
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  interviewer_tags:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      name:
+        description: Label of the interviewer tag (surfaced as an Interviewer Group in the Greenhouse UI). Unique per organization and case sensitive; a user can be assigned to multiple tags, and scheduling flows filter the interviewer picker by these labels.
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  interviewers:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      email:
+        description: Email address used to identify this panel member. When `user_id` is set, this returns the user's primary Greenhouse email; for external attendees without a Greenhouse user, this is the raw calendar invitee address. `null` only when neither is available.
+        type:
+        - 'null'
+        - string
+      id:
+        type:
+        - 'null'
+        - integer
+      interview_id:
+        description: Id of the scheduled interview this row belongs to. References a `/v3/interviews` row; the same interview appears once per panel member.
+        type:
+        - 'null'
+        - integer
+      response_status:
+        description: Panel member's RSVP on the calendar invite. `needs_action` is the default until the invitee responds; `accepted`, `tentative`, and `declined` mirror the calendar response. For Outlook 365 customers, accept/decline only syncs back after the interview is updated in Greenhouse or the external event is re-edited.
+        type:
+        - 'null'
+        - string
+      scorecard_id:
+        description: "Id of the scorecard assigned to this panel member for this interview. Scorecards are one-to-one with interviewer rows: when an interview is scheduled, Greenhouse creates a placeholder scorecard per assigned interviewer that the same user later fills out. `null` for panel members who do not get a scorecard (typically the calendar organizer or external attendees without a Greenhouse user)."
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      user_id:
+        description: "Id of the Greenhouse user on the panel. References a `/v3/users` row. `null` when the panel member is an external attendee on the underlying calendar event whose email does not match a Greenhouse user \u2014 in that case the address surfaces in `email`."
+        type:
+        - 'null'
+        - integer
+  job_interviews:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      active:
+        description: Whether the slot is on the job's current interview plan. Inactive slots are retained for historical interviews that were scheduled against them but are not used for new applications.
+        type:
+        - 'null'
+        - boolean
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      duration:
+        description: Default length of the interview in minutes, used to seed the scheduler. `null` if not set on the slot.
+        type:
+        - 'null'
+        - integer
+      id:
+        type:
+        - 'null'
+        - integer
+      instructions:
+        description: "Interviewer-facing instructions copied from the interview's default Interview Prep when the slot was added to the job. Snapshot only \u2014 edits made later in the job's Interview Kit are not reflected here; use the Interview Kits endpoint for the live value."
+        type:
+        - 'null'
+        - string
+      job_id:
+        description: Id of the job whose interview plan this slot is defined on.
+        type:
+        - 'null'
+        - integer
+      job_interview_stage_id:
+        description: Id of the `job_interview_stage` this slot belongs to (the section of the job's interview plan, e.g. "Onsite").
+        type:
+        - 'null'
+        - integer
+      name:
+        description: Name of the interview slot as it appears on the job's interview plan (e.g. "Recruiter Phone Screen", "Hiring Manager Interview").
+        type:
+        - 'null'
+        - string
+      require_scorecard:
+        description: Whether interviewers must submit a scorecard for interviews scheduled against this slot. Only meaningful for `needs_scheduling` and `take_home_test` slots; `null` for `none` and `offer` slots, which never collect scorecards.
+        type:
+        - 'null'
+        - boolean
+      scheduling_type:
+        description: How the slot is fulfilled when a candidate hits the stage. `needs_scheduling` is a calendared interview that coordinators book against candidate availability; `take_home_test` is an asynchronous test sent through Greenhouse; `offer` is the offer step; `none` is a feedback-only slot (no scheduling). `null` for legacy steps with no scheduling type set.
+        type:
+        - 'null'
+        - string
+      sort_order:
+        description: Position of this slot within its `job_interview_stage`, ascending. The first interview in the stage is `1`.
+        type:
+        - 'null'
+        - integer
+      summary:
+        description: "Candidate-facing summary copied from the interview's default Interview Prep when the slot was added to the job. Snapshot only \u2014 edits made later in the job's Interview Kit are not reflected here; use the Interview Kits endpoint for the live value."
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  scorecard_candidate_attributes:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      candidate_attribute_rating:
+        description: Interviewer's rating for the attribute on this scorecard. One of `definitely_not`, `no`, `yes`, `strong_yes`, `mixed`, or `no_decision`. `no_decision` is recorded when the row exists (e.g. a `note` was left) but no rating was selected.
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      job_candidate_attribute_id:
+        description: Id of the job's `job_candidate_attribute` being rated (the per-job attribute catalogue entry on `/v3/job_candidate_attributes`). The attribute's display name and `candidate_attribute_type` live on that record.
+        type:
+        - 'null'
+        - integer
+      note:
+        description: Free-text note the interviewer left for this attribute (e.g. a brief justification for the rating). `null` when no note was provided.
+        type:
+        - 'null'
+        - string
+      scorecard_id:
+        description: "Id of the scorecard this attribute rating belongs to. One row per (scorecard, attribute) pair \u2014 the interviewer rated this candidate on this attribute on this scorecard."
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      value:
+        description: "Read-only alias of `candidate_attribute_rating`, in the same vocabulary the nested write path accepts (`candidate_attributes[].value` on `POST`/`PATCH /v3/scorecards`). A rating cleared with `value: null` reads back as `no_decision`."
+        type:
+        - 'null'
+        - string
+  scorecard_questions:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      active:
+        description: "`true` when the question is in use; `false` after it has been removed from the kit. Inactive questions are returned by default \u2014 pass `active=true` to filter to live questions only. Past `scorecard_question_answers` still reference inactive rows so historical scorecards stay readable."
+        type:
+        - 'null'
+        - boolean
+      answer_type:
+        description: "Shape of the answer the interviewer fills in. `text` is free-form rich text; `yes_no` is a binary choice; `single_select` and `multi_select` pick from the question's `scorecard_question_options`; `instruction` is a display-only guidance row with no answer field and no `required` semantics \u2014 instructions exist to script interviewers and do not produce a `scorecard_question_answer`. Immutable after the question is created."
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      interview_kit_id:
+        description: Id of the interview kit this question belongs to. Each `interview_kit` carries its own ordered set of scorecard questions, so the same prompt configured on two kits has two distinct `scorecard_question` rows.
+        type:
+        - 'null'
+        - integer
+      question:
+        description: "Text of the scorecard question \u2014 or, when `answer_type` is `instruction`, the body of the display-only instruction shown to interviewers. Supports basic HTML formatting (`<p>`, `<ul>`, `<li>`, `<b>`, `<i>`, `<a>`). Render or sanitize as needed."
+        type:
+        - 'null'
+        - string
+      required:
+        description: If `true`, an interviewer must answer this question before submitting the scorecard. Ignored when `answer_type` is `instruction`.
+        type:
+        - 'null'
+        - boolean
+      sort_order:
+        description: Position of this question within its interview kit, ascending. Lower values render first; aliased from the underlying `priority` column. Questions and `instruction` rows share a single ordering.
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  approver_groups:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      approval_flow_id:
+        description: Id of the approval flow this group belongs to.
+        type:
+        - 'null'
+        - integer
+      approvals_required:
+        description: Number of approvers in this group whose `approve` actions are needed to resolve the group as approved (i.e., the M in "M of N"). Defaults to 1. The group resolves as rejected once enough approvers reject that the remaining members can no longer reach this threshold.
+        type:
+        - 'null'
+        - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      required_for_exception:
+        description: When `true`, this group must still approve even when the approval flow is being processed as an exception (where other groups can be skipped). Defaults to `false`.
+        type:
+        - 'null'
+        - boolean
+      resolved_at:
+        description: ISO 8601 timestamp at which the group reached a terminal state (all `approvals_required` approvals received, or enough rejections to make that impossible). Null while the group is still pending.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      sort_order:
+        description: Zero-based position of this group within its approval flow. Groups with the same `sort_order` resolve in parallel; groups with a higher `sort_order` only become actionable once all earlier groups have resolved as approved.
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  approvers:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      added_by_custom_field_id:
+        description: Id of the custom field that resolved to this approver, when the approver was added dynamically via a user-typed custom field (for example, a `Hiring Manager` field). Null when the approver was set explicitly rather than via a custom field.
+        type:
+        - 'null'
+        - integer
+      approver_group_id:
+        description: Id of the approver group this approver belongs to. References a `/v3/approver_groups` row. The parent approval flow is reachable via the group.
+        type:
+        - 'null'
+        - integer
+      auto_reminders_sent:
+        description: Count of automatic reminders sent to this approver since the request was last issued. Resets when the parent approval flow is restarted.
+        type:
+        - 'null'
+        - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      reminder_sent_at:
+        description: ISO 8601 timestamp of the most recent manual reminder sent to this approver. Null if no manual reminder has been sent.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      reminder_sent_by_id:
+        description: Id of the user who sent the most recent manual reminder. References a `/v3/users` row. Null if no manual reminder has been sent.
+        type:
+        - 'null'
+        - integer
+      reminders_sent:
+        description: Count of manual reminders sent to this approver. Distinct from `auto_reminders_sent`.
+        type:
+        - 'null'
+        - integer
+      request_sent_at:
+        description: ISO 8601 timestamp when the approval request email was first sent to this approver. Null until the parent approval flow reaches this approver.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      resolved_at:
+        description: ISO 8601 timestamp when this approver was resolved (approved or rejected). Null while the approver is `waiting` or `due`.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      resolved_by_id:
+        description: Id of the user who approved or rejected on this approver's behalf. References a `/v3/users` row. Null until `status` is `approved` or `rejected`; usually equal to `user_id` unless an admin resolved the request for them.
+        type:
+        - 'null'
+        - integer
+      send_auto_reminder_at:
+        description: "Date (`YYYY-MM-DD`) when the next automatic reminder is scheduled to send. Null when no auto-reminder is queued \u2014 either because the approver is not `due`, automatic reminders are disabled for the organization, or the configured reminder limit has been reached."
+        type:
+        - 'null'
+        - string
+        format: date
+      sort_order:
+        description: Position of this approver within its approver group. Lower values are asked to approve first when the parent approval flow is sequential.
+        type:
+        - 'null'
+        - integer
+      status:
+        description: Current state of this approver's response. `waiting` means earlier approvers (or the parent flow) have not yet activated this approver, `due` means a request has been sent and is pending action, `approved` and `rejected` are the resolved outcomes.
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      user_id:
+        description: Id of the user designated as an approver. References a `/v3/users` row.
+        type:
+        - 'null'
+        - integer
+      version_sent:
+        description: Version of the parent approval flow at the time the request was sent to this approver. If the flow is later edited and its version increments, this value lets you tell whether the approver is responding to the current version or a stale request.
+        type:
+        - 'null'
+        - integer
+  job_hiring_managers:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      job_id:
+        description: Id of the job this hiring-manager assignment belongs to. References a `/v3/jobs` row.
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      user_id:
+        description: Id of the user designated as a hiring manager on the job. References a `/v3/users` row. The same user can be a hiring manager on multiple jobs.
+        type:
+        - 'null'
+        - integer
+  job_owners:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      job_id:
+        description: Id of the job this hiring-team assignment belongs to. References a `/v3/jobs` row.
+        type:
+        - 'null'
+        - integer
+      responsible:
+        description: "If `true`, this user is the responsible recruiter or coordinator for the job \u2014 the default assignee for new applications created against this job. Always `false` for `sourcer` rows, which do not carry candidate responsibility."
+        type:
+        - 'null'
+        - boolean
+      type:
+        description: Hiring-team role this user holds on the job. One of `sourcer`, `recruiter`, or `coordinator`. Hiring managers are exposed on the separate `/v3/job_hiring_managers` endpoint.
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      user_id:
+        description: Id of the user assigned to the job in this role. References a `/v3/users` row. The same user can hold multiple roles on the same job; each role is a separate row.
+        type:
+        - 'null'
+        - integer
+  prospect_pool_stages:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      name:
+        description: Name of the stage as it appears inside the prospect pool (e.g. `Not Reviewed`, `In Discussion`, `Keep Warm - Senior`). Stage names are entirely customer-defined per pool; there is no Greenhouse-managed default set, though new pools are typically seeded with starter stages such as `Not Reviewed`.
+        type:
+        - 'null'
+        - string
+      prospect_pool_id:
+        description: Id of the prospect pool this stage belongs to. Stage names are unique (case-insensitive) within a pool but can repeat across pools.
+        type:
+        - 'null'
+        - integer
+      sort_order:
+        description: Position of this stage within its prospect pool, ascending. Used by the Greenhouse UI to render stages in a fixed order; lower values appear first.
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  user_emails:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      email:
+        description: The email address. Stored case-insensitively and unique across all users in Greenhouse; an email can be attached to only one user at a time.
+        type:
+        - 'null'
+        - string
+      id:
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      user_id:
+        description: Id of the user this email belongs to. References a `/v3/users` row.
+        type:
+        - 'null'
+        - integer
+      verification_token_sent_at:
+        description: When the most recent verification email was sent, as an ISO 8601 timestamp. Null if no verification email is outstanding (the address is already verified, or verification was never requested).
+        type:
+        - 'null'
+        - string
+        format: date-time
+      verified:
+        description: Whether the user has confirmed ownership of this address. Only verified emails can be used to send mail on behalf of the user or to match interviewer calendars.
+        type:
+        - 'null'
+        - boolean

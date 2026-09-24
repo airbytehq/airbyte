@@ -3076,9 +3076,6 @@ Classes
     `id: Any`
     :   The type of the None singleton.
 
-    `invite_hash: Any`
-    :   The type of the None singleton.
-
     `issue_count: Any`
     :   The type of the None singleton.
 
@@ -3094,19 +3091,10 @@ Classes
     `key: Any`
     :   The type of the None singleton.
 
-    `marked_as_duplicate_workflow_state: Any`
-    :   The type of the None singleton.
-
-    `marked_as_duplicate_workflow_state_id: Any`
-    :   The type of the None singleton.
-
     `name: Any`
     :   The type of the None singleton.
 
     `parent_team_id: Any`
-    :   The type of the None singleton.
-
-    `private: Any`
     :   The type of the None singleton.
 
     `require_priority_to_leave_triage: Any`
@@ -3131,6 +3119,9 @@ Classes
     :   The type of the None singleton.
 
     `updated_at: Any`
+    :   The type of the None singleton.
+
+    `visibility: Any`
     :   The type of the None singleton.
 
 <a id="TeamsArrayContainsCondition"></a>
@@ -3341,9 +3332,6 @@ Classes
     `id: list[str]`
     :   The type of the None singleton.
 
-    `invite_hash: list[str]`
-    :   The type of the None singleton.
-
     `issue_count: list[float]`
     :   The type of the None singleton.
 
@@ -3359,19 +3347,10 @@ Classes
     `key: list[str]`
     :   The type of the None singleton.
 
-    `marked_as_duplicate_workflow_state: list[dict[str, typing.Any]]`
-    :   The type of the None singleton.
-
-    `marked_as_duplicate_workflow_state_id: list[str]`
-    :   The type of the None singleton.
-
     `name: list[str]`
     :   The type of the None singleton.
 
     `parent_team_id: list[str]`
-    :   The type of the None singleton.
-
-    `private: list[bool]`
     :   The type of the None singleton.
 
     `require_priority_to_leave_triage: list[bool]`
@@ -3396,6 +3375,9 @@ Classes
     :   The type of the None singleton.
 
     `updated_at: list[str]`
+    :   The type of the None singleton.
+
+    `visibility: list[str]`
     :   The type of the None singleton.
 
 <a id="TeamsKeywordCondition"></a>
@@ -3589,9 +3571,6 @@ Classes
     `id: str | None`
     :   The type of the None singleton.
 
-    `invite_hash: str | None`
-    :   The type of the None singleton.
-
     `issue_count: float | None`
     :   The type of the None singleton.
 
@@ -3607,19 +3586,10 @@ Classes
     `key: str | None`
     :   The type of the None singleton.
 
-    `marked_as_duplicate_workflow_state: dict[str, typing.Any] | None`
-    :   The type of the None singleton.
-
-    `marked_as_duplicate_workflow_state_id: str | None`
-    :   The type of the None singleton.
-
     `name: str | None`
     :   The type of the None singleton.
 
     `parent_team_id: str | None`
-    :   The type of the None singleton.
-
-    `private: bool | None`
     :   The type of the None singleton.
 
     `require_priority_to_leave_triage: bool | None`
@@ -3644,6 +3614,9 @@ Classes
     :   The type of the None singleton.
 
     `updated_at: str | None`
+    :   The type of the None singleton.
+
+    `visibility: str | None`
     :   The type of the None singleton.
 
 <a id="TeamsSearchQuery"></a>
@@ -3737,9 +3710,6 @@ Classes
     `id: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
-    `invite_hash: Literal['asc', 'desc']`
-    :   The type of the None singleton.
-
     `issue_count: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
@@ -3755,19 +3725,10 @@ Classes
     `key: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
-    `marked_as_duplicate_workflow_state: Literal['asc', 'desc']`
-    :   The type of the None singleton.
-
-    `marked_as_duplicate_workflow_state_id: Literal['asc', 'desc']`
-    :   The type of the None singleton.
-
     `name: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
     `parent_team_id: Literal['asc', 'desc']`
-    :   The type of the None singleton.
-
-    `private: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
     `require_priority_to_leave_triage: Literal['asc', 'desc']`
@@ -3792,6 +3753,9 @@ Classes
     :   The type of the None singleton.
 
     `updated_at: Literal['asc', 'desc']`
+    :   The type of the None singleton.
+
+    `visibility: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
 <a id="TeamsStartswithCondition"></a>
@@ -3882,9 +3846,6 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
-    `invite_hash: str`
-    :   The type of the None singleton.
-
     `issue_count: str`
     :   The type of the None singleton.
 
@@ -3900,19 +3861,10 @@ Classes
     `key: str`
     :   The type of the None singleton.
 
-    `marked_as_duplicate_workflow_state: str`
-    :   The type of the None singleton.
-
-    `marked_as_duplicate_workflow_state_id: str`
-    :   The type of the None singleton.
-
     `name: str`
     :   The type of the None singleton.
 
     `parent_team_id: str`
-    :   The type of the None singleton.
-
-    `private: str`
     :   The type of the None singleton.
 
     `require_priority_to_leave_triage: str`
@@ -3937,6 +3889,9 @@ Classes
     :   The type of the None singleton.
 
     `updated_at: str`
+    :   The type of the None singleton.
+
+    `visibility: str`
     :   The type of the None singleton.
 
 <a id="UsersAndCondition"></a>
@@ -4025,9 +3980,6 @@ Classes
     :   The type of the None singleton.
 
     `initials: Any`
-    :   The type of the None singleton.
-
-    `invite_hash: Any`
     :   The type of the None singleton.
 
     `is_me: Any`
@@ -4232,9 +4184,6 @@ Classes
     `initials: list[str]`
     :   The type of the None singleton.
 
-    `invite_hash: list[str]`
-    :   The type of the None singleton.
-
     `is_me: list[bool]`
     :   The type of the None singleton.
 
@@ -4420,9 +4369,6 @@ Classes
     `initials: str | None`
     :   The type of the None singleton.
 
-    `invite_hash: str | None`
-    :   The type of the None singleton.
-
     `is_me: bool | None`
     :   The type of the None singleton.
 
@@ -4508,9 +4454,6 @@ Classes
     `initials: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
-    `invite_hash: Literal['asc', 'desc']`
-    :   The type of the None singleton.
-
     `is_me: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
@@ -4591,9 +4534,6 @@ Classes
     :   The type of the None singleton.
 
     `initials: str`
-    :   The type of the None singleton.
-
-    `invite_hash: str`
     :   The type of the None singleton.
 
     `is_me: str`

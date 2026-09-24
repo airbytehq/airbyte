@@ -21,6 +21,7 @@ Administrators can add connectors from the web app.
 
 - [**Add a connector**](./add-connector.md): Authenticate data sources so agents in Chats and every other interface can use them.
 - [**Context Store**](../../concepts/context-store.md): The searchable replica of select entities from your connected data sources that powers grounded answers and large-scale analytics. The Context Store is always on and requires no configuration.
+- [**Skills**](../../concepts/skills.md): Reusable instructions that shape how agents in every interface handle a kind of task. Administrators create and manage custom skills from the **Skills** page.
 
 ## Workspaces
 

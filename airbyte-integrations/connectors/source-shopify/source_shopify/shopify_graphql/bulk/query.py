@@ -3529,3 +3529,208 @@ class DeliveryProfile(DeliveryZoneList):
             ),
         ]
         return query_nodes
+
+
+class ShopFeatures:
+    """
+    query ShopFeatures {
+      shop {
+        features {
+          marketDrivenShipping
+        }
+      }
+    }
+    """
+
+    operation_name = "ShopFeatures"
+    operation_type = "query"
+
+    def get(self) -> str:
+        query = Query(name="shop", fields=[Field(name="features", fields=["marketDrivenShipping"])])
+        return Operation(type=self.operation_type, name=self.operation_name, queries=[query]).render()
+
+
+class MarketCountry(DeliveryZoneList):
+    """
+    Replacement for `DeliveryProfile` on shops with `marketDrivenShipping` enabled,
+    where shipping configuration lives on `Market.delivery` instead of `deliveryProfiles`.
+
+    query MarketCountriesList {
+      markets(
+        first: 1
+      ) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          id
+          name
+          handle
+          status
+          type
+          conditions {
+            regionsCondition {
+              regions(
+                first: 250
+              ) {
+                nodes {
+                  __typename
+                  ... on MarketRegionCountry {
+                    id
+                    name
+                    code
+                    currency {
+                      currency_code: currencyCode
+                    }
+                  }
+                  ... on MarketRegionSubdivision {
+                    id
+                    name
+                    code
+                    country {
+                      code
+                      name
+                    }
+                  }
+                }
+                pageInfo {
+                  hasNextPage
+                  endCursor
+                }
+              }
+            }
+          }
+          delivery {
+            shipping {
+              is_enabled: isEnabled
+              option_definitions: optionDefinitions(
+                first: 250
+              ) {
+                nodes {
+                  __typename
+                  id
+                  currency
+                  description
+                  is_active: isActive
+                  free_delivery_minimum_value: freeDeliveryMinimumValue {
+                    amount
+                    currency_code: currencyCode
+                  }
+                  ... on DeliveryFlatRateOptionDefinition {
+                    name
+                  }
+                  ... on DeliveryWeightBasedOptionDefinition {
+                    name
+                  }
+                  ... on DeliveryValueBasedOptionDefinition {
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    """
+
+    query_name = "markets"
+    operation_name = "MarketCountriesList"
+
+    page_size = 1
+    sub_page_size = 250
+    # not paginated: 250 is the Shopify page maximum, live cost of this query with 250 is 44 of 1000 points
+    option_definitions_page_size = 250
+
+    def __init__(self, regions_cursor: Optional[str] = None):
+        self.regions_cursor = regions_cursor
+
+    @property
+    def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
+        regions_arguments = [Argument(name="first", value=self.sub_page_size)]
+        if self.regions_cursor:
+            cursor = '"' + self.regions_cursor + '"'
+            regions_arguments.append(Argument(name="after", value=cursor))
+
+        region_fields: List[Field] = [
+            "__typename",
+            InlineFragment(
+                type="MarketRegionCountry",
+                fields=[
+                    "id",
+                    "name",
+                    "code",
+                    Field(name="currency", fields=[Field(name="currencyCode", alias="currency_code")]),
+                ],
+            ),
+            InlineFragment(
+                type="MarketRegionSubdivision",
+                fields=["id", "name", "code", Field(name="country", fields=["code", "name"])],
+            ),
+        ]
+        option_definition_fields: List[Field] = [
+            "__typename",
+            "id",
+            "currency",
+            "description",
+            Field(name="isActive", alias="is_active"),
+            Field(
+                name="freeDeliveryMinimumValue",
+                alias="free_delivery_minimum_value",
+                fields=["amount", Field(name="currencyCode", alias="currency_code")],
+            ),
+            InlineFragment(type="DeliveryFlatRateOptionDefinition", fields=["name"]),
+            InlineFragment(type="DeliveryWeightBasedOptionDefinition", fields=["name"]),
+            InlineFragment(type="DeliveryValueBasedOptionDefinition", fields=["name"]),
+        ]
+
+        query_nodes: List[Field] = [
+            Field(name="pageInfo", fields=["hasNextPage", "endCursor"]),
+            Field(
+                name="nodes",
+                fields=[
+                    "id",
+                    "name",
+                    "handle",
+                    "status",
+                    "type",
+                    Field(
+                        name="conditions",
+                        fields=[
+                            Field(
+                                name="regionsCondition",
+                                fields=[
+                                    Field(
+                                        name="regions",
+                                        arguments=regions_arguments,
+                                        fields=[
+                                            Field(name="nodes", fields=region_fields),
+                                            Field(name="pageInfo", fields=["hasNextPage", "endCursor"]),
+                                        ],
+                                    ),
+                                ],
+                            ),
+                        ],
+                    ),
+                    Field(
+                        name="delivery",
+                        fields=[
+                            Field(
+                                name="shipping",
+                                fields=[
+                                    Field(name="isEnabled", alias="is_enabled"),
+                                    Field(
+                                        name="optionDefinitions",
+                                        alias="option_definitions",
+                                        arguments=[Argument(name="first", value=self.option_definitions_page_size)],
+                                        fields=[Field(name="nodes", fields=option_definition_fields)],
+                                    ),
+                                ],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ]
+        return query_nodes

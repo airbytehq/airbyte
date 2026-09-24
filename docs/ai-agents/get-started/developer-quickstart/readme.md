@@ -54,7 +54,7 @@ Both paths share a few common requirements.
 
 - **API credentials.** Copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the Profile page on [app.airbyte.ai](https://app.airbyte.ai). See [Manage your user profile](../../admin/profile.md) for details.
 
-- **Python 3.10+ and uv** (for tutorials). Skills have their own prerequisites listed on each skill page.
+- **Python 3.11+ and uv** (for tutorials). Skills have their own prerequisites listed on each skill page.
 
 import DocCardList from '@theme/DocCardList';
 

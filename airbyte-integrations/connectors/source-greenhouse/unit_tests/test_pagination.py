@@ -252,14 +252,14 @@ def test_shared_error_handler_surfaces_403_as_config_error(requests_mock, get_so
     assert all(trace.trace.error.failure_type == FailureType.config_error for trace in output.errors)
 
 
-def test_custom_field_options_stream_is_unfiltered_and_paginated(requests_mock, get_source):
+def test_custom_field_options_stream_is_unfiltered_by_key_and_paginated(requests_mock, get_source):
     _register_token(requests_mock)
     option_requests = []
 
     def options_callback(request, context):
         option_requests.append(request)
         if len(option_requests) == 1:
-            assert request.qs == {"per_page": ["500"]}
+            assert request.qs == {"per_page": ["500"], "updated_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"]}
             context.status_code = 200
             context.headers["Link"] = '<https://harvest.greenhouse.io/v3/custom_field_options?cursor=cursor-2>; rel="next"'
             return [{"id": 1, "custom_field_id": 10, "name": "Full-time"}]
@@ -271,8 +271,9 @@ def test_custom_field_options_stream_is_unfiltered_and_paginated(requests_mock, 
     requests_mock.get("https://harvest.greenhouse.io/v3/custom_field_options", json=options_callback)
 
     source = get_source(CONFIG)
-    catalog = CatalogBuilder().with_stream("custom_field_options", SyncMode.full_refresh).build()
-    output = read(source, config=CONFIG, catalog=catalog)
+    catalog = CatalogBuilder().with_stream("custom_field_options", SyncMode.incremental).build()
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG, catalog=catalog)
 
     assert [record.record.data["id"] for record in output.records] == [1, 2]
     assert len(option_requests) == 2
@@ -294,7 +295,11 @@ def test_custom_field_option_streams_filter_on_first_page_only(requests_mock, ge
         option_requests.append(request)
         context.status_code = 200
         if len(option_requests) == 1:
-            assert request.qs == {"per_page": ["500"], "custom_field_key": [custom_field_key]}
+            assert request.qs == {
+                "per_page": ["500"],
+                "updated_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"],
+                "custom_field_key": [custom_field_key],
+            }
             context.headers["Link"] = '<https://harvest.greenhouse.io/v3/custom_field_options?cursor=cursor-2>; rel="next"'
             return [{"id": 1, "custom_field_id": 10, "name": "Bachelor's Degree"}]
 
@@ -304,8 +309,9 @@ def test_custom_field_option_streams_filter_on_first_page_only(requests_mock, ge
     requests_mock.get("https://harvest.greenhouse.io/v3/custom_field_options", json=options_callback)
 
     source = get_source(CONFIG)
-    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
-    output = read(source, config=CONFIG, catalog=catalog)
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG, catalog=catalog)
 
     assert not output.errors
     assert [record.record.data["id"] for record in output.records] == [1, 2]
@@ -545,7 +551,8 @@ def test_users_include_service_accounts_only_on_first_page(requests_mock, get_so
     assert user_requests[1].qs == {"cursor": ["cursor-2"]}
 
 
-def test_activity_feed_reads_notes_for_candidate_and_uses_note_id(requests_mock, get_source):
+def test_activity_feed_reads_notes_directly_without_a_candidate_filter(requests_mock, get_source):
+    """/v3/notes lists every note without candidate_ids, so activity_feed reads it as a flat incremental stream."""
     _register_token(requests_mock)
     candidate_requests = []
     note_requests = []
@@ -565,6 +572,7 @@ def test_activity_feed_reads_notes_for_candidate_and_uses_note_id(requests_mock,
                 "application_id": None,
                 "body": "Candidate contacted",
                 "type": "NOTE",
+                "updated_at": "2024-01-01T00:00:00.000Z",
             }
         ]
 
@@ -572,13 +580,14 @@ def test_activity_feed_reads_notes_for_candidate_and_uses_note_id(requests_mock,
     requests_mock.get("https://harvest.greenhouse.io/v3/notes", json=notes_callback)
 
     source = get_source(CONFIG)
-    catalog = CatalogBuilder().with_stream("activity_feed", SyncMode.full_refresh).build()
-    output = read(source, config=CONFIG, catalog=catalog)
+    catalog = CatalogBuilder().with_stream("activity_feed", SyncMode.incremental).build()
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG, catalog=catalog)
 
     assert not output.errors
-    assert candidate_requests
+    assert not candidate_requests, "activity_feed must not fan out over candidates any more"
     assert len(note_requests) == 1
-    assert note_requests[0].qs == {"per_page": ["500"], "candidate_ids": ["42"]}
+    assert note_requests[0].qs == {"per_page": ["500"], "updated_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"]}
     assert [record.record.data["id"] for record in output.records] == [101]
     assert output.records[0].record.data["candidate_id"] == 42
 
@@ -586,42 +595,40 @@ def test_activity_feed_reads_notes_for_candidate_and_uses_note_id(requests_mock,
 def test_grouped_substreams_batch_parent_ids_at_the_50_id_api_cap(requests_mock, get_source):
     """Greenhouse caps every *_ids filter at maxItems: 50, so GroupingPartitionRouter must comma-join parents in batches of at most 50 and issue one request per batch."""
     _register_token(requests_mock)
-    note_requests = []
+    option_requests = []
 
-    def candidates_callback(request, context):
+    def questions_callback(request, context):
         context.status_code = 200
-        return [{"id": candidate_id, "updated_at": "2024-01-01T00:00:00.000Z"} for candidate_id in range(1, 52)]
+        return [{"id": question_id, "updated_at": "2024-01-01T00:00:00.000Z"} for question_id in range(1, 52)]
 
-    def notes_callback(request, context):
-        note_requests.append(request)
+    def answer_options_callback(request, context):
+        option_requests.append(request)
         context.status_code = 200
-        return [{"id": 100 + len(note_requests), "candidate_id": 1, "type": "NOTE"}]
+        return [{"id": 100 + len(option_requests), "demographic_question_id": 1}]
 
-    requests_mock.get("https://harvest.greenhouse.io/v3/candidates", json=candidates_callback)
-    requests_mock.get("https://harvest.greenhouse.io/v3/notes", json=notes_callback)
+    requests_mock.get("https://harvest.greenhouse.io/v3/demographic_questions", json=questions_callback)
+    requests_mock.get("https://harvest.greenhouse.io/v3/demographic_answer_options", json=answer_options_callback)
 
     source = get_source(CONFIG)
-    catalog = CatalogBuilder().with_stream("activity_feed", SyncMode.full_refresh).build()
+    catalog = CatalogBuilder().with_stream("demographics_answers_answer_options", SyncMode.full_refresh).build()
     output = read(source, config=CONFIG, catalog=catalog)
 
     assert not output.errors
-    assert len(note_requests) == 2, "51 candidates must be split into two <=50-id batches"
-    assert note_requests[0].qs["candidate_ids"] == [",".join(str(i) for i in range(1, 51))]
-    assert note_requests[1].qs["candidate_ids"] == ["51"]
-    for request in note_requests:
-        assert len(request.qs["candidate_ids"][0].split(",")) <= 50
+    assert len(option_requests) == 2, "51 questions must be split into two <=50-id batches"
+    assert option_requests[0].qs["demographic_question_ids"] == [",".join(str(i) for i in range(1, 51))]
+    assert option_requests[1].qs["demographic_question_ids"] == ["51"]
+    for request in option_requests:
+        assert len(request.qs["demographic_question_ids"][0].split(",")) <= 50
 
 
 @pytest.mark.parametrize(
     "substream, parent_stream, parent_url, child_url",
     [
-        ("jobs_openings", "jobs", "https://harvest.greenhouse.io/v3/jobs", "https://harvest.greenhouse.io/v3/openings"),
-        ("activity_feed", "candidates", "https://harvest.greenhouse.io/v3/candidates", "https://harvest.greenhouse.io/v3/notes"),
         (
-            "user_permissions",
-            "users",
-            "https://harvest.greenhouse.io/v3/users",
-            "https://harvest.greenhouse.io/v3/user_job_permissions",
+            "demographics_question_sets_questions",
+            "demographics_question_sets",
+            "https://harvest.greenhouse.io/v3/demographic_question_sets",
+            "https://harvest.greenhouse.io/v3/demographic_questions",
         ),
     ],
 )
@@ -656,88 +663,295 @@ def test_substream_parents_ignore_start_date_while_standalone_parents_use_it(
     assert parent_requests[1].qs["updated_at"] == ["gte|2025-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"]
 
 
+# One record per stream, copied from the example response on that endpoint's Harvest v3
+# reference page. Used twice: to check the inline schema declares every documented field, and
+# as the first page each parity stream's mock read replays.
+DOCUMENTED_V3_EXAMPLES = {
+    "approver_groups": {
+        "id": 1,
+        "approval_flow_id": 1,
+        "approvals_required": 1,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "required_for_exception": False,
+        "resolved_at": None,
+        "sort_order": 0,
+    },
+    "approvers": {
+        "id": 1,
+        "user_id": 1,
+        "status": "waiting",
+        "resolved_by_id": None,
+        "resolved_at": None,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "request_sent_at": None,
+        "version_sent": None,
+        "reminder_sent_at": None,
+        "reminder_sent_by_id": None,
+        "reminders_sent": 0,
+        "approver_group_id": None,
+        "added_by_custom_field_id": None,
+        "send_auto_reminder_at": None,
+        "auto_reminders_sent": None,
+        "sort_order": 0,
+    },
+    "job_hiring_managers": {
+        "id": 1,
+        "user_id": 1,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "job_id": 1,
+    },
+    "job_owners": {
+        "id": 1,
+        "user_id": 1,
+        "type": "coordinator",
+        "responsible": False,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "job_id": 1,
+    },
+    "prospect_pool_stages": {
+        "id": 1,
+        "prospect_pool_id": 1,
+        "name": "prospect pool stage 1",
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "sort_order": 0,
+    },
+    "user_emails": {
+        "id": 1,
+        "user_id": 1,
+        "email": "bob_johnson667@localhost.com",
+        "verified": True,
+        "verification_token_sent_at": None,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+    },
+    "interview_kits": {
+        "id": 1,
+        "anonymize_candidate": False,
+        "anonymize_resumes": False,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "job_id": 1,
+        "job_interview_id": 1,
+        "exercises": None,
+    },
+    "interviewer_tags": {"id": 1, "name": "Tag Name 1", "created_at": "2024-01-01T12:30:30.000Z", "updated_at": "2024-01-01T12:30:30.000Z"},
+    "interviewers": {
+        "id": 1,
+        "interview_id": 1,
+        "user_id": 1,
+        "scorecard_id": None,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "response_status": "needs_action",
+        "email": "bob_johnson371@localhost.com",
+    },
+    "job_interviews": {
+        "id": 1,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "duration": 60,
+        "summary": "This is a summary",
+        "instructions": "Do it now",
+        "name": "First Interview",
+        "active": True,
+        "require_scorecard": True,
+        "job_interview_stage_id": 1,
+        "sort_order": 1,
+        "scheduling_type": "take_home_test",
+        "job_id": 1,
+    },
+    "scorecard_candidate_attributes": {
+        "id": 1,
+        "scorecard_id": 1,
+        "note": None,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "job_candidate_attribute_id": 1,
+        "candidate_attribute_rating": "strong_yes",
+        "value": "strong_yes",
+    },
+    "scorecard_questions": {
+        "id": 1,
+        "interview_kit_id": 1,
+        "question": "Is this question inactive?",
+        "active": False,
+        "answer_type": "text",
+        "required": False,
+        "created_at": "2023-01-05T00:00:00.000Z",
+        "updated_at": "2023-01-05T00:00:00.000Z",
+        "sort_order": 4,
+    },
+    "application_stages": {
+        "id": 1,
+        "application_id": 1,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "job_interview_stage_id": 1,
+        "entered_at": None,
+        "exited_at": None,
+        "days_in_stage": 0,
+        "current": False,
+    },
+    "applied_candidate_tags": {
+        "id": 1,
+        "candidate_tag_id": 1,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "candidate_id": 1,
+    },
+    "attachments": {
+        "id": 1,
+        "application_id": 1,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "type": "resume",
+        "candidate_id": 1,
+        "filename": "Oldest Attachments",
+        "url": "https://example.com/signed-resource",
+    },
+    "candidate_educations": {
+        "id": 1,
+        "latest": True,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "start_date_month": 1,
+        "start_date_year": 2019,
+        "end_date_month": 1,
+        "end_date_year": 2023,
+        "candidate_id": 1,
+        "school_name_custom_field_option_id": 1,
+        "degree_custom_field_option_id": 1,
+        "discipline_custom_field_option_id": 1,
+        "start_at": "2019-01-01T12:30:30.000Z",
+        "end_at": "2023-01-01T12:30:30.000Z",
+    },
+    "candidate_employments": {
+        "id": 1,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "company_name": "Toyota",
+        "title": "CIO",
+        "start_date": "2019-01-01",
+        "end_date": None,
+        "latest": True,
+        "candidate_id": 1,
+    },
+    "prospect_details": {
+        "id": 1,
+        "application_id": 1,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "prospect_owner_id": 1,
+        "pool_id": 1,
+        "pool_stage_id": 1,
+        "department_id": 1,
+        "office_id": 1,
+    },
+    "referrers": {
+        "id": 1,
+        "user_id": 1,
+        "name": "Admin User",
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+    },
+    "rejection_details": {
+        "id": 1,
+        "application_id": 1,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "rejected_by_id": 1,
+        "rejection_note_id": 1,
+        "rejected_at": "2024-01-01T12:30:30.000Z",
+        "rejection_reason_id": 1,
+        "question_custom_fields": {"custom_field_15": {"name": "Custom Field 15", "type": "short_text", "value": "some rejection"}},
+    },
+    "applications": {
+        "id": 1,
+        "referrer_id": 1,
+        "source_id": 1,
+        "agency_note_id": 1,
+        "recruiter_id": 1,
+        "coordinator_id": 1,
+        "needs_decision": False,
+        "prospect": False,
+        "rejected_at": None,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "last_activity_at": "2024-01-01T00:00:00.000Z",
+        "stage_id": 1,
+        "job_interview_stage_id": 1,
+        "candidate_id": 1,
+        "job_id": 1,
+        "job_post_id": None,
+        "status": "in_process",
+        "stage_name": "Application Review",
+        "custom_fields": {
+            "custom_field_1": {
+                "name": "Custom Field 1",
+                "type": "short_text",
+                "value": "some value",
+            }
+        },
+        "location_address": "455 Broadway St., New York, NY",
+        "answers": [{"question": "Simple question", "answer": "some answer"}],
+        "prospective_job_ids": [],
+    },
+    "users": {
+        "id": 1,
+        "first_name": "Admin",
+        "last_name": "User",
+        "job_title": None,
+        "agency_id": None,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "primary_email": "bob_johnson727@localhost.com",
+        "name": "Admin User",
+        "deactivated": False,
+        "site_admin": True,
+        "employee_id": None,
+        "linked_candidate_ids": [],
+        "office_ids": [],
+        "department_ids": [],
+        "interviewer_tags": [],
+        "custom_fields": {
+            "select_custom_field": {
+                "name": "Select custom field",
+                "type": "single_select",
+                "value": None,
+            }
+        },
+    },
+    "activity_feed": {
+        "id": 1,
+        "body": "Admin-only note",
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "subject": None,
+        "user_id": 1,
+        "visibility": "admin_only_visible",
+        "email_from": None,
+        "email_to": None,
+        "email_cc": None,
+        "import_hash": None,
+        "body_with_tags": None,
+        "email_attachment_file_names": None,
+        "candidate_id": 1,
+        "type": "NOTE",
+        "application_id": None,
+    },
+}
+
+
 def test_documented_v3_examples_validate_against_stream_schemas(connector_path):
     with open(connector_path / "manifest.yaml") as manifest_file:
         manifest = yaml.safe_load(manifest_file)
 
-    documented_examples = {
-        "applications": {
-            "id": 1,
-            "referrer_id": 1,
-            "source_id": 1,
-            "agency_note_id": 1,
-            "recruiter_id": 1,
-            "coordinator_id": 1,
-            "needs_decision": False,
-            "prospect": False,
-            "rejected_at": None,
-            "created_at": "2024-01-01T12:30:30.000Z",
-            "updated_at": "2024-01-01T00:00:00.000Z",
-            "last_activity_at": "2024-01-01T00:00:00.000Z",
-            "stage_id": 1,
-            "job_interview_stage_id": 1,
-            "candidate_id": 1,
-            "job_id": 1,
-            "job_post_id": None,
-            "status": "in_process",
-            "stage_name": "Application Review",
-            "custom_fields": {
-                "custom_field_1": {
-                    "name": "Custom Field 1",
-                    "type": "short_text",
-                    "value": "some value",
-                }
-            },
-            "location_address": "455 Broadway St., New York, NY",
-            "answers": [{"question": "Simple question", "answer": "some answer"}],
-            "prospective_job_ids": [],
-        },
-        "users": {
-            "id": 1,
-            "first_name": "Admin",
-            "last_name": "User",
-            "job_title": None,
-            "agency_id": None,
-            "created_at": "2024-01-01T00:00:00.000Z",
-            "updated_at": "2024-01-01T00:00:00.000Z",
-            "primary_email": "bob_johnson727@localhost.com",
-            "name": "Admin User",
-            "deactivated": False,
-            "site_admin": True,
-            "employee_id": None,
-            "linked_candidate_ids": [],
-            "office_ids": [],
-            "department_ids": [],
-            "interviewer_tags": [],
-            "custom_fields": {
-                "select_custom_field": {
-                    "name": "Select custom field",
-                    "type": "single_select",
-                    "value": None,
-                }
-            },
-        },
-        "activity_feed": {
-            "id": 1,
-            "body": "Admin-only note",
-            "created_at": "2024-01-01T12:30:30.000Z",
-            "updated_at": "2024-01-01T12:30:30.000Z",
-            "subject": None,
-            "user_id": 1,
-            "visibility": "admin_only_visible",
-            "email_from": None,
-            "email_to": None,
-            "email_cc": None,
-            "import_hash": None,
-            "body_with_tags": None,
-            "email_attachment_file_names": None,
-            "candidate_id": 1,
-            "type": "NOTE",
-            "application_id": None,
-        },
-    }
-
-    for stream_name, record in documented_examples.items():
+    for stream_name, record in DOCUMENTED_V3_EXAMPLES.items():
         schema = manifest["schemas"][stream_name]
         validate(record, schema)
         # Full documented-example coverage for every stream is a follow-up.
@@ -807,6 +1021,218 @@ def test_eeoc_uses_submitted_at_filter_and_cursor_only_follow_up(requests_mock, 
     assert [record.record.data["application_id"] for record in output.records] == [1, 2]
 
 
+@pytest.mark.parametrize(
+    "stream_name, url, first_record, second_record",
+    [
+        pytest.param(
+            "prospect_pools",
+            "https://harvest.greenhouse.io/v3/prospect_pools",
+            {
+                "id": 17,
+                "name": "Engineering Talent Community",
+                "active": True,
+                "department_ids": [],
+                "office_ids": [],
+                "job_ids": [],
+                "updated_at": "2024-01-01T00:00:00.000Z",
+            },
+            {
+                "id": 18,
+                "name": "Retired Pool",
+                "active": False,
+                "department_ids": [],
+                "office_ids": [],
+                "job_ids": [],
+                "updated_at": "2024-01-02T00:00:00.000Z",
+            },
+            id="prospect_pools",
+        ),
+        pytest.param(
+            "tags",
+            "https://harvest.greenhouse.io/v3/candidate_tags",
+            {"id": 5, "name": "Referral", "updated_at": "2024-01-01T00:00:00.000Z"},
+            {"id": 6, "name": "Rehire", "updated_at": "2024-01-02T00:00:00.000Z"},
+            id="tags",
+        ),
+        pytest.param(
+            "offers",
+            "https://harvest.greenhouse.io/v3/offers",
+            {
+                "id": 31,
+                "application_id": 1,
+                "version": 1,
+                "status": "signed",
+                "updated_at": "2024-01-01T00:00:00.000Z",
+            },
+            {
+                "id": 32,
+                "application_id": 2,
+                "version": 2,
+                "status": "rejected",
+                "updated_at": "2024-01-02T00:00:00.000Z",
+            },
+            id="offers",
+        ),
+        pytest.param(
+            "demographics_answers",
+            "https://harvest.greenhouse.io/v3/demographic_answers",
+            {
+                "id": 41,
+                "application_id": 1,
+                "demographic_question_id": 2,
+                "demographic_answer_option_id": 3,
+                "updated_at": "2024-01-01T00:00:00.000Z",
+            },
+            {
+                "id": 42,
+                "application_id": 2,
+                "demographic_question_id": 2,
+                "demographic_answer_option_id": 4,
+                "updated_at": "2024-01-02T00:00:00.000Z",
+            },
+            id="demographics_answers",
+        ),
+    ],
+)
+def test_bypassed_streams_paginate_and_filter_on_the_first_page_only(
+    requests_mock, get_source, stream_name, url, first_record, second_record
+):
+    """offers and demographics_answers are bypassed in acceptance-test-config, so no live read covers them.
+
+    prospect_pools and tags do return data now, but keeping them here costs nothing and pins the
+    same first-page-only contract.
+    """
+    _register_token(requests_mock)
+    requests = []
+
+    def callback(request, context):
+        requests.append(request)
+        context.status_code = 200
+        if len(requests) == 1:
+            assert request.qs == {
+                "per_page": ["500"],
+                "updated_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"],
+            }
+            context.headers["Link"] = f'<{url}?cursor=cursor-2>; rel="next"'
+            return [first_record]
+
+        assert parse_qs(request.query) == {"cursor": ["cursor-2"]}
+        return [second_record]
+
+    requests_mock.get(url, json=callback)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG, catalog=catalog)
+
+    assert not output.errors
+    assert [record.record.data["id"] for record in output.records] == [first_record["id"], second_record["id"]]
+    assert len(requests) == 2
+
+
+def test_job_posts_filters_each_active_partition_on_the_first_page_only(requests_mock, get_source):
+    """job_posts is bypassed and default-on, and it is the only stream combining a list partition with the cursor window.
+
+    Greenhouse hides deleted posts unless active=false is requested, so the stream reads both
+    partitions. Each partition sends its own first page carrying per_page, the updated_at window
+    and its own active value, and each cursor follow-up must carry the cursor alone.
+    """
+    _register_token(requests_mock)
+    url = "https://harvest.greenhouse.io/v3/job_posts"
+    requests = []
+    records = {
+        "true": {"id": 51, "job_id": 1, "title": "Live post", "active": True, "updated_at": "2024-01-01T00:00:00.000Z"},
+        "false": {"id": 52, "job_id": 1, "title": "Deleted post", "active": False, "updated_at": "2024-01-02T00:00:00.000Z"},
+    }
+    followups = {
+        "true": {"id": 53, "job_id": 2, "title": "Live post 2", "active": True, "updated_at": "2024-01-03T00:00:00.000Z"},
+        "false": {"id": 54, "job_id": 2, "title": "Deleted post 2", "active": False, "updated_at": "2024-01-04T00:00:00.000Z"},
+    }
+
+    def callback(request, context):
+        requests.append(request)
+        context.status_code = 200
+        query = parse_qs(request.query)
+        if "cursor" in query:
+            assert query == {"cursor": [f"cursor-{query['cursor'][0].rsplit('-', 1)[-1]}"]}
+            return [followups[query["cursor"][0].rsplit("-", 1)[-1]]]
+
+        active = request.qs["active"][0]
+        assert request.qs == {
+            "per_page": ["500"],
+            "updated_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"],
+            "active": [active],
+        }
+        context.headers["Link"] = f'<{url}?cursor=cursor-{active}>; rel="next"'
+        return [records[active]]
+
+    requests_mock.get(url, json=callback)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream("job_posts", SyncMode.incremental).build()
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG, catalog=catalog)
+
+    assert not output.errors
+    assert sorted(record.record.data["id"] for record in output.records) == [51, 52, 53, 54]
+    assert len(requests) == 4
+    assert sorted(r.qs["active"][0] for r in requests if "active" in r.qs) == ["false", "true"]
+
+
+@pytest.mark.parametrize(
+    "stream_name, url, parent_url, record",
+    [
+        pytest.param(
+            "user_permissions",
+            "https://harvest.greenhouse.io/v3/user_job_permissions",
+            "https://harvest.greenhouse.io/v3/users",
+            {"id": 9, "user_id": 1, "job_id": 2, "role_id": 3, "automated": False, "updated_at": "2024-01-01T00:00:00.000Z"},
+            id="user_permissions",
+        ),
+        pytest.param(
+            "jobs_openings",
+            "https://harvest.greenhouse.io/v3/openings",
+            "https://harvest.greenhouse.io/v3/jobs",
+            {"id": 11, "job_id": 2, "opening_id": "1-1", "status": "open", "updated_at": "2024-01-01T00:00:00.000Z"},
+            id="jobs_openings",
+        ),
+    ],
+)
+def test_defanned_streams_read_their_endpoint_without_a_parent_filter(requests_mock, get_source, stream_name, url, parent_url, record):
+    """/v3/user_job_permissions and /v3/openings list everything, so these streams no longer fan out one request per 50 parents."""
+    _register_token(requests_mock)
+    requests = []
+    parent_requests = []
+
+    def callback(request, context):
+        requests.append(request)
+        context.status_code = 200
+        return [record]
+
+    def parent_callback(request, context):
+        parent_requests.append(request)
+        context.status_code = 200
+        return [{"id": 1, "updated_at": "2024-01-01T00:00:00.000Z"}]
+
+    requests_mock.get(url, json=callback)
+    requests_mock.get(parent_url, json=parent_callback)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG, catalog=catalog)
+
+    assert not output.errors
+    assert not parent_requests, f"{stream_name} must not read its former parent stream any more"
+    assert len(requests) == 1
+    assert requests[0].qs == {
+        "per_page": ["500"],
+        "updated_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"],
+    }
+    assert [emitted.record.data["id"] for emitted in output.records] == [record["id"]]
+
+
 def test_email_templates_incremental_stateful_cursor_pagination(requests_mock, get_source):
     _register_token(requests_mock)
     email_template_requests = []
@@ -857,18 +1283,19 @@ def test_lookback_window_widens_resume_bound(requests_mock, get_source):
 
 
 @pytest.mark.parametrize(
-    "status_code, message",
+    "status_code, error",
     [
-        (400, "Bad Request Params"),
-        (401, "Unauthorized"),
+        pytest.param(400, "invalid_grant", id="expired_or_rotated_refresh_token"),
+        pytest.param(401, "invalid_client", id="bad_client_credentials"),
+        pytest.param(400, "unauthorized_client", id="client_not_allowed_grant"),
     ],
 )
-def test_oauth_refresh_failure_surfaces_reauthenticate_config_error(status_code, message, requests_mock, get_source):
+def test_oauth_refresh_failure_surfaces_reauthenticate_config_error(status_code, error, requests_mock, get_source):
     def token_callback(request, context):
         context.status_code = status_code
         return {
-            "message": message,
-            "errors": ["Refresh token expired at 2026-01-01T00:00:00Z. The user must re-authorize consent"],
+            "error": error,
+            "error_description": "Refresh token has been invalidated at 2026-01-01T00:00:00Z. The user must re-authorize consent",
         }
 
     requests_mock.post("https://auth.greenhouse.io/token", json=token_callback)
@@ -878,7 +1305,73 @@ def test_oauth_refresh_failure_surfaces_reauthenticate_config_error(status_code,
     output = read(source, config=CONFIG, catalog=catalog, expecting_exception=True)
 
     messages = [trace.trace.error.message for trace in output.errors]
-    assert any("Please re-authenticate" in text for text in messages), messages
+    assert any("e-authenticate" in text for text in messages), messages
     assert all(trace.trace.error.failure_type == FailureType.config_error for trace in output.errors), [
         (trace.trace.error.failure_type, trace.trace.error.message) for trace in output.errors
     ]
+
+
+# Every Harvest v3 parity stream reads one list endpoint with the shared offers shape. These mocks
+# pin the request contract; live reads against the test account cover the records themselves.
+PARITY_STREAM_ENDPOINTS = {
+    "approver_groups": "https://harvest.greenhouse.io/v3/approver_groups",
+    "approvers": "https://harvest.greenhouse.io/v3/approvers",
+    "job_hiring_managers": "https://harvest.greenhouse.io/v3/job_hiring_managers",
+    "job_owners": "https://harvest.greenhouse.io/v3/job_owners",
+    "prospect_pool_stages": "https://harvest.greenhouse.io/v3/prospect_pool_stages",
+    "user_emails": "https://harvest.greenhouse.io/v3/user_emails",
+    "interview_kits": "https://harvest.greenhouse.io/v3/interview_kits",
+    "interviewer_tags": "https://harvest.greenhouse.io/v3/interviewer_tags",
+    "interviewers": "https://harvest.greenhouse.io/v3/interviewers",
+    "job_interviews": "https://harvest.greenhouse.io/v3/job_interviews",
+    "scorecard_candidate_attributes": "https://harvest.greenhouse.io/v3/scorecard_candidate_attributes",
+    "scorecard_questions": "https://harvest.greenhouse.io/v3/scorecard_questions",
+    "application_stages": "https://harvest.greenhouse.io/v3/application_stages",
+    "applied_candidate_tags": "https://harvest.greenhouse.io/v3/applied_candidate_tags",
+    "attachments": "https://harvest.greenhouse.io/v3/attachments",
+    "candidate_educations": "https://harvest.greenhouse.io/v3/candidate_educations",
+    "candidate_employments": "https://harvest.greenhouse.io/v3/candidate_employments",
+    "prospect_details": "https://harvest.greenhouse.io/v3/prospect_details",
+    "referrers": "https://harvest.greenhouse.io/v3/referrers",
+    "rejection_details": "https://harvest.greenhouse.io/v3/rejection_details",
+}
+
+
+@pytest.mark.parametrize("stream_name", sorted(PARITY_STREAM_ENDPOINTS))
+def test_parity_streams_paginate_and_filter_on_the_first_page_only(requests_mock, get_source, stream_name):
+    """Pin the first-page-only filter and the Link-header cursor walk for each parity stream.
+
+    Page one carries per_page and the two-sided updated_at window; the follow-up carries the cursor
+    and nothing else, which is what Harvest v3 requires. The first page replays the endpoint's own
+    documented example record, so a field the schema forgot to declare shows up here too.
+    """
+    url = PARITY_STREAM_ENDPOINTS[stream_name]
+    first_record = DOCUMENTED_V3_EXAMPLES[stream_name]
+    second_record = {**first_record, "id": first_record["id"] + 1, "updated_at": "2024-01-02T00:00:00.000Z"}
+    _register_token(requests_mock)
+    requests = []
+
+    def callback(request, context):
+        requests.append(request)
+        context.status_code = 200
+        if len(requests) == 1:
+            assert request.qs == {
+                "per_page": ["500"],
+                "updated_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"],
+            }
+            context.headers["Link"] = f'<{url}?cursor=cursor-2>; rel="next"'
+            return [first_record]
+
+        assert parse_qs(request.query) == {"cursor": ["cursor-2"]}
+        return [second_record]
+
+    requests_mock.get(url, json=callback)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG, catalog=catalog)
+
+    assert not output.errors
+    assert [record.record.data["id"] for record in output.records] == [first_record["id"], second_record["id"]]
+    assert len(requests) == 2
