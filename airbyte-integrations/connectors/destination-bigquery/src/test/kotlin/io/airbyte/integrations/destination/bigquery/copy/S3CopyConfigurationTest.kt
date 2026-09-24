@@ -13,10 +13,10 @@ class S3CopyConfigurationTest {
                 BigqueryS3CopyFactory.createForOperation(
                     "write",
                     mapOf(
-                        "AIRBYTE_S3_COPY_ENABLED" to "true",
-                        "AIRBYTE_S3_COPY_BUCKET" to "archive",
-                        "AIRBYTE_S3_COPY_REGION" to "us-east-1",
-                        "AIRBYTE_S3_COPY_ROLE_ARN" to "arn:aws:iam::123456789012:role/archive",
+                        "AIRBYTE_FUSION_ENABLED" to "true",
+                        "AIRBYTE_FUSION_S3_BUCKET" to "archive",
+                        "AIRBYTE_FUSION_S3_REGION" to "us-east-1",
+                        "AIRBYTE_FUSION_S3_ROLE_ARN" to "arn:aws:iam::123456789012:role/archive",
                     )
                 ) { error("Missing routing must fail before construction") }
             }
@@ -28,7 +28,7 @@ class S3CopyConfigurationTest {
         assertThrows(SystemErrorException::class.java) {
             BigqueryS3CopyFactory.createForOperation(
                 "write",
-                mapOf("AIRBYTE_S3_COPY_ENABLED" to "TRUE")
+                mapOf("AIRBYTE_FUSION_ENABLED" to "TRUE")
             ) { error("Malformed config must fail before construction") }
         }
     }

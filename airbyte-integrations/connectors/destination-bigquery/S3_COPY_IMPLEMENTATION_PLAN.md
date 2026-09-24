@@ -2,7 +2,7 @@
 
 Status: implemented for GCS staging on `johnny/bigquery-fusion-sync-copy`; standard inserts remain
 unsupported when copying is enabled. Copying defaults off and is enabled only by the platform's
-`AIRBYTE_S3_COPY_ENABLED=true` environment variable. Routing and credentials come from the environment;
+`AIRBYTE_FUSION_ENABLED=true` environment variable. Routing and credentials come from the environment;
 there are no connector configuration overrides. The sections below describe the implementation contract
 and rollout requirements.
 Reviewed September 10, 2026 against the BigQuery files at repository baseline `aa28ceeac4e`.
@@ -63,7 +63,7 @@ Use the agreed Fusion contract:
 ```text
 fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/
   connections/<connection_uuid>/destinations/<destination_uuid>/syncs/streams/<escaped_namespace>/<escaped_stream_name>/
-    runs/<epoch_seconds>/<run_uuid>/
+    runs/<run_uuid>/<epoch_seconds>/
       schema.json
       batches/<batch_uuid>.csv.gz
       batches/stream_complete.json
@@ -97,8 +97,7 @@ archive is durable and successful destination finalization returns, write
 ```
 
 The catalog stream's `syncId` is populated from the platform job ID. It is distinct from the random
-run UUID and job attempt ID. Omit `min_generation_id` entirely when the minimum generation is zero;
-include it only for a positive refresh cutoff. No `generation-cutoff.json` or `truncate_refresh.json`
+run UUID and job attempt ID. Retain `min_generation_id`, including zero when no refresh cutoff applies. No `generation-cutoff.json` or `truncate_refresh.json`
 is written. Failed/incomplete streams and failed destination finalization produce no completion
 marker. Failed marker uploads fail stream close; retries keep the same key and content.
 
@@ -127,16 +126,16 @@ CSV layout and mappings remain under `layout`; the schema ID hashes that layout 
 
 | Environment variable | Enabled-write requirement |
 | --- | --- |
-| `AIRBYTE_S3_COPY_ENABLED` | Defaults false; only explicit `true` or `false` accepted on writes |
-| `AIRBYTE_S3_COPY_BUCKET` | Required archive bucket |
-| `AIRBYTE_S3_COPY_REGION` | Required S3/STS region |
-| `AIRBYTE_S3_COPY_ROLE_ARN` | Required target role |
+| `AIRBYTE_FUSION_ENABLED` | Enabled only by case-insensitive `true`; otherwise disabled |
+| `AIRBYTE_FUSION_S3_BUCKET` | Required archive bucket |
+| `AIRBYTE_FUSION_S3_REGION` | Required S3/STS region |
+| `AIRBYTE_FUSION_S3_ROLE_ARN` | Required target role |
 | `AIRBYTE_ORGANIZATION_ID` | Required canonical UUID |
 | `AIRBYTE_WORKSPACE_ID` | Required canonical UUID |
 | `AIRBYTE_SOURCE_ID` | Required canonical UUID |
 | `AIRBYTE_CONNECTION_ID` | Required canonical UUID |
 | `AIRBYTE_DESTINATION_ID` | Required canonical UUID |
-| `AIRBYTE_S3_COPY_PREFIX` | Default `fusion`; trim surrounding slashes; reject empty |
+| `AIRBYTE_FUSION_S3_PREFIX` | Default `fusion`; trim surrounding slashes; reject empty |
 | `AWS_ASSUME_ROLE_EXTERNAL_ID` | Optional STS external ID |
 | `AWS_ASSUME_ROLE_ACCESS_KEY_ID` / `AWS_ASSUME_ROLE_SECRET_ACCESS_KEY` | Paired STS bootstrap credentials; otherwise use the ambient AWS credential chain |
 

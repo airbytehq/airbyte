@@ -99,11 +99,11 @@ class BigqueryCopyWiringTest {
                 .redirectOutput(log.toFile())
         builder.environment().apply {
             keys
-                .filter { it.startsWith("AIRBYTE_S3_COPY_") || it.startsWith("AWS_") }
+                .filter { it.startsWith("AIRBYTE_FUSION_") || it.startsWith("AWS_") }
                 .toList()
                 .forEach { remove(it) }
-            put("AIRBYTE_S3_COPY_ENABLED", enabled)
-            put("AIRBYTE_S3_COPY_ROLE_ARN", "invalid-enabled-only-field")
+            put("AIRBYTE_FUSION_ENABLED", enabled)
+            put("AIRBYTE_FUSION_S3_ROLE_ARN", "invalid-enabled-only-field")
             listOf("ORGANIZATION", "WORKSPACE", "SOURCE", "CONNECTION", "DESTINATION").forEach {
                 put(
                     "AIRBYTE_${it}_ID",
@@ -111,9 +111,9 @@ class BigqueryCopyWiringTest {
                 )
             }
             if (enabled == "true") {
-                put("AIRBYTE_S3_COPY_BUCKET", "platform-bucket")
-                put("AIRBYTE_S3_COPY_REGION", "us-east-2")
-                put("AIRBYTE_S3_COPY_ROLE_ARN", "arn:aws:iam::123456789012:role/platform")
+                put("AIRBYTE_FUSION_S3_BUCKET", "platform-bucket")
+                put("AIRBYTE_FUSION_S3_REGION", "us-east-2")
+                put("AIRBYTE_FUSION_S3_ROLE_ARN", "arn:aws:iam::123456789012:role/platform")
             }
             put("AWS_EC2_METADATA_DISABLED", "true")
         }

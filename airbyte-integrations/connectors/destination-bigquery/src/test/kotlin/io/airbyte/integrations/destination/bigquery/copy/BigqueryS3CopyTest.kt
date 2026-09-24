@@ -59,7 +59,7 @@ class BigqueryS3CopyTest {
                 DisabledBigqueryS3Copy,
                 BigqueryS3CopyFactory.createForOperation(
                     operation,
-                    mapOf("AIRBYTE_S3_COPY_ENABLED" to "invalid"),
+                    mapOf("AIRBYTE_FUSION_ENABLED" to "invalid"),
                     enabledFactory,
                 ),
             )
@@ -68,7 +68,7 @@ class BigqueryS3CopyTest {
             DisabledBigqueryS3Copy,
             BigqueryS3CopyFactory.createForOperation(
                 "write",
-                mapOf("AIRBYTE_S3_COPY_ROLE_ARN" to "invalid"),
+                mapOf("AIRBYTE_FUSION_S3_ROLE_ARN" to "invalid"),
                 enabledFactory,
             ),
         )
@@ -79,11 +79,11 @@ class BigqueryS3CopyTest {
     fun `write factory respects environment opt in and routing`() {
         val env =
             mapOf(
-                "AIRBYTE_S3_COPY_ENABLED" to "true",
-                "AIRBYTE_S3_COPY_BUCKET" to "platform-bucket",
-                "AIRBYTE_S3_COPY_REGION" to "us-east-2",
-                "AIRBYTE_S3_COPY_ROLE_ARN" to "arn:aws:iam::123456789012:role/platform",
-                "AIRBYTE_S3_COPY_PREFIX" to "platform-prefix",
+                "AIRBYTE_FUSION_ENABLED" to "true",
+                "AIRBYTE_FUSION_S3_BUCKET" to "platform-bucket",
+                "AIRBYTE_FUSION_S3_REGION" to "us-east-2",
+                "AIRBYTE_FUSION_S3_ROLE_ARN" to "arn:aws:iam::123456789012:role/platform",
+                "AIRBYTE_FUSION_S3_PREFIX" to "platform-prefix",
                 "AIRBYTE_SOURCE_ID" to UUID(0, 42).toString(),
                 "AIRBYTE_ORGANIZATION_ID" to UUID(0, 43).toString(),
                 "AIRBYTE_WORKSPACE_ID" to UUID(0, 44).toString(),
@@ -107,7 +107,7 @@ class BigqueryS3CopyTest {
             DisabledBigqueryS3Copy,
             BigqueryS3CopyFactory.createForOperation(
                 "write",
-                env + ("AIRBYTE_S3_COPY_ENABLED" to "false")
+                env + ("AIRBYTE_FUSION_ENABLED" to "false")
             ) { error("Disabled writes must not construct an uploader") }
         )
     }
@@ -157,7 +157,7 @@ class BigqueryS3CopyTest {
             val marker = fixture.uploader.objects.last()
             assertEquals("fusion/test-run/batches/stream_complete.json", marker.key)
             assertEquals(
-                mapOf("job_id" to fixture.stream.syncId),
+                mapOf("job_id" to fixture.stream.syncId, "min_generation_id" to 0L),
                 com.fasterxml.jackson.databind
                     .ObjectMapper()
                     .readValue(String(marker.bytes), Map::class.java)
@@ -512,9 +512,7 @@ class BigqueryS3CopyTest {
             every { metadata.runPath(stream) } returns "fusion/test-run"
             every { metadata.streamKey(stream) } returns "stream-hash"
             every { metadata.streamComplete(stream) } returns
-                (mapOf("job_id" to stream.syncId) +
-                    if (minimumGeneration > 0) mapOf("min_generation_id" to minimumGeneration)
-                    else emptyMap())
+                mapOf("job_id" to stream.syncId, "min_generation_id" to minimumGeneration)
             every { metadata.serialize(any()) } answers
                 {
                     com.fasterxml.jackson.databind.ObjectMapper().writeValueAsBytes(firstArg<Any>())
