@@ -104,6 +104,71 @@ class FusionContractTest {
     }
 
     @Test
+    fun `namespace paths distinguish null empty literal sentinels and escaped namespaces`() {
+        val config = FusionConfiguration.fromEnvironment(env)!!
+        val namespaces =
+            mapOf(
+                null to "~null",
+                "" to "~empty",
+                "~null" to "%7Enull",
+                "~empty" to "%7Eempty",
+                "%7Enull" to "%257Enull",
+                "a/b" to "a%2Fb",
+                "a%2Fb" to "a%252Fb",
+                "é雪" to "%C3%A9%E9%9B%AA",
+                "." to "%2E",
+                ".." to "%2E%2E",
+                "a~b" to "a%7Eb",
+            )
+        val paths =
+            namespaces.map { (namespace, encoded) ->
+                val path = FusionPaths.run(config, namespace, "orders", id, 42)
+                assertEquals(
+                    "fusion/organizations/$id/workspaces/$id/sources/$id/connections/$id/destinations/$id/syncs/streams/$encoded/orders/runs/42/$id/",
+                    path,
+                )
+                path
+            }
+        assertEquals(namespaces.size, paths.toSet().size)
+        assertFalse(paths.contains(FusionPaths.run(config, "orders", id, 42)))
+    }
+
+    @Test
+    fun `namespace and stream name remain separate escaped path components`() {
+        val config = FusionConfiguration.fromEnvironment(env)!!
+        val path = FusionPaths.run(config, "a/b é", "c/d 雪~", id, 42)
+        assertTrue(path.endsWith("/streams/a%2Fb%20%C3%A9/c%2Fd%20%E9%9B%AA~/runs/42/$id/"))
+        assertNotEquals(
+            FusionPaths.run(config, "a/b", "c", id, 42),
+            FusionPaths.run(config, "a", "b/c", id, 42),
+        )
+        assertThrows(IllegalArgumentException::class.java) {
+            FusionPaths.run(config, "namespace", "", id, 42)
+        }
+    }
+
+    @Test
+    fun `namespace paths enforce exact UTF8 key limit including reserved batch suffix`() {
+        val config =
+            FusionConfiguration.fromEnvironment(env + ("AIRBYTE_S3_COPY_PREFIX" to "préfix"))!!
+        val suffix = "batches/$id.jsonl.gz"
+        val baseline = FusionPaths.run(config, "n", "orders", id, 42) + suffix
+        val namespaceLength = 1 + 1024 - baseline.toByteArray(Charsets.UTF_8).size
+        val namespace = "n".repeat(namespaceLength)
+        val maxKey = FusionPaths.run(config, namespace, "orders", id, 42) + suffix
+        assertEquals(1024, maxKey.toByteArray(Charsets.UTF_8).size)
+        assertThrows(IllegalArgumentException::class.java) {
+            FusionPaths.run(config, namespace + "n", "orders", id, 42)
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            FusionPaths.run(config, "é".repeat(200), "orders", id, 42)
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            FusionPaths.run(config, "n", "é".repeat(200), id, 42)
+        }
+    }
+
+    @Test
     fun `schema identity cannot be overwritten and completion stays minimal`() {
         val metadata = FusionMetadata(FusionConfiguration.fromEnvironment(env)!!, id, 42)
         val descriptor =

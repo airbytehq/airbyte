@@ -25,6 +25,34 @@ object FusionPaths {
         return path
     }
 
+    /**
+     * Namespace-aware run path. Null and empty namespaces have distinct sentinel components;
+     * nonempty namespaces escape literal tildes so they cannot collide with those sentinels.
+     */
+    @JvmStatic
+    fun run(
+        config: FusionConfiguration,
+        namespace: String?,
+        streamName: String,
+        runId: UUID,
+        epochSeconds: Long
+    ): String {
+        val escapedNamespace =
+            when (namespace) {
+                null -> "~null"
+                "" -> "~empty"
+                else -> escape(namespace).replace("~", "%7E")
+            }
+        val path =
+            "${config.prefix}/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/streams/$escapedNamespace/${escape(streamName)}/runs/$epochSeconds/$runId/"
+        // Include the namespace and reserve the full batch suffix before any uploads.
+        val longestKey = "${path}batches/${UUID(0, 0)}.jsonl.gz"
+        require(longestKey.toByteArray(Charsets.UTF_8).size <= 1024) {
+            "Archive object key exceeds the S3 limit of 1024 UTF-8 bytes"
+        }
+        return path
+    }
+
     // Encode the actual key component; the SDK separately handles HTTP URL encoding.
     @JvmStatic
     fun escape(name: String): String {
