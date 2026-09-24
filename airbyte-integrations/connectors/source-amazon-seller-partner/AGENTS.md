@@ -125,7 +125,28 @@ day-aligned, and the full-refresh snapshot and forecast streams (`GET_VENDOR_INV
 `GET_VENDOR_FORECASTING_FRESH_REPORT`, `GET_VENDOR_FORECASTING_RETAIL_REPORT`) have no cursor and
 intentionally send no window at all.
 
-## 8. FATAL reports must surface Amazon's reason
+## 8. Vendor retail analytics reports forward report options but supply no defaults
+
+Amazon documents `reportPeriod`, `distributorView`, and `sellingProgram` as required for the vendor sales and
+inventory reports, and `reportPeriod` for traffic and net pure product margin. Real-time inventory has no
+documented options.
+
+Because each of these streams declares its own `request_body_json`, which replaces rather than merges with
+the shared requester's body, configured options used to be validated and then silently dropped
+(issue #77617). Each stream's `request_body_json` now references the single `report_options_from_config`
+Jinja block that `creation_requester_with_report_options` also references, so the option matching rules
+exist in exactly one place. Each stream supplies only its `report_type` via `$parameters`.
+
+Do not add default values for these options. The right values are account-specific (`distributorView` is
+`MANUFACTURING` or `SOURCING` depending on how the vendor sells to Amazon; `sellingProgram` is `RETAIL`, `FRESH`
+or, for some reports, `BUSINESS`), so a hardcoded guess can return the wrong numbers with no error and no schema change to signal it.
+A missing option fails loudly instead: Amazon can reject a request that omits them, and on a live Vendor
+connection every vendor sales, inventory and traffic report went `FATAL` with "This report type requires the
+reportPeriod, distributorView, sellingProgram reportOption to be specified" until the user configured them. The
+block ends in `{{ opts if opts else None }}` so an unconfigured connection sends no `reportOptions` key at all and
+its request body is byte-identical to previous versions.
+
+## 9. FATAL reports must surface Amazon's reason
 
 When `getReport` returns `processingStatus: FATAL`, Amazon accepted `createReport` but could not produce the
 report, and the reason lives in a separate document referenced by `reportDocumentId`. The CDK never fetches it:
