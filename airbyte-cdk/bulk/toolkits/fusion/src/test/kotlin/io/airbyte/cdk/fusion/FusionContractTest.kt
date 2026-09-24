@@ -38,7 +38,9 @@ class FusionContractTest {
         assertEquals(configured["cursor_field"], mapper.valueToTree(descriptor["cursor"]))
         val defaults =
             FusionSchema.fromConfiguredStream(
-                mapper.readTree("""{"stream":{"json_schema":{}},"primary_key":null,"cursor_field":null}""")
+                mapper.readTree(
+                    """{"stream":{"json_schema":{}},"primary_key":null,"cursor_field":null}"""
+                )
             )
         assertEquals(emptyList<Any>(), defaults["primary_key"])
         assertEquals(emptyList<Any>(), defaults["cursor"])
@@ -52,7 +54,9 @@ class FusionContractTest {
         assertNull(FusionConfiguration.fromEnvironment(emptyMap()))
         assertNull(FusionConfiguration.fromEnvironment(env + ("AIRBYTE_FUSION_ENABLED" to "FALSE")))
         assertNull(FusionConfiguration.fromEnvironment(env + ("AIRBYTE_FUSION_ENABLED" to "yes")))
-        assertNotNull(FusionConfiguration.fromEnvironment(env + ("AIRBYTE_FUSION_ENABLED" to "TRUE")))
+        assertNotNull(
+            FusionConfiguration.fromEnvironment(env + ("AIRBYTE_FUSION_ENABLED" to "TRUE"))
+        )
         assertNull(
             FusionConfiguration.fromEnvironment(
                 mapOf(
@@ -192,7 +196,10 @@ class FusionContractTest {
         assertEquals(descriptor["primary_key"], schema["primary_key"])
         assertEquals(descriptor["cursor"], schema["cursor"])
         assertEquals(mapOf("job_id" to 8L), metadata.streamComplete(8))
-        assertEquals(mapOf("job_id" to 8L, "min_generation_id" to 0L), metadata.streamComplete(8, 0))
+        assertEquals(
+            mapOf("job_id" to 8L, "min_generation_id" to 0L),
+            metadata.streamComplete(8, 0)
+        )
         assertEquals(mapOf("job_id" to 8L), metadata.streamComplete(8, -1))
         assertEquals(
             mapOf("job_id" to 8L, "min_generation_id" to 7L),
