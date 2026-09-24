@@ -3623,17 +3623,17 @@ definitions:
       end_time_option:
         field_name: "createdUntil"
         inject_into: "request_parameter"
-    ignore_stream_slicer_parameters_on_paginated_requests: true
     retriever:
       type: SimpleRetriever
+      ignore_stream_slicer_parameters_on_paginated_requests: true
       requester:
         $ref: "#/definitions/base_requester"
         path: "reports/2021-06-30/reports"
         http_method: GET
         request_headers:
           content-type: "application/json"
-        request_parameters:
-          reportTypes: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
+        # SP-API rejects getReports calls that combine nextToken with any other query parameter
+        request_parameters: "{{ {} if next_page_token else {'reportTypes': 'GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE', 'pageSize': 100} }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -3645,14 +3645,9 @@ definitions:
           type: RequestOption
           inject_into: request_parameter
           field_name: nextToken
-        page_size_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: pageSize
         pagination_strategy:
           type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response.NextToken }}"
+          cursor_value: "{{ response.get('nextToken') or response.get('NextToken') }}"
     # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
     transformations:
       - type: AddFields
