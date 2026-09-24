@@ -15,7 +15,6 @@ import binascii
 import logging
 import struct
 from dataclasses import InitVar, dataclass
-from datetime import timedelta
 from itertools import groupby
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
@@ -26,12 +25,11 @@ from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordEx
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import (
     PaginationStrategy,
 )
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
@@ -700,45 +698,3 @@ class CommitsBranchPartitionRouter(SubstreamPartitionRouter):
                         StreamSlice(partition={"branch": default_branch, "parent_slice": {"repository": repository}}, cursor_slice={})
                     ]
             yield from wanted
-
-
-@dataclass
-class WorkflowRunsPaginationStrategy(CursorPaginationStrategy):
-    """Stop paging once the page's oldest run was created more than 32 days before the slice start.
-
-    Runs are listed newest-created first and can be re-run for 32 days, so nothing older can still
-    change: the legacy `WorkflowRuns.read_records` broke out of the page loop there.
-
-    This is a workaround for a CDK gap, not a GitHub quirk. `CursorPaginationStrategy` already
-    exposes the decoded page to `stop_condition`, but the paginator's interpolation context has no
-    `stream_slice` (only `config`, `response`, `headers`, `last_record`, `last_page_size`), so the
-    slice start cannot be compared against the page from YAML. Until that lands
-    (https://github.com/airbytehq/airbyte-python-cdk/issues/1166), the requester injects the slice
-    start as a request header GitHub ignores and this strategy reads it back from
-    `response.request`. Once `stream_slice` is available, delete this class and the header and use
-    a `stop_condition` on the built-in strategy instead.
-    """
-
-    window_header: str = "X-Airbyte-Window-Start"
-    re_run_period_days: int = 32
-
-    def next_page_token(
-        self,
-        response: requests.Response,
-        last_page_size: int,
-        last_record: Optional[Record],
-        last_page_token_value: Optional[Any] = None,
-    ) -> Optional[Any]:
-        window_start = response.request.headers.get(self.window_header) if response.request else None
-        try:
-            runs = (response.json() or {}).get("workflow_runs") or []
-        except ValueError:
-            runs = []
-        oldest = runs[-1].get("created_at") if runs and isinstance(runs[-1], Mapping) else None
-        if (
-            window_start
-            and oldest
-            and ab_datetime_parse(oldest) < ab_datetime_parse(window_start) - timedelta(days=self.re_run_period_days)
-        ):
-            return None
-        return super().next_page_token(response, last_page_size, last_record, last_page_token_value)

@@ -365,10 +365,10 @@ def test_contributor_activity_other_errors_are_not_swallowed(rate_limit_mock_res
 # ----------------------------------------------------------------------------------- workflow_runs
 
 
-def test_workflow_runs_filter_on_updated_at_and_carry_the_window_start(rate_limit_mock_response, requests_mock):
+def test_workflow_runs_filter_on_updated_at(rate_limit_mock_response, requests_mock):
     """`WorkflowRuns.read_records` emitted the runs updated after its cursor, whatever their
-    `created_at`, so a re-run of an old run is kept. The slice start is sent as a header for the
-    pagination strategy to stop on; no `created` filter, which GitHub caps at 1,000 results."""
+    `created_at`, so a re-run of an old run is kept. No `created` filter, which GitHub caps at
+    1,000 results: the pagination stop condition reads the slice start instead."""
     config = _config(_REPO)
     _mock_repository_resolution(requests_mock, _REPO)
     requests_mock.get(
@@ -387,26 +387,37 @@ def test_workflow_runs_filter_on_updated_at_and_carry_the_window_start(rate_limi
     assert records[0]["repository"] == {"full_name": _REPO}, "legacy emitted the payload as is, no `repository` string"
     (request,) = [request for request in requests_mock.request_history if request.path.endswith("/actions/runs")]
     assert request.qs == {"per_page": ["100"]}
-    assert request.headers["X-Airbyte-Window-Start"] == _START_DATE
+    assert "X-Airbyte-Window-Start" not in request.headers, "the stop condition reads the slice, not a smuggled header"
     assert _partition_cursors(states[-1]) == {'{"repository": "docker/compose"}': _LATER}
 
 
 def test_workflow_runs_legacy_state_becomes_the_window_start(rate_limit_mock_response, requests_mock):
+    """The run on the first page was created 45 days before the state cursor but long after the
+    configured start date, so paging stops there only if the window starts at the state cursor."""
     config = _config(_REPO)
     _mock_repository_resolution(requests_mock, _REPO)
-    requests_mock.get(f"{_API}/repos/{_REPO}/actions/runs", json={"total_count": 1, "workflow_runs": [_run(3, _LATER, _LATER)]})
+    runs = f"{_API}/repos/{_REPO}/actions/runs"
+    requests_mock.get(
+        runs,
+        [
+            {
+                "json": {"total_count": 2, "workflow_runs": [_run(3, "2022-04-17T00:00:00Z", _LATER)]},
+                "headers": {"Link": f'<{runs}?page=2>; rel="next"'},
+            },
+            {"json": {"total_count": 2, "workflow_runs": [_run(2, "2022-04-01T00:00:00Z", _LATER)]}},
+        ],
+    )
 
     records, _, _, error = _read(config, "workflow_runs", state=_state_message("workflow_runs", {_REPO: {"updated_at": _AFTER_START}}))
 
     assert error is None
     assert [record["id"] for record in records] == [3]
-    (request,) = [request for request in requests_mock.request_history if request.path.endswith("/actions/runs")]
-    assert request.headers["X-Airbyte-Window-Start"] == _AFTER_START
+    assert len([request for request in requests_mock.request_history if request.path.endswith("/actions/runs")]) == 1
 
 
 def test_workflow_runs_stop_paging_at_the_first_run_older_than_the_window(rate_limit_mock_response, requests_mock):
     """Legacy broke out of the page loop at the first run created more than 32 days before the
-    cursor; `WorkflowRunsPaginationStrategy` does the same, so a busy repository is not read back
+    cursor; the pagination `stop_condition` does the same, so a busy repository is not read back
     to its first run on every sync."""
     config = _config(_REPO)
     _mock_repository_resolution(requests_mock, _REPO)
@@ -438,7 +449,7 @@ def test_workflow_runs_stop_paging_at_the_first_run_older_than_the_window(rate_l
 def test_workflow_runs_keep_paging_while_the_window_holds_even_if_nothing_is_emitted(rate_limit_mock_response, requests_mock):
     """A page whose runs were all created inside the window but not updated since the cursor emits
     nothing, yet pagination must go on: a re-run of an older run may sit on the next page. The
-    strategy reads the raw page, not the filtered records, which is what makes this work."""
+    stop condition reads the raw page, not the filtered records, which is what makes this work."""
     config = _config(_REPO)
     _mock_repository_resolution(requests_mock, _REPO)
     runs = f"{_API}/repos/{_REPO}/actions/runs"
@@ -490,9 +501,6 @@ def test_workflow_runs_two_syncs_legacy_scenario(rate_limit_mock_response, reque
     )
     assert error is None
     assert [record["id"] for record in records] == [5, 4, 3]
-    assert [request for request in requests_mock.request_history if request.path.endswith("/actions/runs")][-1].headers[
-        "X-Airbyte-Window-Start"
-    ] == "2022-02-05T00:00:00Z"
     assert _partition_cursors(states[-1]) == {'{"repository": "org/repos"}': "2022-02-08T00:00:00Z"}
 
 
@@ -598,9 +606,6 @@ def test_workflow_jobs_legacy_state_is_migrated(rate_limit_mock_response, reques
     assert _requested(requests_mock, "/jobs") == [
         "/repos/org/repo/actions/runs/1/jobs?per_page=100&filter=all"
     ], "run 2 predates the migrated parent cursor"
-    assert [request for request in requests_mock.request_history if request.path.endswith("/actions/runs")][-1].headers[
-        "X-Airbyte-Window-Start"
-    ] == "2022-09-02T09:10:00Z"
     state = states[-1].stream.stream_state.__dict__
     assert state["use_global_cursor"] is True and state["state"] == {"completed_at": "2022-09-02T09:12:00Z"}
 
