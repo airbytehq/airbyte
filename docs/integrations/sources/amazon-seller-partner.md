@@ -105,7 +105,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 2. On the Set up the source page, select Amazon Seller Partner from the Source type dropdown.
 3. Enter a name for the Amazon Seller Partner connector.
 4. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token.
-5. For Start Date, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, the date 2 years ago from today will be used.
+5. For Start Date, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided or older than 2 years ago from today, the date 2 years ago from today will be used.
 6. For End Date, enter the date in YYYY-MM-DD format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
 7. **Financial Events Step Size**: Select the time window size for fetching financial events data for the ListFinancialEvents and ListFinancialEventGroups streams. Options include:
    - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
