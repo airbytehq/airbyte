@@ -204,8 +204,8 @@ class SnowflakeBeanFactory {
         return if (dataChannelMedium == DataChannelMedium.STDIO) {
             AggregatePublishingConfig(
                 maxRecordsPerAgg = 10_000_000_000_000L,
-                maxEstBytesPerAgg = 350_000_000L,
-                maxEstBytesAllAggregates = 350_000_000L * 5,
+                maxEstBytesPerAgg = 100_000_000L,
+                maxEstBytesAllAggregates = 100_000_000L,
             )
         } else {
             AggregatePublishingConfig(
