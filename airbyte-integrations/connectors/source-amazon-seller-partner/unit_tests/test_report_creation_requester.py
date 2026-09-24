@@ -31,7 +31,6 @@ def _make_report(
     end_time: str = "2023-01-30T00:00:00Z",
     marketplace_ids: list = None,
     created_time: str = "",
-    report_options: dict = None,
 ) -> dict:
     """Build a report object matching the Amazon SP-API Report schema."""
     report = {
@@ -44,8 +43,6 @@ def _make_report(
     }
     if created_time:
         report["createdTime"] = created_time
-    if report_options is not None:
-        report["reportOptions"] = report_options
     return report
 
 
@@ -801,47 +798,3 @@ class TestSendRequest:
         call_kwargs = requester._http_client.send_request.call_args
         params = call_kwargs.kwargs.get("params", call_kwargs[1].get("params", {}))
         assert params["marketplaceIds"] == "ATVPDKIKX0DER,A2EUQ1WTGCTBG2"
-
-
-class TestReportOptionsMatch:
-    """Tests for ReportCreationRequester._report_options_match static method."""
-
-    def test_both_absent_match(self):
-        report = _make_report()
-        assert ReportCreationRequester._report_options_match(None, report) is True
-
-    def test_requested_options_but_report_has_none(self):
-        report = _make_report()
-        assert ReportCreationRequester._report_options_match({"reportPeriod": "DAY"}, report) is False
-
-    def test_same_options_match(self):
-        options = {"reportPeriod": "DAY", "distributorView": "MANUFACTURING"}
-        report = _make_report(report_options=dict(options))
-        assert ReportCreationRequester._report_options_match(dict(options), report) is True
-
-    def test_different_option_values_do_not_match(self):
-        report = _make_report(report_options={"reportPeriod": "WEEK"})
-        assert ReportCreationRequester._report_options_match({"reportPeriod": "DAY"}, report) is False
-
-    def test_report_options_but_request_has_none(self):
-        report = _make_report(report_options={"reportPeriod": "DAY"})
-        assert ReportCreationRequester._report_options_match(None, report) is False
-
-    def test_find_existing_report_skips_report_with_different_options(self):
-        """An IN_PROGRESS report created with different reportOptions is a different report."""
-        requester = _make_requester()
-        weekly_report = _make_report(report_id="rpt-week", status="IN_PROGRESS", report_options={"reportPeriod": "WEEK"})
-        get_response = _make_get_reports_response([weekly_report])
-        requester._http_client.send_request.return_value = (None, get_response)
-
-        result = requester._find_existing_report(
-            stream_state=None,
-            stream_slice=None,
-            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
-            requested_start="2023-01-01T00:00:00Z",
-            requested_end="2023-01-30T00:00:00Z",
-            requested_marketplace_ids=["ATVPDKIKX0DER"],
-            requested_report_options={"reportPeriod": "DAY"},
-        )
-
-        assert result is None

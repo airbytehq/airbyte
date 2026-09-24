@@ -143,10 +143,6 @@ change which numbers existing connections receive, with no error and no schema c
 ends in `{{ opts if opts else None }}` so an unconfigured connection sends no `reportOptions` key at all and its
 request body is byte-identical to previous versions.
 
-Report reuse is options-aware too: `ReportCreationRequester` only reuses an existing report when its
-`reportOptions` echo matches the options in the request body, so a report Amazon created with
-different (or defaulted) options is never reused for a connection that configured its own.
-
 ## Incremental Stream Considerations
 
 The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 8 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.
