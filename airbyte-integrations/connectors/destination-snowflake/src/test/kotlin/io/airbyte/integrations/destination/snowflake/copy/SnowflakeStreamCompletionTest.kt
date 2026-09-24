@@ -78,7 +78,10 @@ class SnowflakeStreamCompletionTest {
             pending.complete(Unit)
             completion.await()
             val key = copy.context(fixture.stream)!!.runPath + "batches/stream_complete.json"
-            assertEquals("{\"job_id\":12345}", fixture.uploader.json.getValue(key))
+            assertEquals(
+                "{\"job_id\":12345,\"min_generation_id\":0}",
+                fixture.uploader.json.getValue(key)
+            )
             assertEquals(2, fixture.uploader.keys.count { it == key })
         }
     }
@@ -120,9 +123,7 @@ class SnowflakeStreamCompletionTest {
     fun `prepare preserves deselected configured keys and cursor for append streams`(raw: Boolean) =
         runBlocking {
             val sourceSchema =
-                Jsons.readTree(
-                    """{"type":"object","properties":{"name":{"type":"string"}}}"""
-                )
+                Jsons.readTree("""{"type":"object","properties":{"name":{"type":"string"}}}""")
             val configured =
                 ConfiguredAirbyteStream()
                     .withStream(
@@ -134,7 +135,8 @@ class SnowflakeStreamCompletionTest {
                     .withDestinationSyncMode(DestinationSyncMode.APPEND)
                     .withPrimaryKey(listOf(listOf("id")))
                     .withCursorField(listOf("updated_at"))
-            val fixture = Fixture(0, ConfiguredAirbyteCatalog().withStreams(listOf(configured)), raw)
+            val fixture =
+                Fixture(0, ConfiguredAirbyteCatalog().withStreams(listOf(configured)), raw)
             // Only name is selected; configured metadata need not have an output mapping.
             every { fixture.stream.tableSchema } returns
                 StreamTableSchema(
@@ -392,16 +394,16 @@ class SnowflakeStreamCompletionTest {
         val copy =
             EnabledSnowflakeS3Copy(
                 FusionConfiguration(
-                    "role",
-                    "bucket",
-                    "us-west-2",
-                    UUID(0, 4),
-                    UUID(0, 2),
-                    UUID(0, 3),
-                    "fusion",
-                    null,
-                    UUID(0, 1),
-                    UUID(0, 5),
+                    roleArn = "role",
+                    externalId = null,
+                    bucket = "bucket",
+                    region = "us-west-2",
+                    connectionId = UUID(0, 4),
+                    workspaceId = UUID(0, 2),
+                    sourceId = UUID(0, 3),
+                    prefix = "fusion",
+                    organizationId = UUID(0, 1),
+                    destinationId = UUID(0, 5),
                 ),
                 SnowflakeColumnManager(configuration),
                 configuration,

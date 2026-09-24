@@ -10,11 +10,11 @@ All routing comes from the environment. There are no Fusion destination configur
 
 | Variable | Behavior |
 | --- | --- |
-| `AIRBYTE_S3_COPY_ENABLED` | Absent or `false` disables copying; `true` enables it. Other values fail validation. |
-| `AIRBYTE_S3_COPY_BUCKET` | Required when enabled. |
-| `AIRBYTE_S3_COPY_REGION` | Required when enabled. |
-| `AIRBYTE_S3_COPY_ROLE_ARN` | Required when enabled. |
-| `AIRBYTE_S3_COPY_PREFIX` | Defaults to `fusion`; surrounding slashes are normalized. |
+| `AIRBYTE_FUSION_ENABLED` | Only `true` (case-insensitive) enables copying; absent or other values disable it. |
+| `AIRBYTE_FUSION_S3_BUCKET` | Required when enabled. |
+| `AIRBYTE_FUSION_S3_REGION` | Required when enabled. |
+| `AIRBYTE_FUSION_S3_ROLE_ARN` | Required when enabled. |
+| `AIRBYTE_FUSION_S3_PREFIX` | Defaults to `fusion`; surrounding slashes are normalized. |
 | `AIRBYTE_ORGANIZATION_ID` | Required canonical UUID when enabled. |
 | `AIRBYTE_WORKSPACE_ID` | Required canonical UUID when enabled. |
 | `AIRBYTE_SOURCE_ID` | Required canonical UUID when enabled. |
@@ -28,7 +28,7 @@ The write-only factory initializes Fusion before ingestion. Spec and check comma
 ## Object layout
 
 ```text
-s3://{bucket}/{prefix}/organizations/{organization_id}/workspaces/{workspace_id}/sources/{source_id}/connections/{connection_id}/destinations/{destination_id}/syncs/streams/{escaped_namespace}/{escaped_stream}/runs/{epoch}/{run_uuid}/
+s3://{bucket}/{prefix}/organizations/{organization_id}/workspaces/{workspace_id}/sources/{source_id}/connections/{connection_id}/destinations/{destination_id}/syncs/streams/{escaped_namespace}/{escaped_stream}/runs/{run_uuid}/{epoch}/
   schema.json
   batches/
     {batch_uuid}.csv.gz
@@ -49,7 +49,7 @@ Setup writes `schema.json` before batches. It includes:
 
 The schema ID hashes the stream descriptor. Batches contain the identical compressed bytes used for Snowflake loading; copying adds no record serialization or recompression. S3 batch metadata includes run identity, stream/schema/batch IDs, generation and sync IDs, record count, and format version.
 
-After successful stream finalization, the connector writes `batches/stream_complete.json` containing `job_id` (the catalog sync ID) and optional positive `min_generation_id`. Empty successful streams also receive a marker. Failed marker uploads remain retryable; successful markers are written once. A worker finds a batch's schema in the parent of its `batches` directory.
+After successful stream finalization, the connector writes `batches/stream_complete.json` containing `job_id` (the catalog sync ID) and `min_generation_id` (including zero). Empty successful streams also receive a marker. Failed marker uploads remain retryable; successful markers are written once. A worker finds a batch's schema in the parent of its `batches` directory.
 
 ## Connector integration and validation
 

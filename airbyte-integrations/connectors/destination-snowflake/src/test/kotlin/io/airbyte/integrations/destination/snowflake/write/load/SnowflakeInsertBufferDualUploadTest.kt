@@ -282,7 +282,7 @@ internal class SnowflakeInsertBufferDualUploadTest {
                 schemaId = "schema-id",
                 runId = UUID.randomUUID(),
                 connectionId = UUID.randomUUID(),
-                runPath = "fusion/streams/stream/runs/1750000000/run/",
+                runPath = "fusion/streams/public/stream/runs/run/1750000000/",
                 epochSeconds = 1750000000,
             )
         val snowflakeEntered = CompletableDeferred<Unit>()

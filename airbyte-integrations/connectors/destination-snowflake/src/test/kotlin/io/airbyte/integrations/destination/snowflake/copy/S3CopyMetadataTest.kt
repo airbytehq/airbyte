@@ -20,16 +20,16 @@ class S3CopyMetadataTest {
     fun `schemas and batch headers carry the same full run identity`() {
         val config =
             FusionConfiguration(
-                "role",
-                "bucket",
-                "region",
-                UUID(0, 4),
-                UUID(0, 2),
-                UUID(0, 3),
-                "fusion",
-                null,
-                UUID(0, 1),
-                UUID(0, 5)
+                roleArn = "role",
+                externalId = null,
+                bucket = "bucket",
+                region = "region",
+                connectionId = UUID(0, 4),
+                workspaceId = UUID(0, 2),
+                sourceId = UUID(0, 3),
+                prefix = "fusion",
+                organizationId = UUID(0, 1),
+                destinationId = UUID(0, 5),
             )
         val runId = UUID(0, 6)
         val epochSeconds = 1789400000L
@@ -52,6 +52,9 @@ class S3CopyMetadataTest {
                 runId,
                 epochSeconds
             )
+        assertTrue(
+            path.endsWith("/streams/public/Orders%2F%E6%97%A5%E6%9C%AC/runs/$runId/$epochSeconds/")
+        )
         val context =
             CsvCopyContext(
                 "stream-hash",
@@ -93,7 +96,10 @@ class S3CopyMetadataTest {
         }
         assertEquals(mapOf("job_id" to 12345L, "min_generation_id" to 42L), complete)
         every { stream.minimumGenerationId } returns 0L
-        assertEquals(mapOf("job_id" to 12345L), metadata.streamComplete(stream))
+        assertEquals(
+            mapOf("job_id" to 12345L, "min_generation_id" to 0L),
+            metadata.streamComplete(stream)
+        )
         assertEquals(42L, schema["generation_id"])
         assertEquals(12345L, schema["sync_id"])
         assertEquals("schema-hash", schema["schema_id"])
