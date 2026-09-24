@@ -35,7 +35,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.0 | 2026-09-24 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Surface Ramp auth and scope errors as config errors, filter transactions server-side with `updated_after`, include declined transactions, add rate-limit budget, declare missing fields, make `start_date` optional |
+| 0.1.0 | 2026-09-24 | [86958](https://github.com/airbytehq/airbyte/pull/86958) | Surface Ramp auth and scope errors as config errors, filter transactions server-side with `updated_after`, include declined transactions, add rate-limit budget, declare missing fields, make `start_date` optional |
 | 0.0.7 | 2026-09-22 | [86778](https://github.com/airbytehq/airbyte/pull/86778) | Update dependencies |
 | 0.0.6 | 2026-09-15 | [86193](https://github.com/airbytehq/airbyte/pull/86193) | Update dependencies |
 | 0.0.5 | 2026-09-08 | [85624](https://github.com/airbytehq/airbyte/pull/85624) | Update dependencies |
