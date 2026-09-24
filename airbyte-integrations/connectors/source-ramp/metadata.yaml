@@ -18,15 +18,21 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 57e906dd-03c3-4d2a-8b4c-e3334acaf8b4
-  dockerImageTag: 0.0.7
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-ramp
   githubIssueLabel: source-ramp
+  maxSecondsBetweenMessages: 3600
   icon: icon.svg
   license: ELv2
   name: Ramp
   releaseDate: 2026-08-05
   releaseStage: alpha
   supportLevel: community
+  suggestedStreams:
+    streams:
+      - transactions
+      - cards
+      - reimbursements
   documentationUrl: https://docs.airbyte.com/integrations/sources/ramp
   tags:
     - language:manifest-only
