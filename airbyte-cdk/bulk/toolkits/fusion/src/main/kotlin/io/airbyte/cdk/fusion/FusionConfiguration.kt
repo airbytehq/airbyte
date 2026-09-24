@@ -15,18 +15,20 @@ import java.util.UUID
  * only in the map supplied to fromEnvironment does not configure the clients.
  */
 class FusionConfiguration(
+    // AWS credentials and role assumption settings.
     val roleArn: String,
+    val externalId: String?,
+    val accessKeyId: String? = null,
+    val secretAccessKey: String? = null,
+    // Airbyte identity and archive destination settings.
     val bucket: String,
     val region: String,
     val connectionId: UUID,
     val workspaceId: UUID,
     val sourceId: UUID,
     val prefix: String,
-    val externalId: String?,
     val organizationId: UUID,
     val destinationId: UUID,
-    val accessKeyId: String? = null,
-    val secretAccessKey: String? = null,
 ) {
     init {
         require((accessKeyId == null) == (secretAccessKey == null)) {
@@ -37,14 +39,10 @@ class FusionConfiguration(
     companion object {
         @JvmStatic
         fun fromEnvironment(env: Map<String, String>): FusionConfiguration? {
-            val enabled = env["AIRBYTE_S3_COPY_ENABLED"] ?: "false"
-            require(enabled == "true" || enabled == "false") {
-                "AIRBYTE_S3_COPY_ENABLED must be true or false"
-            }
-            if (enabled != "true") return null
+            if (!env["AIRBYTE_FUSION_ENABLED"].equals("true", ignoreCase = true)) return null
             fun required(name: String): String =
                 env[name]?.takeIf { it.isNotBlank() }
-                    ?: error("$name is required when AIRBYTE_S3_COPY_ENABLED=true")
+                    ?: error("$name is required when AIRBYTE_FUSION_ENABLED=true")
             fun id(name: String): UUID {
                 val envName = "AIRBYTE_${name}_ID"
                 val value = required(envName)
@@ -54,22 +52,22 @@ class FusionConfiguration(
                 }
                 return parsed
             }
-            val prefix = (env["AIRBYTE_S3_COPY_PREFIX"] ?: "fusion").trim('/')
-            require(prefix.isNotBlank()) { "AIRBYTE_S3_COPY_PREFIX must not be empty" }
+            val prefix = (env["AIRBYTE_FUSION_S3_PREFIX"] ?: "fusion").trim('/')
+            require(prefix.isNotBlank()) { "AIRBYTE_FUSION_S3_PREFIX must not be empty" }
             return FusionConfiguration(
-                roleArn = required("AIRBYTE_S3_COPY_ROLE_ARN"),
-                bucket = required("AIRBYTE_S3_COPY_BUCKET"),
-                region = required("AIRBYTE_S3_COPY_REGION"),
+                roleArn = required("AIRBYTE_FUSION_S3_ROLE_ARN"),
+                externalId = env["AWS_ASSUME_ROLE_EXTERNAL_ID"]?.takeIf { it.isNotBlank() },
+                accessKeyId = env["AWS_ASSUME_ROLE_ACCESS_KEY_ID"]?.takeIf { it.isNotBlank() },
+                secretAccessKey =
+                    env["AWS_ASSUME_ROLE_SECRET_ACCESS_KEY"]?.takeIf { it.isNotBlank() },
+                bucket = required("AIRBYTE_FUSION_S3_BUCKET"),
+                region = required("AIRBYTE_FUSION_S3_REGION"),
                 connectionId = id("CONNECTION"),
                 workspaceId = id("WORKSPACE"),
                 sourceId = id("SOURCE"),
                 prefix = prefix,
-                externalId = env["AWS_ASSUME_ROLE_EXTERNAL_ID"]?.takeIf { it.isNotBlank() },
                 organizationId = id("ORGANIZATION"),
                 destinationId = id("DESTINATION"),
-                accessKeyId = env["AWS_ASSUME_ROLE_ACCESS_KEY_ID"]?.takeIf { it.isNotBlank() },
-                secretAccessKey =
-                    env["AWS_ASSUME_ROLE_SECRET_ACCESS_KEY"]?.takeIf { it.isNotBlank() },
             )
         }
     }

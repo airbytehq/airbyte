@@ -41,7 +41,7 @@ class FusionMetadata(config: FusionConfiguration, runId: UUID, epochSeconds: Lon
     @JvmOverloads
     fun streamComplete(jobId: Long, minGenerationId: Long? = null): Map<String, Any> =
         mapOf<String, Any>("job_id" to jobId) +
-            if (minGenerationId != null && minGenerationId > 0)
+            if (minGenerationId != null && minGenerationId >= 0)
                 mapOf("min_generation_id" to minGenerationId)
             else emptyMap()
 
