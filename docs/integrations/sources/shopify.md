@@ -11,7 +11,7 @@ This page contains the setup guide and reference information for the [Shopify](h
 - An active [Shopify store](https://www.shopify.com).
 - If you are syncing data from a store that you do not own, you will need to [request access to your client's store](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) (not required for account owners).
 <!-- env:oss  -->
-- For **Airbyte Open Source** users: A custom Shopify application with [`read_` scopes enabled](#scopes-required-for-custom-app).
+- For **Airbyte Open Source** users: A custom Shopify application with [`read_` scopes enabled](#custom-app-scopes).
 <!-- /env:oss -->
 
 ## Setup guide
@@ -43,9 +43,11 @@ For existing **Airbyte Cloud** customers, if you are currently using the **API P
 3. Click **Install** to install the Airbyte application. Log in to your account, if you are not already logged in. Select the store you want to sync and review the consent form. Click **Install app** to finish the installation.
 <FieldAnchor field="shop">
 4. The **Shopify Store** field will be automatically filled after you authenticate your Shopify account based on the store you selected. Once populated, confirm the value is accurate.
+
 </FieldAnchor>
 <FieldAnchor field="start_date">
 5. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
+
 </FieldAnchor>
 6. Click **Set up source** and wait for the connection test to complete.
 <!-- /env:cloud -->
@@ -63,60 +65,53 @@ For existing **Airbyte Cloud** customers, if you are currently using the **API P
 
 Authentication to the Shopify API requires a [custom application](https://help.shopify.com/en/manual/apps/app-types/custom-apps). Follow these instructions to create a custom app and find your Admin API Access Token.
 
+:::note
+The steps below describe custom apps created in the Shopify admin, which Shopify now calls [legacy custom apps](https://help.shopify.com/en/manual/apps/managing-apps#manage-legacy-custom-apps). Custom apps created after January 1, 2026 are created in the [Dev Dashboard](https://shopify.dev/docs/apps/build/dev-dashboard/create-apps-using-dev-dashboard) instead, and Shopify's documented way to authenticate them is the [client credentials grant](https://shopify.dev/docs/apps/build/dev-dashboard/get-api-access-tokens), which issues access tokens that expire after 24 hours. A token like that works in the **API Password** field for one day and then fails with "Shopify access token is invalid or has expired." If you already have a legacy custom app, keep using its Admin API access token. The connector sends whatever token you give it as a static `X-Shopify-Access-Token` header and never refreshes it, so any token you use for **API Password** must be one that doesn't expire. Shopify's [authorization code grant](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/authorization-code-grant) issues non-expiring offline access tokens for Dev Dashboard apps, but obtaining one requires running the OAuth redirect flow yourself; the connector doesn't run it for you. On Airbyte Cloud, use **OAuth2.0** authentication instead.
+:::
+
 1. Log in to your Shopify account.
 2. In the dashboard, navigate to **Settings** > **App and sales channels** > **Develop apps** > **Create an app**.
 3. Select a name for your new app.
 4. Select **Configure Admin API scopes**.
-5. Grant access to the [following list of scopes](#scopes-required-for-custom-app). Only select scopes prefixed with `read_`, not `write_` (e.g. `read_locations`,`read_price_rules`, etc ).
+5. Grant access to the [following list of scopes](#custom-app-scopes). Only select scopes prefixed with `read_`, not `write_` (for example, `read_locations` and `read_price_rules`).
 6. Click **Install app** to give this app access to your data.
 7. Once installed, go to **API Credentials** to copy the **Admin API Access Token**. You are now ready to set up the source in Airbyte!
 
 #### Connect using API Password
 
 1. Enter a **Source name**.
-2. Enter your **Shopify Store** name. You can find this in your URL when logged in to Shopify or within the Store details section of your Settings.
+<FieldAnchor field="shop">
+2. Enter your **Shopify Store** name. This is the subdomain from your store's `myshopify.com` URL. For example, if your URL is `https://my-store.myshopify.com`, enter `my-store`. You can also paste the full URL (e.g. `https://my-store.myshopify.com`) and it will be normalized automatically. Find your store name in the URL bar when logged in to Shopify, or under **Settings** > **Store details**.
+</FieldAnchor>
 3. For **API Password**, enter your custom application's Admin API access token.
-4. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Please note that this defaults to January 1st, 2020.
+<FieldAnchor field="start_date">
+4. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
+</FieldAnchor>
 5. Click **Set up source** and wait for the connection test to complete.
 
 ### Custom app scopes
 
-Add the following scopes to your custom app to ensure Airbyte can sync all available data. For more information on access scopes, see the [Shopify docs](https://shopify.dev/docs/api/usage/access-scopes).
+Grant these scopes to sync all available data. The connector checks your granted scopes at the start of every sync and only syncs the streams your scopes allow. If a scope is missing, the connector logs a warning like ``The stream `Orders` could not be synced without the `read_orders` scope. Please check the `read_orders` is granted.`` and skips that stream instead of failing the sync. Grant only the scopes for the streams you need. For more information, see the [Shopify access scopes documentation](https://shopify.dev/docs/api/usage/access-scopes).
 
-- `read_analytics`
-- `read_assigned_fulfillment_orders`
-- `read_content`
-- `read_customers`
-- `read_discounts`
-- `read_draft_orders`
-- `read_fulfillments`
-- `read_gdpr_data_request`
-- `read_gift_cards`
-- `read_inventory`
-- `read_legal_policies`
-- `read_locations`
-- `read_locales`
-- `read_marketing_events`
-- `read_markets`
-- `read_merchant_managed_fulfillment_orders`
-- `read_online_store_pages`
-- `read_order_edits`
-- `read_orders`
-- `read_price_rules`
-- `read_product_listings`
-- `read_products`
-- `read_publications`
-- `read_reports`
-- `read_resource_feedbacks`
-- `read_script_tags`
-- `read_shipping`
-- `read_shopify_payments_accounts`
-- `read_shopify_payments_bank_accounts`
-- `read_shopify_payments_disputes`
-- `read_shopify_payments_payouts`
-- `read_themes`
-- `read_third_party_fulfillment_orders`
-- `read_translations`
+| Scope | Streams it enables |
+| :--- | :--- |
+| `read_content` | Pages, Metafield Pages |
+| `read_customers` | Customers, Customer Address, Metafield Customers |
+| `read_discounts` | Discount Codes, Discount Codes Sync |
+| `read_draft_orders` | Draft Orders, Metafield Draft Orders |
+| `read_inventory` | Inventory Items, Inventory Levels, Product Variants |
+| `read_locations` | Locations, Metafield Locations |
+| `read_markets` | Market Countries |
+| `read_merchant_managed_fulfillment_orders` | Fulfillment Orders |
+| `read_online_store_pages` | Articles, Blogs, Metafield Articles, Metafield Blogs |
+| `read_orders` | Orders, Order Refunds, Order Risks, Order Agreements, Transactions, Tender Transactions, Fulfillments, Abandoned Checkouts, Customer Journey Summary, Metafield Orders |
+| `read_price_rules` | Price Rules |
+| `read_products` | Products, Deleted Products, Product Images, Product Variants, Collections, Collection Products, Collects, Custom Collections, Smart Collections, and the product, product image, product variant, collection, and smart collection metafield streams |
+| `read_publications` | Collections |
+| `read_shipping` | Countries |
+| `read_shopify_payments_payouts` | Balance Transactions, Disputes |
+
+The Shop and Metafield Shops streams don't require a scope beyond app installation. Product Variants requires both `read_products` and `read_inventory`, and Collections requires both `read_products` and `read_publications`.
 
 <!-- /env:oss -->
 
@@ -129,7 +124,9 @@ The Shopify source connector supports the following [sync modes](https://docs.ai
 - Full Refresh
 - Incremental
 
-This source syncs data using the [Shopify REST API](https://shopify.dev/api/admin-rest), the [Shopify GraphQL API](https://shopify.dev/api/admin-graphql), and the [Shopify GraphQL BULK API](https://shopify.dev/docs/api/usage/bulk-operations/queries). Streams labeled "(GraphQL)" in the list below use the GraphQL or BULK API; unlabeled streams use the REST API.
+The following streams are full refresh only, because the Shopify endpoints behind them don't support filtering by an updated timestamp: Countries, Market Countries, Locations, and Shop. Articles, Blogs, Collects, Disputes, and Balance Transactions sync incrementally by record ID rather than by timestamp, so they replicate new records but not updates to existing ones.
+
+This source syncs data using the [Shopify REST API](https://shopify.dev/api/admin-rest), the [Shopify GraphQL API](https://shopify.dev/api/admin-graphql), and the [Shopify GraphQL BULK API](https://shopify.dev/docs/api/usage/bulk-operations/queries). Streams labeled "(GraphQL)" in the list below use the GraphQL or BULK API; unlabeled streams use the REST API, except for the metafield streams called out in the Metafields entry. The connector calls Shopify Admin API version `2026-07` for REST, GraphQL, and BULK requests. Shopify [supports each stable version for one year](https://shopify.dev/docs/api/usage/versioning); `2026-07` is available until July 16, 2027.
 
 ## Supported Streams
 
@@ -156,7 +153,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Inventory Levels (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryLevel)
 - [Locations](https://shopify.dev/api/admin-rest/latest/resources/location)
 - [Market Countries (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/queries/markets) — Shipping configuration of shops using [market-driven shipping](#countries-and-market-driven-shipping). Requires the `read_markets` scope.
-- [Metafields (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Metafield) — Available as separate streams for: Articles, Blogs, Collections, Customers, Draft Orders, Locations, Orders, Pages, Product Images, Products, Product Variants, Shops, and Smart Collections
+- [Metafields](https://shopify.dev/docs/api/admin-graphql/latest/objects/Metafield) — Available as separate streams for: Articles, Blogs, Collections, Customers, Draft Orders, Locations, Orders, Pages, Product Images, Products, Product Variants, Shops, and Smart Collections. The Collections, Customers, Draft Orders, Locations, Orders, Products, Product Images, and Product Variants metafield streams use the BULK API. The rest use the REST API.
 - [Order Agreements (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderAgreement)
 - [Orders](https://shopify.dev/api/admin-rest/latest/resources/order#top)
 - [Order Refunds](https://shopify.dev/api/admin-rest/latest/resources/refund#top)
@@ -169,10 +166,10 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Shop](https://shopify.dev/api/admin-rest/latest/resources/shop)
 - [Smart Collections](https://shopify.dev/api/admin-rest/latest/resources/smartcollection)
 - [Tender Transactions](https://shopify.dev/api/admin-rest/latest/resources/tendertransaction)
-- [Transactions](https://shopify.dev/api/admin-rest/latest/resources/transaction#top)
-- [Transactions (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderTransaction)
+- [Transactions](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderTransaction) — Uses the BULK API by default. Enabling **Add `user_id` to Transactions** switches this stream to the [REST API](https://shopify.dev/api/admin-rest/latest/resources/transaction#top), which returns the `user_id` field but syncs more slowly.
 
 ### Entity-Relationship Diagram (ERD)
+
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ## Countries and market-driven shipping
@@ -219,8 +216,23 @@ Shopify's Bulk Operations API silently truncates the nested `codes` connection a
 
 **Recommendation:** Enable the **Discount Codes Sync** stream if you have any discounts with more than ~100 redeem codes. You may run both streams simultaneously — they produce records with the same schema, so you can deduplicate downstream by `id`.
 
+## Tuning sync performance
+
+Most stores don't need to change these settings. Adjust them if BULK jobs time out, syncs are slower than you'd like, or you're missing late-arriving records. The setting names below match the labels in the connector's configuration form, and the defaults are the values the form fills in for a new source.
+
+| Setting | Default | What it does |
+| :--- | :--- | :--- |
+| **GraphQL BULK Date Range in Days** | 30 | The size of the date window each BULK job covers. The connector halves the window automatically when a job exceeds the termination threshold below. If Shopify itself ends a job with a `TIMEOUT` status, the sync fails with a message asking you to reduce this value, so lower it up front for large stores. |
+| **BULK Job termination threshold** | 7200 seconds | How long a single BULK job may run before the connector cancels it and retries with a smaller date window. Accepts 3600 to 21600. |
+| **BULK Job checkpoint (rows collected)** | 100000 | How many rows a BULK job collects before the connector checkpoints it, consumes the partial result, and resumes from where it left off. Accepts 15000 to 1000000. Lower it if BULK jobs on high-volume streams fail before finishing. Only BULK queries sorted by `updatedAt` support checkpointing; Metafield Locations and Metafield Product Variants ignore this setting. |
+| **Add `Presentment prices` to Product Variants** | On | Includes the `presentmentPrices` field in the Product Variants query. Turn it off if you don't need presentment prices and the stream is slow. |
+| **Add `user_id` to Transactions (slower)** | Off | Switches the Transactions stream from the BULK API to the REST API so records include `user_id`. |
+| **Lookback Window (in Days)** | 0 | Rewinds the saved cursor by this many days on each incremental sync so the connector re-fetches recent records. Accepts 0 to 30. Use a small value of 1 to 3 days if a sync misses records because updates occur while it runs. The rewound cursor never goes earlier than **Replication Start Date**, and the first sync of a stream (which has no saved cursor) is unaffected. Re-fetched records are emitted again, so use a deduplicating sync mode or deduplicate downstream on the primary key. It has no effect on streams that sync by record ID rather than by timestamp: Articles, Blogs, Collects, Disputes, and Balance Transactions. |
+
 ## Marketing Attribution data
+
 Data related to [marketing attribution](https://www.shopify.com/au/blog/marketing-attribution) can be found across a few different streams. Sync these streams to understand marketing performance:
+
 - `Customer Journey Summary` (firstVisit.source, firstVisit.sourcetype)
 - `Orders` (referring_site, source_name)
 - `Abandoned Checkouts` (referring_site, source_name)
@@ -242,6 +254,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Integration Type | Airbyte Type |
 |:-----------------|:-------------|
 | `string`         | `string`     |
+| `integer`        | `integer`    |
 | `number`         | `number`     |
 | `array`          | `array`      |
 | `object`         | `object`     |
@@ -312,6 +325,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 ### Troubleshooting
 
+- If a sync fails with "Shopify access token is invalid or has expired." or "Failed to access the Shopify store with provided API token", Shopify rejected the connector's credentials. For **API Password** authentication with a legacy custom app, the Admin API access token was revoked or regenerated, for example because the app was uninstalled. Open the app's **API credentials** in Shopify, copy the current **Admin API access token**, and paste it into the **API Password** field of your source. If the token came from a Dev Dashboard app's client credentials grant, it expired after 24 hours and pasting a fresh one only buys another day; see the note under [Create a custom app](#create-a-custom-app) for a token that doesn't expire. For **OAuth2.0** authentication, re-authenticate the source. The connector reports this as a configuration error, so rerunning the sync without updating the credentials fails the same way.
 - If you encounter access errors while using **OAuth2.0** authentication, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the client's store first. Once the access is granted, you should be able to proceed with **OAuth2.0** authentication.
 - If you receive a "The BULK job couldn't be created at this time, since another job is running." error, please [check your operation's progress](https://shopify.dev/docs/api/usage/bulk-operations/queries#check-an-operations-progress) with the `Shopify GraphQL BULK` api.
 - If you receive a "checkpoint collision is detected" error for a stream, see [BULK job checkpoint collisions](#bulk-job-checkpoint-collisions) above to tell a self-clearing failure from a blocked stream.
