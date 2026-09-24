@@ -8,14 +8,12 @@ import io.airbyte.cdk.read.PartitionsCreator
 import io.airbyte.cdk.read.PartitionsCreatorFactory
 import io.airbyte.cdk.read.PartitionsCreatorFactorySupplier
 import io.airbyte.cdk.read.StreamFeedBootstrap
-import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-
-private val log = KotlinLogging.logger {}
 
 /**
  * Entry point of the READ operation: for each stream (table) feed, plans what is left to read given
- * the stream's current state and hands it to one [DynamoDbPartitionReader].
+ * the stream's current state and the progress made in this run, and hands every unfinished segment
+ * of the table to its own [DynamoDbPartitionReader].
  *
  * This connector has no `Global` feed (no CDC), so anything else gets [CreateNoPartitions].
  */
@@ -28,15 +26,7 @@ class DynamoDbPartitionsCreatorFactory(
         if (feedBootstrap !is StreamFeedBootstrap) {
             return CreateNoPartitions
         }
-        val partition: DynamoDbPartition =
-            DynamoDbPartition.plan(feedBootstrap, sharedState) ?: return CreateNoPartitions
-        log.info {
-            "Planned a scan of table '${partition.stream.name}'" +
-                (partition.filter?.let { " with ${it.attribute} ${it.comparator} '${it.value}'" }
-                    ?: "") +
-                (partition.exclusiveStartKey?.let { " resuming after key $it" } ?: "")
-        }
-        return DynamoDbPartitionsCreator(partition, feedBootstrap, sharedState)
+        return DynamoDbPartitionsCreator(feedBootstrap, sharedState)
     }
 }
 
@@ -49,11 +39,11 @@ class DynamoDbPartitionsCreatorFactorySupplier(
 }
 
 /**
- * One partition per stream, read sequentially: no resources are needed to create it, the reader
- * acquires them.
+ * One partition per unfinished segment of the table, in segment order; no resources are needed to
+ * plan them (one `DescribeTable` on the table's first round), the readers acquire theirs. An empty
+ * list ends the feed.
  */
 class DynamoDbPartitionsCreator(
-    val partition: DynamoDbPartition,
     val feedBootstrap: StreamFeedBootstrap,
     val sharedState: DynamoDbSharedState,
 ) : PartitionsCreator {
@@ -62,7 +52,15 @@ class DynamoDbPartitionsCreator(
         PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN
 
     override suspend fun run(): List<PartitionReader> =
-        listOf(DynamoDbPartitionReader(partition, feedBootstrap, sharedState))
+        when (val plan: DynamoDbReadPlan = DynamoDbPartition.plan(feedBootstrap, sharedState)) {
+            is DynamoDbReadPlan.Done -> emptyList()
+            is DynamoDbReadPlan.Finalize ->
+                listOf(
+                    DynamoDbTerminalStateReader(plan.stream, plan.scan, plan.cursor, feedBootstrap)
+                )
+            is DynamoDbReadPlan.Scan ->
+                plan.partitions.map { DynamoDbPartitionReader(it, feedBootstrap, sharedState) }
+        }
 
     override fun releaseResources() {}
 }

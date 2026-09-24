@@ -13,6 +13,15 @@ airbyte:
         # 1 MB page. Smaller pages bound the memory per page and give finer checkpoints at the cost
         # of more requests. Tests lower it to exercise multi-page scans.
         scan-page-limit: ${DYNAMODB_SCAN_PAGE_LIMIT:0}
+        # A table is scanned in parallel-scan segments (`Segment`/`TotalSegments`, assigned by
+        # DynamoDB from the partition-key hash, so no boundary is computed): one segment per this
+        # many bytes of table size (`DescribeTable`, refreshed by AWS about every 6 hours), at most
+        # `max-segments`. 64 MiB gave 16 segments and a 10x speed-up on a 1 GB table; the
+        # `concurrency` setting bounds how many segments (and tables) scan at once. Every segment
+        # adds one resume key to the stream state; the segment count of a table is fixed for the
+        # life of its scan and saved in the state.
+        segment-target-bytes: ${DYNAMODB_SEGMENT_TARGET_BYTES:67108864}
+        max-segments: ${DYNAMODB_MAX_SEGMENTS:128}
     exception-classifiers:
       regex:
         # Rules are applied in order to a Throwable's message and to the messages of its causes.
@@ -83,6 +92,16 @@ airbyte:
               Request ID: ABC)
             error: config
             output: "The saved state of a stream does not match its table's key schema; the table was probably recreated. Clear the connection's data to reset the stream and retry."
+
+          # A saved ExclusiveStartKey was produced by another (Segment, TotalSegments) pair: the
+          # state was edited by hand or written by another connector version. The connector keeps
+          # the segment count a scan started with, so this should not happen on its own.
+          - pattern: "(?i).*Exclusive start key must lie within the segment.*"
+            input-example: >-
+              software.amazon.awssdk.services.dynamodb.model.DynamoDbException: Exclusive start key must lie within
+              the segment (Service: DynamoDb, Status Code: 400, Request ID: ABC)
+            error: config
+            output: "The saved state of a stream does not match its table's scan segments. Clear the connection's data to reset the stream and retry."
 
           - pattern: "(?i).*Unable to execute HTTP request.*"
             input-example: >-

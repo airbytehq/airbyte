@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/dynamodb",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/dynamodb-v2",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "DynamoDB Source Spec",

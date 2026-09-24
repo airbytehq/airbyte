@@ -20,10 +20,11 @@ import io.airbyte.cdk.util.Jsons
  * and a downgrade keeps working.
  *
  * Two properties are new:
- * - [scan] is present while a table scan is in progress and is the point to resume it from: the
- * DynamoDB `LastEvaluatedKey` of the last page read, and, for an incremental stream, the highest
- * cursor value seen so far in this scan. [cursor] then still holds the lower bound the scan filters
- * on, so that an interrupted incremental scan resumes with the same filter;
+ * - [scan] is present while a table scan is in progress and is the point to resume it from: for
+ * each parallel-scan segment of the table its DynamoDB `LastEvaluatedKey` (or a `complete` marker)
+ * and, for an incremental stream, the highest cursor value the segment has seen so far. [cursor]
+ * then still holds the lower bound the scan filters on, so that an interrupted incremental scan
+ * resumes with the same filter;
  * - [scanComplete] marks a finished full refresh (the legacy connector emitted no state at all for
  * full refresh streams). The platform clears it after a successful sync; when it is passed back,
  * i.e. after a failed attempt in which this stream completed, the stream is not read again.
@@ -37,13 +38,54 @@ data class DynamoDbStreamStateValue(
     @JsonProperty("scan") val scan: ScanProgress? = null,
     @JsonProperty("scan_complete") val scanComplete: Boolean? = null,
 ) {
-    /** Where an in-progress scan stopped. */
+    /**
+     * Where an in-progress scan stopped: one entry per parallel-scan segment (`TotalSegments` =
+     * [totalSegments], fixed for the life of the scan because a `LastEvaluatedKey` is only valid
+     * for the segment count that produced it).
+     *
+     * States written before the table was split into segments had a single scan and carried its key
+     * and running maximum directly ([exclusiveStartKey], [maxCursor], [maxCursorRecordCount]); they
+     * are still read, as segment 0 of 1 ([segmentProgress]).
+     */
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     data class ScanProgress(
-        /** DynamoDB JSON of the `LastEvaluatedKey`, to pass back as `ExclusiveStartKey`. */
-        @JsonProperty("exclusive_start_key") val exclusiveStartKey: ObjectNode,
-        /** Highest cursor value seen in this scan, as text (incremental streams only). */
+        @JsonProperty("total_segments") val totalSegments: Int? = null,
+        @JsonProperty("segments") val segments: List<SegmentProgress>? = null,
+        /** Single-segment shape: DynamoDB JSON of the `LastEvaluatedKey`. */
+        @JsonProperty("exclusive_start_key") val exclusiveStartKey: ObjectNode? = null,
+        /** Single-segment shape: highest cursor value seen in this scan, as text. */
+        @JsonProperty("max_cursor") val maxCursor: String? = null,
+        /** Single-segment shape: number of records seen with [maxCursor]. */
+        @JsonProperty("max_cursor_record_count") val maxCursorRecordCount: Long? = null,
+    ) {
+        /** The saved progress per segment, whichever shape was saved; null when there is none. */
+        fun segmentProgress(): List<SegmentProgress>? =
+            when {
+                segments != null -> segments
+                exclusiveStartKey != null ->
+                    listOf(
+                        SegmentProgress(0, exclusiveStartKey, null, maxCursor, maxCursorRecordCount)
+                    )
+                else -> null
+            }
+
+        /** The segment count the saved keys belong to. */
+        fun segmentCount(): Int = totalSegments ?: segments?.size ?: 1
+    }
+
+    /** Progress of one parallel-scan segment. Neither a key nor `complete`: not started yet. */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    data class SegmentProgress(
+        @JsonProperty("segment") val segment: Int,
+        /**
+         * DynamoDB JSON of the segment's `LastEvaluatedKey`, to pass back as `ExclusiveStartKey`.
+         */
+        @JsonProperty("exclusive_start_key") val exclusiveStartKey: ObjectNode? = null,
+        /** True once the segment has been scanned to its end. */
+        @JsonProperty("complete") val complete: Boolean? = null,
+        /** Highest cursor value seen in this segment, as text (incremental streams only). */
         @JsonProperty("max_cursor") val maxCursor: String? = null,
         /** Number of records seen with [maxCursor] (incremental streams only). */
         @JsonProperty("max_cursor_record_count") val maxCursorRecordCount: Long? = null,
@@ -71,13 +113,26 @@ data class DynamoDbStreamStateValue(
                 return null
             }
             try {
-                return Jsons.treeToValue(opaqueStateValue, DynamoDbStreamStateValue::class.java)
+                val state: DynamoDbStreamStateValue =
+                    Jsons.treeToValue(opaqueStateValue, DynamoDbStreamStateValue::class.java)
+                state.scan?.let(::validate)
+                return state
             } catch (e: Exception) {
                 throw ConfigErrorException(
                     "The saved state of stream '$streamID' could not be read: ${e.message}. " +
                         "Clear the connection's data to reset the stream and retry.",
                     e,
                 )
+            }
+        }
+
+        private fun validate(scan: ScanProgress) {
+            val segments: List<SegmentProgress> = scan.segments ?: return
+            require(segments.map { it.segment } == segments.indices.toList()) {
+                "'segments' must list every segment 0..${segments.size - 1} in order"
+            }
+            require(scan.totalSegments == null || scan.totalSegments == segments.size) {
+                "'total_segments' (${scan.totalSegments}) does not match the ${segments.size} segments"
             }
         }
     }

@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.dynamodbv2
 
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.util.Jsons
@@ -95,6 +96,98 @@ class DynamoDbStreamStateValueTest {
             Jsons.readTree("""{"scan_complete":true}"""),
             DynamoDbStreamStateValue.FULL_REFRESH_COMPLETE.toOpaqueStateValue(),
         )
+    }
+
+    @Test
+    fun testSegmentedInProgressStateRoundTrip() {
+        val key = Jsons.readTree("""{"pk":{"S":"a"},"sk":{"N":"7"}}""") as ObjectNode
+        val state =
+            DynamoDbStreamStateValue(
+                cursorField = listOf("v"),
+                cursor = "100",
+                cursorRecordCount = 2L,
+                scan =
+                    DynamoDbStreamStateValue.ScanProgress(
+                        totalSegments = 3,
+                        segments =
+                            listOf(
+                                DynamoDbStreamStateValue.SegmentProgress(0, key, null, "250", 1L),
+                                DynamoDbStreamStateValue.SegmentProgress(1, null, true, "300", 2L),
+                                DynamoDbStreamStateValue.SegmentProgress(2),
+                            ),
+                    ),
+            )
+        val json = state.toOpaqueStateValue()
+        Assertions.assertEquals(
+            Jsons.readTree(
+                """{"cursor_field":["v"],"cursor":"100","cursor_record_count":2,
+                    "scan":{"total_segments":3,"segments":[
+                      {"segment":0,"exclusive_start_key":{"pk":{"S":"a"},"sk":{"N":"7"}},"max_cursor":"250","max_cursor_record_count":1},
+                      {"segment":1,"complete":true,"max_cursor":"300","max_cursor_record_count":2},
+                      {"segment":2}]}}"""
+            ),
+            json,
+        )
+        val parsed: DynamoDbStreamStateValue = DynamoDbStreamStateValue.parse(streamID, json)!!
+        Assertions.assertEquals(state, parsed)
+        Assertions.assertEquals(3, parsed.scan!!.segmentCount())
+        Assertions.assertEquals(state.scan!!.segments, parsed.scan!!.segmentProgress())
+    }
+
+    /** The shape written before tables were split into segments reads as segment 0 of 1. */
+    @Test
+    fun testSingleSegmentShapeReadsAsOneSegment() {
+        val json =
+            Jsons.readTree(
+                """{"cursor_field":["v"],"cursor":"100",
+                    "scan":{"exclusive_start_key":{"id":{"S":"a"}},"max_cursor":"250","max_cursor_record_count":2}}"""
+            )
+        val parsed: DynamoDbStreamStateValue = DynamoDbStreamStateValue.parse(streamID, json)!!
+        Assertions.assertEquals(1, parsed.scan!!.segmentCount())
+        Assertions.assertEquals(
+            listOf(
+                DynamoDbStreamStateValue.SegmentProgress(
+                    0,
+                    Jsons.readTree("""{"id":{"S":"a"}}""") as ObjectNode,
+                    null,
+                    "250",
+                    2L,
+                )
+            ),
+            parsed.scan!!.segmentProgress(),
+        )
+        val fullRefresh: DynamoDbStreamStateValue =
+            DynamoDbStreamStateValue.parse(
+                streamID,
+                Jsons.readTree("""{"scan":{"exclusive_start_key":{"id":{"S":"a"}}}}"""),
+            )!!
+        Assertions.assertEquals(1, fullRefresh.scan!!.segmentProgress()!!.size)
+        Assertions.assertNull(fullRefresh.scan!!.segmentProgress()!![0].maxCursor)
+    }
+
+    @Test
+    fun testEmptyScanProgressHasNoSegments() {
+        val parsed: DynamoDbStreamStateValue =
+            DynamoDbStreamStateValue.parse(streamID, Jsons.readTree("""{"scan":{}}"""))!!
+        Assertions.assertNull(parsed.scan!!.segmentProgress())
+    }
+
+    @Test
+    fun testInconsistentSegmentsAreAConfigError() {
+        for (bad in
+            listOf(
+                """{"scan":{"total_segments":2,"segments":[{"segment":0}]}}""",
+                """{"scan":{"segments":[{"segment":1},{"segment":0}]}}""",
+                """{"scan":{"segments":[{"segment":0},{"segment":0}]}}""",
+            )) {
+            val e =
+                Assertions.assertThrows(
+                    ConfigErrorException::class.java,
+                    { DynamoDbStreamStateValue.parse(streamID, Jsons.readTree(bad)) },
+                    "case: $bad",
+                )
+            Assertions.assertTrue(e.message!!.contains("orders"), e.message)
+        }
     }
 
     @Test

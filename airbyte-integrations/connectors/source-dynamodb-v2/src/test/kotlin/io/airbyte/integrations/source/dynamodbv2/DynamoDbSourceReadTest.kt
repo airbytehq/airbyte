@@ -158,7 +158,8 @@ class DynamoDbSourceReadTest {
         val states: List<JsonNode> = result.states("wide")
         for (state in states.dropLast(1)) {
             Assertions.assertTrue(state.has("scan"), state.toString())
-            Assertions.assertTrue(state["scan"]["exclusive_start_key"].has("id"), state.toString())
+            val segment: JsonNode = state["scan"]["segments"].single()
+            Assertions.assertTrue(segment["exclusive_start_key"].has("id"), state.toString())
         }
         Assertions.assertEquals(Jsons.readTree("""{"scan_complete":true}"""), states.last())
         Assertions.assertEquals(
@@ -475,8 +476,9 @@ class DynamoDbSourceReadTest {
         val states: List<JsonNode> = result.states("wide")
         for (state in states.dropLast(1)) {
             Assertions.assertEquals("w-0100", state["cursor"].asText(), state.toString())
-            Assertions.assertTrue(state["scan"].has("exclusive_start_key"), state.toString())
-            Assertions.assertTrue(state["scan"].has("max_cursor"), state.toString())
+            val segment: JsonNode = state["scan"]["segments"].single()
+            Assertions.assertTrue(segment.has("exclusive_start_key"), state.toString())
+            Assertions.assertTrue(segment.has("max_cursor"), state.toString())
         }
         Assertions.assertEquals(
             Jsons.readTree("""{"cursor_field":["id"],"cursor":"w-2500","cursor_record_count":1}"""),
@@ -495,7 +497,314 @@ class DynamoDbSourceReadTest {
         )
     }
 
+    // ---------------------------------------------------------------- parallel-scan segments
+
+    /**
+     * `many_items` has 1,200 distinct partition keys; split 8 ways (the tiny target makes
+     * `DescribeTable`'s size ask for far more, the cap yields exactly 8) and scanned 4 at a time,
+     * the table comes out identical to the single-segment read, with valid intermediate states.
+     */
+    @Test
+    fun testSegmentedFullRefreshMatchesSingleSegment() {
+        val single: ReadResult = read(catalog(configured("many_items", SyncMode.FULL_REFRESH)))
+        single.assertNoErrors()
+        val segmented: ReadResult =
+            withSegments(8) {
+                read(
+                    catalog(configured("many_items", SyncMode.FULL_REFRESH)),
+                    extraConfig = mapOf("concurrency" to 4),
+                )
+            }
+        segmented.assertNoErrors()
+        Assertions.assertEquals(1200, segmented.records("many_items").size)
+        Assertions.assertEquals(
+            single.records("many_items").map { it.toString() }.sorted(),
+            segmented.records("many_items").map { it.toString() }.sorted(),
+        )
+        Assertions.assertEquals(listOf("STARTED", "COMPLETE"), segmented.statuses("many_items"))
+        val states: List<JsonNode> = segmented.states("many_items")
+        Assertions.assertEquals(Jsons.readTree("""{"scan_complete":true}"""), states.last())
+        assertSegmentStatesAreConsistent(states.filter { it.has("scan") }, totalSegments = 8)
+        // No record of the stream follows the state that declares it complete.
+        val messages = segmented.output.messages()
+        val terminalIndex: Int =
+            messages.indexOfLast {
+                it.state?.stream?.streamDescriptor?.name == "many_items" &&
+                    it.state.stream.streamState == states.last()
+            }
+        Assertions.assertTrue(terminalIndex >= 0)
+        Assertions.assertTrue(
+            messages.drop(terminalIndex + 1).none { it.record?.stream == "many_items" },
+            "records after the terminal state",
+        )
+        Assertions.assertEquals(
+            1200.0,
+            segmented.stateMessages("many_items").sumOf { it.sourceStats.recordCount },
+        )
+    }
+
+    /** Incremental scans use the same segments; the cursor maximum is merged across them. */
+    @Test
+    fun testSegmentedIncrementalIntegerCursor() {
+        val first: ReadResult =
+            withSegments(8) {
+                read(
+                    catalog(configured("many_items", SyncMode.INCREMENTAL, cursor = "v")),
+                    extraConfig = mapOf("concurrency" to 3),
+                )
+            }
+        first.assertNoErrors()
+        Assertions.assertEquals(1200, first.records("many_items").size)
+        Assertions.assertEquals(1200, first.records("many_items").map { it["id"] }.toSet().size)
+        val states: List<JsonNode> = first.states("many_items")
+        Assertions.assertEquals(
+            Jsons.readTree("""{"cursor_field":["v"],"cursor":"1200","cursor_record_count":1}"""),
+            states.last(),
+        )
+        val inProgress: List<JsonNode> = states.filter { it.has("scan") }
+        for (state in inProgress) {
+            // No saved cursor: nothing to filter on until the scan completes.
+            Assertions.assertFalse(state.has("cursor"), state.toString())
+            Assertions.assertEquals(listOf("v"), state["cursor_field"].map { it.asText() })
+        }
+        assertSegmentStatesAreConsistent(inProgress, totalSegments = 8)
+        val messages = first.output.messages()
+        val terminalIndex: Int =
+            messages.indexOfFirst {
+                it.state?.stream?.streamDescriptor?.name == "many_items" &&
+                    it.state.stream.streamState == states.last()
+            }
+        Assertions.assertTrue(terminalIndex >= 0)
+        Assertions.assertTrue(
+            messages.drop(terminalIndex + 1).none { it.record?.stream == "many_items" },
+            "records after the terminal state",
+        )
+        val next: ReadResult =
+            withSegments(8) {
+                read(
+                    catalog(configured("many_items", SyncMode.INCREMENTAL, cursor = "v")),
+                    state = listOf(streamState("many_items", states.last())),
+                    extraConfig = mapOf("concurrency" to 3),
+                )
+            }
+        next.assertNoErrors()
+        Assertions.assertEquals(0, next.records("many_items").size)
+        Assertions.assertEquals(states.last(), next.states("many_items").last())
+    }
+
+    /** Ties on the maximum are counted across segments, for `>` and for the `>=` bare-date rule. */
+    @Test
+    fun testSegmentedIncrementalDateCursorsCountTiesAcrossSegments() {
+        // Five partition keys spread over 8 segments: e4 and e5 (both 2024-01-03) may well land
+        // in different segments.
+        val byTimestamp: ReadResult =
+            withSegments(8) {
+                read(catalog(configured("events", SyncMode.INCREMENTAL, cursor = "ts")))
+            }
+        byTimestamp.assertNoErrors()
+        Assertions.assertEquals(5, byTimestamp.records("events").size)
+        Assertions.assertEquals(
+            Jsons.readTree(
+                """{"cursor_field":["ts"],"cursor":"2024-01-03T00:00:00Z","cursor_record_count":2}"""
+            ),
+            byTimestamp.states("events").last(),
+        )
+        val byDate: ReadResult =
+            withSegments(8) {
+                read(
+                    catalog(configured("events", SyncMode.INCREMENTAL, cursor = "d")),
+                    state =
+                        listOf(
+                            streamState(
+                                "events",
+                                """{"cursor_field":["d"],"cursor":"2024-01-02"}"""
+                            )
+                        ),
+                )
+            }
+        byDate.assertNoErrors()
+        Assertions.assertEquals(
+            listOf("e3", "e4", "e5"),
+            byDate.records("events").map { it["id"].asText() }.sorted(),
+        )
+        Assertions.assertEquals(
+            Jsons.readTree(
+                """{"cursor_field":["d"],"cursor":"2024-01-03","cursor_record_count":2}"""
+            ),
+            byDate.states("events").last(),
+        )
+    }
+
+    /** A saved segment count wins over the current sizing: the keys belong to it. */
+    @Test
+    fun testResumesSegmentedScanWithItsSavedSegmentCount() {
+        val all: List<String> =
+            read(catalog(configured("many_items", SyncMode.FULL_REFRESH)))
+                .records("many_items")
+                .map { it["id"].asText() }
+        // Segments 0 and 2 of 4 complete, 1 and 3 not started: the resumed read must produce
+        // exactly the items DynamoDB hashes into segments 1 and 3, and nothing twice.
+        val state =
+            """{"scan":{"total_segments":4,"segments":[
+                 {"segment":0,"complete":true},{"segment":1},
+                 {"segment":2,"complete":true},{"segment":3}]}}"""
+        val resumed: ReadResult =
+            withSegments(2) {
+                read(
+                    catalog(configured("many_items", SyncMode.FULL_REFRESH)),
+                    state = listOf(streamState("many_items", state)),
+                    extraConfig = mapOf("concurrency" to 2),
+                )
+            }
+        resumed.assertNoErrors()
+        val expected: Set<String> = segmentMembers("many_items", setOf(1, 3), totalSegments = 4)
+        val ids: List<String> = resumed.records("many_items").map { it["id"].asText() }
+        Assertions.assertEquals(ids.size, ids.toSet().size, "duplicates")
+        Assertions.assertEquals(expected, ids.toSet())
+        Assertions.assertTrue(expected.size in 1 until all.size)
+        Assertions.assertEquals(
+            Jsons.readTree("""{"scan_complete":true}"""),
+            resumed.states("many_items").last(),
+        )
+    }
+
+    /**
+     * Every in-progress state parses and keeps the segment count. The states of one round are
+     * snapshots taken when each reader stopped but applied in partition order, so a later state can
+     * show less progress than an earlier one (a segment complete in one, not started in the next);
+     * each is still a valid resume point, and the freshest one is applied last.
+     */
+    private fun assertSegmentStatesAreConsistent(states: List<JsonNode>, totalSegments: Int) {
+        val streamID = io.airbyte.cdk.StreamIdentifier.from(StreamDescriptor().withName("x"))
+        Assertions.assertTrue(states.isNotEmpty())
+        for (state in states) {
+            val parsed: DynamoDbStreamStateValue = DynamoDbStreamStateValue.parse(streamID, state)!!
+            Assertions.assertEquals(totalSegments, parsed.scan!!.totalSegments, state.toString())
+            Assertions.assertEquals(totalSegments, parsed.scan!!.segments!!.size, state.toString())
+            for (segment in parsed.scan!!.segments!!) {
+                Assertions.assertFalse(
+                    segment.complete == true && segment.exclusiveStartKey != null,
+                    "complete segment with a key: $state",
+                )
+            }
+        }
+    }
+
+    /** The keys DynamoDB assigns to the given segments of a table. */
+    private fun segmentMembers(table: String, segments: Set<Int>, totalSegments: Int): Set<String> {
+        val ids = mutableSetOf<String>()
+        for (segment in segments) {
+            var key: Map<String, AttributeValue>? = null
+            while (true) {
+                val response =
+                    client.scan {
+                        it.tableName(table).segment(segment).totalSegments(totalSegments)
+                        if (key != null) it.exclusiveStartKey(key)
+                    }
+                response.items().forEach { item -> ids.add(item["id"]!!.s()) }
+                if (!response.hasLastEvaluatedKey() || response.lastEvaluatedKey().isEmpty()) break
+                key = response.lastEvaluatedKey()
+            }
+        }
+        return ids
+    }
+
+    /** Forces every table of the runs in [block] to be scanned in exactly [segments] segments. */
+    private fun <T> withSegments(segments: Int, block: () -> T): T {
+        // One byte per segment asks for one segment per table byte; the cap decides.
+        System.setProperty(DynamoDbSharedState.SEGMENT_TARGET_BYTES_PROPERTY, "1")
+        System.setProperty(DynamoDbSharedState.MAX_SEGMENTS_PROPERTY, segments.toString())
+        try {
+            return block()
+        } finally {
+            System.clearProperty(DynamoDbSharedState.SEGMENT_TARGET_BYTES_PROPERTY)
+            System.clearProperty(DynamoDbSharedState.MAX_SEGMENTS_PROPERTY)
+        }
+    }
+
     // ---------------------------------------------------------------- helpers
+
+    /**
+     * A catalog configured from the legacy connector, or from this connector before its schemas
+     * became canonical, carries `{"type": ["null", <type>]}` shapes. The CDK types those fields as
+     * JSONB at READ time and so does the connector, so the stream still validates and reads the
+     * same records (as JSON values) until the schema is refreshed.
+     */
+    @Test
+    fun testLegacyShapedCatalogStillReads() {
+        val canonical: ConfiguredAirbyteStream = configured("all_types", SyncMode.FULL_REFRESH)
+        val legacyStream: AirbyteStream =
+            Jsons.readValue(Jsons.writeValueAsString(canonical.stream), AirbyteStream::class.java)
+                .withJsonSchema(legacyShaped(canonical.stream.jsonSchema))
+        Assertions.assertEquals(
+            Jsons.readTree("""["null","string"]"""),
+            legacyStream.jsonSchema["properties"]["str"]["type"],
+        )
+        Assertions.assertEquals(
+            Jsons.readTree("""["null","integer"]"""),
+            legacyStream.jsonSchema["properties"]["int"]["type"],
+        )
+        val expected: ReadResult = read(catalog(canonical))
+        val result: ReadResult =
+            read(catalog(configured("all_types", SyncMode.FULL_REFRESH, stream = legacyStream)))
+        result.assertNoErrors()
+        Assertions.assertEquals(listOf("STARTED", "COMPLETE"), result.statuses("all_types"))
+        Assertions.assertEquals(
+            expected.records("all_types").map { normalizeSets(it).toString() }.sorted(),
+            result.records("all_types").map { normalizeSets(it).toString() }.sorted(),
+        )
+        // The integer cursor is still recognised through the legacy shape.
+        val incremental: ReadResult =
+            read(
+                catalog(
+                    configured(
+                        "all_types",
+                        SyncMode.INCREMENTAL,
+                        cursor = "int",
+                        stream = legacyStream
+                    )
+                )
+            )
+        incremental.assertNoErrors()
+        Assertions.assertEquals(
+            Jsons.readTree("""{"cursor_field":["int"],"cursor":"42","cursor_record_count":1}"""),
+            incremental.states("all_types").last(),
+        )
+    }
+
+    /** The legacy shapes of a canonical schema: `["null", <type>]`, integers as `integer`. */
+    private fun legacyShaped(schema: JsonNode): JsonNode {
+        if (!schema.isObject) return schema
+        val result: ObjectNode = Jsons.objectNode()
+        val airbyteType: String? = schema["airbyte_type"]?.asText()
+        for ((key: String, value: JsonNode) in schema.properties()) {
+            when (key) {
+                "type" -> {
+                    val type: String =
+                        if (value.asText() == "number" && airbyteType == "integer") "integer"
+                        else value.asText()
+                    if (type == "null") result.put("type", "null")
+                    else result.set<JsonNode>("type", Jsons.arrayNode().add("null").add(type))
+                }
+                "airbyte_type" -> if (airbyteType != "integer") result.set<JsonNode>(key, value)
+                "properties" -> {
+                    val properties: ObjectNode = Jsons.objectNode()
+                    for ((name: String, property: JsonNode) in value.properties()) {
+                        properties.set<JsonNode>(name, legacyShaped(property))
+                    }
+                    result.set<JsonNode>(key, properties)
+                }
+                "items" -> result.set<JsonNode>(key, legacyShaped(value))
+                "anyOf" ->
+                    result.set<JsonNode>(
+                        key,
+                        Jsons.arrayNode().apply { value.forEach { add(legacyShaped(it)) } },
+                    )
+                else -> result.set<JsonNode>(key, value)
+            }
+        }
+        return result
+    }
 
     private fun discovered(): AirbyteCatalog =
         CliRunner.source("discover", container.config()).run().catalogs().single()

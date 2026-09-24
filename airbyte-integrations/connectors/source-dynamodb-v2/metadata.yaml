@@ -5,15 +5,18 @@ data:
   connectorBuildOptions:
     baseImage: docker.io/airbyte/java-connector-base:2.0.4@sha256:5f343797cfcf021ca98ba9bdf5970ef66cbf6222d8cc17b0d61d13860a5bcc2b
   connectorSubtype: database
+  connectorIPCOptions:
+    dataChannel:
+      version: "0.0.2"
+      supportedSerialization: ["JSONL", "PROTOBUF"]
+      supportedTransport: ["SOCKET", "STDIO"]
   connectorTestSuitesOptions:
     - suite: unitTests
   connectorType: source
   definitionId: 42d7528b-22cc-44d1-acd3-9026092be6ac
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-dynamodb-v2
-  # Deliberately points at the legacy source-dynamodb docs: this connector is a Bulk CDK rewrite of
-  # source-dynamodb and its `spec` output (which embeds this URL) must match the legacy one.
-  documentationUrl: https://docs.airbyte.com/integrations/sources/dynamodb
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dynamodb-v2
   githubIssueLabel: source-dynamodb-v2
   icon: icon.svg
   license: ELv2
