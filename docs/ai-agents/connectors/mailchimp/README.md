@@ -42,18 +42,18 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Context Store Search](./REFERENCE.md#campaigns-context-store-search) |
-| Lists | [List](./REFERENCE.md#lists-list), [Get](./REFERENCE.md#lists-get), [Context Store Search](./REFERENCE.md#lists-context-store-search) |
-| List Members | [List](./REFERENCE.md#list-members-list), [Get](./REFERENCE.md#list-members-get), [Context Store Search](./REFERENCE.md#list-members-context-store-search) |
-| Reports | [List](./REFERENCE.md#reports-list), [Get](./REFERENCE.md#reports-get), [Context Store Search](./REFERENCE.md#reports-context-store-search) |
-| Email Activity | [List](./REFERENCE.md#email-activity-list), [Context Store Search](./REFERENCE.md#email-activity-context-store-search) |
-| Automations | [List](./REFERENCE.md#automations-list), [Context Store Search](./REFERENCE.md#automations-context-store-search) |
-| Tags | [List](./REFERENCE.md#tags-list), [Context Store Search](./REFERENCE.md#tags-context-store-search) |
-| Interest Categories | [List](./REFERENCE.md#interest-categories-list), [Get](./REFERENCE.md#interest-categories-get), [Context Store Search](./REFERENCE.md#interest-categories-context-store-search) |
-| Interests | [List](./REFERENCE.md#interests-list), [Get](./REFERENCE.md#interests-get), [Context Store Search](./REFERENCE.md#interests-context-store-search) |
-| Segments | [List](./REFERENCE.md#segments-list), [Get](./REFERENCE.md#segments-get), [Context Store Search](./REFERENCE.md#segments-context-store-search) |
-| Segment Members | [List](./REFERENCE.md#segment-members-list), [Context Store Search](./REFERENCE.md#segment-members-context-store-search) |
-| Unsubscribes | [List](./REFERENCE.md#unsubscribes-list), [Context Store Search](./REFERENCE.md#unsubscribes-context-store-search) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Context Store Search](./REFERENCE.md#campaigns-context-store-search), [Context Store SQL Query](./REFERENCE.md#campaigns-context-store-sql-query) |
+| Lists | [List](./REFERENCE.md#lists-list), [Get](./REFERENCE.md#lists-get), [Context Store Search](./REFERENCE.md#lists-context-store-search), [Context Store SQL Query](./REFERENCE.md#lists-context-store-sql-query) |
+| List Members | [List](./REFERENCE.md#list-members-list), [Get](./REFERENCE.md#list-members-get), [Context Store Search](./REFERENCE.md#list-members-context-store-search), [Context Store SQL Query](./REFERENCE.md#list-members-context-store-sql-query) |
+| Reports | [List](./REFERENCE.md#reports-list), [Get](./REFERENCE.md#reports-get), [Context Store Search](./REFERENCE.md#reports-context-store-search), [Context Store SQL Query](./REFERENCE.md#reports-context-store-sql-query) |
+| Email Activity | [List](./REFERENCE.md#email-activity-list), [Context Store Search](./REFERENCE.md#email-activity-context-store-search), [Context Store SQL Query](./REFERENCE.md#email-activity-context-store-sql-query) |
+| Automations | [List](./REFERENCE.md#automations-list), [Context Store Search](./REFERENCE.md#automations-context-store-search), [Context Store SQL Query](./REFERENCE.md#automations-context-store-sql-query) |
+| Tags | [List](./REFERENCE.md#tags-list), [Context Store Search](./REFERENCE.md#tags-context-store-search), [Context Store SQL Query](./REFERENCE.md#tags-context-store-sql-query) |
+| Interest Categories | [List](./REFERENCE.md#interest-categories-list), [Get](./REFERENCE.md#interest-categories-get), [Context Store Search](./REFERENCE.md#interest-categories-context-store-search), [Context Store SQL Query](./REFERENCE.md#interest-categories-context-store-sql-query) |
+| Interests | [List](./REFERENCE.md#interests-list), [Get](./REFERENCE.md#interests-get), [Context Store Search](./REFERENCE.md#interests-context-store-search), [Context Store SQL Query](./REFERENCE.md#interests-context-store-sql-query) |
+| Segments | [List](./REFERENCE.md#segments-list), [Get](./REFERENCE.md#segments-get), [Context Store Search](./REFERENCE.md#segments-context-store-search), [Context Store SQL Query](./REFERENCE.md#segments-context-store-sql-query) |
+| Segment Members | [List](./REFERENCE.md#segment-members-list), [Context Store Search](./REFERENCE.md#segment-members-context-store-search), [Context Store SQL Query](./REFERENCE.md#segment-members-context-store-sql-query) |
+| Unsubscribes | [List](./REFERENCE.md#unsubscribes-list), [Context Store Search](./REFERENCE.md#unsubscribes-context-store-search), [Context Store SQL Query](./REFERENCE.md#unsubscribes-context-store-sql-query) |
 
 
 ## Mailchimp API docs
@@ -135,6 +135,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -202,9 +206,91 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `MailchimpConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.mailchimp import MailchimpConnector
+
+connector = connect("mailchimp", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@MailchimpConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="mailchimp_inspect",
+    docs_tool="mailchimp_read_docs",
+)
+async def mailchimp_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@MailchimpConnector.agent_tool(framework="pydantic_ai")
+async def mailchimp_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@MailchimpConnector.agent_tool(framework="pydantic_ai")
+async def mailchimp_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.mailchimp import MailchimpConnector
+
+connector = connect("mailchimp", workspace_name="<your_workspace_name>")
+
+@MailchimpConnector.agent_tool(
+    inspect_tool="mailchimp_inspect",
+    docs_tool="mailchimp_read_docs",
+)
+async def mailchimp_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@MailchimpConnector.agent_tool()
+async def mailchimp_inspect():
+    return await connector.inspect_connector()
+
+@MailchimpConnector.agent_tool()
+async def mailchimp_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (mailchimp_inspect, mailchimp_read_docs, mailchimp_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `MailchimpConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `MailchimpConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `MailchimpConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -391,6 +477,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -402,7 +492,8 @@ from airbyte_agent_sdk.connectors.mailchimp.models import MailchimpAuthConfig
 connector = MailchimpConnector(
     auth_config=MailchimpAuthConfig(
         api_key="<Your Mailchimp API key. You can find this in your Mailchimp account under Account > Extras > API keys.>"
-    )
+    ),
+    data_center="<The data center for your Mailchimp account (e.g., us1, us2, us6)>"
 )
 
 tools = build_connector_tools(connector, framework="pydantic_ai")
@@ -420,7 +511,8 @@ from airbyte_agent_sdk.connectors.mailchimp.models import MailchimpAuthConfig
 connector = MailchimpConnector(
     auth_config=MailchimpAuthConfig(
         api_key="<Your Mailchimp API key. You can find this in your Mailchimp account under Account > Extras > API keys.>"
-    )
+    ),
+    data_center="<The data center for your Mailchimp account (e.g., us1, us2, us6)>"
 )
 
 tools = build_connector_tools(connector, framework="langchain")
@@ -445,7 +537,8 @@ from airbyte_agent_sdk.connectors.mailchimp.models import MailchimpAuthConfig
 connector = MailchimpConnector(
     auth_config=MailchimpAuthConfig(
         api_key="<Your Mailchimp API key. You can find this in your Mailchimp account under Account > Extras > API keys.>"
-    )
+    ),
+    data_center="<The data center for your Mailchimp account (e.g., us1, us2, us6)>"
 )
 
 tools = build_connector_tools(connector, framework="openai_agents")
@@ -465,7 +558,8 @@ from airbyte_agent_sdk.connectors.mailchimp.models import MailchimpAuthConfig
 connector = MailchimpConnector(
     auth_config=MailchimpAuthConfig(
         api_key="<Your Mailchimp API key. You can find this in your Mailchimp account under Account > Extras > API keys.>"
-    )
+    ),
+    data_center="<The data center for your Mailchimp account (e.g., us1, us2, us6)>"
 )
 
 mcp = FastMCP("Mailchimp Agent")
@@ -474,9 +568,101 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `MailchimpConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.mailchimp import MailchimpConnector
+from airbyte_agent_sdk.connectors.mailchimp.models import MailchimpAuthConfig
+
+connector = MailchimpConnector(
+    auth_config=MailchimpAuthConfig(
+        api_key="<Your Mailchimp API key. You can find this in your Mailchimp account under Account > Extras > API keys.>"
+    ),
+    data_center="<The data center for your Mailchimp account (e.g., us1, us2, us6)>"
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@MailchimpConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="mailchimp_inspect",
+    docs_tool="mailchimp_read_docs",
+)
+async def mailchimp_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@MailchimpConnector.agent_tool(framework="pydantic_ai")
+async def mailchimp_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@MailchimpConnector.agent_tool(framework="pydantic_ai")
+async def mailchimp_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.mailchimp import MailchimpConnector
+from airbyte_agent_sdk.connectors.mailchimp.models import MailchimpAuthConfig
+
+connector = MailchimpConnector(
+    auth_config=MailchimpAuthConfig(
+        api_key="<Your Mailchimp API key. You can find this in your Mailchimp account under Account > Extras > API keys.>"
+    ),
+    data_center="<The data center for your Mailchimp account (e.g., us1, us2, us6)>"
+)
+
+@MailchimpConnector.agent_tool(
+    inspect_tool="mailchimp_inspect",
+    docs_tool="mailchimp_read_docs",
+)
+async def mailchimp_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@MailchimpConnector.agent_tool()
+async def mailchimp_inspect():
+    return await connector.inspect_connector()
+
+@MailchimpConnector.agent_tool()
+async def mailchimp_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (mailchimp_inspect, mailchimp_read_docs, mailchimp_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `MailchimpConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `MailchimpConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `MailchimpConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -488,7 +674,8 @@ from airbyte_agent_sdk.connectors.mailchimp.models import MailchimpAuthConfig
 connector = MailchimpConnector(
     auth_config=MailchimpAuthConfig(
         api_key="<Your Mailchimp API key. You can find this in your Mailchimp account under Account > Extras > API keys.>"
-    )
+    ),
+    data_center="<The data center for your Mailchimp account (e.g., us1, us2, us6)>"
 )
 
 agent = Agent("openai:gpt-4o")
@@ -509,7 +696,8 @@ from airbyte_agent_sdk.connectors.mailchimp.models import MailchimpAuthConfig
 connector = MailchimpConnector(
     auth_config=MailchimpAuthConfig(
         api_key="<Your Mailchimp API key. You can find this in your Mailchimp account under Account > Extras > API keys.>"
-    )
+    ),
+    data_center="<The data center for your Mailchimp account (e.g., us1, us2, us6)>"
 )
 
 @tool
@@ -531,7 +719,8 @@ from airbyte_agent_sdk.connectors.mailchimp.models import MailchimpAuthConfig
 connector = MailchimpConnector(
     auth_config=MailchimpAuthConfig(
         api_key="<Your Mailchimp API key. You can find this in your Mailchimp account under Account > Extras > API keys.>"
-    )
+    ),
+    data_center="<The data center for your Mailchimp account (e.g., us1, us2, us6)>"
 )
 
 # strict_mode=False because `params: dict` is permissive and the default strict
@@ -556,7 +745,8 @@ from airbyte_agent_sdk.connectors.mailchimp.models import MailchimpAuthConfig
 connector = MailchimpConnector(
     auth_config=MailchimpAuthConfig(
         api_key="<Your Mailchimp API key. You can find this in your Mailchimp account under Account > Extras > API keys.>"
-    )
+    ),
+    data_center="<The data center for your Mailchimp account (e.g., us1, us2, us6)>"
 )
 
 mcp = FastMCP("Mailchimp Agent")
