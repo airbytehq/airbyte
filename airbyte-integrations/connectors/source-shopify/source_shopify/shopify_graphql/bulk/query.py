@@ -3605,7 +3605,7 @@ class MarketCountry(DeliveryZoneList):
             shipping {
               is_enabled: isEnabled
               option_definitions: optionDefinitions(
-                first: 50
+                first: 250
               ) {
                 nodes {
                   __typename
@@ -3640,7 +3640,8 @@ class MarketCountry(DeliveryZoneList):
 
     page_size = 1
     sub_page_size = 250
-    option_definitions_page_size = 50
+    # not paginated: 250 is the Shopify page maximum, live cost of this query with 250 is 44 of 1000 points
+    option_definitions_page_size = 250
 
     def __init__(self, regions_cursor: Optional[str] = None):
         self.regions_cursor = regions_cursor

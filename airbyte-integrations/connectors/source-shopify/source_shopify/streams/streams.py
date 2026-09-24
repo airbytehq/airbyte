@@ -39,6 +39,7 @@ from source_shopify.shopify_graphql.bulk.tools import BulkTools
 from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors, ShopifyRateLimiter
 
 from airbyte_cdk import HttpSubStream
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
@@ -764,7 +765,8 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
         if self.market_driven_shipping_enabled:
             self.logger.warning(
                 f"Stream `{self.name}`: the shop uses market-driven shipping, `deliveryProfiles` is a snapshot frozen at migration time "
-                "and no longer reflects the live shipping settings. Use the `market_countries` stream for current data."
+                "and no longer reflects the live shipping settings. Use the `market_countries` stream (requires the `read_markets` scope) "
+                "for current data."
             )
         for stream_slice in super().stream_slices(stream_state=stream_state, **kwargs):
             parent = stream_slice.get("parent", {})
@@ -869,7 +871,14 @@ class MarketCountries(FullRefreshShopifyGraphQlBulkStream):
         stream_state: Optional[Mapping[str, Any]] = None,
         **kwargs,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        if not self.market_driven_shipping_enabled:
+        market_driven_shipping = self.market_driven_shipping_enabled
+        if market_driven_shipping is None:
+            # an empty but "successful" full refresh would overwrite the destination table, fail the stream instead
+            raise AirbyteTracedException(
+                message=f"Stream `{self.name}`: could not read `shop.features.marketDrivenShipping`, the sync will retry later.",
+                failure_type=FailureType.transient_error,
+            )
+        if not market_driven_shipping:
             self.logger.info(
                 f"Stream `{self.name}`: the shop does not use market-driven shipping yet, its shipping settings are available "
                 "in the `countries` stream. No records will be emitted."
@@ -918,24 +927,32 @@ class MarketCountries(FullRefreshShopifyGraphQlBulkStream):
         return {"query": self.query(regions_cursor=self._sub_page_cursor).get(query_args={"cursor": self._page_cursor})}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        errors = response.json().get("errors")
+        if errors:
+            # Shopify returns HTTP 200 with GraphQL `errors` (THROTTLED, ACCESS_DENIED, ...); such a page carries no data,
+            # completing the pagination here would mark an incomplete snapshot as complete.
+            raise AirbyteTracedException(
+                message=f"Stream `{self.name}`: Shopify GraphQL request failed: "
+                + "; ".join(str(error.get("message", error)) for error in errors),
+                failure_type=FailureType.transient_error if DiscountCodesSync._is_throttled(errors) else FailureType.system_error,
+            )
         for market in super().parse_response(response, **kwargs):
             regions_condition = (market.get("conditions") or {}).get("regionsCondition") or {}
-            shipping = (market.get("delivery") or {}).get("shipping") or {}
-            shipping_options = [
-                self._process_shipping_option(option) for option in (shipping.get("option_definitions") or {}).get("nodes") or []
-            ]
+            # `shipping` is null when the market inherits its shipping configuration from a parent market
+            shipping = (market.get("delivery") or {}).get("shipping")
+            shipping_options = (
+                None
+                if shipping is None
+                else [self._process_shipping_option(option) for option in (shipping.get("option_definitions") or {}).get("nodes") or []]
+            )
             for region in (regions_condition.get("regions") or {}).get("nodes") or []:
                 # region types not covered by the query's inline fragments resolve to `__typename` only
                 if region.get("id"):
-                    yield self._transformer.transform(self._process_region(region, market, shipping, shipping_options))
-
-    @staticmethod
-    def _gid_to_int(gid: str) -> int:
-        return int(gid.split("/")[-1])
+                    yield self._transformer.transform(self._process_region(region, market, shipping or {}, shipping_options))
 
     def _process_shipping_option(self, option: Mapping[str, Any]) -> Mapping[str, Any]:
         return {
-            "id": self._gid_to_int(option["id"]),
+            "id": BulkTools.resolve_str_id(option.get("id")),
             "type": option.get("__typename"),
             "name": option.get("name"),
             "description": option.get("description"),
@@ -949,7 +966,7 @@ class MarketCountries(FullRefreshShopifyGraphQlBulkStream):
         region: Mapping[str, Any],
         market: Mapping[str, Any],
         shipping: Mapping[str, Any],
-        shipping_options: List[Mapping[str, Any]],
+        shipping_options: Optional[List[Mapping[str, Any]]],
     ) -> Mapping[str, Any]:
         is_subdivision = region.get("__typename") == "MarketRegionSubdivision"
         country = (region.get("country") or {}) if is_subdivision else region
@@ -961,7 +978,7 @@ class MarketCountries(FullRefreshShopifyGraphQlBulkStream):
             "subdivision_name": region.get("name") if is_subdivision else None,
             "subdivision_code": region.get("code") if is_subdivision else None,
             "currency_code": (region.get("currency") or {}).get("currency_code"),
-            "market_id": self._gid_to_int(market["id"]),
+            "market_id": BulkTools.resolve_str_id(market.get("id")),
             "market_name": market.get("name"),
             "market_handle": market.get("handle"),
             "market_status": market.get("status"),

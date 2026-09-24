@@ -43,21 +43,21 @@
       "type": ["null", "string"]
     },
     "market_type": {
-      "description": "Type of the market (REGION, LOCATION, COMPANY_LOCATION, NONE).",
+      "description": "Type of the market (REGION, LOCATION, COMPANY_LOCATION, CHANNEL, NONE).",
       "type": ["null", "string"]
     },
     "shipping_enabled": {
-      "description": "Whether shipping is enabled for the market.",
+      "description": "Whether shipping is enabled for the market. Null when the market inherits its shipping configuration from a parent market (or, without a parent, from the shop default of no shipping).",
       "type": ["null", "boolean"]
     },
     "shipping_options": {
-      "description": "Shipping options configured for the market and shown to buyers at checkout.",
+      "description": "Shipping options configured for the market and shown to buyers at checkout. Null when the market inherits its shipping configuration from a parent market.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "id": {
-            "description": "Unique identifier of the shipping option.",
+            "description": "Identifier of the shipping option, unique within its `type`.",
             "type": ["null", "integer"]
           },
           "type": {

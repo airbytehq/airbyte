@@ -54,7 +54,7 @@ from source_shopify.streams.streams import (
 )
 from source_shopify.utils import ShopifyWrongShopNameError
 
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, FailureType, SyncMode
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
 from airbyte_cdk.utils import AirbyteTracedException
@@ -664,7 +664,7 @@ def test_market_countries_request_body_json(config):
         shipping {
           is_enabled: isEnabled
           option_definitions: optionDefinitions(
-            first: 50
+            first: 250
           ) {
             nodes {
               __typename
@@ -741,7 +741,7 @@ def _markets_response(
             id="next_regions_page_of_the_same_market_first",
         ),
         pytest.param({"data": {"markets": {"pageInfo": {"hasNextPage": False}, "nodes": []}}}, None, id="no_markets"),
-        pytest.param({"errors": [{"message": "Access denied"}]}, None, id="no_data"),
+        pytest.param({"data": None}, None, id="no_data"),
     ],
 )
 def test_market_countries_next_page_token(config, response_data, expected_token):
@@ -750,6 +750,49 @@ def test_market_countries_next_page_token(config, response_data, expected_token)
     response.status_code = 200
     response._content = json.dumps(response_data).encode("utf-8")
     assert stream.next_page_token(response) == expected_token
+
+
+_LOCATION_MARKET_PAGE = {
+    "data": {
+        "markets": {
+            "pageInfo": {"hasNextPage": True, "endCursor": "m2"},
+            "nodes": [{"id": "gid://shopify/Market/5", "type": "LOCATION", "conditions": None, "delivery": {"shipping": None}}],
+        }
+    }
+}
+
+
+def test_market_countries_market_without_regions_condition_is_skipped(config):
+    """LOCATION / COMPANY_LOCATION markets can come without `conditions`: no records, pagination moves on to the next market."""
+    stream = MarketCountries(config)
+    response = MagicMock(status_code=requests.codes.OK)
+    response.json.return_value = _LOCATION_MARKET_PAGE
+    assert list(stream.parse_response(response)) == []
+    assert stream.next_page_token(response) == {"cursor": "m2", "sub_cursor": None}
+
+
+@pytest.mark.parametrize(
+    "errors, expected_failure_type",
+    [
+        pytest.param(
+            [{"message": "Throttled", "extensions": {"code": "THROTTLED"}}], FailureType.transient_error, id="throttled_is_transient"
+        ),
+        pytest.param(
+            [{"message": "Access denied for markets field.", "extensions": {"code": "ACCESS_DENIED"}}],
+            FailureType.system_error,
+            id="access_denied_is_a_system_error",
+        ),
+    ],
+)
+def test_market_countries_parse_response_fails_on_graphql_errors(config, errors, expected_failure_type):
+    """A 200 response with GraphQL `errors` has no usable page: completing here would mark an incomplete snapshot as complete."""
+    stream = MarketCountries(config)
+    response = MagicMock(status_code=requests.codes.OK)
+    response.json.return_value = {"data": None, "errors": errors}
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(stream.parse_response(response))
+    assert exc_info.value.failure_type == expected_failure_type
+    assert errors[0]["message"] in exc_info.value.message
 
 
 def _market_region_country(region_id: int, code: str) -> dict:
@@ -762,20 +805,7 @@ def _query_cursors(query: str) -> tuple:
     return (markets_cursor and markets_cursor.group(1), regions_cursor and regions_cursor.group(1))
 
 
-def test_market_countries_resumes_from_checkpointed_cursors(requests_mock, config):
-    """
-    A fresh stream instance must honor the cursors handed back by the CDK (resumable full refresh):
-    the market cursor is kept while paging the regions of the same market, and the regions cursor
-    is dropped when moving on to the next market.
-    """
-    responses_by_cursors = {
-        # resumed mid-way: 2nd page of regions of market 2
-        ("m1", "r1"): _markets_response(True, True, "gid://shopify/Market/2", [_market_region_country(21, "DE")], "m1", "r2"),
-        ("m1", "r2"): _markets_response(True, False, "gid://shopify/Market/2", [_market_region_country(22, "FR")], "m1", "r2"),
-        ("m1", None): _markets_response(False, False, "gid://shopify/Market/3", [_market_region_country(31, "CA")]),
-    }
-    seen_cursors = []
-
+def _market_driven_shop_callback(responses_by_cursors: dict, seen_cursors: list):
     def graphql_callback(request, context):
         query = request.json()["query"]
         if query.startswith("query ShopFeatures"):
@@ -784,22 +814,62 @@ def test_market_countries_resumes_from_checkpointed_cursors(requests_mock, confi
         seen_cursors.append(cursors)
         return responses_by_cursors[cursors]
 
-    requests_mock.post("https://test-shop.myshopify.com/admin/api/2026-07/graphql.json", json=graphql_callback)
+    return graphql_callback
 
-    stream = MarketCountries(config)
-    stream.state = {"cursor": "m1", "sub_cursor": "r1"}
+
+def _read_full_refresh(stream):
     configured_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(name=stream.name, json_schema=stream.get_json_schema(), supported_sync_modes=[SyncMode.full_refresh]),
         sync_mode=SyncMode.full_refresh,
         destination_sync_mode=DestinationSyncMode.overwrite,
     )
-    records = [
-        message
-        for message in stream.read(configured_stream, logging.getLogger("airbyte"), DebugSliceLogger(), {}, None, InternalConfig())
-        if isinstance(message, dict)
-    ]
+    return stream.read(configured_stream, logging.getLogger("airbyte"), DebugSliceLogger(), {}, None, InternalConfig())
 
-    assert seen_cursors == [("m1", "r1"), ("m1", "r2"), ("m1", None)]
+
+def test_market_countries_read_fails_on_errored_page_and_keeps_the_last_checkpoint(requests_mock, config):
+    """
+    A throttled page must not complete the resumable full refresh: the stream fails and the
+    retry resumes from the last checkpoint instead of overwriting the destination with a partial snapshot.
+    """
+    responses_by_cursors = {
+        ("m1", "r1"): _markets_response(True, True, "gid://shopify/Market/2", [_market_region_country(21, "DE")], "m2", "r2"),
+        ("m1", "r2"): {"errors": [{"message": "Throttled", "extensions": {"code": "THROTTLED"}}]},
+    }
+    requests_mock.post(
+        "https://test-shop.myshopify.com/admin/api/2026-07/graphql.json",
+        json=_market_driven_shop_callback(responses_by_cursors, []),
+    )
+
+    stream = MarketCountries(config)
+    stream.state = {"cursor": "m1", "sub_cursor": "r1"}
+    with pytest.raises(AirbyteTracedException):
+        list(_read_full_refresh(stream))
+    assert stream.state == {"cursor": "m1", "sub_cursor": "r2"}
+
+
+def test_market_countries_resumes_from_checkpointed_cursors(requests_mock, config):
+    """
+    A fresh stream instance must honor the cursors handed back by the CDK (resumable full refresh):
+    the market cursor is kept while paging the regions of the same market, and the regions cursor
+    is dropped when moving on to the next market.
+    """
+    responses_by_cursors = {
+        # resumed mid-way: 2nd page of regions of market 2, the markets `endCursor` (m2) is only used once its regions are exhausted
+        ("m1", "r1"): _markets_response(True, True, "gid://shopify/Market/2", [_market_region_country(21, "DE")], "m2", "r2"),
+        ("m1", "r2"): _markets_response(True, False, "gid://shopify/Market/2", [_market_region_country(22, "FR")], "m2", "r2"),
+        ("m2", None): _markets_response(False, False, "gid://shopify/Market/3", [_market_region_country(31, "CA")]),
+    }
+    seen_cursors = []
+    requests_mock.post(
+        "https://test-shop.myshopify.com/admin/api/2026-07/graphql.json",
+        json=_market_driven_shop_callback(responses_by_cursors, seen_cursors),
+    )
+
+    stream = MarketCountries(config)
+    stream.state = {"cursor": "m1", "sub_cursor": "r1"}
+    records = [message for message in _read_full_refresh(stream) if isinstance(message, dict)]
+
+    assert seen_cursors == [("m1", "r1"), ("m1", "r2"), ("m2", None)]
     assert stream.state == {"__ab_full_refresh_sync_complete": True}
     assert [record["id"] for record in records] == [
         "gid://shopify/MarketRegionCountry/21",
@@ -970,7 +1040,7 @@ def test_market_countries_parse_response_subdivision_only_market(config):
     """A market limited to a single US state has no `MarketRegionCountry` node at all."""
     stream = MarketCountries(config)
     response = MagicMock(status_code=requests.codes.OK)
-    response.json.return_value = _markets_response(
+    payload = _markets_response(
         False,
         False,
         "gid://shopify/Market/7",
@@ -984,8 +1054,12 @@ def test_market_countries_parse_response_subdivision_only_market(config):
             }
         ],
     )
+    # `shipping` is null when the market inherits its shipping configuration from a parent market
+    payload["data"]["markets"]["nodes"][0]["delivery"] = {"shipping": None}
+    response.json.return_value = payload
     records = list(stream.parse_response(response))
     assert len(records) == 1
+    assert (records[0]["shipping_enabled"], records[0]["shipping_options"]) == (None, None)
     assert records[0]["id"] == "gid://shopify/MarketRegionSubdivision/70"
     assert (records[0]["code"], records[0]["name"]) == ("US", "United States")
     assert (records[0]["subdivision_code"], records[0]["subdivision_name"]) == ("CA", "California")

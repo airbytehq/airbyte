@@ -945,10 +945,11 @@ class FullRefreshShopifyGraphQlBulkStream(ShopifyStream):
     response_field: str
 
     @cached_property
-    def market_driven_shipping_enabled(self) -> bool:
+    def market_driven_shipping_enabled(self) -> Optional[bool]:
         """
         Shops with `marketDrivenShipping` enabled keep their shipping configuration on `Market.delivery`;
         for them the legacy `deliveryProfiles` API only returns a frozen snapshot.
+        Returns `None` when the flag cannot be read (HTTP 200 with GraphQL `errors`, e.g. THROTTLED, or a non-JSON body).
         See https://shopify.dev/docs/apps/build/orders-fulfillment/market-driven-shipping/upgrade-your-app
         """
         _, response = self._http_client.send_request(
@@ -957,16 +958,19 @@ class FullRefreshShopifyGraphQlBulkStream(ShopifyStream):
             json={"query": ShopFeatures().get()},
             request_kwargs={},
         )
-        json_response = response.json()
+        try:
+            json_response = response.json()
+        except RequestException:
+            json_response = {}
         data = json_response.get("data") or {}
         features = (data.get("shop") or {}).get("features") or {}
         flag = features.get("marketDrivenShipping")
         if not isinstance(flag, bool) or json_response.get("errors"):
             self.logger.warning(
-                f"Stream `{self.name}`: could not read `shop.features.marketDrivenShipping`, assuming the shop uses legacy "
-                f"delivery profiles. Response: {json_response.get('errors') or json_response}"
+                f"Stream `{self.name}`: could not read `shop.features.marketDrivenShipping`. "
+                f"Response: {json_response.get('errors') or json_response or response.text[:500]}"
             )
-            return False
+            return None
         return flag
 
     def request_body_json(

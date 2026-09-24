@@ -179,12 +179,14 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 
 Shopify is moving merchant shipping configuration from delivery profiles to [Markets](https://shopify.dev/docs/apps/build/orders-fulfillment/market-driven-shipping/upgrade-your-app). Once a shop is on market-driven shipping, the `deliveryProfiles` API that backs the `Countries` stream returns a frozen snapshot that no longer reflects changes made by the merchant.
 
-The connector checks `shop.features.marketDrivenShipping` at the start of each sync:
+The connector checks `shop.features.marketDrivenShipping` when the `Countries` or `Market Countries` stream starts syncing:
 
 - Shops on legacy shipping: `Countries` syncs as before; `Market Countries` emits no records.
-- Shops on market-driven shipping: `Countries` keeps emitting the snapshot of the shipping configuration as it was at migration time (and logs a warning), so previously synced data is not wiped; `Market Countries` emits one record per market region — a whole country or a country subdivision such as a US state — with the market's current shipping options.
+- Shops on market-driven shipping: `Countries` keeps emitting the snapshot of the shipping configuration as it was at migration time (and logs a warning), so previously synced data is not wiped; `Market Countries` emits one record per market region (a whole country, or a country subdivision such as a US state) with the market's current shipping options.
 
-Shopify migrates shops between October 1, 2026 and July 1, 2027, so both stream behaviors coexist during that period. Nothing changes in your connection automatically and no global switch is required: keep `Countries` if you need the legacy snapshot, and enable `Market Countries` for shops that have migrated.
+`Market Countries` differs from `Countries` in shape: a country that belongs to several markets appears once per market, whole-country regions carry no province list, and `shipping_enabled` / `shipping_options` are null when the market inherits its shipping configuration from a parent market. Markets of every type and status are included, so filter on `market_type = REGION` and `market_status = ACTIVE` for buyer-facing shipping countries.
+
+Shopify's rollout starts on October 1, 2026 (new installs and merchants who opt in) and is planned to cover all shops by July 1, 2027, so both stream behaviors coexist during that period. Nothing changes in your connection automatically and no global switch is required: keep `Countries` if you need the legacy snapshot, and enable `Market Countries` for shops that have migrated.
 
 ### Enabling Market Countries for a migrated shop
 
