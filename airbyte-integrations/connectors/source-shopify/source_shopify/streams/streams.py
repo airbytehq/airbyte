@@ -5,7 +5,7 @@
 
 import logging
 import sys
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 from source_shopify.shopify_graphql.bulk.query import (
@@ -18,6 +18,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     FulfillmentOrder,
     InventoryItem,
     InventoryLevel,
+    MarketCountry,
     MetafieldCollection,
     MetafieldCustomer,
     MetafieldDraftOrder,
@@ -35,9 +36,10 @@ from source_shopify.shopify_graphql.bulk.query import (
     Transaction,
 )
 from source_shopify.shopify_graphql.bulk.tools import BulkTools
-from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors, ShopifyRateLimiter
+from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors, ShopifyRateLimiter, is_throttled_graphql_error
 
 from airbyte_cdk import HttpSubStream
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
@@ -578,7 +580,7 @@ class DiscountCodesSync(IncrementalShopifyStream):
             result = response.json()
             errors = result.get("errors")
             if errors:
-                if self._is_throttled(errors):
+                if is_throttled_graphql_error(errors):
                     if attempt < self._GRAPHQL_MAX_RETRIES:
                         ShopifyRateLimiter.wait_time(ShopifyRateLimiter.on_unknown_load)
                         continue
@@ -590,15 +592,6 @@ class DiscountCodesSync(IncrementalShopifyStream):
             ShopifyRateLimiter.wait_time(ShopifyRateLimiter.get_graphql_api_wait_time(response, threshold=0.9))
             return result
         raise AirbyteTracedException(message="GraphQL query for stream `discount_codes_sync` exceeded max retries due to throttling.")
-
-    @staticmethod
-    def _is_throttled(errors: list) -> bool:
-        throttle_codes = {"THROTTLED", "MAX_COST_EXCEEDED"}
-        for error in errors:
-            extensions = error.get("extensions", {})
-            if extensions.get("code") in throttle_codes:
-                return True
-        return False
 
     @staticmethod
     def _extract_codes_connection(code_discount: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -760,6 +753,12 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
         stream_state: Optional[Mapping[str, Any]] = None,
         **kwargs,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        if self.market_driven_shipping_enabled:
+            self.logger.warning(
+                f"Stream `{self.name}`: the shop uses market-driven shipping, `deliveryProfiles` is a snapshot frozen at migration time "
+                "and no longer reflects the live shipping settings. Use the `market_countries` stream (requires the `read_markets` scope) "
+                "for current data."
+            )
         for stream_slice in super().stream_slices(stream_state=stream_state, **kwargs):
             parent = stream_slice.get("parent", {})
             profile_location_groups = parent.get("profile_location_groups", [])
@@ -838,3 +837,135 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
 
         country["shop_url"] = self.config["shop"]
         return country
+
+
+class MarketCountries(FullRefreshShopifyGraphQlBulkStream):
+    """
+    Countries a shop ships to, sourced from Markets (`Market.conditions.regionsCondition.regions`)
+    together with the market's shipping configuration (`Market.delivery.shipping`).
+    Emits one record per market region (a whole country or a country subdivision, e.g. a US state)
+    and only for shops with `marketDrivenShipping` enabled,
+    where the legacy `deliveryProfiles` used by the `countries` stream returns a frozen snapshot.
+    https://shopify.dev/docs/api/admin-graphql/latest/queries/markets
+    """
+
+    query = MarketCountry
+    response_field = "markets"
+
+    def __init__(self, config: Mapping[str, Any]) -> None:
+        super().__init__(config)
+        self._page_cursor: Optional[str] = None
+        self._sub_page_cursor: Optional[str] = None
+
+    def stream_slices(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        **kwargs,
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        market_driven_shipping = self.market_driven_shipping_enabled
+        if market_driven_shipping is None:
+            # an empty but "successful" full refresh would overwrite the destination table, fail the stream instead
+            raise AirbyteTracedException(
+                message=f"Stream `{self.name}`: could not read `shop.features.marketDrivenShipping`, the sync will retry later.",
+                failure_type=FailureType.transient_error,
+            )
+        if not market_driven_shipping:
+            self.logger.info(
+                f"Stream `{self.name}`: the shop does not use market-driven shipping yet, its shipping settings are available "
+                "in the `countries` stream. No records will be emitted."
+            )
+            return
+        yield {}
+
+    @staticmethod
+    def _regions_page_info(market: Mapping[str, Any]) -> Mapping[str, Any]:
+        regions_condition = (market.get("conditions") or {}).get("regionsCondition") or {}
+        return (regions_condition.get("regions") or {}).get("pageInfo") or {"hasNextPage": False}
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        json_response = response.json().get("data") or {}
+        if not json_response:
+            return None
+
+        markets = json_response.get(self.response_field) or {}
+        page_info = markets.get("pageInfo") or {"hasNextPage": False}
+        # only one market per page in query
+        nodes = markets.get("nodes") or []
+        sub_page_info = self._regions_page_info(nodes[0]) if nodes else {"hasNextPage": False}
+
+        if sub_page_info["hasNextPage"]:
+            self._sub_page_cursor = sub_page_info["endCursor"]
+        elif page_info["hasNextPage"]:
+            self._page_cursor = page_info["endCursor"]
+            self._sub_page_cursor = None
+        else:
+            return None
+
+        return {
+            "cursor": self._page_cursor,
+            "sub_cursor": self._sub_page_cursor,
+        }
+
+    def request_body_json(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[Mapping[str, Any]]:
+        token = next_page_token or {}
+        self._page_cursor = token.get("cursor")
+        self._sub_page_cursor = token.get("sub_cursor")
+        return {"query": self.query(regions_cursor=self._sub_page_cursor).get(query_args={"cursor": self._page_cursor})}
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        for market in super().parse_response(response, **kwargs):
+            regions_condition = (market.get("conditions") or {}).get("regionsCondition") or {}
+            # `shipping` is null when the market inherits its shipping configuration from a parent market
+            shipping = (market.get("delivery") or {}).get("shipping")
+            shipping_options = (
+                None
+                if shipping is None
+                else [self._process_shipping_option(option) for option in (shipping.get("option_definitions") or {}).get("nodes") or []]
+            )
+            for region in (regions_condition.get("regions") or {}).get("nodes") or []:
+                # region types not covered by the query's inline fragments resolve to `__typename` only
+                if region.get("id"):
+                    yield self._transformer.transform(self._process_region(region, market, shipping or {}, shipping_options))
+
+    def _process_shipping_option(self, option: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {
+            "id": BulkTools.resolve_str_id(option.get("id")),
+            "type": option.get("__typename"),
+            "name": option.get("name"),
+            "description": option.get("description"),
+            "currency": option.get("currency"),
+            "is_active": option.get("is_active"),
+            "free_delivery_minimum_value": option.get("free_delivery_minimum_value"),
+        }
+
+    def _process_region(
+        self,
+        region: Mapping[str, Any],
+        market: Mapping[str, Any],
+        shipping: Mapping[str, Any],
+        shipping_options: Optional[List[Mapping[str, Any]]],
+    ) -> Mapping[str, Any]:
+        is_subdivision = region.get("__typename") == "MarketRegionSubdivision"
+        country = (region.get("country") or {}) if is_subdivision else region
+        return {
+            # full GID: `MarketRegionCountry` and `MarketRegionSubdivision` ids live in different namespaces
+            "id": region["id"],
+            "name": country.get("name"),
+            "code": country.get("code"),
+            "subdivision_name": region.get("name") if is_subdivision else None,
+            "subdivision_code": region.get("code") if is_subdivision else None,
+            "currency_code": (region.get("currency") or {}).get("currency_code"),
+            "market_id": BulkTools.resolve_str_id(market.get("id")),
+            "market_name": market.get("name"),
+            "market_handle": market.get("handle"),
+            "market_status": market.get("status"),
+            "market_type": market.get("type"),
+            "shipping_enabled": shipping.get("is_enabled"),
+            "shipping_options": shipping_options,
+            "shop_url": self.config["shop"],
+        }
