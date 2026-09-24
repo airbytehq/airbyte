@@ -106,3 +106,36 @@ contentType = "application/gzip")` assumes the configured role and owns/closes i
 Serialize metadata with the connector's existing JSON mapper. Await uploads before emitting
 successful state and write `{runPath}batches/stream_complete.json` only after successful
 stream completion, including empty streams.
+
+## Controlled uploads in connector tests
+
+The Java test fixtures variant provides a Kotlin helper with Java concurrency primitives
+and no dependency on core CDK or coroutines:
+
+```kotlin
+testImplementation(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-fusion")))
+```
+
+Inject `io.airbyte.cdk.fusion.testing.ControlledFusionUploader` into the connector's real
+copy service. Run the operation under test on a separate worker, then on the test thread:
+
+```kotlin
+val upload = uploader.awaitUpload(10, TimeUnit.SECONDS)
+assertArrayEquals(expectedBytes, upload.bytes)
+assertEquals(expectedKey, upload.key)
+upload.result.complete(Unit) // Or completeExceptionally(error) to exercise failure.
+```
+
+`Upload` contains `path`, `key`, copied `metadata`, captured `bytes`, and a
+`CompletableFuture<Unit>` named `result`. `awaitUpload` consumes the next started file
+upload from a blocking queue and throws `TimeoutException` if none arrives. `uploads`
+retains a thread-safe list snapshot of all requests. JSON uploads complete immediately;
+`jsonUploads` captures their keys and copied bytes for schema/completion assertions.
+Byte arrays are test-owned snapshots; treat them as read-only.
+
+Use independent gates for the primary destination operation to establish that both sides
+started before releasing either. Avoid blocking `awaitUpload` on the same thread needed
+to launch the upload. Always close the fixture in test cleanup: close fails unresolved
+upload futures, rejects new uploads, and leaves connector-owned files untouched. The
+fixture reads each complete file into memory at upload entry; use small test payloads.
+It verifies connector coordination and bytes, not SDK transport or reader-drain behavior.
