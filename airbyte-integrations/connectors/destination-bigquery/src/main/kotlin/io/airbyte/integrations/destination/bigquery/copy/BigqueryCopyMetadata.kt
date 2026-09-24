@@ -54,9 +54,7 @@ class BigqueryCopyMetadata(
         val table =
             requireNotNull(
                 if (raw) tableInfo.tableNames.rawTableName else tableInfo.tableNames.finalTableName
-            ) {
-                "Missing logical BigQuery table for ${stream.mappedDescriptor}"
-            }
+            ) { "Missing logical BigQuery table for ${stream.mappedDescriptor}" }
         // Use the same schemas as the loader factories. Standard raw inserts include loaded-at
         // in their target schema, even though neither standard formatter writes that field.
         val headers =
@@ -145,7 +143,8 @@ class BigqueryCopyMetadata(
             configuredCatalog?.streams?.singleOrNull {
                 it.stream.namespace == stream.unmappedNamespace &&
                     it.stream.name == stream.unmappedName
-            } ?: stream.asProtocolObject()
+            }
+                ?: stream.asProtocolObject()
         val configuredTree = mapper.valueToTree<JsonNode>(configured)
         (configuredTree["stream"] as com.fasterxml.jackson.databind.node.ObjectNode).set<JsonNode>(
             "json_schema",
@@ -404,9 +403,7 @@ class BigqueryCopyMetadata(
             stream.generationId >= 0 &&
                 (stream.minimumGenerationId == 0L ||
                     stream.minimumGenerationId == stream.generationId)
-        ) {
-            "BigQuery S3 copy supports minimum generation zero or equal to current generation"
-        }
+        ) { "BigQuery S3 copy supports minimum generation zero or equal to current generation" }
     }
 
     private fun hash(value: Any): String {

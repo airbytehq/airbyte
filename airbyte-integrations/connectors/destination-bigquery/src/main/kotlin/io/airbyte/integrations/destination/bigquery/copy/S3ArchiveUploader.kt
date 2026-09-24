@@ -200,6 +200,11 @@ internal constructor(
         }
     }
 
+    @SuppressFBWarnings(
+        value = ["RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"],
+        justification =
+            "Kotlin generates null checks for the captured lateinit session, which is assigned before registration and return.",
+    )
     override fun startStreaming(
         key: String,
         contentType: String,
