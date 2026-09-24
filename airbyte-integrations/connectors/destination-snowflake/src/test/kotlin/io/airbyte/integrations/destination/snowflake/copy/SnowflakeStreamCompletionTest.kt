@@ -24,6 +24,7 @@ import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.mockk.every
 import io.mockk.mockk
 import java.nio.file.Path
@@ -34,6 +35,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.ValueSource
 
 class SnowflakeStreamCompletionTest {
     @Test
@@ -110,6 +112,55 @@ class SnowflakeStreamCompletionTest {
                 val schema = Jsons.readTree(unconfigured.uploader.json.values.single())
                 assertTrue(schema["primary_key"].isArray && schema["primary_key"].isEmpty)
                 assertTrue(schema["cursor"].isArray && schema["cursor"].isEmpty)
+            }
+        }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `prepare preserves deselected configured keys and cursor for append streams`(raw: Boolean) =
+        runBlocking {
+            val sourceSchema =
+                Jsons.readTree(
+                    """{"type":"object","properties":{"name":{"type":"string"}}}"""
+                )
+            val configured =
+                ConfiguredAirbyteStream()
+                    .withStream(
+                        AirbyteStream()
+                            .withName("Orders/日本")
+                            .withNamespace("public")
+                            .withJsonSchema(sourceSchema)
+                    )
+                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                    .withPrimaryKey(listOf(listOf("id")))
+                    .withCursorField(listOf("updated_at"))
+            val fixture = Fixture(0, ConfiguredAirbyteCatalog().withStreams(listOf(configured)), raw)
+            // Only name is selected; configured metadata need not have an output mapping.
+            every { fixture.stream.tableSchema } returns
+                StreamTableSchema(
+                    TableNames(finalTableName = TableName("public", "orders")),
+                    ColumnSchema(
+                        linkedMapOf("name" to FieldType(StringType, true)),
+                        mapOf("name" to "NAME"),
+                        if (raw) mapOf("_airbyte_data" to ColumnType("VARIANT", false))
+                        else mapOf("NAME" to ColumnType("TEXT", true)),
+                    ),
+                    Append,
+                )
+            fixture.copy.use { copy ->
+                copy.prepare(DestinationCatalog(listOf(fixture.stream)))
+                val context = checkNotNull(copy.context(fixture.stream))
+                assertEquals(listOf(context.runPath + "schema.json"), fixture.uploader.keys)
+                val schema = Jsons.readTree(fixture.uploader.json.values.single())
+                assertEquals(sourceSchema, schema["source_schema"])
+                assertEquals(Jsons.readTree("""[["id"]]"""), schema["primary_key"])
+                assertEquals(Jsons.readTree("""["updated_at"]"""), schema["cursor"])
+                assertEquals(Jsons.readTree("""{"name":"NAME"}"""), schema["input_to_final"])
+                assertEquals(if (raw) "raw" else "schema", schema["mode"].asText())
+                assertEquals(raw, schema["columns"].has("_airbyte_data"))
+                assertEquals(!raw, schema["columns"].has("NAME"))
+                assertFalse(schema["columns"].has("ID"))
+                assertFalse(schema["columns"].has("UPDATED_AT"))
             }
         }
 
