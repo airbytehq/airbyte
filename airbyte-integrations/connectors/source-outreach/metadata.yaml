@@ -67,4 +67,10 @@ data:
     - title: Outreach rate limits
       url: https://api.outreach.io/api/v2/docs#rate-limiting
       type: rate_limits
+    - title: Outreach deprecated features
+      url: https://developers.outreach.io/api/deprecated-features/
+      type: api_deprecations
+    - title: Outreach API access (OAuth)
+      url: https://developers.outreach.io/api/oauth/
+      type: authentication_guide
 metadataSpecVersion: "1.0"
