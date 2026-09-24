@@ -11,7 +11,7 @@ authors = [
 package-mode = false
 [tool.poetry.dependencies]
 python = "^3.10,<3.14"
-pytest = "^8"
+pytest = ">=8,<10"
 airbyte-cdk = "^7.30.0"
 requests-mock = "^1.12"
 pytest-mock = "^3"
