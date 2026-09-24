@@ -332,6 +332,7 @@ The connector adapts some values to what Postgres accepts:
   point, strings the connector estimates could exceed Postgres's 1 GB field limit (it assumes a
   worst case of 4 bytes per character, so any string longer than about 268 million characters),
   and timestamps outside the range Postgres supports (4713 BC to 294276 AD).
+- Dates and timestamps with a year later than 9999 are written without the leading `+` sign that the connector's internal representation uses for extended years (`+10000-01-01` becomes `10000-01-01`). Before version 3.0.22, PostgreSQL's `COPY` rejected these values and the sync failed.
 
 ## Creating dependent objects
 
@@ -377,7 +378,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                                                                                                               |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.22  | 2026-09-23 | [86926](https://github.com/airbytehq/airbyte/pull/86926) | Strip the leading `+` from extended-year date/timestamp values so PostgreSQL `COPY` accepts them |
+| 3.0.22  | 2026-09-24 | [86926](https://github.com/airbytehq/airbyte/pull/86926) | Strip the leading `+` from extended-year date/timestamp values so PostgreSQL `COPY` accepts them |
 | 3.0.21 | 2026-09-15 | [86331](https://github.com/airbytehq/airbyte/pull/86331) | Version bump to republish the Cloud-specific connector spec. |
 | 3.0.20  | 2026-09-11 | [85835](https://github.com/airbytehq/airbyte/pull/85835)   | Upgrade to Bulk CDK 1.1.0 and replace the startup `COUNT(*)` with an existence check, so syncs no longer scan large tables before replicating.                                                                                                                                                        |
 | 3.0.19  | 2026-09-11 | [84953](https://github.com/airbytehq/airbyte/pull/84953)   | Add missing Airbyte meta columns (`_airbyte_meta`, `_airbyte_generation_id`) to tables created by pre-direct-load connector versions, and read a missing `_airbyte_generation_id` column as generation 0, when the `AIRBYTE_DESTINATION_POSTGRES_META_COLUMN_REPAIR` env var is set to `true` (off by default). |
