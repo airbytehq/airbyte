@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.7.1"
+version = "2.7.2"
 name = "source-github"
 description = "Source implementation for GitHub."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_github"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.14"
-airbyte-cdk = "^7.30.0"
+airbyte-cdk = "7.30.0.post6.dev35881424906"
 
 [tool.poetry.scripts]
 source-github = "source_github.run:run"

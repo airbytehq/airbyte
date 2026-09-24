@@ -755,6 +755,11 @@ def test_reviews_drills_into_a_pull_request_with_more_reviews(rate_limit_mock_re
 
     assert error is None
     assert sorted(record["id"] for record in records) == [101, 102]
+    # The drill-down record is stamped from the single pull request it was rooted at.
+    drilled = next(record for record in records if record["id"] == 102)
+    assert drilled["pull_request_url"] == f"https://github.com/{REPOSITORY}/pull/4"
+    assert drilled["repository"] == REPOSITORY
+    assert "original_record" not in drilled
     requests = _graphql_requests(requests_mock)
     assert len(requests) == 2
     # The second request roots at the single pull request and carries the review cursor.
@@ -876,6 +881,8 @@ def test_issue_reactions_drills_into_an_issue_with_more_reactions(rate_limit_moc
 
     assert error is None
     assert sorted(record["id"] for record in records) == [201, 202]
+    assert {record["issue_number"] for record in records} == {12}
+    assert all("original_record" not in record for record in records)
     second = json.loads(_graphql_requests(requests_mock)[1].body)
     assert "issue(number: 12)" in second["query"]
     assert second["variables"]["after"] == "REACT_CUR"
@@ -1020,6 +1027,69 @@ def test_pull_request_comment_reactions_drills_deepest_first(rate_limit_mock_res
     assert "pullRequests(" in queries[4]
     cursors = [_variables(request).get("after") for request in _graphql_requests(requests_mock)]
     assert cursors == [None, "REACT_CUR", "COMMENT_CUR", "REVIEW_CUR", "LIST_CUR"]
+
+
+def _deep_node(typename, node):
+    repository = {"name": REPOSITORY.split("/")[1], "owner": {"login": REPOSITORY.split("/")[0]}}
+    return {"data": {"node": {**node, "__typename": typename, "repository": repository}}}
+
+
+@pytest.mark.parametrize(
+    ("listing_pull_request", "drilldown"),
+    [
+        pytest.param(
+            _pr_with_reviews("PR_1", [], has_next=True, cursor="REVIEW_CUR"),
+            _deep_node(
+                "PullRequest",
+                _pr_with_reviews("PR_1", [_pr_review("PRR_1", 11, [_pr_comment("PRRC_1", 21, [_reaction_node("REA_2", 302)])])]),
+            ),
+            id="pull_request",
+        ),
+        pytest.param(
+            _pr_with_reviews("PR_1", [_pr_review("PRR_1", 11, [], has_next=True, cursor="COMMENT_CUR")]),
+            _deep_node("PullRequestReview", _pr_review("PRR_1", 11, [_pr_comment("PRRC_1", 21, [_reaction_node("REA_2", 302)])])),
+            id="review",
+        ),
+        pytest.param(
+            _pr_with_reviews("PR_1", [_pr_review("PRR_1", 11, [_pr_comment("PRRC_1", 21, [], has_next=True, cursor="REACT_CUR")])]),
+            _deep_node("PullRequestReviewComment", _pr_comment("PRRC_1", 21, [_reaction_node("REA_2", 302)])),
+            id="comment",
+        ),
+    ],
+)
+def test_pull_request_comment_reactions_reads_every_drilldown_root(listing_pull_request, drilldown, rate_limit_mock_response, requests_mock):
+    """Each root the traversal re-roots at nests the comments at a different depth."""
+    _mock_repository_resolution(requests_mock)
+    requests_mock.post(GRAPHQL_URL, [{"json": _deep_listing([listing_pull_request])}, {"json": drilldown}])
+
+    records, error = _read(_config(), "pull_request_comment_reactions")
+
+    assert error is None
+    assert len(records) == 1
+    record = records[0]
+    assert record["id"] == 302
+    assert record["comment_id"] == 21
+    assert record["repository"] == REPOSITORY
+    assert "original_record" not in record
+
+
+def test_pull_request_comment_reactions_sets_the_user_type_when_there_is_a_user(rate_limit_mock_response, requests_mock):
+    """The legacy record carried `user.type`, which the `user` field of these documents does not return."""
+    _mock_repository_resolution(requests_mock)
+    with_user = {**_reaction_node("REA_1", 301), "user": {"node_id": "U_1", "id": 7, "login": "octocat"}}
+    without_user = {**_reaction_node("REA_2", 302), "user": None}
+    requests_mock.post(
+        GRAPHQL_URL,
+        json=_deep_listing([_pr_with_reviews("PR_1", [_pr_review("PRR_1", 11, [_pr_comment("PRRC_1", 21, [with_user, without_user])])])]),
+    )
+
+    records, error = _read(_config(), "pull_request_comment_reactions")
+
+    assert error is None
+    assert {record["id"]: record["user"] for record in records} == {
+        301: {"node_id": "U_1", "id": 7, "login": "octocat", "type": "User"},
+        302: None,
+    }
 
 
 def test_pull_request_comment_reactions_omits_owner_and_name_on_drilldowns(rate_limit_mock_response, requests_mock):

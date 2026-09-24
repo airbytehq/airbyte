@@ -18720,12 +18720,26 @@ definitions:
       record_selector:
         type: RecordSelector
         extractor:
-          type: CustomRecordExtractor
-          class_name: source_github.components.NestedGraphQLRecordExtractor
-          list_connection: "pullRequests"
-          drilldown_field: "pullRequest"
-          child_connection: "reviews"
-          parent_fields: { "url": "pull_request_url" }
+          # The listing document nests the reviews under every pull request; the drill-down
+          # document returns the single pull request whose reviews overflowed. A response
+          # carries one of the two paths, so the union yields the reviews of whichever came
+          # back. Each pull request is expanded into its reviews, keeping the pull request
+          # under `original_record` for the transformations to copy `url` from.
+          type: CombinedExtractor
+          mode: union
+          extractors:
+            - type: DpathExtractor
+              field_path: ["data", "repository", "pullRequests", "nodes"]
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field: ["reviews", "nodes"]
+                remain_original_record: true
+            - type: DpathExtractor
+              field_path: ["data", "repository", "pullRequest"]
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field: ["reviews", "nodes"]
+                remain_original_record: true
       paginator:
         type: DefaultPaginator
         # No `page_token_option`: the token is a traversal state object, not a value to inject.
@@ -18744,6 +18758,15 @@ definitions:
       partition_router:
         $ref: "#/definitions/repository_partition_router"
     transformations:
+      - type: AddFields
+        fields:
+          - path: ["repository"]
+            value: "{{ stream_partition.repository }}"
+          - path: ["pull_request_url"]
+            value: "{{ record['original_record']['url'] }}"
+      - type: RemoveFields
+        field_pointers:
+          - ["original_record"]
       - type: AddFields
         # `commit_id` replaced the nested `commit { oid }` in the REST-shaped record.
         condition: "{{ record.get('commit') }}"
@@ -18986,12 +19009,26 @@ definitions:
       record_selector:
         type: RecordSelector
         extractor:
-          type: CustomRecordExtractor
-          class_name: source_github.components.NestedGraphQLRecordExtractor
-          list_connection: "issues"
-          drilldown_field: "issue"
-          child_connection: "reactions"
-          parent_fields: { "number": "issue_number" }
+          # The listing document nests the reactions under every issue; the drill-down
+          # document returns the single issue whose reactions overflowed. A response
+          # carries one of the two paths, so the union yields the reactions of whichever came
+          # back. Each issue is expanded into its reactions, keeping the issue
+          # under `original_record` for the transformations to copy `number` from.
+          type: CombinedExtractor
+          mode: union
+          extractors:
+            - type: DpathExtractor
+              field_path: ["data", "repository", "issues", "nodes"]
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field: ["reactions", "nodes"]
+                remain_original_record: true
+            - type: DpathExtractor
+              field_path: ["data", "repository", "issue"]
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field: ["reactions", "nodes"]
+                remain_original_record: true
       paginator:
         type: DefaultPaginator
         # No `page_token_option`: the token is a traversal state object, not a value to inject.
@@ -19009,6 +19046,16 @@ definitions:
           page_size: "{{ config['page_size_for_large_streams'] if config.get('page_size_for_large_streams') is not none else 10 }}"
       partition_router:
         $ref: "#/definitions/repository_partition_router"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["repository"]
+            value: "{{ stream_partition.repository }}"
+          - path: ["issue_number"]
+            value: "{{ record['original_record']['number'] }}"
+      - type: RemoveFields
+        field_pointers:
+          - ["original_record"]
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "created_at"
@@ -19273,8 +19320,39 @@ definitions:
       record_selector:
         type: RecordSelector
         extractor:
-          type: CustomRecordExtractor
-          class_name: source_github.components.DeepNestedGraphQLRecordExtractor
+          # The traversal re-roots at four object types, so a response holds comments under one of
+          # four paths: the repository listing, or a `node` that is a pull request, a review or the
+          # comment itself. The documents select only the connections of their own root type, so
+          # the paths of the other roots are absent and the union yields the comments' reactions
+          # from whichever root came back. Each comment is expanded into its reactions, keeping the
+          # comment under `original_record` for the transformations to copy its `id` from.
+          type: CombinedExtractor
+          mode: union
+          extractors:
+            - type: DpathExtractor
+              field_path: ["data", "repository", "pullRequests", "nodes", "*", "reviews", "nodes", "*", "comments", "nodes", "*"]
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field: ["reactions", "nodes"]
+                remain_original_record: true
+            - type: DpathExtractor
+              field_path: ["data", "node", "reviews", "nodes", "*", "comments", "nodes", "*"]
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field: ["reactions", "nodes"]
+                remain_original_record: true
+            - type: DpathExtractor
+              field_path: ["data", "node", "comments", "nodes", "*"]
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field: ["reactions", "nodes"]
+                remain_original_record: true
+            - type: DpathExtractor
+              field_path: ["data", "node"]
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field: ["reactions", "nodes"]
+                remain_original_record: true
       paginator:
         type: DefaultPaginator
         page_size_option:
@@ -19287,6 +19365,22 @@ definitions:
           page_size: "{{ config['page_size_for_large_streams'] if config.get('page_size_for_large_streams') is not none else 10 }}"
       partition_router:
         $ref: "#/definitions/repository_partition_router"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["repository"]
+            value: "{{ stream_partition.repository }}"
+          - path: ["comment_id"]
+            value: "{{ record['original_record']['id'] }}"
+      - type: RemoveFields
+        field_pointers:
+          - ["original_record"]
+      - type: AddFields
+        # The legacy record carried `user.type`, and `user` is not a union in these documents.
+        condition: "{{ record.get('user') }}"
+        fields:
+          - path: ["user", "type"]
+            value: "User"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "created_at"
