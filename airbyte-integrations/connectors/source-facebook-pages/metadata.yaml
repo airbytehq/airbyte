@@ -34,6 +34,7 @@ data:
         message: >-
           Meta removed the legacy Page fields `current_location`, `genre`, `network`, `parking` and `start_info` in Graph API v26.0, with no replacement. This version stops requesting them and removes them from the `page` stream schema. Users syncing the `page` stream must refresh the stream schema, and downstream models referencing those columns must be updated.
         upgradeDeadline: "2026-10-27"
+        deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["page"]
