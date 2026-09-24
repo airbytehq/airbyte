@@ -2,11 +2,14 @@
 # for more information about how to configure these tests
 connector_image: airbyte/source-greenhouse:dev
 test_strictness_level: "high"
-# Live lanes use the ClientCredentials branch: its credential is a static, read-only
-# Harvest v3 custom integration on the test account, so it survives consecutive runs. The
-# OAuth branch's refresh token is single-use and rotates on every refresh, and CI never
-# writes the rotated token back, so a config_oauth.json lane dies after its first run.
-# The OAuth branch is covered by the mock tests in unit_tests/test_pagination.py.
+# Live lanes run on both authentication branches:
+# - config_client_credentials.json: a static, read-only Harvest v3 custom integration
+#   credential on the test account. It doesn't rotate, so it survives consecutive runs.
+# - config_oauth.json: the Airbyte partner app's Authorization Code grant. Greenhouse
+#   refresh tokens are single-use, and CI never writes the rotated token back to GSM
+#   (airbytehq/airbyte-internal-issues#17023). This lane only passes while the stored
+#   access token is valid (1 hour after a re-mint) and fails after that until the secret
+#   is re-minted by hand.
 acceptance_tests:
   spec:
     tests:
@@ -15,17 +18,36 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config_client_credentials.json"
         status: "succeed"
+      - config_path: "secrets/config_oauth.json"
+        status: "succeed"
       - config_path: "integration_tests/config_invalid.json"
         status: "failed"
   discovery:
     tests:
       - config_path: "secrets/config_client_credentials.json"
+      - config_path: "secrets/config_oauth.json"
   basic_read:
     tests:
       # Restore expect_records from a regenerated live Harvest v3 read before enabling fixture validation.
       - config_path: "secrets/config_client_credentials.json"
         empty_streams:
           # These four hold no records on the test account and cannot be seeded through
+          # Harvest v3: eeoc and demographics_answers only exist once a candidate submits
+          # the questionnaire themselves (POST /v3/eeoc returns 404 - there is no write
+          # endpoint), and job_posts and offers need a published post and a live offer.
+          # eeoc has a mock read test in unit_tests/test_pagination.py; the other three
+          # are covered only by the schema in discover.
+          - name: eeoc
+            bypass_reason: "Test account has no submitted EEOC responses"
+          - name: demographics_answers
+            bypass_reason: "Test account has no submitted demographic answers"
+          - name: job_posts
+            bypass_reason: "Test account has no published job posts"
+          - name: offers
+            bypass_reason: "Test account has no offers"
+      - config_path: "secrets/config_oauth.json"
+        empty_streams:
+          # Same empty streams as the client-credentials lane above. These four hold no records on the test account and cannot be seeded through
           # Harvest v3: eeoc and demographics_answers only exist once a candidate submits
           # the questionnaire themselves (POST /v3/eeoc returns 404 - there is no write
           # endpoint), and job_posts and offers need a published post and a live offer.
