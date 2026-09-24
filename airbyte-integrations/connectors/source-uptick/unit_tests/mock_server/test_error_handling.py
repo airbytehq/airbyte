@@ -153,7 +153,7 @@ def test_401_with_rejected_refresh_fails_fast_as_config_error(virtual_clock: lis
     assert len(matching) == 1, f"expected exactly one config_error from the rejected refresh, got {output.errors}"
     assert not any("Exhausted available request attempts" in error.message for error in _stream_errors(output)), output.errors
     assert virtual_clock == []
-    http_mocker.assert_number_of_calls(_TOKEN_REQUEST, 2)
+    http_mocker.assert_number_of_calls(_TOKEN_REQUEST, 2)  # initial grant + the one rejected refresh
     http_mocker.assert_number_of_calls(_PAGE_REQUEST, 1)
 
 
@@ -185,8 +185,9 @@ def test_401_after_successful_refresh_fails_as_config_error(virtual_clock: list[
         error for error in _stream_errors(output) if error.failure_type == FailureType.config_error and _401_MESSAGE in error.message
     ]
     assert len(matching) == 1, f"expected exactly one config_error containing {_401_MESSAGE}, got {output.errors}"
-    assert virtual_clock == []
-    http_mocker.assert_number_of_calls(_TOKEN_REQUEST, 2)
+    # One handler backoff sleep before the single retry; not a refresh loop.
+    assert virtual_clock == [11.0, 0]
+    http_mocker.assert_number_of_calls(_TOKEN_REQUEST, 2)  # initial grant + one refresh
     http_mocker.assert_number_of_calls(_PAGE_REQUEST, 1)
     http_mocker.assert_number_of_calls(refreshed_page_request, 1)
 
