@@ -234,10 +234,10 @@ class PostgresSourceDebeziumOperations(
             var mappedValue: JsonNode?
             if (field.type is ArrayFieldType<*>) {
                 val rawArray = data[field.id]
-                // A NULL array, and an array whose key is absent from the Debezium image, must both
-                // map to an explicit null rather than to a Kotlin null: on the socket/protobuf path
-                // a field missing from the payload leaves the reused protobuf builder's slot
-                // untouched, i.e. holding the previous record's value.
+                // on the socket/protobuf path a field missing from the payload leaves the reused
+                // protobuf builder's slot untouched, i.e. holding the previous record's value.
+                // A NULL array and an array whose key is absent from the Debezium image, must both
+                // map to an explicit null.
                 mappedValue =
                     if (rawArray == null || rawArray is NullNode) NullNode.getInstance()
                     else {

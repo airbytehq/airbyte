@@ -33,11 +33,11 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * `deserializeRecord` has to uphold for the socket/protobuf output path: every field of the stream
+ * testing `deserializeRecord` for socket/protobuf output path: every field of the stream
  * schema ends up in the payload, including the ones whose value is NULL, whose key is missing from
  * the Debezium image, or whose mapping failed.
  *
- * The protobuf record consumer reuses one builder for the whole sync and only writes the slots of
+ * The protobuf record consumer reuses one builder for the whole sync and only overwrites the slots of
  * the fields present in the payload, so a field left out of the payload keeps the previous record's
  * value on the wire (oncall 13042).
  */
@@ -88,7 +88,7 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
 
     @Test
     fun `a NULL array is written as an explicit null`() {
-        val record = deserializeInsert("""{"id": 1, "name": "null first", "tags": null}""")
+        val record = deserialize("""{"id": 1, "name": "null first", "tags": null}""")
 
         assertExplicitNull(record, "tags")
         assertTrue(record.changes.isEmpty(), "a NULL value is not a change: ${record.changes}")
@@ -96,8 +96,8 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
     }
 
     @Test
-    fun `an array whose key is absent from the image is written as an explicit null`() {
-        val record = deserializeInsert("""{"id": 1, "name": "no tags key"}""")
+    fun `absent column from the image is written as an explicit null`() {
+        val record = deserialize("""{"id": 1, "name": "no tags key"}""")
 
         assertExplicitNull(record, "tags")
         assertTrue(record.changes.isEmpty(), "an absent key is not a change: ${record.changes}")
@@ -106,7 +106,7 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
 
     @Test
     fun `an empty array stays an empty array`() {
-        val record = deserializeInsert("""{"id": 1, "tags": []}""")
+        val record = deserialize("""{"id": 1, "tags": []}""")
 
         val tags = assertNotNull(record.data["tags"])
         assertEquals(emptyList<String>(), tags.fieldValue)
@@ -115,7 +115,7 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
 
     @Test
     fun `a populated array is decoded element by element`() {
-        val record = deserializeInsert("""{"id": 1, "tags": ["Other", "previously-resolved"]}""")
+        val record = deserialize("""{"id": 1, "tags": ["Other", "previously-resolved"]}""")
 
         val tags = assertNotNull(record.data["tags"])
         assertEquals(listOf("Other", "previously-resolved"), tags.fieldValue)
@@ -124,7 +124,7 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
 
     @Test
     fun `array columns are independent of each other within a record`() {
-        val record = deserializeInsert("""{"id": 1, "tags": null, "notes": ["kept"]}""")
+        val record = deserialize("""{"id": 1, "tags": null, "notes": ["kept"]}""")
 
         assertExplicitNull(record, "tags")
         assertEquals(listOf("kept"), assertNotNull(record.data["notes"]).fieldValue)
@@ -132,7 +132,7 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
 
     @Test
     fun `a NULL scalar is written as an explicit null`() {
-        val record = deserializeInsert("""{"id": 1, "name": null}""")
+        val record = deserialize("""{"id": 1, "name": null}""")
 
         assertExplicitNull(record, "name")
         assertTrue(record.changes.isEmpty())
@@ -140,7 +140,7 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
 
     @Test
     fun `a scalar whose key is absent from the image is written as an explicit null`() {
-        val record = deserializeInsert("""{"id": 1}""")
+        val record = deserialize("""{"id": 1}""")
 
         assertExplicitNull(record, "name")
         assertTrue(record.changes.isEmpty(), "an absent key is not a change: ${record.changes}")
@@ -148,10 +148,9 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
     }
 
     @Test
-    fun `a scalar whose mapping fails is written as an explicit null and flagged`() {
-        // BigDecimalFieldType routes a non-numeric node through BigDecimal(input.textValue()),
-        // which throws, so mapValue() returns a failure and the mapped value is a Kotlin null.
-        val record = deserializeInsert("""{"id": 1, "amount": "not-a-number"}""")
+    fun `a bigDecimal whose mapping fails is written as an explicit null and flagged`() {
+        // mapValue() should return a failure and the mapped value is a Kotlin null.
+        val record = deserialize("""{"id": 1, "amount": "not-a-number"}""")
 
         assertExplicitNull(record, "amount")
         assertEquals(
@@ -163,8 +162,8 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
 
     @Test
     fun `a delete image carrying only the primary key writes explicit nulls for the rest`() {
-        // With REPLICA IDENTITY DEFAULT the `before` image of a delete holds the primary key and
-        // little else; every other column has to be nulled out rather than left to the reused
+        // With REPLICA IDENTITY DEFAULT the `before` image of a delete holds the primary key -
+        // every other column has to be nulled out rather than left to the reused
         // protobuf builder.
         val record = deserialize(before = """{"id": 42}""", after = "null")
 
@@ -183,7 +182,7 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
 
     @Test
     fun `cdc meta fields survive the schema loop`() {
-        val record = deserializeInsert("""{"id": 1, "tags": null}""")
+        val record = deserialize("""{"id": 1, "tags": null}""")
 
         assertEquals(
             transactionTimestamp,
@@ -200,10 +199,11 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
     private val transactionTimestamp: OffsetDateTime
         get() = OffsetDateTime.ofInstant(Instant.ofEpochMilli(TRANSACTION_MILLIS), ZoneOffset.UTC)
 
-    private fun deserializeInsert(after: String): DeserializedRecord =
-        deserialize(before = "null", after = after)
-
-    private fun deserialize(before: String, after: String): DeserializedRecord {
+    /**
+     * A [before] of `"null"` is an insert. An [after] of `"null"` is a delete, which is how
+     * `deserializeRecord` tells them apart (`isDelete = after.isNull`).
+     */
+    private fun deserialize(after: String, before: String = "null"): DeserializedRecord {
         val value =
             DebeziumRecordValue(
                 Jsons.readTree(
@@ -224,10 +224,10 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
         return ops.deserializeRecord(DebeziumRecordKey(Jsons.objectNode()), value, stream)
     }
 
-    private fun assertExplicitNull(record: DeserializedRecord, id: String) {
-        val fve = assertNotNull(record.data[id], "$id is missing from the record payload")
-        assertNull(fve.fieldValue, "$id should hold a null value")
-        assertEquals(NullCodec, fve.jsonEncoder, "$id should be encoded with NullCodec")
+    private fun assertExplicitNull(record: DeserializedRecord, column: String) {
+        val fve = assertNotNull(record.data[column], "$column is missing from the record payload")
+        assertNull(fve.fieldValue, "$column should hold a null value")
+        assertEquals(NullCodec, fve.jsonEncoder, "$column should be encoded with NullCodec")
     }
 
     private fun assertAllSchemaFieldsPresent(record: DeserializedRecord) {
