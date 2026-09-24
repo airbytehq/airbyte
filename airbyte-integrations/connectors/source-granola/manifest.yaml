@@ -335,7 +335,7 @@ definitions:
         - 503
         - 504
       action: RETRY
-      failure_type: system_error
+      failure_type: transient_error
       error_message: "Granola returned a server error; retrying."
 
   base_error_handler:

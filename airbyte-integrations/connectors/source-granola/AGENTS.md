@@ -24,7 +24,7 @@ The `deleted_notes` stream additionally accepts an optional `audit_api_key` conf
 
 - `401`/`403` → `FAIL` with `failure_type: config_error`, naming the API key.
 - `429` → `RATE_LIMITED`; backoff honors `Retry-After` up to 60 seconds, then exponential backoff with factor 5, `max_retries: 5`.
-- `500`/`502`/`503`/`504` → `RETRY` with `failure_type: system_error`.
+- `500`/`502`/`503`/`504` → `RETRY` with `failure_type: transient_error`.
 - `413` on `detailed_notes` and `404` on `note_transcripts` → `IGNORE` (see Oversized Transcripts).
 - `404` on `deleted_notes` → `FAIL` with `config_error`, because a notes key cannot read `/v1/audit`.
 
