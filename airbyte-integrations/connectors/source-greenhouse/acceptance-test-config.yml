@@ -2,23 +2,28 @@
 # for more information about how to configure these tests
 connector_image: airbyte/source-greenhouse:dev
 test_strictness_level: "high"
+# Live lanes use the ClientCredentials branch: its credential is a static, read-only
+# Harvest v3 custom integration on the test account, so it survives consecutive runs. The
+# OAuth branch's refresh token is single-use and rotates on every refresh, and CI never
+# writes the rotated token back, so a config_oauth.json lane dies after its first run.
+# The OAuth branch is covered by the mock tests in unit_tests/test_pagination.py.
 acceptance_tests:
   spec:
     tests:
       - spec_path: "manifest.yaml"
   connection:
     tests:
-      - config_path: "secrets/config_oauth.json"
+      - config_path: "secrets/config_client_credentials.json"
         status: "succeed"
       - config_path: "integration_tests/config_invalid.json"
         status: "failed"
   discovery:
     tests:
-      - config_path: "secrets/config_oauth.json"
+      - config_path: "secrets/config_client_credentials.json"
   basic_read:
     tests:
       # Restore expect_records from a regenerated live Harvest v3 read before enabling fixture validation.
-      - config_path: "secrets/config_oauth.json"
+      - config_path: "secrets/config_client_credentials.json"
         empty_streams:
           # These four hold no records on the test account and cannot be seeded through
           # Harvest v3: eeoc and demographics_answers only exist once a candidate submits
@@ -36,11 +41,11 @@ acceptance_tests:
             bypass_reason: "Test account has no offers"
   full_refresh:
     tests:
-      - config_path: "secrets/config_oauth.json"
+      - config_path: "secrets/config_client_credentials.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
   incremental:
     tests:
-      - config_path: "secrets/config_oauth.json"
+      - config_path: "secrets/config_client_credentials.json"
         configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"

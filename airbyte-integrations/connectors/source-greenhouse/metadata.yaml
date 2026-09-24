@@ -110,6 +110,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GREENHOUSE__CREDS_CLIENT_CREDENTIALS
+          fileName: config_client_credentials.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
     - title: Greenhouse Harvest API
       url: https://harvestdocs.greenhouse.io/
