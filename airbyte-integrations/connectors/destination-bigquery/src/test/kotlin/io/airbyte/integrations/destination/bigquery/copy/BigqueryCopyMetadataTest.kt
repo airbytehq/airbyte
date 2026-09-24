@@ -485,6 +485,121 @@ class BigqueryCopyMetadataTest {
         assertTrue(append["deduplication_cursor"].isNull)
     }
 
+    @ParameterizedTest
+    @CsvSource(
+        "false,false,JSONL",
+        "false,true,JSONL",
+        "true,false,JSONL",
+        "true,true,JSONL",
+        "false,false,PROTOBUF",
+        "false,true,PROTOBUF",
+        "true,false,PROTOBUF",
+        "true,true,PROTOBUF",
+    )
+    fun `prepare preserves deselected append keys and cursor without inventing output mappings`(
+        raw: Boolean,
+        standard: Boolean,
+        format: DataChannelFormat,
+    ) = runBlocking {
+        val stream =
+            stream().copy(schema = ObjectType(linkedMapOf("name" to FieldType(StringType, true))))
+        val keys = listOf(listOf("id"), listOf("name"))
+        val cursor = listOf("updated_at")
+        val configured = stream.asProtocolObject().withPrimaryKey(keys).withCursorField(cursor)
+        val configuration =
+            if (standard) bigquery(raw).copy(loadingMethod = BatchedStandardInsertConfiguration)
+            else bigquery(raw)
+        val metadata =
+            BigqueryCopyMetadata(
+                config,
+                configuration,
+                names(stream),
+                runId,
+                format,
+                ConfiguredAirbyteCatalog().withStreams(listOf(configured)),
+            )
+        val uploaded = mutableMapOf<String, JsonNode>()
+        val uploader =
+            object : ArchiveUploader {
+                override suspend fun validateCredentials() = Unit
+
+                override fun close() = Unit
+
+                override suspend fun upload(
+                    path: Path,
+                    key: String,
+                    contentType: String,
+                    metadata: Map<String, String>,
+                ) {
+                    uploaded[key] = Jsons.readTree(Files.readAllBytes(path))
+                }
+            }
+        EnabledBigqueryS3Copy(
+                config,
+                configuration,
+                metadata,
+                runId,
+                { uploader },
+                spoolDirectory = directory,
+            )
+            .use { archive ->
+                archive.prepare(DestinationCatalog(listOf(stream)))
+                assertTrue(archive.metadataReady())
+                val descriptor = uploaded.getValue(archive.context(stream).runPath + "/schema.json")
+                val layout = descriptor["layout"]
+                for (node in listOf(descriptor, layout)) {
+                    assertEquals(keys, node["primary_key"].map { it.map(JsonNode::asText) })
+                    assertEquals(cursor, node["cursor"].map(JsonNode::asText))
+                }
+                assertEquals(configured.stream.jsonSchema, descriptor["source_schema"])
+                assertTrue(layout["deduplication_cursor"].isNull)
+                val missing = listOf(layout["primary_key_mapping"][0], layout["cursor_mapping"][0])
+                missing.zip(listOf(listOf("id"), cursor)).forEach { (mapping, path) ->
+                    assertEquals(path, mapping["source_path"].map(JsonNode::asText))
+                    if (raw) {
+                        // Raw serialization retains arbitrary source fields inside _airbyte_data.
+                        assertEquals("_airbyte_data", mapping["target_column"].asText())
+                        assertEquals(
+                            listOf("_airbyte_data") + path,
+                            mapping["target_path"].map(JsonNode::asText),
+                        )
+                    } else {
+                        val outputFields =
+                            listOf("target_column", "path_within_column", "target_path") +
+                                if (standard) listOf("json_field")
+                                else listOf("csv_ordinal", "csv_header")
+                        outputFields.forEach { field ->
+                            assertTrue(mapping.has(field), "Explicit null required for $field")
+                            assertTrue(mapping[field].isNull, "Unavailable $field must be null")
+                        }
+                    }
+                }
+                val selected = layout["primary_key_mapping"][1]
+                assertEquals(listOf("name"), selected["source_path"].map(JsonNode::asText))
+                assertEquals(
+                    if (raw) "_airbyte_data" else "mapped_0",
+                    selected["target_column"].asText(),
+                )
+                if (standard) assertEquals(selected["target_column"], selected["json_field"])
+                else assertEquals(4, selected["csv_ordinal"].asInt())
+            }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `typed dedupe still rejects missing configured output fields`(standard: Boolean) {
+        val stream =
+            stream()
+                .copy(
+                    schema = ObjectType(linkedMapOf("name" to FieldType(StringType, true))),
+                    importType = Dedupe(listOf(listOf("id")), emptyList()),
+                )
+        val metadata = metadata(stream, standard = standard)
+        val failure =
+            assertThrows(IllegalArgumentException::class.java) { metadata.descriptor(stream) }
+        assertTrue(failure.message!!.contains("Configured key/cursor field id is absent"))
+    }
+
     @Test
     fun `append retains configured keys and cursor from original catalog`() {
         val stream = stream().copy(namespaceMapper = NamespaceMapper(streamPrefix = "destination_"))

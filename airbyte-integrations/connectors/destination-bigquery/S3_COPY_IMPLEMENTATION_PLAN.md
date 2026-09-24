@@ -303,6 +303,15 @@ Raw mode's CSV order is `_airbyte_raw_id`, `_airbyte_extracted_at`, `_airbyte_me
 `_airbyte_generation_id`, `_airbyte_data`. It omits `_airbyte_loaded_at`, even though that field
 exists in `SCHEMA_V2`. Do not use the final raw-table schema as the CSV descriptor.
 
+Configured keys and cursors may reference deselected fields in valid append/overwrite catalogs,
+even when `source_schema` contains only the selected fields. Preserve those configured paths.
+Each unavailable typed-output mapping retains `source_path` and serializes explicit JSON null for
+`target_column`, `path_within_column`, and `target_path`, plus `csv_ordinal`/`csv_header` for GCS
+or `json_field` for standard inserts. Never emit ordinal `-1` or infer a nonexistent target.
+Selected and composite mappings remain unchanged. Raw mappings continue to reference the existing
+`_airbyte_data` container and original path; this does not promise every row contains that path.
+Typed dedupe still rejects missing output fields required by its existing key/cursor semantics.
+
 Include `import_type`, configured `primary_key` paths, and configured `cursor` path. Preserve
 original paths and their target-column mapping for direct mode. In raw mode identify those as
 paths inside `_airbyte_data`, not nonexistent top-level CSV columns. Empty arrays indicate no

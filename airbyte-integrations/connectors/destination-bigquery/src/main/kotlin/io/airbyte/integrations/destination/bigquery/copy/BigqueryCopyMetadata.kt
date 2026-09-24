@@ -111,28 +111,32 @@ class BigqueryCopyMetadata(
         fun pathMapping(path: List<String>): Map<String, Any?> {
             require(path.isNotEmpty()) { "Configured BigQuery key paths must not be empty" }
             val header = if (raw) Meta.COLUMN_NAME_DATA else path.first()
-            val ordinal = if (gcs) headers.indexOf(header) else -1
+            val ordinal = if (gcs) headers.indexOf(header).takeIf { it >= 0 } else null
             val target =
-                if (gcs) {
-                    require(ordinal >= 0) {
-                        "Configured key/cursor field $header is absent from the CSV"
-                    }
-                    fields[ordinal].name
-                } else {
+                if (gcs) ordinal?.let { fields[it].name }
+                else {
                     val mapped =
                         if (raw) Meta.COLUMN_NAME_DATA else tableInfo.columnNameMapping[header]
-                    requireNotNull(mapped?.takeIf { name -> fields.any { it.name == name } }) {
-                        "Configured key/cursor field $header is absent from the standard insert schema"
-                    }
+                    mapped?.takeIf { name -> fields.any { it.name == name } }
                 }
-            val withinColumn = if (raw) path else path.drop(1)
+            // Append/overwrite may retain configured source keys that were deselected. They
+            // describe the source contract without claiming that the load payload contains them.
+            // Dedupe still requires the output fields used by its existing load semantics.
+            require(target != null || stream.importType !is Dedupe) {
+                "Configured key/cursor field $header is absent from the ${if (gcs) "CSV" else "standard insert schema"}"
+            }
+            val withinColumn = target?.let { if (raw) path else path.drop(1) }
             return mapOf("source_path" to path) +
-                (if (gcs) mapOf("csv_ordinal" to ordinal, "csv_header" to header)
+                (if (gcs)
+                    mapOf(
+                        "csv_ordinal" to ordinal,
+                        "csv_header" to header.takeIf { target != null },
+                    )
                 else mapOf("json_field" to target)) +
                 mapOf(
                     "target_column" to target,
                     "path_within_column" to withinColumn,
-                    "target_path" to (listOf(target) + withinColumn),
+                    "target_path" to target?.let { listOf(it) + requireNotNull(withinColumn) },
                 )
         }
 
