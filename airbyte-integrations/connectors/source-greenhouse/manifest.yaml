@@ -2342,10 +2342,10 @@ spec:
                 type: integer
                 title: Site Admin user ID
                 description: >-
-                  The Greenhouse user ID of the Site Admin to authorize as. Every
-                  Harvest v3 list endpoint requires Site Admin authorization. If you
-                  omit this, Greenhouse authorizes as the credential's integration
-                  service user, which must itself be a Site Admin.
+                  Optional. Leave blank to authorize as the credential's integration
+                  service user, which can read every Harvest v3 list endpoint. If you
+                  set it, it must be the Greenhouse user ID of a Site Admin; any other
+                  user is denied access to the list endpoints the connector reads.
                 examples:
                   - 1234567
                 order: 3

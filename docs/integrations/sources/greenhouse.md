@@ -9,18 +9,18 @@ Harvest v3 supports two authentication paths, and the credential type must match
 - **OAuth (Authorization Code, `Client`)** uses Airbyte's registered Greenhouse partner application. In Airbyte Cloud, select **OAuth** and click **Authenticate** to complete the Greenhouse consent flow. Greenhouse issues partner credentials only to integration partners, so this path is only available in Airbyte Cloud.
 - **Client Credentials (`ClientCredentials`)** uses a customer-created **Harvest V3 (OAuth)** custom integration credential. Create this credential in Greenhouse and enter its client ID and client secret directly in the source. Use this path for self-managed Airbyte and for credentials you created yourself.
 
-Every Harvest v3 list endpoint requires Site Admin authorization. For Client Credentials, provide the optional Site Admin `sub` user ID unless the custom integration's service user is itself a Site Admin. For OAuth, the Greenhouse user who approves the consent flow must be a Site Admin.
+Harvest v3 list endpoints only accept a Site Admin or a custom integration's service user. For Client Credentials, leave the optional **Site Admin user ID** (`sub`) blank to authorize as the integration's service user, which can read every list endpoint; if you set it, it must be a Site Admin's user ID. For OAuth, the Greenhouse user who approves the consent flow must be a Site Admin.
 
 ## Prerequisites
 
-The OAuth path authenticates through Airbyte's registered Greenhouse partner application. You don't create, request, or register a Greenhouse OAuth application of your own: Greenhouse issues Harvest v3 partner credentials only to integration partners, not to Greenhouse customers, and doesn't permit customers to connect through their own applications. Airbyte supplies the client ID and client secret during the consent flow.
+The OAuth path authenticates through Airbyte's registered Greenhouse partner application. You don't create, request, or register a Greenhouse OAuth application of your own: Greenhouse issues Harvest v3 partner credentials only to integration partners, not to Greenhouse customers, and doesn't let customers use their own OAuth applications for this consent flow. Airbyte supplies the client ID and client secret during the consent flow. To use a credential you created yourself in Greenhouse, choose **Client Credentials** instead.
 
 To set up the source with OAuth, you need:
 
 - An Airbyte Cloud workspace. The consent flow relies on Airbyte's partner credentials, which are only available in Airbyte Cloud.
 - A Greenhouse user who is a Site Admin to approve the consent flow.
 
-To set up the source with Client Credentials, you need a Greenhouse **Harvest V3 (OAuth)** custom integration credential and, unless its service user is a Site Admin, the user ID of a Site Admin to authorize as.
+To set up the source with Client Credentials, you need a Greenhouse **Harvest V3 (OAuth)** custom integration credential. Creating one requires access to **Configure** > **Dev Center** > **API Credential Management** in Greenhouse.
 
 The consent flow requests these scopes; approve all of them. For Client Credentials, grant the custom integration the same scopes:
 
@@ -86,13 +86,13 @@ Greenhouse ties the scopes to the refresh token it issued when you approved the 
 4. Enter the name for the Greenhouse connector.
 5. Select **OAuth** or **Client Credentials**.
    - For **OAuth**, click **Authenticate**, sign in to Greenhouse as a Site Admin, and approve the requested scopes. Airbyte fills in its partner application's client ID and client secret and stores the resulting refresh token. You don't enter any Greenhouse credentials yourself.
-   - For **Client Credentials**, enter the custom integration's **Client ID** and **Client secret**, and optionally the **Site Admin user ID** to authorize as.
+   - For **Client Credentials**, enter the custom integration's **Client ID** and **Client secret**, Leave **Site Admin user ID** blank unless you want the connector to authorize as a specific Site Admin instead of the integration's service user.
 6. Optionally enter a **Start date** in UTC using the format `YYYY-MM-DDTHH:MM:SSZ`. Records updated before this date will not be replicated. If omitted, the connector replicates all history.
 7. Optionally change **Number of concurrent threads**. The connector syncs with 2 threads by default and accepts 1 to 8. All threads share one Greenhouse rate limit, so raise this only if your Greenhouse account can absorb more API traffic, and lower it to 1 if syncs fail with rate-limit errors.
 8. Click **Set up source**.
 
 :::warning
-Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh. Set connections to sync more often than once a day. A connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings. See [Troubleshooting](#troubleshooting) for the error this produces.
+This applies to OAuth only; Client Credentials has no refresh token. Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh. Set connections to sync more often than once a day. A connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings. See [Troubleshooting](#troubleshooting) for the error this produces.
 :::
 
 ## Supported sync modes
@@ -216,14 +216,23 @@ The connector requests 500 records per page, the Harvest v3 maximum, and then fo
 
 ### Sync fails with a configuration error asking you to re-authenticate
 
+This section covers OAuth. If you use Client Credentials, see [Client Credentials authentication fails](#client-credentials-authentication-fails).
+
 The connector can't renew its access token because Greenhouse rejected the refresh token. Starting with version 1.0.1, the connector reports this as a configuration error instead of a system error. The Greenhouse error code in the sync log tells you what to fix:
 
 - `invalid_grant`: the refresh token expired or was invalidated. This happens when the connection hasn't synced for more than about 24 hours, or when another tool used the same refresh token, which causes Greenhouse to issue a new one that Airbyte never receives. Open the source settings, click **Authenticate**, and complete the consent flow again to store a new refresh token. Run the consent flow separately for each Airbyte source; don't reuse one refresh token across sources or other tools.
 - `invalid_client` or `unauthorized_client`: Greenhouse rejected the partner application credentials Airbyte used for the refresh, or that application isn't allowed to use the refresh token grant. Open the source settings, click **Authenticate**, and complete the consent flow again. If the error persists, contact Airbyte support; there are no credentials for you to correct on your side.
 
+### Client Credentials authentication fails
+
+With Client Credentials the connector requests a new access token from Greenhouse with your client ID and secret, and there's no refresh token to renew. The error message still says the refresh token was rejected and asks you to re-authenticate, because it's shared with OAuth. Use the Greenhouse error code at the end of the message instead:
+
+- `invalid_client`: Greenhouse doesn't recognize the client ID and client secret. Check both values against the credential in **Configure** > **Dev Center** > **API Credential Management**, and make sure the credential hasn't been revoked.
+- `invalid_grant`: the **Site Admin user ID** doesn't match a Greenhouse user. Correct it, or leave it blank to authorize as the integration's service user.
+
 ### Sync fails with a `403` configuration error on a stream
 
-The authorizing user isn't a Site Admin, or the consent flow didn't include the scope for that stream. This is expected when you enable one of the [streams added in 1.2.0](#streams-added-in-120) on a source you authorized before that version. Compare the scopes in [Prerequisites](#prerequisites) with the ones you approved, then open the source settings, click **Authenticate**, and re-run the consent flow as a Site Admin.
+The authorizing user isn't a Site Admin, or the consent flow didn't include the scope for that stream. This is expected when you enable one of the [streams added in 1.2.0](#streams-added-in-120) on a source you authorized before that version. Compare the scopes in [Prerequisites](#prerequisites) with the ones you approved, then open the source settings, click **Authenticate**, and re-run the consent flow as a Site Admin. With Client Credentials, grant the missing scope to the credential in Greenhouse, and check that **Site Admin user ID** is blank or belongs to a Site Admin.
 
 ### A stream returns fewer records after upgrading to 1.1.0
 

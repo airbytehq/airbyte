@@ -1311,6 +1311,28 @@ def test_oauth_refresh_failure_surfaces_reauthenticate_config_error(status_code,
     ]
 
 
+# Bodies captured from https://auth.greenhouse.io/token on the client_credentials grant.
+@pytest.mark.parametrize(
+    "status_code, body",
+    [
+        pytest.param(401, {"error": "invalid_client"}, id="wrong_client_id_or_secret"),
+        pytest.param(400, {"error": "invalid_grant", "error_description": "User from sub field not found"}, id="unknown_sub"),
+    ],
+)
+def test_client_credentials_token_failure_surfaces_config_error(status_code, body, requests_mock, get_source):
+    requests_mock.post("https://auth.greenhouse.io/token", status_code=status_code, json=body)
+
+    source = get_source(CLIENT_CREDENTIALS_CONFIG_WITH_SUB)
+    catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
+    output = read(source, config=CLIENT_CREDENTIALS_CONFIG_WITH_SUB, catalog=catalog, expecting_exception=True)
+
+    assert output.errors
+    assert all(trace.trace.error.failure_type == FailureType.config_error for trace in output.errors), [
+        (trace.trace.error.failure_type, trace.trace.error.message) for trace in output.errors
+    ]
+    assert any(body["error"] in trace.trace.error.message for trace in output.errors)
+
+
 # Every Harvest v3 parity stream reads one list endpoint with the shared offers shape. These mocks
 # pin the request contract; live reads against the test account cover the records themselves.
 PARITY_STREAM_ENDPOINTS = {
