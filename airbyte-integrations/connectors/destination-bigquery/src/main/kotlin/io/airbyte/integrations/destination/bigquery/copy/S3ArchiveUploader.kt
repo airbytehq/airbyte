@@ -73,6 +73,14 @@ interface ArchiveUploader {
         metadata: Map<String, String> = emptyMap(),
     )
 
+    fun startStreaming(
+        key: String,
+        contentType: String,
+        metadata: Map<String, String>,
+        directory: Path? = null,
+    ): StreamingArchiveUpload =
+        throw UnsupportedOperationException("Streaming archive upload is not supported")
+
     fun close()
 }
 
@@ -118,6 +126,10 @@ internal constructor(
     private val poisoned = AtomicBoolean()
     private val transfers = mutableSetOf<Transfer>()
     private val slots = Semaphore(4)
+    private val streamingParts = Semaphore(8)
+    private val streamingBudget = StreamingArchiveDiskBudget()
+    private val streaming = mutableSetOf<StreamingArchiveUpload>()
+    private val log = io.github.oshai.kotlinlogging.KotlinLogging.logger {}
     private val cleanupWorkers = Executors.newFixedThreadPool(4) { daemon(it, "fusion-s3-cleanup") }
     private val shutdownHook =
         if (installShutdownHook) Thread({ close() }, "fusion-s3-shutdown") else null
@@ -186,15 +198,52 @@ internal constructor(
         }
     }
 
+    override fun startStreaming(
+        key: String,
+        contentType: String,
+        metadata: Map<String, String>,
+        directory: Path?,
+    ): StreamingArchiveUpload =
+        synchronized(lock) {
+            checkAvailable()
+            lateinit var session: StreamingS3ArchiveUpload
+            session =
+                StreamingS3ArchiveUpload(
+                    client,
+                    bucket,
+                    key,
+                    contentType,
+                    metadata,
+                    directory,
+                    budget = streamingBudget,
+                    globalParts = streamingParts,
+                    cleanupWorkers = cleanupWorkers,
+                    cleanupTimeout = cleanupTimeout,
+                    bodyFactory = bodyFactory,
+                    checkAvailable = ::checkAvailable,
+                    onUnsafe = { error ->
+                        poisoned.set(true)
+                        log.error(error) {
+                            "Fusion streaming archive cleanup failed: key=$key retained_spool_bytes=${streamingBudget.retainedBytes()}"
+                        }
+                    },
+                    onClosed = { synchronized(lock) { streaming.remove(session) } },
+                )
+            streaming.add(session)
+            session
+        }
+
     private fun checkAvailable() {
         check(!closed.get()) { "Archive uploader is closed" }
         check(!poisoned.get()) { "Archive uploader disabled after a file reader cleanup failure" }
     }
 
     override fun close() {
+        val activeStreaming: List<StreamingArchiveUpload>
         val active =
             synchronized(lock) {
                 if (!closed.compareAndSet(false, true)) return
+                activeStreaming = streaming.toList()
                 transfers.toList()
             }
         active.forEach { it.future.get()?.cancel(true) }
@@ -210,6 +259,7 @@ internal constructor(
                         if (failure == null) failure = t else failure!!.addSuppressed(t)
                     }
                 }
+                activeStreaming.forEach { session -> attempt { session.close() } }
                 active.forEach { transfer ->
                     attempt { transfer.body.stop(cleanupWorkers, cleanupTimeout) }
                 }

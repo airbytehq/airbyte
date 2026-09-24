@@ -51,12 +51,19 @@ import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.UUID
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -134,6 +141,7 @@ class BigqueryBatchStandardInsertCopyTest {
         loader.accept(fixture.record())
         val finish = launch(start = CoroutineStart.UNDISPATCHED) { loader.finish() }
         assertTrue(fixture.batch.entered.isCompleted)
+        assertEquals(1, fixture.batch.seals)
         assertFalse(finish.isCompleted)
         verify(exactly = 1) { fixture.job.waitFor(any<RetryOption>()) }
         assertTrue(fixture.batch.completions.isEmpty())
@@ -141,6 +149,94 @@ class BigqueryBatchStandardInsertCopyTest {
         finish.join()
         assertEquals(listOf(7L), fixture.batch.completions)
     }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `seal precedes final buffered write and BigQuery close and job wait`(streaming: Boolean) =
+        runTest {
+            val fixture = Fixture()
+            val events = mutableListOf<String>()
+            fixture.batch.onSeal = { events.add("seal") }
+            if (!streaming)
+                fixture.beforeWrite = {
+                    assertEquals(
+                        listOf("seal"),
+                        events,
+                        "Seal must precede the buffered BigQuery write"
+                    )
+                }
+            every { fixture.writer.close() } answers
+                {
+                    assertEquals(listOf("seal"), events)
+                    events.add("BigQuery close")
+                }
+            every { fixture.job.waitFor(any<RetryOption>()) } answers
+                {
+                    assertEquals(listOf("seal", "BigQuery close"), events)
+                    events.add("BigQuery wait")
+                    fixture.job
+                }
+            val loader = fixture.loader()
+            loader.accept(fixture.record(if (streaming) "x".repeat(15 * 1024 * 1024) else "small"))
+            assertEquals(0, fixture.batch.seals)
+            loader.finish()
+            assertEquals(listOf("seal", "BigQuery close", "BigQuery wait"), events)
+            assertEquals(1, fixture.batch.seals)
+            assertEquals(listOf(7L), fixture.batch.completions)
+        }
+
+    @Test
+    fun `finished S3 upload cannot acknowledge while BigQuery load is pending`() = runBlocking {
+        withTimeout(10_000) {
+            val fixture = Fixture()
+            val loadEntered = CountDownLatch(1)
+            val releaseLoad = CountDownLatch(1)
+            fixture.batch.gate = CompletableDeferred()
+            fixture.batch.onSeal = { fixture.batch.gate!!.complete(Unit) }
+            every { fixture.job.waitFor(any<RetryOption>()) } answers
+                {
+                    loadEntered.countDown()
+                    check(releaseLoad.await(5, TimeUnit.SECONDS))
+                    fixture.job
+                }
+            val loader = fixture.loader()
+            loader.accept(fixture.record())
+            val finish = async(Dispatchers.IO) { loader.finish() }
+            try {
+                withContext(Dispatchers.IO) { assertTrue(loadEntered.await(5, TimeUnit.SECONDS)) }
+                assertEquals(1, fixture.batch.seals)
+                assertTrue(fixture.batch.gate!!.isCompleted, "S3 finished before the load job")
+                assertFalse(finish.isCompleted, "No successful finish until BigQuery also succeeds")
+                assertTrue(fixture.batch.completions.isEmpty())
+                releaseLoad.countDown()
+                finish.await()
+                assertEquals(listOf(7L), fixture.batch.completions)
+            } finally {
+                releaseLoad.countDown()
+                finish.cancelAndJoin()
+                loader.close()
+            }
+        }
+    }
+
+    @Test
+    fun `seal failure aborts finish before waiting for BigQuery and cleans up both resources`() =
+        runTest {
+            val fixture = Fixture()
+            val failure = IOException("final S3 upload could not start")
+            fixture.batch.onSeal = { throw failure }
+            val loader = fixture.loader()
+            loader.accept(fixture.record())
+            assertSame(failure, assertThrows<IOException> { loader.finish() })
+            assertEquals(1, fixture.batch.seals)
+            assertEquals(1, fixture.batch.closes)
+            assertTrue(fixture.batch.completions.isEmpty())
+            verify(exactly = 0) { fixture.job.waitFor(any<RetryOption>()) }
+            verify(exactly = 0) { fixture.writer.close() }
+            verify(exactly = 0) { fixture.bigquery.writer(any<JobId>(), any()) }
+            loader.close()
+            assertEquals(1, fixture.batch.closes)
+        }
 
     enum class LoadFailure {
         CREATE,
@@ -389,10 +485,17 @@ class BigqueryBatchStandardInsertCopyTest {
         var completeFailure: Throwable? = null
         var closeFailure: Throwable? = null
         var closes = 0
+        var seals = 0
+        var onSeal: () -> Unit = {}
 
         override fun append(bytes: ByteArray) {
             appendFailure?.let { throw it }
             appended.add(bytes)
+        }
+
+        override fun seal() {
+            seals++
+            onSeal()
         }
 
         override suspend fun complete(loadedRecordCount: Long) {
@@ -431,6 +534,7 @@ class BigqueryBatchStandardInsertCopyTest {
         val batch = Batch()
         val written = ByteArrayOutputStream()
         val formatted = mutableListOf<String>()
+        var beforeWrite: () -> Unit = {}
         var maxWrite = 1024 * 1024
         var lastWriteArray: ByteArray? = null
         var zeroWritesBetweenProgress = 0
@@ -456,6 +560,7 @@ class BigqueryBatchStandardInsertCopyTest {
             every { writer.job } returns job
             every { writer.write(any()) } answers
                 {
+                    beforeWrite()
                     val source = firstArg<ByteBuffer>()
                     lastWriteArray = source.array()
                     if (stalled++ < zeroWritesBetweenProgress) {

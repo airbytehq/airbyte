@@ -169,6 +169,69 @@ class S3ArchiveUploaderMultipartTest {
             }
         }
 
+    @Test
+    fun `real streaming multipart uploads during append and completes on seal before finish`() =
+        runBlocking {
+            FakeS3(failPermanently = false, holdParts = true, failBeforeConsumption = true).use {
+                server ->
+                val uploader = uploader(server)
+                val upload =
+                    uploader.startStreaming(
+                        "fusion/streaming.jsonl",
+                        "application/x-ndjson",
+                        mapOf("batch-id" to "streaming"),
+                        directory
+                    )
+                val first = ByteArray(S3ArchiveUploader.PART_SIZE.toInt()) { (it % 127).toByte() }
+                val second = ByteArray(first.size) { (it % 113).toByte() }
+                val last = "last bytes\n".toByteArray()
+                try {
+                    upload.append(first)
+                    upload.append(second)
+                    withContext(Dispatchers.IO) {
+                        assertTrue(server.twoPartsStarted.await(10, TimeUnit.SECONDS))
+                        assertFalse(server.thirdPartStarted.await(100, TimeUnit.MILLISECONDS))
+                    }
+                    assertEquals(0, server.partsInCompletion.get())
+                    server.allowParts.countDown()
+                    upload.append(last)
+                    upload.seal()
+                    withContext(Dispatchers.IO) {
+                        assertTrue(server.completing.await(10, TimeUnit.SECONDS))
+                    }
+                    assertEquals(3, server.partsInCompletion.get())
+                    assertEquals(3, server.checksumsInCompletion.get())
+                    assertEquals("CRC32", server.checksumAlgorithm)
+                    assertEquals("COMPOSITE", server.checksumType)
+                    assertEquals(
+                        mapOf(1 to "CRC32", 2 to "CRC32", 3 to "CRC32"),
+                        server.partChecksumAlgorithms
+                    )
+                    assertEquals("application/x-ndjson", server.contentType)
+                    assertEquals("streaming", server.batchId)
+                    val finished = async { upload.finish() }
+                    kotlinx.coroutines.yield()
+                    assertFalse(finished.isCompleted)
+                    server.allowCompletion.countDown()
+                    withTimeout(10_000) { finished.await() }
+                    listOf(first, second, last).forEachIndexed { index, bytes ->
+                        assertArrayEquals(
+                            MessageDigest.getInstance("SHA-256").digest(bytes),
+                            server.digests.getValue(index + 1).single()
+                        )
+                    }
+                    assertEquals(0, Files.list(directory).use { it.count() })
+                    assertEquals(2, server.attempts.getValue(2).get())
+                    assertEquals(0, server.aborts.get())
+                } finally {
+                    server.allowParts.countDown()
+                    server.allowCompletion.countDown()
+                    upload.close()
+                    uploader.close()
+                }
+            }
+        }
+
     private fun uploader(server: FakeS3): S3ArchiveUploader {
         val credentials =
             StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test"))
@@ -228,6 +291,10 @@ class S3ArchiveUploaderMultipartTest {
         val creates = AtomicInteger()
         val aborts = AtomicInteger()
         val partsInCompletion = AtomicInteger()
+        val checksumsInCompletion = AtomicInteger()
+        val partChecksumAlgorithms = ConcurrentHashMap<Int, String>()
+        @Volatile var checksumAlgorithm: String? = null
+        @Volatile var checksumType: String? = null
         val completing = CountDownLatch(1)
         val allowCompletion = CountDownLatch(1)
         val aborted = CountDownLatch(1)
@@ -261,6 +328,8 @@ class S3ArchiveUploaderMultipartTest {
                 exchange.requestMethod == "POST" && "uploads" in query -> {
                     creates.incrementAndGet()
                     contentType = exchange.requestHeaders.getFirst("Content-Type")
+                    checksumAlgorithm = exchange.requestHeaders.getFirst("x-amz-checksum-algorithm")
+                    checksumType = exchange.requestHeaders.getFirst("x-amz-checksum-type")
                     batchId = exchange.requestHeaders.getFirst("x-amz-meta-batch-id")
                     reply(
                         exchange,
@@ -270,6 +339,9 @@ class S3ArchiveUploaderMultipartTest {
                 }
                 exchange.requestMethod == "PUT" && "partNumber" in query -> {
                     val part = query.getValue("partNumber").toInt()
+                    exchange.requestHeaders.getFirst("x-amz-sdk-checksum-algorithm")?.let {
+                        partChecksumAlgorithms[part] = it
+                    }
                     twoPartsStarted.countDown()
                     thirdPartStarted.countDown()
                     check(allowParts.await(30, TimeUnit.SECONDS))
@@ -306,6 +378,7 @@ class S3ArchiveUploaderMultipartTest {
                 exchange.requestMethod == "POST" && "uploadId" in query -> {
                     val xml = exchange.requestBody.readBytes().toString(Charsets.UTF_8)
                     partsInCompletion.set(Regex("<Part>").findAll(xml).count())
+                    checksumsInCompletion.set(Regex("<ChecksumCRC32>").findAll(xml).count())
                     completing.countDown()
                     check(allowCompletion.await(30, TimeUnit.SECONDS))
                     reply(
@@ -325,23 +398,31 @@ class S3ArchiveUploaderMultipartTest {
 
         private fun wireDigest(exchange: HttpExchange): ByteArray {
             val input = BufferedInputStream(exchange.requestBody)
+            val hash = MessageDigest.getInstance("SHA-256")
+            val crc = java.util.zip.CRC32()
             if (
                 !exchange.requestHeaders
                     .getFirst("Content-Encoding")
                     .orEmpty()
                     .contains("aws-chunked")
             ) {
-                return digest(input, Long.MAX_VALUE)
+                updateDigest(input, Long.MAX_VALUE, hash, crc)
+            } else {
+                // Decode the SDK aws-chunked envelope after HttpServer removes HTTP chunking.
+                while (true) {
+                    val size = line(input).substringBefore(';').toLong(16)
+                    if (size == 0L) break
+                    updateDigest(input, size, hash, crc)
+                    check(line(input).isEmpty())
+                }
             }
-            // HTTP chunking is decoded by HttpServer; decode the SDK's separate aws-chunked
-            // envelope.
-            val hash = MessageDigest.getInstance("SHA-256")
-            while (true) {
-                val size = line(input).substringBefore(';').toLong(16)
-                if (size == 0L) break
-                updateDigest(input, size, hash)
-                check(line(input).isEmpty())
-            }
+            exchange.responseHeaders.add(
+                "x-amz-checksum-crc32",
+                java.util.Base64.getEncoder()
+                    .encodeToString(
+                        java.nio.ByteBuffer.allocate(4).putInt(crc.value.toInt()).array()
+                    )
+            )
             return hash.digest()
         }
 
@@ -379,13 +460,19 @@ class S3ArchiveUploaderMultipartTest {
             return hash.digest()
         }
 
-        private fun updateDigest(input: InputStream, size: Long, hash: MessageDigest) {
+        private fun updateDigest(
+            input: InputStream,
+            size: Long,
+            hash: MessageDigest,
+            crc: java.util.zip.CRC32? = null
+        ) {
             val buffer = ByteArray(8192)
             var remaining = size
             while (remaining > 0) {
                 val read = input.read(buffer, 0, minOf(buffer.size.toLong(), remaining).toInt())
                 if (read == -1) break
                 hash.update(buffer, 0, read)
+                crc?.update(buffer, 0, read)
                 remaining -= read
             }
         }
