@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import logging
 from typing import Any, Mapping, Optional
 from unittest.mock import patch
 
@@ -8,8 +9,11 @@ import pytest
 import requests
 from source_shopify.run import run
 from source_shopify.source import ConnectionCheckTest, SourceShopify
-from source_shopify.streams.streams import BalanceTransactions, Countries, DiscountCodes, PriceRules
+from source_shopify.streams.streams import BalanceTransactions, Countries, DiscountCodes, MarketCountries, PriceRules
 from source_shopify.utils import ShopifyNonRetryableErrors
+
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 def test_get_next_page_token(requests_mock, auth_config):
@@ -161,11 +165,12 @@ def test_run_module_emits_spec():
         ),
     ],
 )
-def test_countries_stream_slices_filters_empty_profile_location_groups(mocker, auth_config, parent_slices, expected_slices):
+def test_countries_stream_slices_filters_empty_profile_location_groups(mocker, requests_mock, auth_config, parent_slices, expected_slices):
     """
     Test that Countries.stream_slices filters out slices where profile_location_groups is empty.
     This prevents IndexError when request_body_json tries to access profile_location_groups[0].
     """
+    mock_shop_features(requests_mock, market_driven_shipping=False)
     mocker.patch(
         "source_shopify.streams.streams.HttpSubStream.stream_slices",
         return_value=iter(parent_slices),
@@ -173,3 +178,140 @@ def test_countries_stream_slices_filters_empty_profile_location_groups(mocker, a
     stream = Countries(parent=mocker.MagicMock(), config=auth_config)
     result = list(stream.stream_slices())
     assert result == expected_slices
+
+
+GRAPHQL_URL = "https://test-shop.myshopify.com/admin/api/2026-07/graphql.json"
+THROTTLED_RESPONSE = {"errors": [{"message": "Throttled", "extensions": {"code": "THROTTLED"}}]}
+GRAPHQL_ERROR_RESPONSE = {
+    "errors": [{"message": "Internal error. Looks like something went wrong on our end.", "extensions": {"code": "INTERNAL_SERVER_ERROR"}}]
+}
+
+
+def mock_shop_features(requests_mock, market_driven_shipping: bool) -> None:
+    requests_mock.post(GRAPHQL_URL, json={"data": {"shop": {"features": {"marketDrivenShipping": market_driven_shipping}}}})
+
+
+@pytest.mark.parametrize(
+    "shop_features_response, expect_warning",
+    [
+        pytest.param({"data": {"shop": {"features": {"marketDrivenShipping": False}}}}, False, id="legacy_shop_reads_delivery_profiles"),
+        pytest.param(
+            {"data": {"shop": {"features": {"marketDrivenShipping": True}}}},
+            True,
+            id="market_driven_shop_still_reads_delivery_profiles_and_warns",
+        ),
+        pytest.param(GRAPHQL_ERROR_RESPONSE, False, id="unreadable_flag_reads_delivery_profiles_without_the_snapshot_warning"),
+    ],
+)
+def test_countries_stream_slices_not_gated_by_market_driven_shipping(
+    mocker, requests_mock, auth_config, caplog, shop_features_response, expect_warning
+):
+    """
+    `countries` keeps emitting the `deliveryProfiles` snapshot on migrated shops (so existing destination
+    data is not wiped by an empty full refresh) and only warns that the data is frozen.
+    """
+    requests_mock.post(GRAPHQL_URL, json=shop_features_response)
+    parent_slices = [{"parent": {"profile_location_groups": [{"locationGroup": {"id": "123"}}]}}]
+    mocker.patch("source_shopify.streams.streams.HttpSubStream.stream_slices", return_value=iter(parent_slices))
+    stream = Countries(parent=mocker.MagicMock(), config=auth_config)
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        assert list(stream.stream_slices()) == parent_slices
+    assert ("snapshot frozen at migration time" in caplog.text) is expect_warning
+
+
+@pytest.mark.parametrize(
+    "market_driven_shipping, expected_slices",
+    [
+        pytest.param(False, [], id="legacy_shop_emits_nothing"),
+        pytest.param(True, [{}], id="market_driven_shop_reads_markets"),
+    ],
+)
+def test_market_countries_stream_slices_gated_by_market_driven_shipping(
+    requests_mock, auth_config, market_driven_shipping, expected_slices
+):
+    mock_shop_features(requests_mock, market_driven_shipping)
+    stream = MarketCountries(auth_config)
+    assert list(stream.stream_slices()) == expected_slices
+
+
+def test_market_countries_stream_slices_fail_when_flag_is_unreadable(requests_mock, auth_config):
+    """An empty but successful full refresh would overwrite the destination table, so the stream fails instead."""
+    requests_mock.post(GRAPHQL_URL, json=GRAPHQL_ERROR_RESPONSE)
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(MarketCountries(auth_config).stream_slices())
+    assert exc_info.value.failure_type == FailureType.transient_error
+
+
+def test_market_driven_shipping_flag_is_fetched_once(requests_mock, auth_config):
+    mock_shop_features(requests_mock, market_driven_shipping=False)
+    stream = MarketCountries(auth_config)
+    assert stream.market_driven_shipping_enabled is False
+    assert stream.market_driven_shipping_enabled is False
+    assert requests_mock.call_count == 1
+
+
+def test_market_driven_shipping_flag_retries_a_throttled_reply(requests_mock, auth_config):
+    requests_mock.post(
+        GRAPHQL_URL,
+        response_list=[{"json": THROTTLED_RESPONSE}, {"json": {"data": {"shop": {"features": {"marketDrivenShipping": True}}}}}],
+    )
+    stream = MarketCountries(auth_config)
+    assert stream.market_driven_shipping_enabled is True
+    assert requests_mock.call_count == 2
+
+
+def test_market_driven_shipping_flag_is_unreadable_when_throttling_persists(requests_mock, auth_config, caplog):
+    """Once the HTTP client's retries are exhausted the flag is unreadable: `market_countries` fails, `countries` proceeds."""
+    requests_mock.post(GRAPHQL_URL, json=THROTTLED_RESPONSE)
+    stream = MarketCountries(auth_config)
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        assert stream.market_driven_shipping_enabled is None
+    assert requests_mock.call_count == 6
+    assert "could not read `shop.features.marketDrivenShipping`" in caplog.text
+    assert requests_mock.last_request.json() == {
+        "query": "query ShopFeatures {\n  shop {\n    features {\n      marketDrivenShipping\n    }\n  }\n}"
+    }
+
+
+@pytest.mark.parametrize(
+    "response",
+    [
+        pytest.param(
+            {"errors": [{"message": "Field 'marketDrivenShipping' doesn't exist on type 'ShopFeatures'"}]},
+            id="errors_without_data",
+        ),
+        pytest.param(
+            {
+                "data": {"shop": {"features": {"marketDrivenShipping": None}}},
+                "errors": [{"message": "Field 'marketDrivenShipping' doesn't exist on type 'ShopFeatures'"}],
+            },
+            id="partial_data_with_null_flag_and_errors",
+        ),
+        pytest.param(
+            {
+                "data": {"shop": {"features": {"marketDrivenShipping": True}}},
+                "errors": [{"message": "Field 'marketDrivenShipping' doesn't exist on type 'ShopFeatures'"}],
+            },
+            id="flag_true_but_errors_present",
+        ),
+        pytest.param({"data": {"shop": {"features": {"marketDrivenShipping": None}}}}, id="null_flag_without_errors"),
+        pytest.param({"data": {"shop": {"features": {}}}}, id="flag_missing_without_errors"),
+        pytest.param({"data": None, **GRAPHQL_ERROR_RESPONSE}, id="internal_server_error"),
+    ],
+)
+def test_market_driven_shipping_flag_is_unreadable(requests_mock, auth_config, caplog, response):
+    requests_mock.post(GRAPHQL_URL, json=response)
+    stream = MarketCountries(auth_config)
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        assert stream.market_driven_shipping_enabled is None
+    assert "could not read `shop.features.marketDrivenShipping`" in caplog.text
+    if response.get("errors"):
+        assert response["errors"][0]["message"] in caplog.text
+
+
+def test_market_driven_shipping_flag_is_unreadable_on_non_json_response(requests_mock, auth_config, caplog):
+    requests_mock.post(GRAPHQL_URL, text="<html>maintenance</html>")
+    stream = MarketCountries(auth_config)
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        assert stream.market_driven_shipping_enabled is None
+    assert "could not read `shop.features.marketDrivenShipping`" in caplog.text
