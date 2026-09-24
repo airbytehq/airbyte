@@ -59,7 +59,9 @@ class BigQueryReadApiPartitionReader(
 
     private var partitionId: String = generatePartitionId(4)
     private val acquiredResources = AtomicReference<Map<ResourceType, Resource.Acquired>>()
-    private lateinit var outputMessageRouter: OutputMessageRouter
+    // Nullable rather than `lateinit`: SpotBugs reports `::x.isInitialized` as a redundant null
+    // check.
+    private var outputMessageRouter: OutputMessageRouter? = null
     private lateinit var outputRoute:
         ((NativeRecordPayload, Map<EmittedField, FieldValueChange>?) -> Unit)
 
@@ -77,7 +79,7 @@ class BigQueryReadApiPartitionReader(
             table.resourceAcquirer.tryAcquire(resourceTypes)
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
         acquiredResources.set(resources)
-        outputMessageRouter =
+        val router =
             OutputMessageRouter(
                 table.streamFeedBootstrap.dataChannelMedium,
                 table.streamFeedBootstrap.dataChannelFormat,
@@ -86,7 +88,8 @@ class BigQueryReadApiPartitionReader(
                 table.streamFeedBootstrap,
                 resources,
             )
-        outputRoute = outputMessageRouter.recordAcceptors[table.stream.id]!!
+        outputMessageRouter = router
+        outputRoute = router.recordAcceptors[table.stream.id]!!
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
@@ -232,9 +235,7 @@ class BigQueryReadApiPartitionReader(
     }
 
     override fun releaseResources() {
-        if (::outputMessageRouter.isInitialized) {
-            outputMessageRouter.close()
-        }
+        outputMessageRouter?.close()
         acquiredResources.getAndSet(null)?.forEach { it.value.close() }
         partitionId = generatePartitionId(4)
     }
@@ -244,12 +245,13 @@ class BigQueryReadApiPartitionReader(
         if (table.streamFeedBootstrap.dataChannelMedium == STDIO) {
             return
         }
+        val router: OutputMessageRouter =
+            checkNotNull(outputMessageRouter) { "resources not acquired before run()" }
         while (PartitionReader.pendingStates.isNotEmpty()) {
             val pendingMessage = PartitionReader.pendingStates.poll() ?: break
             when (pendingMessage) {
-                is AirbyteStateMessage -> outputMessageRouter.acceptNonRecord(pendingMessage)
-                is AirbyteStreamStatusTraceMessage ->
-                    outputMessageRouter.acceptNonRecord(pendingMessage)
+                is AirbyteStateMessage -> router.acceptNonRecord(pendingMessage)
+                is AirbyteStreamStatusTraceMessage -> router.acceptNonRecord(pendingMessage)
             }
         }
     }
