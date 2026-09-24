@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
-  dockerImageTag: 2.1.5
+  dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-facebook-pages
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-pages
   githubIssueLabel: source-facebook-pages
@@ -30,6 +30,13 @@ data:
   supportLevel: community
   releases:
     breakingChanges:
+      3.0.0:
+        message: >-
+          Meta removed the legacy Page fields `current_location`, `genre`, `network`, `parking` and `start_info` in Graph API v26.0, with no replacement. This version stops requesting them and removes them from the `page` stream schema. Users syncing the `page` stream must refresh the stream schema, and downstream models referencing those columns must be updated.
+        upgradeDeadline: "2026-10-27"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["page"]
       2.0.0:
         message: >-
           This version updates the API version from v23 to v24. Deprecated fields have been removed and new fields have been added for the streams `Post`, `Post Insights` and `Page Insights`.

@@ -1,5 +1,25 @@
 # Facebook Pages Migration Guide
 
+## Upgrading to 3.0.0
+
+This version removes the Meta-deprecated legacy Page fields `current_location`, `genre`, `network`, `parking` and `start_info` from the `page` stream schema. The connector no longer requests these fields.
+
+### Why this change?
+
+Meta deprecated these fields for New Pages Experience Pages in Graph API v26.0, launched on 2026-07-29, and provides no replacement. Meta states that the deprecation will reach all remaining supported Graph API versions approximately 90 days after launch; the exact date is to be confirmed. The connector's error handler fails hard on `Tried accessing nonexisting field`, so leaving these fields in the request would fail the entire `page` stream. See the [Meta Graph API v26.0 changelog](https://developers.facebook.com/docs/graph-api/changelog/version26.0).
+
+### Who is affected?
+
+This change only affects users syncing the `page` stream. No specification, configuration, or state changes are required.
+
+### Migration steps
+
+1. Upgrade the connector to version `3.0.0`.
+2. Refresh the source schema for the `page` stream.
+3. Update downstream models or SQL that reference any of the removed columns.
+
+Clearing the `page` stream is not required.
+
 ## Upgrading to 2.0.0
 
 Version `v2.0.0` updates the API version from v23 to v24.
