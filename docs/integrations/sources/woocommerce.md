@@ -113,6 +113,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
+| 0.5.52 | 2026-09-22 | [86871](https://github.com/airbytehq/airbyte/pull/86871) | Update dependencies |
+| 0.5.51 | 2026-09-15 | [86294](https://github.com/airbytehq/airbyte/pull/86294) | Update dependencies |
 | 0.5.50 | 2026-09-08 | [85730](https://github.com/airbytehq/airbyte/pull/85730) | Update dependencies |
 | 0.5.49 | 2026-08-25 | [85030](https://github.com/airbytehq/airbyte/pull/85030) | Skip product attributes whose WooCommerce taxonomy no longer exists instead of failing the sync |
 | 0.5.48 | 2026-08-18 | [84829](https://github.com/airbytehq/airbyte/pull/84829) | Update dependencies |

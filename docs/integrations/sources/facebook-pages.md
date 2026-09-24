@@ -108,10 +108,12 @@ For Page Insights, Meta requires access to a Page that you own or administer, or
 
 ### "Please reduce the amount of data you're asking for" error
 
-This error occurs when the Facebook Graph API considers the total response data too large. Starting from version 2.1.3, the connector treats it as a configuration error and fails the sync instead of retrying, because retrying the same request never succeeds. There are two ways to resolve it:
+The Graph API returns this error (error code 1, often with HTTP 500) when a response is too large to build in time. Because Meta returns it intermittently, the connector retries the request with backoff. If the retries are exhausted, the sync fails with a transient error and usually succeeds on a later attempt. Version 2.1.3 failed the sync immediately with a configuration error instead of retrying; upgrade to 2.1.4 or later to restore the retries.
 
-- **Remove fields from the request via the Schema Tab.** Go to your connection's Schema Tab and deselect fields you don't need for the affected stream. This reduces the number of fields included in API requests. Supported streams: `page`, `post`.
-- **Reduce page size.** Set the **Page Size** configuration parameter to a lower value (e.g., 25 or 50). This reduces the number of records fetched per API request. Supported streams: `post`, `post_insights`.
+If the error keeps recurring, reduce the size of each response:
+
+- **Deselect fields in the Schema tab.** Open your connection's **Schema** tab and deselect fields you don't need for the affected stream. The connector requests only the selected fields. Applies to the `page` and `post` streams.
+- **Reduce the page size.** Set **Page Size** in the source settings to a lower value, such as 25 or 50. Applies to the `post` and `post_insights` streams.
 
 ### "Facebook API request contains invalid Page fields, metrics, or permissions" error
 
@@ -173,7 +175,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.4 | 2026-09-09 | [85780](https://github.com/airbytehq/airbyte/pull/85780) | Stop requesting the Meta-deprecated legacy Page fields `current_location`, `genre`, `network`, `parking` and `start_info` from the `page` stream (Graph API v26.0 New Pages Experience deprecation). |
+| 2.1.5 | 2026-09-24 | [85780](https://github.com/airbytehq/airbyte/pull/85780) | Stop requesting the Meta-deprecated legacy Page fields `current_location`, `genre`, `network`, `parking` and `start_info` from the `page` stream (Graph API v26.0 New Pages Experience deprecation). |
+| 2.1.4 | 2026-09-22 | [86489](https://github.com/airbytehq/airbyte/pull/86489) | Retry Facebook's "Please reduce the amount of data you're asking for" error again instead of failing the sync as a configuration error. |
 | 2.1.3 | 2026-09-08 | [78077](https://github.com/airbytehq/airbyte/pull/78077) | Fail fast on deterministic Facebook API bad request errors as config errors, surface the Facebook error message, and keep retrying rate-limit and transient errors. |
 | 2.1.2 | 2026-08-17 | [84408](https://github.com/airbytehq/airbyte/pull/84408) | Remove Page/Post Insights metrics deprecated by Meta and request `page_total_media_view_unique` / `post_total_media_view_unique` instead; fail fast with Meta's own message on invalid-metric errors. |
 | 2.1.1 | 2026-05-22 | [78342](https://github.com/airbytehq/airbyte/pull/78342) | Classify Facebook app-approval errors as configuration errors. |
