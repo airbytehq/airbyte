@@ -7,7 +7,7 @@ This page contains the setup guide and reference information for the QuickBooks 
 - [Intuit QuickBooks account](https://quickbooks.intuit.com/global/)
 - [Intuit Developer account](https://developer.intuit.com/app/developer/qbo/docs/get-started) with an app created
 - **Client ID** and **Client Secret**: the credentials that identify your app. Obtain these from the Keys tab on the app profile under My Apps on the developer site. There are separate development and production versions of these keys.
-- **Refresh Token**: the OAuth 2.0 token the connector exchanges for access tokens. The easiest way to get one is Intuit's [OAuth 2.0 playground](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0-playground). **Access Token** and **Token Expiry Date** are optional: the connector obtains and maintains them from the refresh token.
+- **Refresh Token**: the OAuth 2.0 token the connector exchanges for access tokens. The easiest way to get one is Intuit's [OAuth 2.0 playground](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0-playground). Select the `com.intuit.quickbooks.accounting` scope when you authorize; the connector can't read data without it. **Access Token** and **Token Expiry Date** are optional: the connector obtains and maintains them from the refresh token.
 - **Realm ID**: the labeled [Company ID](https://developer.intuit.com/app/developer/qbo/docs/learn/learn-basic-field-definitions#realm-id) of the company you want to replicate data for.
 - **Start Date**: the earliest date-time to replicate data from, as a UTC timestamp in the form `YYYY-MM-DDTHH:MM:SSZ`, such as `2021-03-20T00:00:00Z`. Offsets and fractional seconds aren't accepted. Airbyte doesn't replicate data from before this date.
 - **Sandbox**: whether to replicate data from Intuit's sandbox environment instead of production.
@@ -18,9 +18,15 @@ This page contains the setup guide and reference information for the QuickBooks 
 
 1. Create an [Intuit Developer account](https://developer.intuit.com/app/developer/qbo/docs/get-started)
 2. Create an application
-3. Obtain credentials. The easiest way to get these credentials is by using Quickbook's [OAuth 2.0 playground](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0-playground)
+3. Obtain credentials. The easiest way to get these credentials is by using Intuit's [OAuth 2.0 playground](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0-playground). The playground also shows the **Realm ID** of the company you authorize.
+
+:::caution Refresh tokens rotate
+Intuit issues a new refresh token roughly every 24 hours, and only the latest one keeps working. The connector stores each new token in the source configuration automatically, so don't share the same refresh token with another tool or a second Airbyte source. If you do, one of them stops working within a day and reports a rejected refresh token. Refresh tokens also expire after 100 days without use.
+:::
 
 ### Step 2: Set up the QuickBooks connector in Airbyte
+
+<!-- env:cloud -->
 
 **For Airbyte Cloud:**
 
@@ -30,7 +36,8 @@ This page contains the setup guide and reference information for the QuickBooks 
 4. Enter your **Client ID**, **Client Secret**, **Refresh Token** and **Realm ID** from the Intuit app you created above.
 5. **Start date** - The date starting from which you'd like to replicate data.
 6. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
-7. Click **Set up source**.
+7. **Page Size** (optional) - Records requested per query page (Intuit's `MAXRESULTS`, default 200, maximum 1,000).
+8. Click **Set up source**.
 
 :::note
 An **Authenticate your QuickBooks account** button (the Intuit consent flow, which also captures the Realm ID for you) is available on Cloud only once this connector version is rolled out there. Until then, enter the credentials above.
@@ -63,6 +70,8 @@ The Quickbooks Source connector supports the following [sync modes](https://docs
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 The `company_info` and `preferences` streams are single-row entities and support Full Refresh only; all other streams support Incremental sync.
+
+Incremental streams use the record's `MetaData.LastUpdatedTime` as the cursor. The connector copies that value into a top-level `airbyte_cursor` field on each record and queries QuickBooks in 30-day windows starting from **Start Date**, so the first sync of a company with a long history can take a while. The `exchange_rates` stream returns one row per currency pair per day and can be very large if multi-currency is enabled.
 
 ## Supported Streams
 
@@ -138,7 +147,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version       | Date         | Pull Request                                               | Subject                                                                                                                                                                                                                                                                                                                                                                                                  |
 | ------------- | ------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.2.0         | 2026-08-31   | [85216](https://github.com/airbytehq/airbyte/pull/85216)   | Certification: actionable error handling for Intuit fault codes and rejected refresh tokens, SDM 7.30.0 bump, rate-limit budget and stream concurrency, automatic migration of pre-4.0.0 nested credentials configs, Cloud OAuth via advanced_auth, a configurable Page Size, and six new streams (company_info, preferences, exchange_rates, reimburse_charges, attachables, credit_card_payments; first two full refresh)        |
+| 4.2.0         | 2026-09-24   | [85216](https://github.com/airbytehq/airbyte/pull/85216)   | Certification: actionable error handling for Intuit fault codes and rejected refresh tokens, SDM 7.30.0 bump, rate-limit budget and stream concurrency, automatic migration of pre-4.0.0 nested credentials configs, Cloud OAuth via advanced_auth, a configurable Page Size, and six new streams (company_info, preferences, exchange_rates, reimburse_charges, attachables, credit_card_payments; first two full refresh)        |
 | 4.1.8         | 2025-05-24   | [60468](https://github.com/airbytehq/airbyte/pull/60468)   | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                      |
 | 4.1.7         | 2025-05-10   | [60170](https://github.com/airbytehq/airbyte/pull/60170)   | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                      |
 | 4.1.6         | 2025-05-03   | [59500](https://github.com/airbytehq/airbyte/pull/59500)   | Update dependencies                                                                                                                                                                                                                                                                                                                                                                                      |
