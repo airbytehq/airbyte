@@ -27,7 +27,7 @@ object FusionPaths {
                 else -> escape(namespace).replace("~", "%7E")
             }
         val path =
-            "${config.prefix}/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/streams/$escapedNamespace/${escape(streamName)}/runs/$epochSeconds/$runId/"
+            "${config.prefix}/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/streams/$escapedNamespace/${escape(streamName)}/runs/$runId/$epochSeconds/"
         // Include the namespace and reserve the full batch suffix before any uploads.
         val longestKey = "${path}batches/${UUID(0, 0)}.jsonl.gz"
         require(longestKey.toByteArray(Charsets.UTF_8).size <= 1024) {

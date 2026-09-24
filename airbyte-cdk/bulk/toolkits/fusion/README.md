@@ -37,12 +37,12 @@ consumption described above.
 
 ## Configuration and APIs
 
-`FusionConfiguration.fromEnvironment(env)` returns null when `AIRBYTE_S3_COPY_ENABLED` is
-absent or `false`. When enabled (`true`), it requires `AIRBYTE_S3_COPY_ROLE_ARN`,
-`AIRBYTE_S3_COPY_BUCKET`, `AIRBYTE_S3_COPY_REGION`, and canonical UUIDs in
+`FusionConfiguration.fromEnvironment(env)` returns null unless `AIRBYTE_FUSION_ENABLED` is
+`true` (case-insensitive). When enabled, it requires `AIRBYTE_FUSION_S3_ROLE_ARN`,
+`AIRBYTE_FUSION_S3_BUCKET`, `AIRBYTE_FUSION_S3_REGION`, and canonical UUIDs in
 `AIRBYTE_{ORGANIZATION,WORKSPACE,SOURCE,CONNECTION,DESTINATION}_ID`.
 There are no specification overrides or invented identity values.
-`AIRBYTE_S3_COPY_PREFIX` defaults to `fusion`.
+`AIRBYTE_FUSION_S3_PREFIX` defaults to `fusion`. No legacy environment variable names are read.
 
 `AWS_ASSUME_ROLE_EXTERNAL_ID` supplies the STS external ID. If the paired
 `AWS_ASSUME_ROLE_ACCESS_KEY_ID` and `AWS_ASSUME_ROLE_SECRET_ACCESS_KEY` are provided, they
@@ -53,7 +53,7 @@ generated configuration `toString`.
 `FusionPaths.run(config, namespace: String?, streamName, runId, epochSeconds)` and returns:
 
 ```text
-{prefix}/organizations/{id}/workspaces/{id}/sources/{id}/connections/{id}/destinations/{id}/syncs/streams/{escaped_namespace}/{escaped_name}/runs/{epoch}/{uuid}/
+{prefix}/organizations/{id}/workspaces/{id}/sources/{id}/connections/{id}/destinations/{id}/syncs/streams/{escaped_namespace}/{escaped_name}/runs/{run_id}/{epoch}/
 ```
 
 Namespace components are encoded without collisions:
@@ -87,8 +87,8 @@ map with the connector descriptor.
 - `schema(descriptor, schemaId, generationId, syncId)`: adds authoritative identity,
   run, schema and generation fields. Descriptor must contain `source_schema`, `primary_key`,
   and `cursor`; connector-specific fields are retained.
-- `streamComplete(jobId, minGenerationId = null)`: returns `job_id` and only adds
-  `min_generation_id` for a positive minimum generation.
+- `streamComplete(jobId, minGenerationId = null)`: returns `job_id` and adds
+  `min_generation_id` when the minimum generation is zero or greater.
 - `batch(streamKey, generationId, syncId, schemaId, recordCount: Long, batchId)`:
   shared S3 metadata headers.
 

@@ -12,10 +12,10 @@ class FusionContractTest {
     private val id = UUID.fromString("12345678-1234-1234-1234-123456789012")
     private val env =
         mapOf(
-            "AIRBYTE_S3_COPY_ENABLED" to "true",
-            "AIRBYTE_S3_COPY_ROLE_ARN" to "arn:aws:iam::123456789012:role/fusion",
-            "AIRBYTE_S3_COPY_BUCKET" to "archive",
-            "AIRBYTE_S3_COPY_REGION" to "us-east-1",
+            "AIRBYTE_FUSION_ENABLED" to "true",
+            "AIRBYTE_FUSION_S3_ROLE_ARN" to "arn:aws:iam::123456789012:role/fusion",
+            "AIRBYTE_FUSION_S3_BUCKET" to "archive",
+            "AIRBYTE_FUSION_S3_REGION" to "us-east-1",
         ) +
             listOf("ORGANIZATION", "WORKSPACE", "SOURCE", "CONNECTION", "DESTINATION").associate {
                 "AIRBYTE_${it}_ID" to id.toString()
@@ -37,7 +37,9 @@ class FusionContractTest {
         assertEquals(configured["primary_key"], mapper.valueToTree(descriptor["primary_key"]))
         assertEquals(configured["cursor_field"], mapper.valueToTree(descriptor["cursor"]))
         val defaults =
-            FusionSchema.fromConfiguredStream(mapper.readTree("""{"stream":{"json_schema":{}}}"""))
+            FusionSchema.fromConfiguredStream(
+                mapper.readTree("""{"stream":{"json_schema":{}},"primary_key":null,"cursor_field":null}""")
+            )
         assertEquals(emptyList<Any>(), defaults["primary_key"])
         assertEquals(emptyList<Any>(), defaults["cursor"])
         assertThrows(IllegalArgumentException::class.java) {
@@ -48,12 +50,17 @@ class FusionContractTest {
     @Test
     fun `disabled needs no archive configuration`() {
         assertNull(FusionConfiguration.fromEnvironment(emptyMap()))
+        assertNull(FusionConfiguration.fromEnvironment(env + ("AIRBYTE_FUSION_ENABLED" to "FALSE")))
+        assertNull(FusionConfiguration.fromEnvironment(env + ("AIRBYTE_FUSION_ENABLED" to "yes")))
+        assertNotNull(FusionConfiguration.fromEnvironment(env + ("AIRBYTE_FUSION_ENABLED" to "TRUE")))
         assertNull(
-            FusionConfiguration.fromEnvironment(env + ("AIRBYTE_S3_COPY_ENABLED" to "false"))
+            FusionConfiguration.fromEnvironment(
+                mapOf(
+                    "AIRBYTE_S3_COPY_ENABLED" to "true",
+                    "AIRBYTE_S3_COPY_BUCKET" to "archive",
+                )
+            )
         )
-        assertThrows(IllegalArgumentException::class.java) {
-            FusionConfiguration.fromEnvironment(env + ("AIRBYTE_S3_COPY_ENABLED" to "yes"))
-        }
     }
 
     @Test
@@ -93,7 +100,7 @@ class FusionContractTest {
     fun `run paths preserve platform hierarchy and encode UTF8 key components`() {
         val config = FusionConfiguration.fromEnvironment(env)!!
         assertEquals(
-            "fusion/organizations/$id/workspaces/$id/sources/$id/connections/$id/destinations/$id/syncs/streams/public/a%2Fb%20%C3%A9/runs/42/$id/",
+            "fusion/organizations/$id/workspaces/$id/sources/$id/connections/$id/destinations/$id/syncs/streams/public/a%2Fb%20%C3%A9/runs/$id/42/",
             FusionPaths.run(config, "public", "a/b é", id, 42),
         )
         assertEquals("%2E%2E", FusionPaths.escape(".."))
@@ -124,7 +131,7 @@ class FusionContractTest {
             namespaces.map { (namespace, encoded) ->
                 val path = FusionPaths.run(config, namespace, "orders", id, 42)
                 assertEquals(
-                    "fusion/organizations/$id/workspaces/$id/sources/$id/connections/$id/destinations/$id/syncs/streams/$encoded/orders/runs/42/$id/",
+                    "fusion/organizations/$id/workspaces/$id/sources/$id/connections/$id/destinations/$id/syncs/streams/$encoded/orders/runs/$id/42/",
                     path,
                 )
                 path
@@ -136,7 +143,7 @@ class FusionContractTest {
     fun `namespace and stream name remain separate escaped path components`() {
         val config = FusionConfiguration.fromEnvironment(env)!!
         val path = FusionPaths.run(config, "a/b é", "c/d 雪~", id, 42)
-        assertTrue(path.endsWith("/streams/a%2Fb%20%C3%A9/c%2Fd%20%E9%9B%AA~/runs/42/$id/"))
+        assertTrue(path.endsWith("/streams/a%2Fb%20%C3%A9/c%2Fd%20%E9%9B%AA~/runs/$id/42/"))
         assertNotEquals(
             FusionPaths.run(config, "a/b", "c", id, 42),
             FusionPaths.run(config, "a", "b/c", id, 42),
@@ -149,7 +156,7 @@ class FusionContractTest {
     @Test
     fun `namespace paths enforce exact UTF8 key limit including reserved batch suffix`() {
         val config =
-            FusionConfiguration.fromEnvironment(env + ("AIRBYTE_S3_COPY_PREFIX" to "préfix"))!!
+            FusionConfiguration.fromEnvironment(env + ("AIRBYTE_FUSION_S3_PREFIX" to "préfix"))!!
         val suffix = "batches/$id.jsonl.gz"
         val baseline = FusionPaths.run(config, "n", "orders", id, 42) + suffix
         val namespaceLength = 1 + 1024 - baseline.toByteArray(Charsets.UTF_8).size
@@ -185,7 +192,8 @@ class FusionContractTest {
         assertEquals(descriptor["primary_key"], schema["primary_key"])
         assertEquals(descriptor["cursor"], schema["cursor"])
         assertEquals(mapOf("job_id" to 8L), metadata.streamComplete(8))
-        assertEquals(mapOf("job_id" to 8L), metadata.streamComplete(8, 0))
+        assertEquals(mapOf("job_id" to 8L, "min_generation_id" to 0L), metadata.streamComplete(8, 0))
+        assertEquals(mapOf("job_id" to 8L), metadata.streamComplete(8, -1))
         assertEquals(
             mapOf("job_id" to 8L, "min_generation_id" to 7L),
             metadata.streamComplete(8, 7)
