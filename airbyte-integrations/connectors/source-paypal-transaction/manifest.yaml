@@ -16,11 +16,11 @@ definitions:
         - transaction_id
       retriever:
         type: SimpleRetriever
-        # Shrinks the request window in halves when PayPal rejects it with RESULTSET_TOO_LARGE
-        # (see the REDUCE_REQUEST_WINDOW response filter below). Requires cursor_granularity on
+        # Splits the request window in halves when PayPal rejects it with RESULTSET_TOO_LARGE
+        # (see the SPLIT_REQUEST_WINDOW response filter below). Requires cursor_granularity on
         # the incremental_sync cursor, which is what the CDK uses as the smallest splittable window.
-        request_window_reduction:
-          type: RequestWindowReduction
+        request_window_splitting:
+          type: RequestWindowSplitting
         requester:
           $ref: "#/definitions/base_requester"
           path: v1/reporting/transactions
@@ -53,7 +53,7 @@ definitions:
                   - type: HttpResponseFilter
                     http_codes:
                       - 400
-                    action: REDUCE_REQUEST_WINDOW
+                    action: SPLIT_REQUEST_WINDOW
                     predicate: "{{ response['name'] == 'RESULTSET_TOO_LARGE' }}"
         record_selector:
           type: RecordSelector
