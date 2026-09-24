@@ -853,6 +853,35 @@ def test_streams_raise_specific_error_message_on_400_with_non_json_body(requests
     assert output.errors[0].trace.error.failure_type == FailureType.system_error
 
 
+def test_custom_object_stream_raises_specific_error_message_on_400(
+    requests_mock, config, custom_object_schema, mock_dynamic_schema_requests
+):
+    """Custom object streams are DynamicDeclarativeStreams whose `parameters.name` is populated by the
+    components resolver; a 400 on the incremental (search) sub-stream must name the resolved stream."""
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={"results": [custom_object_schema]}, status_code=200)
+    requests_mock.register_uri(
+        "POST",
+        "https://api.hubapi.com/crm/v3/objects/p19936848_Animal/search",
+        status_code=400,
+        json={
+            "status": "error",
+            "message": "There was a problem with the request.",
+            "category": "VALIDATION_ERROR",
+            "subCategory": "SomeSubCategory",
+            "correlationId": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        },
+    )
+    state = StateBuilder().with_stream_state("animals", {"updatedAt": "2021-01-10T00:00:00.000Z"}).build()
+    output = read_from_stream(config, "animals", SyncMode.incremental, state, expecting_exception=True)
+    assert output.errors[0].trace.error.message == (
+        "HubSpot rejected the request for stream 'animals' with HTTP 400 (not an authentication error): "
+        "There was a problem with the request. "
+        "[category: VALIDATION_ERROR, subCategory: SomeSubCategory, correlationId: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee]. "
+        "If the error persists, contact HubSpot support with the correlation ID."
+    )
+    assert output.errors[0].trace.error.failure_type == FailureType.system_error
+
+
 def test_discover_if_scopes_missing(config, requests_mock, mock_dynamic_schema_requests):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     requests_mock.register_uri("GET", "https://api.hubapi.com/properties/v2/companies/properties", [{"status_code": 403}])
