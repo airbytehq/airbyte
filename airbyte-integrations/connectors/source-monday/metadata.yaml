@@ -11,20 +11,16 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
-  dockerImageTag: 3.0.0
+  dockerImageTag: 2.6.0
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
       defaultRolloutMode: autopilot
       autopilotConfig:
         autoStart: true
         autoPromoteStages: true
         strategy: fast
     breakingChanges:
-      3.0.0:
-        message: "Monday.com is moving to OAuth 2.1 and stops accepting legacy OAuth access tokens on 2026-10-01 (https://developer-community.monday.com/product-updates/oauth-2-1-is-now-open-for-all-monday-developers-5326). The connector now authenticates through Monday's new token endpoint with PKCE and rotating refresh tokens. Sources that use the OAuth2.0 authorization method migrate their existing legacy token automatically on the first run after the upgrade, as long as that run happens before 2026-10-01; if the migration fails, the source stops syncing until it is re-authenticated once (Authenticate your Monday account). Sources that use a Personal API Token are not affected. See the [migration guide](https://docs.airbyte.com/integrations/sources/monday-migrations#upgrading-to-300) for details."
-        upgradeDeadline: "2026-09-30"
-        deadlineAction: "auto_upgrade"
       2.0.0:
         message: "Source Monday has deprecated API version 2023-07. We have upgraded the connector to the latest API version 2024-01. In this new version, the Id field has changed from an integer to a string in the streams Boards, Items, Tags, Teams, Updates, Users and Workspaces. Please reset affected streams."
         upgradeDeadline: "2024-01-15"

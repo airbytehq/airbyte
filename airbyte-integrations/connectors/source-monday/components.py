@@ -2,11 +2,12 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import base64
 import json
 import logging
 import threading
 from dataclasses import InitVar, dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import partial
 from typing import Any, ClassVar, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
@@ -29,7 +30,7 @@ from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 from airbyte_cdk.sources.types import Record
 from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
@@ -41,12 +42,14 @@ class MondayOAuthAuthenticator(DeclarativeAuthenticator):
     """
     OAuth 2.1 authenticator that first migrates legacy OAuth credentials.
 
-    Sources authorized before connector 3.0.0 hold a non-expiring legacy access token and no refresh token. Monday
+    Sources authorized before connector 2.6.0 hold a non-expiring legacy access token and no refresh token. Monday
     exposes a one-time, temporary migration endpoint that exchanges such a token for an OAuth 2.1 access/refresh
     token pair without user consent (https://developer.monday.com/apps/docs/migrating-to-the-new-oauth-flow#6-migrate-legacy-api-tokens).
-    When the config has no refresh token, the migration is attempted once, the resulting pair is persisted through
-    a config control message, and the request is then delegated to the regular refresh-token authenticator. Any
-    migration failure surfaces as a config error asking the user to re-authenticate.
+    When the config has no refresh token, the migration is attempted once per run, the resulting pair is persisted
+    through a config control message, and the request is then delegated to the regular refresh-token authenticator.
+    The endpoint is rate limited and meant for one call per token, so a failure is raised again for the other streams
+    of the run instead of calling it again: a rejection surfaces as a config error asking the user to re-authenticate,
+    an unreachable or rate-limited endpoint as a transient error.
     """
 
     config: Mapping[str, Any]
@@ -58,6 +61,8 @@ class MondayOAuthAuthenticator(DeclarativeAuthenticator):
         "automatically to the new OAuth flow. Re-authenticate this source in its settings to continue syncing."
     )
     _migration_lock: ClassVar[threading.Lock] = threading.Lock()
+    # (config, exception) of the failed migration of this run; all authenticators of a run share the same config object
+    _migration_failure: ClassVar[Optional[Tuple[Mapping[str, Any], Exception]]] = None
 
     @property
     def auth_header(self) -> str:
@@ -78,16 +83,23 @@ class MondayOAuthAuthenticator(DeclarativeAuthenticator):
         with self._migration_lock:
             if self.oauth.get_refresh_token():
                 return
-            access_token, refresh_token, expires_in = self._migrate_legacy_token()
+            if self._migration_failure is not None and self._migration_failure[0] is self.config:
+                raise self._migration_failure[1]
+            try:
+                access_token, refresh_token, token_expiry_date = self._migrate_legacy_token()
+            except Exception as exception:
+                MondayOAuthAuthenticator._migration_failure = (self.config, exception)
+                raise
             add_to_secrets(access_token)
             add_to_secrets(refresh_token)
+            # the refresh token is the flag read without the lock above, so it is written last
+            self.oauth.set_token_expiry_date(token_expiry_date)
             self.oauth.access_token = access_token
             self.oauth.set_refresh_token(refresh_token)
-            self.oauth.set_token_expiry_date(ab_datetime_now() + timedelta(seconds=expires_in))
             self.oauth._emit_control_message()
             logger.info("Migrated legacy Monday OAuth credentials to the new OAuth flow.")
 
-    def _migrate_legacy_token(self) -> tuple[str, str, int]:
+    def _migrate_legacy_token(self) -> tuple[str, str, AirbyteDateTime]:
         credentials = self.config.get("credentials", {})
         legacy_access_token = credentials.get("access_token")
         if not legacy_access_token:
@@ -105,11 +117,12 @@ class MondayOAuthAuthenticator(DeclarativeAuthenticator):
                     "client_secret": credentials.get("client_secret"),
                 },
                 headers={"Content-Type": "application/json"},
+                timeout=30,
             )
         except requests.exceptions.RequestException as exception:
             raise AirbyteTracedException(
                 internal_message=f"Legacy Monday OAuth token migration request failed: {exception}",
-                message="Could not reach Monday's OAuth migration endpoint. The sync will be retried.",
+                message="Could not reach Monday's OAuth migration endpoint. Try again in a few minutes.",
                 failure_type=FailureType.transient_error,
                 exception=exception,
             ) from exception
@@ -117,7 +130,7 @@ class MondayOAuthAuthenticator(DeclarativeAuthenticator):
         if response.status_code == 429 or response.status_code >= 500:
             raise AirbyteTracedException(
                 internal_message=f"Legacy Monday OAuth token migration returned HTTP {response.status_code}: {response.text}",
-                message="Monday's OAuth migration endpoint is rate limited or unavailable. The sync will be retried.",
+                message="Monday's OAuth migration endpoint is rate limited or unavailable. Try again in a few minutes.",
                 failure_type=FailureType.transient_error,
             )
 
@@ -130,7 +143,18 @@ class MondayOAuthAuthenticator(DeclarativeAuthenticator):
                 message=f"{self.REAUTHENTICATE_MESSAGE} Monday responded: {provider_error}",
                 failure_type=FailureType.config_error,
             )
-        return access_token, refresh_token, int(body.get("expires_in") or 3600)
+        return access_token, refresh_token, self._token_expiry_date(access_token, body.get("expires_in"))
+
+    @staticmethod
+    def _token_expiry_date(access_token: str, expires_in: Any) -> AirbyteDateTime:
+        # A repeated migrate call returns the existing token with its original expiry (already_migrated: true), so
+        # expires_in can overstate the remaining lifetime; monday recommends reading the JWT exp claim instead.
+        try:
+            payload = access_token.split(".")[1]
+            exp = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))["exp"]
+            return AirbyteDateTime.from_datetime(datetime.fromtimestamp(int(exp), tz=timezone.utc))
+        except (IndexError, KeyError, TypeError, ValueError):
+            return ab_datetime_now() + timedelta(seconds=int(expires_in or 3600))
 
     @staticmethod
     def _parse_json_body(response: requests.Response) -> Mapping[str, Any]:

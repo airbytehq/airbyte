@@ -12,7 +12,7 @@ definitions:
         - "{{ parameters['name'] }}"
 
   oauth_authenticator:
-    # Wraps the OAuth 2.1 refresh-token authenticator; legacy (pre-3.0.0) credentials without a refresh_token are
+    # Wraps the OAuth 2.1 refresh-token authenticator; legacy (pre-2.6.0) credentials without a refresh_token are
     # first exchanged through Monday's one-time migration endpoint, see MondayOAuthAuthenticator.
     type: CustomAuthenticator
     class_name: "source_declarative_manifest.components.MondayOAuthAuthenticator"
@@ -21,7 +21,6 @@ definitions:
       type: OAuthAuthenticator
       client_id: "{{ config['credentials']['client_id'] }}"
       client_secret: "{{ config['credentials']['client_secret'] }}"
-      refresh_token: "{{ config['credentials'].get('refresh_token', '') }}"
       grant_type: refresh_token
       token_refresh_endpoint: https://auth.monday.com/oauth_ms/oauth/token
       # surface Monday's token-endpoint rejections as a re-authenticate config error instead of a system error
@@ -434,7 +433,7 @@ spec:
               refresh_token:
                 type: string
                 title: Refresh Token
-                description: Refresh Token used to obtain new access tokens when the current one expires. Left empty for sources authorized before version 3.0.0; the connector then migrates the legacy access token to the new OAuth flow on its next run.
+                description: Refresh Token used to obtain new access tokens when the current one expires. Empty for sources authorized before version 2.6.0. On its next run before October 1, 2026 the connector migrates the legacy access token to the new OAuth flow; after that date the source must be re-authenticated.
                 airbyte_secret: true
               token_expiry_date:
                 type: string

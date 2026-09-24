@@ -1,19 +1,25 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+import base64
+import json
 from datetime import timedelta
 from unittest import TestCase
 from urllib.parse import parse_qs
 
 from airbyte_cdk.models import FailureType, SyncMode, Type
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_parse
 
 from .config import ConfigBuilder
-from .monday_requests import TeamsRequestBuilder
+from .monday_requests import BoardsRequestBuilder, TeamsRequestBuilder
 from .monday_requests.request_authenticators import ApiTokenAuthenticator
-from .monday_responses import TeamsResponseBuilder
-from .monday_responses.records import TeamsRecordBuilder
-from .utils import read_stream
+from .monday_responses import BoardsResponseBuilder, TeamsResponseBuilder
+from .monday_responses.records import BoardsRecordBuilder, TeamsRecordBuilder
+from .utils import _YAML_FILE_PATH, read_stream
 
 
 _TOKEN_REFRESH_ENDPOINT = "https://auth.monday.com/oauth_ms/oauth/token"
@@ -45,6 +51,26 @@ def _requests_to(http_mocker, url):
 
 def _stream_error(output, stream_name):
     return next(message.trace.error for message in output.errors if message.trace.error.stream_descriptor.name == stream_name)
+
+
+def _read_streams(stream_names, config, expecting_exception=False):
+    catalog = CatalogBuilder()
+    for stream_name in stream_names:
+        catalog = catalog.with_stream(stream_name, SyncMode.full_refresh)
+    catalog = catalog.build()
+    source = YamlDeclarativeSource(config=config, catalog=catalog, state=None, path_to_yaml=_YAML_FILE_PATH)
+    return read(source, config, catalog, None, expecting_exception)
+
+
+def _jwt(payload):
+    encoded = base64.urlsafe_b64encode(json.dumps(payload).encode()).rstrip(b"=").decode()
+    return f"header.{encoded}.signature"
+
+
+def _migrated_token_expiry(output):
+    control_messages = output.get_message_by_types([Type.CONTROL])
+    assert len(control_messages) == 1
+    return ab_datetime_parse(control_messages[0].control.connectorConfig.config["credentials"]["token_expiry_date"])
 
 
 class TestOAuthAuthentication(TestCase):
@@ -139,6 +165,7 @@ class TestOAuthAuthentication(TestCase):
         assert updated_credentials["access_token"] == "migrated-access"
         assert updated_credentials["refresh_token"] == "migrated-refresh"
         assert ab_datetime_now() + timedelta(hours=23) < ab_datetime_parse(updated_credentials["token_expiry_date"])
+        assert filter_secrets("migrated-access migrated-refresh") == "**** ****"
 
     @HttpMocker()
     def test_given_legacy_config_when_migration_rejected_then_config_error_asking_to_reauthenticate(self, http_mocker):
@@ -167,6 +194,74 @@ class TestOAuthAuthentication(TestCase):
         assert output.records == []
         assert output.get_message_by_types([Type.CONTROL]) == []
         assert _stream_error(output, "teams").failure_type == FailureType.transient_error
+
+    @HttpMocker()
+    def test_given_legacy_config_when_migration_unavailable_then_transient_error(self, http_mocker):
+        http_mocker._mocker.post(_TOKEN_MIGRATION_ENDPOINT, status_code=503, text="Service Unavailable")
+
+        output = read_stream("teams", SyncMode.full_refresh, _legacy_oauth_config(), expecting_exception=True)
+
+        assert output.get_message_by_types([Type.CONTROL]) == []
+        assert _stream_error(output, "teams").failure_type == FailureType.transient_error
+
+    @HttpMocker()
+    def test_given_legacy_config_when_reading_two_streams_then_migrate_once(self, http_mocker):
+        http_mocker.post(
+            TeamsRequestBuilder.teams_endpoint(ApiTokenAuthenticator("migrated-access")).build(),
+            TeamsResponseBuilder.teams_response().with_record(TeamsRecordBuilder.teams_record()).build(),
+        )
+        http_mocker.post(
+            BoardsRequestBuilder.boards_endpoint(ApiTokenAuthenticator("migrated-access")).build(),
+            BoardsResponseBuilder.boards_response().with_record(BoardsRecordBuilder.boards_record()).build(),
+        )
+        http_mocker._mocker.post(_TOKEN_MIGRATION_ENDPOINT, json=_MIGRATION_RESPONSE)
+
+        output = _read_streams(["teams", "boards"], _legacy_oauth_config())
+
+        assert len(output.records) == 2
+        assert len(_requests_to(http_mocker, _TOKEN_MIGRATION_ENDPOINT)) == 1
+        assert len(output.get_message_by_types([Type.CONTROL])) == 1
+
+    @HttpMocker()
+    def test_given_legacy_config_when_migration_rejected_then_other_streams_do_not_call_migrate_again(self, http_mocker):
+        http_mocker._mocker.post(_TOKEN_MIGRATION_ENDPOINT, status_code=401, json={"error": "invalid_token"})
+
+        output = _read_streams(["teams", "boards"], _legacy_oauth_config(), expecting_exception=True)
+
+        assert output.records == []
+        assert len(_requests_to(http_mocker, _TOKEN_MIGRATION_ENDPOINT)) == 1
+        assert _stream_error(output, "teams").failure_type == FailureType.config_error
+        assert _stream_error(output, "boards").failure_type == FailureType.config_error
+
+    @HttpMocker()
+    def test_given_migrated_jwt_when_read_then_token_expiry_comes_from_the_exp_claim(self, http_mocker):
+        exp = ab_datetime_now() + timedelta(hours=5)
+        access_token = _jwt({"exp": int(exp.timestamp())})
+        http_mocker.post(
+            TeamsRequestBuilder.teams_endpoint(ApiTokenAuthenticator(access_token)).build(),
+            TeamsResponseBuilder.teams_response().with_record(TeamsRecordBuilder.teams_record()).build(),
+        )
+        http_mocker._mocker.post(_TOKEN_MIGRATION_ENDPOINT, json={**_MIGRATION_RESPONSE, "access_token": access_token, "expires_in": 86400})
+
+        output = read_stream("teams", SyncMode.full_refresh, _legacy_oauth_config())
+
+        assert len(output.records) == 1
+        assert abs((_migrated_token_expiry(output) - exp).total_seconds()) < 60
+
+    @HttpMocker()
+    def test_given_migration_response_without_expires_in_when_read_then_token_expiry_defaults_to_one_hour(self, http_mocker):
+        http_mocker.post(
+            TeamsRequestBuilder.teams_endpoint(ApiTokenAuthenticator("migrated-access")).build(),
+            TeamsResponseBuilder.teams_response().with_record(TeamsRecordBuilder.teams_record()).build(),
+        )
+        http_mocker._mocker.post(
+            _TOKEN_MIGRATION_ENDPOINT, json={key: value for key, value in _MIGRATION_RESPONSE.items() if key != "expires_in"}
+        )
+
+        output = read_stream("teams", SyncMode.full_refresh, _legacy_oauth_config())
+
+        assert len(output.records) == 1
+        assert ab_datetime_now() + timedelta(minutes=59) < _migrated_token_expiry(output) < ab_datetime_now() + timedelta(minutes=61)
 
     @HttpMocker()
     def test_given_api_token_config_when_read_then_no_token_refresh(self, http_mocker):
