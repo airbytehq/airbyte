@@ -131,6 +131,41 @@ Two deliberate exceptions remain: streams whose window is multi-day or monthly (
 forecast streams (`GET_VENDOR_FORECASTING_FRESH_REPORT`, `GET_VENDOR_FORECASTING_RETAIL_REPORT`)
 have no cursor and intentionally send no window at all.
 
+## 8. Vendor retail analytics reports forward report options but supply no defaults
+
+Amazon documents `reportPeriod`, `distributorView`, and `sellingProgram` as required for the vendor sales and
+inventory reports, and `reportPeriod` for traffic and net pure product margin. Real-time inventory has no
+documented options.
+
+Because each of these streams declares its own `request_body_json`, which replaces rather than merges with
+the shared requester's body, configured options used to be validated and then silently dropped
+(issue #77617). Each stream's `request_body_json` now references the single `report_options_from_config`
+Jinja block that `creation_requester_with_report_options` also references, so the option matching rules
+exist in exactly one place. Each stream supplies only its `report_type` via `$parameters`.
+
+Do not add default values for these options. The right values are account-specific (`distributorView` is
+`MANUFACTURING` or `SOURCING` depending on how the vendor sells to Amazon; `sellingProgram` is `RETAIL`, `FRESH`
+or, for some reports, `BUSINESS`), so a hardcoded guess can return the wrong numbers with no error and no schema change to signal it.
+A missing option fails loudly instead: Amazon can reject a request that omits them, and on a live Vendor
+connection every vendor sales, inventory and traffic report went `FATAL` with "This report type requires the
+reportPeriod, distributorView, sellingProgram reportOption to be specified" until the user configured them. The
+block ends in `{{ opts if opts else None }}` so an unconfigured connection sends no `reportOptions` key at all and
+its request body is byte-identical to previous versions.
+
+## 9. FATAL reports must surface Amazon's reason
+
+When `getReport` returns `processingStatus: FATAL`, Amazon accepted `createReport` but could not produce the
+report, and the reason lives in a separate document referenced by `reportDocumentId`. The CDK never fetches it:
+it retries and then fails with "Async job failed after exhausting all retry attempts.", which tells the user
+nothing. `ReportPollingRequester` (wired as the `basic_async_retriever.polling_requester`) fetches that document,
+logs Amazon's reason at ERROR, and raises a `config_error` when the reason points at report options.
+
+`AsyncJobOrchestrator._is_breaking_exception` treats a `config_error` as breaking, so that path aborts the sync
+immediately rather than waiting out `failed_retry_wait_time_in_seconds` (default 1800s) per retry. Every other
+case - no document, a fetch failure, an unrecognised payload - must leave the response untouched so the existing
+retry and `status_mapping` behaviour is unchanged. This is a diagnostic path: it must never turn a report Amazon
+accepted into a failure.
+
 ## Incremental Stream Considerations
 
 The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 7 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.
