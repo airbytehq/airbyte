@@ -191,7 +191,7 @@ class BigqueryCopyMetadata(
     /** Use this for archive JSON as well as hashing so null fields survive serialization. */
     fun serialize(value: Any): ByteArray = mapper.writeValueAsBytes(value)
 
-    /** The identity matches the name-only routing contract, and stays stable across runs. */
+    /** The identity includes the original nullable namespace and stays stable across runs. */
     fun streamKey(stream: DestinationStream): String =
         hash(
                 listOf(
@@ -200,6 +200,7 @@ class BigqueryCopyMetadata(
                     config.sourceId.toString(),
                     config.connectionId.toString(),
                     config.destinationId.toString(),
+                    stream.unmappedNamespace,
                     stream.unmappedName,
                 )
             )
@@ -207,7 +208,14 @@ class BigqueryCopyMetadata(
 
     fun runPath(stream: DestinationStream): String {
         require(epochSeconds >= 0) { "Fusion run epoch must not be negative" }
-        return FusionPaths.run(config, stream.unmappedName, runId, epochSeconds).removeSuffix("/")
+        return FusionPaths.run(
+                config,
+                stream.unmappedNamespace,
+                stream.unmappedName,
+                runId,
+                epochSeconds
+            )
+            .removeSuffix("/")
     }
 
     /** Catalog syncId is the platform job ID, independent of the random archive run ID. */

@@ -62,7 +62,7 @@ Use the agreed Fusion contract:
 
 ```text
 fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/
-  connections/<connection_uuid>/destinations/<destination_uuid>/syncs/streams/<escaped_stream_name>/
+  connections/<connection_uuid>/destinations/<destination_uuid>/syncs/streams/<escaped_namespace>/<escaped_stream_name>/
     runs/<epoch_seconds>/<run_uuid>/
       schema.json
       batches/<batch_uuid>.csv.gz
@@ -83,10 +83,10 @@ An SDK may additionally URL-encode the resulting key for transport; consumers mu
 S3 notification encoding from the archive's component encoding. Do not lowercase or apply
 BigQuery name munging. Record original/mapped namespace and name in JSON.
 
-The name-only convention assumes unique stream names within a connection. Validate this at setup
-and reject duplicate names across namespaces rather than allowing two streams to overwrite the
-same run descriptor. This preserves the selected layout without relying on an unchecked catalog
-assumption.
+Original namespaces are separate escaped path components: null uses `~null`, empty uses
+`~empty`, and literal tildes in nonempty namespaces are percent-encoded. Same-name streams
+in different original namespaces have distinct schema, batch, and completion keys. Stream
+identity hashes include the nullable original namespace as well as the original name.
 
 Write `schema.json` once per stream/run before setup returns. After the stream's final batch
 archive is durable and successful destination finalization returns, write
@@ -377,7 +377,7 @@ Deterministic connector tests must cover:
 3. Request identity: SDK retries keep key/metadata/file; distinct objects/runs have distinct UUIDs.
    A failed download leaves no partial file eligible for upload. Assert the spool byte cap.
 4. Setup: schema before batches, completion after close, minimum zero omits cutoff, metadata
-   failure blocks ingestion, duplicate stream-name routing rejected, unsupported hybrids preserve
+   failure blocks ingestion, same-name streams isolated by original namespace, unsupported hybrids preserve
    existing behavior, and zero-row refreshes still get metadata.
 5. Descriptors: real header ordinals versus mapped fields, raw CSV versus final raw schema,
    source/target primary key and cursor mapping, null namespace, escaped names, schema hash

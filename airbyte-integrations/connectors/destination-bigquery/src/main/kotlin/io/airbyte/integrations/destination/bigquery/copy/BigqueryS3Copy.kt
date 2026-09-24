@@ -143,10 +143,13 @@ class EnabledBigqueryS3Copy(
             )
         }
         val duplicates =
-            catalog.streams.groupingBy { it.unmappedName }.eachCount().filterValues { it > 1 }
+            catalog.streams
+                .groupingBy { it.unmappedNamespace to it.unmappedName }
+                .eachCount()
+                .filterValues { it > 1 }
         if (duplicates.isNotEmpty()) {
             throw SystemErrorException(
-                "Fusion S3 routing requires unique stream names across namespaces in a connection: ${duplicates.keys}"
+                "Fusion S3 routing requires unique original namespace and name pairs: ${duplicates.keys}"
             )
         }
         catalog.streams.forEach { stream ->

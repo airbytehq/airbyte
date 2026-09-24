@@ -6,8 +6,17 @@ package io.airbyte.integrations.destination.bigquery.copy
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.google.cloud.RetryOption
+import com.google.cloud.bigquery.BigQuery
+import com.google.cloud.bigquery.BigQueryError
+import com.google.cloud.bigquery.Job
+import com.google.cloud.bigquery.JobInfo
+import com.google.cloud.bigquery.JobStatistics
+import com.google.cloud.bigquery.Schema
+import com.google.cloud.bigquery.TableId
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.fusion.FusionConfiguration
+import io.airbyte.cdk.fusion.testing.ControlledFusionUploader
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
@@ -39,6 +48,7 @@ import io.airbyte.integrations.destination.bigquery.spec.BigqueryRegion
 import io.airbyte.integrations.destination.bigquery.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.bigquery.spec.GcsFilePostProcessing
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
+import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkLoader
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryObjectStorageFormattingWriterFactory
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -47,7 +57,9 @@ import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
@@ -56,9 +68,17 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.OffsetDateTime
 import java.util.UUID
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import org.apache.commons.csv.CSVFormat
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -493,7 +513,7 @@ class BigqueryCopyMetadataTest {
                 )
         val metadata = metadata(stream)
         val expected =
-            "fusion/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/streams/MiX%2F%E9%9B%AA%25%20./runs/$epochSeconds/$runId"
+            "fusion/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/streams/~null/MiX%2F%E9%9B%AA%25%20./runs/$epochSeconds/$runId"
         assertEquals(expected, metadata.runPath(stream))
         val descriptor = tree(metadata.descriptor(stream))
         assertTrue(descriptor["original_stream"]["namespace"].isNull)
@@ -522,11 +542,26 @@ class BigqueryCopyMetadataTest {
                 assertTrue(
                     metadata
                         .runPath(stream.copy(unmappedName = name))
-                        .endsWith("/streams/$escaped/runs/$epochSeconds/$runId")
+                        .endsWith("/streams/~null/$escaped/runs/$epochSeconds/$runId")
                 )
             }
         assertThrows(IllegalArgumentException::class.java) {
             metadata.runPath(stream.copy(unmappedName = ""))
+        }
+    }
+
+    @Test
+    fun `original namespaces isolate stream keys including null and empty`() {
+        val original = stream()
+        val metadata = metadata(original)
+        val streams =
+            listOf(null, "", "sales", "support", "~null", "~empty").map {
+                original.copy(unmappedNamespace = it)
+            }
+        assertEquals(streams.size, streams.map(metadata::streamKey).toSet().size)
+        assertEquals(streams.size, streams.map(metadata::runPath).toSet().size)
+        streams.forEach {
+            assertEquals(metadata.streamKey(it), metadata.streamKey(it.copy(syncId = 99)))
         }
     }
 
@@ -640,6 +675,251 @@ class BigqueryCopyMetadataTest {
         assertThrows(IllegalArgumentException::class.java) { missing.descriptor(stream) }
     }
 
+    @Test
+    fun `prepare isolates same name namespaces through schema batches and completion`() =
+        runBlocking {
+            val streams =
+                listOf(null, "", "sales", "support").map { stream().copy(unmappedNamespace = it) }
+            val fixture = ActualArchiveFixture(streams)
+            fixture.archive.use { archive ->
+                archive.prepare(DestinationCatalog(streams))
+                val paths = streams.map { archive.context(it).runPath }
+                assertEquals(streams.size, paths.toSet().size)
+                assertEquals(
+                    paths.map { "$it/schema.json" }.toSet(),
+                    fixture.uploader.jsonUploads.map { it.key }.toSet()
+                )
+                streams.forEach { stream ->
+                    val copy =
+                        async(Dispatchers.IO) {
+                            archive.copyCompletedGcsObject(
+                                fixture.storage,
+                                fixture.blob,
+                                archive.context(stream),
+                                7
+                            )
+                        }
+                    val upload = fixture.uploader.awaitUpload()
+                    assertTrue(upload.key.startsWith("${archive.context(stream).runPath}/batches/"))
+                    assertEquals(archive.context(stream).streamKey, upload.metadata["stream-key"])
+                    upload.result.complete(Unit)
+                    withTimeout(10000) { copy.await() }
+                    archive.complete(stream)
+                }
+                assertEquals(
+                    paths.map { "$it/batches/stream_complete.json" }.toSet(),
+                    fixture.uploader.jsonUploads
+                        .filter { it.key.endsWith("stream_complete.json") }
+                        .map { it.key }
+                        .toSet()
+                )
+            }
+            assertEquals(0L, Files.list(directory).use { it.count() })
+        }
+
+    @Test
+    fun `duplicate original identities reject before uploader construction`() = runBlocking {
+        val original = stream()
+        val duplicate = original.copy(namespaceMapper = NamespaceMapper(streamPrefix = "other_"))
+        val fixture = ActualArchiveFixture(listOf(original, duplicate))
+        fixture.archive.use {
+            assertNotNull(
+                runCatching { it.prepare(DestinationCatalog(listOf(original, duplicate))) }
+                    .exceptionOrNull()
+            )
+            assertEquals(0, fixture.uploaderConstructions)
+            assertTrue(fixture.uploader.jsonUploads.isEmpty())
+        }
+    }
+
+    @Test
+    fun `oversized namespace rejects entire prepare before uploader or filesystem side effects`() =
+        runBlocking {
+            val streams = listOf(stream(), stream().copy(unmappedNamespace = "雪".repeat(200)))
+            val fixture = ActualArchiveFixture(streams)
+            fixture.archive.use {
+                val failure =
+                    runCatching { it.prepare(DestinationCatalog(streams)) }.exceptionOrNull()
+                assertNotNull(failure)
+                assertTrue(
+                    generateSequence(failure) { it.cause }.any { it is IllegalArgumentException }
+                )
+                assertEquals(0, fixture.uploaderConstructions)
+                assertTrue(fixture.uploader.jsonUploads.isEmpty())
+                assertTrue(fixture.uploader.uploads.isEmpty())
+                assertEquals(0L, Files.list(directory).use { it.count() })
+            }
+        }
+
+    @ParameterizedTest
+    @CsvSource("false,false", "false,true", "true,false")
+    fun `real GCS load waits each stage and retains source on either failure`(
+        bigqueryFails: Boolean,
+        archiveFails: Boolean
+    ) = runBlocking {
+        val fixture = ActualArchiveFixture(listOf(stream()))
+        val jobEntered = CountDownLatch(1)
+        val jobRelease = CountDownLatch(1)
+        val bq = mockk<BigQuery>()
+        val job = mockk<Job>(relaxed = true)
+        val statistics = mockk<JobStatistics.LoadStatistics>()
+        every { bq.create(any<JobInfo>()) } returns job
+        every { job.waitFor(any<RetryOption>()) } answers
+            {
+                jobEntered.countDown()
+                check(jobRelease.await(10, TimeUnit.SECONDS))
+                job
+            }
+        every { job.status.error } returns
+            if (bigqueryFails) BigQueryError("invalid", "load", "BQ failed") else null
+        every { job.reload() } returns job
+        every { job.getStatistics<JobStatistics.LoadStatistics>() } returns statistics
+        every { statistics.outputRows } returns 7L
+        every { statistics.badRecords } returns 0L
+        try {
+            fixture.archive.prepare(DestinationCatalog(listOf(stream())))
+            val loader =
+                BigQueryBulkLoader(
+                    fixture.storage,
+                    bq,
+                    bigquery()
+                        .copy(
+                            loadingMethod =
+                                GcsStagingConfiguration(mockk(), GcsFilePostProcessing.DELETE)
+                        ),
+                    TableId.of("dataset", "table"),
+                    Schema.of(),
+                    fixture.archive,
+                    fixture.archive.context(stream())
+                )
+            val load = async(Dispatchers.IO) { runCatching { loader.load(fixture.blob) } }
+            assertTrue(jobEntered.await(10, TimeUnit.SECONDS))
+            assertFalse(load.isCompleted)
+            assertTrue(fixture.uploader.uploads.isEmpty())
+            coVerify(exactly = 0) { fixture.storage.get<Long>(any(), any()) }
+            jobRelease.countDown()
+            if (!bigqueryFails) {
+                val upload = fixture.uploader.awaitUpload()
+                assertFalse(load.isCompleted)
+                assertTrue(Files.exists(upload.path))
+                assertArrayEquals(fixture.bytes, Files.readAllBytes(upload.path))
+                coVerify(exactly = 0) { fixture.storage.delete(any<GcsBlob>()) }
+                if (archiveFails)
+                    upload.result.completeExceptionally(IllegalStateException("S3 failed"))
+                else upload.result.complete(Unit)
+                val result = withTimeout(10000) { load.await() }
+                assertEquals(archiveFails, result.isFailure)
+                if (archiveFails)
+                    assertTrue(
+                        generateSequence(result.exceptionOrNull()) { it.cause }
+                            .any { it.message == "S3 failed" }
+                    )
+                assertFalse(Files.exists(upload.path))
+            } else {
+                assertTrue(withTimeout(10000) { load.await() }.isFailure)
+                assertTrue(fixture.uploader.uploads.isEmpty())
+            }
+            coVerify(exactly = if (bigqueryFails || archiveFails) 0 else 1) {
+                fixture.storage.delete(fixture.blob)
+            }
+            verify(exactly = 1) { bq.create(any<JobInfo>()) }
+        } finally {
+            jobRelease.countDown()
+            fixture.archive.close()
+        }
+        assertEquals(0L, Files.list(directory).use { it.count() })
+    }
+
+    @Test
+    fun `actual archive cancellation keeps spool until controlled reader finishes`() = runBlocking {
+        val fixture = ActualArchiveFixture(listOf(stream()))
+        try {
+            fixture.archive.prepare(DestinationCatalog(listOf(stream())))
+            val copy =
+                async(Dispatchers.IO) {
+                    fixture.archive.copyCompletedGcsObject(
+                        fixture.storage,
+                        fixture.blob,
+                        fixture.archive.context(stream()),
+                        7
+                    )
+                }
+            val upload = fixture.uploader.awaitUpload()
+            copy.cancel()
+            delay(100)
+            assertFalse(copy.isCompleted)
+            assertTrue(Files.exists(upload.path))
+            assertArrayEquals(fixture.bytes, Files.readAllBytes(upload.path))
+            upload.result.complete(Unit)
+            withTimeout(10000) { copy.join() }
+            assertTrue(copy.isCancelled)
+            assertFalse(Files.exists(upload.path))
+        } finally {
+            fixture.archive.close()
+        }
+    }
+
+    private inner class ActualArchiveFixture(streams: List<DestinationStream>) {
+        val uploader = ControlledFusionUploader()
+        var uploaderConstructions = 0
+        val metadata =
+            BigqueryCopyMetadata(
+                config,
+                bigquery(),
+                names(streams),
+                runId,
+                DataChannelFormat.JSONL,
+                epochSeconds = epochSeconds
+            )
+        val archive =
+            EnabledBigqueryS3Copy(
+                config,
+                bigquery(),
+                metadata,
+                runId,
+                {
+                    uploaderConstructions++
+                    object : ArchiveUploader {
+                        override suspend fun validateCredentials() = Unit
+                        override suspend fun upload(
+                            path: Path,
+                            key: String,
+                            contentType: String,
+                            metadata: Map<String, String>
+                        ) {
+                            if (contentType == "application/json")
+                                uploader.uploadJson(Files.readAllBytes(path), key).get()
+                            else
+                                withContext(NonCancellable + Dispatchers.IO) {
+                                    uploader.upload(path, key, metadata).get()
+                                }
+                        }
+                        override fun close() = uploader.close()
+                    }
+                },
+                spoolDirectory = directory
+            )
+        val bytes =
+            ByteArrayOutputStream()
+                .also { out ->
+                    GZIPOutputStream(out).use { it.write("actual,csv\n".toByteArray()) }
+                }
+                .toByteArray()
+        val blob =
+            GcsBlob(
+                "staging/input.csv.gz",
+                mockk { every { gcsBucketName } returns "staging-bucket" }
+            )
+        val storage =
+            mockk<GcsClient>().also { client ->
+                coEvery { client.delete(blob) } returns Unit
+                coEvery { client.get<Long>(blob.key, any()) } coAnswers
+                    {
+                        secondArg<(InputStream) -> Long>().invoke(ByteArrayInputStream(bytes))
+                    }
+            }
+    }
+
     private fun stream() =
         DestinationStream(
             unmappedNamespace = "original_namespace",
@@ -666,13 +946,16 @@ class BigqueryCopyMetadataTest {
         )
 
     private fun names(stream: DestinationStream, mappingPrefix: String = "mapped_") =
+        names(listOf(stream), mappingPrefix)
+
+    private fun names(streams: List<DestinationStream>, mappingPrefix: String = "mapped_") =
         TableCatalogByDescriptor(
-            mapOf(
+            streams.associate { stream ->
                 stream.mappedDescriptor to
                     TableNameInfo(
                         TableNames(
                             TableName("raw_dataset", "raw_table"),
-                            TableName("mapped_dataset", "mapped_table"),
+                            TableName("mapped_dataset", "mapped_table")
                         ),
                         ColumnNameMapping(
                             stream.schema
@@ -682,7 +965,7 @@ class BigqueryCopyMetadataTest {
                                 .toMap()
                         ),
                     )
-            )
+            }
         )
 
     private fun metadata(

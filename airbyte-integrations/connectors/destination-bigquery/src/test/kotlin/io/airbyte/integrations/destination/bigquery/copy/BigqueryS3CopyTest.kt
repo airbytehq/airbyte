@@ -169,29 +169,19 @@ class BigqueryS3CopyTest {
     }
 
     @Test
-    fun `invalid strategy or duplicate stream name fails before database setup or AWS`() =
-        runBlocking {
-            val fixture = Fixture()
-            fixture.archive.use { archive ->
-                every { fixture.configuration.loadingMethod } returns
-                    BatchedStandardInsertConfiguration
-                val delegate = mockk<DestinationWriter>(relaxed = true)
-                val result = runCatching {
-                    BigqueryCopyWriter(delegate, fixture.catalog, archive, mockk()).setup()
-                }
-                assertInstanceOf(SystemErrorException::class.java, result.exceptionOrNull())
-                coVerify(exactly = 0) { delegate.setup() }
-                assertEquals(0, fixture.uploader.credentialsChecks)
+    fun `invalid strategy fails before database setup or AWS`() = runBlocking {
+        val fixture = Fixture()
+        fixture.archive.use { archive ->
+            every { fixture.configuration.loadingMethod } returns BatchedStandardInsertConfiguration
+            val delegate = mockk<DestinationWriter>(relaxed = true)
+            val result = runCatching {
+                BigqueryCopyWriter(delegate, fixture.catalog, archive, mockk()).setup()
             }
-            val other = Fixture()
-            other.archive.use { archive ->
-                val duplicate = other.stream.copy(unmappedNamespace = "another")
-                assertThrows(SystemErrorException::class.java) {
-                    archive.validate(DestinationCatalog(listOf(other.stream, duplicate)))
-                }
-                assertEquals(0, other.uploader.credentialsChecks)
-            }
+            assertInstanceOf(SystemErrorException::class.java, result.exceptionOrNull())
+            coVerify(exactly = 0) { delegate.setup() }
+            assertEquals(0, fixture.uploader.credentialsChecks)
         }
+    }
 
     @Test
     fun `metadata failure never publishes a run context and closes uploader`() = runBlocking {

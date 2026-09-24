@@ -57,5 +57,6 @@ dependencies {
     implementation 'com.google.cloud:google-cloud-bigquery:2.62.0'
 
     integrationTestImplementation 'com.google.cloud:google-cloud-bigquery'
+    testImplementation(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-fusion")))
     testImplementation "io.mockk:mockk:1.13.13"
 }
