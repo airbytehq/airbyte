@@ -278,6 +278,160 @@ class BigqueryCopyMetadataTest {
         assertEquals("WRITE_APPEND", layout["load_options"]["writeDisposition"].asText())
     }
 
+    @ParameterizedTest
+    @CsvSource("false,false", "false,true", "true,false", "true,true")
+    fun `append prepare preserves deselected configured keys and cursor without invented coordinates`(
+        raw: Boolean,
+        composite: Boolean,
+    ) = runBlocking {
+        val selectedSchema = ObjectType(linkedMapOf("name" to FieldType(StringType, true)))
+        val selected = stream().copy(schema = selectedSchema)
+        val keys = if (composite) listOf(listOf("name"), listOf("id")) else listOf(listOf("id"))
+        // The configured schema itself is already filtered; only key/cursor settings retain id.
+        val configured =
+            selected.asProtocolObject().withPrimaryKey(keys).withCursorField(listOf("updated_at"))
+        val fixture =
+            ActualArchiveFixture(
+                listOf(selected),
+                raw,
+                ConfiguredAirbyteCatalog().withStreams(listOf(configured))
+            )
+        fixture.archive.use { archive ->
+            archive.prepare(DestinationCatalog(listOf(selected)))
+            assertEquals(1, fixture.uploader.jsonUploads.size)
+            val descriptor = Jsons.readTree(fixture.uploader.jsonUploads.single().bytes)
+            assertEquals(keys, descriptor["primary_key"].map { it.map(JsonNode::asText) })
+            assertEquals(listOf("updated_at"), descriptor["cursor"].map(JsonNode::asText))
+            assertFalse(descriptor["source_schema"]["properties"].has("id"))
+            assertEquals("APPEND", descriptor["layout"]["import_type"].asText())
+            val mappings =
+                descriptor["layout"]["primary_key_mapping"].toList() +
+                    descriptor["layout"]["cursor_mapping"].toList()
+            assertEquals(
+                keys + listOf(listOf("updated_at")),
+                mappings.map { it["source_path"].map(JsonNode::asText) }
+            )
+            assertEquals(descriptor["primary_key"], descriptor["layout"]["primary_key"])
+            assertEquals(descriptor["cursor"], descriptor["layout"]["cursor"])
+            mappings.forEach { mapping ->
+                val path = mapping["source_path"].map(JsonNode::asText)
+                if (raw || path == listOf("name")) {
+                    val target = if (raw) "_airbyte_data" else "mapped_0"
+                    val within = if (raw) path else emptyList()
+                    assertEquals(4, mapping["csv_ordinal"].asInt())
+                    assertEquals(
+                        if (raw) "_airbyte_data" else "name",
+                        mapping["csv_header"].asText()
+                    )
+                    assertEquals(target, mapping["target_column"].asText())
+                    assertEquals(within, mapping["path_within_column"].map(JsonNode::asText))
+                    assertEquals(
+                        listOf(target) + within,
+                        mapping["target_path"].map(JsonNode::asText)
+                    )
+                } else {
+                    listOf(
+                            "csv_ordinal",
+                            "csv_header",
+                            "target_column",
+                            "path_within_column",
+                            "target_path"
+                        )
+                        .forEach { field ->
+                            assertTrue(mapping.has(field), "Missing explicit field $field")
+                            assertTrue(mapping[field].isNull, "Invented output coordinate $field")
+                        }
+                }
+            }
+            assertEquals(
+                fixture.metadata.schemaId(mapOf("layout" to descriptor["layout"])),
+                descriptor["schema_id"].asText()
+            )
+            assertNotNull(archive.context(selected))
+        }
+    }
+
+    @Test
+    fun `dedupe still rejects configured key absent from typed CSV`() = runBlocking {
+        val selected =
+            stream()
+                .copy(
+                    schema = ObjectType(linkedMapOf("name" to FieldType(StringType, true))),
+                    importType = Dedupe(listOf(listOf("name")), emptyList()),
+                )
+        val configured = selected.asProtocolObject().withPrimaryKey(listOf(listOf("id")))
+        val fixture =
+            ActualArchiveFixture(
+                listOf(selected),
+                configuredCatalog = ConfiguredAirbyteCatalog().withStreams(listOf(configured))
+            )
+        fixture.archive.use { archive ->
+            val failure =
+                runCatching { archive.prepare(DestinationCatalog(listOf(selected))) }
+                    .exceptionOrNull()
+            assertNotNull(failure)
+            assertTrue(
+                generateSequence(failure) { it.cause }
+                    .any {
+                        it is IllegalArgumentException &&
+                            it.message == "Configured key/cursor field id is absent from the CSV"
+                    }
+            )
+            assertTrue(fixture.uploader.jsonUploads.isEmpty())
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource("false", "true")
+    fun `append prepare keeps configured nested paths within selected JSON output`(raw: Boolean) =
+        runBlocking {
+            val selected =
+                stream()
+                    .copy(
+                        schema =
+                            ObjectType(
+                                linkedMapOf(
+                                    "nested" to
+                                        FieldType(
+                                            ObjectType(
+                                                linkedMapOf("name" to FieldType(StringType, true))
+                                            ),
+                                            true
+                                        )
+                                )
+                            )
+                    )
+            val path = listOf("nested", "id")
+            val configured =
+                selected.asProtocolObject().withPrimaryKey(listOf(path)).withCursorField(path)
+            val fixture =
+                ActualArchiveFixture(
+                    listOf(selected),
+                    raw,
+                    ConfiguredAirbyteCatalog().withStreams(listOf(configured))
+                )
+            fixture.archive.use { archive ->
+                archive.prepare(DestinationCatalog(listOf(selected)))
+                val descriptor = Jsons.readTree(fixture.uploader.jsonUploads.single().bytes)
+                for (mapping in
+                    listOf(
+                        descriptor["layout"]["primary_key_mapping"][0],
+                        descriptor["layout"]["cursor_mapping"][0]
+                    )) {
+                    assertEquals(path, mapping["source_path"].map(JsonNode::asText))
+                    assertEquals(4, mapping["csv_ordinal"].asInt())
+                    assertEquals(
+                        if (raw) "_airbyte_data" else "mapped_0",
+                        mapping["target_column"].asText()
+                    )
+                    assertEquals(
+                        if (raw) path else listOf("id"),
+                        mapping["path_within_column"].map(JsonNode::asText)
+                    )
+                }
+            }
+        }
+
     @Test
     fun `configured keys and cursor retain paths and map to actual CSV columns`() {
         val stream =
@@ -859,22 +1013,27 @@ class BigqueryCopyMetadataTest {
         }
     }
 
-    private inner class ActualArchiveFixture(streams: List<DestinationStream>) {
+    private inner class ActualArchiveFixture(
+        streams: List<DestinationStream>,
+        raw: Boolean = false,
+        configuredCatalog: ConfiguredAirbyteCatalog? = null,
+    ) {
         val uploader = ControlledFusionUploader()
         var uploaderConstructions = 0
         val metadata =
             BigqueryCopyMetadata(
                 config,
-                bigquery(),
+                bigquery(raw),
                 names(streams),
                 runId,
                 DataChannelFormat.JSONL,
+                configuredCatalog = configuredCatalog,
                 epochSeconds = epochSeconds
             )
         val archive =
             EnabledBigqueryS3Copy(
                 config,
-                bigquery(),
+                bigquery(raw),
                 metadata,
                 runId,
                 {

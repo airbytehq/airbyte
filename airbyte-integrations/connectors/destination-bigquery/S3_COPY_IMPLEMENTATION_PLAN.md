@@ -311,6 +311,13 @@ missing from the current Snowflake preview descriptor.
 
 The legacy CDK drops configured keys/cursors from its `DestinationStream` for append streams.
 Read these fields from the original `ConfiguredAirbyteCatalog` and match by original stream identity.
+Field selection can remove a configured key/cursor from typed CSV output even when the configured
+schema itself contains only selected fields. Preserve the full configured `primary_key`/`cursor`.
+For an unavailable CSV column, retain `source_path` and serialize explicit nulls for `csv_ordinal`,
+`csv_header`, `target_column`, `path_within_column`, and `target_path`; never invent an ordinal or
+target. Preserve available members of composite mappings. Raw `_airbyte_data` and selected JSON
+columns retain valid paths inside their opaque JSON payloads, even for fields absent from the
+selected schema. This is metadata only and does not relax destination deduplication validation.
 Descriptor serialization preserves explicit nulls with the same Jackson mapper used for hashing;
 the CDK's default null-omitting serialization would change the published layout's hash.
 

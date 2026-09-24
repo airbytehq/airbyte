@@ -81,7 +81,21 @@ class BigqueryCopyMetadata(
             require(path.isNotEmpty()) { "Configured BigQuery key paths must not be empty" }
             val header = if (raw) Meta.COLUMN_NAME_DATA else path.first()
             val ordinal = headers.indexOf(header)
-            require(ordinal >= 0) { "Configured key/cursor field $header is absent from the CSV" }
+            // Configured append keys/cursors can outlive field selection. Describe the
+            // configured source path without inventing coordinates for absent output columns.
+            if (ordinal < 0) {
+                require(stream.importType !is Dedupe) {
+                    "Configured key/cursor field $header is absent from the CSV"
+                }
+                return mapOf(
+                    "source_path" to path,
+                    "csv_ordinal" to null,
+                    "csv_header" to null,
+                    "target_column" to null,
+                    "path_within_column" to null,
+                    "target_path" to null,
+                )
+            }
             val target = fields[ordinal].name
             val withinColumn = if (raw) path else path.drop(1)
             return mapOf(
