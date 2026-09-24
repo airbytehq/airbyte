@@ -50,14 +50,6 @@ bootstrap STS. If both are absent, the AWS default credentials provider chain is
 A partially supplied pair fails configuration validation. Secrets are not included in a
 generated configuration `toString`.
 
-`FusionPaths.run(config, streamName, runId, epochSeconds)` retains its existing path for
-BigQuery compatibility:
-
-```text
-{prefix}/organizations/{id}/workspaces/{id}/sources/{id}/connections/{id}/destinations/{id}/syncs/streams/{escaped}/runs/{epoch}/{uuid}/
-```
-
-The namespace-aware overload, initially for Snowflake adoption, is
 `FusionPaths.run(config, namespace: String?, streamName, runId, epochSeconds)` and returns:
 
 ```text
@@ -77,12 +69,11 @@ Namespace components are encoded without collisions:
 
 Stream names use the unchanged `escape(streamName)` encoding, including literal tildes.
 Namespace and name are separate components, so identical names in different namespaces
-have distinct paths. The original overload omits the namespace component entirely; even
-passing null to the new overload produces a different path. BigQuery callers should keep
-using the original overload for now.
+have distinct paths. This is the only supported layout; every caller must supply the
+original namespace, including null when the source provides none.
 
-Both overloads reserve `batches/{uuid}.jsonl.gz` after the run path and reject keys exceeding
-1024 UTF-8 bytes before upload. The namespace-aware overload includes the encoded namespace
+Run paths reserve `batches/{uuid}.jsonl.gz` after the run path and reject keys exceeding
+1024 UTF-8 bytes before upload. The path includes the encoded namespace
 in that limit; exactly 1024 bytes is allowed.
 
 `FusionSchema.fromConfiguredStream(configuredStream: JsonNode)` extracts the original

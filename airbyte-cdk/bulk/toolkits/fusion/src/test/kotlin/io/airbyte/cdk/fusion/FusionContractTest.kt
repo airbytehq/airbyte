@@ -93,13 +93,13 @@ class FusionContractTest {
     fun `run paths preserve platform hierarchy and encode UTF8 key components`() {
         val config = FusionConfiguration.fromEnvironment(env)!!
         assertEquals(
-            "fusion/organizations/$id/workspaces/$id/sources/$id/connections/$id/destinations/$id/syncs/streams/a%2Fb%20%C3%A9/runs/42/$id/",
-            FusionPaths.run(config, "a/b é", id, 42),
+            "fusion/organizations/$id/workspaces/$id/sources/$id/connections/$id/destinations/$id/syncs/streams/public/a%2Fb%20%C3%A9/runs/42/$id/",
+            FusionPaths.run(config, "public", "a/b é", id, 42),
         )
         assertEquals("%2E%2E", FusionPaths.escape(".."))
         assertEquals("a.b", FusionPaths.escape("a.b"))
         assertThrows(IllegalArgumentException::class.java) {
-            FusionPaths.run(config, "é".repeat(200), id, 42)
+            FusionPaths.run(config, "public", "é".repeat(200), id, 42)
         }
     }
 
@@ -130,7 +130,6 @@ class FusionContractTest {
                 path
             }
         assertEquals(namespaces.size, paths.toSet().size)
-        assertFalse(paths.contains(FusionPaths.run(config, "orders", id, 42)))
     }
 
     @Test
