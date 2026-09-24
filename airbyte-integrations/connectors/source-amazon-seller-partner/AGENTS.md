@@ -131,7 +131,7 @@ Amazon publishes the vendor retail analytics reports "72 hours after the close o
 `DAY` reportPeriod
 (https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports).
 Requesting a day it has not published yet makes the report `FATAL` with "The report data for the requested
-date range is not yet available". That is a partial failure per slice, not a skip, so before 5.10.8 every
+date range is not yet available". That is a partial failure per slice, not a skip, so before 6.0.3 every
 sync failed on its newest day and a long-running connection hit the platform's 20-partial-failure limit while
 most of its data had loaded.
 
