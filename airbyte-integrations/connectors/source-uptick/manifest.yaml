@@ -44,17 +44,15 @@ definitions:
           # A 401 on a stream request cannot be a bad credential (those fail on the token endpoint,
           # see the authenticator above). Uptick returns the same body for an expired, revoked or
           # missing token: {"errors": {"detail": "Authentication credentials were not provided."}}.
-          # Tokens live 10 h, so this is an expired/revoked token mid-sync: refresh it and retry
-          # the request. If the refresh itself fails (password rotated mid-sync) the retries are
-          # exhausted through the shared backoff and the attempt fails as `config_error`.
-          # failure_type below is only applied by the CDK when action is FAIL; with REFRESH_TOKEN_THEN_RETRY the
-          # exhausted-retries classification comes from the CDK's default 401 mapping, which is also config_error.
-          # Lockout risk: a failed refresh (password rotated mid-sync) is re-driven through the backoff
-          # loop (~6 failed logins per stream), and repeated failed logins can trigger Uptick's
-          # automatic account lockout. Fixed CDK-side by https://github.com/airbytehq/airbyte-python-cdk/pull/1173,
-          # so this connector must be pinned to a CDK release containing it before merge.
-          # TODO(cdk): once released, bump `version` here, `airbyte-cdk` in unit_tests/pyproject.toml,
-          # and the base image in metadata.yaml.
+          # Tokens live 10 h, so this is an expired/revoked token mid-sync: refresh it and retry the request
+          # once. The CDK bounds this to a single refresh per request (airbyte-python-cdk#1173): a rejected
+          # refresh (password rotated mid-sync) fails immediately with the authenticator's config_error, and
+          # a second 401 after a successful refresh fails with the error_message below — no backoff loop,
+          # so at most one failed login per stream and no Uptick account-lockout exposure.
+          # failure_type below is only applied by the CDK when action is FAIL; the fail-fast paths above are
+          # classified config_error by the CDK/authenticator.
+          # Requires the released CDK containing #1173: `version` here, `airbyte-cdk` in unit_tests/pyproject.toml
+          # and the base image in metadata.yaml must all point at that release.
           - type: HttpResponseFilter
             http_codes: [401]
             action: REFRESH_TOKEN_THEN_RETRY

@@ -134,9 +134,9 @@ def test_401_on_stream_refreshes_token_then_retries(virtual_clock: list[float]) 
     http_mocker.assert_number_of_calls(refreshed_page_request, 1)
 
 
-def test_401_with_failed_refresh_exhausts_retries_as_config_error(virtual_clock: list[float]) -> None:
+def test_401_with_rejected_refresh_fails_fast_as_config_error(virtual_clock: list[float]) -> None:
     output, http_mocker = _read_with_responses(
-        [HttpResponse(body='{"errors": {"detail": "Authentication credentials were not provided."}}', status_code=401) for _ in range(6)],
+        [HttpResponse(body='{"errors": {"detail": "Authentication credentials were not provided."}}', status_code=401)],
         token_responses=[
             _TOKEN_RESPONSE,
             HttpResponse(body='{"error": "invalid_grant", "error_description": "Invalid credentials given."}', status_code=400),
@@ -148,15 +148,47 @@ def test_401_with_failed_refresh_exhausts_retries_as_config_error(virtual_clock:
     matching = [
         error
         for error in _stream_errors(output)
-        if error.failure_type == FailureType.config_error
-        and "Exhausted available request attempts" in error.message
-        and _401_MESSAGE in error.message
+        if error.failure_type == FailureType.config_error and "Refresh token was rejected by the OAuth provider" in error.message
+    ]
+    assert len(matching) == 1, f"expected exactly one config_error from the rejected refresh, got {output.errors}"
+    assert not any("Exhausted available request attempts" in error.message for error in _stream_errors(output)), output.errors
+    assert virtual_clock == []
+    http_mocker.assert_number_of_calls(_TOKEN_REQUEST, 2)
+    http_mocker.assert_number_of_calls(_PAGE_REQUEST, 1)
+
+
+def test_401_after_successful_refresh_fails_as_config_error(virtual_clock: list[float]) -> None:
+    config = ConfigBuilder().build()
+    catalog = CatalogBuilder().with_stream(_STREAM, SyncMode.full_refresh).build()
+    refreshed_page_request = UptickRequestBuilder.collection(_STREAM, token="tok2")
+    with HttpMocker() as http_mocker:
+        http_mocker.post(
+            _TOKEN_REQUEST,
+            [
+                HttpResponse(body=json.dumps({"access_token": "tok", "expires_in": 3600}), status_code=200),
+                HttpResponse(body=json.dumps({"access_token": "tok2", "expires_in": 3600}), status_code=200),
+            ],
+        )
+        http_mocker.get(
+            _PAGE_REQUEST,
+            [HttpResponse(body='{"errors": {"detail": "Authentication credentials were not provided."}}', status_code=401)],
+        )
+        http_mocker.get(
+            refreshed_page_request,
+            [HttpResponse(body='{"errors": {"detail": "Authentication credentials were not provided."}}', status_code=401)],
+        )
+        output = read(get_source(config=config), config=config, catalog=catalog, state=StateBuilder().build())
+
+    assert output.records == []
+    assert output.get_stream_statuses(_STREAM)[-1].name == "INCOMPLETE"
+    matching = [
+        error for error in _stream_errors(output) if error.failure_type == FailureType.config_error and _401_MESSAGE in error.message
     ]
     assert len(matching) == 1, f"expected exactly one config_error containing {_401_MESSAGE}, got {output.errors}"
-    # Today's CDK numbers; airbyte-python-cdk#1173 bounds this to 1 initial + 1 failed refresh, then fail — update with the pin bump.
-    http_mocker.assert_number_of_calls(_TOKEN_REQUEST, 7)
-    http_mocker.assert_number_of_calls(_PAGE_REQUEST, 6)
-    assert sum(virtual_clock) <= 400
+    assert virtual_clock == []
+    http_mocker.assert_number_of_calls(_TOKEN_REQUEST, 2)
+    http_mocker.assert_number_of_calls(_PAGE_REQUEST, 1)
+    http_mocker.assert_number_of_calls(refreshed_page_request, 1)
 
 
 def test_429_waits_for_retry_after_then_succeeds(virtual_clock: list[float]) -> None:

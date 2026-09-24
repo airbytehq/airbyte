@@ -11,7 +11,8 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
-airbyte-cdk = "^7"
+# PLACEHOLDER: git ref of airbyte-python-cdk#1173; replace with the released version "X.Y.Z" before pushing.
+airbyte-cdk = { git = "https://github.com/airbytehq/airbyte-python-cdk.git", branch = "devin/1790165041-bounded-refresh-retry" }
 pytest = "^8"
 requests-mock = "^1"
 
