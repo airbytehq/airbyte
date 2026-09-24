@@ -2,6 +2,29 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## September 23, 2026
+
+Connections
+
+- The tag shown on connections that use on-demand capacity now reads "On-demand" instead of "Burst," matching the name Airbyte uses for this feature everywhere else.
+- If a connector stops responding while Airbyte tests a source or destination or discovers its schema, the operation now fails after a timeout instead of staying stuck until a later safeguard cancels it. Standalone tests and schema refreshes time out after 9 minutes, and schema discovery that runs as part of a sync times out after 30 minutes.
+
+Platform
+
+- The Standard plan's new pricing, announced on September 15, is now in effect and reflected on the Plans page: $20 per month with 5 credits included, and additional credits at $5 each. The advance notice about the pricing change no longer appears on the Standard plan card.
+- On Cloud Pro and Enterprise Flex plans, the dotted line on the data worker usage charts is now labeled "Allocated capacity" instead of "Contracted capacity," because the capacity allocated to a region can differ from the total your contract includes. The label also stays readable when usage bars reach the line.
+
+API
+
+- When you list a user's permissions through the API, the response no longer includes permissions for workspaces that have been deleted, so it matches the workspaces the user can actually access.
+
+## September 17, 2026
+
+Platform
+
+- On the Pro and Enterprise Flex plans, when Airbyte staff take an action in your organization as part of a support case, your audit logs now attribute that action to "Airbyte Support" instead of an individual employee's email address, making it clearer which changes came from Airbyte rather than from your own team.
+- Viewing your SCIM configuration no longer creates an audit log entry. Your audit logs now show only actual changes to SCIM settings, not every time an admin opens the page.
+
 ## September 15, 2026
 
 **Important**: Updated pricing model
