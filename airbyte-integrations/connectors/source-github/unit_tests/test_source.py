@@ -265,64 +265,6 @@ def test_streams_no_streams_available_error(monkeypatch, rate_limit_mock_respons
     )
 
 
-def test_streams_page_size(rate_limit_mock_response, requests_mock):
-    requests_mock.get("https://api.github.com/repos/airbytehq/airbyte", json={"full_name": "airbytehq/airbyte", "default_branch": "master"})
-    requests_mock.get(
-        "https://api.github.com/repos/airbytehq/airbyte/branches", json=[{"repository": "airbytehq/airbyte", "name": "master"}]
-    )
-
-    config = {
-        "credentials": {"access_token": "access_token"},
-        "repository": "airbytehq/airbyte",
-        "start_date": "1900-07-12T00:00:00Z",
-    }
-
-    source = SourceGithub()
-    streams = source.streams(config)
-    assert constants.DEFAULT_PAGE_SIZE != constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
-
-    for stream in streams:
-        if not hasattr(stream, "page_size"):
-            continue
-        if stream.large_stream:
-            assert stream.page_size == constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
-        else:
-            assert stream.page_size == constants.DEFAULT_PAGE_SIZE
-
-
-@pytest.mark.parametrize(
-    "config, expected",
-    (
-        (
-            {
-                "start_date": "2021-08-27T00:00:46Z",
-                "access_token": "test_token",
-                "repository": "airbyte/test",
-            },
-            6,
-        ),
-        ({"access_token": "test_token", "repository": "airbyte/test"}, 6),
-    ),
-)
-def test_streams_config_start_date(config, expected, rate_limit_mock_response, requests_mock):
-    requests_mock.get("https://api.github.com/repos/airbyte/test", json={"full_name": "airbyte/test", "default_branch": "default_branch"})
-    requests_mock.get(
-        "https://api.github.com/repos/airbyte/test/branches",
-        json=[{"repository": "airbyte/test", "name": "name"}],
-    )
-    source = SourceGithub()
-    streams = source.streams(config=config)
-    # Find a Python stream that accepts start_date to verify config propagation
-    python_streams_with_start_date = [s for s in streams if hasattr(s, "_start_date")]
-    assert len(streams) == expected
-    assert len(python_streams_with_start_date) > 0
-    sample_stream = python_streams_with_start_date[0]
-    if config.get("start_date"):
-        assert sample_stream._start_date == "2021-08-27T00:00:46Z"
-    else:
-        assert not sample_stream._start_date
-
-
 @pytest.mark.parametrize(
     "error_message, expected_user_friendly_message",
     [
@@ -419,12 +361,13 @@ def test_read_routes_manifest_streams_to_concurrent_and_python_streams_to_synchr
     assert [s.stream.name for s in synchronous_catalog.streams] == ["teams"]
 
 
-def test_read_with_empty_manifest_skips_concurrent_read(rate_limit_mock_response, requests_mock):
-    """A catalog holding only Python streams must not start the concurrent source. `issues` moved
-    to the manifest in Step 6, so this uses `pull_request_stats`, which stays Python until Step 9."""
+def test_read_with_manifest_only_catalog_skips_synchronous_read(rate_limit_mock_response, requests_mock):
+    """Step 9 empties the Python stream list, so every catalog is manifest-only and the
+    synchronous path must never be entered. The routing itself is still covered by
+    `test_read_routes_manifest_streams_to_concurrent_and_python_streams_to_synchronous`."""
     requests_mock.get("https://api.github.com/repos/airbyte/test", json={"full_name": "airbyte/test"})
     source = SourceGithub(config=_CONFIG)
-    catalog = CatalogBuilder().with_stream(name="pull_request_stats", sync_mode=SyncMode.full_refresh).build()
+    catalog = CatalogBuilder().with_stream(name="workflow_runs", sync_mode=SyncMode.full_refresh).build()
 
     with (
         patch.object(ConcurrentSource, "read", return_value=iter([])) as concurrent_read,
@@ -432,7 +375,37 @@ def test_read_with_empty_manifest_skips_concurrent_read(rate_limit_mock_response
     ):
         list(source.read(logging.getLogger("airbyte"), _CONFIG, catalog))
 
-    concurrent_read.assert_not_called()
-    synchronous_read.assert_called_once()
-    synchronous_catalog = synchronous_read.call_args.args[3]
-    assert [s.stream.name for s in synchronous_catalog.streams] == ["pull_request_stats"]
+    synchronous_read.assert_not_called()
+    selected_concurrent_streams = concurrent_read.call_args.args[0]
+    assert [stream.name for stream in selected_concurrent_streams] == ["workflow_runs"]
+
+
+def test_every_discovered_schema_is_fully_expanded(monkeypatch):
+    """No `$ref` may survive into a discovered schema.
+
+    The manifest cannot resolve a JSON-Schema `$ref`: a relative one (`user.json`) is left as a
+    literal string, and `#/definitions/...` is swallowed by the manifest's own `$ref` resolver.
+    Either way the platform receives `"user.json"` where an object belongs and DISCOVER fails.
+    The shared schemas are expanded at every use instead, so nothing here may look like a ref.
+    """
+    source = SourceGithub(config=_CONFIG)
+    # `streams()` already returns [], but it resolves the configured repositories over HTTP on
+    # the way there. Stubbing it keeps this test off the network.
+    monkeypatch.setattr(SourceGithub, "streams", MagicMock(return_value=[]))
+
+    catalog = source.discover(logging.getLogger("airbyte"), _CONFIG)
+
+    offenders = []
+    for stream in catalog.streams:
+        stack = [(stream.name, stream.json_schema)]
+        while stack:
+            path, node = stack.pop()
+            if isinstance(node, dict):
+                if "$ref" in node:
+                    offenders.append(f"{path}.$ref = {node['$ref']!r}")
+                stack.extend((f"{path}.{key}", value) for key, value in node.items())
+            elif isinstance(node, list):
+                stack.extend((f"{path}[{index}]", value) for index, value in enumerate(node))
+            elif isinstance(node, str) and node.endswith(".json"):
+                offenders.append(f"{path} = {node!r}")
+    assert offenders == []
