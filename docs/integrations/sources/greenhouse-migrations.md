@@ -85,25 +85,25 @@ Version 1.0.0 removes the redundant `applications_demographics_answers`, `applic
 
 Timestamp and date fields now carry `format: date-time` / `format: date`, so destinations type them as TIMESTAMP/DATE rather than string. This is another reason to give 1.0.0 its own tables: the v1 tables type those columns as string, and destinations do not change a column's type on a schema refresh.
 
-Most of the fields above are not gone from Harvest. Harvest v3 moved them off the parent record onto their own collection endpoints. Version 1.2.0 syncs most of those endpoints as their own streams; enabling them on a source authorized before 1.2.0 requires re-running the consent flow, because each one needs its own scope (see [Streams added in 1.2.0](./greenhouse.md#streams-added-in-120)). The four endpoints marked "not synced" below are not read by any stream.
+Most of the fields above are not gone from Harvest. Harvest v3 moved them off the parent record onto their own collection endpoints, and this release does not sync those endpoints yet. Adding the rest is tracked for a follow-up release and will require adding the corresponding scopes to your Greenhouse OAuth application and re-running consent. Until then, Harvest v3 still serves this data at:
 
-| Dropped v1 field | Stream in 1.2.0 and later |
+| Dropped v1 field | Harvest v3 endpoint |
 |---|---|
-| `applications.attachments`, `candidates.attachments` | `attachments` |
-| `applications.current_stage` | `application_stages` (join on `applications.stage_id`) |
-| `applications.prospect_detail`, `prospective_department`, `prospective_office` | `prospect_details` |
-| `applications.rejection_details` | `rejection_details` |
-| `approvals.approver_groups` | `approver_groups`, `approvers` |
-| `candidates.educations` | `candidate_educations` |
-| `candidates.employments` | `candidate_employments` |
-| `custom_fields.departments`, `custom_fields.offices` | Not synced (`GET /v3/custom_field_departments`, `GET /v3/custom_field_offices`) |
-| `interviews.interviewers` | `interviewers` |
-| `job_posts.location` | Not synced (`GET /v3/job_post_locations`; a job post can carry several locations in v3) |
-| `job_stages.interviews` | `job_interviews`, `interview_kits` |
-| `jobs.hiring_team` | `job_hiring_managers`, `job_owners` |
-| `prospect_pools.prospect_stages` | `prospect_pool_stages` |
-| `scorecards.attributes` | `scorecard_candidate_attributes` |
-| `scorecards.questions` | Not synced (`GET /v3/scorecard_question_answers`); `scorecard_questions` has the question text but not the answers |
+| `applications.attachments`, `candidates.attachments` | `GET /v3/attachments` |
+| `applications.current_stage` | `GET /v3/application_stages` (join on `applications.stage_id`) |
+| `applications.prospect_detail`, `prospective_department`, `prospective_office` | `GET /v3/prospect_details` |
+| `applications.rejection_details` | `GET /v3/rejection_details` |
+| `approvals.approver_groups` | `GET /v3/approver_groups`, `GET /v3/approvers` |
+| `candidates.educations` | `GET /v3/candidate_educations` |
+| `candidates.employments` | `GET /v3/candidate_employments` |
+| `custom_fields.departments`, `custom_fields.offices` | `GET /v3/custom_field_departments`, `GET /v3/custom_field_offices` |
+| `interviews.interviewers` | `GET /v3/interviewers` |
+| `job_posts.location` | `GET /v3/job_post_locations` (a job post can carry several locations in v3) |
+| `job_stages.interviews` | `GET /v3/job_interviews`, `GET /v3/interview_kits` |
+| `jobs.hiring_team` | `GET /v3/job_hiring_managers`, `GET /v3/job_owners` |
+| `prospect_pools.prospect_stages` | `GET /v3/prospect_pool_stages` |
+| `scorecards.attributes` | `GET /v3/scorecard_candidate_attributes` |
+| `scorecards.questions` | `GET /v3/scorecard_question_answers` |
 
 `custom_fields.custom_field_options` is not removed in v3, only relocated: Harvest v3 serves it from `GET /v3/custom_field_options`. Enable the new `custom_field_options` stream and join it back to `custom_fields` on `custom_field_id` to rebuild the nested v1 array.
 
@@ -113,7 +113,7 @@ Most of the fields above are not gone from Harvest. Harvest v3 moved them off th
 
 Harvest v3 returns opaque cursor URLs in the `Link` response header. The connector sends `per_page=500`, incremental filters, parent filters, and static filters only on the first request; cursor follow-up requests use only the cursor URL. The legacy `applied_at` watermark is discarded during the 1.0.0 upgrade because it is v3's `created_at`, so `applications` backfills once on the new `updated_at` cursor. The remaining de-fanned child streams preserve the minimum recoverable `updated_at` cursor and resume without a backfill.
 
-`eeoc` keeps `submitted_at` as its cursor, matching 0.8.1. `/v3/eeoc` also accepts an `updated_at` filter, but switching the cursor needs a migration of the saved state of existing connections, so the connector hasn't made that change yet. Corrections made to an EEOC response after submission do not change `submitted_at`, so incremental syncs never re-read them and, with `application_id` as the primary key in destinations that merge records, the corrected values are silently missed. Re-run the stream in full refresh if you need corrections to land.
+`eeoc` keeps `submitted_at` as its cursor, matching 0.8.1, because `/v3/eeoc` exposes no `updated_at` filter. Corrections made to an EEOC response after submission do not change `submitted_at`, so incremental syncs never re-read them and, with `application_id` as the primary key in destinations that merge records, the corrected values are silently missed. Re-run the stream in full refresh if you need corrections to land.
 
 The deleted child streams were redundant in v3: `demographics_answers`, `interviews`, and `job_stages` now provide the complete collections formerly exposed through their child-stream counterparts.
 
