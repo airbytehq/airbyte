@@ -46,6 +46,10 @@ class PipelinesSourcePartitionStateMigration(StateMigration):
 
     The `default` partition inherits the old cursor. `parent_pipeline` (child pipelines) was never
     read before, so it gets an explicit cursor at the configured `start_date` to backfill from.
+
+    State saved in global-cursor mode (`use_global_cursor: true`, no per-partition entries) has no
+    per-project cursors to re-key and no persisted marker to make a reset idempotent, so it is left
+    untouched; those connections need a manual stream reset to backfill child pipelines.
     """
 
     config: Mapping[str, Any]

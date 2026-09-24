@@ -125,6 +125,12 @@ This connector uses GitLab API v4. It works with both GitLab.com and self-hosted
 
 Incremental streams filter on `updated_at` and request data in 180-day windows, so a first sync of a long-lived project issues many requests. If you leave **Start date** blank, incremental streams start from 2014-01-01, which is effectively all history for most projects. Set a start date to cut the initial sync short.
 
+### Child pipelines on very large instances
+
+Since version 4.4.41, `pipelines` reads each project twice: once for regular pipelines and once with `source=parent_pipeline` for child pipelines. Existing connections keep their per-project cursor for regular pipelines and backfill child pipelines from **Start date** automatically.
+
+The backfill is not guaranteed when the stream tracks more than 10,000 partitions (more than roughly 5,000 projects, since each project now has two partitions). Above that limit the connector stores a single shared cursor for the whole stream instead of one per project, and child pipelines older than that cursor are not read. If your connection is that large, reset the `pipelines`, `pipelines_extended`, and `jobs` streams once after upgrading to load historical child pipelines.
+
 ### Rate limits
 
 The connector respects per-endpoint rate limits based on [GitLab.com's documented defaults](https://docs.gitlab.com/user/gitlab_com/#rate-limits-on-gitlabcom) for the [Groups API](https://docs.gitlab.com/administration/settings/rate_limit_on_groups_api/), [Members API](https://docs.gitlab.com/administration/settings/rate_limit_on_members_api/), [Projects API](https://docs.gitlab.com/administration/settings/rate_limit_on_projects_api/), and general authenticated traffic:
