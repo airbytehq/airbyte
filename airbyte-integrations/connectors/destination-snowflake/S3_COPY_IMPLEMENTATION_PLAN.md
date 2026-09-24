@@ -28,14 +28,14 @@ The write-only factory initializes Fusion before ingestion. Spec and check comma
 ## Object layout
 
 ```text
-s3://{bucket}/{prefix}/organizations/{organization_id}/workspaces/{workspace_id}/sources/{source_id}/connections/{connection_id}/destinations/{destination_id}/syncs/streams/{escaped_stream}/runs/{epoch}/{run_uuid}/
+s3://{bucket}/{prefix}/organizations/{organization_id}/workspaces/{workspace_id}/sources/{source_id}/connections/{connection_id}/destinations/{destination_id}/syncs/streams/{escaped_namespace}/{escaped_stream}/runs/{epoch}/{run_uuid}/
   schema.json
   batches/
     {batch_uuid}.csv.gz
     stream_complete.json
 ```
 
-Snowflake always writes under `syncs`. The epoch is captured once with `Instant.now().epochSecond` alongside a generated run UUID when the write service is created. All streams share that run identity. Original stream names preserve case and use percent-encoded UTF-8 components. Before writing sidecars, setup validates every stream's path against S3's 1,024-byte key limit, reserving room for batch suffixes.
+Snowflake always writes under `syncs`. The epoch is captured once with `Instant.now().epochSecond` alongside a generated run UUID when the write service is created. All streams share that run identity. Original namespaces and stream names preserve case and are escaped independently as UTF-8 path components. Namespace comes from `unmappedNamespace`, not the Snowflake table schema. A missing namespace uses `~null`; an empty namespace uses `~empty`. Literal tildes in nonempty namespaces are encoded as `%7E`, so real namespaces named `~null` or `~empty` cannot collide with these sentinels. Slash, percent, and other reserved bytes are percent-encoded; dot-only components are encoded too. Same-named streams in different namespaces have distinct schemas, batches, and completion markers even though they share the run identity. Before writing sidecars, setup validates every stream's path against S3's 1,024-byte key limit, reserving room for batch suffixes.
 
 ## Schema and completion
 
@@ -56,3 +56,11 @@ After successful stream finalization, the connector writes `batches/stream_compl
 `SnowflakeWriter.setup()` prepares schemas before ingestion. `SnowflakeAggregateFactory` passes immutable stream context to `SnowflakeInsertBuffer`. The buffer closes the CSV, performs both durable operations, and retains the file until both readers finish. Existing flush/checkpoint behavior applies to STDIO and socket inputs. Both legacy raw tables and schema mode retain the original source schema.
 
 Shared toolkit tests cover configuration, escaping, identity and schema requirements. Focused Snowflake tests cover descriptor contents, original schemas and keys/cursors, empty streams, completion retries, and batch integration. GitHub runs the broader suites and preview publishing; local checks do not require production warehouse credentials.
+
+## Dual-upload failure contract
+
+A nonempty flush closes the gzip CSV before starting concurrent Snowflake and S3 uploads of that same file. It may acknowledge success only after both uploads succeed. Failure of either upload fails the flush; the temporary CSV must remain available until both upload readers have terminated, including when cancellation is requested. Only then may cleanup unlink the file. A successful copy on one side does not make a failed batch checkpointable.
+
+The shared Fusion toolkit publishes `ControlledFusionUploader` as a Gradle test fixture. It captures upload requests and lets connector tests independently succeed or fail each future without warehouse or AWS credentials. It tests connector coordination, not AWS SDK transport-level reader drainage.
+
+Dedicated Snowflake buffer tests exercise the actual non-null copy context and nonempty CSV: S3 failure after Snowflake success, Snowflake failure while S3 retains the file, and each upload pending after its peer completes. Namespace regression tests prepare both same-named streams together and verify distinct schema, batch, and completion keys. Shared CDK path tests cover namespace sentinels, escaping, and complete key length. BigQuery adoption of the namespace-aware path is a separate follow-up; its legacy path API remains available during this migration.

@@ -101,7 +101,13 @@ class EnabledSnowflakeS3Copy(
         }
         val runPaths =
             catalog.streams.associateWith { stream ->
-                FusionPaths.run(config, stream.unmappedName, runId, epochSeconds)
+                FusionPaths.run(
+                    config,
+                    stream.unmappedNamespace,
+                    stream.unmappedName,
+                    runId,
+                    epochSeconds
+                )
             }
         catalog.streams.forEach { stream ->
             val schema = descriptor(stream)

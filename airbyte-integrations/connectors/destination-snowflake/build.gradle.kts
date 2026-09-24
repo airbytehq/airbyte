@@ -50,6 +50,7 @@ dependencies {
 
     testImplementation("org.bouncycastle:bcpkix-jdk18on:1.78.1")
     testImplementation("io.mockk:mockk:1.14.5")
+    testImplementation(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-fusion")))
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-engine:$junitPlatformVersion")

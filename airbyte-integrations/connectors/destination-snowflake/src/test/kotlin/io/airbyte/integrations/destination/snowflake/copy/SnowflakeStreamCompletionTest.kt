@@ -185,6 +185,116 @@ class SnowflakeStreamCompletionTest {
             }
         }
 
+    @Test
+    fun `same named streams in different namespaces have separate schemas batches and completion`() =
+        runBlocking {
+            val publicSchema =
+                Jsons.readTree(
+                    """{"type":"object","properties":{"public_id":{"type":"integer"}}}"""
+                )
+            val billingSchema =
+                Jsons.readTree(
+                    """{"type":"object","properties":{"billing_id":{"type":"string"}}}"""
+                )
+            fun configured(namespace: String, schema: com.fasterxml.jackson.databind.JsonNode) =
+                ConfiguredAirbyteStream()
+                    .withStream(
+                        AirbyteStream()
+                            .withName("Orders/日本")
+                            .withNamespace(namespace)
+                            .withJsonSchema(schema)
+                    )
+            val fixture =
+                Fixture(
+                    0,
+                    ConfiguredAirbyteCatalog()
+                        .withStreams(
+                            listOf(
+                                configured("public", publicSchema),
+                                configured("billing", billingSchema)
+                            )
+                        )
+                )
+            val billingFixture = Fixture(0)
+            val billing = billingFixture.stream
+            billingFixture.copy.close()
+            every { billing.unmappedNamespace } returns "billing"
+            every { billing.mappedDescriptor } returns
+                DestinationStream.Descriptor("billing", "orders")
+            fixture.copy.use { copy ->
+                copy.prepare(DestinationCatalog(listOf(fixture.stream, billing)))
+                val publicContext = copy.context(fixture.stream)!!
+                val billingContext = copy.context(billing)!!
+                assertEquals(publicContext.runId, billingContext.runId)
+                assertEquals(publicContext.epochSeconds, billingContext.epochSeconds)
+                assertNotEquals(publicContext.runPath, billingContext.runPath)
+                assertTrue(
+                    publicContext.runPath.contains(
+                        "/streams/public/Orders%2F%E6%97%A5%E6%9C%AC/runs/"
+                    )
+                )
+                assertTrue(
+                    billingContext.runPath.contains(
+                        "/streams/billing/Orders%2F%E6%97%A5%E6%9C%AC/runs/"
+                    )
+                )
+                assertEquals(2, fixture.uploader.json.size)
+                assertEquals(
+                    publicSchema,
+                    Jsons.readTree(
+                            fixture.uploader.json.getValue(publicContext.runPath + "schema.json")
+                        )["source_schema"]
+                )
+                assertEquals(
+                    billingSchema,
+                    Jsons.readTree(
+                            fixture.uploader.json.getValue(billingContext.runPath + "schema.json")
+                        )["source_schema"]
+                )
+                val batchId = UUID.randomUUID()
+                val path = java.nio.file.Files.createTempFile("namespace-copy", ".csv.gz")
+                try {
+                    copy.upload(path, publicContext, 1, batchId)
+                    copy.upload(path, billingContext, 1, batchId)
+                } finally {
+                    java.nio.file.Files.deleteIfExists(path)
+                }
+                copy.complete(fixture.stream)
+                copy.complete(billing)
+                assertEquals(6, fixture.uploader.keys.size)
+                assertEquals(6, fixture.uploader.keys.toSet().size)
+                listOf(publicContext, billingContext).forEach { context ->
+                    assertTrue(
+                        fixture.uploader.keys.contains(context.runPath + "batches/$batchId.csv.gz")
+                    )
+                    assertTrue(
+                        fixture.uploader.keys.contains(
+                            context.runPath + "batches/stream_complete.json"
+                        )
+                    )
+                }
+            }
+        }
+
+    @Test
+    fun `oversized namespace fails preflight before any schemas are uploaded`() = runBlocking {
+        val fixture = Fixture(0)
+        val invalidFixture = Fixture(0)
+        invalidFixture.copy.close()
+        every { invalidFixture.stream.unmappedNamespace } returns "界".repeat(120)
+        every { invalidFixture.stream.mappedDescriptor } returns
+            DestinationStream.Descriptor("invalid", "orders")
+        fixture.copy.use { copy ->
+            assertThrows(IllegalArgumentException::class.java) {
+                runBlocking {
+                    copy.prepare(DestinationCatalog(listOf(fixture.stream, invalidFixture.stream)))
+                }
+            }
+            assertTrue(fixture.uploader.keys.isEmpty())
+            assertNull(copy.context(fixture.stream))
+        }
+    }
+
     private class Fixture(
         minimum: Long,
         configuredCatalog: ConfiguredAirbyteCatalog? = null,
@@ -256,7 +366,10 @@ class SnowflakeStreamCompletionTest {
             path: Path,
             key: String,
             metadata: Map<String, String>
-        ): CompletableFuture<*> = error("No data in empty stream")
+        ): CompletableFuture<*> {
+            keys.add(key)
+            return CompletableFuture.completedFuture(Unit)
+        }
         override fun uploadJson(bytes: ByteArray, key: String): CompletableFuture<*> {
             keys.add(key)
             json[key] = Jsons.writeValueAsString(Jsons.readTree(String(bytes, Charsets.UTF_8)))

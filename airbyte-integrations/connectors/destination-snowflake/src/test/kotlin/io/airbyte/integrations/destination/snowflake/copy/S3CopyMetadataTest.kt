@@ -44,7 +44,14 @@ class S3CopyMetadataTest {
                 every { mappedDescriptor } returns
                     DestinationStream.Descriptor("analytics", "ORDERS")
             }
-        val path = FusionPaths.run(config, stream.unmappedName, runId, epochSeconds)
+        val path =
+            FusionPaths.run(
+                config,
+                stream.unmappedNamespace,
+                stream.unmappedName,
+                runId,
+                epochSeconds
+            )
         val context =
             CsvCopyContext(
                 "stream-hash",
