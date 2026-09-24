@@ -6,16 +6,19 @@
   read scopes) and the `Bearer` token it hands to the data requests
 - `DefaultPaginator` + `CursorPagination`: `page_size` on every request, `start` set to the `id`
   of the previous page's last record, and a null-safe stop condition
-- `transactions` incremental sync is filtered client-side, so its requests must never carry
-  `updated_after`
+- `transactions` incremental sync is filtered server-side via `updated_after` and always requests
+  `state=ALL` so declined transactions are emitted
 - `reimbursements` incremental sync is filtered server-side via `updated_after`, once per
   `direction` partition
+- Ramp auth and scope errors are surfaced as `config_error` with actionable messages
+- `api_budget` throttles requests under Ramp's 200 requests / 10 s limit
 """
 
 import base64
 import logging
 from urllib.parse import parse_qs
 
+import pytest
 import requests_mock
 from _helpers import (
     ACCESS_TOKEN,
@@ -33,7 +36,7 @@ from _helpers import (
     requests_to,
 )
 
-from airbyte_cdk.models import Status, SyncMode
+from airbyte_cdk.models import FailureType, Status, SyncMode
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
@@ -72,6 +75,15 @@ def _reimbursement(reimbursement_id: str, direction: str, updated_at: str = "202
 def _page(records: list, next_url=None) -> dict:
     """Ramp's list envelope: records under `data`, pagination under `page.next`."""
     return {"data": records, "page": {"next": next_url}}
+
+
+def _ramp_error(error_code: str, message: str) -> dict:
+    """Ramp's `DeveloperApiErrorResponse` body."""
+    return {"error_v2": {"error_code": error_code, "message": message, "error_id": "abc123", "notes": "", "additional_info": {}}}
+
+
+def _config_errors(output) -> list:
+    return [t.trace.error for t in output.trace_messages if t.trace.error is not None and t.trace.error.failure_type == FailureType.config_error]
 
 
 def test_token_request():
@@ -146,28 +158,39 @@ def test_pagination_stops_on_null_page():
     assert len(data_requests) == 1, f"expected the read to stop after one page, got {len(data_requests)} requests"
 
 
-def test_transactions_client_side_incremental():
-    """`transactions` filters on `updated_at` in the connector, so requests must not carry `updated_after`."""
-    state = StateBuilder().with_stream_state("transactions", {"updated_at": "2024-06-01T00:00:00Z"}).build()
-    response = _page(
-        [
-            _transaction("tx-old", "2024-05-01T00:00:00+00:00"),
-            _transaction("tx-new", "2024-07-01T00:00:00+00:00"),
-        ]
-    )
+def test_transactions_server_side_incremental_and_state_all():
+    """`transactions` sends the state cursor as `updated_after` and asks for `state=ALL` so declined records are emitted."""
+    cursor = "2024-06-01T00:00:00Z"
+    state = StateBuilder().with_stream_state("transactions", {"updated_at": cursor}).build()
+    declined = dict(_transaction("tx-declined", "2024-07-02T00:00:00+00:00"), state="DECLINED")
+    response = _page([_transaction("tx-new", "2024-07-01T00:00:00+00:00"), declined])
 
     with requests_mock.Mocker() as mocker:
         mocker.post(TOKEN_URL, json=TOKEN_RESPONSE)
         mocker.get(TRANSACTIONS_URL, json=response)
         output = read_stream("transactions", sync_mode=SyncMode.incremental, state=state)
 
-    assert record_ids(output) == ["tx-new"], f"expected only records newer than the state cursor, got {record_ids(output)}"
+    assert record_ids(output) == ["tx-new", "tx-declined"], f"expected every record the API returned, got {record_ids(output)}"
 
     data_requests = requests_to(mocker.request_history, TRANSACTIONS_PATH)
-    assert data_requests, "expected at least one request against /transactions"
-    for request in data_requests:
-        params = query_params(request)
-        assert "updated_after" not in params, f"transactions is filtered client-side and must not send `updated_after`, got {params}"
+    assert len(data_requests) == 1, f"expected a single request against /transactions, got {len(data_requests)}"
+    params = query_params(data_requests[0])
+    assert params.get("updated_after") == cursor, f"transactions must filter server-side with the state cursor, got {params}"
+    assert params.get("state") == "ALL", f"transactions must request state=ALL to include declined transactions, got {params}"
+
+
+def test_transactions_first_sync_uses_default_start_date():
+    """Without `start_date` in the config, the first sync starts from the spec default."""
+    config = {key: value for key, value in CONFIG.items() if key != "start_date"}
+
+    with requests_mock.Mocker() as mocker:
+        mocker.post(TOKEN_URL, json=TOKEN_RESPONSE)
+        mocker.get(TRANSACTIONS_URL, json=_page([_transaction("tx-1", "2024-06-01T00:00:00+00:00")]))
+        output = read_stream("transactions", config=config, sync_mode=SyncMode.incremental)
+
+    assert record_ids(output) == ["tx-1"]
+    params = query_params(requests_to(mocker.request_history, TRANSACTIONS_PATH)[0])
+    assert params.get("updated_after") == "2019-01-01T00:00:00Z", f"expected the default start date as `updated_after`, got {params}"
 
 
 def test_reimbursements_server_side_filter_and_directions():
@@ -191,6 +214,86 @@ def test_reimbursements_server_side_filter_and_directions():
     assert {params.get("direction") for params in all_params} == {"BUSINESS_TO_USER", "USER_TO_BUSINESS"}
     for params in all_params:
         assert params.get("updated_after") == START_DATE, f"expected the start date as `updated_after`, got {params}"
+
+
+@pytest.mark.parametrize(
+    "status_code, body, expected_fragment",
+    [
+        pytest.param(400, _ramp_error("5006", "client_id is malformed, invalid length."), "client_id is malformed", id="malformed-client-id"),
+        pytest.param(401, _ramp_error("5001", "Client credentials not found or malformed."), "Client credentials not found", id="wrong-secret"),
+    ],
+)
+def test_login_errors_are_config_errors(status_code, body, expected_fragment):
+    """Token endpoint rejections surface as `config_error` naming Ramp's message, without retrying."""
+    with requests_mock.Mocker() as mocker:
+        mocker.post(TOKEN_URL, status_code=status_code, json=body)
+        mocker.get(TRANSACTIONS_URL, json=_page([]))
+        output = read_stream("transactions")
+
+    errors = _config_errors(output)
+    assert errors, f"expected a config_error trace, got {[t.trace.error for t in output.trace_messages if t.trace.error]}"
+    assert expected_fragment in errors[0].message
+    assert "Ramp > Company > Developer" in errors[0].message
+    assert len(requests_to(mocker.request_history, TOKEN_PATH)) == 1, "credential errors must not be retried"
+
+
+@pytest.mark.parametrize(
+    "status_code, body, expected_fragment",
+    [
+        pytest.param(403, _ramp_error("DEVELOPER_7100", "These scopes are not allowed for this token: cards:read"), "cards:read", id="missing-scope"),
+        pytest.param(404, _ramp_error("DEVELOPER_7002", "Access token with given access_token not found"), "access token", id="revoked-token-404"),
+        pytest.param(401, _ramp_error("DEVELOPER_7002", "Access token with given access_token not found"), "access token", id="revoked-token-401"),
+        pytest.param(401, {"error": {"message": "Unauthorized"}}, "credentials", id="generic-401"),
+    ],
+)
+def test_data_request_auth_errors_are_config_errors(status_code, body, expected_fragment):
+    """Scope and token errors on data requests surface as `config_error` with an actionable message."""
+    with requests_mock.Mocker() as mocker:
+        mocker.post(TOKEN_URL, json=TOKEN_RESPONSE)
+        mocker.get(CARDS_URL, status_code=status_code, json=body)
+        output = read_stream("cards")
+
+    errors = _config_errors(output)
+    assert errors, f"expected a config_error trace, got {[t.trace.error for t in output.trace_messages if t.trace.error]}"
+    assert expected_fragment in errors[0].message
+    assert len(requests_to(mocker.request_history, CARDS_PATH)) == 1, "auth errors must not be retried"
+
+
+def test_unmatched_404_keeps_default_message():
+    """A 404 without Ramp's `DEVELOPER_7002` code keeps the CDK default handling instead of the token message."""
+    with requests_mock.Mocker() as mocker:
+        mocker.post(TOKEN_URL, json=TOKEN_RESPONSE)
+        mocker.get(CARDS_URL, status_code=404, json={"error": {"message": "not found"}})
+        output = read_stream("cards")
+
+    messages = [t.trace.error.message for t in output.trace_messages if t.trace.error is not None]
+    assert messages, "expected the failed read to be reported"
+    assert all("access token" not in message for message in messages), messages
+
+
+def test_api_budget_matches_ramp_rate_limit():
+    """The manifest declares a moving-window budget under Ramp's 200 requests per 10 s."""
+    budget = get_source(CONFIG).resolved_manifest["api_budget"]
+    assert budget["type"] == "HTTPAPIBudget"
+    (policy,) = budget["policies"]
+    (rate,) = policy["rates"]
+    assert policy["type"] == "MovingWindowCallRatePolicy"
+    assert rate["interval"] == "PT10S"
+    assert 0 < rate["limit"] <= 200
+
+
+def test_spec_start_date_optional_with_default():
+    """`start_date` is optional, defaults, and accepts fractional seconds; `api_url` must be https."""
+    import re
+
+    spec = get_source(CONFIG).spec(logging.getLogger("spec")).connectionSpecification
+    assert "start_date" not in spec["required"]
+    start_date = spec["properties"]["start_date"]
+    assert start_date["default"] == "2019-01-01T00:00:00Z"
+    assert re.match(start_date["pattern"], "2024-01-01T00:00:00.123Z")
+    assert re.match(start_date["pattern"], "2024-01-01T00:00:00Z")
+    assert not re.match(spec["properties"]["api_url"]["pattern"], "http://demo-api.ramp.com")
+    assert "transactions:read" in spec["properties"]["client_id"]["description"]
 
 
 def test_check_uses_transactions():
