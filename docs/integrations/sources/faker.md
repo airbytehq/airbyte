@@ -47,7 +47,7 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
-| 7.2.2 | 2026-09-24 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Point external documentation links to the mimesis library and remove a stale metadata comment |
+| 7.2.2 | 2026-09-24 | [86971](https://github.com/airbytehq/airbyte/pull/86971) | Point external documentation links to the mimesis library and remove a stale metadata comment |
 | 7.2.1 | 2026-07-10 | [81653](https://github.com/airbytehq/airbyte/pull/81653) | chore(source-faker): dummy version bump for progressive rollout (autopilot) testing |
 | 7.2.0 | 2026-07-09 | [81556](https://github.com/airbytehq/airbyte/pull/81556) | Promoted release candidate to GA |
 | 7.2.0-rc.2 | 2026-06-24 | [80776](https://github.com/airbytehq/airbyte/pull/80776) | Test autopilot progressive rollout lifecycle |
