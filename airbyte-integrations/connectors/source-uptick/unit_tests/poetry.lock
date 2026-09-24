@@ -2,52 +2,55 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "0.0.0"
+version = "7.30.0.post4.dev35881380673"
 description = "A framework for writing Airbyte Connectors."
 optional = false
-python-versions = ">=3.10,<3.14"
+python-versions = "<3.14,>=3.10"
 groups = ["main"]
-files = []
-develop = false
+files = [
+    {file = "airbyte_cdk-7.30.0.post4.dev35881380673-py3-none-any.whl", hash = "sha256:6a6949b5dd74de0ca7db4e670603bf53e403ee777eff6b8e04e472ddd548b425"},
+    {file = "airbyte_cdk-7.30.0.post4.dev35881380673.tar.gz", hash = "sha256:4a260446c4a4de4de54298fa1bf8045730ea033d88a7b9cfad148728eda8e6f3"},
+]
 
 [package.dependencies]
-airbyte-protocol-models-dataclasses = "^0.17.1"
-anyascii = "^0.3.2"
+airbyte-protocol-models-dataclasses = ">=0.17.1,<0.18.0"
+anyascii = ">=0.3.2,<0.4.0"
 backoff = "*"
-boltons = "^25.0.0"
+boltons = ">=25.0.0,<26.0.0"
 cachetools = "*"
-click = "^8.1.8"
+click = ">=8.1.8,<9.0.0"
 cryptography = ">=44.0.0,!=45.0.0,!=45.0.1"
-dateparser = "^1.2.2"
-dpath = "^2.1.6"
-dunamai = "^1.22.0"
+dateparser = ">=1.2.2,<2.0.0"
+dpath = ">=2.1.6,<3.0.0"
+dunamai = ">=1.22.0,<2.0.0"
 genson = "1.3.0"
-google-cloud-secret-manager = "^2.17.0"
-ijson = "^3.3.0"
-isodate = "~0.6.1"
-Jinja2 = "~3.1.2"
-jsonref = "^1"
+google-cloud-secret-manager = ">=2.17.0,<3.0.0"
+ijson = ">=3.3.0,<4.0.0"
+isodate = ">=0.6.1,<0.7.0"
+Jinja2 = ">=3.1.2,<3.2.0"
+jsonref = ">=1,<2"
 jsonschema = ">=4.17.3,<5.0"
-orjson = "^3.10.7"
+nltk = "3.9.4"
+orjson = ">=3.10.7,<4.0.0"
 packaging = "*"
 pandas = "2.2.3"
-pydantic = "^2.7"
-pyjwt = "^2.8.0"
-pyrate-limiter = "~3.1.0"
-python-dateutil = "^2.9.0"
-python-ulid = "^3.0.0"
+pydantic = ">=2.7,<3.0"
+pyjwt = ">=2.8.0,<3.0.0"
+pyrate-limiter = ">=3.1.0,<3.2.0"
+python-dateutil = ">=2.9.0,<3.0.0"
+python-ulid = ">=3.0.0,<4.0.0"
 pytz = ">=2024.2"
-PyYAML = "^6.0.1"
-rapidfuzz = "^3.10.1"
+PyYAML = ">=6.0.1,<7.0.0"
+rapidfuzz = ">=3.10.1,<4.0.0"
 referencing = ">=0.36.2"
 requests = "*"
 requests_cache = "*"
 rich = "*"
-rich-click = "^1.8.8"
-serpyco-rs = "^1.10.2"
-setuptools = "^80.9.0"
+rich-click = ">=1.8.8,<2.0.0"
+serpyco-rs = ">=1.10.2,<2.0.0"
+setuptools = ">=80.9.0,<81.0.0"
 typing-extensions = "*"
-unidecode = "^1.3.8"
+unidecode = ">=1.3.8,<2.0.0"
 wcmatch = "10.0"
 whenever = ">=0.7.3,<0.9.0"
 xmltodict = ">=0.13,<0.15"
@@ -56,14 +59,8 @@ xmltodict = ">=0.13,<0.15"
 dev = ["pytest (>=7,<8)"]
 file-based = ["avro (>=1.11.2,<1.13.0)", "fastavro (>=1.11.0,<2.0.0)", "markdown", "openpyxl (>=3.1.0,<4.0.0)", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (>=19.0.0,<20.0.0)", "pytesseract (==0.3.10)", "python-calamine (==0.2.3)", "python-snappy (==0.7.3)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
 manifest-server = ["ddtrace (>=3,<4)", "fastapi (>=0.116.1)", "uvicorn (>=0.35.0)"]
-sql = ["sqlalchemy (>=2.0,<3.0,!=2.0.36)"]
+sql = ["sqlalchemy (>=2.0,!=2.0.36,<3.0)"]
 vector-db-based = ["cohere (>=4.21,<6.0.0)", "langchain_community (>=0.4,<0.5)", "langchain_core (>=1.2.5,<2.0.0)", "langchain_text_splitters (>=1.0.0,<2.0.0)", "openai[embeddings] (==0.27.9)", "tiktoken (==0.8.0)"]
-
-[package.source]
-type = "git"
-url = "https://github.com/airbytehq/airbyte-python-cdk.git"
-reference = "devin/1790165041-bounded-refresh-retry"
-resolved_reference = "5e104fc30c0dd5bfe43161722fbac6a64682a977"
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
@@ -519,6 +516,18 @@ groups = ["main"]
 files = [
     {file = "click-8.5.0-py3-none-any.whl", hash = "sha256:255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360"},
     {file = "click-8.5.0.tar.gz", hash = "sha256:ba0d2089de75ea0310e2dde03160e6ca10009947fb95a182f9b54021bb272e34"},
+]
+
+[[package]]
+name = "cloudpickle"
+version = "3.1.2"
+description = "Pickler class to extend the standard pickle.Pickler functionality"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "cloudpickle-3.1.2-py3-none-any.whl", hash = "sha256:9acb47f6afd73f60dc1df93bb801b472f05ff42fa6c84167d25cb206be1fbf4a"},
+    {file = "cloudpickle-3.1.2.tar.gz", hash = "sha256:7fda9eb655c9c230dab534f1983763de5835249750e85fbcef43aaa30a9a2414"},
 ]
 
 [[package]]
@@ -1046,6 +1055,25 @@ MarkupSafe = ">=2.0"
 i18n = ["Babel (>=2.7)"]
 
 [[package]]
+name = "joblib"
+version = "1.6.0"
+description = "Lightweight pipelining with Python functions"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "joblib-1.6.0-py3-none-any.whl", hash = "sha256:3dbbf9f6e4b592a2357b854608e980fe6390d131d7a82f011a377ef2ebef7aba"},
+    {file = "joblib-1.6.0.tar.gz", hash = "sha256:2ccc96785b12046c08fd6d55839c12857831b54a3c1673ffadd2f04bfc4eda03"},
+]
+
+[package.dependencies]
+cloudpickle = ">=3.0"
+
+[package.extras]
+docs = ["distributed", "lz4", "matplotlib", "numpy", "numpydoc", "pandas", "psutil", "pydata-sphinx-theme", "sphinx", "sphinx-copybutton", "sphinx-design", "sphinx-gallery", "tqdm"]
+test = ["distributed", "lz4", "memory_profiler", "numpy", "pytest", "pytest-asyncio", "pytest-cov", "pytest-run-parallel", "pytest-timeout", "threadpoolctl"]
+
+[[package]]
 name = "jsonref"
 version = "1.1.0"
 description = "jsonref is a library for automatic dereferencing of JSON Reference objects for Python."
@@ -1228,6 +1256,32 @@ files = [
     {file = "mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8"},
     {file = "mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba"},
 ]
+
+[[package]]
+name = "nltk"
+version = "3.9.4"
+description = "Natural Language Toolkit"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "nltk-3.9.4-py3-none-any.whl", hash = "sha256:f2fa301c3a12718ce4a0e9305c5675299da5ad9e26068218b69d692fda84828f"},
+    {file = "nltk-3.9.4.tar.gz", hash = "sha256:ed03bc098a40481310320808b2db712d95d13ca65b27372f8a403949c8b523d0"},
+]
+
+[package.dependencies]
+click = "*"
+joblib = "*"
+regex = ">=2021.8.3"
+tqdm = "*"
+
+[package.extras]
+all = ["matplotlib", "numpy", "pyparsing", "python-crfsuite", "requests", "scikit-learn", "scipy", "twython"]
+corenlp = ["requests"]
+machine-learning = ["numpy", "python-crfsuite", "scikit-learn", "scipy"]
+plot = ["matplotlib"]
+tgrep = ["pyparsing"]
+twitter = ["twython"]
 
 [[package]]
 name = "numpy"
@@ -2988,6 +3042,27 @@ files = [
 ]
 
 [[package]]
+name = "tqdm"
+version = "4.70.1"
+description = "Fast, Extensible Progress Meter"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "tqdm-4.70.1-py3-none-any.whl", hash = "sha256:c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73"},
+    {file = "tqdm-4.70.1.tar.gz", hash = "sha256:cefd0eca11b2a37a3aee776544d4f4ae913f02688135b5556b8788dfa474afc4"},
+]
+
+[package.dependencies]
+colorama = {version = "*", markers = "platform_system == \"Windows\""}
+
+[package.extras]
+discord = ["envwrap", "requests"]
+notebook = ["ipywidgets (>=6)"]
+slack = ["envwrap", "slack-sdk"]
+telegram = ["envwrap", "requests"]
+
+[[package]]
 name = "typing-extensions"
 version = "4.16.0"
 description = "Backported and Experimental Type Hints for Python 3.9+"
@@ -3222,4 +3297,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.13"
-content-hash = "5884ddd62ff08fcbb77c52428bb07eed8c67fb7ad87336d133397cf74e278d4e"
+content-hash = "020ebd241b4757aa1ec31b522ee73b7db3b7501ed117928cffbb35b1c51074e2"

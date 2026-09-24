@@ -1,5 +1,6 @@
 ---
-version: 7.30.0
+# Dev pre-release of airbyte-python-cdk#1173 — replace with the released version before merge.
+version: 7.30.0.post4.dev35881380673
 type: DeclarativeSource
 description: Extract data from Uptick (field service management software).
 check:
@@ -51,8 +52,7 @@ definitions:
           # so at most one failed login per stream and no Uptick account-lockout exposure.
           # failure_type below is only applied by the CDK when action is FAIL; the fail-fast paths above are
           # classified config_error by the CDK/authenticator.
-          # Requires the released CDK containing #1173: `version` here, `airbyte-cdk` in unit_tests/pyproject.toml
-          # and the base image in metadata.yaml must all point at that release.
+          # Pinned to a dev pre-release of the CDK containing #1173 (`version` here, `airbyte-cdk` in unit_tests/pyproject.toml, base image in metadata.yaml); all three must move to the released version before merge.
           - type: HttpResponseFilter
             http_codes: [401]
             action: REFRESH_TOKEN_THEN_RETRY
