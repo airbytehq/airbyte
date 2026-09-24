@@ -256,6 +256,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:------------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.3 | 2026-09-22 | [86737](https://github.com/airbytehq/airbyte/pull/86737) | Update dependencies |
+| 2.3.2 | 2026-09-15 | [86186](https://github.com/airbytehq/airbyte/pull/86186) | Update dependencies |
 | 2.3.1 | 2026-09-08 | [85598](https://github.com/airbytehq/airbyte/pull/85598) | Update dependencies |
 | 2.3.0 | 2026-08-24 | [80303](https://github.com/airbytehq/airbyte/pull/80303) | Split Pinterest custom report status filters into multiple API calls when more than six values are selected. |
 | 2.2.12 | 2026-08-18 | [84706](https://github.com/airbytehq/airbyte/pull/84706) | Update dependencies |
