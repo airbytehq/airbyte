@@ -45,10 +45,9 @@ definitions:
     url_base: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}"
     authenticator:
       type: RateLimitedMultipleTokenAuthenticator
-      # Precedence must match SourceGithub.get_access_token: legacy root-level
-      # `access_token` first, then `credentials.access_token`, then
-      # `credentials.personal_access_token` — so manifest and Python streams
-      # always authenticate with the same token.
+      # Token precedence: legacy root-level `access_token` first, then
+      # `credentials.access_token`, then `credentials.personal_access_token` — the
+      # legacy `get_access_token` accepted all three, so the authenticator does too.
       tokens: "{{ config.get('access_token', config.get('credentials', {}).get('access_token', config.get('credentials', {}).get('personal_access_token', ''))) }}"
       token_delimiter: ","
       auth_method: "token"
@@ -59,8 +58,9 @@ definitions:
       # literal "None", so the previous expression produced "PTNoneM" and every command failed at
       # startup. The error reads `ISO8601Error: Unrecognised ISO 8601 date format: ''` because
       # isodate splits on the "T" and reports the empty date half, not because the value was
-      # empty. `check_connection` passes 0 deliberately, so the guard must distinguish null from
-      # 0 — which is why this is `is not none` rather than `or 120`.
+      # empty. `check` overrides `max_waiting_time` with 1 deliberately (see the `check`
+      # component), so the guard must distinguish null from 0 — which is why this is
+      # `is not none` rather than `or 120`.
       max_wait_time: "PT{{ config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120 }}M"
       quota_status_source:
         type: QuotaStatusSource
@@ -181,9 +181,8 @@ definitions:
   # `AirbyteTracedException` for 502/504, logged a warning and moved on to the next repository
   # (the `BAD_GATEWAY` and `GATEWAY_TIMEOUT` branches of that method), i.e. it reported a
   # COMPLETE sync with that repository's records silently missing. Failing the stream is the
-  # better contract, and `SourceGithub.continue_sync_on_stream_failure` keeps the other streams
-  # going. Parity is not
-  # reachable declaratively anyway: `DefaultErrorHandler` has no "retry N times, then ignore",
+  # better contract — the connector reports INCOMPLETE rather than COMPLETE-with-gaps.
+  # Parity is not reachable declaratively anyway: `DefaultErrorHandler` has no "retry N times, then ignore",
   # and a `502/504 -> IGNORE` filter would drop the repository on the *first* blip instead of
   # retrying it. Pinned by `test_repeated_502_fails_the_stream`.
   #
@@ -225,8 +224,8 @@ definitions:
   rate_limit_backoff_strategies:
     # Both strategies are capped by the user's Max Waiting Time, so that setting bounds every
     # rate-limit wait rather than only the ones the authenticator decides before sending.
-    # `check_connection` resolves the manifest with `max_waiting_time: 0`, which makes the cap 1s:
-    # an interactive check then fails in seconds with the rate-limit message instead of sleeping
+    # `check` runs with `config_overrides.max_waiting_time: 1`, which makes the cap 61s:
+    # an interactive check then fails fast on an exhausted quota instead of sleeping
     # until the reset. A sync keeps the user's budget.
     #
     # Requires CDK >= 7.28.1, which ships airbytehq/airbyte-python-cdk#1126. Before it,
@@ -321,6 +320,18 @@ definitions:
     type: HttpResponseFilter
     http_codes: [200]
     action: SUCCESS
+
+  # Sits right after the rate-limit filters in every handler: a revoked credential must fail
+  # with this message rather than reaching the generic 403/404 filters and being skipped
+  # (skip_inaccessible) or reported without the guidance (strict_access).
+  unauthorized_fail_filter:
+    type: HttpResponseFilter
+    http_codes: [401]
+    action: FAIL
+    failure_type: config_error
+    error_message: >-
+      GitHub authentication failed (HTTP 401). Please verify your Personal Access Token or OAuth
+      credentials are valid and not expired.
 
   retry_after_rate_limit_filter:
     type: HttpResponseFilter
@@ -468,6 +479,7 @@ definitions:
       - $ref: "#/definitions/primary_rate_limit_filter"
       - $ref: "#/definitions/secondary_rate_limit_filter"
       - $ref: "#/definitions/exhausted_quota_filter"
+      - $ref: "#/definitions/unauthorized_fail_filter"
       # No `disabled_feature_skip_filter` here, deliberately. The endpoints on this handler are
       # the repository listing and resolution (`/orgs/{org}/repos`, `/repos/{owner}/{repo}`), which
       # have no per-repository feature to disable and so never send that 410. Including it would
@@ -487,6 +499,7 @@ definitions:
       - $ref: "#/definitions/primary_rate_limit_filter"
       - $ref: "#/definitions/secondary_rate_limit_filter"
       - $ref: "#/definitions/exhausted_quota_filter"
+      - $ref: "#/definitions/unauthorized_fail_filter"
       - $ref: "#/definitions/disabled_feature_skip_filter"
       - $ref: "#/definitions/not_found_skip_filter"
       - $ref: "#/definitions/forbidden_skip_filter"
@@ -509,8 +522,7 @@ definitions:
   # partition. Legacy skipped it with a warning and synced the rest, and this keeps that.
   #
   # `check` still catches a bad token: with every explicit entry skipped the resolved repository
-  # list is empty, and `SourceGithub.check_connection` answers "Some of the provided repositories
-  # couldn't be found..." for that case.
+  # list is empty, and `CheckStream` fails with "no stream slices were found" for that case.
   resolve_explicit_repository_error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
@@ -521,6 +533,7 @@ definitions:
       - $ref: "#/definitions/primary_rate_limit_filter"
       - $ref: "#/definitions/secondary_rate_limit_filter"
       - $ref: "#/definitions/exhausted_quota_filter"
+      - $ref: "#/definitions/unauthorized_fail_filter"
       - $ref: "#/definitions/not_found_skip_filter"
       - $ref: "#/definitions/forbidden_skip_filter"
       - $ref: "#/definitions/gone_fail_filter"
@@ -685,7 +698,7 @@ definitions:
   # for a wildcard entry to learn whether the login is an organization at all.
   #
   # `organization_resolution_partition_router` is the narrower list the org-scoped
-  # Python streams slice on, and must not be the router above: a login taken from
+  # streams slice on, and must not be the router above: a login taken from
   # config text is only a *candidate* org, and `orgs/{login}` 404s on every
   # org-scoped stream when it is a user. Both branches here take the org from a
   # response payload instead — `owner/login` of the repos `orgs/{org}/repos`
@@ -1937,9 +1950,9 @@ definitions:
     # `organization_resolution_partition_router`, not `organization_partition_router`: these
     # endpoints only exist for real organizations, so the partition list has to be the
     # payload-confirmed one. The config-derived router hands over any wildcard owner, including a
-    # personal account, and it also yields an org whose wildcard matched no repository — the Python
-    # streams these replaced saw neither, because `SourceGithub` filters its enumeration down to
-    # the owners of resolved repositories. See that definition's comment.
+    # personal account, and it also yields an org whose wildcard matched no repository — the
+    # org-scoped streams must see neither, which is why they take this payload-confirmed list
+    # rather than the config-derived router. See that definition's comment.
     partition_router:
       $ref: "#/definitions/organization_resolution_partition_router"
 
@@ -8072,7 +8085,7 @@ definitions:
       $ref: "#/definitions/client_side_filtered_cursor"
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_github.components.NestedLegacyToPerPartitionStateMigration
+        class_name: source_declarative_manifest.components.NestedLegacyToPerPartitionStateMigration
         cursor_field: "updated_at"
         partition_fields: ["project_id"]
     schema_loader:
@@ -8170,7 +8183,7 @@ definitions:
       $ref: "#/definitions/client_side_filtered_cursor"
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_github.components.NestedLegacyToPerPartitionStateMigration
+        class_name: source_declarative_manifest.components.NestedLegacyToPerPartitionStateMigration
         cursor_field: "updated_at"
         partition_fields: ["project_id", "column_id"]
     schema_loader:
@@ -8533,7 +8546,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_github.components.IssueTimelineEventsExtractor
+          class_name: source_declarative_manifest.components.IssueTimelineEventsExtractor
       paginator:
         $ref: "#/definitions/page_link_paginator"
       partition_router:
@@ -15524,7 +15537,7 @@ definitions:
       cursor_field: "created_at"
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_github.components.NestedLegacyToPerPartitionStateMigration
+        class_name: source_declarative_manifest.components.NestedLegacyToPerPartitionStateMigration
         cursor_field: "created_at"
         partition_fields: ["comment_id"]
     schema_loader:
@@ -15670,7 +15683,7 @@ definitions:
       cursor_field: "created_at"
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_github.components.NestedLegacyToPerPartitionStateMigration
+        class_name: source_declarative_manifest.components.NestedLegacyToPerPartitionStateMigration
         cursor_field: "created_at"
         partition_fields: ["comment_id"]
     schema_loader:
@@ -15866,7 +15879,7 @@ definitions:
         $ref: "#/definitions/page_link_paginator"
       partition_router:
         type: CustomPartitionRouter
-        class_name: source_github.components.CommitsBranchPartitionRouter
+        class_name: source_declarative_manifest.components.CommitsBranchPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
@@ -15889,7 +15902,7 @@ definitions:
       cursor_field: "created_at"
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_github.components.NestedLegacyToPerPartitionStateMigration
+        class_name: source_declarative_manifest.components.NestedLegacyToPerPartitionStateMigration
         cursor_field: "created_at"
         partition_fields: ["branch"]
         integer_ids: false
@@ -16433,7 +16446,7 @@ definitions:
           field_name: "page"
         pagination_strategy:
           type: CustomPaginationStrategy
-          class_name: source_github.components.WorkflowRunsPaginationStrategy
+          class_name: source_declarative_manifest.components.WorkflowRunsPaginationStrategy
           cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", "") | regex_search("[?&]page=([0-9]+)") }}'
     incremental_sync:
       $ref: "#/definitions/client_side_filtered_cursor"
@@ -17464,7 +17477,7 @@ definitions:
       global_substream_cursor: true
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_github.components.WorkflowJobsLegacyStateMigration
+        class_name: source_declarative_manifest.components.WorkflowJobsLegacyStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -17889,7 +17902,7 @@ definitions:
         $ref: "#/definitions/repository_partition_router"
     transformations:
       - type: CustomTransformation
-        class_name: source_github.components.ReleasesRecordTransformation
+        class_name: source_declarative_manifest.components.ReleasesRecordTransformation
     incremental_sync:
       # Semi-incremental, matching legacy `SemiIncrementalMixin`: the query is ordered
       # CREATED_AT ASC and every page is read, with records at or below the partition cursor
@@ -18754,7 +18767,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_github.components.NestedGraphQLRecordExtractor
+          class_name: source_declarative_manifest.components.NestedGraphQLRecordExtractor
           list_connection: "pullRequests"
           drilldown_field: "pullRequest"
           child_connection: "reviews"
@@ -18769,7 +18782,7 @@ definitions:
           field_path: ["variables", "first"]
         pagination_strategy:
           type: CustomPaginationStrategy
-          class_name: source_github.components.NestedGraphQLPaginationStrategy
+          class_name: source_declarative_manifest.components.NestedGraphQLPaginationStrategy
           list_connection: "pullRequests"
           drilldown_field: "pullRequest"
           child_connection: "reviews"
@@ -19021,7 +19034,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_github.components.NestedGraphQLRecordExtractor
+          class_name: source_declarative_manifest.components.NestedGraphQLRecordExtractor
           list_connection: "issues"
           drilldown_field: "issue"
           child_connection: "reactions"
@@ -19036,7 +19049,7 @@ definitions:
           field_path: ["variables", "first"]
         pagination_strategy:
           type: CustomPaginationStrategy
-          class_name: source_github.components.NestedGraphQLPaginationStrategy
+          class_name: source_declarative_manifest.components.NestedGraphQLPaginationStrategy
           list_connection: "issues"
           drilldown_field: "issue"
           child_connection: "reactions"
@@ -19309,7 +19322,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_github.components.DeepNestedGraphQLRecordExtractor
+          class_name: source_declarative_manifest.components.DeepNestedGraphQLRecordExtractor
       paginator:
         type: DefaultPaginator
         page_size_option:
@@ -19318,7 +19331,7 @@ definitions:
           field_path: ["variables", "first"]
         pagination_strategy:
           type: CustomPaginationStrategy
-          class_name: source_github.components.DeepNestedGraphQLPaginationStrategy
+          class_name: source_declarative_manifest.components.DeepNestedGraphQLPaginationStrategy
           # Not a `large_stream` in the legacy code, so it keeps constants.DEFAULT_PAGE_SIZE.
           page_size: 100
       partition_router:
@@ -19464,9 +19477,20 @@ streams:
   - $ref: "#/definitions/issue_reactions_stream"
   - $ref: "#/definitions/pull_request_comment_reactions_stream"
 
+# `branches` slices on `repository_partition_router`, so `check` runs the same repository
+# resolution the streams do — a config whose repos resolve to nothing fails here with
+# "no stream slices were found" — and then reads one page of `repos/{repo}/branches`.
+# `config_overrides.max_waiting_time: 1` is the interactive check's fail-fast budget:
+# it makes the authenticator raise "Rate limit is exceeded for all provided tokens."
+# on an exhausted quota instead of sleeping up to the default 120 minutes. 1 rather
+# than 0 because the backoff caps resolve to `max_waiting_time * 60 + 1` and the
+# `WaitUntilTimeFromHeader` floor is 60s — a 1s cap would fail the first transient
+# error (500, 429 without headers) with the rate-limit message; 61s retries a blip.
 check:
   type: CheckStream
-  stream_names: []
+  stream_names: [branches]
+  config_overrides:
+    max_waiting_time: 1
 
 spec:
   type: Spec
@@ -19661,3 +19685,25 @@ spec:
             path_in_connector_config:
               - credentials
               - client_secret
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: "1.4.6: `repository` (space-separated string) -> `repositories` (list)"
+        transformations:
+          - type: CustomConfigTransformation
+            class_name: source_declarative_manifest.components.MigrateRepository
+      - type: ConfigMigration
+        description: "1.4.6: `branch` (space-separated string) -> `branches` (list)"
+        transformations:
+          - type: CustomConfigTransformation
+            class_name: source_declarative_manifest.components.MigrateBranch
+    transformations:
+      - type: CustomConfigTransformation
+        class_name: source_declarative_manifest.components.ConfigNormalization
+    validations:
+      - type: DpathValidator
+        field_path: ["api_url"]
+        validation_strategy:
+          type: CustomValidationStrategy
+          class_name: source_declarative_manifest.components.ApiUrlValidationStrategy

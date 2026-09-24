@@ -17,7 +17,9 @@ import struct
 from dataclasses import InitVar, dataclass
 from datetime import timedelta
 from itertools import groupby
+from os import getenv
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from urllib.parse import urlparse
 
 import requests
 
@@ -31,6 +33,10 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination
     PaginationStrategy,
 )
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.declarative.transformations.config_transformations.config_transformation import (
+    ConfigTransformation,
+)
+from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -742,3 +748,70 @@ class WorkflowRunsPaginationStrategy(CursorPaginationStrategy):
         ):
             return None
         return super().next_page_token(response, last_page_size, last_record, last_page_token_value)
+
+
+class ConfigNormalization(ConfigTransformation):
+    """Default/normalize `api_url` and convert the legacy `repository`/`branch` strings to collections."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        pass
+
+    def transform(self, config: MutableMapping[str, Any]) -> None:
+        # `not config.get(...)` rather than `setdefault`: the key can be present and null or
+        # empty — null via the API or Terraform, empty because the spec tells users to "leave it
+        # empty to use GitHub" — and both used to reach `urlparse` as a non-string, crashing with
+        # an unhandled TypeError/AttributeError where every other bad `api_url` gets an
+        # actionable config error.
+        if not config.get("api_url"):
+            config["api_url"] = "https://api.github.com"
+        if not config["api_url"].endswith("/"):
+            config["api_url"] = config["api_url"] + "/"
+        if not config.get("repositories") and config.get("repository"):
+            config["repositories"] = set(filter(None, config["repository"].split(" ")))
+        if not config.get("branches") and config.get("branch"):
+            config["branches"] = set(filter(None, config["branch"].split(" ")))
+
+
+class MigrateStringToArray(ConfigTransformation):
+    """Legacy (<1.4.6) `repository`/`branch` were space-separated strings; the CDK writes the
+    migrated config back and emits a CONNECTOR_CONFIG control message when this changes it.
+    The legacy key is kept so a downgrade still finds it."""
+
+    migrate_from_key: str
+    migrate_to_key: str
+
+    def __init__(self, **kwargs: Any) -> None:
+        pass
+
+    def transform(self, config: MutableMapping[str, Any]) -> None:
+        if self.migrate_from_key in config and self.migrate_to_key not in config:
+            config[self.migrate_to_key] = sorted(set(filter(None, config[self.migrate_from_key].split(" "))))
+
+
+class MigrateRepository(MigrateStringToArray):
+    migrate_from_key = "repository"
+    migrate_to_key = "repositories"
+
+
+class MigrateBranch(MigrateStringToArray):
+    migrate_from_key = "branch"
+    migrate_to_key = "branches"
+
+
+class ApiUrlValidationStrategy(ValidationStrategy):
+    """Validate `api_url` scheme and host, rejecting plain `http` on Cloud."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        pass
+
+    def validate(self, value: Any) -> None:
+        api_url_parsed = urlparse(value)
+        if not api_url_parsed.scheme.startswith("http"):
+            message = "Please enter a full url for `API URL` field starting with `http`"
+        elif api_url_parsed.scheme == "http" and getenv("DEPLOYMENT_MODE", "").upper() == "CLOUD":
+            message = "HTTP connection is insecure and is not allowed in this environment. Please use `https` instead."
+        elif not api_url_parsed.netloc:
+            message = "Please provide a correct API URL."
+        else:
+            return
+        raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
