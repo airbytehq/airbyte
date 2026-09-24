@@ -105,7 +105,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 2. On the Set up the source page, select Amazon Seller Partner from the Source type dropdown.
 3. Enter a name for the Amazon Seller Partner connector.
 4. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token.
-5. For Start Date, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, the date 2 years ago from today will be used.
+5. For Start Date, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided or older than 2 years ago from today, the date 2 years ago from today will be used.
 6. For End Date, enter the date in YYYY-MM-DD format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
 7. **Financial Events Step Size**: Select the time window size for fetching financial events data for the ListFinancialEvents and ListFinancialEventGroups streams. Options include:
    - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
@@ -137,6 +137,8 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 
 - Full Refresh
 - Incremental
+
+The `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` reports contain one row per order item and have no proven, reliably unique row identifier, so they have no primary key and do not offer `Incremental | Append + Deduped`.
 
 ## Supported Streams
 
@@ -264,7 +266,7 @@ Amazon accepts a `reportOptions` object when you request a report, and those opt
 
 ### Report options you configure
 
-The **Report Options** setting takes a report type, a stream name, and a list of option name/value pairs. As of version 5.10.6, the connector sends these options for six streams:
+The **Report Options** setting takes a report type, a stream name, and a list of option name/value pairs. As of version 6.0.1, the connector sends these options for six streams:
 
 - `GET_LEDGER_DETAIL_VIEW_DATA` — for example, set `eventType` to `Adjustments` to return only adjustment rows.
 - `GET_LEDGER_SUMMARY_VIEW_DATA` — for example, set `aggregatedByTimePeriod` to `DAILY` for daily rows instead of Amazon's `MONTHLY` default, or set `aggregateByLocation` to `FC` to break out rows by fulfillment center instead of by country.
@@ -275,7 +277,7 @@ For the other report types the **Report Options** dropdown offers, the connector
 
 For the four vendor retail analytics reports, the connector sends only what you configure. It supplies no default values of its own, because the right values depend on your vendor account. If you configure nothing, the request goes to Amazon without a `reportOptions` object, exactly as in earlier versions, and Amazon can reject it. If these streams fail, add the required options for each one, for example `reportPeriod` = `DAY`, `distributorView` = `MANUFACTURING` or `SOURCING`, and `sellingProgram` = `RETAIL`. Amazon's [vendor retail analytics documentation](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) lists the values each report accepts. Use `DAY` for `reportPeriod`: the sales, traffic, and net pure product margin streams request one calendar day per report. Option names and values are case-sensitive: enter `distributorView`, not `distributorview`.
 
-If you already had report options configured for either ledger stream before 5.9.3, or for any of the four vendor retail analytics reports before 5.10.6, they take effect as soon as you upgrade, and the records change shape: a summary view aggregated `DAILY` returns one row per day where it previously returned one per month, and a detailed view filtered by `eventType` returns fewer rows. Refresh the stream if you need history to match the new options.
+If you already had report options configured for either ledger stream before 5.9.3, or for any of the four vendor retail analytics reports before 6.0.1, they take effect as soon as you upgrade, and the records change shape: a summary view aggregated `DAILY` returns one row per day where it previously returned one per month, and a detailed view filtered by `eventType` returns fewer rows. Refresh the stream if you need history to match the new options.
 
 ### Report options the connector sets for you
 
@@ -485,9 +487,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
-|:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.10.6 | 2026-09-23 | [86940](https://github.com/airbytehq/airbyte/pull/86940) | Send configured `reportOptions` for the vendor sales, inventory, traffic and net pure product margin reports instead of validating and then dropping them |
+| Version | Date | Pull Request | Subject |
+| :----------- | :----------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 6.0.1 | 2026-09-24 | [86940](https://github.com/airbytehq/airbyte/pull/86940) | Send configured `reportOptions` for the vendor sales, inventory, traffic and net pure product margin reports instead of validating and then dropping them |
+| 6.0.0 | 2026-09-24 | [85813](https://github.com/airbytehq/airbyte/pull/85813) | Remove primary key from `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` streams; these line-item reports have no proven, reliably unique identifier, so deduplicating on `amazon-order-id` dropped records |
 | 5.10.5 | 2026-09-22 | [86512](https://github.com/airbytehq/airbyte/pull/86512) | Update dependencies |
 | 5.10.4 | 2026-09-21 | [86322](https://github.com/airbytehq/airbyte/pull/86322) | Add `order-item-id` to `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` schemas |
 | 5.10.3 | 2026-09-15 | [85942](https://github.com/airbytehq/airbyte/pull/85942) | Update dependencies |
