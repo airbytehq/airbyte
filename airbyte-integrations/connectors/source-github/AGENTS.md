@@ -6,15 +6,40 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Migration to manifest-only (complete)
 
-Every stream now lives in `source_github/manifest.yaml` (tracking issue:
-airbytehq/airbyte-internal-issues#16492). Step 9 moved the last six — the GraphQL streams — and
-deleted the Python stream layer (`streams.py`, `errors_handlers.py`, `backoff_strategies.py`).
-What remains in Python is `source.py` (config validation, repository resolution, `check`,
-and the `read`/`discover` overrides) and `components.py` (the custom components the manifest
-names by `class_name`).
+The connector is now fully manifest-only (tracking issue:
+airbytehq/airbyte-internal-issues#16492): `manifest.yaml` and `components.py` at the connector
+root, `language:manifest-only` in `metadata.yaml`, and no Python package — Step 9 moved the
+last six (the GraphQL) streams into the manifest, and Step 10 deleted `source_github/`,
+`main.py` and the root `pyproject.toml`. The connector runs on the `source-declarative-manifest`
+base image, where `components.py` is loaded as `source_declarative_manifest.components` — every
+`class_name:` in the manifest uses that module path, and `unit_tests/conftest.py` puts the
+connector root on `sys.path` so the same imports work under `components` locally.
 
-- `source_github/manifest.yaml` — every stream, with every schema inline
-  (`InlineSchemaLoader`). `source_github/schemas/` is gone; there is no `JsonFileSchemaLoader`
+`unit_tests/` is a self-contained poetry project (`unit_tests/pyproject.toml`,
+`package-mode = false`); run the suite exactly as CI does: `cd unit_tests && poetry install
+--no-root && poetry run pytest`. Helpers live in `unit_tests/utils.py`: `make_source` builds
+the `YamlDeclarativeSource` on `manifest.yaml`, and `resolve_repositories_and_organizations` /
+`get_authenticator` are test-side ports of the connector's former resolution/authenticator
+methods.
+
+`check` is declarative too: `CheckStream` on `branches` with
+`config_overrides.max_waiting_time: 1`. `branches` slices on `repository_partition_router`,
+so `check` runs the same repository resolution the streams do — a config whose repos resolve
+to nothing fails with "no stream slices were found" — and then reads one page of
+`repos/{repo}/branches`. The `max_waiting_time` override is the interactive check's fail-fast
+budget (see the comment on the `check` component in `manifest.yaml`).
+
+Config normalization, validation and the legacy config migrations live in the manifest
+`spec.config_normalization_rules`: `config_migrations` runs
+`components.MigrateRepository`/`MigrateBranch` (1.4.6 space-separated strings → lists, emitting
+CONNECTOR_CONFIG), `transformations` runs `components.ConfigNormalization` (default/normalize
+`api_url`, convert the legacy strings when the list keys are absent), and `validations` runs
+`components.ApiUrlValidationStrategy` on `api_url`. The CDK runs migrations+transformations at
+construction on `self._config` and the validations in `streams()`, so `read`/`discover`/`check`
+get a config error.
+
+- `manifest.yaml` — every stream, with every schema inline
+  (`InlineSchemaLoader`). There is no `schemas/` directory; there is no `JsonFileSchemaLoader`
   left, including for `issue_timeline_events`, whose shared `base_event` definition is expanded
   at all 23 uses (~6,900 lines) because a manifest schema cannot express the reference.
   **No `$ref` may appear inside an inline schema.** A relative one (`user.json`) is left as a
@@ -27,16 +52,6 @@ names by `class_name`).
 
 Things worth knowing before touching either half:
 
-- `test_discover_returns_union_of_python_and_manifest_streams` and
-  `test_read_routes_manifest_streams_to_concurrent_and_python_streams_to_synchronous` both fake a
-  Python stream with `monkeypatch`. Since `streams()` returns `[]`, the union in `discover()` and
-  the concurrent/synchronous split in `read()` have no production caller; those tests pin the
-  routing as a safety net, they are not evidence the path is live.
-- `SourceGithub.streams()` returns an empty list. It is kept because `discover()` calls it and
-  because the repository resolution inside it is what turns an unusable
-  repositories/organizations config into a config error rather than an empty catalog. `read()`
-  still routes a catalog stream the manifest does not define to `AbstractSource.read`, but no
-  such stream exists any more.
 - No Python _technical_ stream is left. `Branches` and `RepositoryStats` went with Step 8: the
   manifest's `repository_partition_router` now carries the repository's `default_branch` as an
   `extra_fields` entry on every repository partition, and `repository_branches_resolver` (an
@@ -87,9 +102,10 @@ Things worth knowing before touching either half:
   stream, not through it.
 - Repository/organization resolution lives in the manifest (`repositories_resolver` and
   `repository_stats`, unioned by `repository_partition_router` /
-  `organization_resolution_partition_router`). `SourceGithub` enumerates those same routers to
-  decide whether a config resolves to anything at all. See the organization-router section
-  below; the two org routers are not interchangeable.
+  `organization_resolution_partition_router`). `check` (`CheckStream` on `branches`) drives
+  those same routers to decide whether a config resolves to anything at all, and
+  `unit_tests/utils.py::resolve_repositories_and_organizations` enumerates them for the tests.
+  See the organization-router section below; the two org routers are not interchangeable.
 - Error contract differs per stream group and is expressed by two composed error handlers in
   the manifest: `strict_access_error_handler` (403 fails — repo listing and resolution, which
   is what makes `check` surface bad token scopes) and `skip_inaccessible_error_handler`
@@ -164,22 +180,22 @@ Things worth knowing before touching either half:
 - When migrating a stream, check `unit_tests/integration/test_<stream>.py` for tests that assert
   `SubstreamResumableFullRefreshCursor` state (`__ab_full_refresh_sync_complete`): declarative
   full-refresh streams emit a single terminal state message instead. Those tests also construct
-  `SourceGithub()` with no arguments and pass state only to `read()`; a declarative stream reads
-  its state at construction, so they have to build `SourceGithub(config=..., catalog=...,
+  `make_source()` with no arguments and pass state only to `read()`; a declarative stream reads
+  its state at construction, so they have to build `make_source(config=..., catalog=...,
   state=...)` or the state is silently ignored (`test_events.py` shows the adapted form). `test_assignees.py` also
   turned out to define the same test name twice, so only the second body ran — worth grepping
   for that in the other `integration/test_*.py` files before trusting their coverage.
 
 ## Authentication: one shared authenticator, always
 
-Every stream now comes from `manifest.yaml`, but the repository/organization resolution
-`source.py` performs still issues HTTP of its own, and it **must** use the same authenticator
+Every stream now comes from `manifest.yaml`, and the repository/organization resolution the
+routers perform issues HTTP too — all of it through the same authenticator
 instance the streams use. `RateLimitedMultipleTokenAuthenticator` tracks each token's remaining
 REST/GraphQL quota in local counters; two instances over the same tokens each believe they own
 the full budget, so the connector plans for twice the quota GitHub grants and overruns the rate
 limit.
 
-`SourceGithub._get_authenticator()` gets that instance by asking the manifest's component
+`unit_tests/utils.py::get_authenticator` gets that instance by asking the manifest's component
 factory for `definitions.requester_base.authenticator`. This reads like it constructs a new
 one but does not: `ModelToComponentFactory` caches these by resolved constructor arguments
 specifically so every stream shares one set of counters. The cache key is value-based, so pass
@@ -220,14 +236,14 @@ not interchangeable:
 - `organization_resolution_partition_router` derives orgs from response payloads —
   `owner/login` on the `orgs/{org}/repos` listing, `organization/login` on
   `repos/{owner}/{repo}`. Every org-scoped stream must slice on this one: the declarative
-  `organizations`/`teams`/`users` via `organization_scoped_retriever`. `SourceGithub`
-  enumerates the same router in `_resolve_repositories_and_organizations`. Its wildcard branch reads its parents through `repositories_resolver`, whose
+  `organizations`/`teams`/`users` via `organization_scoped_retriever`; `check` and the tests'
+  `resolve_repositories_and_organizations` enumerate the same router. Its wildcard branch reads its parents through `repositories_resolver`, whose
   `record_filter` is `wildcard_repository_filter`, so an organization whose wildcard matched no
   repository is not a partition either — that is why the declarative streams need no equivalent
-  of the `repository_owners` filter `SourceGithub` applies by hand.
+  of the `repository_owners` filter the test helper applies by hand.
 
-The asymmetric `parent_key`s are load-bearing, not an inconsistency to tidy: *list org repos*
-returns `owner` but no `organization`, while *get a repository* returns both, so using
+The asymmetric `parent_key`s are load-bearing, not an inconsistency to tidy: _list org repos_
+returns `owner` but no `organization`, while _get a repository_ returns both, so using
 `owner/login` on the explicit-repo branch would hand user logins back to the org-scoped streams.
 
 2.2.0 wired the org-scoped streams to the config-derived router, and every affected sync died on
@@ -244,14 +260,56 @@ The GitHub REST and GraphQL APIs support `since` parameter on many list endpoint
 
 **Analysis status:** Every stream is in the manifest; the per-step notes below cover them all.
 
-### Future incremental stream candidates
+### Stream-by-stream incremental analysis
+
+| Stream | Sync mode | Cursor field | Filtering | Notes |
+| :----- | :-------- | :----------- | :-------- | :---- |
+| `repositories` | incremental | `updated_at` | data feed (newest-first stop) | |
+| `assignees` | full refresh | — | — | |
+| `branches` | full refresh | — | — | |
+| `collaborators` | full refresh | — | — | |
+| `issue_labels` | full refresh | — | — | |
+| `tags` | full refresh | — | — | |
+| `organizations` | full refresh | — | — | |
+| `teams` | full refresh | — | — | |
+| `users` | full refresh | — | — | |
+| `events` | incremental | `created_at` | client-side | |
+| `pull_requests` | incremental | `updated_at` | data feed (newest-first stop) | |
+| `commit_comments` | incremental | `updated_at` | client-side | |
+| `issue_milestones` | incremental | `updated_at` | data feed (newest-first stop) | |
+| `stargazers` | incremental | `starred_at` | client-side | |
+| `projects` | incremental | `updated_at` | client-side | |
+| `issue_events` | incremental | `created_at` | client-side | |
+| `deployments` | incremental | `updated_at` | client-side | |
+| `workflows` | incremental | `updated_at` | client-side | `%z` offset timestamps |
+| `comments` | incremental | `updated_at` | server-side `since` | |
+| `issues` | incremental | `updated_at` | server-side `since` | |
+| `review_comments` | incremental | `updated_at` | server-side `since` | |
+| `pull_request_commits` | full refresh | — | — | substream of `pull_requests` |
+| `project_columns` | incremental | `updated_at` | client-side | substream of `projects` |
+| `project_cards` | incremental | `updated_at` | client-side | substream of `project_columns` |
+| `team_members` | full refresh | — | — | substream of `teams` |
+| `team_memberships` | full refresh | — | — | substream of `team_members` |
+| `issue_timeline_events` | full refresh | — | — | substream of `issues` |
+| `commit_comment_reactions` | incremental | `created_at` | client-side | substream of `commit_comments` |
+| `issue_comment_reactions` | incremental | `created_at` | client-side | substream of `comments` |
+| `commits` | incremental | `created_at` | server-side `since` | slices per branch via `CommitsBranchPartitionRouter` |
+| `contributor_activity` | full refresh | — | — | retries 202 with a 90s constant backoff |
+| `workflow_runs` | incremental | `updated_at` | client-side, 32-day window | `WorkflowRunsPaginationStrategy` |
+| `workflow_jobs` | incremental | `completed_at` | client-side, 32-day window | substream of `workflow_runs` |
+| `releases` | incremental | `created_at` | client-side | GraphQL |
+| `projects_v2` | incremental | `updated_at` | client-side | GraphQL |
+| `pull_request_stats` | incremental | `updated_at` | data feed (newest-first stop) | GraphQL |
+| `reviews` | incremental | `updated_at` | client-side | GraphQL |
+| `issue_reactions` | incremental | `created_at` | client-side | GraphQL |
+| `pull_request_comment_reactions` | incremental | `created_at` | client-side | GraphQL |
 
 - **The five streams migrated in Step 3** (`assignees`, `branches`, `collaborators`, `issue_labels`, `tags`) have no usable cursor: none of their endpoints returns an `updated_at`/`created_at` field or accepts `since`, so they stay full refresh.
 - **The nine streams migrated in Step 5** (`events`, `pull_requests`, `commit_comments`, `issue_milestones`, `stargazers`, `projects`, `issue_events`, `deployments`, `workflows`) have a cursor field but no server-side filter, so they are client-side incremental; `pull_requests` and `issue_milestones` additionally sort newest-first and use the data-feed stop condition. See the semi-incremental bullet above before adding another.
 - **The three streams migrated in Step 6** (`comments`, `issues`, `review_comments`) are the connector's only REST streams that filter server-side: their endpoints accept `since` and the declarative `DatetimeBasedCursor` injects it via `start_time_option`. Any further stream whose endpoint accepts `since` belongs in that group rather than the client-side-filtered one.
 - **The eight streams migrated in Step 7** (`pull_request_commits`, `project_columns`, `project_cards`, `team_members`, `team_memberships`, `issue_timeline_events`, `commit_comment_reactions`, `issue_comment_reactions`) are substreams. `project_columns`, `project_cards` and the two reaction streams are client-side incremental with a cursor per parent record; the other four have no cursor and stay full refresh.
 - **The four streams migrated in Step 8** (`commits`, `contributor_activity`, `workflow_runs`, `workflow_jobs`): `commits` filters server-side with `since` per branch, `workflow_runs` and `workflow_jobs` are client-side incremental with the 32-day `created` window described above, `contributor_activity` has no cursor and stays full refresh.
-- The GraphQL error contract is carried by the *order* of `graphql_error_handler.response_filters`,
+- The GraphQL error contract is carried by the _order_ of `graphql_error_handler.response_filters`,
   not by the filters alone. GitHub reports GraphQL failures in the body — on a 200 and on a
   502/504 alike — so the body predicates and the status matchers compete for the same responses
   and `DefaultErrorHandler` stops at the first one that matches. Three rules hold:
