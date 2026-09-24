@@ -1055,11 +1055,10 @@ class ReportPollingRequester(HttpRequester):
 
     @staticmethod
     def _decode_document(response: requests.Response, compression_algorithm: Optional[str]) -> str:
-        """Decode the error document, gunzipping when the payload is gzip regardless of what compressionAlgorithm says."""
-        content = response.content
-        if content[:2] == b"\x1f\x8b" or (compression_algorithm or "").upper() == "GZIP":
+        """Decode the error document, tolerating a compressionAlgorithm that does not match the payload."""
+        if (compression_algorithm or "").upper() == "GZIP":
             try:
-                return gzip.decompress(content).decode("utf-8", errors="replace")
+                return gzip.decompress(response.content).decode("utf-8", errors="replace")
             except (OSError, EOFError, gzip.BadGzipFile):
                 pass
         return response.text
