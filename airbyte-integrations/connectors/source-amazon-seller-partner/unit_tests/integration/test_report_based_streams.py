@@ -1546,13 +1546,13 @@ class TestVendorReportOptionsForwarding:
 
     @staticmethod
     def _expected_body(stream_name: str, report_options: Optional[dict]) -> dict:
-        # GET_VENDOR_INVENTORY_REPORT is a full-refresh snapshot: its request body carries no date
-        # window. The other three send the day-aligned window derived from the slice.
-        body = {"reportType": stream_name}
-        if stream_name != "GET_VENDOR_INVENTORY_REPORT":
-            body["dataStartTime"] = "2023-01-01T00:00:00Z"
-            body["dataEndTime"] = "2023-01-01T23:59:59Z"
-        body["marketplaceIds"] = [MARKETPLACE_ID]
+        # All four streams send the same day-aligned window derived from the slice.
+        body = {
+            "reportType": stream_name,
+            "dataStartTime": "2023-01-01T00:00:00Z",
+            "dataEndTime": "2023-01-01T23:59:59Z",
+            "marketplaceIds": [MARKETPLACE_ID],
+        }
         if report_options is not None:
             body["reportOptions"] = report_options
         return body
