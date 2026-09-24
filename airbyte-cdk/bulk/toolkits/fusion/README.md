@@ -50,14 +50,40 @@ bootstrap STS. If both are absent, the AWS default credentials provider chain is
 A partially supplied pair fails configuration validation. Secrets are not included in a
 generated configuration `toString`.
 
-`FusionPaths.run(config, streamName, runId, epochSeconds)` returns:
+`FusionPaths.run(config, streamName, runId, epochSeconds)` retains its existing path for
+BigQuery compatibility:
 
 ```text
 {prefix}/organizations/{id}/workspaces/{id}/sources/{id}/connections/{id}/destinations/{id}/syncs/streams/{escaped}/runs/{epoch}/{uuid}/
 ```
 
-Stream names are percent escaped UTF-8 key components. Paths reserve space for a batch UUID
-and `.jsonl.gz` suffix within the S3 1024-byte key limit.
+The namespace-aware overload, initially for Snowflake adoption, is
+`FusionPaths.run(config, namespace: String?, streamName, runId, epochSeconds)` and returns:
+
+```text
+{prefix}/organizations/{id}/workspaces/{id}/sources/{id}/connections/{id}/destinations/{id}/syncs/streams/{escaped_namespace}/{escaped_name}/runs/{epoch}/{uuid}/
+```
+
+Namespace components are encoded without collisions:
+
+- Null namespace: literal `~null`.
+- Empty namespace: literal `~empty`.
+- Nonempty namespace: `escape(namespace).replace("~", "%7E")`. `escape` percent-encodes
+  UTF-8 bytes with uppercase hexadecimal, preserving ASCII letters, digits, `-`, `_`, `~`,
+  and dots except when the entire component is `.` or `..`. Then every literal tilde is
+  encoded as `%7E`, reserving the sentinel spelling for null and empty namespaces only.
+  Thus namespace `~null` becomes `%7Enull`, `~empty` becomes `%7Eempty`, and literal
+  `%7Enull` becomes `%257Enull`. Slashes are `%2F`; `é` becomes `%C3%A9`.
+
+Stream names use the unchanged `escape(streamName)` encoding, including literal tildes.
+Namespace and name are separate components, so identical names in different namespaces
+have distinct paths. The original overload omits the namespace component entirely; even
+passing null to the new overload produces a different path. BigQuery callers should keep
+using the original overload for now.
+
+Both overloads reserve `batches/{uuid}.jsonl.gz` after the run path and reject keys exceeding
+1024 UTF-8 bytes before upload. The namespace-aware overload includes the encoded namespace
+in that limit; exactly 1024 bytes is allowed.
 
 `FusionSchema.fromConfiguredStream(configuredStream: JsonNode)` extracts the original
 `stream.json_schema`, `primary_key` and `cursor_field` into `source_schema`, `primary_key`
