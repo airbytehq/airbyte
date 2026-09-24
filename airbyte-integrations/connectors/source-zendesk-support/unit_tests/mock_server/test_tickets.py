@@ -46,7 +46,10 @@ class TestTicketsStreamFullRefresh(TestCase):
     def test_given_one_page_when_read_tickets_then_return_records(self, http_mocker):
         api_token_authenticator = self._get_authenticator(self._config)
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(self._config["start_date"]).build(),
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator)
+            .with_start_time(self._config["start_date"])
+            .with_per_page(100)
+            .build(),
             TicketsResponseBuilder.tickets_response().with_record(TicketsRecordBuilder.tickets_record()).build(),
         )
 
@@ -58,7 +61,10 @@ class TestTicketsStreamFullRefresh(TestCase):
     def test_given_two_pages_when_read_tickets_then_return_all_records(self, http_mocker):
         api_token_authenticator = self._get_authenticator(self._config)
         first_page_request = (
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(self._config["start_date"]).build()
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator)
+            .with_start_time(self._config["start_date"])
+            .with_per_page(100)
+            .build()
         )
 
         # Build the base URL for cursor-based pagination
@@ -73,10 +79,13 @@ class TestTicketsStreamFullRefresh(TestCase):
             .with_pagination()
             .build(),
         )
-        # The connector uses RequestPath pagination, meaning it uses the full URL from after_url
-        # The after_url only includes the cursor, not per_page
+        # The connector uses RequestPath pagination, meaning it uses the full URL from after_url.
+        # The after_url only includes the cursor, but the CDK still adds per_page to the paginated request.
+        second_page_request = (
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_cursor(_A_CURSOR).with_per_page(100).build()
+        )
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_cursor(_A_CURSOR).build(),
+            second_page_request,
             TicketsResponseBuilder.tickets_response().with_record(TicketsRecordBuilder.tickets_record().with_id(2)).build(),
         )
 
@@ -86,6 +95,46 @@ class TestTicketsStreamFullRefresh(TestCase):
         record_ids = [r.record.data["id"] for r in output.records]
         assert 1 in record_ids
         assert 2 in record_ids
+        http_mocker.assert_number_of_calls(first_page_request, 1)
+        http_mocker.assert_number_of_calls(second_page_request, 1)
+
+    @HttpMocker()
+    def test_given_after_url_already_has_per_page_when_read_tickets_then_per_page_not_duplicated(self, http_mocker):
+        """When Zendesk echoes per_page in after_url, the page-2 request must not carry it twice.
+
+        HttpClient._dedupe_query_params drops the paginator's per_page request option because the
+        after_url already carries the identical query param; the matcher requires exactly one
+        per_page=100, so a duplicated parameter would not match and the test would fail.
+        """
+        api_token_authenticator = self._get_authenticator(self._config)
+        first_page_request = (
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator)
+            .with_start_time(self._config["start_date"])
+            .with_per_page(100)
+            .build()
+        )
+
+        after_url = f"https://d3v-airbyte.zendesk.com/api/v2/incremental/tickets/cursor.json?cursor={_A_CURSOR}&per_page=100"
+        http_mocker.get(
+            first_page_request,
+            TicketsResponseBuilder.tickets_response(after_url=after_url)
+            .with_record(TicketsRecordBuilder.tickets_record().with_id(1))
+            .with_pagination()
+            .build(),
+        )
+        second_page_request = (
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_cursor(_A_CURSOR).with_per_page(100).build()
+        )
+        http_mocker.get(
+            second_page_request,
+            TicketsResponseBuilder.tickets_response().with_record(TicketsRecordBuilder.tickets_record().with_id(2)).build(),
+        )
+
+        output = read_stream("tickets", SyncMode.full_refresh, self._config)
+
+        assert len(output.records) == 2
+        http_mocker.assert_number_of_calls(first_page_request, 1)
+        http_mocker.assert_number_of_calls(second_page_request, 1)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -109,7 +158,10 @@ class TestTicketsStreamIncremental(TestCase):
         cursor_value = 1723660897
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(self._config["start_date"]).build(),
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator)
+            .with_start_time(self._config["start_date"])
+            .with_per_page(100)
+            .build(),
             TicketsResponseBuilder.tickets_response()
             .with_record(TicketsRecordBuilder.tickets_record().with_field(FieldPath("generated_timestamp"), cursor_value))
             .build(),
@@ -129,7 +181,7 @@ class TestTicketsStreamIncremental(TestCase):
         new_cursor_value = int(state_cursor_value.add(timedelta(days=1)).timestamp())
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(state_cursor_value).build(),
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(state_cursor_value).with_per_page(100).build(),
             TicketsResponseBuilder.tickets_response()
             .with_record(TicketsRecordBuilder.tickets_record().with_field(FieldPath("generated_timestamp"), new_cursor_value))
             .build(),
@@ -336,7 +388,7 @@ class TestTicketsStreamStateMigration(TestCase):
         record_cursor = self._BACKFILL_FLOOR + 10
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(self._BACKFILL_FLOOR).build(),
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(self._BACKFILL_FLOOR).with_per_page(100).build(),
             TicketsResponseBuilder.tickets_response().with_record(TicketsRecordBuilder.tickets_record().with_cursor(record_cursor)).build(),
         )
 
@@ -360,7 +412,7 @@ class TestTicketsStreamStateMigration(TestCase):
         cursor = int(_NOW.subtract(timedelta(days=3)).timestamp())
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(cursor).build(),
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(cursor).with_per_page(100).build(),
             TicketsResponseBuilder.tickets_response().build(),
         )
 
