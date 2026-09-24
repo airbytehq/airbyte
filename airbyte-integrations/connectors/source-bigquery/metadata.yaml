@@ -3,25 +3,21 @@ data:
     ql: 200
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
+    baseImage: docker.io/airbyte/java-connector-base:2.0.4@sha256:5f343797cfcf021ca98ba9bdf5970ef66cbf6222d8cc17b0d61d13860a5bcc2b
   connectorSubtype: database
+  # Speed mode: records (and a copy of the states) can go to the destination over Unix domain
+  # sockets, as JSONL or protobuf, when the platform sets DATA_CHANNEL_MEDIUM=SOCKET,
+  # DATA_CHANNEL_FORMAT and DATA_CHANNEL_SOCKET_PATHS (see application.yml).
+  connectorIPCOptions:
+    dataChannel:
+      version: "0.0.2"
+      supportedSerialization: ["JSONL", "PROTOBUF"]
+      supportedTransport: ["SOCKET", "STDIO"]
   connectorTestSuitesOptions:
     - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - fileName: credentials.json
-          name: SECRET_SOURCE-BIGQUERY_CREDENTIALS__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: sat-config.json
-          name: SECRET_SOURCE-BIGQUERY_SAT__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
   connectorType: source
   definitionId: bfd1ddf8-ae8a-4620-b1d7-55597d2ba08c
-  dockerImageTag: 0.4.5
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-bigquery
   documentationUrl: https://docs.airbyte.com/integrations/sources/bigquery
   githubIssueLabel: source-bigquery
@@ -35,12 +31,39 @@ data:
       enabled: true
   releaseStage: alpha
   supportLevel: community
+  releases:
+    breakingChanges:
+      1.0.0:
+        message:
+          "**The BigQuery source has been rebuilt on Airbyte's Bulk CDK.** It reads tables through the
+          BigQuery Storage Read API, checkpoints full refresh syncs so that large tables resume after an
+          interruption, discovers nested `STRUCT` and `ARRAY` schemas and primary key constraints, and
+          supports speed mode. Saved configurations and incremental sync state keep working.
+
+          **What changed:** `DATE`, `DATETIME`, `TIME` and `TIMESTAMP` columns are now typed as Airbyte
+          date and time types instead of strings, `JSON` columns as JSON, and `BYTES` columns declare their
+          base64 encoding; `STRUCT` and `ARRAY` columns carry their nested schema; `PRIMARY KEY`
+          constraints become source-defined primary keys; only columns of a supported cursor type can be
+          chosen as the incremental cursor; and the credentials must be a service account key.
+
+          **What to do:** after upgrading, refresh the source schema of your connections. If a sync fails
+          after the type change, refresh the affected streams. Connections whose cursor column is a `BOOL`,
+          `BYTES`, `JSON`, `STRUCT` or `ARRAY` column must choose a new cursor. See the
+          [migration guide](https://docs.airbyte.com/integrations/sources/bigquery-migrations).
+          "
+        upgradeDeadline: "2026-12-31"
   tags:
     - language:java
   externalDocumentationUrls:
     - title: BigQuery REST API
       url: https://cloud.google.com/bigquery/docs/reference/rest
       type: api_reference
+    - title: BigQuery Storage Read API
+      url: https://cloud.google.com/bigquery/docs/reference/storage
+      type: api_reference
+    - title: BigQuery JDBC driver (google-cloud-bigquery-jdbc)
+      url: https://github.com/googleapis/google-cloud-java/tree/main/java-bigquery-jdbc
+      type: code_repository
     - title: Release notes
       url: https://cloud.google.com/bigquery/docs/release-notes
       type: api_release_history
