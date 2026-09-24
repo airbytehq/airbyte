@@ -59,7 +59,7 @@ class BigqueryS3CopyTest {
                 DisabledBigqueryS3Copy,
                 BigqueryS3CopyFactory.createForOperation(
                     operation,
-                    mapOf("AIRBYTE_S3_COPY_ENABLED" to "invalid"),
+                    mapOf("AIRBYTE_FUSION_ENABLED" to "invalid"),
                     enabledFactory,
                 ),
             )
@@ -68,7 +68,7 @@ class BigqueryS3CopyTest {
             DisabledBigqueryS3Copy,
             BigqueryS3CopyFactory.createForOperation(
                 "write",
-                mapOf("AIRBYTE_S3_COPY_ROLE_ARN" to "invalid"),
+                mapOf("AIRBYTE_FUSION_S3_ROLE_ARN" to "invalid"),
                 enabledFactory,
             ),
         )
@@ -120,7 +120,7 @@ class BigqueryS3CopyTest {
             val marker = fixture.uploader.objects.last()
             assertEquals("fusion/test-run/batches/stream_complete.json", marker.key)
             assertEquals(
-                mapOf("job_id" to fixture.stream.syncId),
+                mapOf("job_id" to fixture.stream.syncId, "min_generation_id" to 0L),
                 com.fasterxml.jackson.databind
                     .ObjectMapper()
                     .readValue(String(marker.bytes), Map::class.java)
@@ -751,9 +751,7 @@ class BigqueryS3CopyTest {
             every { metadata.runPath(stream) } returns "fusion/test-run"
             every { metadata.streamKey(stream) } returns "stream-hash"
             every { metadata.streamComplete(stream) } returns
-                (mapOf("job_id" to stream.syncId) +
-                    if (minimumGeneration > 0) mapOf("min_generation_id" to minimumGeneration)
-                    else emptyMap())
+                mapOf("job_id" to stream.syncId, "min_generation_id" to minimumGeneration)
             every { metadata.serialize(any()) } answers
                 {
                     com.fasterxml.jackson.databind.ObjectMapper().writeValueAsBytes(firstArg<Any>())

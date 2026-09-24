@@ -98,18 +98,18 @@ class BigqueryCopyWiringTest {
                 .redirectOutput(log.toFile())
         builder.environment().apply {
             keys
-                .filter { it.startsWith("AIRBYTE_S3_COPY_") || it.startsWith("AWS_") }
+                .filter { it.startsWith("AIRBYTE_FUSION_S3_") || it.startsWith("AWS_") }
                 .toList()
                 .forEach { remove(it) }
-            put("AIRBYTE_S3_COPY_ENABLED", enabled)
-            put("AIRBYTE_S3_COPY_ROLE_ARN", "invalid-enabled-only-field")
+            put("AIRBYTE_FUSION_ENABLED", enabled)
+            put("AIRBYTE_FUSION_S3_ROLE_ARN", "invalid-enabled-only-field")
             listOf("ORGANIZATION", "WORKSPACE", "SOURCE", "CONNECTION", "DESTINATION").forEach {
                 put("AIRBYTE_${it}_ID", "invalid-environment-id")
             }
             if (enabled == "true") {
-                put("AIRBYTE_S3_COPY_BUCKET", "platform-archive")
-                put("AIRBYTE_S3_COPY_REGION", "us-east-1")
-                put("AIRBYTE_S3_COPY_ROLE_ARN", "arn:aws:iam::123456789012:role/archive")
+                put("AIRBYTE_FUSION_S3_BUCKET", "platform-archive")
+                put("AIRBYTE_FUSION_S3_REGION", "us-east-1")
+                put("AIRBYTE_FUSION_S3_ROLE_ARN", "arn:aws:iam::123456789012:role/archive")
                 listOf("ORGANIZATION", "WORKSPACE", "SOURCE", "CONNECTION", "DESTINATION")
                     .forEachIndexed { index, name ->
                         put("AIRBYTE_${name}_ID", "ABCDEFAB-CDEF-4ABC-8DEF-ABCDEFABCDE$index")
@@ -155,7 +155,7 @@ object BigqueryCopyWiringProbe {
                         if (args.single() == "disabled") {
                             assertSame(
                                 DisabledBigqueryS3Copy,
-                                context.getBean(BigqueryS3Copy::class.java)
+                                context.getBean(BigqueryS3Copy::class.java),
                             )
                             assertInstanceOf(
                                 BigqueryCopyCheckpointConsumer::class.java,
@@ -181,7 +181,7 @@ object BigqueryCopyWiringProbe {
                                 archiveConfig.workspaceId,
                                 archiveConfig.sourceId,
                                 archiveConfig.connectionId,
-                                archiveConfig.destinationId
+                                archiveConfig.destinationId,
                             ),
                         )
                         assertEquals("platform-archive", archiveConfig.bucket)
@@ -288,7 +288,7 @@ object BigqueryCopyWiringProbe {
                 .copy(
                     loadingMethod =
                         if (gcs) GcsStagingConfiguration(mockk(), GcsFilePostProcessing.KEEP)
-                        else BatchedStandardInsertConfiguration,
+                        else BatchedStandardInsertConfiguration
                 )
         val stream =
             DestinationStream(

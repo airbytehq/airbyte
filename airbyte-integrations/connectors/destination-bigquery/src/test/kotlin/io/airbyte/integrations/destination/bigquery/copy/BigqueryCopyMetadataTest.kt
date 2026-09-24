@@ -917,7 +917,7 @@ class BigqueryCopyMetadataTest {
                 )
         val metadata = metadata(stream)
         val expected =
-            "fusion/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/streams/~null/MiX%2F%E9%9B%AA%25%20./runs/$epochSeconds/$runId"
+            "fusion/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/streams/~null/MiX%2F%E9%9B%AA%25%20./runs/$runId/$epochSeconds"
         assertEquals(expected, metadata.runPath(stream))
         val descriptor = tree(metadata.descriptor(stream))
         assertTrue(descriptor["original_stream"]["namespace"].isNull)
@@ -946,7 +946,7 @@ class BigqueryCopyMetadataTest {
                 assertTrue(
                     metadata
                         .runPath(stream.copy(unmappedName = name))
-                        .endsWith("/streams/~null/$escaped/runs/$epochSeconds/$runId")
+                        .endsWith("/streams/~null/$escaped/runs/$runId/$epochSeconds")
                 )
             }
         assertThrows(IllegalArgumentException::class.java) {
@@ -987,7 +987,7 @@ class BigqueryCopyMetadataTest {
         assertTrue(
             original
                 .runPath(stream.copy(unmappedName = "second"))
-                .endsWith("/runs/$epochSeconds/$runId")
+                .endsWith("/runs/$runId/$epochSeconds")
         )
     }
 
@@ -1016,7 +1016,7 @@ class BigqueryCopyMetadataTest {
             metadata.streamComplete(stream),
         )
         assertEquals(
-            mapOf("job_id" to 42L),
+            mapOf("job_id" to 42L, "min_generation_id" to 0L),
             metadata.streamComplete(stream.copy(minimumGenerationId = 0)),
         )
         listOf(-1L, 1L, 10L).forEach { minimum ->

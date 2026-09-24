@@ -10,10 +10,10 @@ import org.junit.jupiter.api.Test
 class S3CopyConfigurationTest {
     private val enabled =
         mapOf(
-            "AIRBYTE_S3_COPY_ENABLED" to "true",
-            "AIRBYTE_S3_COPY_BUCKET" to "archive-bucket",
-            "AIRBYTE_S3_COPY_REGION" to "us-east-1",
-            "AIRBYTE_S3_COPY_ROLE_ARN" to "arn:aws:iam::123456789012:role/archive",
+            "AIRBYTE_FUSION_ENABLED" to "true",
+            "AIRBYTE_FUSION_S3_BUCKET" to "archive-bucket",
+            "AIRBYTE_FUSION_S3_REGION" to "us-east-1",
+            "AIRBYTE_FUSION_S3_ROLE_ARN" to "arn:aws:iam::123456789012:role/archive",
             "AIRBYTE_ORGANIZATION_ID" to "44444444-4444-4444-8444-444444444444",
             "AIRBYTE_DESTINATION_ID" to "55555555-5555-4555-8555-555555555555",
             "AIRBYTE_WORKSPACE_ID" to "11111111-1111-4111-8111-111111111111",
@@ -24,7 +24,7 @@ class S3CopyConfigurationTest {
     @Test
     fun `disabled config does not bind enabled-only values`() {
         assertNull(S3CopyConfiguration.fromEnvironment(emptyMap()))
-        assertNull(S3CopyConfiguration.fromEnvironment(mapOf("AIRBYTE_S3_COPY_ENABLED" to "false")))
+        assertNull(S3CopyConfiguration.fromEnvironment(mapOf("AIRBYTE_FUSION_ENABLED" to "false")))
         assertNull(S3CopyConfiguration.fromEnvironment(mapOf("AIRBYTE_WORKSPACE_ID" to "invalid")))
     }
 
@@ -68,6 +68,6 @@ class S3CopyConfigurationTest {
             config.workspaceId,
             config.sourceId,
             config.connectionId,
-            config.destinationId
+            config.destinationId,
         )
 }

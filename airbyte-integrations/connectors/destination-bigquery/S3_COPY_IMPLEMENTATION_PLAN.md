@@ -67,7 +67,7 @@ Use the agreed Fusion contract:
 ```text
 fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/
   connections/<connection_uuid>/destinations/<destination_uuid>/syncs/streams/<escaped_original_namespace>/<escaped_stream_name>/
-    runs/<epoch_seconds>/<run_uuid>/
+    runs/<run_uuid>/<epoch_seconds>/
       schema.json
       batches/<batch_uuid>.csv.gz  # GCS staging
       batches/<batch_uuid>.jsonl   # batched standard inserts
@@ -103,8 +103,8 @@ archive is durable and successful destination finalization returns, write
 ```
 
 The catalog stream's `syncId` is populated from the platform job ID. It is distinct from the random
-run UUID and job attempt ID. Omit `min_generation_id` entirely when the minimum generation is zero;
-include it only for a positive refresh cutoff. No `generation-cutoff.json` or `truncate_refresh.json`
+run UUID and job attempt ID. Include `min_generation_id` when supplied by the catalog, including zero;
+zero indicates no positive refresh cutoff. No `generation-cutoff.json` or `truncate_refresh.json`
 is written. Failed/incomplete streams and failed destination finalization produce no completion
 marker. Failed marker uploads fail stream close; retries keep the same key and content.
 
@@ -129,16 +129,16 @@ never count CSV lines, since quoted records can contain newlines.
 
 | Environment variable | Enabled-write requirement |
 | --- | --- |
-| `AIRBYTE_S3_COPY_ENABLED` | Defaults false; only explicit `true` or `false` accepted on writes |
-| `AIRBYTE_S3_COPY_BUCKET` | Required archive bucket |
-| `AIRBYTE_S3_COPY_REGION` | Required S3/STS region |
-| `AIRBYTE_S3_COPY_ROLE_ARN` | Required target role |
+| `AIRBYTE_FUSION_ENABLED` | Defaults false; case-insensitive `true` enables it; other values disable it |
+| `AIRBYTE_FUSION_S3_BUCKET` | Required archive bucket |
+| `AIRBYTE_FUSION_S3_REGION` | Required S3/STS region |
+| `AIRBYTE_FUSION_S3_ROLE_ARN` | Required target role |
 | `AIRBYTE_ORGANIZATION_ID` | Required canonical UUID from the platform environment |
 | `AIRBYTE_WORKSPACE_ID` | Required canonical UUID from the platform environment |
 | `AIRBYTE_SOURCE_ID` | Required canonical UUID from the platform environment |
 | `AIRBYTE_CONNECTION_ID` | Required canonical UUID from the platform environment |
 | `AIRBYTE_DESTINATION_ID` | Required canonical UUID from the platform environment |
-| `AIRBYTE_S3_COPY_PREFIX` | Default `fusion`; trim surrounding slashes; reject empty |
+| `AIRBYTE_FUSION_S3_PREFIX` | Default `fusion`; trim surrounding slashes; reject empty |
 | `AWS_ASSUME_ROLE_EXTERNAL_ID` | Optional STS external ID |
 
 Check operation and enablement before binding enabled-only fields or constructing AWS clients.
