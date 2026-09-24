@@ -98,6 +98,14 @@ class ApiTypeEnum(enum.Enum):
         return [api_type.value for api_type in ApiTypeEnum]
 
 
+GRAPHQL_THROTTLE_ERROR_CODES: Final[set] = {"THROTTLED", "MAX_COST_EXCEEDED"}
+
+
+def is_throttled_graphql_error(errors: List[Mapping[str, Any]]) -> bool:
+    """Shopify GraphQL reports throttling as HTTP 200 with `errors[].extensions.code` in GRAPHQL_THROTTLE_ERROR_CODES."""
+    return any((error.get("extensions") or {}).get("code") in GRAPHQL_THROTTLE_ERROR_CODES for error in errors)
+
+
 class ShopifyRateLimiter:
     """
     Define timings for RateLimits. Adjust timings if needed.

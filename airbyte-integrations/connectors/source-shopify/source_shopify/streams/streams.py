@@ -36,7 +36,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     Transaction,
 )
 from source_shopify.shopify_graphql.bulk.tools import BulkTools
-from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors, ShopifyRateLimiter
+from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors, ShopifyRateLimiter, is_throttled_graphql_error
 
 from airbyte_cdk import HttpSubStream
 from airbyte_cdk.models import FailureType
@@ -580,7 +580,7 @@ class DiscountCodesSync(IncrementalShopifyStream):
             result = response.json()
             errors = result.get("errors")
             if errors:
-                if self._is_throttled(errors):
+                if is_throttled_graphql_error(errors):
                     if attempt < self._GRAPHQL_MAX_RETRIES:
                         ShopifyRateLimiter.wait_time(ShopifyRateLimiter.on_unknown_load)
                         continue
@@ -592,15 +592,6 @@ class DiscountCodesSync(IncrementalShopifyStream):
             ShopifyRateLimiter.wait_time(ShopifyRateLimiter.get_graphql_api_wait_time(response, threshold=0.9))
             return result
         raise AirbyteTracedException(message="GraphQL query for stream `discount_codes_sync` exceeded max retries due to throttling.")
-
-    @staticmethod
-    def _is_throttled(errors: list) -> bool:
-        throttle_codes = {"THROTTLED", "MAX_COST_EXCEEDED"}
-        for error in errors:
-            extensions = error.get("extensions", {})
-            if extensions.get("code") in throttle_codes:
-                return True
-        return False
 
     @staticmethod
     def _extract_codes_connection(code_discount: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -927,15 +918,6 @@ class MarketCountries(FullRefreshShopifyGraphQlBulkStream):
         return {"query": self.query(regions_cursor=self._sub_page_cursor).get(query_args={"cursor": self._page_cursor})}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        errors = response.json().get("errors")
-        if errors:
-            # Shopify returns HTTP 200 with GraphQL `errors` (THROTTLED, ACCESS_DENIED, ...); such a page carries no data,
-            # completing the pagination here would mark an incomplete snapshot as complete.
-            raise AirbyteTracedException(
-                message=f"Stream `{self.name}`: Shopify GraphQL request failed: "
-                + "; ".join(str(error.get("message", error)) for error in errors),
-                failure_type=FailureType.transient_error if DiscountCodesSync._is_throttled(errors) else FailureType.system_error,
-            )
         for market in super().parse_response(response, **kwargs):
             regions_condition = (market.get("conditions") or {}).get("regionsCondition") or {}
             # `shipping` is null when the market inherits its shipping configuration from a parent market

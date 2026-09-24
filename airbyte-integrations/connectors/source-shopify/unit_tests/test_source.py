@@ -772,6 +772,13 @@ def test_market_countries_market_without_regions_condition_is_skipped(config):
 
 
 @pytest.mark.parametrize(
+    "make_stream",
+    [
+        pytest.param(lambda config: Countries(config=config, parent=MagicMock()), id="countries"),
+        pytest.param(MarketCountries, id="market_countries"),
+    ],
+)
+@pytest.mark.parametrize(
     "errors, expected_failure_type",
     [
         pytest.param(
@@ -784,9 +791,9 @@ def test_market_countries_market_without_regions_condition_is_skipped(config):
         ),
     ],
 )
-def test_market_countries_parse_response_fails_on_graphql_errors(config, errors, expected_failure_type):
-    """A 200 response with GraphQL `errors` has no usable page: completing here would mark an incomplete snapshot as complete."""
-    stream = MarketCountries(config)
+def test_graphql_full_refresh_stream_fails_on_graphql_errors(config, make_stream, errors, expected_failure_type):
+    """A 200 response with GraphQL `errors` has no usable page: treating it as empty would mark an incomplete snapshot as complete."""
+    stream = make_stream(config)
     response = MagicMock(status_code=requests.codes.OK)
     response.json.return_value = {"data": None, "errors": errors}
     with pytest.raises(AirbyteTracedException) as exc_info:

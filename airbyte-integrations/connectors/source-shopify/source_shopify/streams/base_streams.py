@@ -18,15 +18,16 @@ from source_shopify.shopify_graphql.bulk.external_sort import DEFAULT_SORT_CHUNK
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
 from source_shopify.shopify_graphql.bulk.query import DeliveryZoneList, ShopFeatures, ShopifyBulkQuery
 from source_shopify.transform import DataTypeEnforcer
-from source_shopify.utils import ApiTypeEnum, ShopifyNonRetryableErrors
+from source_shopify.utils import ApiTypeEnum, ShopifyNonRetryableErrors, is_throttled_graphql_error
 from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from source_shopify.utils import ShopifyRateLimiter as limiter
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 class ShopifyStream(HttpStream, ABC):
@@ -985,8 +986,18 @@ class FullRefreshShopifyGraphQlBulkStream(ShopifyStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.status_code is requests.codes.OK:
             try:
-                json_response = response.json().get("data", {}).get(self.response_field, {}).get("nodes", [])
-                yield from json_response
+                json_response = response.json()
             except RequestException as e:
                 self.logger.warning(f"Unexpected error in `parse_response`: {e}, the actual response data: {response.text}")
                 yield {}
+                return
+            errors = json_response.get("errors")
+            if errors:
+                # Shopify returns HTTP 200 with GraphQL `errors` (THROTTLED, ACCESS_DENIED, ...) and no usable `data`;
+                # treating such a page as empty would end the pagination and mark an incomplete snapshot as complete.
+                raise AirbyteTracedException(
+                    message=f"Stream `{self.name}`: Shopify GraphQL request failed: "
+                    + "; ".join(str(error.get("message", error)) for error in errors),
+                    failure_type=FailureType.transient_error if is_throttled_graphql_error(errors) else FailureType.system_error,
+                )
+            yield from ((json_response.get("data") or {}).get(self.response_field) or {}).get("nodes") or []
