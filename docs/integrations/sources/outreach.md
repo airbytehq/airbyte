@@ -54,7 +54,7 @@ Starting **October 1, 2026**, Outreach will no longer include the `contactHistog
 
 After that date, the `contactHistogram` column in the `Prospects` stream will be `null` for newly synced records. Syncs will continue to run normally, and no other fields, the primary key (`id`), or the cursor (`updatedAt`) are affected. Historical values already in your destination are unchanged.
 
-If you rely on `contactHistogram`, retrieve it directly from Outreach or fork the connector in the Connector Builder and add a `fields[prospect]` request parameter to the `Prospects` stream that lists every attribute you need, including `contactHistogram`.
+If you rely on `contactHistogram`, retrieve it directly from the Outreach API by requesting it explicitly with the `fields[prospect]` parameter.
 :::
 
 ## IP allow list
