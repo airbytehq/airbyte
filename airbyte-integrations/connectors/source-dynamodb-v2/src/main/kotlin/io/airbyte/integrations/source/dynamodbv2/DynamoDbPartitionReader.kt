@@ -188,7 +188,7 @@ class DynamoDbPartitionReader(
     /**
      * Every field of the stream, with an explicit null for each attribute the item lacks (or whose
      * value is the DynamoDB `NULL`). The JSON consumers fill absent fields with null themselves,
-     * but the protobuf consumer reuses one record builder per stream and, before Bulk CDK 1.1.12,
+     * but the protobuf consumer reuses one record builder per stream and, before Bulk CDK 1.1.13,
      * only overwrote the slots present in the payload, so a sparse payload let an item inherit the
      * previous item's attributes. Explicit nulls keep the connector safe on any CDK version.
      *

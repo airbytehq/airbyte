@@ -279,7 +279,7 @@ Bulk CDK 1.1.11 could not build a protobuf record for a stream without a namespa
 (`FeedBootstrap.ProtoEfficientStreamRecordConsumer` called `setStreamNamespace(null)`) and its
 protobuf consumer reused one record builder per stream while only overwriting the slots present in
 a payload, so a sparse item inherited the previous item's attributes. Both are fixed in the CDK at
-1.1.12 (this branch builds against the local CDK until it is published); the reader also puts an
+1.1.13, airbytehq/airbyte#86976 (this branch builds against the local CDK until it is published); the reader also puts an
 explicit null in the payload for every attribute an item lacks and releases its resources if the
 router construction throws, so it is safe on either version.
 

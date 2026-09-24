@@ -201,7 +201,7 @@ class DynamoDbSourceSpeedModeReadTest {
         // JsonNode equality is class-sensitive (IntNode vs BigIntegerNode): compare the text.
         Assertions.assertEquals("100", run.decode(item2)["flexible"].asText())
         // Item 2 carries no change record: the CDK's protobuf consumer reuses one record builder
-        // per stream and, since Bulk CDK 1.1.12, clears the previous record's meta changes.
+        // per stream and, since Bulk CDK 1.1.13, clears the previous record's meta changes.
         Assertions.assertEquals(
             0,
             item2.meta.changesCount,
