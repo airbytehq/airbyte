@@ -137,11 +137,14 @@ the shared requester's body, configured options used to be validated and then si
 Jinja block that `creation_requester_with_report_options` also references, so the option matching rules
 exist in exactly one place. Each stream supplies only its `report_type` via `$parameters`.
 
-Do not add default values for these options. Amazon does not reject a request that omits them - it applies its
-own account-specific defaults - so hardcoding `MANUFACTURING`/`RETAIL` or a fixed `reportPeriod` would silently
-change which numbers existing connections receive, with no error and no schema change to signal it. The block
-ends in `{{ opts if opts else None }}` so an unconfigured connection sends no `reportOptions` key at all and its
-request body is byte-identical to previous versions.
+Do not add default values for these options. The right values are account-specific (`distributorView` is
+`MANUFACTURING` or `SOURCING` depending on how the vendor sells to Amazon; `sellingProgram` is `RETAIL`, `FRESH`
+or, for some reports, `BUSINESS`), so a hardcoded guess can return the wrong numbers with no error and no schema change to signal it.
+A missing option fails loudly instead: Amazon can reject a request that omits them, and on a live Vendor
+connection every vendor sales, inventory and traffic report went `FATAL` with "This report type requires the
+reportPeriod, distributorView, sellingProgram reportOption to be specified" until the user configured them. The
+block ends in `{{ opts if opts else None }}` so an unconfigured connection sends no `reportOptions` key at all and
+its request body is byte-identical to previous versions.
 
 ## Incremental Stream Considerations
 
