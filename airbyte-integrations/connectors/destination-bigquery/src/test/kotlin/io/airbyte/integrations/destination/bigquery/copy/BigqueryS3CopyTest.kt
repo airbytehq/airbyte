@@ -94,7 +94,7 @@ class BigqueryS3CopyTest {
             archive.complete(fixture.stream)
             assertEquals(
                 listOf("schema.json", "stream_complete.json"),
-                fixture.uploader.objects.map { it.key.substringAfterLast('/') }
+                fixture.uploader.objects.map { it.key.substringAfterLast('/') },
             )
             val marker = fixture.uploader.objects.last()
             assertEquals("fusion/test-run/batches/stream_complete.json", marker.key)
@@ -124,7 +124,7 @@ class BigqueryS3CopyTest {
                 com.fasterxml.jackson.databind
                     .ObjectMapper()
                     .readValue(String(marker.bytes), Map::class.java)
-                    .mapValues { (_, v) -> (v as Number).toLong() }
+                    .mapValues { (_, v) -> (v as Number).toLong() },
             )
             assertEquals(2, fixture.uploader.objects.size)
         }
@@ -132,25 +132,27 @@ class BigqueryS3CopyTest {
     }
 
     @Test
-    fun `standard inserts prepare normally while duplicate names fail before AWS`() = runBlocking {
-        val fixture = Fixture()
-        fixture.archive.use { archive ->
-            every { fixture.configuration.loadingMethod } returns BatchedStandardInsertConfiguration
-            val delegate = mockk<DestinationWriter>(relaxed = true)
-            BigqueryCopyWriter(delegate, fixture.catalog, archive, mockk()).setup()
-            assertTrue(archive.metadataReady())
-            coVerify(exactly = 1) { delegate.setup() }
-            assertEquals(1, fixture.uploader.credentialsChecks)
-        }
-        val other = Fixture()
-        other.archive.use { archive ->
-            val duplicate = other.stream.copy(unmappedNamespace = "another")
-            assertThrows(SystemErrorException::class.java) {
-                archive.validate(DestinationCatalog(listOf(other.stream, duplicate)))
+    fun `standard inserts prepare normally while duplicate original descriptors fail before AWS`() =
+        runBlocking {
+            val fixture = Fixture()
+            fixture.archive.use { archive ->
+                every { fixture.configuration.loadingMethod } returns
+                    BatchedStandardInsertConfiguration
+                val delegate = mockk<DestinationWriter>(relaxed = true)
+                BigqueryCopyWriter(delegate, fixture.catalog, archive, mockk()).setup()
+                assertTrue(archive.metadataReady())
+                coVerify(exactly = 1) { delegate.setup() }
+                assertEquals(1, fixture.uploader.credentialsChecks)
             }
-            assertEquals(0, other.uploader.credentialsChecks)
+            val other = Fixture()
+            other.archive.use { archive ->
+                val duplicate = other.stream.copy()
+                assertThrows(io.airbyte.cdk.ConfigErrorException::class.java) {
+                    archive.validate(DestinationCatalog(listOf(other.stream, duplicate)))
+                }
+                assertEquals(0, other.uploader.credentialsChecks)
+            }
         }
-    }
 
     @Test
     fun `metadata failure never publishes a run context and closes uploader`() = runBlocking {
@@ -206,11 +208,11 @@ class BigqueryS3CopyTest {
                 assertEquals("1", copied.metadata["loaded-record-count"])
                 assertEquals(
                     fixture.config.organizationId.toString(),
-                    copied.metadata["organization-id"]
+                    copied.metadata["organization-id"],
                 )
                 assertEquals(
                     fixture.config.destinationId.toString(),
-                    copied.metadata["destination-id"]
+                    copied.metadata["destination-id"],
                 )
                 assertEquals("1750000000", copied.metadata["epoch-seconds"])
                 assertEquals(fixture.config.sourceId.toString(), copied.metadata["source-id"])
@@ -455,7 +457,7 @@ class BigqueryS3CopyTest {
                 assertEquals(
                     1,
                     fixture.uploader.objects.size,
-                    "Only schema before BigQuery completion"
+                    "Only schema before BigQuery completion",
                 )
                 batch.seal()
                 assertEquals(1, fixture.uploader.sessions.single().seals)
@@ -468,11 +470,11 @@ class BigqueryS3CopyTest {
                 assertTrue(copied.key.endsWith(".jsonl"))
                 assertEquals(
                     fixture.config.organizationId.toString(),
-                    copied.metadata["organization-id"]
+                    copied.metadata["organization-id"],
                 )
                 assertEquals(
                     fixture.config.destinationId.toString(),
-                    copied.metadata["destination-id"]
+                    copied.metadata["destination-id"],
                 )
                 assertEquals("1750000000", copied.metadata["epoch-seconds"])
                 assertFalse(copied.metadata.containsKey("input-record-count"))
@@ -519,7 +521,7 @@ class BigqueryS3CopyTest {
                     assertEquals(6, paths.size)
                     assertEquals(
                         6,
-                        fixture.uploader.objects.count { it.contentType == "application/x-ndjson" }
+                        fixture.uploader.objects.count { it.contentType == "application/x-ndjson" },
                     )
                 }
             }
@@ -539,12 +541,12 @@ class BigqueryS3CopyTest {
                 }
                 assertEquals(
                     listOf("schema.json"),
-                    fixture.uploader.objects.map { it.key.substringAfterLast('/') }
+                    fixture.uploader.objects.map { it.key.substringAfterLast('/') },
                 )
                 archive.complete(fixture.stream)
                 assertEquals(
                     listOf("schema.json", "stream_complete.json"),
-                    fixture.uploader.objects.map { it.key.substringAfterLast('/') }
+                    fixture.uploader.objects.map { it.key.substringAfterLast('/') },
                 )
                 assertTrue(archive.metadataReady())
             }
@@ -582,7 +584,7 @@ class BigqueryS3CopyTest {
                 fixture.uploader.beforeStreamingFinish = { path ->
                     throw ArchiveReaderStillActiveException(
                         path,
-                        IllegalStateException("reader stuck")
+                        IllegalStateException("reader stuck"),
                     )
                 }
                 batch.seal()
@@ -667,7 +669,7 @@ class BigqueryS3CopyTest {
                     batch.seal()
                     assertInstanceOf(
                         SystemErrorException::class.java,
-                        runCatching { batch.complete(loaded) }.exceptionOrNull()
+                        runCatching { batch.complete(loaded) }.exceptionOrNull(),
                     )
                     assertEquals(0, fixture.uploader.sessions.single().finishes)
                     assertFalse(archive.metadataReady())

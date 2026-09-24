@@ -54,7 +54,9 @@ class BigqueryCopyMetadata(
         val table =
             requireNotNull(
                 if (raw) tableInfo.tableNames.rawTableName else tableInfo.tableNames.finalTableName
-            ) { "Missing logical BigQuery table for ${stream.mappedDescriptor}" }
+            ) {
+                "Missing logical BigQuery table for ${stream.mappedDescriptor}"
+            }
         // Use the same schemas as the loader factories. Standard raw inserts include loaded-at
         // in their target schema, even though neither standard formatter writes that field.
         val headers =
@@ -139,8 +141,7 @@ class BigqueryCopyMetadata(
             configuredCatalog?.streams?.singleOrNull {
                 it.stream.namespace == stream.unmappedNamespace &&
                     it.stream.name == stream.unmappedName
-            }
-                ?: stream.asProtocolObject()
+            } ?: stream.asProtocolObject()
         val configuredTree = mapper.valueToTree<JsonNode>(configured)
         (configuredTree["stream"] as com.fasterxml.jackson.databind.node.ObjectNode).set<JsonNode>(
             "json_schema",
@@ -236,7 +237,7 @@ class BigqueryCopyMetadata(
             result + sourceMetadata,
             schemaId(result),
             stream.generationId,
-            stream.syncId
+            stream.syncId,
         )
     }
 
@@ -247,7 +248,10 @@ class BigqueryCopyMetadata(
     /** Use this for archive JSON as well as hashing so null fields survive serialization. */
     fun serialize(value: Any): ByteArray = mapper.writeValueAsBytes(value)
 
-    /** The identity matches the name-only routing contract, and stays stable across runs. */
+    /**
+     * Original namespace and name identify the stream, including distinct null and empty
+     * namespaces.
+     */
     fun streamKey(stream: DestinationStream): String =
         hash(
                 listOf(
@@ -256,6 +260,7 @@ class BigqueryCopyMetadata(
                     config.sourceId.toString(),
                     config.connectionId.toString(),
                     config.destinationId.toString(),
+                    stream.unmappedNamespace,
                     stream.unmappedName,
                 )
             )
@@ -263,7 +268,14 @@ class BigqueryCopyMetadata(
 
     fun runPath(stream: DestinationStream): String {
         require(epochSeconds >= 0) { "Fusion run epoch must not be negative" }
-        return FusionPaths.run(config, stream.unmappedName, runId, epochSeconds).removeSuffix("/")
+        return FusionPaths.run(
+                config,
+                stream.unmappedNamespace,
+                stream.unmappedName,
+                runId,
+                epochSeconds,
+            )
+            .removeSuffix("/")
     }
 
     /** Catalog syncId is the platform job ID, independent of the random archive run ID. */
@@ -388,7 +400,9 @@ class BigqueryCopyMetadata(
             stream.generationId >= 0 &&
                 (stream.minimumGenerationId == 0L ||
                     stream.minimumGenerationId == stream.generationId)
-        ) { "BigQuery S3 copy supports minimum generation zero or equal to current generation" }
+        ) {
+            "BigQuery S3 copy supports minimum generation zero or equal to current generation"
+        }
     }
 
     private fun hash(value: Any): String {

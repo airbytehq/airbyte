@@ -66,7 +66,7 @@ Use the agreed Fusion contract:
 
 ```text
 fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/
-  connections/<connection_uuid>/destinations/<destination_uuid>/syncs/streams/<escaped_stream_name>/
+  connections/<connection_uuid>/destinations/<destination_uuid>/syncs/streams/<escaped_original_namespace>/<escaped_stream_name>/
     runs/<epoch_seconds>/<run_uuid>/
       schema.json
       batches/<batch_uuid>.csv.gz  # GCS staging
@@ -88,10 +88,11 @@ An SDK may additionally URL-encode the resulting key for transport; consumers mu
 S3 notification encoding from the archive's component encoding. Do not lowercase or apply
 BigQuery name munging. Record original/mapped namespace and name in JSON.
 
-The name-only convention assumes unique stream names within a connection. Validate this at setup
-and reject duplicate names across namespaces rather than allowing two streams to overwrite the
-same run descriptor. This preserves the selected layout without relying on an unchecked catalog
-assumption.
+Original namespace and name are separate encoded path components. Null namespace uses `~null`,
+empty namespace uses `~empty`, and literal tildes in nonempty namespaces are encoded as `%7E`.
+Same-named streams in different namespaces have separate schemas, batches, completion markers,
+and stream keys. Stream keys hash the original namespace (retaining JSON null versus empty string)
+and name along with platform identity. Reject duplicate original namespace/name pairs at setup.
 
 Write `schema.json` once per stream/run before setup returns. After the stream's final batch
 archive is durable and successful destination finalization returns, write
@@ -377,7 +378,7 @@ Deterministic connector tests must cover:
 3. Request identity: SDK retries keep key/metadata/file; distinct objects/runs have distinct UUIDs.
    A failed download leaves no partial file eligible for upload. Assert the spool byte cap.
 4. Setup: schema before batches, completion after close, minimum zero omits cutoff, metadata
-   failure blocks ingestion, duplicate stream-name routing rejected, unsupported hybrids preserve
+   failure blocks ingestion, duplicate original namespace/name routing rejected, unsupported hybrids preserve
    existing behavior, and zero-row refreshes still get metadata.
 5. Descriptors: real header ordinals versus mapped fields, raw CSV versus final raw schema,
    source/target primary key and cursor mapping, null namespace, escaped names, schema hash
@@ -484,10 +485,14 @@ acknowledges state or produces a successful stream-complete marker; consumers mu
 
 Validation covers exact NDJSON bytes, raw/direct and JSON/protobuf formatters, the BigQuery buffer
 transition and partial writes, multipart progress before batch close, bounded outstanding requests,
-empty batches, failures/cancellation/reader cleanup, and existing pipeline checkpoint gating. Previous
-live smoke tests exercised the older completed-file implementation; they do not establish streaming
-throughput or memory behavior. Compare enabled/disabled production-impact runs using the new preview
-before drawing performance conclusions.
+empty batches, failures/cancellation/reader cleanup, and existing pipeline checkpoint gating.
+The final streaming uploader and standard-insert loader production files are byte-identical to the
+legacy tested preview revision `3868e2e`: stream/submit/ACK/drain behavior is preserved. The final
+branch deliberately uses platform configuration, original namespace/name identity, source-schema
+metadata, and the current completion contract; it does not carry legacy preview routing overrides.
+Focused tests additionally exercise the real loader, archive service, and streaming uploader with
+each destination pending or failing, and actual preparation of same-named streams across namespaces
+for both standard inserts and GCS. This parity is not a production throughput or memory benchmark.
 
 ## 11. Later CDK extraction
 

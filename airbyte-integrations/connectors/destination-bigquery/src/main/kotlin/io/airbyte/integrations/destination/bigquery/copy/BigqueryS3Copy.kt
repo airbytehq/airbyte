@@ -143,10 +143,13 @@ class EnabledBigqueryS3Copy(
     override fun validate(catalog: DestinationCatalog) {
         checkHealthy()
         val duplicates =
-            catalog.streams.groupingBy { it.unmappedName }.eachCount().filterValues { it > 1 }
+            catalog.streams
+                .groupingBy { it.unmappedNamespace to it.unmappedName }
+                .eachCount()
+                .filterValues { it > 1 }
         if (duplicates.isNotEmpty()) {
             throw SystemErrorException(
-                "Fusion S3 routing requires unique stream names across namespaces in a connection: ${duplicates.keys}"
+                "Fusion S3 routing requires unique original namespace and stream name pairs in a connection: ${duplicates.keys}"
             )
         }
         catalog.streams.forEach { stream ->
@@ -217,7 +220,7 @@ class EnabledBigqueryS3Copy(
             } catch (t: Throwable) {
                 throw archiveFailure(
                     "Fusion S3 stream completion failed for run=$runId key=$key",
-                    t
+                    t,
                 )
             }
         }

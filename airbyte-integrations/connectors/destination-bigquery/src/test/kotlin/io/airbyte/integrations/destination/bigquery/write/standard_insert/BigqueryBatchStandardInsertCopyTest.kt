@@ -34,11 +34,13 @@ import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
+import io.airbyte.integrations.destination.bigquery.copy.*
 import io.airbyte.integrations.destination.bigquery.copy.BigqueryCopyContext
 import io.airbyte.integrations.destination.bigquery.copy.BigqueryS3Copy
 import io.airbyte.integrations.destination.bigquery.copy.StandardInsertArchiveBatch
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.airbyte.integrations.destination.bigquery.formatter.ProtoToBigQueryStandardInsertRecordFormatter
+import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryRegion
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -50,7 +52,11 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets.UTF_8
+import java.nio.file.Files
+import java.nio.file.Path
 import java.util.UUID
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CancellationException
@@ -67,12 +73,206 @@ import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
 import org.junit.jupiter.params.provider.ValueSource
+import org.reactivestreams.Subscriber
+import org.reactivestreams.Subscription
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.core.async.AsyncRequestBody
+import software.amazon.awssdk.services.s3.S3AsyncClient
+import software.amazon.awssdk.services.s3.model.*
 
 class BigqueryBatchStandardInsertCopyTest {
+    @TempDir lateinit var directory: Path
+
+    enum class StreamingOutcome {
+        S3_PENDING,
+        BIGQUERY_PENDING,
+        S3_FAILURE,
+        BIGQUERY_FAILURE,
+    }
+
+    @ParameterizedTest
+    @EnumSource(StreamingOutcome::class)
+    fun `real streaming service and loader gate success on both uploads`(
+        outcome: StreamingOutcome
+    ) = runBlocking {
+        val fixture = Fixture()
+        every { fixture.statistics.outputRows } returns 1L
+        val client = mockk<S3AsyncClient>()
+        val partStarted = CountDownLatch(1)
+        val completing = CountDownLatch(1)
+        val bqEntered = CountDownLatch(1)
+        val releaseBq = CountDownLatch(1)
+        val completion = CompletableFuture<CompleteMultipartUploadResponse>()
+        val uploaded = ConcurrentSkipListMap<Int, ByteArray>()
+        every { client.putObject(any<PutObjectRequest>(), any<AsyncRequestBody>()) } returns
+            CompletableFuture.completedFuture(PutObjectResponse.builder().build())
+        every { client.createMultipartUpload(any<CreateMultipartUploadRequest>()) } returns
+            CompletableFuture.completedFuture(
+                CreateMultipartUploadResponse.builder().uploadId("upload").build()
+            )
+        every { client.abortMultipartUpload(any<AbortMultipartUploadRequest>()) } returns
+            CompletableFuture.completedFuture(AbortMultipartUploadResponse.builder().build())
+        every { client.completeMultipartUpload(any<CompleteMultipartUploadRequest>()) } answers
+            {
+                completing.countDown()
+                completion
+            }
+        every { client.uploadPart(any<UploadPartRequest>(), any<AsyncRequestBody>()) } answers
+            {
+                val number = firstArg<UploadPartRequest>().partNumber()
+                val response = CompletableFuture<UploadPartResponse>()
+                secondArg<AsyncRequestBody>()
+                    .subscribe(
+                        object : Subscriber<ByteBuffer> {
+                            val bytes = ByteArrayOutputStream()
+
+                            override fun onSubscribe(subscription: Subscription) {
+                                subscription.request(Long.MAX_VALUE)
+                            }
+
+                            override fun onNext(buffer: ByteBuffer) {
+                                val chunk = ByteArray(buffer.remaining())
+                                buffer.get(chunk)
+                                bytes.write(chunk)
+                            }
+
+                            override fun onError(error: Throwable) {
+                                response.completeExceptionally(error)
+                            }
+
+                            override fun onComplete() {
+                                uploaded[number] = bytes.toByteArray()
+                                response.complete(
+                                    UploadPartResponse.builder()
+                                        .eTag("part-$number")
+                                        .checksumCRC32("checksum-$number")
+                                        .build()
+                                )
+                                partStarted.countDown()
+                            }
+                        }
+                    )
+                response
+            }
+        every { fixture.job.waitFor(any<RetryOption>()) } answers
+            {
+                bqEntered.countDown()
+                check(releaseBq.await(10, TimeUnit.SECONDS))
+                if (outcome == StreamingOutcome.BIGQUERY_FAILURE)
+                    throw IOException("BigQuery rejected load")
+                fixture.job
+            }
+        val config =
+            S3CopyConfiguration(
+                bucket = "archive",
+                region = "us-east-2",
+                roleArn = "arn:aws:iam::123456789012:role/archive",
+                connectionId = UUID.randomUUID(),
+                workspaceId = UUID.randomUUID(),
+                sourceId = UUID.randomUUID(),
+                organizationId = UUID.randomUUID(),
+                destinationId = UUID.randomUUID(),
+                prefix = "fusion",
+                externalId = null,
+            )
+        val configuration = mockk<BigqueryConfiguration>()
+        every { configuration.loadingMethod } returns BatchedStandardInsertConfiguration
+        val metadata = mockk<BigqueryCopyMetadata>()
+        every { metadata.runPath(any()) } returns "fusion/test-run"
+        every { metadata.streamKey(any()) } returns "stream-key"
+        every { metadata.epochSeconds } returns 1750000000L
+        every { metadata.descriptor(any()) } returns mapOf("schema_id" to "schema-id")
+        every { metadata.serialize(any()) } answers { Jsons.writeValueAsBytes(firstArg<Any>()) }
+        val uploader =
+            S3ArchiveUploader(
+                "archive",
+                client,
+                StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test")),
+                emptyList(),
+            )
+        EnabledBigqueryS3Copy(
+                config,
+                configuration,
+                metadata,
+                UUID.randomUUID(),
+                { uploader },
+                spoolDirectory = directory,
+            )
+            .use { archive ->
+                archive.prepare(DestinationCatalog(listOf(fixture.stream)))
+                val batch = archive.startStandardInsertBatch(archive.context(fixture.stream))
+                val loader =
+                    BigqueryBatchStandardInsertsLoader(
+                        fixture.bigquery,
+                        fixture.configuration,
+                        fixture.jobId,
+                        fixture.formatter,
+                        batch,
+                    )
+                try {
+                    loader.accept(fixture.record("x".repeat(16 * 1024 * 1024)))
+                    assertTrue(
+                        partStarted.await(5, TimeUnit.SECONDS),
+                        "A full part must upload during accept, before finish/seal",
+                    )
+                    val finishing = async(Dispatchers.IO) { runCatching { loader.finish() } }
+                    try {
+                        assertTrue(bqEntered.await(5, TimeUnit.SECONDS))
+                        assertTrue(completing.await(5, TimeUnit.SECONDS))
+                        if (
+                            outcome == StreamingOutcome.BIGQUERY_PENDING ||
+                                outcome == StreamingOutcome.BIGQUERY_FAILURE
+                        ) {
+                            completion.complete(CompleteMultipartUploadResponse.builder().build())
+                            assertFalse(finishing.isCompleted, "S3 completion alone cannot ACK")
+                            releaseBq.countDown()
+                        } else {
+                            releaseBq.countDown()
+                            assertFalse(
+                                finishing.isCompleted,
+                                "BigQuery completion alone cannot ACK",
+                            )
+                            if (outcome == StreamingOutcome.S3_FAILURE)
+                                completion.completeExceptionally(
+                                    IOException("S3 rejected completion")
+                                )
+                            else
+                                completion.complete(
+                                    CompleteMultipartUploadResponse.builder().build()
+                                )
+                        }
+                        val result = withTimeout(10000) { finishing.await() }
+                        assertEquals(
+                            outcome == StreamingOutcome.S3_FAILURE ||
+                                outcome == StreamingOutcome.BIGQUERY_FAILURE,
+                            result.isFailure,
+                        )
+                        val bytes = ByteArrayOutputStream()
+                        uploaded.values.forEach { bytes.write(it) }
+                        assertArrayEquals(fixture.written.toByteArray(), bytes.toByteArray())
+                        if (outcome == StreamingOutcome.S3_FAILURE)
+                            assertFalse(
+                                archive.metadataReady(),
+                                "Archive failure must poison subsequent success",
+                            )
+                    } finally {
+                        releaseBq.countDown()
+                        completion.completeExceptionally(IOException("test cleanup"))
+                        finishing.cancelAndJoin()
+                    }
+                } finally {
+                    loader.close()
+                }
+            }
+        assertEquals(0L, Files.list(directory).use { it.count() }, "Drained parts are deleted")
+    }
+
     @ParameterizedTest
     @CsvSource("false,false", "false,true", "true,false", "true,true")
     fun `buffered JSON and proto raw and direct output is archived exactly once`(
@@ -162,7 +362,7 @@ class BigqueryBatchStandardInsertCopyTest {
                     assertEquals(
                         listOf("seal"),
                         events,
-                        "Seal must precede the buffered BigQuery write"
+                        "Seal must precede the buffered BigQuery write",
                     )
                 }
             every { fixture.writer.close() } answers
@@ -246,7 +446,7 @@ class BigqueryBatchStandardInsertCopyTest {
         JOB_ERROR,
         BAD_RECORDS,
         NOT_DONE,
-        MISSING_JOB
+        MISSING_JOB,
     }
 
     @ParameterizedTest
@@ -319,7 +519,7 @@ class BigqueryBatchStandardInsertCopyTest {
         val loader = fixture.loader(formatter = formatter)
         assertSame(
             cancellation,
-            assertThrows<CancellationException> { loader.accept(fixture.record()) }
+            assertThrows<CancellationException> { loader.accept(fixture.record()) },
         )
         assertEquals(1, fixture.batch.closes)
         assertTrue(fixture.batch.appended.isEmpty())
@@ -359,7 +559,7 @@ class BigqueryBatchStandardInsertCopyTest {
             failure,
             assertThrows<IOException> {
                 loader.accept(fixture.record("x".repeat(15 * 1024 * 1024)))
-            }
+            },
         )
         assertEquals(1, fixture.batch.closes)
         verify(exactly = 1) { fixture.writer.close() }
@@ -423,7 +623,7 @@ class BigqueryBatchStandardInsertCopyTest {
                 fixture.bigquery,
                 fixture.configuration,
                 fixture.jobId,
-                fixture.formatter
+                fixture.formatter,
             )
         loader.accept(fixture.record())
         loader.finish()
@@ -545,7 +745,7 @@ class BigqueryBatchStandardInsertCopyTest {
                     stream.airbyteValueProxyFieldAccessors,
                     mapping,
                     stream,
-                    raw
+                    raw,
                 )
             else BigQueryRecordFormatter(mapping, raw)
         val formatter =
@@ -620,7 +820,7 @@ class BigqueryBatchStandardInsertCopyTest {
                 stream,
                 source,
                 serializedSizeBytes = value.length.toLong(),
-                airbyteRawId = UUID.fromString("129b0dc6-826a-4e86-a50f-33250cbf63c2")
+                airbyteRawId = UUID.fromString("129b0dc6-826a-4e86-a50f-33250cbf63c2"),
             )
         }
 
@@ -634,7 +834,7 @@ class BigqueryBatchStandardInsertCopyTest {
             batch.appended.forEachIndexed { index, bytes ->
                 assertArrayEquals(
                     "${formatted[index]}${System.lineSeparator()}".toByteArray(UTF_8),
-                    bytes
+                    bytes,
                 )
                 archived.write(bytes)
             }

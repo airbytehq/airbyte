@@ -67,6 +67,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.ValueSource
 
 class BigqueryCopyMetadataTest {
     @TempDir lateinit var directory: Path
@@ -114,7 +115,7 @@ class BigqueryCopyMetadataTest {
     fun `GCS layout hashes remain compatible`(
         raw: Boolean,
         format: DataChannelFormat,
-        expected: String
+        expected: String,
     ) {
         val stream =
             stream()
@@ -137,11 +138,11 @@ class BigqueryCopyMetadataTest {
         assertEquals("bigquery-load-ndjson-v1", descriptor["format_version"].asText())
         assertEquals(
             "BigQuery load job outputRows",
-            descriptor["loaded_record_count_meaning"].asText()
+            descriptor["loaded_record_count_meaning"].asText(),
         )
         assertEquals(
             "Successful formatter-byte appends to the standard insert archive batch",
-            descriptor["input_record_count_meaning"].asText()
+            descriptor["input_record_count_meaning"].asText(),
         )
         assertEquals(descriptor["format_version"], layout["format_version"])
         assertEquals("BATCHED_STANDARD_INSERT", layout["loading_strategy"].asText())
@@ -155,7 +156,7 @@ class BigqueryCopyMetadataTest {
         assertFalse(layout.has("csv"))
         assertEquals(
             setOf("format", "createDisposition", "unspecified_options"),
-            layout["load_options"].fieldNames().asSequence().toSet()
+            layout["load_options"].fieldNames().asSequence().toSet(),
         )
         assertEquals("NEWLINE_DELIMITED_JSON", layout["load_options"]["format"].asText())
         assertEquals("CREATE_IF_NEEDED", layout["load_options"]["createDisposition"].asText())
@@ -167,15 +168,15 @@ class BigqueryCopyMetadataTest {
             else
                 BigQueryRecordFormatter.getDirectLoadSchema(
                     stream,
-                    names(stream)[stream.mappedDescriptor]!!.columnNameMapping
+                    names(stream)[stream.mappedDescriptor]!!.columnNameMapping,
                 )
         assertEquals(
             targetSchema.fields.map { it.name },
-            columns.map { it["target_field"].asText() }
+            columns.map { it["target_field"].asText() },
         )
         assertEquals(
             targetSchema.fields.map { it.type.standardType.name },
-            columns.map { it["type"].asText() }
+            columns.map { it["type"].asText() },
         )
         columns.forEach {
             assertFalse(it.has("csv_ordinal"))
@@ -202,7 +203,7 @@ class BigqueryCopyMetadataTest {
                     .filter { !it["json_field"].isNull }
                     .map { it["json_field"].asText() }
                     .toSet(),
-                output.fieldNames().asSequence().toSet()
+                output.fieldNames().asSequence().toSet(),
             )
             assertEquals(format == DataChannelFormat.JSONL, data.has("undeclared"))
             assertEquals(format == DataChannelFormat.PROTOBUF, data.has("missing"))
@@ -228,7 +229,7 @@ class BigqueryCopyMetadataTest {
         assertEquals(payload["z field"], data[if (raw) "z field" else "mapped_0"])
         assertEquals(
             if (raw) "raw_table" else "mapped_table",
-            descriptor["logical_table"]["table"].asText()
+            descriptor["logical_table"]["table"].asText(),
         )
     }
 
@@ -236,7 +237,7 @@ class BigqueryCopyMetadataTest {
     @CsvSource("false,JSONL", "false,PROTOBUF", "true,JSONL", "true,PROTOBUF")
     fun `standard descriptor reflects validation in direct JSON and both protobuf modes`(
         raw: Boolean,
-        format: DataChannelFormat
+        format: DataChannelFormat,
     ) {
         val stream = stream()
         val invalid = payload.deepCopy<ObjectNode>().put("id", BigInteger("9223372036854775808"))
@@ -526,7 +527,7 @@ class BigqueryCopyMetadataTest {
     @CsvSource("false,JSONL", "false,PROTOBUF", "true,JSONL", "true,PROTOBUF")
     fun `standard keys and cursors retain original paths for append overwrite and dedupe`(
         raw: Boolean,
-        format: DataChannelFormat
+        format: DataChannelFormat,
     ) {
         val keys = listOf(listOf("id"), listOf("nested", "key"))
         val cursor = listOf("nested", "key")
@@ -535,7 +536,7 @@ class BigqueryCopyMetadataTest {
                 stream()
                     .copy(
                         importType = importType,
-                        namespaceMapper = NamespaceMapper(streamPrefix = "destination_")
+                        namespaceMapper = NamespaceMapper(streamPrefix = "destination_"),
                     )
             val configured = stream.asProtocolObject().withPrimaryKey(keys).withCursorField(cursor)
             val metadata =
@@ -545,7 +546,7 @@ class BigqueryCopyMetadataTest {
                     names(stream),
                     runId,
                     format,
-                    ConfiguredAirbyteCatalog().withStreams(listOf(configured))
+                    ConfiguredAirbyteCatalog().withStreams(listOf(configured)),
                 )
             val layout = tree(metadata.descriptor(stream))["layout"]
             assertEquals(configured.destinationSyncMode.name, layout["import_type"].asText())
@@ -557,22 +558,22 @@ class BigqueryCopyMetadataTest {
             assertEquals(nested["target_column"], nested["json_field"])
             assertEquals(
                 if (raw) listOf("_airbyte_data", "nested", "key") else listOf("mapped_6", "key"),
-                nested["target_path"].map(JsonNode::asText)
+                nested["target_path"].map(JsonNode::asText),
             )
             assertEquals(
                 if (raw) cursor else listOf("key"),
-                nested["path_within_column"].map(JsonNode::asText)
+                nested["path_within_column"].map(JsonNode::asText),
             )
             assertFalse(nested.has("csv_header"))
             assertFalse(nested.has("csv_ordinal"))
             if (importType is Dedupe) {
                 assertEquals(
                     nested["target_column"],
-                    layout["deduplication_cursor"]["target_column"]
+                    layout["deduplication_cursor"]["target_column"],
                 )
                 assertEquals(
                     nested["path_within_column"],
-                    layout["deduplication_cursor"]["path_within_column"]
+                    layout["deduplication_cursor"]["path_within_column"],
                 )
                 assertFalse(layout["deduplication_cursor"]["performed_in_raw_mode"].asBoolean())
             } else assertTrue(layout["deduplication_cursor"].isNull)
@@ -582,7 +583,7 @@ class BigqueryCopyMetadataTest {
             tree(metadata(fallback, raw, format, standard = true).descriptor(fallback))["layout"]
         assertEquals(
             "_airbyte_extracted_at",
-            layout["deduplication_cursor"]["target_column"].asText()
+            layout["deduplication_cursor"]["target_column"].asText(),
         )
         assertTrue(layout["deduplication_cursor"]["path_within_column"].isEmpty)
         assertTrue(layout["cursor_mapping"].isEmpty)
@@ -604,12 +605,12 @@ class BigqueryCopyMetadataTest {
                         metadata(retry, raw, format, UUID.randomUUID(), standard = standard)
                     assertEquals(descriptor["schema_id"], retried.descriptor(retry)["schema_id"])
                     assertEquals(
-                        descriptor["format_version"],
-                        retried.cutoff(retry)["format_version"]
+                        mapOf("job_id" to 43L, "min_generation_id" to 10L),
+                        retried.streamComplete(retry),
                     )
                     assertEquals(
                         descriptor["schema_id"],
-                        metadata.schemaId(mapOf("layout" to tree(descriptor)["layout"]))
+                        metadata.schemaId(mapOf("layout" to tree(descriptor)["layout"])),
                     )
                     if (!raw)
                         assertNotEquals(
@@ -619,9 +620,9 @@ class BigqueryCopyMetadataTest {
                                     raw,
                                     format,
                                     mappingPrefix = "other_",
-                                    standard = standard
+                                    standard = standard,
                                 )
-                                .descriptor(stream)["schema_id"]
+                                .descriptor(stream)["schema_id"],
                         )
                 }
             }
@@ -632,7 +633,7 @@ class BigqueryCopyMetadataTest {
             stream.copy(schema = ObjectType(linkedMapOf("id" to FieldType(StringType, true))))
         assertNotEquals(
             descriptor["schema_id"],
-            metadata(changed, standard = true).descriptor(changed)["schema_id"]
+            metadata(changed, standard = true).descriptor(changed)["schema_id"],
         )
         val layout = tree(descriptor)["layout"].deepCopy<ObjectNode>()
         (layout["ndjson"] as ObjectNode).put("compression", "gzip")
@@ -714,10 +715,20 @@ class BigqueryCopyMetadataTest {
     }
 
     @ParameterizedTest
-    @CsvSource("false,JSONL", "false,PROTOBUF", "true,JSONL", "true,PROTOBUF")
+    @CsvSource(
+        "false,JSONL,false",
+        "false,PROTOBUF,false",
+        "true,JSONL,false",
+        "true,PROTOBUF,false",
+        "false,JSONL,true",
+        "false,PROTOBUF,true",
+        "true,JSONL,true",
+        "true,PROTOBUF,true",
+    )
     fun `source schema preserves configured types and annotations in every table and input mode`(
         raw: Boolean,
         format: DataChannelFormat,
+        standard: Boolean,
     ) {
         val stream = stream().copy(namespaceMapper = NamespaceMapper(streamPrefix = "destination_"))
         val originalSchema =
@@ -740,7 +751,16 @@ class BigqueryCopyMetadataTest {
         for (catalog in
             listOf(null, ConfiguredAirbyteCatalog().withStreams(listOf(other, configured)))) {
             val metadata =
-                BigqueryCopyMetadata(config, bigquery(raw), names(stream), runId, format, catalog)
+                BigqueryCopyMetadata(
+                    config,
+                    if (standard)
+                        bigquery(raw).copy(loadingMethod = BatchedStandardInsertConfiguration)
+                    else bigquery(raw),
+                    names(stream),
+                    runId,
+                    format,
+                    catalog,
+                )
             val descriptor = tree(metadata.descriptor(stream))
             val sourceSchema = descriptor["source_schema"]
             assertEquals(sourceSchema, descriptor["layout"]["source_schema"])
@@ -748,21 +768,23 @@ class BigqueryCopyMetadataTest {
             assertEquals(descriptor["layout"]["cursor"], descriptor["cursor"])
             assertEquals(stream.generationId, descriptor["generation_id"].asLong())
             assertEquals(
+                if (standard) "BATCHED_STANDARD_INSERT" else "GCS_STAGING",
+                descriptor["layout"]["loading_strategy"].asText(),
+            )
+            assertEquals(
                 if (catalog == null) stream.asProtocolObject().stream.jsonSchema
                 else originalSchema,
-                sourceSchema
+                sourceSchema,
             )
             assertTrue(sourceSchema["properties"].has("id"))
             assertTrue(sourceSchema["properties"]["nested"]["properties"].has("key"))
             assertEquals(if (raw) "raw" else "direct", descriptor["layout"]["table_mode"].asText())
             if (catalog != null) {
                 configured.stream.jsonSchema =
-                    originalSchema.deepCopy().apply {
-                        put("description", "Updated source schema")
-                    }
+                    originalSchema.deepCopy().apply { put("description", "Updated source schema") }
                 assertNotEquals(
                     descriptor["schema_id"],
-                    tree(metadata.descriptor(stream))["schema_id"]
+                    tree(metadata.descriptor(stream))["schema_id"],
                 )
                 configured.stream.jsonSchema = originalSchema
             }
@@ -780,7 +802,7 @@ class BigqueryCopyMetadataTest {
                 )
         val metadata = metadata(stream)
         val expected =
-            "fusion/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/streams/MiX%2F%E9%9B%AA%25%20./runs/$epochSeconds/$runId"
+            "fusion/organizations/${config.organizationId}/workspaces/${config.workspaceId}/sources/${config.sourceId}/connections/${config.connectionId}/destinations/${config.destinationId}/syncs/streams/~null/MiX%2F%E9%9B%AA%25%20./runs/$epochSeconds/$runId"
         assertEquals(expected, metadata.runPath(stream))
         val descriptor = tree(metadata.descriptor(stream))
         assertTrue(descriptor["original_stream"]["namespace"].isNull)
@@ -809,7 +831,7 @@ class BigqueryCopyMetadataTest {
                 assertTrue(
                     metadata
                         .runPath(stream.copy(unmappedName = name))
-                        .endsWith("/streams/$escaped/runs/$epochSeconds/$runId")
+                        .endsWith("/streams/~null/$escaped/runs/$epochSeconds/$runId")
                 )
             }
         assertThrows(IllegalArgumentException::class.java) {
@@ -845,7 +867,7 @@ class BigqueryCopyMetadataTest {
         assertNotEquals(original.streamKey(stream), changed.streamKey(stream))
         assertEquals(
             original.descriptor(stream)["schema_id"],
-            changed.descriptor(stream)["schema_id"]
+            changed.descriptor(stream)["schema_id"],
         )
         assertTrue(
             original
@@ -876,11 +898,11 @@ class BigqueryCopyMetadataTest {
         val metadata = metadata(stream)
         assertEquals(
             mapOf("job_id" to 42L, "min_generation_id" to 9L),
-            metadata.streamComplete(stream)
+            metadata.streamComplete(stream),
         )
         assertEquals(
             mapOf("job_id" to 42L),
-            metadata.streamComplete(stream.copy(minimumGenerationId = 0))
+            metadata.streamComplete(stream.copy(minimumGenerationId = 0)),
         )
         listOf(-1L, 1L, 10L).forEach { minimum ->
             assertThrows(IllegalArgumentException::class.java) {
@@ -916,6 +938,162 @@ class BigqueryCopyMetadataTest {
                 DataChannelFormat.JSONL,
             )
         assertThrows(IllegalArgumentException::class.java) { missing.descriptor(stream) }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `actual prepare isolates same named streams by original namespace through completion`(
+        standard: Boolean
+    ) = runBlocking {
+        val namespaces = listOf(null, "", "sales/雪", "~null", "~empty")
+        val streams =
+            namespaces.mapIndexed { index, namespace ->
+                stream()
+                    .copy(
+                        unmappedNamespace = namespace,
+                        schema =
+                            ObjectType(linkedMapOf("field$index" to FieldType(StringType, true))),
+                        namespaceMapper = NamespaceMapper(streamPrefix = "mapped_"),
+                    )
+            }
+        val configuration =
+            if (standard) bigquery().copy(loadingMethod = BatchedStandardInsertConfiguration)
+            else bigquery()
+        val tableNames =
+            TableCatalogByDescriptor(
+                streams.associate {
+                    it.mappedDescriptor to requireNotNull(names(it)[it.mappedDescriptor])
+                }
+            )
+        val metadata =
+            BigqueryCopyMetadata(
+                config,
+                configuration,
+                tableNames,
+                runId,
+                DataChannelFormat.JSONL,
+                ConfiguredAirbyteCatalog().withStreams(streams.map { it.asProtocolObject() }),
+                epochSeconds,
+            )
+        val objects = linkedMapOf<String, ByteArray>()
+        val headers = linkedMapOf<String, Map<String, String>>()
+        val uploader =
+            object : ArchiveUploader {
+                override suspend fun validateCredentials() = Unit
+
+                override fun close() = Unit
+
+                override suspend fun upload(
+                    path: Path,
+                    key: String,
+                    contentType: String,
+                    metadata: Map<String, String>,
+                ) {
+                    check(key !in objects)
+                    objects[key] = Files.readAllBytes(path)
+                    headers[key] = metadata
+                }
+
+                override fun startStreaming(
+                    key: String,
+                    contentType: String,
+                    metadata: Map<String, String>,
+                    directory: Path?,
+                ): StreamingArchiveUpload =
+                    object : StreamingArchiveUpload {
+                        val bytes = ByteArrayOutputStream()
+
+                        override fun append(bytes: ByteArray) {
+                            this.bytes.write(bytes)
+                        }
+
+                        override fun seal() = Unit
+
+                        override suspend fun finish() {
+                            check(key !in objects)
+                            objects[key] = bytes.toByteArray()
+                            headers[key] = metadata
+                        }
+
+                        override fun close() = Unit
+                    }
+            }
+        EnabledBigqueryS3Copy(
+                config,
+                configuration,
+                metadata,
+                runId,
+                { uploader },
+                spoolDirectory = directory,
+            )
+            .use { archive ->
+                archive.prepare(DestinationCatalog(streams))
+                assertEquals(streams.size, objects.size)
+                assertEquals(streams.size, streams.map(metadata::streamKey).toSet().size)
+                assertEquals(streams.size, streams.map(metadata::runPath).toSet().size)
+                streams.forEachIndexed { index, stream ->
+                    val context = archive.context(stream)
+                    val schema = Jsons.readTree(objects.getValue(context.runPath + "/schema.json"))
+                    assertEquals(
+                        stream.asProtocolObject().stream.jsonSchema,
+                        schema["source_schema"],
+                    )
+                    assertEquals(metadata.streamKey(stream), schema["stream_key"].asText())
+                    assertEquals(
+                        metadata.streamKey(stream),
+                        metadata.streamKey(stream.copy(syncId = 99)),
+                    )
+                    val recordBytes = "{\"field$index\":\"value\"}\n".toByteArray()
+                    val data =
+                        if (standard) recordBytes
+                        else
+                            ByteArrayOutputStream()
+                                .also { output ->
+                                    GZIPOutputStream(output).use { it.write(recordBytes) }
+                                }
+                                .toByteArray()
+                    if (standard) {
+                        archive.startStandardInsertBatch(context).use { batch ->
+                            batch.append(data)
+                            batch.seal()
+                            batch.complete(1)
+                        }
+                    } else {
+                        val blob = GcsBlob("same-staging-key.csv.gz", mockk())
+                        val storage = mockk<GcsClient>()
+                        coEvery { storage.get<Long>(blob.key, any()) } coAnswers
+                            {
+                                secondArg<(InputStream) -> Long>()
+                                    .invoke(ByteArrayInputStream(data))
+                            }
+                        archive.copyCompletedGcsObject(storage, blob, context, 1)
+                    }
+                    archive.complete(stream)
+                    val batchKey =
+                        objects.keys.single {
+                            it.startsWith(context.runPath + "/batches/") &&
+                                !it.endsWith("stream_complete.json")
+                        }
+                    assertArrayEquals(data, objects.getValue(batchKey))
+                    assertEquals(context.streamKey, headers.getValue(batchKey)["stream-key"])
+                    assertEquals(
+                        stream.syncId,
+                        Jsons.readTree(
+                                objects.getValue(context.runPath + "/batches/stream_complete.json")
+                            )["job_id"]
+                            .asLong(),
+                    )
+                }
+                assertEquals(streams.size * 3, objects.size)
+                val encoded = listOf("~null", "~empty", "sales%2F%E9%9B%AA", "%7Enull", "%7Eempty")
+                streams.zip(encoded).forEach { (stream, namespace) ->
+                    assertTrue(
+                        metadata
+                            .runPath(stream)
+                            .contains("/streams/$namespace/Original%20Name/runs/")
+                    )
+                }
+            }
     }
 
     private fun stream() =
@@ -988,7 +1166,7 @@ class BigqueryCopyMetadataTest {
         stream: DestinationStream,
         raw: Boolean,
         format: DataChannelFormat,
-        record: DestinationRecordRaw
+        record: DestinationRecordRaw,
     ): JsonNode {
         val mapping = names(stream)[stream.mappedDescriptor]!!.columnNameMapping
         val formatter =
@@ -997,7 +1175,7 @@ class BigqueryCopyMetadataTest {
                     stream.airbyteValueProxyFieldAccessors,
                     mapping,
                     stream,
-                    raw
+                    raw,
                 )
             else BigQueryRecordFormatter(mapping, raw)
         return Jsons.readTree(formatter.formatRecord(record))
@@ -1006,7 +1184,7 @@ class BigqueryCopyMetadataTest {
     private fun record(
         stream: DestinationStream,
         format: DataChannelFormat,
-        payload: JsonNode = this.payload
+        payload: JsonNode = this.payload,
     ): DestinationRecordRaw {
         val source: DestinationRecordSource =
             if (format == DataChannelFormat.JSONL) {
@@ -1023,7 +1201,7 @@ class BigqueryCopyMetadataTest {
                             IntegerType ->
                                 encoder.encode(
                                     node.bigIntegerValue(),
-                                    LeafAirbyteSchemaType.INTEGER
+                                    LeafAirbyteSchemaType.INTEGER,
                                 )
                             TimestampTypeWithTimezone ->
                                 encoder.encode(
