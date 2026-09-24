@@ -369,3 +369,25 @@ class LimitReducingErrorHandler(HttpStatusErrorHandler):
                     error_message="Persistent 500 error after reducing limit to 1",
                 )
         return super().interpret_response(response_or_exception)
+
+
+class ShopifyGraphQlErrorHandler(HttpStatusErrorHandler):
+    """
+    Shopify GraphQL reports throttling as HTTP 200 with `errors[].extensions.code` THROTTLED / MAX_COST_EXCEEDED
+    (https://shopify.dev/docs/api/admin-graphql/2026-07#status-and-error-codes). Retry such pages instead of
+    treating the 200 as a success: the cost bucket refills at the shop's restore rate within seconds.
+    """
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
+        if isinstance(response_or_exception, requests.Response) and response_or_exception.ok:
+            try:
+                body = response_or_exception.json()
+            except requests.exceptions.RequestException:
+                body = {}
+            if is_throttled_graphql_error(body.get("errors") or [] if isinstance(body, dict) else []):
+                return ErrorResolution(
+                    response_action=ResponseAction.RETRY,
+                    failure_type=FailureType.transient_error,
+                    error_message="Shopify GraphQL request throttled, retrying.",
+                )
+        return super().interpret_response(response_or_exception)

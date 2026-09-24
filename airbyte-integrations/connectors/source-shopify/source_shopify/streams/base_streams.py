@@ -18,7 +18,7 @@ from source_shopify.shopify_graphql.bulk.external_sort import DEFAULT_SORT_CHUNK
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
 from source_shopify.shopify_graphql.bulk.query import DeliveryZoneList, ShopFeatures, ShopifyBulkQuery
 from source_shopify.transform import DataTypeEnforcer
-from source_shopify.utils import ApiTypeEnum, ShopifyNonRetryableErrors, is_throttled_graphql_error
+from source_shopify.utils import ApiTypeEnum, ShopifyGraphQlErrorHandler, ShopifyNonRetryableErrors, is_throttled_graphql_error
 from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from source_shopify.utils import ShopifyRateLimiter as limiter
 
@@ -945,6 +945,12 @@ class FullRefreshShopifyGraphQlBulkStream(ShopifyStream):
     query: DeliveryZoneList
     response_field: str
 
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        # retries HTTP 200 pages that carry a THROTTLED GraphQL error, everything else follows the status-code mapping
+        return ShopifyGraphQlErrorHandler(
+            self.logger, max_retries=5, error_mapping=DEFAULT_ERROR_MAPPING | ShopifyNonRetryableErrors(self.name)
+        )
+
     @cached_property
     def market_driven_shipping_enabled(self) -> Optional[bool]:
         """
@@ -953,14 +959,18 @@ class FullRefreshShopifyGraphQlBulkStream(ShopifyStream):
         Returns `None` when the flag cannot be read (HTTP 200 with GraphQL `errors`, e.g. THROTTLED, or a non-JSON body).
         See https://shopify.dev/docs/apps/build/orders-fulfillment/market-driven-shipping/upgrade-your-app
         """
-        _, response = self._http_client.send_request(
-            http_method=self.http_method,
-            url=f"{self.url_base}{self.path()}",
-            json={"query": ShopFeatures().get()},
-            request_kwargs={},
-        )
         try:
+            _, response = self._http_client.send_request(
+                http_method=self.http_method,
+                url=f"{self.url_base}{self.path()}",
+                json={"query": ShopFeatures().get()},
+                request_kwargs={},
+            )
             json_response = response.json()
+        except AirbyteTracedException as error:
+            # e.g. the HTTP client exhausted its retries on a persistently throttled reply
+            self.logger.warning(f"Stream `{self.name}`: could not read `shop.features.marketDrivenShipping`: {error.message}")
+            return None
         except RequestException:
             json_response = {}
         data = json_response.get("data") or {}
@@ -985,12 +995,7 @@ class FullRefreshShopifyGraphQlBulkStream(ShopifyStream):
     @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.status_code is requests.codes.OK:
-            try:
-                json_response = response.json()
-            except RequestException as e:
-                self.logger.warning(f"Unexpected error in `parse_response`: {e}, the actual response data: {response.text}")
-                yield {}
-                return
+            json_response = response.json()
             errors = json_response.get("errors")
             if errors:
                 # Shopify returns HTTP 200 with GraphQL `errors` (THROTTLED, ACCESS_DENIED, ...) and no usable `data`;

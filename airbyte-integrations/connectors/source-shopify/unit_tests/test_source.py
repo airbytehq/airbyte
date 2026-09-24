@@ -55,6 +55,7 @@ from source_shopify.streams.streams import (
 from source_shopify.utils import ShopifyWrongShopNameError
 
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, FailureType, SyncMode
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
 from airbyte_cdk.utils import AirbyteTracedException
@@ -791,15 +792,58 @@ def test_market_countries_market_without_regions_condition_is_skipped(config):
         ),
     ],
 )
-def test_graphql_full_refresh_stream_fails_on_graphql_errors(config, make_stream, errors, expected_failure_type):
-    """A 200 response with GraphQL `errors` has no usable page: treating it as empty would mark an incomplete snapshot as complete."""
+@pytest.mark.parametrize(
+    "data_for",
+    [
+        pytest.param(lambda field: None, id="data_null"),
+        pytest.param(lambda field: {field: None}, id="root_field_null"),
+        pytest.param(
+            lambda field: {field: {"pageInfo": {"hasNextPage": False}, "nodes": [{"id": "gid://shopify/Market/1", "conditions": None}]}},
+            id="partial_data_with_nodes",
+        ),
+    ],
+)
+def test_graphql_full_refresh_stream_fails_on_graphql_errors(config, make_stream, errors, expected_failure_type, data_for):
+    """
+    A 200 response with GraphQL `errors` has no usable page (`data` absent, null, or partial per GraphQL spec 7.1.2):
+    treating it as empty would mark an incomplete snapshot as complete, so the stream fails before yielding anything.
+    """
     stream = make_stream(config)
     response = MagicMock(status_code=requests.codes.OK)
-    response.json.return_value = {"data": None, "errors": errors}
+    response.json.return_value = {"data": data_for(stream.response_field), "errors": errors}
     with pytest.raises(AirbyteTracedException) as exc_info:
-        list(stream.parse_response(response))
+        next(stream.parse_response(response))
     assert exc_info.value.failure_type == expected_failure_type
     assert errors[0]["message"] in exc_info.value.message
+
+
+def _graphql_response(body: dict) -> requests.Response:
+    response = requests.Response()
+    response.status_code = 200
+    response._content = json.dumps(body).encode("utf-8")
+    return response
+
+
+@pytest.mark.parametrize(
+    "make_stream",
+    [
+        pytest.param(lambda config: Countries(config=config, parent=MagicMock()), id="countries"),
+        pytest.param(MarketCountries, id="market_countries"),
+    ],
+)
+def test_graphql_full_refresh_error_handler_retries_throttled_pages_only(config, make_stream):
+    """Only a throttled 200 is retried by the HTTP client; other GraphQL errors reach `parse_response`, which fails the stream."""
+    handler = make_stream(config).get_error_handler()
+
+    throttled = handler.interpret_response(_graphql_response({"errors": [{"message": "Throttled", "extensions": {"code": "THROTTLED"}}]}))
+    assert (throttled.response_action, throttled.failure_type) == (ResponseAction.RETRY, FailureType.transient_error)
+
+    denied = handler.interpret_response(
+        _graphql_response({"data": None, "errors": [{"message": "Access denied", "extensions": {"code": "ACCESS_DENIED"}}]})
+    )
+    assert denied.response_action == ResponseAction.SUCCESS
+
+    assert handler.interpret_response(_graphql_response({"data": {"markets": {"nodes": []}}})).response_action == ResponseAction.SUCCESS
 
 
 def _market_region_country(region_id: int, code: str) -> dict:
@@ -833,14 +877,39 @@ def _read_full_refresh(stream):
     return stream.read(configured_stream, logging.getLogger("airbyte"), DebugSliceLogger(), {}, None, InternalConfig())
 
 
+def test_market_countries_read_retries_a_throttled_page(requests_mock, config):
+    """A throttled page is re-requested by the HTTP client (same cursors); the retried page's records are emitted once."""
+    page_responses = [
+        {"errors": [{"message": "Throttled", "extensions": {"code": "THROTTLED"}}]},
+        _markets_response(False, False, "gid://shopify/Market/2", [_market_region_country(21, "DE")]),
+    ]
+    seen_cursors = []
+
+    def graphql_callback(request, context):
+        query = request.json()["query"]
+        if query.startswith("query ShopFeatures"):
+            return {"data": {"shop": {"features": {"marketDrivenShipping": True}}}}
+        seen_cursors.append(_query_cursors(query))
+        return page_responses.pop(0)
+
+    requests_mock.post("https://test-shop.myshopify.com/admin/api/2026-07/graphql.json", json=graphql_callback)
+
+    stream = MarketCountries(config)
+    records = [message for message in _read_full_refresh(stream) if isinstance(message, dict)]
+
+    assert seen_cursors == [(None, None), (None, None)]
+    assert [record["id"] for record in records] == ["gid://shopify/MarketRegionCountry/21"]
+    assert stream.state == {"__ab_full_refresh_sync_complete": True}
+
+
 def test_market_countries_read_fails_on_errored_page_and_keeps_the_last_checkpoint(requests_mock, config):
     """
-    A throttled page must not complete the resumable full refresh: the stream fails and the
-    retry resumes from the last checkpoint instead of overwriting the destination with a partial snapshot.
+    A page answered with GraphQL `errors` must not complete the resumable full refresh: the stream fails and the
+    next attempt resumes from the last checkpoint instead of overwriting the destination with a partial snapshot.
     """
     responses_by_cursors = {
         ("m1", "r1"): _markets_response(True, True, "gid://shopify/Market/2", [_market_region_country(21, "DE")], "m2", "r2"),
-        ("m1", "r2"): {"errors": [{"message": "Throttled", "extensions": {"code": "THROTTLED"}}]},
+        ("m1", "r2"): {"data": None, "errors": [{"message": "Access denied for markets field.", "extensions": {"code": "ACCESS_DENIED"}}]},
     }
     requests_mock.post(
         "https://test-shop.myshopify.com/admin/api/2026-07/graphql.json",
