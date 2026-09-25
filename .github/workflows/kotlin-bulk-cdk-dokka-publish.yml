@@ -5,13 +5,11 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - "airbyte-cdk/bulk/**"
-      - ".github/workflows/kotlin-bulk-cdk-dokka-publish.yml"
   push:
     branches:
       - master
     paths:
       - "airbyte-cdk/bulk/**"
-      - ".github/workflows/kotlin-bulk-cdk-dokka-publish.yml"
   workflow_dispatch:
 
 # Concurrency group ensures only one deployment runs at a time
@@ -45,7 +43,6 @@ jobs:
           filters: |
             bulk-cdk:
               - 'airbyte-cdk/bulk/**'
-              - '.github/workflows/kotlin-bulk-cdk-dokka-publish.yml'
 
     outputs:
       changed: ${{ steps.set-changed.outputs.changed || steps.detect-changes.outputs.bulk-cdk }}
@@ -150,7 +147,7 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
           vercel-project-id: ${{ env.VERCEL_PROJECT_ID }}
-          working-directory: ${{ github.workspace }}/docs-output
+          working-directory: docs-output
           vercel-args: ${{ github.ref == 'refs/heads/master' && '--prod' || '' }}
 
       - name: Authenticate as GitHub App
