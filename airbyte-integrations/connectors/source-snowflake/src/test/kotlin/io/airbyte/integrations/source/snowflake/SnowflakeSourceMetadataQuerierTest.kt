@@ -171,6 +171,11 @@ class SnowflakeSourceMetadataQuerierTest {
                                 columnRow("TEST_DB", "TEST_SCHEMA", "USERS", "USER_ID"),
                                 columnRow("TEST_DB", "TESTXSCHEMA", "USERS", "USER_ID"),
                             ),
+                        "TEST_SCHEMA" to
+                            listOf(
+                                columnRow("TEST_DB", "TEST_SCHEMA", "USERS", "USER_ID"),
+                                columnRow("TEST_DB", "TESTXSCHEMA", "USERS", "USER_ID"),
+                            ),
                         "TESTXSCHEMA" to
                             listOf(
                                 columnRow("TEST_DB", "TESTXSCHEMA", "USERS", "USER_ID"),
