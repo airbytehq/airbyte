@@ -125,6 +125,18 @@ class Config(AbstractFileBasedSpec):
         stream_item_props = schema["properties"]["streams"]["items"]["properties"]
         stream_item_props["skip_full_check_for_parquet"] = skip_prop
 
+        # Add newlines_in_values field to CSV format
+        csv_format_schema = dpath.util.get(schema, "properties/streams/items/properties/format/oneOf")
+        for format_option in csv_format_schema:
+            if format_option.get("properties", {}).get("filetype", {}).get("const") == "csv":
+                format_option["properties"]["newlines_in_values"] = {
+                    "title": "Allow newlines in values",
+                    "type": "boolean",
+                    "default": False,
+                    "description": "Whether newline characters are allowed in CSV values. Turning this on may affect performance. Leave blank to default to False.",
+                }
+                break
+
         # Hide API processing option until https://github.com/airbytehq/airbyte-platform-internal/issues/10354 is fixed
         processing_options = dpath.util.get(schema, "properties/streams/items/properties/format/oneOf/4/properties/processing/oneOf")
         dpath.util.set(schema, "properties/streams/items/properties/format/oneOf/4/properties/processing/oneOf", processing_options[:1])
