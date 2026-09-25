@@ -47,11 +47,14 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.30.0@sha256:a249dd191ff2b4e5a7c6fd3749395d4a2f5beee988165ebabfacb17199e5b378
   externalDocumentationUrls:
     - title: API documentation
-      url: https://developers.ashbyhq.com/
+      url: https://developers.ashbyhq.com/reference
       type: api_reference
     - title: Authentication
-      url: https://developers.ashbyhq.com/#authentication
+      url: https://developers.ashbyhq.com/reference/authentication
       type: authentication_guide
+    - title: Changelog
+      url: https://developers.ashbyhq.com/changelog
+      type: api_release_history
   releases:
     breakingChanges:
       1.0.0:
