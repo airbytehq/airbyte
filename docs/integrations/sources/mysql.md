@@ -87,8 +87,8 @@ To fill out the required information:
 
 1. Enter the hostname, port number, and name for your MySQL database.
 2. Enter the username and password you created in [Step 1](#step-1-create-a-dedicated-read-only-mysql-user).
-3. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your MySQL database. See [here](#ssl-modes) to learn about other SSL modes and SSH tunneling.
-4. Select `Read Changes using Binary Log (CDC)` from available replication methods.
+3. Select an SSL mode. You will most frequently choose `required` or `verify_ca`. Both of these always require encryption. `verify_ca` also requires the CA certificate that signed your MySQL server's certificate. See [SSL modes](#ssl-modes) to learn about other SSL modes and SSH tunneling.
+4. Select `Read Changes using Change Data Capture (CDC)` from available replication methods.
 
 <!-- env:cloud -->
 
@@ -124,6 +124,21 @@ Airbyte offers incremental replication using a custom cursor available in your s
 
 </FieldAnchor>
 
+## Limiting which tables Airbyte discovers
+
+<FieldAnchor field="table_filters">
+
+By default, the connector discovers every table and view in the configured database that your MySQL user can read. In databases with a very large number of tables, this can make schema discovery slow. Use `Table Filters` to narrow discovery to the tables you care about.
+
+Each filter has two parts:
+
+- `Database Name`: the database the filter applies to. This must match the database you entered in the `Database` field.
+- `Table Filter Patterns`: one or more table name patterns, written as SQL `LIKE` patterns. `%` matches any sequence of characters and `_` matches a single character. For example, `orders_%` matches `orders_2024` and `orders_2025`.
+
+Filters are inclusive: when you set at least one pattern, only the tables matching a pattern are discovered. Filters apply during schema discovery, so they determine which streams are available to select in a connection.
+
+</FieldAnchor>
+
 ## Connecting with SSL or SSH Tunneling
 
 <FieldAnchor field="ssl">
@@ -134,8 +149,18 @@ Here is a breakdown of available SSL connection modes:
 
 - `preferred` to allow unencrypted communication only when the source doesn't support encryption. On Airbyte Cloud, this mode requires an SSH tunnel.
 - `required` to always require encryption. The connection fails if the source doesn't support encryption. This is the default.
-- `verify_ca` to always require encryption and verify that the source has a valid SSL certificate.
-- `verify_identity` to always require encryption and verify the identity of the source.
+- `verify_ca` to always require encryption and verify that the source's SSL certificate was signed by the CA certificate you provide.
+- `verify_identity` to always require encryption, verify the source's certificate against the CA certificate you provide, and verify that the server's hostname matches the certificate.
+
+#### Certificates for `verify_ca` and `verify_identity`
+
+When you select `verify_ca` or `verify_identity`, provide the following certificates in PEM format.
+
+- **CA certificate** (required): The certificate of the authority that signed your MySQL server's certificate.
+- **Client certificate** and **Client key** (optional): Provide both of these if your MySQL server requires clients to authenticate with a certificate, for example for users created with `REQUIRE X509`. Airbyte only uses them when you provide both.
+- **Client key password** (optional): The password Airbyte uses for the keystores it creates from your certificates. If you leave this blank, Airbyte generates a password automatically.
+
+Airbyte applies these settings to every connection the connector makes to your database, including the binary log connection that CDC uses.
 
 </FieldAnchor>
 
@@ -230,8 +255,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                          |
 |:------------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.53.5      | 2026-09-09 | [77840](https://github.com/airbytehq/airbyte/pull/77840)   | Fix CDC binlog client authentication when SSL `verify_ca`/`verify_identity` is configured with client certificates.                              |
-| 3.53.4      | 2026-08-27 | [81413](https://github.com/airbytehq/airbyte/pull/81413)   | Retry CDC syncs that fail with an EOF error while reading the MySQL binlog instead of failing as a config error.                                 |
+| 3.53.5      | 2026-09-21 | [77840](https://github.com/airbytehq/airbyte/pull/77840)   | Fix CDC binlog client authentication when SSL `verify_ca`/`verify_identity` is configured with client certificates.                              |
+| 3.53.4      | 2026-09-01 | [81413](https://github.com/airbytehq/airbyte/pull/81413)   | Retry CDC syncs that fail with an EOF error while reading the MySQL binlog instead of failing as a config error.                                 |
 | 3.53.3      | 2026-08-11 | [84207](https://github.com/airbytehq/airbyte/pull/84207)   | Promote to Bulk CDK 1.1.10: fix CDC meta-field decoration of full refresh streams with no source-defined primary key in speed mode.              |
 | 3.53.2      | 2026-08-06 | [83239](https://github.com/airbytehq/airbyte/pull/83239)   | Fix error 1267 (illegal mix of collations) when partitioning text primary keys with utf8mb3 or other legacy charset columns.                     |
 | 3.53.1      | 2026-07-13 | [80858](https://github.com/airbytehq/airbyte/pull/80858)   | Fix CDC sync failure on non-nullable DATE/DATETIME columns when zero-dates (0000-00-00) convert to null.                                         |
