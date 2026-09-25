@@ -95,6 +95,7 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
     data_field = "orders"
     deleted_events_api_name = "Order"
     initial_limit = 250
+    customer_prefix = "customer_"
 
     def __init__(self, config: Mapping[str, Any]):
         self._error_handler = LimitReducingErrorHandler(
@@ -112,6 +113,20 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
 
     def get_error_handler(self):
         return self._error_handler
+
+    def flatten_customer(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        customer = record.get("customer")
+        if isinstance(customer, Mapping):
+            for key, value in customer.items():
+                record[f"{self.customer_prefix}{key}"] = value
+        return record
+
+    def produce_records(self, records=None):
+        if isinstance(records, MutableMapping):
+            records = self.flatten_customer(records)
+        else:
+            records = (self.flatten_customer(record) for record in records)
+        yield from super().produce_records(records)
 
 
 class Disputes(IncrementalShopifyStream):
