@@ -33,6 +33,19 @@ _STREAM_RECORDS = {
         "segments": {"date": "2024-01-01"},
         "metrics": {"costMicros": "1000000"},
     },
+    "asset_group": {
+        "assetGroup": {
+            "id": "600001",
+            "name": "Test Asset Group",
+            "campaign": "customers/1234567890/campaigns/700001",
+            "status": "ENABLED",
+            "primaryStatus": "ELIGIBLE",
+            "adStrength": "EXCELLENT",
+            "finalUrls": ["https://example.com"],
+            "resourceName": "customers/1234567890/assetGroups/600001",
+        },
+        "segments": {"date": "2024-01-01"},
+    },
     "ad_group_ad": {
         "adGroup": {"id": "400001"},
         "adGroupAd": {
@@ -88,6 +101,7 @@ _STREAM_RECORDS = {
 
 _KEY_FIELD_CHECKS = {
     "ad_group": ("ad_group.id", 400001),
+    "asset_group": ("asset_group.id", 600001),
     "ad_group_ad": ("ad_group.id", 400001),
     "customer": ("customer.id", int(_CUSTOMER_ID)),
     "campaign_bidding_strategy": ("campaign.id", 700001),
@@ -97,6 +111,7 @@ _KEY_FIELD_CHECKS = {
 
 INCREMENTAL_STREAMS = [
     "ad_group",
+    "asset_group",
     "ad_group_ad",
     "customer",
     "campaign_bidding_strategy",
