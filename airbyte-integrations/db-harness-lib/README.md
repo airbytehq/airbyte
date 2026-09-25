@@ -20,7 +20,8 @@ An engine shim must export:
   unless `--config-template` is supplied.
 - `DEFAULT_FIXTURE`: engine's default SQL fixture, required unless an
   explicit `--fixture` is supplied or `--skip-fixtures` is used.
-- `BACKEND_NAME`: backend container name, required by the config renderer.
+- `BACKEND_MODE`: `local` (default) or `remote`.
+- `BACKEND_NAME`: backend container name, required when `BACKEND_MODE=local`.
 
 The engine scripts own backend startup, fixture application, and any
 engine-specific teardown. The library's default teardown removes the
@@ -28,6 +29,18 @@ backend container when no engine-specific `stop-backend.sh` is provided.
 The library scripts own protocol orchestration, catalog derivation, config
 rendering, and state extraction. `BACKEND_NAME` and the other usual harness
 environment variables may be overridden by callers for test isolation.
+An engine may provide an optional `render-config.sh` alongside its lifecycle
+scripts to override the library's default config renderer, just as it may
+provide an optional `stop-backend.sh`.
+
+### Remote backend mode
+
+In `BACKEND_MODE=remote`, the harness does not start a container. The engine's
+`start-backend.sh`, `reset-databases.sh`, and `stop-backend.sh` own whatever
+remote isolation unit exists, such as a per-run schema. `--reset=backend` is
+rejected; use `--reset=fixture` for a fresh isolation unit between images.
+The engine renders its config from a secret rather than using host
+substitution.
 
 ## Getting a target image
 
@@ -105,5 +118,6 @@ export CONFIG_HOST_JQ='.host = $h | .port = 5432'
 - `run-protocol-cmd.sh` invokes `airbyte-ops` for one protocol command.
 - `make-catalog.sh` derives a configured catalog from discover output.
 - `render-config.sh` substitutes the backend address using an overridable
-  `CONFIG_HOST_JQ` jq expression.
+  `CONFIG_HOST_JQ` jq expression. An engine-specific `render-config.sh` may
+  override this for remote backends.
 - `extract-state.py` extracts Airbyte state messages from JSONL output.
