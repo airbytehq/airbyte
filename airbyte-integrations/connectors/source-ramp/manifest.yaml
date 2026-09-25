@@ -30,6 +30,17 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 400
+                  - 401
+                action: FAIL
+                failure_type: config_error
+                error_message: >-
+                  Ramp rejected the client ID or client secret ({{ (response.get('error_v2') or {}).get('message') }}).
+                  Copy both again from Ramp > Company > Developer > your app, and check the app uses
+                  the Client Credentials grant.
         session_token_path:
           - access_token
         expiration_duration: PT240H
@@ -41,6 +52,33 @@ definitions:
         backoff_strategies:
           - type: ExponentialBackoffStrategy
             factor: 2
+        response_filters:
+          # Ramp signals scope and token problems with `error_v2.error_code`; a filter matches on
+          # http_codes OR predicate, so these two key on the code alone (403 DEVELOPER_7100,
+          # 401/404 DEVELOPER_7002) and run before the generic 401 filter.
+          - type: HttpResponseFilter
+            predicate: "{{ (response.get('error_v2') or {}).get('error_code') == 'DEVELOPER_7100' }}"
+            action: FAIL
+            failure_type: config_error
+            error_message: >-
+              Your Ramp app is not allowed to read this data ({{ (response.get('error_v2') or {}).get('message') }}).
+              In Ramp, open Company > Developer > your app, grant the missing read scope
+              (transactions:read, cards:read and reimbursements:read), then re-test the source.
+          - type: HttpResponseFilter
+            predicate: "{{ (response.get('error_v2') or {}).get('error_code') == 'DEVELOPER_7002' }}"
+            action: FAIL
+            failure_type: config_error
+            error_message: >-
+              Ramp no longer accepts this connector's access token. Check that the Ramp app still
+              exists and its client secret has not been rotated, then re-test the source.
+          - type: HttpResponseFilter
+            http_codes:
+              - 401
+            action: FAIL
+            failure_type: config_error
+            error_message: >-
+              Ramp rejected the connector's credentials. Re-enter the client ID and client secret
+              from Ramp > Company > Developer > your app.
       request_headers:
         Content-Type: application/json
     Paginator:
@@ -172,6 +210,8 @@ streams:
           $ref: "#/definitions/linked/HttpRequester/error_handler"
         request_headers:
           $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_parameters:
+          state: ALL
       record_selector:
         type: RecordSelector
         extractor:
@@ -343,6 +383,37 @@ streams:
             type:
               - integer
               - "null"
+          all_requirements_met_and_approved:
+            type:
+              - boolean
+              - "null"
+          decline_details:
+            type:
+              - object
+              - "null"
+            description: Nested - reason a DECLINED transaction was declined.
+          entity_amount:
+            type:
+              - object
+              - "null"
+            description: Nested - amount, currency_code
+          fund_id:
+            type:
+              - string
+              - "null"
+          merchant_amount:
+            type:
+              - object
+              - "null"
+            description: Nested - amount, currency_code
+          original_transaction_id:
+            type:
+              - string
+              - "null"
+          statement_id:
+            type:
+              - string
+              - "null"
     transformations:
       - type: KeysToSnakeCase
     incremental_sync:
@@ -356,9 +427,12 @@ streams:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
+        datetime: "{{ config.get('start_date', '2019-01-01T00:00:00Z') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      is_client_side_incremental: true
+      start_time_option:
+        type: RequestOption
+        field_name: updated_after
+        inject_into: request_parameter
   - type: DeclarativeStream
     name: reimbursements
     retriever:
@@ -526,6 +600,37 @@ streams:
             type:
               - object
               - "null"
+          entity_amount:
+            type:
+              - object
+              - "null"
+            description: Nested - amount, currency_code
+          fund_id:
+            type:
+              - string
+              - "null"
+          merchant_amount:
+            type:
+              - object
+              - "null"
+            description: Nested - amount, currency_code
+          payment_batch_id:
+            type:
+              - string
+              - "null"
+          payment_id:
+            type:
+              - string
+              - "null"
+          payment_processed_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          repayment_transaction_id:
+            type:
+              - string
+              - "null"
     transformations:
       - type: KeysToSnakeCase
     incremental_sync:
@@ -539,7 +644,7 @@ streams:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
+        datetime: "{{ config.get('start_date', '2019-01-01T00:00:00Z') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
@@ -555,11 +660,13 @@ spec:
     required:
       - client_id
       - client_secret
-      - start_date
     properties:
       client_id:
         type: string
-        description: Your Ramp API client ID, created in Ramp's developer settings.
+        description: >-
+          Client ID of the Ramp developer app (Ramp > Company > Developer). The app needs the
+          Client Credentials grant and the scopes `transactions:read`, `cards:read` and
+          `reimbursements:read`.
         title: Ramp Client ID
         airbyte_secret: true
         order: 0
@@ -572,12 +679,13 @@ spec:
       start_date:
         type: string
         description: >-
-          Earliest updated_at to pull on the initial sync of the transactions
-          and reimbursements streams. Format ISO 8601 with Z suffix (e.g.
-          2024-01-01T00:00:00Z). Ignored on subsequent incremental syncs.
+          Only transactions and reimbursements changed on or after this date are
+          synced on the first sync. Format ISO 8601 with Z suffix (e.g.
+          2024-01-01T00:00:00Z).
         title: Start Date
         format: date-time
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        default: "2019-01-01T00:00:00Z"
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?Z$
         examples:
           - "2024-01-01T00:00:00Z"
         order: 2
@@ -589,9 +697,22 @@ spec:
           sandbox app.
         title: API Base URL
         default: https://api.ramp.com
+        pattern: ^https://
         airbyte_hidden: true
         order: 3
     additionalProperties: true
+
+# Ramp allows 200 requests per 10-second rolling window per IP; stay under it.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 180
+          interval: PT10S
+      matchers: []
+  status_codes_for_ratelimit_hit:
+    - 429
 
 concurrency_level:
   type: ConcurrencyLevel
