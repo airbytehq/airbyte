@@ -26,7 +26,7 @@ Every stream defines a `DatetimeBasedCursor` on `updated` (`%Y-%m-%dT%H:%M:%S.%f
 
 ## Deletions
 
-All 54 JSON:API streams pass `show_deleted: "true"`, so Uptick includes deleted records in the response. Only the 12 streams that also request the `deleted` field in their sparse fieldset can surface deletions — they expose a `deleted` timestamp column (`tasks`, `assets`, `creditnotes`, `creditnotelineitems`, `remarks`, `assettypes`, `assettypevariants`, `products`, `rounds`, `servicetasks`, `subtasks`, `promptquestions`). On all other streams deletes are not detectable, so deleted rows persist in the destination until a full refresh. `task_profitability` is a generated report and has no deleted state.
+All 54 JSON:API streams pass `show_deleted: "true"`, but it only has an effect on Uptick's soft-delete resources: the 12 streams that also request the `deleted` field in their sparse fieldset, which expose a `deleted` timestamp column (`tasks`, `assets`, `creditnotes`, `creditnotelineitems`, `remarks`, `assettypes`, `assettypevariants`, `products`, `rounds`, `servicetasks`, `subtasks`, `promptquestions`). The other endpoints hard-delete and expose no `deleted` field (checked on a live tenant; Uptick's docs don't cover this), so deleted rows persist in the destination until a full refresh. `task_profitability` is a generated report and has no deleted state.
 
 ## Rate limiting
 
