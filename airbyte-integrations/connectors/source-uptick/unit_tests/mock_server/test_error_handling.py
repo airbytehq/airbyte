@@ -182,9 +182,13 @@ def test_401_after_successful_refresh_fails_as_config_error(virtual_clock: list[
     assert output.records == []
     assert output.get_stream_statuses(_STREAM)[-1].name == "INCOMPLETE"
     matching = [
-        error for error in _stream_errors(output) if error.failure_type == FailureType.config_error and _401_MESSAGE in error.message
+        error
+        for error in _stream_errors(output)
+        if error.failure_type == FailureType.config_error
+        and "Refreshed OAuth access token is rejected by the API." in error.message
+        and _401_MESSAGE in error.internal_message
     ]
-    assert len(matching) == 1, f"expected exactly one config_error containing {_401_MESSAGE}, got {output.errors}"
+    assert len(matching) == 1, f"expected exactly one config_error for the second-401 fail-fast, got {output.errors}"
     # One handler backoff sleep before the single retry; not a refresh loop.
     assert virtual_clock == [11.0, 0]
     http_mocker.assert_number_of_calls(_TOKEN_REQUEST, 2)  # initial grant + one refresh
