@@ -12,7 +12,7 @@ The connector authenticates with the Uptick API using OAuth 2.0 with the passwor
 
 To generate the OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance, select **Create Application**, provide a name, and save. Uptick generates the Client ID and Client Secret for you. For step-by-step instructions, see [Uptick API - Getting started](https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started).
 
-The Uptick user account needs read access to each module you want to sync, and the Intelligence reports permission to sync `task_profitability`.
+The Uptick user account needs read access to each module you want to sync; in practice `task_profitability` has required the Intelligence reports permission.
 
 ## Setup guide
 
@@ -39,7 +39,7 @@ The Uptick user account needs read access to each module you want to sync, and t
 | Full Refresh Sync | ✅ |
 | Incremental Sync | ✅ |
 
-All streams support both full refresh and incremental sync on the `updated` cursor. Only the streams marked ✅ in the **Supports Incremental** column below surface deletions; on the streams marked `❌ (no soft delete)` an incremental sync retains rows in your destination after they're deleted in Uptick, so use full refresh for those. `task_profitability` is a generated report with no deleted state and is safe to sync incrementally.
+All streams support both full refresh and incremental sync on the `updated` cursor. Only the streams marked ✅ in the **Supports Incremental** column below expose a `deleted` timestamp; on the streams marked `❌ (no soft delete)` an incremental sync retains rows in your destination after they're deleted in Uptick, so use full refresh for those. `task_profitability` is a generated report with no deleted state and is safe to sync incrementally.
 
 ## Supported Streams
 
@@ -199,14 +199,14 @@ Prompt data spans three streams, and Uptick reworked its prompt model in API v2.
 
 ### Incremental sync
 
-For every stream, the connector uses each record's `updated` timestamp as the cursor and fetches only records changed since the last sync through the Uptick API's `updatedsince` filter. Streams that support only full refresh are re-read in full on every sync.
+For every stream, the connector uses each record's `updated` timestamp as the cursor and fetches only records changed since the last sync through the Uptick API's `updatedsince` filter.
 
 Avoid incremental sync for the streams marked `❌ (no soft delete)`: their Uptick endpoints don't report deletions, so an incremental sync keeps records in your destination after they're deleted in Uptick. Sync them with **Full Refresh | Overwrite** instead.
 
 ## Data type map
 
-| Uptick JSON:API type | Airbyte type |
-| -------------------- | ------------ |
+| Connector schema type | Airbyte type |
+| --------------------- | ------------ |
 | string | string |
 | integer | integer |
 | number | number |
@@ -221,7 +221,7 @@ Avoid incremental sync for the streams marked `❌ (no soft delete)`: their Upti
 
 ### Permission errors (403)
 
-If the Uptick user account lacks permission for an endpoint, the sync fails with `HTTP 403: Uptick user lacks permission for the requested endpoint.` In production this has been seen on `task_profitability`, which requires the Intelligence reports permission, and on `billingcontractlineitems`. Grant the missing module permission in Uptick or deselect the stream.
+If the Uptick user account lacks permission for an endpoint, the sync fails with `HTTP 403: Uptick user lacks permission for the requested endpoint.` Uptick doesn't publish a per-endpoint permission list; in production this has been seen on `task_profitability` (resolved by granting the Intelligence reports permission) and on `billingcontractlineitems`. Grant the missing module permission in Uptick or deselect the stream.
 
 ### Authentication errors (401)
 
@@ -233,7 +233,7 @@ Streams marked `❌ (no soft delete)` in the table above don't report deletions,
 
 ### Rate limits
 
-Uptick enforces rate limits and reasonable-use guidelines on its API. When Uptick throttles a request, the connector reads the `Retry-After` response header and waits the indicated time before retrying, up to five retries after the initial request. Waits longer than 30 minutes fail the sync with a rate-limit error instead of blocking. The connector also caps itself at 60 requests per minute across all streams and runs `num_workers` concurrent requests (default 3, maximum 10); raise `num_workers` for faster syncs on tenants that tolerate it, or lower it if you see throttling. To stay within these limits, sync only the streams and fields you need and schedule syncs no more frequently than your reporting requires.
+Uptick enforces rate limits and reasonable-use guidelines on its API and may revoke API access for violating them, but doesn't publish a numeric limit. If a throttled response carries a `Retry-After` header, the connector waits the indicated time before retrying; otherwise it backs off exponentially. It retries up to five times after the initial request, and a `Retry-After` wait of 30 minutes or more fails the sync with a rate-limit error instead of blocking. The connector also caps itself at 60 requests per minute across all streams and runs `num_workers` concurrent requests (default 3, maximum 10); raise `num_workers` for faster syncs on tenants that tolerate it, or lower it if you see throttling. To stay within these limits, sync only the streams and fields you need and schedule syncs no more frequently than your reporting requires.
 
 ### IP allow list
 

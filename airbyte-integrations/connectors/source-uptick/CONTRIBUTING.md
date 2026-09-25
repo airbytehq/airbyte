@@ -18,7 +18,7 @@ HTTP 401 fails fast as a `config_error` rather than refresh-and-retry — the au
 
 ## Streams and pagination
 
-All streams paginate by following the `links.next` URL via `CursorPagination` with a `RequestPath` page token. Each of the 54 JSON:API streams requests a curated sparse fieldset (`fields[<Type>]`) and orders by `ordering: -updated`; `AddFields` transformations flatten the JSON:API `attributes` object into top-level columns and each to-one `relationships` entry into a scalar `<relationship>_id` column; to-many relationships such as `tags` and `supporting_technicians` stay arrays. `task_profitability` sends no sparse fieldset or ordering (only the `updatedsince` cursor parameter), extracts `results`, and emits the report rows as-is.
+All streams paginate by following the `links.next` URL via `CursorPagination` with a `RequestPath` page token. Uptick's [API overview](https://support.uptickhq.com/en/articles/6728314-uptick-api-overview-and-patch-notes) recommends its cursor pagination mode (`page[cursor]`/`page[size]`) for data syncs; the connector instead follows whatever `links.next` the default (limit/offset) mode returns. Switching to cursor mode would be a behavior change. Uptick recommends pinning a minor version (hence `v2.15`) and announces deprecations in the same article. Each of the 54 JSON:API streams requests a curated sparse fieldset (`fields[<Type>]`) and orders by `ordering: -updated`; `AddFields` transformations flatten the JSON:API `attributes` object into top-level columns and each to-one `relationships` entry into a scalar `<relationship>_id` column; to-many relationships such as `tags` and `supporting_technicians` stay arrays. `task_profitability` sends no sparse fieldset or ordering (only the `updatedsince` cursor parameter), extracts `results`, and emits the report rows as-is.
 
 ## Incremental sync
 
@@ -34,7 +34,7 @@ All 54 JSON:API streams pass `show_deleted: "true"`, so Uptick includes deleted 
 
 ## Permissions
 
-`task_profitability` requires the Intelligence reports permission on the Uptick user account; `billingcontractlineitems` has also been observed failing with 403 in production.
+Uptick doesn't publish a per-endpoint permission list. In production, `task_profitability` has returned 403 until the Uptick user was granted the Intelligence reports permission, and `billingcontractlineitems` has also been observed failing with 403.
 
 ## Local development
 
