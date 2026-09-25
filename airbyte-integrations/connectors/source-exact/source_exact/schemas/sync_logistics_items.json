@@ -1,0 +1,449 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "SyncLogisticsItems",
+  "additionalProperties": true,
+  "properties": {
+    "ID": {
+      "description": "A guid that is the unique identifier of the item",
+      "type": ["null", "string"]
+    },
+    "AssembledLeadDays": {
+      "description": "Assembly lead days",
+      "type": ["null", "integer"]
+    },
+    "AverageCost": {
+      "description": "The current average cost price",
+      "type": ["null", "number"]
+    },
+    "Barcode": {
+      "description": "Barcode of the item (numeric string)",
+      "type": ["null", "string"]
+    },
+    "BatchQuantity": {
+      "description": "Batch quantity",
+      "type": ["null", "number"]
+    },
+    "Class_01": {
+      "description": "Item class code referring to ItemClasses with ClassID 1",
+      "type": ["null", "string"]
+    },
+    "Class_02": {
+      "description": "Item class code referring to ItemClasses with ClassID 2",
+      "type": ["null", "string"]
+    },
+    "Class_03": {
+      "description": "Item class code referring to ItemClasses with ClassID 3",
+      "type": ["null", "string"]
+    },
+    "Class_04": {
+      "description": "Item class code referring to ItemClasses with ClassID 4",
+      "type": ["null", "string"]
+    },
+    "Class_05": {
+      "description": "Item class code referring to ItemClasses with ClassID 5",
+      "type": ["null", "string"]
+    },
+    "Class_06": {
+      "description": "Item class code referring to ItemClasses with ClassID 6",
+      "type": ["null", "string"]
+    },
+    "Class_07": {
+      "description": "Item class code referring to ItemClasses with ClassID 7",
+      "type": ["null", "string"]
+    },
+    "Class_08": {
+      "description": "Item class code referring to ItemClasses with ClassID 8",
+      "type": ["null", "string"]
+    },
+    "Class_09": {
+      "description": "Item class code referring to ItemClasses with ClassID 9",
+      "type": ["null", "string"]
+    },
+    "Class_10": {
+      "description": "Item class code referring to ItemClasses with ClassID 10",
+      "type": ["null", "string"]
+    },
+    "Code": {
+      "description": "Item code",
+      "type": ["null", "string"]
+    },
+    "CopyRemarks": {
+      "description": "Copy sales remarks to sales lines",
+      "type": ["null", "integer"]
+    },
+    "CostPriceCurrency": {
+      "description": "The currency of the current and proposed cost price",
+      "type": ["null", "string"]
+    },
+    "CostPriceNew": {
+      "description": "Proposed cost price",
+      "type": ["null", "number"]
+    },
+    "CostPriceStandard": {
+      "description": "The current standard cost price",
+      "type": ["null", "number"]
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": ["null", "string"]
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": ["null", "string"]
+    },
+    "CustomField": {
+      "description": "Custom field endpoint. Provided only for the Exact Online Premium users.",
+      "type": ["null", "string"]
+    },
+    "Description": {
+      "description": "Description of the item",
+      "type": ["null", "string"]
+    },
+    "Division": {
+      "description": "Division code",
+      "type": ["null", "integer"]
+    },
+    "EndDate": {
+      "description": "Together with StartDate this determines if the item is active",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "ExtraDescription": {
+      "description": "Extra description text, slightly longer than the regular description (255 instead of 60)",
+      "type": ["null", "string"]
+    },
+    "FreeBoolField_01": {
+      "description": "Free boolean field 1",
+      "type": ["null", "boolean"]
+    },
+    "FreeBoolField_02": {
+      "description": "Free boolean field 2",
+      "type": ["null", "boolean"]
+    },
+    "FreeBoolField_03": {
+      "description": "Free boolean field 3",
+      "type": ["null", "boolean"]
+    },
+    "FreeBoolField_04": {
+      "description": "Free boolean field 4",
+      "type": ["null", "boolean"]
+    },
+    "FreeBoolField_05": {
+      "description": "Free boolean field 5",
+      "type": ["null", "boolean"]
+    },
+    "FreeDateField_01": {
+      "description": "Free date field 1",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "FreeDateField_02": {
+      "description": "Free date field 2",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "FreeDateField_03": {
+      "description": "Free date field 3",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "FreeDateField_04": {
+      "description": "Free date field 4",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "FreeDateField_05": {
+      "description": "Free date field 5",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "FreeNumberField_01": {
+      "description": "Free numeric field 1",
+      "type": ["null", "number"]
+    },
+    "FreeNumberField_02": {
+      "description": "Free numeric field 2",
+      "type": ["null", "number"]
+    },
+    "FreeNumberField_03": {
+      "description": "Free numeric field 3",
+      "type": ["null", "number"]
+    },
+    "FreeNumberField_04": {
+      "description": "Free numeric field 4",
+      "type": ["null", "number"]
+    },
+    "FreeNumberField_05": {
+      "description": "Free numeric field 5",
+      "type": ["null", "number"]
+    },
+    "FreeNumberField_06": {
+      "description": "Free numeric field 6",
+      "type": ["null", "number"]
+    },
+    "FreeNumberField_07": {
+      "description": "Free numeric field 7",
+      "type": ["null", "number"]
+    },
+    "FreeNumberField_08": {
+      "description": "Free numeric field 8",
+      "type": ["null", "number"]
+    },
+    "FreeTextField_01": {
+      "description": "Free text field 1",
+      "type": ["null", "string"]
+    },
+    "FreeTextField_02": {
+      "description": "Free text field 2",
+      "type": ["null", "string"]
+    },
+    "FreeTextField_03": {
+      "description": "Free text field 3",
+      "type": ["null", "string"]
+    },
+    "FreeTextField_04": {
+      "description": "Free text field 4",
+      "type": ["null", "string"]
+    },
+    "FreeTextField_05": {
+      "description": "Free text field 5",
+      "type": ["null", "string"]
+    },
+    "FreeTextField_06": {
+      "description": "Free text field 6",
+      "type": ["null", "string"]
+    },
+    "FreeTextField_07": {
+      "description": "Free text field 7",
+      "type": ["null", "string"]
+    },
+    "FreeTextField_08": {
+      "description": "Free text field 8",
+      "type": ["null", "string"]
+    },
+    "FreeTextField_09": {
+      "description": "Free text field 9",
+      "type": ["null", "string"]
+    },
+    "FreeTextField_10": {
+      "description": "Free text field 10",
+      "type": ["null", "string"]
+    },
+    "GLCosts": {
+      "description": "GL account the cost entries will be booked on. This overrules the GL account from the item group. If the license contains 'Intuit integration' this property overrides the value in Settings, not the item group.",
+      "type": ["null", "string"]
+    },
+    "GLCostsCode": {
+      "description": "Code of GL account for costs",
+      "type": ["null", "string"]
+    },
+    "GLCostsDescription": {
+      "description": "Description of GLCosts",
+      "type": ["null", "string"]
+    },
+    "GLRevenue": {
+      "description": "GL account the revenue will be booked on. This overrules the GL account from the item group. If the license contains 'Intuit integration' this property overrides the value in Settings, not the item group.",
+      "type": ["null", "string"]
+    },
+    "GLRevenueCode": {
+      "description": "Code of GLRevenue",
+      "type": ["null", "string"]
+    },
+    "GLRevenueDescription": {
+      "description": "Description of GLRevenue",
+      "type": ["null", "string"]
+    },
+    "GLStock": {
+      "description": "GL account the stock entries will be booked on. This overrules the GL account from the item group. If the license contains 'Intuit integration' this property overrides the value in Settings, not the item group.",
+      "type": ["null", "string"]
+    },
+    "GLStockCode": {
+      "description": "Code of GL account for stock",
+      "type": ["null", "string"]
+    },
+    "GLStockDescription": {
+      "description": "Description of GLStock",
+      "type": ["null", "string"]
+    },
+    "GrossWeight": {
+      "description": "Gross weight for international goods shipments",
+      "type": ["null", "number"]
+    },
+    "IsBatchItem": {
+      "description": "Indicates if batches are used for this item",
+      "type": ["null", "integer"]
+    },
+    "IsFractionAllowedItem": {
+      "description": "Indicates if fractions (for example 0.35) are allowed for quantities of this item",
+      "type": ["null", "boolean"]
+    },
+    "IsMakeItem": {
+      "description": "Indicates that an Item is produced to Inventory, not purchased",
+      "type": ["null", "integer"]
+    },
+    "IsNewContract": {
+      "description": "Only used for packages (IsPackageItem=1). To indicate if this package is a new contract type package",
+      "type": ["null", "integer"]
+    },
+    "IsOnDemandItem": {
+      "description": "Is On demand Item",
+      "type": ["null", "integer"]
+    },
+    "IsPackageItem": {
+      "description": "Indicates if the item is a package item. Can only be created in the hosting administration",
+      "type": ["null", "boolean"]
+    },
+    "IsPurchaseItem": {
+      "description": "Indicates if the item can be purchased",
+      "type": ["null", "boolean"]
+    },
+    "IsRegistrationCodeItem": {
+      "description": "Indicated if the item is used in voucher functionality",
+      "type": ["null", "integer"]
+    },
+    "IsSalesItem": {
+      "description": "Indicates if the item can be sold",
+      "type": ["null", "boolean"]
+    },
+    "IsSerialItem": {
+      "description": "Indicates that serial numbers are used for this item",
+      "type": ["null", "boolean"]
+    },
+    "IsStockItem": {
+      "description": "If you have the Trade or Manufacturing license and you check this property the item will be shown in the stock positions overview, stock counts and transaction lists. If you have the Invoice module and you check this property you will get a general journal entry based on the Stock and Costs G/L accounts of the item group. If you don't want the general journal entry to be created you should change the Stock/Costs G/L account on the Item group page to the type Costs instead of Inventory. If you have the CRM Standalone license, the item will not be available.",
+      "type": ["null", "boolean"]
+    },
+    "IsSubcontractedItem": {
+      "description": "Indicates if the item is provided by an outside supplier",
+      "type": ["null", "boolean"]
+    },
+    "IsTaxableItem": {
+      "description": "Indicates if tax needs to be calculated for this item",
+      "type": ["null", "integer"]
+    },
+    "IsTime": {
+      "description": "Indicates if the item is a time unit item (for example a labor hour item)",
+      "type": ["null", "integer"]
+    },
+    "IsWebshopItem": {
+      "description": "Indicates if the item can be exported to a web shop. If you have the CRM Standalone license, the item will not be available.",
+      "type": ["null", "integer"]
+    },
+    "ItemGroup": {
+      "description": "GUID of Item group of the item",
+      "type": ["null", "string"]
+    },
+    "ItemGroupCode": {
+      "description": "Code of ItemGroup",
+      "type": ["null", "string"]
+    },
+    "ItemGroupDescription": {
+      "description": "Description of ItemGroup",
+      "type": ["null", "string"]
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": ["null", "string"]
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": ["null", "string"]
+    },
+    "NetWeight": {
+      "description": "Net weight for international goods shipments",
+      "type": ["null", "number"]
+    },
+    "NetWeightUnit": {
+      "description": "Net Weight unit for international goods shipment, only available in manufacturing packages",
+      "type": ["null", "string"]
+    },
+    "Notes": {
+      "description": "Notes",
+      "type": ["null", "string"]
+    },
+    "Picture": {
+      "description": "This field is write-only. The picture can be downloaded through PictureUrl and PictureThumbnailUrl.",
+      "type": ["null", "string"]
+    },
+    "PictureName": {
+      "description": "File name of picture",
+      "type": ["null", "string"]
+    },
+    "PictureThumbnailUrl": {
+      "description": "Url where thumbnail picture can be retrieved",
+      "type": ["null", "string"]
+    },
+    "PictureUrl": {
+      "description": "Url where picture can be retrieved",
+      "type": ["null", "string"]
+    },
+    "SalesVatCode": {
+      "description": "Code of SalesVat",
+      "type": ["null", "string"]
+    },
+    "SalesVatCodeDescription": {
+      "description": "Description of SalesVatCode",
+      "type": ["null", "string"]
+    },
+    "SearchCode": {
+      "description": "Search code of the item",
+      "type": ["null", "string"]
+    },
+    "SecurityLevel": {
+      "description": "Security level (0 - 100)",
+      "type": ["null", "integer"]
+    },
+    "StartDate": {
+      "description": "Together with EndDate this determines if the item is active",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "StatisticalCode": {
+      "description": "Statistical code",
+      "type": ["null", "string"]
+    },
+    "StatisticalNetWeight": {
+      "description": "Statistical net weight",
+      "type": ["null", "number"]
+    },
+    "StatisticalUnits": {
+      "description": "Statistical units",
+      "type": ["null", "number"]
+    },
+    "StatisticalValue": {
+      "description": "Statistical value",
+      "type": ["null", "number"]
+    },
+    "Stock": {
+      "description": "Quantity that is in stock",
+      "type": ["null", "number"]
+    },
+    "Timestamp": {
+    "description": "Timestamp for synchronization purposes",
+    "type": ["null", "integer"]
+    },
+    "Unit": {
+      "description": "The standard unit of this item",
+      "type": ["null", "string"]
+    },
+    "UnitDescription": {
+      "description": "Description of Unit",
+      "type": ["null", "string"]
+    },
+    "UnitType": {
+      "description": "Type of unit: A=Area, L=Length, O=Other, T=Time, V=Volume, W=Weight",
+      "type": ["null", "string"]
+    }
+  }
+}
