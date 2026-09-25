@@ -67,10 +67,12 @@ class SnowflakeSourceMetadataQuerier(
                 .map { it.catalog to it.schema }
                 .distinct()
                 .forEach { (catalog: String?, schema: String?) ->
-                    dbmd.getColumns(catalog, schema, null, null).use { rs: ResultSet ->
+                    dbmd.getColumns(catalog, schema?.let { dbmd.escapePattern(it) }, null, null)
+                        .use { rs: ResultSet ->
                         while (rs.next()) {
                             val (tableName: TableName, metadata: ColumnMetadata) =
                                 columnMetadataFromResultSet(rs, isPseudoColumn = false)
+                            if (schema != null && tableName.schema != schema) continue
                             val joinedTableName: TableName = joinMap[tableName] ?: continue
                             results.add(joinedTableName to metadata)
                         }
@@ -82,8 +84,9 @@ class SnowflakeSourceMetadataQuerier(
         }
         return@lazy results.groupBy({ it.first }, { it.second }).mapValues {
             (_, columnMetadataByTable: List<ColumnMetadata>) ->
-            columnMetadataByTable.filter { it.ordinal == null } +
-                columnMetadataByTable.filter { it.ordinal != null }.sortedBy { it.ordinal }
+            val deduplicatedColumns = columnMetadataByTable.distinctBy { it.name }
+            deduplicatedColumns.filter { it.ordinal == null } +
+                deduplicatedColumns.filter { it.ordinal != null }.sortedBy { it.ordinal }
         }
     }
 
@@ -234,8 +237,13 @@ class SnowflakeSourceMetadataQuerier(
             for (namespace in
                 base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
                 // Query all schemas in the current database
-                dbmd.getTables(namespace, schema, null, arrayOf("TABLE", "VIEW")).use {
-                    rs: ResultSet ->
+                dbmd.getTables(
+                        namespace,
+                        schema?.let { dbmd.escapePattern(it) },
+                        null,
+                        arrayOf("TABLE", "VIEW"),
+                    )
+                    .use { rs: ResultSet ->
                     while (rs.next()) {
                         val tableName =
                             TableName(
@@ -244,6 +252,9 @@ class SnowflakeSourceMetadataQuerier(
                                 name = rs.getString("TABLE_NAME"),
                                 type = rs.getString("TABLE_TYPE") ?: "",
                             )
+                        // The schema was passed as a LIKE pattern; re-filter exactly
+                        // in case a driver ignores escaping and over-matches.
+                        if (schema != null && tableName.schema != schema) continue
                         // Filter out system schemas
                         if (!EXCLUDED_NAMESPACES.contains(tableName.schema?.uppercase())) {
                             allTables.add(tableName)
@@ -306,7 +317,22 @@ class SnowflakeSourceMetadataQuerier(
         return memoizedPrimaryKeys[table] ?: listOf()
     }
 
+    private fun DatabaseMetaData.escapePattern(value: String): String =
+        escapeSearchPattern(value, searchStringEscape ?: "")
+
     companion object {
+
+        /**
+         * Escapes LIKE metacharacters so [value] matches literally when used as a JDBC metadata
+         * pattern.
+         */
+        fun escapeSearchPattern(value: String, escape: String): String {
+            if (escape.isEmpty()) return value
+            return value
+                .replace(escape, escape + escape)
+                .replace("_", escape + "_")
+                .replace("%", escape + "%")
+        }
 
         /** Snowflake implementation of [MetadataQuerier.Factory]. */
         @Singleton
