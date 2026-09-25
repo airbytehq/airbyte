@@ -98,10 +98,7 @@ class SnowflakeSourceMetadataQuerier(
 
     private fun escapeLikePattern(value: String, escape: String): String {
         if (escape.isEmpty()) return value
-        return value
-            .replace(escape, escape + escape)
-            .replace("_", escape + "_")
-            .replace("%", escape + "%")
+        return value.replace("_", escape + "_").replace("%", escape + "%")
     }
 
     private fun columnMetadataFromResultSet(
