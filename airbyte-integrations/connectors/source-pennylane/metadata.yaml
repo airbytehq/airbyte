@@ -34,6 +34,24 @@ data:
     ql: 100
     sl: 100
   externalDocumentationUrls:
-    - title: Pennylane API documentation
-      url: https://pennylane.com/api/
+    - title: Pennylane API reference (v2)
+      url: https://pennylane.readme.io/reference
       type: api_reference
+    - title: Pennylane API v1 reference (used by this connector)
+      url: https://pennylane.readme.io/v1.0/reference
+      type: api_reference
+    - title: Pennylane API changelog
+      url: https://pennylane.readme.io/changelog
+      type: api_release_history
+    - title: Migrate from API v1 to v2 (v1 deprecation notice)
+      url: https://pennylane.readme.io/docs/api-v2-vs-v1
+      type: api_deprecations
+    - title: 2026 API changes migration guide
+      url: https://pennylane.readme.io/docs/2026-api-changes-guide
+      type: api_deprecations
+    - title: Pennylane OAuth 2.0 walkthrough
+      url: https://pennylane.readme.io/docs/oauth-20-walkthrough
+      type: authentication_guide
+    - title: Pennylane API rate limiting
+      url: https://pennylane.readme.io/docs/rate-limiting-1
+      type: rate_limits
