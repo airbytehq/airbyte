@@ -12,10 +12,20 @@ CUSTOMER_1 = {"id": 100, "email": "a@example.com", "first_name": "A", "updated_a
 CUSTOMER_2 = {"id": 200, "email": "b@example.com", "first_name": "B", "updated_at": "2019-06-01T00:00:00-07:00"}
 
 ORDERS = [
-    {"id": 1, "updated_at": "2023-01-01T00:00:00-07:00", "customer": CUSTOMER_1, "refunds": [{"id": 11, "created_at": "2023-01-01T00:00:00-07:00"}]},
+    {
+        "id": 1,
+        "updated_at": "2023-01-01T00:00:00-07:00",
+        "customer": CUSTOMER_1,
+        "refunds": [{"id": 11, "created_at": "2023-01-01T00:00:00-07:00"}],
+    },
     # guest checkout: no customer attached to the order
     {"id": 2, "updated_at": "2023-01-02T00:00:00-07:00", "customer": None, "refunds": []},
-    {"id": 3, "updated_at": "2023-01-03T00:00:00-07:00", "customer": CUSTOMER_2, "refunds": [{"id": 31, "created_at": "2023-01-03T00:00:00-07:00"}]},
+    {
+        "id": 3,
+        "updated_at": "2023-01-03T00:00:00-07:00",
+        "customer": CUSTOMER_2,
+        "refunds": [{"id": 31, "created_at": "2023-01-03T00:00:00-07:00"}],
+    },
     # same customer placed a second order
     {"id": 4, "updated_at": "2023-01-04T00:00:00-07:00", "customer": dict(CUSTOMER_1), "refunds": []},
 ]
