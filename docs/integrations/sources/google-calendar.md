@@ -3,11 +3,13 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 
 ## Configuration
 
+On Airbyte Cloud, authenticate with **Authenticate your Google account** (OAuth — Airbyte's Google app). Otherwise, choose **Authenticate with custom app (client ID / secret)** and enter an OAuth client ID, client secret, and refresh token issued by *your own* Google Cloud OAuth app with the `calendar.readonly` scope. Existing configurations with flat `client_id`/`client_secret`/`client_refresh_token_2` fields are migrated automatically to the custom-app option, so a later re-authentication never silently switches to Airbyte's app.
+
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `client_id` | `string` | Client ID.  |  |
-| `client_secret` | `string` | Client secret.  |  |
-| `client_refresh_token_2` | `string` | Refresh token.  |  |
+| `credentials.client_id` | `string` | OAuth 2.0 client ID.  |  |
+| `credentials.client_secret` | `string` | OAuth 2.0 client secret.  |  |
+| `credentials.refresh_token` | `string` | OAuth refresh token.  |  |
 | `calendarid` | `string` | Calendar Id.  |  |
 
 ## Streams
@@ -30,6 +32,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.2.0 | 2026-09-21 | [86468](https://github.com/airbytehq/airbyte/pull/86468) | Add error handling, API budget, concurrency, incremental `events`, and enable acceptance tests |
+| 0.1.0 | 2026-09-21 | [86469](https://github.com/airbytehq/airbyte/pull/86469) | Add declarative OAuth (`advanced_auth`); legacy flat credentials migrate to the custom-app `credentials` option |
 | 0.0.53 | 2026-09-22 | [86679](https://github.com/airbytehq/airbyte/pull/86679) | Update dependencies |
 | 0.0.52 | 2026-09-15 | [86070](https://github.com/airbytehq/airbyte/pull/86070) | Update dependencies |
 | 0.0.51 | 2026-09-08 | [85541](https://github.com/airbytehq/airbyte/pull/85541) | Update dependencies |
