@@ -24,6 +24,19 @@ CONFIG = {
         "refresh_token": "test-refresh-token",
     }
 }
+CLIENT_CREDENTIALS_CONFIG = {
+    "credentials": {
+        "auth_type": "ClientCredentials",
+        "client_id": "cc-client",
+        "client_secret": "cc-secret",
+    }
+}
+CLIENT_CREDENTIALS_CONFIG_WITH_SUB = {
+    "credentials": {
+        **CLIENT_CREDENTIALS_CONFIG["credentials"],
+        "sub": 1234567,
+    }
+}
 CONFIG_WITH_EPOCH_START_DATE = {**CONFIG, "start_date": "1970-01-01T00:00:00Z"}
 CONFIG_WITH_LATER_START_DATE = {**CONFIG, "start_date": "2025-01-01T00:00:00Z"}
 CURSOR_NOW = datetime.datetime(2026, 8, 27, tzinfo=datetime.timezone.utc)
@@ -36,12 +49,14 @@ def _freeze_cursor_time():
     )
 
 
-def _register_token(requests_mock):
+def _register_token(requests_mock, client_credentials=False):
     token_requests = []
 
     def token_callback(request, context):
         token_requests.append(request)
         context.status_code = 200
+        if client_credentials:
+            return {"access_token": "access-token", "expires_in": 3600}
         return {
             "access_token": "access-token",
             "expires_at": "2030-01-01T00:00:00+0000",
@@ -343,6 +358,71 @@ def test_oauth_rotated_refresh_token_is_persisted(requests_mock, get_source):
     assert updated_credentials["token_expiry_date"]
 
 
+@pytest.mark.parametrize(
+    "config, expected_sub",
+    [
+        (CLIENT_CREDENTIALS_CONFIG, None),
+        (CLIENT_CREDENTIALS_CONFIG_WITH_SUB, "1234567"),
+    ],
+)
+def test_client_credentials_token_request_shape(config, expected_sub, requests_mock, get_source):
+    token_requests = _register_token(requests_mock, client_credentials=True)
+    requests_mock.get(
+        "https://harvest.greenhouse.io/v3/applications",
+        json=[{"id": 1, "created_at": "2024-01-01T00:00:00.000Z"}],
+    )
+
+    source = get_source(config)
+    catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
+    read(source, config=config, catalog=catalog)
+
+    request = token_requests[0]
+    assert request.headers["Authorization"] == "Basic " + base64.b64encode(b"cc-client:cc-secret").decode()
+    assert request.headers["Content-Type"] == "application/x-www-form-urlencoded"
+    assert request.query == "", "Refresh args must not be on the query string because Greenhouse reads them from the body"
+    token_params = parse_qs(request.text, keep_blank_values=True)
+    assert token_params["grant_type"] == ["client_credentials"]
+    assert "refresh_token" not in token_params
+    if expected_sub is None:
+        assert "sub" not in token_params
+    else:
+        assert token_params["sub"] == [expected_sub]
+
+
+def test_client_credentials_read_uses_bearer_access_token(requests_mock, get_source):
+    _register_token(requests_mock, client_credentials=True)
+    application_requests = []
+
+    def applications_callback(request, context):
+        application_requests.append(request)
+        context.status_code = 200
+        return [{"id": 1, "created_at": "2024-01-01T00:00:00.000Z"}]
+
+    requests_mock.get("https://harvest.greenhouse.io/v3/applications", json=applications_callback)
+
+    source = get_source(CLIENT_CREDENTIALS_CONFIG)
+    catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
+    output = read(source, config=CLIENT_CREDENTIALS_CONFIG, catalog=catalog)
+
+    assert not output.errors
+    assert [record.record.data["id"] for record in output.records] == [1]
+    assert application_requests[0].headers["Authorization"] == "Bearer access-token"
+
+
+def test_client_credentials_does_not_persist_token(requests_mock, get_source):
+    _register_token(requests_mock, client_credentials=True)
+    requests_mock.get(
+        "https://harvest.greenhouse.io/v3/applications",
+        json=[{"id": 1, "created_at": "2024-01-01T00:00:00.000Z"}],
+    )
+
+    source = get_source(CLIENT_CREDENTIALS_CONFIG)
+    catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
+    output = read(source, config=CLIENT_CREDENTIALS_CONFIG, catalog=catalog)
+
+    assert not output.get_message_by_types([Type.CONTROL])
+
+
 def _read_application_start_date_request(requests_mock, get_source, config):
     _register_token(requests_mock)
     application_requests = []
@@ -583,88 +663,295 @@ def test_substream_parents_ignore_start_date_while_standalone_parents_use_it(
     assert parent_requests[1].qs["updated_at"] == ["gte|2025-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"]
 
 
+# One record per stream, copied from the example response on that endpoint's Harvest v3
+# reference page. Used twice: to check the inline schema declares every documented field, and
+# as the first page each parity stream's mock read replays.
+DOCUMENTED_V3_EXAMPLES = {
+    "approver_groups": {
+        "id": 1,
+        "approval_flow_id": 1,
+        "approvals_required": 1,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "required_for_exception": False,
+        "resolved_at": None,
+        "sort_order": 0,
+    },
+    "approvers": {
+        "id": 1,
+        "user_id": 1,
+        "status": "waiting",
+        "resolved_by_id": None,
+        "resolved_at": None,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "request_sent_at": None,
+        "version_sent": None,
+        "reminder_sent_at": None,
+        "reminder_sent_by_id": None,
+        "reminders_sent": 0,
+        "approver_group_id": None,
+        "added_by_custom_field_id": None,
+        "send_auto_reminder_at": None,
+        "auto_reminders_sent": None,
+        "sort_order": 0,
+    },
+    "job_hiring_managers": {
+        "id": 1,
+        "user_id": 1,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "job_id": 1,
+    },
+    "job_owners": {
+        "id": 1,
+        "user_id": 1,
+        "type": "coordinator",
+        "responsible": False,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "job_id": 1,
+    },
+    "prospect_pool_stages": {
+        "id": 1,
+        "prospect_pool_id": 1,
+        "name": "prospect pool stage 1",
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "sort_order": 0,
+    },
+    "user_emails": {
+        "id": 1,
+        "user_id": 1,
+        "email": "bob_johnson667@localhost.com",
+        "verified": True,
+        "verification_token_sent_at": None,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+    },
+    "interview_kits": {
+        "id": 1,
+        "anonymize_candidate": False,
+        "anonymize_resumes": False,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "job_id": 1,
+        "job_interview_id": 1,
+        "exercises": None,
+    },
+    "interviewer_tags": {"id": 1, "name": "Tag Name 1", "created_at": "2024-01-01T12:30:30.000Z", "updated_at": "2024-01-01T12:30:30.000Z"},
+    "interviewers": {
+        "id": 1,
+        "interview_id": 1,
+        "user_id": 1,
+        "scorecard_id": None,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "response_status": "needs_action",
+        "email": "bob_johnson371@localhost.com",
+    },
+    "job_interviews": {
+        "id": 1,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "duration": 60,
+        "summary": "This is a summary",
+        "instructions": "Do it now",
+        "name": "First Interview",
+        "active": True,
+        "require_scorecard": True,
+        "job_interview_stage_id": 1,
+        "sort_order": 1,
+        "scheduling_type": "take_home_test",
+        "job_id": 1,
+    },
+    "scorecard_candidate_attributes": {
+        "id": 1,
+        "scorecard_id": 1,
+        "note": None,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "job_candidate_attribute_id": 1,
+        "candidate_attribute_rating": "strong_yes",
+        "value": "strong_yes",
+    },
+    "scorecard_questions": {
+        "id": 1,
+        "interview_kit_id": 1,
+        "question": "Is this question inactive?",
+        "active": False,
+        "answer_type": "text",
+        "required": False,
+        "created_at": "2023-01-05T00:00:00.000Z",
+        "updated_at": "2023-01-05T00:00:00.000Z",
+        "sort_order": 4,
+    },
+    "application_stages": {
+        "id": 1,
+        "application_id": 1,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "job_interview_stage_id": 1,
+        "entered_at": None,
+        "exited_at": None,
+        "days_in_stage": 0,
+        "current": False,
+    },
+    "applied_candidate_tags": {
+        "id": 1,
+        "candidate_tag_id": 1,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "candidate_id": 1,
+    },
+    "attachments": {
+        "id": 1,
+        "application_id": 1,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "type": "resume",
+        "candidate_id": 1,
+        "filename": "Oldest Attachments",
+        "url": "https://example.com/signed-resource",
+    },
+    "candidate_educations": {
+        "id": 1,
+        "latest": True,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "start_date_month": 1,
+        "start_date_year": 2019,
+        "end_date_month": 1,
+        "end_date_year": 2023,
+        "candidate_id": 1,
+        "school_name_custom_field_option_id": 1,
+        "degree_custom_field_option_id": 1,
+        "discipline_custom_field_option_id": 1,
+        "start_at": "2019-01-01T12:30:30.000Z",
+        "end_at": "2023-01-01T12:30:30.000Z",
+    },
+    "candidate_employments": {
+        "id": 1,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "company_name": "Toyota",
+        "title": "CIO",
+        "start_date": "2019-01-01",
+        "end_date": None,
+        "latest": True,
+        "candidate_id": 1,
+    },
+    "prospect_details": {
+        "id": 1,
+        "application_id": 1,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "prospect_owner_id": 1,
+        "pool_id": 1,
+        "pool_stage_id": 1,
+        "department_id": 1,
+        "office_id": 1,
+    },
+    "referrers": {
+        "id": 1,
+        "user_id": 1,
+        "name": "Admin User",
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+    },
+    "rejection_details": {
+        "id": 1,
+        "application_id": 1,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "rejected_by_id": 1,
+        "rejection_note_id": 1,
+        "rejected_at": "2024-01-01T12:30:30.000Z",
+        "rejection_reason_id": 1,
+        "question_custom_fields": {"custom_field_15": {"name": "Custom Field 15", "type": "short_text", "value": "some rejection"}},
+    },
+    "applications": {
+        "id": 1,
+        "referrer_id": 1,
+        "source_id": 1,
+        "agency_note_id": 1,
+        "recruiter_id": 1,
+        "coordinator_id": 1,
+        "needs_decision": False,
+        "prospect": False,
+        "rejected_at": None,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "last_activity_at": "2024-01-01T00:00:00.000Z",
+        "stage_id": 1,
+        "job_interview_stage_id": 1,
+        "candidate_id": 1,
+        "job_id": 1,
+        "job_post_id": None,
+        "status": "in_process",
+        "stage_name": "Application Review",
+        "custom_fields": {
+            "custom_field_1": {
+                "name": "Custom Field 1",
+                "type": "short_text",
+                "value": "some value",
+            }
+        },
+        "location_address": "455 Broadway St., New York, NY",
+        "answers": [{"question": "Simple question", "answer": "some answer"}],
+        "prospective_job_ids": [],
+    },
+    "users": {
+        "id": 1,
+        "first_name": "Admin",
+        "last_name": "User",
+        "job_title": None,
+        "agency_id": None,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "primary_email": "bob_johnson727@localhost.com",
+        "name": "Admin User",
+        "deactivated": False,
+        "site_admin": True,
+        "employee_id": None,
+        "linked_candidate_ids": [],
+        "office_ids": [],
+        "department_ids": [],
+        "interviewer_tags": [],
+        "custom_fields": {
+            "select_custom_field": {
+                "name": "Select custom field",
+                "type": "single_select",
+                "value": None,
+            }
+        },
+    },
+    "activity_feed": {
+        "id": 1,
+        "body": "Admin-only note",
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+        "subject": None,
+        "user_id": 1,
+        "visibility": "admin_only_visible",
+        "email_from": None,
+        "email_to": None,
+        "email_cc": None,
+        "import_hash": None,
+        "body_with_tags": None,
+        "email_attachment_file_names": None,
+        "candidate_id": 1,
+        "type": "NOTE",
+        "application_id": None,
+    },
+}
+
+
 def test_documented_v3_examples_validate_against_stream_schemas(connector_path):
     with open(connector_path / "manifest.yaml") as manifest_file:
         manifest = yaml.safe_load(manifest_file)
 
-    documented_examples = {
-        "applications": {
-            "id": 1,
-            "referrer_id": 1,
-            "source_id": 1,
-            "agency_note_id": 1,
-            "recruiter_id": 1,
-            "coordinator_id": 1,
-            "needs_decision": False,
-            "prospect": False,
-            "rejected_at": None,
-            "created_at": "2024-01-01T12:30:30.000Z",
-            "updated_at": "2024-01-01T00:00:00.000Z",
-            "last_activity_at": "2024-01-01T00:00:00.000Z",
-            "stage_id": 1,
-            "job_interview_stage_id": 1,
-            "candidate_id": 1,
-            "job_id": 1,
-            "job_post_id": None,
-            "status": "in_process",
-            "stage_name": "Application Review",
-            "custom_fields": {
-                "custom_field_1": {
-                    "name": "Custom Field 1",
-                    "type": "short_text",
-                    "value": "some value",
-                }
-            },
-            "location_address": "455 Broadway St., New York, NY",
-            "answers": [{"question": "Simple question", "answer": "some answer"}],
-            "prospective_job_ids": [],
-        },
-        "users": {
-            "id": 1,
-            "first_name": "Admin",
-            "last_name": "User",
-            "job_title": None,
-            "agency_id": None,
-            "created_at": "2024-01-01T00:00:00.000Z",
-            "updated_at": "2024-01-01T00:00:00.000Z",
-            "primary_email": "bob_johnson727@localhost.com",
-            "name": "Admin User",
-            "deactivated": False,
-            "site_admin": True,
-            "employee_id": None,
-            "linked_candidate_ids": [],
-            "office_ids": [],
-            "department_ids": [],
-            "interviewer_tags": [],
-            "custom_fields": {
-                "select_custom_field": {
-                    "name": "Select custom field",
-                    "type": "single_select",
-                    "value": None,
-                }
-            },
-        },
-        "activity_feed": {
-            "id": 1,
-            "body": "Admin-only note",
-            "created_at": "2024-01-01T12:30:30.000Z",
-            "updated_at": "2024-01-01T12:30:30.000Z",
-            "subject": None,
-            "user_id": 1,
-            "visibility": "admin_only_visible",
-            "email_from": None,
-            "email_to": None,
-            "email_cc": None,
-            "import_hash": None,
-            "body_with_tags": None,
-            "email_attachment_file_names": None,
-            "candidate_id": 1,
-            "type": "NOTE",
-            "application_id": None,
-        },
-    }
-
-    for stream_name, record in documented_examples.items():
+    for stream_name, record in DOCUMENTED_V3_EXAMPLES.items():
         schema = manifest["schemas"][stream_name]
         validate(record, schema)
         # Full documented-example coverage for every stream is a follow-up.
@@ -675,21 +962,26 @@ def test_documented_v3_examples_validate_against_stream_schemas(connector_path):
         )
 
 
-def test_manifest_uses_greenhouse_fixed_window_api_budget(connector_path):
+def test_manifest_uses_greenhouse_selective_authentication_and_fixed_window_api_budget(connector_path):
     manifest = yaml.safe_load((connector_path / "manifest.yaml").read_text())
 
-    assert "SelectiveAuthenticator" not in yaml.safe_dump(manifest)
     assert manifest["spec"]["advanced_auth"]["predicate_value"] == "Client"
     authenticator = manifest["definitions"]["base_requester"]["authenticator"]
-    assert authenticator["type"] == "OAuthAuthenticator"
-    assert authenticator["grant_type"] == "refresh_token"
-    assert "refresh_token_updater" in authenticator
+    assert authenticator["type"] == "SelectiveAuthenticator"
+    assert authenticator["authenticator_selection_path"] == ["credentials", "auth_type"]
+    assert set(authenticator["authenticators"]) == {"Client", "ClientCredentials"}
+    client_authenticator = manifest["definitions"]["authenticators"]["authorization_code"]
+    assert client_authenticator["grant_type"] == "refresh_token"
+    assert "refresh_token_updater" in client_authenticator
+    client_credentials_authenticator = manifest["definitions"]["authenticators"]["client_credentials"]
+    assert client_credentials_authenticator["grant_type"] == "client_credentials"
+    assert "refresh_token_updater" not in client_credentials_authenticator
     credentials = manifest["spec"]["connection_specification"]["properties"]["credentials"]
-    assert len(credentials["oneOf"]) == 1
-    credentials_option = credentials["oneOf"][0]
-    assert credentials_option["properties"]["auth_type"]["const"] == "Client"
-    assert "ClientCredentials" not in yaml.safe_dump(credentials)
-    assert "sub" not in yaml.safe_dump(credentials)
+    assert len(credentials["oneOf"]) == 2
+    assert {option["properties"]["auth_type"]["const"] for option in credentials["oneOf"]} == {
+        "Client",
+        "ClientCredentials",
+    }
     assert manifest["api_budget"]["ratelimit_reset_header"] == "X-RateLimit-Reset"
     assert manifest["api_budget"]["policies"] == [
         {
@@ -1017,3 +1309,91 @@ def test_oauth_refresh_failure_surfaces_reauthenticate_config_error(status_code,
     assert all(trace.trace.error.failure_type == FailureType.config_error for trace in output.errors), [
         (trace.trace.error.failure_type, trace.trace.error.message) for trace in output.errors
     ]
+
+
+# Bodies captured from https://auth.greenhouse.io/token on the client_credentials grant.
+@pytest.mark.parametrize(
+    "status_code, body",
+    [
+        pytest.param(401, {"error": "invalid_client"}, id="wrong_client_id_or_secret"),
+        pytest.param(400, {"error": "invalid_grant", "error_description": "User from sub field not found"}, id="unknown_sub"),
+    ],
+)
+def test_client_credentials_token_failure_surfaces_config_error(status_code, body, requests_mock, get_source):
+    requests_mock.post("https://auth.greenhouse.io/token", status_code=status_code, json=body)
+
+    source = get_source(CLIENT_CREDENTIALS_CONFIG_WITH_SUB)
+    catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
+    output = read(source, config=CLIENT_CREDENTIALS_CONFIG_WITH_SUB, catalog=catalog, expecting_exception=True)
+
+    assert output.errors
+    assert all(trace.trace.error.failure_type == FailureType.config_error for trace in output.errors), [
+        (trace.trace.error.failure_type, trace.trace.error.message) for trace in output.errors
+    ]
+    assert any(body["error"] in trace.trace.error.message for trace in output.errors)
+
+
+# Every Harvest v3 parity stream reads one list endpoint with the shared offers shape. These mocks
+# pin the request contract; live reads against the test account cover the records themselves.
+PARITY_STREAM_ENDPOINTS = {
+    "approver_groups": "https://harvest.greenhouse.io/v3/approver_groups",
+    "approvers": "https://harvest.greenhouse.io/v3/approvers",
+    "job_hiring_managers": "https://harvest.greenhouse.io/v3/job_hiring_managers",
+    "job_owners": "https://harvest.greenhouse.io/v3/job_owners",
+    "prospect_pool_stages": "https://harvest.greenhouse.io/v3/prospect_pool_stages",
+    "user_emails": "https://harvest.greenhouse.io/v3/user_emails",
+    "interview_kits": "https://harvest.greenhouse.io/v3/interview_kits",
+    "interviewer_tags": "https://harvest.greenhouse.io/v3/interviewer_tags",
+    "interviewers": "https://harvest.greenhouse.io/v3/interviewers",
+    "job_interviews": "https://harvest.greenhouse.io/v3/job_interviews",
+    "scorecard_candidate_attributes": "https://harvest.greenhouse.io/v3/scorecard_candidate_attributes",
+    "scorecard_questions": "https://harvest.greenhouse.io/v3/scorecard_questions",
+    "application_stages": "https://harvest.greenhouse.io/v3/application_stages",
+    "applied_candidate_tags": "https://harvest.greenhouse.io/v3/applied_candidate_tags",
+    "attachments": "https://harvest.greenhouse.io/v3/attachments",
+    "candidate_educations": "https://harvest.greenhouse.io/v3/candidate_educations",
+    "candidate_employments": "https://harvest.greenhouse.io/v3/candidate_employments",
+    "prospect_details": "https://harvest.greenhouse.io/v3/prospect_details",
+    "referrers": "https://harvest.greenhouse.io/v3/referrers",
+    "rejection_details": "https://harvest.greenhouse.io/v3/rejection_details",
+}
+
+
+@pytest.mark.parametrize("stream_name", sorted(PARITY_STREAM_ENDPOINTS))
+def test_parity_streams_paginate_and_filter_on_the_first_page_only(requests_mock, get_source, stream_name):
+    """Pin the first-page-only filter and the Link-header cursor walk for each parity stream.
+
+    Page one carries per_page and the two-sided updated_at window; the follow-up carries the cursor
+    and nothing else, which is what Harvest v3 requires. The first page replays the endpoint's own
+    documented example record, so a field the schema forgot to declare shows up here too.
+    """
+    url = PARITY_STREAM_ENDPOINTS[stream_name]
+    first_record = DOCUMENTED_V3_EXAMPLES[stream_name]
+    second_record = {**first_record, "id": first_record["id"] + 1, "updated_at": "2024-01-02T00:00:00.000Z"}
+    _register_token(requests_mock)
+    requests = []
+
+    def callback(request, context):
+        requests.append(request)
+        context.status_code = 200
+        if len(requests) == 1:
+            assert request.qs == {
+                "per_page": ["500"],
+                "updated_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"],
+            }
+            context.headers["Link"] = f'<{url}?cursor=cursor-2>; rel="next"'
+            return [first_record]
+
+        assert parse_qs(request.query) == {"cursor": ["cursor-2"]}
+        return [second_record]
+
+    requests_mock.get(url, json=callback)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG, catalog=catalog)
+
+    assert not output.errors
+    assert [record.record.data["id"] for record in output.records] == [first_record["id"], second_record["id"]]
+    assert len(requests) == 2

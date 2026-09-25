@@ -1,5 +1,5 @@
-# Community PRs touching a certified API source land in Status "Community PR
-# Review"; community PRs that add a connector directory not present on master
+# Community PRs touching a certified API source land in Status "New Community
+# PRs"; community PRs that add a connector directory not present on master
 # land in Status "New Connector PRs", which takes precedence when both apply.
 #
 # Live synchronization is the default; scheduled runs always write. A
@@ -221,7 +221,7 @@ jobs:
               }
               return option;
             };
-            const certifiedStatusOption = findStatusOption('Community PR Review');
+            const certifiedStatusOption = findStatusOption('New Community PRs');
             const newConnectorStatusOption = findStatusOption('New Connector PRs');
             core.info(
               `Resolved project "${project.title}" with options ` +
