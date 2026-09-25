@@ -73,7 +73,7 @@ You can follow the steps laid out below to create the application and obtain the
    - `r_marketing_leadgen_automation` - Read lead gen form data
    - `r_ads_leadgen_automation` - Read lead gen automation data
 
-   Not all scopes may be available depending on your LinkedIn API program access level. At a minimum, you need `r_ads` and `r_ads_reporting` to sync ad account data and analytics. The **Videos** stream also needs `r_organization_social`; see [Videos](#videos).
+   Not all scopes may be available depending on your LinkedIn API program access level. At a minimum, you need `r_ads` and `r_ads_reporting` to sync ad account data and analytics. The **Videos** stream also needs `r_organization_social`; see [Videos](#videos). The **Organizations** stream also needs `r_organization_admin`; see [Organizations](#organizations).
 5. Click **Request access token**. You will be redirected to an authorization page. Use your LinkedIn credentials to log in and authorize your app and obtain your **Access Token** and **Refresh Token**.
 
 :::caution
@@ -174,12 +174,6 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 
 :::info
 
-The `Organizations` stream returns the organization access control (ACL) records of the authenticated member - one row per organization and role, with the organization URN, the role, and its state. All role states (`APPROVED`, `REQUESTED`, `REJECTED`, `REVOKED`) are returned; filter on the `state` field if you only need approved roles. This stream requires the `r_organization_admin` (or `rw_organization_admin`) OAuth scope - without it, LinkedIn returns a 403 for this stream only.
-
-:::
-
-:::info
-
 For Ad Analytics Streams such as `Ad Analytics by Campaign` and `Ad Analytics by Creative`, the `pivot` column name is renamed to `pivotValue` to handle the data normalization correctly and avoid name conflicts with certain destinations. This field contains the ID of the associated entity as a [URN](https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/urns). Please refer to the [LinkedIn documentation](https://learn.microsoft.com/en-us/linkedin/marketing/urn-resolution?view=li-lms-2023-05) for the format of the URN value for the Ad Analytics streams.
 
 :::
@@ -222,9 +216,24 @@ The LinkedIn Ads API does not return records that have no values for any of the 
 
 ## Limitations
 
+### Accounts
+
+The **Accounts** stream supports Full Refresh sync mode only. The LinkedIn API doesn't support date-based filtering when listing ad accounts.
+
 ### Lead forms and Lead form responses
 
 The **Lead forms** and **Lead form responses** streams support Full Refresh sync mode only. Incremental sync is not available for these streams due to limitations in how the LinkedIn API handles time-range filtering for lead data.
+
+### Organizations
+
+The **Organizations** stream returns the [organization access control (ACL)](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/organization-access-control-by-role) records of the member who authenticated the connector: one row per organization and role, with the organization URN (`organization`), the member URN (`roleAssignee`), the `role` (for example `ADMINISTRATOR` or `DIRECT_SPONSORED_CONTENT_POSTER`), and the role's `state`. It supports Full Refresh sync mode only, as the LinkedIn API doesn't expose a modification timestamp usable for filtering.
+
+Keep in mind the following:
+
+- The stream returns roles in every state (`APPROVED`, `REQUESTED`, `REJECTED`, `REVOKED`). Filter on `state` downstream if you only need approved roles.
+- The stream describes the authenticated member's organization roles, not ad accounts, so the **Account IDs** setting doesn't filter it.
+- The stream needs the `r_organization_admin` (or `rw_organization_admin`) scope. The connector's OAuth flow requests it; if you authenticate with an access token that lacks this scope, LinkedIn returns a 403 error and this stream fails. Other streams don't need this scope and aren't affected.
+- Unlike other streams, where `created` and `lastModified` are converted to RFC 3339 timestamps, this stream keeps them as the objects LinkedIn returns: `actor` (the member URN that made the change) and `time` (epoch milliseconds).
 
 ### Videos
 
