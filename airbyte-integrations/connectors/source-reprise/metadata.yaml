@@ -14,11 +14,11 @@ data:
       enabled: false
       packageName: airbyte-source-reprise
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.26.0@sha256:94a7ac35764d45a5c5a797cc99940308c11c62313b7dfad555a10a6002d8d5d3
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.30.0@sha256:a249dd191ff2b4e5a7c6fd3749395d4a2f5beee988165ebabfacb17199e5b378
   connectorSubtype: api
   connectorType: source
   definitionId: 77562b16-e56b-4135-bde6-1e87ef6a1449
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.4
   dockerRepository: airbyte/source-reprise
   githubIssueLabel: source-reprise
   icon: icon.svg

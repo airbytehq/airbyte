@@ -97,6 +97,7 @@ Add the following scopes to your custom app to ensure Airbyte can sync all avail
 - `read_locations`
 - `read_locales`
 - `read_marketing_events`
+- `read_markets`
 - `read_merchant_managed_fulfillment_orders`
 - `read_online_store_pages`
 - `read_order_edits`
@@ -139,7 +140,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Collects](https://shopify.dev/api/admin-rest/latest/resources/collect#top)
 - [Collection Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Collection#field-Collection.fields.products) — All products associated with each collection, including smart collection matches
 - [Collections (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Collection)
-- [Countries (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/queries/deliveryProfiles)
+- [Countries (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/queries/deliveryProfiles) — Legacy shipping configuration. Returns a frozen snapshot for shops using [market-driven shipping](#countries-and-market-driven-shipping).
 - [Custom Collections](https://shopify.dev/api/admin-rest/latest/resources/customcollection#top)
 - [Customers](https://shopify.dev/api/admin-rest/latest/resources/customer#top)
 - [Customer Journey Summary (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/customerjourneysummary)
@@ -154,6 +155,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Inventory Items (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryItem)
 - [Inventory Levels (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryLevel)
 - [Locations](https://shopify.dev/api/admin-rest/latest/resources/location)
+- [Market Countries (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/queries/markets) — Shipping configuration of shops using [market-driven shipping](#countries-and-market-driven-shipping). Requires the `read_markets` scope.
 - [Metafields (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Metafield) — Available as separate streams for: Articles, Blogs, Collections, Customers, Draft Orders, Locations, Orders, Pages, Product Images, Products, Product Variants, Shops, and Smart Collections
 - [Order Agreements (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderAgreement)
 - [Orders](https://shopify.dev/api/admin-rest/latest/resources/order#top)
@@ -172,6 +174,26 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
+
+## Countries and market-driven shipping
+
+Shopify is moving merchant shipping configuration from delivery profiles to [Markets](https://shopify.dev/docs/apps/build/orders-fulfillment/market-driven-shipping/upgrade-your-app). Once a shop is on market-driven shipping, the `deliveryProfiles` API that backs the `Countries` stream returns a frozen snapshot that no longer reflects changes made by the merchant.
+
+The connector checks `shop.features.marketDrivenShipping` when the `Countries` or `Market Countries` stream starts syncing:
+
+- Shops on legacy shipping: `Countries` syncs as before; `Market Countries` emits no records.
+- Shops on market-driven shipping: `Countries` keeps emitting the snapshot of the shipping configuration as it was at migration time (and logs a warning), so previously synced data is not wiped; `Market Countries` emits one record per market region (a whole country, or a country subdivision such as a US state) with the market's current shipping options.
+
+`Market Countries` differs from `Countries` in shape: a country that belongs to several markets appears once per market, whole-country regions carry no province list, and `shipping_enabled` / `shipping_options` are null when the market inherits its shipping configuration from a parent market. Markets of every type and status are included, so filter on `market_type = REGION` and `market_status = ACTIVE` for buyer-facing shipping countries.
+
+Shopify's rollout starts on October 1, 2026 (merchants who opt in, plus shops that Shopify moves automatically once their installed apps are confirmed compatible) and is planned to cover all shops by July 1, 2027, so both stream behaviors coexist during that period. Nothing changes in your connection automatically and no global switch is required: keep `Countries` if you need the legacy snapshot, and enable `Market Countries` for shops that have migrated.
+
+### Enabling Market Countries for a migrated shop
+
+1. Make sure the connector has the `read_markets` scope. With **OAuth2.0**, re-authenticate the source on its Settings page. With **API password**, add `read_markets` to your custom app's Admin API scopes and save the source again. Without the scope, the stream is not in the catalog and the source logs a warning when the schema is discovered.
+2. Refresh the source schema on the connection so `Market Countries` appears in the stream list.
+3. Enable the `Market Countries` stream. You can leave `Countries` enabled; it continues to hold the last legacy snapshot.
+4. Run a sync and check that `market_countries` contains one record per market region (`market_handle`, `code`, `subdivision_code`, `shipping_options`). On a shop that has not migrated yet, the stream stays empty until Shopify migrates the shop; no action is needed.
 
 ## Capturing deleted records
 
@@ -304,6 +326,10 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.1.0 | 2026-09-21 | [86493](https://github.com/airbytehq/airbyte/pull/86493) | Add `market_countries` stream for shops on market-driven shipping (requires `read_markets`); `countries` logs a warning for such shops since `deliveryProfiles` returns a frozen snapshot; `countries` and `market_countries` retry throttled pages and fail on other Shopify GraphQL `errors` responses instead of completing a partial snapshot |
+| 4.0.3 | 2026-09-16 | [86371](https://github.com/airbytehq/airbyte/pull/86371) | Fix `ValueError: year 0 is out of range` when the lookback window is applied to an empty stream state |
+| 4.0.2 | 2026-09-15 | [83335](https://github.com/airbytehq/airbyte/pull/83335) | Upgrade Shopify API version to 2026-07 |
+| 4.0.1 | 2026-09-14 | [81363](https://github.com/airbytehq/airbyte/pull/81363) | Classify Shopify authentication errors as config errors instead of system errors during bulk job creation |
 | 4.0.0 | 2026-08-11 | [81339](https://github.com/airbytehq/airbyte/pull/81339) | Add missing `format: date-time` annotations to datetime fields in `orders` and `order_refunds`. `orders.processed_at` and `order_refunds.processed_at` change column type in typed destinations and require a schema refresh and resync. See the [migration guide](./shopify-migrations.md#upgrading-to-400). |
 | 3.5.1 | 2026-06-24 | [80787](https://github.com/airbytehq/airbyte/pull/80787) | Validate and normalize the `shop` config value: accept a bare subdomain or full myshopify URL, and reject malformed input with a clear config error. The normalized handle is also written to the `shop_url` record field, so previously-malformed configs now emit a clean value. |
 | 3.5.0 | 2026-06-11 | [79624](https://github.com/airbytehq/airbyte/pull/79624) | Add new synchronous cursor-paginated `discount_codes_sync` stream with support for >100 redeem codes per discount |
