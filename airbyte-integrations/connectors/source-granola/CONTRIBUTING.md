@@ -20,15 +20,15 @@ Revisit this if Granola publishes an OAuth application model for the public API.
 
 ## Incremental Stream Considerations
 
-The Granola API connector has 3 streams: `notes` (incremental with `created_at` cursor), `detailed_notes` and `note_transcripts` (children of notes via `SubstreamPartitionRouter`). No FR parent streams remain.
+The Granola API connector has 3 streams: `notes` (incremental with `updated_at` cursor), `detailed_notes` and `note_transcripts` (children of notes via `SubstreamPartitionRouter`). No FR parent streams remain.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|
-| notes | medium | top-level parent | created_at | created_at | incremental |  |
+| notes | medium | top-level parent | updated_at | updated_at | incremental |  |
 | detailed_notes | medium | child | none | none | deferred_child |  |
 | note_transcripts | medium | child | none | none | deferred_child |  |
 
-The `notes` cursor slices on second-granular date-times (`%Y-%m-%dT%H:%M:%SZ` with `cursor_granularity: PT1S`) because the API's `created_before=<date>` excludes that whole day, which used to drop notes created on a slice boundary date. `cursor_datetime_formats` retains `%Y-%m-%d` so date-only state from earlier versions still parses.
+The `notes` cursor is `updated_at` with a single slice: the API exposes `updated_after` but no `updated_before`, so there is no `step` or end bound. A note edited after a sync is re-emitted on the next incremental sync, and the child streams inherit this through their parent partitions. The bound stays second-granular (`%Y-%m-%dT%H:%M:%SZ`) because Granola has treated date-only bounds as excluding the named day, and `cursor_datetime_formats` retains `%Y-%m-%d` so date-only state from earlier versions still parses.
 
 ### Future incremental stream candidates
 

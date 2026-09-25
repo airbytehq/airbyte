@@ -6,6 +6,8 @@ This page contains the setup guide and reference information for the [Granola](h
 
 </HideInUI>
 
+See the [migration guide](granola-migrations.md) when upgrading across a breaking version such as 1.0.0.
+
 ## Prerequisites
 
 You need a Granola API key from a workspace on a **Business** or **Enterprise** plan. Granola offers two kinds of keys:
@@ -41,7 +43,7 @@ On Enterprise plans, a workspace administrator controls which scopes members can
 
 1. Enter a **Name** for the Granola source connector.
 2. Enter your **API Key**.
-3. (Optional) Enter a **Start Date** in `YYYY-MM-DD` format. The connector replicates notes created on or after this date. If you leave this field empty, the connector defaults to replicating notes from the last two years.
+3. (Optional) Enter a **Start Date** in `YYYY-MM-DD` format. The connector replicates notes last updated on or after this date. If you leave this field empty, the connector defaults to replicating notes updated in the last two years.
 4. Click **Set up source** and wait for the connection test to complete.
 
 ## Supported sync modes
@@ -70,7 +72,7 @@ The Granola source connector supports the following streams:
 
 The `notes` stream retrieves meeting notes from your Granola workspace using the [`GET /v1/notes`](https://docs.granola.ai/api-reference/list-notes) endpoint. Each record includes the note ID, title, object type, owner name and email, and creation timestamp. The API may return additional fields beyond those listed here, and the connector captures them automatically.
 
-For incremental syncs, the connector uses `created_at` as the cursor field and fetches notes in 30-day time windows, passing each window's bounds as second-level timestamps in the `created_after` and `created_before` query parameters. Because the cursor is the creation date, edits to an existing note aren't picked up by later incremental syncs. Run a full refresh if you need to capture changes to notes you already synced.
+For incremental syncs, the connector uses `updated_at` as the cursor field and requests all notes updated since the stored cursor in a single `updated_after` query parameter — the API exposes no upper-bound filter, so the request is one unbounded window rather than stepped slices. A note edited after a sync is emitted again on the next incremental sync. Each record includes `created_at` and `updated_at` timestamps.
 
 The API only returns notes that have a generated AI summary and transcript. Notes that are still being processed or were never summarized are excluded.
 
@@ -88,7 +90,7 @@ Granola returns the transcript inline. If a transcript is too large to return th
 
 The `note_transcripts` stream retrieves each note's transcript from the [`GET /v1/notes/{note_id}/transcript`](https://docs.granola.ai/api-reference/get-transcript) endpoint, one record per transcript segment. Each record carries the segment's speaker, text, and start and end times, plus the `note_id` of the note it belongs to. Because this endpoint is paged, it returns transcripts of any size, including those `detailed_notes` can't return inline.
 
-The stream has no primary key, so records are appended rather than deduplicated. It isn't incremental: on every sync it re-reads the full list of notes created since your start date and requests each of those notes' transcripts again, so it adds at least one request for every note in that range rather than only for new notes. The connector requests the API's maximum of 100 transcript segments per page, so a transcript longer than 100 segments costs one more request for each additional page. On a workspace with thousands of historical notes this dominates sync time, so size your sync frequency against the total note count.
+The stream has no primary key, so records are appended rather than deduplicated. It isn't incremental: on every sync it re-reads the full list of notes updated since your start date and requests each of those notes' transcripts again, so it adds at least one request for every note in that range rather than only for new notes. The connector requests the API's maximum of 100 transcript segments per page, so a transcript longer than 100 segments costs one more request for each additional page. On a workspace with thousands of historical notes this dominates sync time, so size your sync frequency against the total note count.
 
 If Granola no longer returns a transcript for a note that the `notes` stream listed, such as a note deleted or unshared mid-sync, the API responds with `404` and the connector skips that note instead of failing the stream.
 
@@ -142,7 +144,7 @@ For programmatic configuration, use these parameter names:
 | Field | Required | Description |
 | :--- | :---: | :--- |
 | `api_key` | Yes | Granola API key. Use a personal API key for notes your own account can read, or a workspace API key for the workspace's shared notes. |
-| `start_date` | No | Earliest note creation date to replicate, in `YYYY-MM-DD` format. Defaults to two years before the sync runs. |
+| `start_date` | No | Earliest note update date to replicate, in `YYYY-MM-DD` format. Defaults to two years before the sync runs. |
 
 ## Changelog
 
@@ -151,6 +153,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.0.0 | 2026-09-25 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Sync notes incrementally on updated_at so edited notes are replicated. Existing connections must reset the notes, detailed_notes, and note_transcripts streams |
 | 0.3.3 | 2026-09-22 | [86667](https://github.com/airbytehq/airbyte/pull/86667) | Update dependencies |
 | 0.3.2 | 2026-09-15 | [86082](https://github.com/airbytehq/airbyte/pull/86082) | Update dependencies |
 | 0.3.1 | 2026-09-08 | [85516](https://github.com/airbytehq/airbyte/pull/85516) | Update dependencies |

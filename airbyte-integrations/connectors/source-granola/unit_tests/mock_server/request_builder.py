@@ -45,6 +45,9 @@ class GranolaRequestBuilder:
     def with_created_after(self, created_after: str) -> "GranolaRequestBuilder":
         return self.with_query_param("created_after", created_after)
 
+    def with_updated_after(self, updated_after: str) -> "GranolaRequestBuilder":
+        return self.with_query_param("updated_after", updated_after)
+
     def with_created_before(self, created_before: str) -> "GranolaRequestBuilder":
         return self.with_query_param("created_before", created_before)
 
