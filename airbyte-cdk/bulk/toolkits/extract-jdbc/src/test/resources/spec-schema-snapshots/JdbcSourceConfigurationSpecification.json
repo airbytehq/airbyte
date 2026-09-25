@@ -1,0 +1,99 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "title" : "Jdbc Source Configuration Specification",
+  "type" : "object",
+  "additionalProperties" : true,
+  "properties" : {
+    "host" : {
+      "type" : "string",
+      "description" : "Hostname of the database.",
+      "title" : "Host",
+      "order" : 0,
+      "always_show" : true
+    },
+    "username" : {
+      "type" : "string",
+      "description" : "The username which is used to access the database.",
+      "title" : "Username",
+      "order" : 2,
+      "always_show" : true
+    },
+    "password" : {
+      "type" : "string",
+      "description" : "The password associated with the username.",
+      "title" : "Password",
+      "order" : 3,
+      "always_show" : true,
+      "airbyte_secret" : true
+    },
+    "database" : {
+      "type" : "string",
+      "description" : "Name of the database.",
+      "title" : "Database",
+      "order" : 4,
+      "always_show" : true
+    },
+    "schemas" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      },
+      "description" : "The list of schemas to sync from. If not specified, all accessible schemas will be synced. The exact meaning depends on the database (schema names, database names, etc.).",
+      "title" : "Schemas",
+      "order" : 1,
+      "always_show" : true,
+      "group" : "optional"
+    },
+    "table_filters" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "additionalProperties" : true,
+        "description" : "Inclusion filter configuration for table selection per schema.",
+        "title" : "Table Filter",
+        "properties" : {
+          "schema_name" : {
+            "type" : "string",
+            "description" : "The name of the schema to apply this filter to. Should match a schema defined in \"Schemas\" field above.",
+            "title" : "Schema Name",
+            "order" : 1,
+            "always_show" : true
+          },
+          "table_name_patterns" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            },
+            "description" : "List of table name patterns to include from this schema. Should be a SQL LIKE pattern.",
+            "title" : "Table Filter Patterns",
+            "order" : 2,
+            "always_show" : true,
+            "minItems" : 1
+          }
+        },
+        "required" : [ "schema_name", "table_name_patterns" ]
+      },
+      "description" : "Optional filters to include only specific tables from specific schemas. Works in combination with the 'Schemas' config above.",
+      "title" : "Table Filters",
+      "order" : 2,
+      "always_show" : true,
+      "group" : "optional"
+    },
+    "jdbc_url_params" : {
+      "type" : "string",
+      "description" : "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+      "title" : "JDBC URL Params",
+      "order" : 3,
+      "group" : "optional"
+    },
+    "check_privileges" : {
+      "type" : "boolean",
+      "default" : true,
+      "description" : "When this feature is enabled, during schema discovery the connector will query each table or view individually to check access privileges and inaccessible tables, views, or columns therein will be removed. In large schemas, this might cause schema discovery to take too long, in which case it might be advisable to disable this feature.",
+      "title" : "Check Table and Column Access Privileges",
+      "order" : 4,
+      "group" : "optional"
+    }
+  },
+  "required" : [ "host", "username", "database" ]
+}
