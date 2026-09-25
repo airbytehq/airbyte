@@ -1,0 +1,29 @@
+plugins {
+    id 'airbyte-bulk-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.slackv2.SlackSource'
+}
+
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = []
+}
+
+dependencies {
+    // The Slack Web API is called with the JDK's java.net.http client and the CDK's Jackson: records
+    // are the raw JSON objects Slack returns (as with the legacy connector), so a typed SDK would
+    // only get in the way of parity and of the rate-limit scheduling.
+}
+
+// Starts the fake Slack Web API of the test fixtures for manual runs of the connector image:
+// ./gradlew :airbyte-integrations:connectors:source-slack-v2:runFakeSlack --args="8085 generate:5:2000"
+tasks.register('runFakeSlack', JavaExec) {
+    group = 'verification'
+    description = 'Runs FakeSlackServer (see CONTRIBUTING.md)'
+    classpath = sourceSets.testFixtures.runtimeClasspath
+    mainClass = 'io.airbyte.integrations.source.slackv2.FakeSlackServer'
+}

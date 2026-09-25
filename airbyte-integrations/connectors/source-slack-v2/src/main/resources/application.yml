@@ -1,0 +1,14 @@
+---
+airbyte:
+  connector:
+    data-channel:
+      medium: ${DATA_CHANNEL_MEDIUM:STDIO}
+      format: ${DATA_CHANNEL_FORMAT:JSONL}
+      socket-paths: ${DATA_CHANNEL_SOCKET_PATHS}
+    output:
+      buffer-byte-size-threshold-for-flush: 8192
+    extract:
+      slack:
+        # Base URL of the Slack Web API. Overridden by tests and the local harness to point the
+        # connector at a fake Slack server; not a user-facing setting.
+        api-base-url: ${SLACK_API_BASE_URL:https://slack.com/api/}

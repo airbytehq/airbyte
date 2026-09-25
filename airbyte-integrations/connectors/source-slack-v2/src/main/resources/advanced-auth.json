@@ -1,0 +1,92 @@
+{
+  "auth_flow_type": "oauth2.0",
+  "oauth_config_specification": {
+    "complete_oauth_output_specification": {
+      "additionalProperties": false,
+      "properties": {
+        "access_token": {
+          "path_in_connector_config": [
+            "credentials",
+            "access_token"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "complete_oauth_server_input_specification": {
+      "additionalProperties": false,
+      "properties": {
+        "client_id": {
+          "type": "string"
+        },
+        "client_secret": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "complete_oauth_server_output_specification": {
+      "additionalProperties": false,
+      "properties": {
+        "client_id": {
+          "path_in_connector_config": [
+            "credentials",
+            "client_id"
+          ],
+          "type": "string"
+        },
+        "client_secret": {
+          "path_in_connector_config": [
+            "credentials",
+            "client_secret"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "oauth_connector_input_specification": {
+      "access_token_headers": {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "access_token_params": {
+        "client_id": "{{ client_id_value }}",
+        "client_secret": "{{ client_secret_value }}",
+        "code": "{{ auth_code_value }}",
+        "redirect_uri": "{{ redirect_uri_value }}"
+      },
+      "access_token_url": "https://slack.com/api/oauth.v2.access",
+      "consent_url": "https://slack.com/oauth/v2/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&{{scopes_param}}",
+      "extract_output": [
+        "access_token"
+      ],
+      "scopes": [
+        {
+          "scope": "channels:history"
+        },
+        {
+          "scope": "channels:join"
+        },
+        {
+          "scope": "channels:read"
+        },
+        {
+          "scope": "groups:read"
+        },
+        {
+          "scope": "groups:history"
+        },
+        {
+          "scope": "users:read"
+        }
+      ],
+      "scopes_join_strategy": "comma"
+    }
+  },
+  "predicate_key": [
+    "credentials",
+    "option_title"
+  ],
+  "predicate_value": "Default OAuth2.0 authorization"
+}

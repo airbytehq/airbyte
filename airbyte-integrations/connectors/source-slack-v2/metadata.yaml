@@ -1,0 +1,47 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.4@sha256:5f343797cfcf021ca98ba9bdf5970ef66cbf6222d8cc17b0d61d13860a5bcc2b
+  connectorSubtype: api
+  connectorTestSuitesOptions:
+    - suite: unitTests
+  connectorType: source
+  definitionId: 24f3b2e7-1a17-40ce-bdc6-4c3e539ed46d
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-slack-v2
+  documentationUrl: https://docs.airbyte.com/integrations/sources/slack-v2
+  githubIssueLabel: source-slack-v2
+  icon: icon.svg
+  license: ELv2
+  name: Slack
+  allowedHosts:
+    hosts:
+      - slack.com
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:java
+  externalDocumentationUrls:
+    - title: Slack Web API methods
+      url: https://api.slack.com/methods
+      type: api_reference
+    - title: Slack rate limits
+      url: https://api.slack.com/apis/rate-limits
+      type: rate_limits
+    - title: Slack developer changelog
+      url: https://docs.slack.dev/changelog/
+      type: api_release_history
+    - title: Slack Web API OpenAPI specification
+      url: https://api.slack.com/specs/openapi/v2/slack_web.json
+      type: openapi_spec
+    - title: Slack system status
+      url: https://slack-status.com/
+      type: status_page
+metadataSpecVersion: "1.0"

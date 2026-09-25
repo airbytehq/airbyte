@@ -1,0 +1,227 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/sources/slack-v2",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Slack Spec",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "start_date" : {
+        "type" : "string",
+        "description" : "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
+        "title" : "Start Date",
+        "pattern" : "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "examples" : [ "2017-01-25T00:00:00Z" ],
+        "format" : "date-time"
+      },
+      "lookback_window" : {
+        "type" : "integer",
+        "description" : "How far into the past to look for messages in threads, default is 0 days",
+        "title" : "Threads Lookback window (Days)",
+        "examples" : [ 7, 14 ],
+        "minimum" : 0,
+        "default" : 0,
+        "maximum" : 365
+      },
+      "join_channels" : {
+        "type" : "boolean",
+        "description" : "Whether to join all channels or to sync data only from channels the bot is already in.  If false, you''ll need to manually add the bot to all the channels from which you''d like to sync messages.",
+        "title" : "Join all channels",
+        "default" : true
+      },
+      "include_private_channels" : {
+        "type" : "boolean",
+        "description" : "Whether to read information from private channels that the bot is already in.  If false, only public channels will be read.  If true, the bot must be manually added to private channels.",
+        "title" : "Include private channels",
+        "default" : false
+      },
+      "include_archived_channels" : {
+        "type" : "boolean",
+        "description" : "Whether to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams such as channel_messages, threads, and channel_members. Enable this option if you need to sync data from archived channels.",
+        "title" : "Include archived channels",
+        "default" : false
+      },
+      "channel_filter" : {
+        "type" : "array",
+        "items" : {
+          "type" : "string",
+          "minLength" : 0
+        },
+        "description" : "A channel name list (without leading '#' char) which limit the channels from which you'd like to sync. Empty list means no filter.",
+        "title" : "Channel name filter",
+        "default" : [ ],
+        "examples" : [ "channel_one", "channel_two" ]
+      },
+      "threads_ignore_no_replies" : {
+        "type" : "boolean",
+        "description" : "When enabled, the threads stream will skip messages that have no replies (reply_count is 0, null, or absent), reducing the number of API calls. Disabled by default to make Threads stream contain unthreaded messages in its records.",
+        "title" : "Ignore messages with no replies in threads stream",
+        "default" : false
+      },
+      "credentials" : {
+        "oneOf" : [ {
+          "title" : "Sign in via Slack (OAuth)",
+          "type" : "object",
+          "order" : 0,
+          "properties" : {
+            "option_title" : {
+              "type" : "string",
+              "const" : "Default OAuth2.0 authorization"
+            },
+            "client_id" : {
+              "type" : "string",
+              "description" : "Slack client_id. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help finding this id.",
+              "title" : "Client ID"
+            },
+            "client_secret" : {
+              "type" : "string",
+              "description" : "Slack client_secret. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help finding this secret.",
+              "title" : "Client Secret",
+              "airbyte_secret" : true
+            },
+            "access_token" : {
+              "type" : "string",
+              "description" : "Slack access_token. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help generating the token.",
+              "title" : "Access token",
+              "airbyte_secret" : true
+            }
+          },
+          "required" : [ "option_title", "client_id", "client_secret", "access_token" ]
+        }, {
+          "title" : "Bot Token",
+          "type" : "object",
+          "order" : 1,
+          "properties" : {
+            "option_title" : {
+              "type" : "string",
+              "const" : "API Token Credentials"
+            },
+            "api_token" : {
+              "type" : "string",
+              "description" : "A Slack bot token (xoxb-). See the <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> for instructions on how to generate it.",
+              "title" : "Bot Token",
+              "airbyte_secret" : true
+            }
+          },
+          "required" : [ "option_title", "api_token" ]
+        } ],
+        "description" : "Choose how to authenticate into Slack",
+        "title" : "Authentication mechanism",
+        "type" : "object"
+      },
+      "num_workers" : {
+        "type" : "integer",
+        "description" : "The number of worker threads to use for the sync.",
+        "title" : "Number of concurrent threads",
+        "minimum" : 2,
+        "maximum" : 10,
+        "default" : 2,
+        "examples" : [ 2, 3 ],
+        "order" : 7
+      },
+      "channel_messages_window_size" : {
+        "type" : "integer",
+        "description" : "The size (in days) of the date window that will be used while syncing data from the channel messages stream. A smaller window will allow for greater parallelization when syncing records, but can lead to rate limiting errors.",
+        "title" : "Channel messages date window size (in days)",
+        "order" : 8,
+        "default" : 100,
+        "minimum" : 1,
+        "maximum" : 100,
+        "examples" : [ 30, 10, 5 ]
+      },
+      "concurrency" : {
+        "type" : "integer",
+        "description" : "Maximum number of streams read at the same time. Slack rate limits each API method separately, so reading the streams concurrently (users, channels, channel members, channel messages and threads each use their own method) shortens a sync without hitting the limits sooner. Defaults to the legacy 'num_workers' value, or 2.",
+        "title" : "Concurrency",
+        "order" : 9,
+        "minimum" : 1,
+        "maximum" : 10,
+        "examples" : [ 2, 5 ]
+      },
+      "checkpoint_target_interval_seconds" : {
+        "type" : "integer",
+        "description" : "How often (in seconds) a stream should checkpoint its progress, when possible. Long streams (channel messages, threads) save their state at about this interval, so that an interrupted sync resumes where it stopped. Defaults to 300.",
+        "title" : "Checkpoint Target Time Interval (Advanced)",
+        "order" : 10,
+        "default" : 300,
+        "minimum" : 1,
+        "examples" : [ 300, 900 ]
+      }
+    },
+    "required" : [ "start_date", "lookback_window", "join_channels" ]
+  },
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ ],
+  "advanced_auth" : {
+    "auth_flow_type" : "oauth2.0",
+    "predicate_key" : [ "credentials", "option_title" ],
+    "predicate_value" : "Default OAuth2.0 authorization",
+    "oauth_config_specification" : {
+      "oauth_connector_input_specification" : {
+        "access_token_headers" : {
+          "Content-Type" : "application/x-www-form-urlencoded"
+        },
+        "access_token_params" : {
+          "client_id" : "{{ client_id_value }}",
+          "client_secret" : "{{ client_secret_value }}",
+          "code" : "{{ auth_code_value }}",
+          "redirect_uri" : "{{ redirect_uri_value }}"
+        },
+        "access_token_url" : "https://slack.com/api/oauth.v2.access",
+        "consent_url" : "https://slack.com/oauth/v2/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&{{scopes_param}}",
+        "extract_output" : [ "access_token" ],
+        "scopes" : [ {
+          "scope" : "channels:history"
+        }, {
+          "scope" : "channels:join"
+        }, {
+          "scope" : "channels:read"
+        }, {
+          "scope" : "groups:read"
+        }, {
+          "scope" : "groups:history"
+        }, {
+          "scope" : "users:read"
+        } ],
+        "scopes_join_strategy" : "comma"
+      },
+      "complete_oauth_output_specification" : {
+        "additionalProperties" : false,
+        "properties" : {
+          "access_token" : {
+            "path_in_connector_config" : [ "credentials", "access_token" ],
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "complete_oauth_server_input_specification" : {
+        "additionalProperties" : false,
+        "properties" : {
+          "client_id" : {
+            "type" : "string"
+          },
+          "client_secret" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "complete_oauth_server_output_specification" : {
+        "additionalProperties" : false,
+        "properties" : {
+          "client_id" : {
+            "path_in_connector_config" : [ "credentials", "client_id" ],
+            "type" : "string"
+          },
+          "client_secret" : {
+            "path_in_connector_config" : [ "credentials", "client_secret" ],
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      }
+    }
+  }
+}
