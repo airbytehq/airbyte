@@ -129,19 +129,6 @@ streams:
           type: DpathExtractor
           field_path:
             - data
-      # Ramp hides terminated cards unless `is_terminated=true` is sent. `is_terminated` is not in Ramp's
-      # published spec for the legacy /cards endpoint; the sandbox applies it (true returns only terminated
-      # cards, an invalid value returns 422). See airbytehq/airbyte-internal-issues#17540.
-      partition_router:
-        type: ListPartitionRouter
-        cursor_field: is_terminated
-        values:
-          - "false"
-          - "true"
-        request_option:
-          type: RequestOption
-          field_name: is_terminated
-          inject_into: request_parameter
     primary_key:
       - id
     schema_loader:

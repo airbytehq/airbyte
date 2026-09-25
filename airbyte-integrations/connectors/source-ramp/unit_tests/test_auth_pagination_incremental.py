@@ -8,7 +8,6 @@
   of the previous page's last record, and a null-safe stop condition
 - `transactions` incremental sync is filtered server-side via `updated_after`, and every request
   sends `state=ALL` so declined transactions are included
-- `cards` is read once per `is_terminated` value so terminated cards are included
 - Ramp's auth and scope errors surface as `config_error` with an actionable message
 - `reimbursements` incremental sync is filtered server-side via `updated_after`, once per
   `direction` partition
@@ -201,21 +200,6 @@ def test_start_date_sent_as_updated_after(stream_name, url, path, start_date, ex
     for request in data_requests:
         params = query_params(request)
         assert params.get("updated_after") == expected_updated_after, f"expected `updated_after={expected_updated_after}`, got {params}"
-
-
-def test_cards_include_terminated():
-    """`cards` is read once per `is_terminated` value so terminated cards reach the destination."""
-    terminated = {**_card("card-2"), "state": "TERMINATED"}
-
-    with requests_mock.Mocker() as mocker:
-        mocker.post(TOKEN_URL, json=TOKEN_RESPONSE)
-        mocker.get(CARDS_URL + "?is_terminated=false", json=_page([_card("card-1")]))
-        mocker.get(CARDS_URL + "?is_terminated=true", json=_page([terminated]))
-        output = read_stream("cards")
-
-    assert sorted(record_ids(output)) == ["card-1", "card-2"]
-    data_requests = requests_to(mocker.request_history, CARDS_PATH)
-    assert sorted(query_params(request).get("is_terminated") for request in data_requests) == ["false", "true"]
 
 
 @pytest.mark.parametrize(
