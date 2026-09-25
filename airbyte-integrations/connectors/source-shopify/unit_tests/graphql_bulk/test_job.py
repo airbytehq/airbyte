@@ -441,21 +441,53 @@ def test_job_self_canceled_on_checkpoint_with_no_url_retries_slice_without_check
     assert stream.job_manager._job_checkpoint_disabled is True
     stream.job_manager._job_last_rec_count = 100
     assert stream.job_manager._job_should_checkpoint is False
-    # the checkpointing is enabled back once the re-run slice is done
+    # the checkpointing stays disabled for the rest of the sync, once the re-run slice is done
     assert stream.job_manager.get_adjusted_job_end(slice_start, slice_end, None, None) == slice_end
-    assert stream.job_manager._job_checkpoint_disabled is False
-    assert stream.job_manager._job_should_checkpoint is True
+    assert stream.job_manager._job_checkpoint_disabled is True
+    assert stream.job_manager._job_should_checkpoint is False
 
 
-def test_job_failed_with_no_partial_url_for_stream_with_bulk_checkpointing(request, requests_mock, auth_config) -> None:
+@pytest.mark.parametrize("object_count", ["0", "20000"], ids=["no_rows_collected", "rows_collected_above_checkpoint"])
+def test_job_failed_with_no_partial_url_for_stream_with_bulk_checkpointing(request, requests_mock, auth_config, object_count) -> None:
     stream = MetafieldOrders(auth_config)
     stream.job_manager._concurrent_max_retry = 1
     stream.job_manager._concurrent_interval = 1
     stream.job_manager._job_check_interval = 1
-    requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue("bulk_job_failed_response"))
+    stream.job_manager._job_checkpoint_interval = 15000
+    failed_response = request.getfixturevalue("bulk_job_failed_response")
+    failed_response["data"]["node"]["objectCount"] = object_count
+    requests_mock.post(stream.job_manager.base_url, json=failed_response)
     with pytest.raises(ShopifyBulkExceptions.BulkJobFailed) as error:
         list(stream.job_manager.job_get_results())
     assert "returned no partial result" in repr(error.value)
+    # the FAILED job is not the self-canceled checkpoint, so the slice re-run is not scheduled
+    assert stream.job_manager._job_retry_slice_without_checkpoint is False
+    assert stream.job_manager._job_checkpoint_disabled is False
+
+
+def test_job_long_running_canceled_with_no_url_reduces_slice_with_checkpointing_disabled(request, requests_mock, auth_config) -> None:
+    stream = MetafieldOrders(auth_config)
+    stream.job_manager._job_check_interval = 0
+    # the checkpointing was disabled by the previous slice, that returned no data on checkpointing
+    stream.job_manager._job_checkpoint_disabled = True
+    running_response = request.getfixturevalue("bulk_job_running_with_object_count_no_url_response")
+    canceled_response = request.getfixturevalue("bulk_job_canceled_with_object_count_no_url_response")
+    stream.job_manager._job_id = running_response["data"]["node"]["id"]
+    # the job runs longer than expected, so it is self-canceled to reduce the slice
+    stream.job_manager._job_created_at = pdm.now().subtract(seconds=stream.job_manager._job_max_elapsed_time + 60).to_rfc3339_string()
+    stream.job_manager._job_checkpoint_interval = 4
+    requests_mock.post(stream.job_manager.base_url, [{"json": running_response}, {"json": canceled_response}])
+    job_size_before = stream.job_manager._job_size
+
+    assert list(stream.job_manager.job_get_results()) == []
+
+    slice_start = pdm.parse("2024-01-01T00:00:00Z")
+    slice_end = pdm.parse("2024-01-02T00:00:00Z")
+    # the slice is re-run with the reduced size, not treated as consumed
+    assert stream.job_manager.get_adjusted_job_end(slice_start, slice_end, None, None) == slice_start
+    assert stream.job_manager._job_size < job_size_before
+    assert stream.job_manager._job_retry_slice_without_checkpoint is False
+    assert stream.job_manager._job_checkpoint_disabled is True
 
 
 def test_job_read_file_invalid_filename(mocker, auth_config) -> None:
