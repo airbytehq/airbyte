@@ -67,16 +67,17 @@ class SnowflakeSourceMetadataQuerier(
                 .map { it.catalog to it.schema }
                 .distinct()
                 .forEach { (catalog: String?, schema: String?) ->
-                    dbmd.getColumns(catalog, schema?.let { dbmd.escapePattern(it) }, null, null)
+                    dbmd
+                        .getColumns(catalog, schema?.let { dbmd.escapePattern(it) }, null, null)
                         .use { rs: ResultSet ->
-                        while (rs.next()) {
-                            val (tableName: TableName, metadata: ColumnMetadata) =
-                                columnMetadataFromResultSet(rs, isPseudoColumn = false)
-                            if (schema != null && tableName.schema != schema) continue
-                            val joinedTableName: TableName = joinMap[tableName] ?: continue
-                            results.add(joinedTableName to metadata)
+                            while (rs.next()) {
+                                val (tableName: TableName, metadata: ColumnMetadata) =
+                                    columnMetadataFromResultSet(rs, isPseudoColumn = false)
+                                if (schema != null && tableName.schema != schema) continue
+                                val joinedTableName: TableName = joinMap[tableName] ?: continue
+                                results.add(joinedTableName to metadata)
+                            }
                         }
-                    }
                 }
             log.info { "Discovered ${results.size} column(s)." }
         } catch (e: Exception) {
@@ -237,30 +238,31 @@ class SnowflakeSourceMetadataQuerier(
             for (namespace in
                 base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
                 // Query all schemas in the current database
-                dbmd.getTables(
+                dbmd
+                    .getTables(
                         namespace,
                         schema?.let { dbmd.escapePattern(it) },
                         null,
                         arrayOf("TABLE", "VIEW"),
                     )
                     .use { rs: ResultSet ->
-                    while (rs.next()) {
-                        val tableName =
-                            TableName(
-                                catalog = rs.getString("TABLE_CAT"),
-                                schema = rs.getString("TABLE_SCHEM"),
-                                name = rs.getString("TABLE_NAME"),
-                                type = rs.getString("TABLE_TYPE") ?: "",
-                            )
-                        // The schema was passed as a LIKE pattern; re-filter exactly
-                        // in case a driver ignores escaping and over-matches.
-                        if (schema != null && tableName.schema != schema) continue
-                        // Filter out system schemas
-                        if (!EXCLUDED_NAMESPACES.contains(tableName.schema?.uppercase())) {
-                            allTables.add(tableName)
+                        while (rs.next()) {
+                            val tableName =
+                                TableName(
+                                    catalog = rs.getString("TABLE_CAT"),
+                                    schema = rs.getString("TABLE_SCHEM"),
+                                    name = rs.getString("TABLE_NAME"),
+                                    type = rs.getString("TABLE_TYPE") ?: "",
+                                )
+                            // The schema was passed as a LIKE pattern; re-filter exactly
+                            // in case a driver ignores escaping and over-matches.
+                            if (schema != null && tableName.schema != schema) continue
+                            // Filter out system schemas
+                            if (!EXCLUDED_NAMESPACES.contains(tableName.schema?.uppercase())) {
+                                allTables.add(tableName)
+                            }
                         }
                     }
-                }
             }
             log.info { "Discovered ${allTables.size} tables and views." }
             return@lazy allTables.toList()

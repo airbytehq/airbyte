@@ -26,14 +26,16 @@ class SnowflakeSourceMetadataQuerierTest {
         var index = -1
         var lastColumn: String? = null
         every { rs.next() } answers { ++index < rows.size }
-        every { rs.getString(any<String>()) } answers {
-            lastColumn = firstArg()
-            rows[index][lastColumn] as? String
-        }
-        every { rs.getInt(any<String>()) } answers {
-            lastColumn = firstArg()
-            (rows[index][lastColumn] as? Int) ?: 0
-        }
+        every { rs.getString(any<String>()) } answers
+            {
+                lastColumn = firstArg()
+                rows[index][lastColumn] as? String
+            }
+        every { rs.getInt(any<String>()) } answers
+            {
+                lastColumn = firstArg()
+                (rows[index][lastColumn] as? Int) ?: 0
+            }
         every { rs.wasNull() } answers { rows[index][lastColumn] == null }
         every { rs.close() } returns Unit
         return rs
@@ -47,9 +49,10 @@ class SnowflakeSourceMetadataQuerierTest {
         val dbmd = mockk<DatabaseMetaData>()
         every { dbmd.searchStringEscape } returns "\\"
         every { dbmd.getTables(any(), any(), null, any()) } answers { makeResultSet(tableRows) }
-        every { dbmd.getColumns(any(), any(), null, null) } answers {
-            makeResultSet(columnRowsByPattern[secondArg()] ?: emptyList())
-        }
+        every { dbmd.getColumns(any(), any(), null, null) } answers
+            {
+                makeResultSet(columnRowsByPattern[secondArg()] ?: emptyList())
+            }
         val conn = mockk<Connection>()
         every { conn.metaData } returns dbmd
         val config = mockk<JdbcSourceConfiguration>()
@@ -116,9 +119,10 @@ class SnowflakeSourceMetadataQuerierTest {
         val slot = slot<String>()
         val dbmd = mockk<DatabaseMetaData>()
         every { dbmd.searchStringEscape } returns "\\"
-        every { dbmd.getTables("TEST_DB", capture(slot), null, any()) } answers {
-            makeResultSet(emptyList())
-        }
+        every { dbmd.getTables("TEST_DB", capture(slot), null, any()) } answers
+            {
+                makeResultSet(emptyList())
+            }
         val conn = mockk<Connection>()
         every { conn.metaData } returns dbmd
         val config = mockk<JdbcSourceConfiguration>()
@@ -182,11 +186,9 @@ class SnowflakeSourceMetadataQuerierTest {
                             ),
                     ),
             )
-        val testX =
-            querier.columnMetadata(TableName("TEST_DB", "TESTXSCHEMA", "USERS", "TABLE"))
+        val testX = querier.columnMetadata(TableName("TEST_DB", "TESTXSCHEMA", "USERS", "TABLE"))
         assertEquals(listOf("USER_ID"), testX.map { it.name })
-        val test =
-            querier.columnMetadata(TableName("TEST_DB", "TEST_SCHEMA", "USERS", "TABLE"))
+        val test = querier.columnMetadata(TableName("TEST_DB", "TEST_SCHEMA", "USERS", "TABLE"))
         assertEquals(listOf("USER_ID"), test.map { it.name })
         verify { dbmd.getColumns("TEST_DB", "TEST\\_SCHEMA", null, null) }
     }
