@@ -4,6 +4,12 @@
 # producing an assessment that assists (and does not replace) the
 # @airbytehq/breaking-change-reviewers sign-off.
 #
+# Triggered manually via `workflow_dispatch` (the `/ai-breaking-change-review`
+# slash command) and automatically by `ai-breaking-change-review-auto.yml` when a
+# breaking-change PR is opened non-draft or marked ready for review. When the
+# `BREAKING_CHANGE_REVIEW_SLACK_WEBHOOK` secret is set, the review verdict is
+# posted to Slack once the Devin session finishes.
+#
 # Security model:
 # - Slash commands require write permission (only collaborators can trigger)
 # - This is workflow_dispatch, so secrets are always available
@@ -87,6 +93,7 @@ jobs:
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
 
       - name: Run AI Breaking Change Review
+        id: devin
         uses: aaronsteers/devin-action@main
         with:
           comment-id: ${{ inputs.comment-id }}
@@ -101,6 +108,65 @@ jobs:
           tags: |
             breaking-change
             area/documentation
+          wait-for-stopped-status: "true"
+          wait-minutes-max: "60"
+
+      - name: Parse structured output for Slack
+        if: always() && steps.devin.outputs.structured-output != '' && env.SLACK_WEBHOOK != ''
+        id: parse
+        env:
+          SLACK_WEBHOOK: ${{ secrets.BREAKING_CHANGE_REVIEW_SLACK_WEBHOOK }}
+          STRUCTURED_OUTPUT: ${{ steps.devin.outputs.structured-output }}
+          PR_URL: https://github.com/${{ github.repository }}/pull/${{ inputs.pr }}
+        run: |
+          set -euo pipefail
+
+          verdict=$(echo "$STRUCTURED_OUTPUT" | jq -r '.verdict // "INCONCLUSIVE"')
+          connector=$(echo "$STRUCTURED_OUTPUT" | jq -r '.connector // "unknown"')
+          target_version=$(echo "$STRUCTURED_OUTPUT" | jq -r '.target_version // ""')
+          data_loss_risk=$(echo "$STRUCTURED_OUTPUT" | jq -r '.data_loss_risk // "UNKNOWN"')
+          blocking_count=$(echo "$STRUCTURED_OUTPUT" | jq -r '.blocking_findings | length')
+          comment_url=$(echo "$STRUCTURED_OUTPUT" | jq -r '.comment_url // empty')
+
+          ready_for_humans="false"
+          if [[ ( "$verdict" == "APPROVE" || "$verdict" == "APPROVE_WITH_NOTES" ) && "$blocking_count" == "0" ]]; then
+            ready_for_humans="true"
+          fi
+
+          if [[ "$ready_for_humans" == "true" ]]; then
+            emoji="✅"
+            signoff="👀 Ready for human sign-off (@airbytehq/breaking-change-reviewers)"
+          elif [[ "$verdict" == "REQUEST_CHANGES" ]]; then
+            emoji="🛑"
+            signoff="Author/Devin should address blocking findings before human review."
+          else
+            emoji="ℹ️"
+            signoff="Author/Devin should address blocking findings before human review."
+          fi
+
+          url="${comment_url:-$PR_URL}"
+
+          text="${emoji} Breaking change review complete: \`${connector}\` ${target_version} — verdict *${verdict}*, data-loss risk *${data_loss_risk}*, ${blocking_count} blocking finding(s)\n${url}\n${signoff}"
+
+          jq -n --arg t "$text" '$t' | tr -d '\n' | sed 's/^"//; s/"$//' > /tmp/slack_text_escaped.txt
+          echo "slack_text_json=$(cat /tmp/slack_text_escaped.txt)" >> "$GITHUB_OUTPUT"
+          echo "ready_for_humans=$ready_for_humans" >> "$GITHUB_OUTPUT"
+
+          echo "::notice::Slack payload built: verdict=$verdict blocking=$blocking_count ready_for_humans=$ready_for_humans"
+
+      - name: Notify Slack (review complete)
+        if: always() && steps.devin.outputs.structured-output != '' && env.SLACK_WEBHOOK != ''
+        env:
+          SLACK_WEBHOOK: ${{ secrets.BREAKING_CHANGE_REVIEW_SLACK_WEBHOOK }}
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
+        with:
+          webhook: ${{ secrets.BREAKING_CHANGE_REVIEW_SLACK_WEBHOOK }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "username": "Breaking Change Review Bot",
+              "text": "${{ steps.parse.outputs.slack_text_json }}"
+            }
 
       - name: Post failure comment
         if: failure() && inputs.comment-id != ''

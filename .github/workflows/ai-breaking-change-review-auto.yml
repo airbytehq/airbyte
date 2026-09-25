@@ -1,0 +1,104 @@
+# AI Breaking Change Review — Auto Trigger
+#
+# Automatically kicks off `ai-breaking-change-review-command.yml` (the
+# `!breaking_change_review` Devin playbook) when a pull request that looks like
+# a connector breaking change is opened non-draft or marked ready for review.
+#
+# Notes:
+# - This fires only on `opened` and `ready_for_review`, not on later pushes.
+#   To re-run the review after fixes, use the `/ai-breaking-change-review`
+#   slash command on the PR.
+# - Fork PRs are excluded (the job requires `head.repo.full_name == github.repository`).
+# - The Slack notifications are dormant until the
+#   `BREAKING_CHANGE_REVIEW_SLACK_WEBHOOK` secret is set on the repo.
+
+name: AI Breaking Change Review Auto
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: write
+
+concurrency:
+  group: ai-breaking-change-review-auto-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  detect-and-dispatch:
+    name: Detect breaking change and dispatch review
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Detect breaking change
+        id: detect
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          EVENT_PATH: ${{ github.event_path }}
+        run: |
+          set -euo pipefail
+
+          is_breaking="false"
+          reason=""
+
+          # 1. breaking-change label
+          if jq -e '[.pull_request.labels[].name] | index("breaking-change")' "$EVENT_PATH" > /dev/null; then
+            is_breaking="true"
+            reason="label: breaking-change"
+          fi
+
+          # 2. Semantic breaking marker in the PR title, e.g. "feat(source-x)!: ..."
+          if [[ "$is_breaking" == "false" ]] && echo "$PR_TITLE" | grep -qE '^[a-z]+(\([^)]*\))?!:'; then
+            is_breaking="true"
+            reason="title: semantic breaking marker"
+          fi
+
+          # Fetch changed files (also used for connector detection below)
+          files="$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files" --paginate --jq '.[].filename')"
+
+          # 3. A new/updated migration guide page
+          if [[ "$is_breaking" == "false" ]] && echo "$files" | grep -qE '^docs/integrations/(sources|destinations)/.*-migrations\.md$'; then
+            is_breaking="true"
+            reason="files: migration guide changed"
+          fi
+
+          # Connector name: first changed connector directory, else empty
+          connector="$(echo "$files" | grep -oE '^airbyte-integrations/connectors/[^/]+' | head -1 | sed 's|airbyte-integrations/connectors/||' || true)"
+
+          {
+            echo "is_breaking=${is_breaking}"
+            echo "connector=${connector}"
+            echo "reason=${reason}"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "::notice::Breaking-change detection: is_breaking=${is_breaking} connector=${connector:-<none>} reason=${reason:-none}"
+
+      - name: Dispatch AI breaking change review
+        if: steps.detect.outputs.is_breaking == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run ai-breaking-change-review-command.yml \
+            --ref master \
+            -f pr=${{ github.event.pull_request.number }} \
+            -f repo=${{ github.repository }} \
+            -f gitref=${{ github.event.pull_request.head.sha }}
+
+      - name: Notify Slack (review kicked off)
+        if: steps.detect.outputs.is_breaking == 'true' && env.SLACK_WEBHOOK != ''
+        env:
+          SLACK_WEBHOOK: ${{ secrets.BREAKING_CHANGE_REVIEW_SLACK_WEBHOOK }}
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
+        with:
+          webhook: ${{ secrets.BREAKING_CHANGE_REVIEW_SLACK_WEBHOOK }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "username": "Breaking Change Review Bot",
+              "text": "🚨 AI breaking change review started for `${{ steps.detect.outputs.connector }}` — ${{ github.event.pull_request.title }}\n${{ github.event.pull_request.html_url }}\nDetected via: ${{ steps.detect.outputs.reason }}"
+            }
