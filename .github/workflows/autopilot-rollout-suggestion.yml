@@ -22,6 +22,9 @@ on:
         required: true
         type: number
 
+env:
+  SENTRY_ENVIRONMENT: production
+
 permissions:
   contents: read
   issues: write

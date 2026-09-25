@@ -10,6 +10,9 @@ on:
   schedule:
     - cron: "0 */2 * * *" # Run every 2 hours
 
+env:
+  SENTRY_ENVIRONMENT: production
+
 permissions:
   contents: read
 

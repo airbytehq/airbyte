@@ -29,6 +29,9 @@ on:
         description: "Ref (Ignored)"
         required: false
 
+env:
+  SENTRY_ENVIRONMENT: production
+
 permissions:
   contents: read
   issues: write

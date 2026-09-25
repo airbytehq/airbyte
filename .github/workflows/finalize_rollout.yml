@@ -24,6 +24,9 @@ on:
         description: "Explicit version to finalize (optional; auto-resolved if omitted)"
         required: false
 
+env:
+  SENTRY_ENVIRONMENT: production
+
 permissions:
   contents: write
   pull-requests: write
