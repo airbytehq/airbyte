@@ -313,7 +313,7 @@ data object DateAccessor : JdbcAccessor<LocalDate> {
             rs.wasNull() -> null
             dateStr == "infinity" || dateStr == "-infinity" ->
                 throw IllegalStateException("Date '$dateStr' is not supported")
-            else -> rs.getDate(colIdx).toLocalDate()
+            else -> rs.getDate(colIdx)?.toLocalDate()
         }
     }
 
@@ -351,7 +351,7 @@ data object TimestampAccessor : JdbcAccessor<LocalDateTime> {
             rs.wasNull() -> null
             timestampStr == "infinity" || timestampStr == "-infinity" ->
                 throw IllegalStateException("Timestamp '$timestampStr' is not supported")
-            else -> rs.getTimestamp(colIdx).toLocalDateTime()
+            else -> rs.getTimestamp(colIdx)?.toLocalDateTime()
         }
     }
 
