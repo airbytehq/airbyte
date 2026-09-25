@@ -109,4 +109,19 @@ data:
     - title: Pipedrive rate limits
       url: https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting
       type: rate_limits
+    - title: API v1 endpoint deprecation announcement
+      url: https://developers.pipedrive.com/changelog/post/deprecation-of-selected-api-v1-endpoints
+      type: api_deprecations
+    - title: Deprecated API v1 endpoints out of support
+      url: https://developers.pipedrive.com/changelog/post/deprecated-apiv1-endpoints-become-out-of-support
+      type: api_deprecations
+    - title: API v2 migration guide
+      url: https://pipedrive.readme.io/docs/pipedrive-api-v2-migration-guide
+      type: api_deprecations
+    - title: Changes to the API (breaking change policy)
+      url: https://pipedrive.readme.io/docs/changes-to-the-api
+      type: api_deprecations
+    - title: OpenAPI specification
+      url: https://developers.pipedrive.com/docs/api/v1/openapi.yaml
+      type: openapi_spec
 metadataSpecVersion: "1.0"
