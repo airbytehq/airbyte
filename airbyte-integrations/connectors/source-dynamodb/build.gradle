@@ -1,28 +1,28 @@
 plugins {
-    id 'airbyte-java-connector'
+    id 'airbyte-bulk-connector'
     id "io.airbyte.gradle.docker"
     id 'airbyte-connector-docker-convention'
 }
 
-airbyteJavaConnector {
-    cdkVersionRequired = '0.20.4'
-    features = ['db-sources']
-    useLocalCdk = false
+application {
+    mainClass = 'io.airbyte.integrations.source.dynamodb.DynamoDbSource'
 }
 
-application {
-    mainClass = 'io.airbyte.integrations.source.dynamodb.DynamodbSource'
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = []
 }
 
 dependencies {
-
-    implementation platform('software.amazon.awssdk:bom:2.18.1')
-    // https://mvnrepository.com/artifact/software.amazon.awssdk/dynamodb
+    // AWS SDK for Java 2.x; the BOM pins every module to the same version.
+    implementation platform('software.amazon.awssdk:bom:2.54.20')
     implementation 'software.amazon.awssdk:dynamodb'
+    // Needed on the classpath for role-based access through STS (IRSA / web identity tokens).
     implementation 'software.amazon.awssdk:sts'
 
-    testImplementation 'org.skyscreamer:jsonassert:1.5.1'
-    testImplementation "org.assertj:assertj-core:3.23.1"
-    testImplementation "org.testcontainers:localstack:1.21.4"
-
+    // amazon/dynamodb-local has no Testcontainers module; a GenericContainer is enough.
+    testFixturesImplementation 'org.testcontainers:testcontainers:1.21.4'
+    testImplementation 'org.testcontainers:testcontainers:1.21.4'
+    // LocalStack emulates STS, which exercises the assume-role credentials path.
+    testImplementation 'org.testcontainers:localstack:1.21.4'
 }
