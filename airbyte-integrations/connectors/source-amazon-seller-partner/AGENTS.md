@@ -146,6 +146,20 @@ reportPeriod, distributorView, sellingProgram reportOption to be specified" unti
 block ends in `{{ opts if opts else None }}` so an unconfigured connection sends no `reportOptions` key at all and
 its request body is byte-identical to previous versions.
 
+## 9. FATAL reports must surface Amazon's reason
+
+When `getReport` returns `processingStatus: FATAL`, Amazon accepted `createReport` but could not produce the
+report, and the reason lives in a separate document referenced by `reportDocumentId`. The CDK never fetches it:
+it retries and then fails with "Async job failed after exhausting all retry attempts.", which tells the user
+nothing. `ReportPollingRequester` (wired as the `basic_async_retriever.polling_requester`) fetches that document,
+logs Amazon's reason at ERROR, and raises a `config_error` when the reason points at report options.
+
+`AsyncJobOrchestrator._is_breaking_exception` treats a `config_error` as breaking, so that path aborts the sync
+immediately rather than waiting out `failed_retry_wait_time_in_seconds` (default 1800s) per retry. Every other
+case - no document, a fetch failure, an unrecognised payload - must leave the response untouched so the existing
+retry and `status_mapping` behaviour is unchanged. This is a diagnostic path: it must never turn a report Amazon
+accepted into a failure.
+
 ## Incremental Stream Considerations
 
 The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 8 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.

@@ -277,6 +277,8 @@ For the other report types the **Report Options** dropdown offers, the connector
 
 For the four vendor retail analytics reports, the connector sends only what you configure. It supplies no default values of its own, because the right values depend on your vendor account. If you configure nothing, the request goes to Amazon without a `reportOptions` object, exactly as in earlier versions, and Amazon can reject it. If these streams fail, add the required options for each one, for example `reportPeriod` = `DAY`, `distributorView` = `MANUFACTURING` or `SOURCING`, and `sellingProgram` = `RETAIL`. Amazon's [vendor retail analytics documentation](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) lists the values each report accepts. Use `DAY` for `reportPeriod`: the sales, traffic, and net pure product margin streams request one calendar day per report. Option names and values are case-sensitive: enter `distributorView`, not `distributorview`.
 
+If Amazon can't generate one of these reports, the sync now fails with Amazon's own explanation instead of a generic "async job failed" message. When that explanation points at report options, the error names the options Amazon expects for that report type so you can add them under **Report Options**.
+
 If you already had report options configured for either ledger stream before 5.9.3, or for any of the four vendor retail analytics reports before 6.0.1, they take effect as soon as you upgrade, and the records change shape: a summary view aggregated `DAILY` returns one row per day where it previously returned one per month, and a detailed view filtered by `eventType` returns fewer rows. Refresh the stream if you need history to match the new options.
 
 ### Report options the connector sets for you
@@ -489,6 +491,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 6.0.2 | 2026-09-23 | [86941](https://github.com/airbytehq/airbyte/pull/86941) | Surface Amazon's own explanation when a report fails with `FATAL` instead of a generic async-job error, and fail fast with a config error when the reason points at report options |
 | 6.0.1 | 2026-09-24 | [86940](https://github.com/airbytehq/airbyte/pull/86940) | Send configured `reportOptions` for the vendor sales, inventory, traffic and net pure product margin reports instead of validating and then dropping them |
 | 6.0.0 | 2026-09-24 | [85813](https://github.com/airbytehq/airbyte/pull/85813) | Remove primary key from `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` streams; these line-item reports have no proven, reliably unique identifier, so deduplicating on `amazon-order-id` dropped records |
 | 5.10.5 | 2026-09-22 | [86512](https://github.com/airbytehq/airbyte/pull/86512) | Update dependencies |
