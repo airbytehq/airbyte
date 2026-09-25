@@ -62,19 +62,27 @@ class SnowflakeSourceMetadataQuerier(
         log.info { "Querying column names for catalog discovery." }
         try {
             val dbmd: DatabaseMetaData = base.conn.metaData
+            val escape: String = dbmd.searchStringEscape ?: "\\"
             memoizedTableNames
                 .filter { it.namespace() != null }
                 .map { it.catalog to it.schema }
                 .distinct()
                 .forEach { (catalog: String?, schema: String?) ->
-                    dbmd.getColumns(catalog, schema, null, null).use { rs: ResultSet ->
-                        while (rs.next()) {
-                            val (tableName: TableName, metadata: ColumnMetadata) =
-                                columnMetadataFromResultSet(rs, isPseudoColumn = false)
-                            val joinedTableName: TableName = joinMap[tableName] ?: continue
-                            results.add(joinedTableName to metadata)
+                    dbmd
+                        .getColumns(
+                            catalog,
+                            schema?.let { escapeLikePattern(it, escape) },
+                            null,
+                            null
+                        )
+                        .use { rs: ResultSet ->
+                            while (rs.next()) {
+                                val (tableName: TableName, metadata: ColumnMetadata) =
+                                    columnMetadataFromResultSet(rs, isPseudoColumn = false)
+                                val joinedTableName: TableName = joinMap[tableName] ?: continue
+                                results.add(joinedTableName to metadata)
+                            }
                         }
-                    }
                 }
             log.info { "Discovered ${results.size} column(s)." }
         } catch (e: Exception) {
@@ -82,9 +90,18 @@ class SnowflakeSourceMetadataQuerier(
         }
         return@lazy results.groupBy({ it.first }, { it.second }).mapValues {
             (_, columnMetadataByTable: List<ColumnMetadata>) ->
-            columnMetadataByTable.filter { it.ordinal == null } +
-                columnMetadataByTable.filter { it.ordinal != null }.sortedBy { it.ordinal }
+            val deduped: List<ColumnMetadata> = columnMetadataByTable.distinctBy { it.name }
+            deduped.filter { it.ordinal == null } +
+                deduped.filter { it.ordinal != null }.sortedBy { it.ordinal }
         }
+    }
+
+    private fun escapeLikePattern(value: String, escape: String): String {
+        if (escape.isEmpty()) return value
+        return value
+            .replace(escape, escape + escape)
+            .replace("_", escape + "_")
+            .replace("%", escape + "%")
     }
 
     private fun columnMetadataFromResultSet(
@@ -229,27 +246,37 @@ class SnowflakeSourceMetadataQuerier(
         try {
             val allTables = mutableSetOf<TableName>()
             val dbmd: DatabaseMetaData = base.conn.metaData
+            val escape: String = dbmd.searchStringEscape ?: "\\"
 
             log.info { "Querying table names for Snowflake source." }
             for (namespace in
                 base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
                 // Query all schemas in the current database
-                dbmd.getTables(namespace, schema, null, arrayOf("TABLE", "VIEW")).use {
-                    rs: ResultSet ->
-                    while (rs.next()) {
-                        val tableName =
-                            TableName(
-                                catalog = rs.getString("TABLE_CAT"),
-                                schema = rs.getString("TABLE_SCHEM"),
-                                name = rs.getString("TABLE_NAME"),
-                                type = rs.getString("TABLE_TYPE") ?: "",
-                            )
-                        // Filter out system schemas
-                        if (!EXCLUDED_NAMESPACES.contains(tableName.schema?.uppercase())) {
-                            allTables.add(tableName)
+                dbmd
+                    .getTables(
+                        namespace,
+                        schema?.let { escapeLikePattern(it, escape) },
+                        null,
+                        arrayOf("TABLE", "VIEW")
+                    )
+                    .use { rs: ResultSet ->
+                        while (rs.next()) {
+                            val tableName =
+                                TableName(
+                                    catalog = rs.getString("TABLE_CAT"),
+                                    schema = rs.getString("TABLE_SCHEM"),
+                                    name = rs.getString("TABLE_NAME"),
+                                    type = rs.getString("TABLE_TYPE") ?: "",
+                                )
+                            // Filter out system schemas
+                            if (
+                                !EXCLUDED_NAMESPACES.contains(tableName.schema?.uppercase()) &&
+                                    (schema == null || tableName.schema == schema)
+                            ) {
+                                allTables.add(tableName)
+                            }
                         }
                     }
-                }
             }
             log.info { "Discovered ${allTables.size} tables and views." }
             return@lazy allTables.toList()
