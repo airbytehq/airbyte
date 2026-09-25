@@ -118,6 +118,7 @@ jobs:
           PR_NUMBER: ${{ steps.marker.outputs.pr }}
           MARKER_HEAD_SHA: ${{ steps.marker.outputs.head_sha }}
           EVENT_NAME: ${{ github.event_name }}
+          SELF_JOB_NAME: Launch single-PR hands-free pass
         run: |
           set -euo pipefail
           PR_JSON=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
@@ -144,11 +145,12 @@ jobs:
               SKIP="not a Hydra PR"
             fi
             if [[ -z "$SKIP" ]]; then
-              RUNNING=$(jq -r '[.statusCheckRollup[] | select(.__typename=="CheckRun" and .status!="COMPLETED")] + [.statusCheckRollup[] | select(.__typename=="StatusContext" and .state=="PENDING")] | length' <<<"$PR_JSON")
+              # This job is itself a check run on the same head; ignore it.
+              RUNNING=$(jq -r --arg self "$SELF_JOB_NAME" '[.statusCheckRollup[] | select(.__typename=="CheckRun" and .name!=$self and .status!="COMPLETED")] + [.statusCheckRollup[] | select(.__typename=="StatusContext" and .state=="PENDING")] | length' <<<"$PR_JSON")
               [[ "$RUNNING" != "0" ]] && SKIP="CI still running"
             fi
             if [[ -z "$SKIP" ]]; then
-              FAILING=$(jq -r '[.statusCheckRollup[] | select(.__typename=="CheckRun" and (.conclusion=="FAILURE" or .conclusion=="TIMED_OUT" or .conclusion=="CANCELLED" or .conclusion=="ACTION_REQUIRED"))] + [.statusCheckRollup[] | select(.__typename=="StatusContext" and (.state=="FAILURE" or .state=="ERROR"))] | length' <<<"$PR_JSON")
+              FAILING=$(jq -r --arg self "$SELF_JOB_NAME" '[.statusCheckRollup[] | select(.__typename=="CheckRun" and .name!=$self and (.conclusion=="FAILURE" or .conclusion=="TIMED_OUT" or .conclusion=="CANCELLED" or .conclusion=="ACTION_REQUIRED"))] + [.statusCheckRollup[] | select(.__typename=="StatusContext" and (.state=="FAILURE" or .state=="ERROR"))] | length' <<<"$PR_JSON")
               [[ "$FAILING" != "0" ]] && SKIP="CI failing"
             fi
           fi
