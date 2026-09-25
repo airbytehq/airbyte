@@ -330,18 +330,23 @@ class BigqueryDirectLoadSqlGenerator(
             val clusterColumns: MutableList<String> = ArrayList()
             if (stream.importType is Dedupe) {
                 // We're doing de-duping, therefore we have a primary key.
+                // BigQuery cannot deduplicate on JSON columns, so fail fast if any PK
+                // column (not just the ones we'll cluster on) is JSON-typed.
+                for (pk in (stream.importType as Dedupe).primaryKey) {
+                    if (
+                        toDialectType(stream.schema.asColumns()[pk.first()]!!.type) ==
+                            StandardSQLTypeName.JSON
+                    ) {
+                        throw ConfigErrorException(
+                            "Stream ${stream.mappedDescriptor.toPrettyString()}: Primary key contains JSON-typed column $pk (arrays, objects, and unions are stored as JSON in BigQuery, which cannot be used for deduplication). Remove this field from the primary key, or use a non-deduplicating sync mode."
+                        )
+                    }
+                }
                 // Cluster on the first 3 PK columns since BigQuery only allows up to 4 clustering
                 // columns, and we're always clustering on _airbyte_extracted_at
                 (stream.importType as Dedupe).primaryKey.stream().limit(3).forEach {
                     pk: List<String> ->
                     val pkName = pk.first()
-                    val pkFieldType = stream.schema.asColumns()[pkName]!!
-                    val bigqueryType = toDialectType(pkFieldType.type)
-                    if (bigqueryType == StandardSQLTypeName.JSON) {
-                        throw ConfigErrorException(
-                            "Stream ${stream.mappedDescriptor.toPrettyString()}: Primary key contains non-clusterable JSON-typed column $pk"
-                        )
-                    }
                     clusterColumns.add(columnNameMapping[pkName]!!)
                 }
             }
