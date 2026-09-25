@@ -28,7 +28,7 @@ data:
     breakingChanges:
       2.0.0:
         message: "The `extensiveCalls` stream schema has changed: the `media` lacked a data type definition and is now declared as `null` or `object`. Additionally, the subfield `parties.items.properties.context` was changed from `object` or `null` to `array` or `null`. Users syncing the `extensiveCalls` stream must refresh the source schema and reset the stream after upgrading. For more information, see the [Gong migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations)."
-        upgradeDeadline: "2026-09-21"
+        upgradeDeadline: "2026-10-09"
         deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream

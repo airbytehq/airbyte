@@ -8,10 +8,12 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 This change is only breaking if you are syncing the `extensiveCalls` stream.
 :::
 
-This update fixes schema two bugs in the `extensiveCalls` stream to match the actual data returned by the [Gong API](https://us-66463.app.gong.io/settings/api/documentation#post-/v2/calls/extensive):
+This update fixes two schema bugs in the `extensiveCalls` stream to match the actual data returned by the [Gong API](https://us-66463.app.gong.io/settings/api/documentation#post-/v2/calls/extensive):
 
 1. The subfield `parties.items.properties.context` changed from `object` or `"null"` to **`array`** or `"null"`.
-2. `media` lacked a data type definition and how is declared as type `object` or `null`.
+2. `media` lacked a data type definition and is now declared as type `object` or `null`.
+
+This release also adds previously undeclared fields (non-breaking): `users.conferencingProviders`, `scorecards.reviewMethod`, and `answeredScorecards.reviewMethod`.
 
 These schema corrections change the data types in the destination table for the `extensiveCalls` stream. Users syncing this stream must refresh the source schema and reset the stream after upgrading.
 
