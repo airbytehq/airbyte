@@ -47,7 +47,7 @@ on:
         type: string
 
 env:
-  SENTRY_ENVIRONMENT: production
+  SENTRY_ENVIRONMENT: gitops-production
 
 permissions:
   contents: read

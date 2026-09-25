@@ -11,7 +11,7 @@ on:
       - "airbyte-integrations/connectors/**"
 
 env:
-  SENTRY_ENVIRONMENT: production
+  SENTRY_ENVIRONMENT: gitops-production
 
 permissions: {}
 

@@ -57,7 +57,7 @@ on:
         required: false
 
 env:
-  SENTRY_ENVIRONMENT: production
+  SENTRY_ENVIRONMENT: gitops-production
 
 permissions:
   contents: read
