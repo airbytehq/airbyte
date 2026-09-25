@@ -369,6 +369,22 @@ class OrderRefunds(IncrementalShopifyNestedStream):
     nested_entity = "refunds"
 
 
+class OrderCustomers(IncrementalShopifyNestedStream):
+    """
+    Flattens the nested `orders[].customer` object into its own records, so that each customer attribute
+    is a top-level column that can be independently selected, hashed or omitted downstream.
+    Orders without a customer (guest checkouts) are skipped.
+    """
+
+    parent_stream_class = Orders
+    nested_entity = "customer"
+    # one customer per order, customer `id` repeats across orders
+    primary_key = "order_id"
+    # records are emitted in the parent `orders.updated_at` order, use it as the cursor
+    cursor_field = "order_updated_at"
+    mutation_map = {"order_id": "id", "order_updated_at": "updated_at"}
+
+
 class OrderRisks(IncrementalShopifyGraphQlBulkStream):
     bulk_query: OrderRisk = OrderRisk
 

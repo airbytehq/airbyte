@@ -30,6 +30,7 @@ SCOPES_MAPPING: Mapping[str, set[str]] = {
     "TransactionsGraphql": ("read_orders",),
     "Fulfillments": ("read_orders",),
     "OrderRefunds": ("read_orders",),
+    "OrderCustomers": ("read_orders",),
     "OrderRisks": ("read_orders",),
     "MetafieldOrders": ("read_orders",),
     # SCOPE: read_draft_orders

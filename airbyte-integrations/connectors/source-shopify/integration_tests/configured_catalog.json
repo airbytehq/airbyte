@@ -326,6 +326,19 @@
     },
     {
       "stream": {
+        "name": "order_customers",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["order_updated_at"],
+        "source_defined_primary_key": [["order_id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["order_updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "order_refunds",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],

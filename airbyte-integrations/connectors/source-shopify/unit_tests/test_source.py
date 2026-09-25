@@ -430,7 +430,7 @@ def test_user_scopes_generate_full_list_of_streams(config, mocker):
     mocker.patch.object(ShopifyScopes, "get_user_scopes", return_value=expected_user_scopes)
 
     # Adjust this number based on the actual permitted streams
-    expected_streams_number = 48
+    expected_streams_number = 49
     streams = source.streams(config)
     assert len(streams) == expected_streams_number
     # `market_countries` requires the `read_markets` scope

@@ -482,6 +482,7 @@ class IncrementalShopifyNestedStream(IncrementalShopifyStream):
 
     ::  @ nested_entity - the name of the nested entity inside of parent stream, helps to reduce the number of
           API Calls, if present, see `OrderRefunds` or `Fulfillments` streams for more info.
+          The nested entity is either a list of sub-records (`order.refunds`) or a single object (`order.customer`).
     """
 
     # Setting the check point interval to the limit of the records output
@@ -553,11 +554,23 @@ class IncrementalShopifyNestedStream(IncrementalShopifyStream):
         Adds new field to the record with name `key` based on the `value` key from record.
         """
         if self.mutation_map and record:
-            for subrecord in record.get(self.nested_entity, []):
+            for subrecord in self.get_nested_records(record):
                 for k, v in self.mutation_map.items():
                     subrecord[k] = record.get(v)
         else:
             return record
+
+    def get_nested_records(self, parent_record: Mapping[str, Any]) -> List[Mapping[str, Any]]:
+        """
+        Returns the nested entity of the parent record as a list of sub-records,
+        wrapping a single nested object into a list and treating `null` as no records.
+        """
+        nested_records = parent_record.get(self.nested_entity)
+        if nested_records is None:
+            return []
+        if isinstance(nested_records, Mapping):
+            return [nested_records]
+        return list(nested_records)
 
     def track_parent_stream_state(self, parent_record: Optional[Mapping[str, Any]] = None):
         # updating the `stream_state` with the state of it's parent stream
@@ -588,7 +601,7 @@ class IncrementalShopifyNestedStream(IncrementalShopifyStream):
                 # add parent_id key, value from mutation_map, if passed.
                 self.populate_with_parent_id(parent_record)
                 # unpack the nested list to the sub_set buffer
-                nested_records = [sub_record for sub_record in parent_record.get(self.nested_entity, [])]
+                nested_records = self.get_nested_records(parent_record)
                 # add nested_records to the buffer, with no summarization.
                 nested_substream_records_buffer += nested_records
                 # emit slice when there is a resonable amount of data collected,
