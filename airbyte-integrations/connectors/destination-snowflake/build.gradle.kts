@@ -7,7 +7,7 @@ plugins {
 
 airbyteBulkConnector {
     core = "load"
-    toolkits = listOf("load-csv")
+    toolkits = listOf("load-csv", "load-fusion")
 }
 
 tasks.withType<JavaCompile>().configureEach {
@@ -41,7 +41,6 @@ val junitPlatformVersion = "1.13.4"
 val snowflakeJdbcThinVersion = "3.26.1"
 
 dependencies {
-    implementation(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-fusion"))
     implementation("net.snowflake:snowflake-jdbc-thin:$snowflakeJdbcThinVersion")
     implementation("com.zaxxer:HikariCP:$hikariCpVersion")
     implementation("com.google.guava:guava:32.1.1-jre")
@@ -50,7 +49,6 @@ dependencies {
 
     testImplementation("org.bouncycastle:bcpkix-jdk18on:1.78.1")
     testImplementation("io.mockk:mockk:1.14.5")
-    testImplementation(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-fusion")))
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-engine:$junitPlatformVersion")

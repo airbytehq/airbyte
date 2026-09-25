@@ -4,7 +4,7 @@ For an enabled write, Snowflake uploads the existing closed gzip CSV to S3 and l
 
 ## Shared CDK contract
 
-The `airbyte-cdk/bulk/toolkits/fusion` toolkit owns environment parsing, AWS credentials and uploading, key escaping and layout, run identity, schema metadata, and stream completion payloads. Snowflake depends on this standalone toolkit without changing its core load CDK version. The dependent PR includes the shared commit so preview builds work directly from the checkout.
+The `airbyte-cdk/bulk/toolkits/load-fusion` toolkit owns environment parsing, AWS credentials and uploading, key escaping and layout, run identity, schema metadata, and stream completion payloads. Snowflake consumes it as a regular bulk load toolkit at the published load CDK version.
 
 All routing comes from the environment. There are no Fusion destination configuration properties or hardcoded enabled settings, buckets, role ARNs, credentials, or identity values.
 
