@@ -1,13 +1,16 @@
 name: "Hydra: Stage Handoff"
 # Event-driven handoff between Hydra pipeline stages.
 #
-# When `/ai-prove-fix` or `/ai-review` posts its result marker on a PR, this
-# workflow launches the existing `daily_hands_free_triage` playbook
+# When `/ai-prove-fix` or `/ai-review` posts its result marker on a PR, or when
+# a PR's CI finishes green (covers new `/ai-fix` PRs, pushes including
+# `/ai-resolve-conflicts`, and re-prove/re-review after commits), this workflow
+# launches the existing `daily_hands_free_triage` playbook
 # (airbytehq/ai-skills) scoped to that single PR. The playbook re-reads the
 # PR's current state, applies its normal decision tree, and triggers the next
 # stage if the PR is ready -- the same logic the 5am UTC sweep uses, minus the
-# up-to-24h wait. The daily sweep remains the catch-all for anything this
-# misses.
+# up-to-24h wait. The launched session is single-pass (no in-session reminder
+# loop) because the next event re-triggers this workflow. The daily sweep
+# remains the catch-all for anything this misses.
 #
 # Set the repository variable HYDRA_HANDOFF_DRY_RUN=true to have the launched
 # session only report what it WOULD do.
@@ -15,6 +18,8 @@ name: "Hydra: Stage Handoff"
 on:
   issue_comment:
     types: [created]
+  check_suite:
+    types: [completed]
   workflow_dispatch:
     inputs:
       pr:
@@ -27,16 +32,17 @@ on:
         type: boolean
         default: true
 
-run-name: "Hydra stage handoff for PR #${{ github.event.issue.number || inputs.pr }}"
+run-name: "Hydra stage handoff for PR #${{ github.event.issue.number || github.event.check_suite.pull_requests[0].number || inputs.pr }}"
 
 permissions:
+  checks: read
   contents: read
   issues: write
   pull-requests: read
 
 concurrency:
-  group: hydra-stage-handoff-${{ github.event.issue.number || inputs.pr }}
-  cancel-in-progress: false
+  group: hydra-stage-handoff-${{ github.event_name == 'check_suite' && 'ci' || 'marker' }}-${{ github.event.issue.number || github.event.check_suite.pull_requests[0].number || inputs.pr }}
+  cancel-in-progress: ${{ github.event_name == 'check_suite' }}
 
 jobs:
   handoff:
@@ -44,6 +50,11 @@ jobs:
     # Only react to result markers posted by our bots on PRs (or manual dispatch).
     if: |
       github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'check_suite' &&
+        github.event.check_suite.conclusion == 'success' &&
+        github.event.check_suite.pull_requests[0] != null
+      ) ||
       (
         github.event.issue.pull_request &&
         (github.event.comment.user.login == 'devin-ai-integration[bot]' || github.event.comment.user.login == 'airbyte-support-bot') &&
@@ -59,8 +70,18 @@ jobs:
           COMMENT_BODY: ${{ github.event.comment.body }}
           PR_INPUT: ${{ inputs.pr }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
+          CS_PR_NUMBER: ${{ github.event.check_suite.pull_requests[0].number }}
+          CS_HEAD_SHA: ${{ github.event.check_suite.head_sha }}
+          CS_CONCLUSION: ${{ github.event.check_suite.conclusion }}
         run: |
           set -euo pipefail
+          if [[ "$EVENT_NAME" == "check_suite" ]]; then
+            echo "pr=$CS_PR_NUMBER" | tee -a "$GITHUB_OUTPUT"
+            echo "stage=ci" | tee -a "$GITHUB_OUTPUT"
+            echo "result=$CS_CONCLUSION" | tee -a "$GITHUB_OUTPUT"
+            echo "head_sha=$CS_HEAD_SHA" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
           if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
             echo "pr=$PR_INPUT" | tee -a "$GITHUB_OUTPUT"
             echo "stage=manual" | tee -a "$GITHUB_OUTPUT"
@@ -96,10 +117,11 @@ jobs:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
           PR_NUMBER: ${{ steps.marker.outputs.pr }}
           MARKER_HEAD_SHA: ${{ steps.marker.outputs.head_sha }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
           PR_JSON=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
-            --json state,isCrossRepository,headRefOid,labels)
+            --json state,isCrossRepository,headRefOid,labels,author,isDraft,statusCheckRollup)
           STATE=$(jq -r '.state' <<<"$PR_JSON")
           IS_FORK=$(jq -r '.isCrossRepository' <<<"$PR_JSON")
           HEAD=$(jq -r '.headRefOid' <<<"$PR_JSON")
@@ -112,6 +134,24 @@ jobs:
           [[ -z "$SKIP" && ",$LABELS," == *",community,"* ]] && SKIP="community label"
           [[ -z "$SKIP" && ",$LABELS," == *",hydra-pause,"* ]] && SKIP="hydra-pause label"
           [[ -z "$SKIP" && -n "$MARKER_HEAD_SHA" && "$HEAD" != "$MARKER_HEAD_SHA"* ]] && SKIP="result is for stale head $MARKER_HEAD_SHA (current $HEAD)"
+
+          # CI-completion trigger: only spend a session on Hydra/Devin PRs, and
+          # only when the rest of CI is done and green.
+          if [[ -z "$SKIP" && "$EVENT_NAME" == "check_suite" ]]; then
+            AUTHOR=$(jq -r '.author.login' <<<"$PR_JSON")
+            HAS_HYD_LABEL=$(jq -r '[.labels[].name | startswith("hyd-")] | any' <<<"$PR_JSON")
+            if [[ "$HAS_HYD_LABEL" != "true" && "$AUTHOR" != "devin-ai-integration" && "$AUTHOR" != "app/devin-ai-integration" ]]; then
+              SKIP="not a Hydra PR"
+            fi
+            if [[ -z "$SKIP" ]]; then
+              RUNNING=$(jq -r '[.statusCheckRollup[] | select(.__typename=="CheckRun" and .status!="COMPLETED")] + [.statusCheckRollup[] | select(.__typename=="StatusContext" and .state=="PENDING")] | length' <<<"$PR_JSON")
+              [[ "$RUNNING" != "0" ]] && SKIP="CI still running"
+            fi
+            if [[ -z "$SKIP" ]]; then
+              FAILING=$(jq -r '[.statusCheckRollup[] | select(.__typename=="CheckRun" and (.conclusion=="FAILURE" or .conclusion=="TIMED_OUT" or .conclusion=="CANCELLED" or .conclusion=="ACTION_REQUIRED"))] + [.statusCheckRollup[] | select(.__typename=="StatusContext" and (.state=="FAILURE" or .state=="ERROR"))] | length' <<<"$PR_JSON")
+              [[ "$FAILING" != "0" ]] && SKIP="CI failing"
+            fi
+          fi
 
           if [[ -n "$SKIP" ]]; then
             echo "::notice::Skipping handoff: $SKIP"
@@ -157,8 +197,9 @@ jobs:
 
             Process ONLY that PR. Skip Phase 1 and the Phase 2 collection queries entirely.
             Re-read the PR's current state, apply the §2.5 decision tree, and take the single
-            next action if it is ready to advance (or no action if it is not). Then run the
-            follow-up loop with 3 iterations every 30m, tracking only this PR. Do not post the
+            next action if it is ready to advance (or no action if it is not). Do NOT run the
+            follow-up loop — this is a single pass (1 iteration). The next stage's result will
+            re-trigger this workflow. Do not post the
             Phase 3 summary to #hands-free-ai-triage; per-item status via send_to_user is enough.
             ${{ steps.mode.outputs.dry_run == 'true' && 'DRY RUN MODE: state what you WOULD do, take no action.' || '' }}
 
