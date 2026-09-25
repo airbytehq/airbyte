@@ -82,7 +82,7 @@ on:
 
 env:
   RELEASE_IMMEDIATELY_PHRASE: Release immediately (bypasses automatic progressive rollout)
-  SENTRY_ENVIRONMENT: ${{ (github.event_name == 'push' || inputs.with-semver-suffix == 'none' || inputs.with-semver-suffix == 'rc') && 'production' || 'gitops-production' }}
+  SENTRY_ENVIRONMENT: ${{ (github.event_name == 'push' || inputs.with-semver-suffix == 'none' || inputs.with-semver-suffix == 'rc') && 'production' || 'gitops-prod' }}
 
 jobs:
   publish_options:

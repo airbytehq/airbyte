@@ -37,7 +37,7 @@ on:
         value: ${{ jobs.generate-matrix.outputs.commit-sha }}
 
 env:
-  SENTRY_ENVIRONMENT: gitops-production
+  SENTRY_ENVIRONMENT: gitops-prod
 
 permissions:
   # Allow the workflow to read contents

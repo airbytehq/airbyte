@@ -23,7 +23,7 @@ on:
           `--certified-only --connector-type=destination` (custom query).
         default: ""
 env:
-  SENTRY_ENVIRONMENT: gitops-production
+  SENTRY_ENVIRONMENT: gitops-prod
 
 jobs:
   generate_matrix:

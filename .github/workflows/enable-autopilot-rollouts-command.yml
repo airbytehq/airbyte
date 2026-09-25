@@ -30,7 +30,7 @@ on:
         required: false
 
 env:
-  SENTRY_ENVIRONMENT: gitops-production
+  SENTRY_ENVIRONMENT: gitops-prod
 
 permissions:
   contents: read

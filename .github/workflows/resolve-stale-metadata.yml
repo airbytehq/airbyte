@@ -11,7 +11,7 @@ on:
     - cron: "0 */2 * * *" # Run every 2 hours
 
 env:
-  SENTRY_ENVIRONMENT: gitops-production
+  SENTRY_ENVIRONMENT: gitops-prod
 
 permissions:
   contents: read
