@@ -14,7 +14,7 @@ data:
       packageName: airbyte-source-uptick
   connectorBuildOptions:
     # Dev pre-release of airbyte-python-cdk#1173 — replace with the released version before merge.
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.30.0.post4.dev35881380673@sha256:6db74b8b35bb8b52dc84cf0cbc1ea2743271cc6fffbc40fbf648bd9efbf2fddf
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.30.0.post6.dev36119801648@sha256:333294d110f579ca90b5db850fe257f64a93699af9f31beaf3ac840be1ada7b7
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests

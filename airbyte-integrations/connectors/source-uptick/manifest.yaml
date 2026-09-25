@@ -1,6 +1,6 @@
 ---
 # Dev pre-release of airbyte-python-cdk#1173 — replace with the released version before merge.
-version: 7.30.0.post4.dev35881380673
+version: 7.30.0.post6.dev36119801648
 type: DeclarativeSource
 description: Extract data from Uptick (field service management software).
 check:
