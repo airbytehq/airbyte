@@ -109,6 +109,9 @@ data:
     - title: Mixpanel API reference
       url: https://developer.mixpanel.com/reference/overview
       type: api_reference
+    - title: Mixpanel developer changelog
+      url: https://developer.mixpanel.com/changelogs
+      type: api_release_history
     - title: Mixpanel authentication
       url: https://developer.mixpanel.com/reference/authentication
       type: authentication_guide
