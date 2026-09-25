@@ -204,3 +204,12 @@ class ContactsStreamRequestBuilder(AbstractRequestBuilder):
     def build(self) -> HttpRequest:
         q = "&".join(filter(None, self._query_params))
         return HttpRequest(self.URL, query_params=q)
+
+
+class EngagementsTaskPipelinesStreamRequestBuilder(AbstractRequestBuilder):
+    URL = "https://api.hubapi.com/crm/v3/pipelines/tasks"
+
+    def build(self) -> HttpRequest:
+        # The endpoint returns every pipeline in one response, so the stream is unpaginated and
+        # sends no query parameters at all.
+        return HttpRequest(self.URL)
