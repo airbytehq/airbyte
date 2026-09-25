@@ -18,7 +18,7 @@ Syncs cards, transactions, and reimbursements from Ramp&#39;s developer API.
 
 ## Limitations & troubleshooting
 
-- The transactions stream syncs every transaction state, including declined transactions.
+- The transactions stream syncs every transaction state, including declined transactions. Declined transactions have `state: DECLINED`; filter them out of spend totals. To backfill declined transactions from before version 0.1.0, refresh the `transactions` stream.
 - The cards stream includes terminated cards.
 - The reimbursements stream syncs both directions: out-of-pocket reimbursements (BUSINESS_TO_USER) and repayments (USER_TO_BUSINESS).
 

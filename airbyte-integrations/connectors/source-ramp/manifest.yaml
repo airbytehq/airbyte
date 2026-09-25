@@ -37,8 +37,11 @@ definitions:
                   - 401
                 action: FAIL
                 failure_type: config_error
+                # Ramp does not fail the token call for a scope the app lacks: it drops the scope and the
+                # data call later returns 403 DEVELOPER_7100, handled by the shared error handler.
                 error_message: >-
-                  Ramp rejected the client ID or client secret ({{ (response.get('error_v2') or {}).get('message') }}).
+                  Ramp rejected the client ID or client secret ({{ (response.get('error_v2') or {}).get('message')
+                  or response.get('error_description') or response.get('error') or 'no details' }}).
                   Copy both again from Ramp > Company > Developer > your app, and check the app uses the
                   Client Credentials grant.
         session_token_path:
@@ -126,7 +129,9 @@ streams:
           type: DpathExtractor
           field_path:
             - data
-      # Ramp hides terminated cards unless `is_terminated=true` is sent.
+      # Ramp hides terminated cards unless `is_terminated=true` is sent. `is_terminated` is not in Ramp's
+      # published spec for the legacy /cards endpoint; the sandbox applies it (true returns only terminated
+      # cards, an invalid value returns 422). See airbytehq/airbyte-internal-issues#17540.
       partition_router:
         type: ListPartitionRouter
         cursor_field: is_terminated
@@ -443,8 +448,11 @@ streams:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config.get('start_date', '2019-01-01T00:00:00Z') }}"
+        datetime: "{{ format_datetime(config.get('start_date', '2019-01-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      # `updated_after` is not in Ramp's published parameter list for /transactions; the sandbox honours it
+      # inclusively (probed 2026-09-24, see airbytehq/airbyte-internal-issues#17540). If Ramp ever ignores it,
+      # the stream re-reads everything and emits duplicates rather than losing records.
       start_time_option:
         type: RequestOption
         field_name: updated_after
@@ -658,7 +666,7 @@ streams:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config.get('start_date', '2019-01-01T00:00:00Z') }}"
+        datetime: "{{ format_datetime(config.get('start_date', '2019-01-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption

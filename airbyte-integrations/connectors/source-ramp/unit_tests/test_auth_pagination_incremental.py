@@ -169,17 +169,38 @@ def test_transactions_server_side_incremental():
     assert params.get("state") == "ALL", f"transactions must request every state, got {params}"
 
 
-def test_transactions_default_start_date():
-    """Without `start_date` in the config, the first sync starts from the spec default."""
+@pytest.mark.parametrize(
+    "stream_name, url, path",
+    [
+        pytest.param("transactions", TRANSACTIONS_URL, TRANSACTIONS_PATH, id="transactions"),
+        pytest.param("reimbursements", REIMBURSEMENTS_URL, REIMBURSEMENTS_PATH, id="reimbursements"),
+    ],
+)
+@pytest.mark.parametrize(
+    "start_date, expected_updated_after",
+    [
+        pytest.param(None, "2019-01-01T00:00:00Z", id="default"),
+        pytest.param("2024-01-01T00:00:00Z", "2024-01-01T00:00:00Z", id="whole_seconds"),
+        pytest.param("2024-01-01T00:00:00.000Z", "2024-01-01T00:00:00Z", id="fractional_seconds"),
+    ],
+)
+def test_start_date_sent_as_updated_after(stream_name, url, path, start_date, expected_updated_after):
+    """Every `start_date` the spec pattern accepts, or its absence, becomes a whole-second `updated_after`."""
     config = {key: value for key, value in CONFIG.items() if key != "start_date"}
+    if start_date is not None:
+        config["start_date"] = start_date
 
     with requests_mock.Mocker() as mocker:
         mocker.post(TOKEN_URL, json=TOKEN_RESPONSE)
-        mocker.get(TRANSACTIONS_URL, json=_page([]))
-        read_stream("transactions", config=config, sync_mode=SyncMode.incremental)
+        mocker.get(url, json=_page([]))
+        output = read_stream(stream_name, config=config, sync_mode=SyncMode.incremental)
 
-    params = query_params(requests_to(mocker.request_history, TRANSACTIONS_PATH)[0])
-    assert params.get("updated_after") == "2019-01-01T00:00:00Z", f"expected the default start date, got {params}"
+    assert not output.errors, f"expected a clean read, got {[error.trace.error.message for error in output.errors]}"
+    data_requests = requests_to(mocker.request_history, path)
+    assert data_requests, f"expected at least one request against {path}"
+    for request in data_requests:
+        params = query_params(request)
+        assert params.get("updated_after") == expected_updated_after, f"expected `updated_after={expected_updated_after}`, got {params}"
 
 
 def test_cards_include_terminated():
@@ -236,6 +257,18 @@ def test_login_errors_are_config_errors(status_code):
     assert errors[0].failure_type == FailureType.config_error, f"expected config_error, got {errors[0].failure_type}"
     assert "client_id is malformed" in errors[0].message, f"unexpected message {errors[0].message!r}"
     assert len(requests_to(mocker.request_history, TOKEN_PATH)) == 1, "login errors must not be retried"
+
+
+def test_login_error_without_error_v2_quotes_oauth_error():
+    """A standard OAuth error body is quoted instead of printing `None`."""
+    body = {"error": "invalid_client", "error_description": "Client authentication failed"}
+
+    with requests_mock.Mocker() as mocker:
+        mocker.post(TOKEN_URL, json=body, status_code=401)
+        output = read_stream("transactions")
+
+    message = output.errors[0].trace.error.message
+    assert "(Client authentication failed)" in message, f"unexpected message {message!r}"
 
 
 def test_reimbursements_server_side_filter_and_directions():
