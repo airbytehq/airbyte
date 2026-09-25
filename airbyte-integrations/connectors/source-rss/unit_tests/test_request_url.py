@@ -3,22 +3,45 @@
 #
 
 import logging
-from pathlib import Path
+from datetime import datetime, timedelta, timezone
+from email.utils import format_datetime
 
 import pytest
 import requests_mock
 from conftest import YAML_FILE_PATH
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import SyncMode, Type
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
-_RESOURCE_DIR = Path(__file__).parent / "resource"
-_FEED_BODY = (_RESOURCE_DIR / "rss2.xml").read_text()
-
 logger = logging.getLogger("airbyte")
+
+
+def _feed_body() -> str:
+    pub_date = format_datetime(datetime.now(timezone.utc) - timedelta(minutes=5))
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Test Feed</title>
+    <link>https://example.com</link>
+    <description>Test</description>
+    <item>
+      <title>Recent Item One</title>
+      <link>https://example.com/1</link>
+      <guid>https://example.com/1</guid>
+      <pubDate>{pub_date}</pubDate>
+    </item>
+    <item>
+      <title>Recent Item Two</title>
+      <link>https://example.com/2</link>
+      <guid>https://example.com/2</guid>
+      <pubDate>{pub_date}</pubDate>
+    </item>
+  </channel>
+</rss>
+"""
 
 
 @pytest.mark.parametrize(
@@ -46,13 +69,12 @@ def test_feed_url_is_used_verbatim(url):
     )
 
     with requests_mock.Mocker(real_http=False) as mocker:
-        mocker.get(requests_mock.ANY, text=_FEED_BODY)
-        try:
-            list(source.read(logger, config, catalog, state=None))
-        except Exception:
-            # Record processing may fail (e.g. record_filter on items without
-            # `published`); the URL assertion below is what matters here.
-            pass
+        mocker.get(requests_mock.ANY, text=_feed_body())
+        messages = list(source.read(logger, config, catalog, state=None))
 
         assert mocker.request_history, "expected at least one HTTP request"
         assert mocker.request_history[0].url == url
+
+    records = [m.record.data for m in messages if m.type == Type.RECORD]
+    assert records, "expected at least one record from the feed"
+    assert all("published" in record for record in records)
