@@ -134,6 +134,6 @@ skip the unchanged ones.
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :--------------------------------------------------------- | :---------------------------------------------- |
-| 0.1.0 | 2026-09-25 | TBD | New Bulk CDK (Kotlin) implementation of the Slack source |
+| 0.1.0 | 2026-09-25 | [87002](https://github.com/airbytehq/airbyte/pull/87002) | New Bulk CDK (Kotlin) implementation of the Slack source |
 
 </details>
