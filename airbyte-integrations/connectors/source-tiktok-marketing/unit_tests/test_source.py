@@ -32,6 +32,10 @@ _PRODUCTION_ONLY_STREAMS = {
     "pixels",
     "pixel_instant_page_events",
     "pixel_events_statistics",
+    "gmv_max_stores",
+    "gmv_max_campaigns",
+    "gmv_max_product_campaign_reports_daily",
+    "gmv_max_live_campaign_reports_daily",
 }
 _COMMON_STREAMS = {"advertisers", "ads", "ad_groups", "campaigns"}
 
@@ -50,7 +54,7 @@ def _walk_response_filters(value):
 @pytest.mark.parametrize(
     "config, stream_len",
     [
-        ({"access_token": "token", "environment": {"app_id": "1111", "secret": "secret"}, "start_date": "2021-04-01"}, 44),
+        ({"access_token": "token", "environment": {"app_id": "1111", "secret": "secret"}, "start_date": "2021-04-01"}, 48),
         ({"access_token": "token", "environment": {"app_id": "1111", "secret": ""}, "start_date": "2021-04-01"}, 28),
         ({"access_token": "token", "start_date": "2021-01-01", "environment": {"advertiser_id": "1111"}}, 28),
         (
@@ -60,7 +64,7 @@ def _walk_response_filters(value):
                 "start_date": "2021-04-01",
                 "report_granularity": "LIFETIME",
             },
-            44,
+            48,
         ),
         (
             {
@@ -69,7 +73,7 @@ def _walk_response_filters(value):
                 "start_date": "2021-04-01",
                 "report_granularity": "DAY",
             },
-            44,
+            48,
         ),
     ],
 )

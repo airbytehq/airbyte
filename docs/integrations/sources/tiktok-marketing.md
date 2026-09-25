@@ -131,6 +131,10 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 | AdsReportsByCountryHourly                 | Prod         | ad_id, stat_time_hour, country_code        | Yes         |
 | AdGroupsReportsByCountryDaily              | Prod         | adgroup_id, stat_time_day, country_code    | Yes         |
 | AdGroupsReportsByCountryHourly             | Prod         | adgroup_id, stat_time_hour, country_code   | Yes         |
+| GmvMaxStores                              | Prod         | store_id                                   | No          |
+| GmvMaxCampaigns                            | Prod         | campaign_id                                | Yes         |
+| GmvMaxProductCampaignReportsDaily          | Prod         | store_id, campaign_id, stat_time_day       | Yes         |
+| GmvMaxLiveCampaignReportsDaily             | Prod         | store_id, campaign_id, stat_time_day       | Yes         |
 
 Streams marked **Prod** only are available when you authenticate with `OAuth2.0`. They don't appear in the connector's catalog when you authenticate with a `Sandbox Access Token`.
 
@@ -180,6 +184,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.0 | 2026-09-22 | [85316](https://github.com/airbytehq/airbyte/pull/85316) | Add GMV Max streams: `gmv_max_stores`, `gmv_max_campaigns`, `gmv_max_product_campaign_reports_daily`, `gmv_max_live_campaign_reports_daily` |
 | 5.1.18 | 2026-09-22 | [86854](https://github.com/airbytehq/airbyte/pull/86854) | Update dependencies |
 | 5.1.17 | 2026-09-21 | [79183](https://github.com/airbytehq/airbyte/pull/79183) | Classify TikTok API error code 40001 (PERMISSION_ERROR) as config_error instead of system_error |
 | 5.1.16 | 2026-09-15 | [86277](https://github.com/airbytehq/airbyte/pull/86277) | Update dependencies |
