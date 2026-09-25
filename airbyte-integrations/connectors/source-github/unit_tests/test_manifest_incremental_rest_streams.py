@@ -18,10 +18,9 @@ budget is re-asserted here.
 
 import logging
 from unittest.mock import patch
+from urllib.parse import parse_qs, urlparse
 
 import pytest
-from source_github.source import SourceGithub
-from source_github.streams import Comments, Issues
 
 from airbyte_cdk.models import (
     AirbyteStateBlob,
@@ -36,6 +35,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+
+from .utils import make_source
 
 
 # (stream name, endpoint segment under repos/{repository}/)
@@ -72,7 +73,7 @@ def _catalog(*stream_names):
 
 def _read_messages(config, *stream_names, state=None):
     catalog = _catalog(*stream_names)
-    source = SourceGithub(config=dict(config), catalog=catalog, state=state)
+    source = make_source(config=dict(config), catalog=catalog, state=state)
     messages, error = [], None
     try:
         # Appended one at a time so the messages emitted before a failure are still available.
@@ -244,25 +245,24 @@ def test_legacy_state_migrates_to_per_partition_state(stream_name, endpoint, rat
     ]
 
 
+@pytest.mark.parametrize(
+    "page_size_config",
+    [
+        pytest.param({}, id="no_config"),
+        pytest.param({"page_size_for_large_streams": 42}, id="deprecated_key_present"),
+        pytest.param({"page_size_for_large_streams": None}, id="deprecated_key_null"),
+    ],
+)
 @pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
-def test_page_size_comes_from_page_size_for_large_streams(stream_name, endpoint, rate_limit_mock_response, requests_mock):
-    """All three were `large_stream = True`, so their `per_page` came from
-    `page_size_for_large_streams` — not the 100 the full-refresh group sends."""
-    config = _config("docker/compose", page_size_for_large_streams=42)
-    _mock_repository_resolution(requests_mock, "docker/compose")
-    requests_mock.get(f"https://api.github.com/repos/docker/compose/{endpoint}", json=[])
+def test_page_size_is_the_large_stream_page_size(stream_name, endpoint, page_size_config, rate_limit_mock_response, requests_mock):
+    """All three were `large_stream = True`, so their `per_page` is
+    `constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM` (10) rather than the 100 the full-refresh
+    group sends.
 
-    _, _, _, error = _read(config, stream_name)
-
-    assert error is None
-    assert [request.qs["per_page"] for request in _listings(requests_mock, endpoint)] == [["42"]]
-
-
-@pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
-def test_page_size_defaults_to_ten(stream_name, endpoint, rate_limit_mock_response, requests_mock):
-    """`constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM`. A present-but-null value must fall back
-    to it as well rather than reaching GitHub as `per_page=None`."""
-    config = _config("docker/compose", page_size_for_large_streams=None)
+    The deprecated `page_size_for_large_streams` no longer changes it. The key left the spec in
+    1.0.1, so a config still carrying it was set through the API or Terraform, and a null there
+    used to be the case that reached GitHub as `per_page=None`. Both are inert now."""
+    config = _config("docker/compose", **page_size_config)
     _mock_repository_resolution(requests_mock, "docker/compose")
     requests_mock.get(f"https://api.github.com/repos/docker/compose/{endpoint}", json=[])
 
@@ -298,10 +298,71 @@ def test_pagination_follows_link_header(stream_name, endpoint, rate_limit_mock_r
     assert all(request.qs["since"] == [_START_DATE.lower()] for request in listings)
 
 
+@pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
+def test_pagination_follows_next_link_with_after_cursor(stream_name, endpoint, rate_limit_mock_response, requests_mock):
+    """Regression test for GitHub's large-dataset HTTP 422: past GitHub's result-set threshold the
+    `rel="next"` link carries an opaque `after` cursor, and re-requesting with `page=N` alone is
+    rejected with "Pagination with the page parameter is not supported for large datasets".
+    The whole next URL must be followed, with `after` decoded exactly once."""
+    config = _config("docker/compose")
+    _mock_repository_resolution(requests_mock, "docker/compose")
+    next_url = (
+        f"https://api.github.com/repositories/1/{endpoint}"
+        "?per_page=10&state=all&sort=updated&direction=asc&since=2022-02-02T10%3A10%3A01Z"
+        "&page={page}&after={cursor}"
+    )
+    after_cursors = {
+        2: "Y3Vyc29yOnYyOpLPAAABgJu9UEjOQuMqZQ==",
+        3: "Y3Vyc29yOnYyOpLPAAABgJ910CDOSSsTvQ==",
+    }
+    requests_mock.get(
+        f"https://api.github.com/repos/docker/compose/{endpoint}",
+        [
+            {
+                "json": [{"id": 1, "updated_at": "2022-03-01T00:00:00Z"}],
+                "headers": _next_link(next_url.format(page=2, cursor="Y3Vyc29yOnYyOpLPAAABgJu9UEjOQuMqZQ%3D%3D")),
+            },
+            # Reached only when the paginator re-requests the stream path with `page=2` instead
+            # of following the next URL — the pre-fix behaviour this test guards against.
+            {"json": [{"id": 99, "updated_at": "2022-03-09T00:00:00Z"}]},
+        ],
+    )
+    requests_mock.get(
+        f"https://api.github.com/repositories/1/{endpoint}",
+        [
+            {
+                "json": [{"id": 2, "updated_at": "2022-03-02T00:00:00Z"}],
+                "headers": _next_link(next_url.format(page=3, cursor="Y3Vyc29yOnYyOpLPAAABgJ910CDOSSsTvQ%3D%3D")),
+            },
+            {"json": [{"id": 3, "updated_at": "2022-03-03T00:00:00Z"}]},
+        ],
+    )
+
+    records, _, _, error = _read(config, stream_name)
+
+    assert error is None
+    assert [record["id"] for record in records] == [1, 2, 3]
+    listings = _listings(requests_mock, endpoint)
+    assert len(listings) == 3
+    for page, request in zip((2, 3), listings[1:]):
+        assert request.path == f"/repositories/1/{endpoint}"
+        assert "%253D" not in request.url
+        query = parse_qs(urlparse(request.url).query)
+        assert query["after"] == [after_cursors[page]]
+        assert query["page"] == [str(page)]
+        # The requester's request_parameters are appended on top of the ones already in the next
+        # URL with identical values; GitHub accepts the duplication.
+        assert set(query["since"]) == {_START_DATE}
+        assert set(query["state"]) == {"all"}
+        assert set(query["sort"]) == {"updated"}
+        assert set(query["direction"]) == {"asc"}
+        assert set(query["per_page"]) == {"10"}
+
+
 def test_issues_sends_the_legacy_base_params(rate_limit_mock_response, requests_mock):
     """`Issues.stream_base_params`. `state=all` is the load-bearing one: without it GitHub
     returns open issues only and every closed issue silently disappears from the stream."""
-    config = _config("docker/compose", page_size_for_large_streams=25)
+    config = _config("docker/compose")
     _mock_repository_resolution(requests_mock, "docker/compose")
     requests_mock.get("https://api.github.com/repos/docker/compose/issues", json=[])
 
@@ -314,14 +375,14 @@ def test_issues_sends_the_legacy_base_params(rate_limit_mock_response, requests_
     assert request.qs["direction"] == ["asc"]
     # Restating `request_parameters` on the stream replaces the requester's dict rather than
     # merging into it, so `per_page` has to be restated with it.
-    assert request.qs["per_page"] == ["25"]
+    assert request.qs["per_page"] == ["10"]
 
 
 @pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
 def test_reaction_counts_are_renamed(stream_name, endpoint, rate_limit_mock_response, requests_mock):
     """`GithubStream.transform` renamed `+1`/`-1` to `plus_one`/`minus_one` and popped the
-    originals. `schemas/shared/reactions.json` declares only the renamed keys, so dropping the
-    rename would lose both counts."""
+    originals. The inline `reactions` schema declares only the renamed keys, so dropping
+    the rename would lose both counts."""
     config = _config("docker/compose")
     _mock_repository_resolution(requests_mock, "docker/compose")
     requests_mock.get(
@@ -425,9 +486,8 @@ def test_stream_primary_key_and_sync_modes_match_legacy(stream_name, endpoint):
     """`GithubStreamABC.primary_key = "id"` and `cursor_field = "updated_at"`. Changing either
     would make existing destinations deduplicate on a different key."""
     config = _config("docker/compose")
-    source = SourceGithub(config=config)
-    # `super()` skips `SourceGithub.streams()`, which returns the Python streams only.
-    manifest_streams = {stream.name: stream for stream in super(SourceGithub, source).streams(config=config)}
+    source = make_source(config=config)
+    manifest_streams = {stream.name: stream for stream in source.streams(config=config)}
 
     airbyte_stream = manifest_streams[stream_name].as_airbyte_stream()
     assert airbyte_stream.source_defined_primary_key == [["id"]]
@@ -443,40 +503,21 @@ def test_streams_are_served_by_the_manifest_only(rate_limit_mock_response, reque
     requests_mock.get("https://api.github.com/repos/docker/compose/branches", json=[{"name": "master"}])
 
     migrated = {name for name, _ in MIGRATED_STREAMS}
-    assert {stream.name for stream in SourceGithub(config=dict(config)).streams(config=dict(config))} & migrated == set()
-
-    discovered = [stream.name for stream in SourceGithub(config=dict(config)).discover(logging.getLogger("airbyte"), dict(config)).streams]
+    discovered = [stream.name for stream in make_source(config=dict(config)).discover(logging.getLogger("airbyte"), dict(config)).streams]
     for name in migrated:
         assert discovered.count(name) == 1
 
 
-@pytest.mark.parametrize(
-    ("technical_stream", "child", "fields"),
-    [
-        (Comments, "IssueCommentReactions", ["repository", "id"]),
-        (Issues, "IssueTimelineEvents", ["repository", "number"]),
-    ],
-)
-def test_technical_parent_streams_still_answer_get_json_schema(technical_stream, child, fields):
-    """`Comments` and `Issues` stay in `streams.py` after this step because `{child}` constructs
-    them as its parent and is only migrated in Step 7. Their schema files were deleted with the
-    migration, so both override `get_json_schema` rather than falling back to the missing file."""
-    stream = technical_stream(repositories=["docker/compose"], page_size_for_large_streams=10)
-
-    schema = stream.get_json_schema()
-
-    assert schema["type"] == "object"
-    assert set(fields) <= set(schema["properties"])
-
-
 def test_comments_two_sync_parity_with_legacy(rate_limit_mock_response, requests_mock):
     """The scenario `test_stream_comments` used to drive through the Python `Comments` class:
-    two repositories, `page_size_for_large_streams = 2`, three linked pages on the second sync.
+    two repositories and three linked pages on the second sync. The legacy test shrank the page
+    size to 2 to get them; the pages here come from the mocked `link` headers instead, since the
+    page size is no longer configurable.
 
     Two syncs, and the first sync's state drives the second — the same shape the legacy test
     asserted, with one deliberate difference called out below.
     """
-    config = _config("organization/repository", "airbytehq/airbyte", page_size_for_large_streams=2)
+    config = _config("organization/repository", "airbytehq/airbyte")
     _mock_repository_resolution(requests_mock, *config["repositories"])
 
     # `updated_at` values per repository, ordered ascending, as GitHub serves them.
@@ -503,12 +544,12 @@ def test_comments_two_sync_parity_with_legacy(rate_limit_mock_response, requests
         url = f"https://api.github.com/repos/{repository}/issues/comments"
         second_sync_since = records[1]["updated_at"]
         # First sync: `since` is the config start date and GitHub answers one unlinked page.
-        requests_mock.get(f"{url}?per_page=2&since={_START_DATE}", json=records[0:2])
+        requests_mock.get(f"{url}?per_page=10&since={_START_DATE}", json=records[0:2])
         # Second sync: `since` is the cursor the first sync stored, and the listing is three
         # linked pages. GitHub's `since` is inclusive, so the boundary record comes back.
-        requests_mock.get(f"{url}?per_page=2&since={second_sync_since}", json=records[1:3], headers=_next_link(f"{url}?page=2"))
-        requests_mock.get(f"{url}?per_page=2&page=2&since={second_sync_since}", json=records[3:5], headers=_next_link(f"{url}?page=3"))
-        requests_mock.get(f"{url}?per_page=2&page=3&since={second_sync_since}", json=records[5:])
+        requests_mock.get(f"{url}?per_page=10&since={second_sync_since}", json=records[1:3], headers=_next_link(f"{url}?page=2"))
+        requests_mock.get(f"{url}?per_page=10&page=2&since={second_sync_since}", json=records[3:5], headers=_next_link(f"{url}?page=3"))
+        requests_mock.get(f"{url}?per_page=10&page=3&since={second_sync_since}", json=records[5:])
 
     records, statuses, states, error = _read(config, "comments")
 

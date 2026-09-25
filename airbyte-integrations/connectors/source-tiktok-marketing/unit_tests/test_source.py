@@ -8,9 +8,32 @@ from unittest.mock import MagicMock
 import pytest
 import yaml
 
-from airbyte_cdk.models import ConnectorSpecification, Status
+from airbyte_cdk.models import ConnectorSpecification, FailureType, Status, SyncMode
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
 
 from .conftest import _YAML_FILE_PATH, get_source
+
+
+_PRODUCTION_ONLY_STREAMS = {
+    "advertiser_ids",
+    "ads_reports_by_country_daily",
+    "ad_groups_reports_by_country_daily",
+    "advertisers_reports_daily",
+    "advertisers_audience_reports_daily",
+    "advertisers_audience_reports_by_country_daily",
+    "advertisers_audience_reports_by_platform_daily",
+    "ads_reports_by_country_hourly",
+    "advertisers_reports_hourly",
+    "ad_groups_reports_by_country_hourly",
+    "advertisers_reports_lifetime",
+    "advertisers_audience_reports_lifetime",
+    "spark_ads",
+    "pixels",
+    "pixel_instant_page_events",
+    "pixel_events_statistics",
+}
+_COMMON_STREAMS = {"advertisers", "ads", "ad_groups", "campaigns"}
 
 
 def _walk_response_filters(value):
@@ -28,6 +51,7 @@ def _walk_response_filters(value):
     "config, stream_len",
     [
         ({"access_token": "token", "environment": {"app_id": "1111", "secret": "secret"}, "start_date": "2021-04-01"}, 44),
+        ({"access_token": "token", "environment": {"app_id": "1111", "secret": ""}, "start_date": "2021-04-01"}, 28),
         ({"access_token": "token", "start_date": "2021-01-01", "environment": {"advertiser_id": "1111"}}, 28),
         (
             {
@@ -52,6 +76,56 @@ def _walk_response_filters(value):
 def test_source_streams(config, stream_len):
     streams = get_source(config=config, state=None).streams(config=config)
     assert len(streams) == stream_len
+
+
+@pytest.mark.parametrize(
+    "config, expects_production_streams",
+    [
+        (
+            {"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111", "secret": ""}},
+            False,
+        ),
+        (
+            {"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111", "secret": None}},
+            False,
+        ),
+        ({"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111"}}, False),
+        (
+            {"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111", "secret": "secret"}},
+            True,
+        ),
+        (
+            {
+                "access_token": "token",
+                "start_date": "2021-04-01",
+                "credentials": {"auth_type": "sandbox_access_token", "advertiser_id": "1111", "access_token": "token"},
+            },
+            False,
+        ),
+        (
+            {
+                "access_token": "token",
+                "start_date": "2021-04-01",
+                "credentials": {
+                    "auth_type": "oauth2.0",
+                    "app_id": "1111",
+                    "secret": "secret",
+                    "access_token": "token",
+                },
+            },
+            True,
+        ),
+    ],
+)
+def test_conditional_production_streams(config, expects_production_streams):
+    names = {stream.name for stream in get_source(config=config, state=None).streams(config=config)}
+    production_set = _PRODUCTION_ONLY_STREAMS
+
+    if expects_production_streams:
+        assert production_set <= names
+    else:
+        assert production_set.isdisjoint(names)
+    assert _COMMON_STREAMS <= names
 
 
 def test_source_spec(config):
@@ -124,6 +198,11 @@ def test_source_check_connection_ok(config, requests_mock):
             None,
         ),
         ({"code": 40100, "message": "App reaches the QPS limit."}, None, 10),
+        (
+            {"code": 40001, "message": "Permission error: The access token lacks the required scope for endpoint."},
+            (Status.FAILED, "Insufficient permissions for this endpoint (error 40001)"),
+            None,
+        ),
     ],
 )
 @pytest.mark.usefixtures("mock_sleep")
@@ -143,3 +222,26 @@ def test_source_check_connection_failed(config, requests_mock, capsys, json_resp
     if expected_message is not None:
         trace_messages = capsys.readouterr().out.split()
         assert len(trace_messages) == expected_message
+
+
+def test_error_40001_classified_as_config_error(requests_mock):
+    """Error code 40001 (PERMISSION_ERROR) must be classified as config_error, not system_error."""
+    config = {"access_token": "TOKEN", "start_date": "2024-01-01", "end_date": "2024-01-02"}
+    json_response = {"code": 40001, "message": "Permission error: The access token lacks the required scope."}
+    ok_response = {"code": 0, "message": "ok", "data": {"list": [{"advertiser_id": "917429327", "advertiser_name": "name"}]}}
+
+    requests_mock.get("https://business-api.tiktok.com/open_api/v1.3/oauth2/advertiser/get/", json=ok_response)
+    requests_mock.get("https://business-api.tiktok.com/open_api/v1.3/advertiser/info/", json=ok_response)
+    report_mock = requests_mock.get("https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/", json=json_response)
+
+    catalog = CatalogBuilder().with_stream("ads_reports_daily", SyncMode.full_refresh).build()
+    source = get_source(config=config, state=None)
+    output = read(source, config, catalog)
+
+    assert report_mock.called, "Expected the report endpoint to be requested"
+    assert len(output.errors) > 0, "Expected at least one error trace for 40001"
+    for error_msg in output.errors:
+        assert (
+            error_msg.trace.error.failure_type == FailureType.config_error
+        ), f"Error 40001 should be config_error but got {error_msg.trace.error.failure_type}"
+    assert any("Insufficient permissions for this endpoint (error 40001)" in error_msg.trace.error.message for error_msg in output.errors)

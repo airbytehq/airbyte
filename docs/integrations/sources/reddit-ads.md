@@ -114,6 +114,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.11 | 2026-09-22 | [86789](https://github.com/airbytehq/airbyte/pull/86789) | Update dependencies |
+| 0.0.10 | 2026-09-15 | [86198](https://github.com/airbytehq/airbyte/pull/86198) | Update dependencies |
 | 0.0.9 | 2026-09-09 | [84850](https://github.com/airbytehq/airbyte/pull/84850) | Fix pagination so every stream syncs all pages instead of only the first |
 | 0.0.8 | 2026-09-08 | [85629](https://github.com/airbytehq/airbyte/pull/85629) | Update dependencies |
 | 0.0.7 | 2026-08-18 | [84348](https://github.com/airbytehq/airbyte/pull/84348) | Enable acceptance test suite with GSM test secrets |
