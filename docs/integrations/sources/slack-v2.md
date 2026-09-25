@@ -33,9 +33,9 @@ per-method rate limits.
 4. **Include private channels** and **Include archived channels** are off by default.
 5. **Channel name filter**: channel names (without `#`) to sync; empty means all channels.
 6. **Ignore messages with no replies in threads stream**: see the `threads` stream below.
-7. **Authentication mechanism**: OAuth (Airbyte Cloud) or bot token.
+7. **Authentication mechanism**: either the OAuth flow (Airbyte Cloud) or a bot token.
 8. **Number of concurrent threads** (`num_workers`) / **Concurrency**: how many streams are read at
-   the same time; see "Performance". Default 2.
+   the same time; see the performance section below. Default 2.
 9. **Channel messages date window size (in days)**: the size of the date windows a channel's
    history is read in. Default 100 days.
 10. **Checkpoint Target Time Interval**: how often the long streams save their progress. Default
