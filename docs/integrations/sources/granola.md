@@ -153,7 +153,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.0.0 | 2026-09-25 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Sync notes incrementally on updated_at so edited notes are replicated. Existing connections must reset the notes, detailed_notes, and note_transcripts streams |
+| 1.0.0 | 2026-09-25 | [87011](https://github.com/airbytehq/airbyte/pull/87011) | Sync notes incrementally on updated_at so edited notes are replicated. Existing connections must reset the notes, detailed_notes, and note_transcripts streams |
 | 0.3.3 | 2026-09-22 | [86667](https://github.com/airbytehq/airbyte/pull/86667) | Update dependencies |
 | 0.3.2 | 2026-09-15 | [86082](https://github.com/airbytehq/airbyte/pull/86082) | Update dependencies |
 | 0.3.1 | 2026-09-08 | [85516](https://github.com/airbytehq/airbyte/pull/85516) | Update dependencies |
