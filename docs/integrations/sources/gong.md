@@ -111,6 +111,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 2.0.0 | 2026-09-25 | [85373](https://github.com/airbytehq/airbyte/pull/85373) | Fix `extensiveCalls` schema: `parties[].context` is an `array` (was `object`), `media` declared as `object`. Add missing `users.conferencingProviders`, `scorecards.reviewMethod`, `answeredScorecards.reviewMethod`. See the [migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations). |
 | 1.4.2 | 2026-09-22 | [86644](https://github.com/airbytehq/airbyte/pull/86644) | Update dependencies |
 | 1.4.1 | 2026-09-15 | [86067](https://github.com/airbytehq/airbyte/pull/86067) | Update dependencies |
 | 1.4.0 | 2026-08-30 | [85192](https://github.com/airbytehq/airbyte/pull/85192) | Promote connector to certified |

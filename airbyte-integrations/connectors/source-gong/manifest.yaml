@@ -863,6 +863,24 @@ schemas:
           - "null"
           - array
         description: Additional email addresses that can be used to reach the user
+      conferencingProviders:
+        type:
+          - "null"
+          - array
+        description: Web conferencing providers configured for the user
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            provider:
+              type:
+                - "null"
+                - string
+            isDefault:
+              type:
+                - "null"
+                - boolean
       extension:
         type:
           - "null"
@@ -1414,6 +1432,9 @@ schemas:
                     - string
                     - "null"
       media:
+        type:
+          - "null"
+          - object
         description: The media urls of the call.
         properties:
           audioUrl:
@@ -1557,7 +1578,7 @@ schemas:
                 Internal, External, Unknown
             context:
               type:
-                - object
+                - array
                 - "null"
               description: >-
                 A list of links to external systems such as CRM, Dialer, Case
@@ -1686,6 +1707,11 @@ schemas:
           - "null"
           - string
         description: The name of the scorecard
+      reviewMethod:
+        type:
+          - "null"
+          - string
+        description: The review method of the scorecard
       updated:
         type:
           - "null"
@@ -1797,6 +1823,11 @@ schemas:
           - "null"
           - string
         description: Name or title of the scorecard template used.
+      reviewMethod:
+        type:
+          - "null"
+          - string
+        description: The review method used for the answered scorecard.
       visibilityType:
         type:
           - "null"
