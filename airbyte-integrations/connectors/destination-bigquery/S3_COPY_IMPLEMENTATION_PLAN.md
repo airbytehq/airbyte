@@ -5,10 +5,9 @@ unsupported when copying is enabled. Copying defaults off and is enabled only by
 `AIRBYTE_FUSION_ENABLED=true` environment variable. Routing and credentials come from the environment;
 there are no connector configuration overrides. The sections below describe the implementation contract
 and rollout requirements.
-Reviewed September 10, 2026 against the BigQuery files at repository baseline `aa28ceeac4e`.
-The connector uses CDK `1.0.25`, `core = 'load'`, and `useLegacyTaskLoader = true`, with
-`legacy-task-load-gcs`, `legacy-task-load-db`, and `legacy-task-load-s3` toolkits, plus an explicit
-project dependency on `bulk-cdk-toolkit-fusion` built from this branch during prerelease publishing.
+Reviewed September 25, 2026 against the merged Fusion load CDK baseline.
+The connector uses load CDK `1.1.1`, `core = 'load'`, and `useLegacyTaskLoader = true`, with
+`legacy-task-load-gcs`, `legacy-task-load-db`, `legacy-task-load-s3`, and `load-fusion` toolkits.
 
 ## 1. Start with GCS staging
 

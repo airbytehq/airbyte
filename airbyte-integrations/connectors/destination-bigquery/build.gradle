@@ -7,7 +7,7 @@ plugins {
 
 airbyteBulkConnector {
     core = 'load'
-    toolkits = ['legacy-task-load-gcs', 'legacy-task-load-db', 'legacy-task-load-s3']
+    toolkits = ['legacy-task-load-gcs', 'legacy-task-load-db', 'legacy-task-load-s3', 'load-fusion']
     useLegacyTaskLoader = true
 }
 
@@ -34,8 +34,6 @@ application {
 }
 
 dependencies {
-    implementation project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-fusion")
-
     // Connector-local Java SDK; GCS continues to use its existing Kotlin SDK and credentials.
     implementation enforcedPlatform('software.amazon.awssdk:bom:2.46.0')
     implementation('software.amazon.awssdk:s3') {
@@ -57,6 +55,5 @@ dependencies {
     implementation 'com.google.cloud:google-cloud-bigquery:2.62.0'
 
     integrationTestImplementation 'com.google.cloud:google-cloud-bigquery'
-    testImplementation(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-fusion")))
     testImplementation "io.mockk:mockk:1.13.13"
 }
