@@ -1,12 +1,13 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 """
-Mock server tests for the `notes` stream incremental slice bounds.
+Mock server tests for the `notes` stream incremental slice bounds and error handling.
 
 `GET /v1/notes` treats `created_before=<date>` as excluding that whole day, so
 day-truncated slice bounds dropped every note created on a slice boundary day.
 These tests pin the exact `created_after` / `created_before` pairs sent across
-several 30-day slices and assert that boundary-day notes are emitted.
+several 30-day slices and assert that boundary-day notes are emitted. They also
+check that a rejected API key (`401`/`403`) fails as a config error.
 """
 
 import json
@@ -16,7 +17,7 @@ from unittest import TestCase
 import freezegun
 from unit_tests.conftest import get_source
 
-from airbyte_cdk.models import AirbyteStateMessage, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -113,3 +114,26 @@ class TestNotesIncrementalSliceBounds(TestCase):
         assert output.errors == []
         http_mocker.assert_number_of_calls(request, 1)
         assert {message.record.data["id"] for message in output.records} == {"note-boundary-3"}
+
+
+@freezegun.freeze_time(_NOW)
+class TestNotesErrorHandling(TestCase):
+    @HttpMocker()
+    def test_401_is_a_config_error_naming_the_api_key(self, http_mocker: HttpMocker):
+        self._assert_unauthorized_is_config_error(401, http_mocker)
+
+    @HttpMocker()
+    def test_403_is_a_config_error_naming_the_api_key(self, http_mocker: HttpMocker):
+        self._assert_unauthorized_is_config_error(403, http_mocker)
+
+    def _assert_unauthorized_is_config_error(self, status_code: int, http_mocker: HttpMocker) -> None:
+        http_mocker.get(
+            _notes_request(*_SLICE_BOUNDS[0]),
+            HttpResponse(body=json.dumps({"error": {"code": "INVALID_API_KEY"}}), status_code=status_code),
+        )
+
+        output = _read_notes()
+
+        config_errors = [message.trace.error for message in output.errors if message.trace.error.failure_type == FailureType.config_error]
+        assert config_errors
+        assert any("API key" in (error.message or "") for error in config_errors)

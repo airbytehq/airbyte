@@ -8,15 +8,10 @@ class ConfigBuilder:
 
     def __init__(self) -> None:
         self._api_key: str = "test-api-key"
-        self._audit_api_key: Optional[str] = None
         self._start_date: Optional[str] = None
 
     def with_api_key(self, api_key: str) -> "ConfigBuilder":
         self._api_key = api_key
-        return self
-
-    def with_audit_api_key(self, audit_api_key: str) -> "ConfigBuilder":
-        self._audit_api_key = audit_api_key
         return self
 
     def with_start_date(self, start_date: str) -> "ConfigBuilder":
@@ -26,8 +21,6 @@ class ConfigBuilder:
 
     def build(self) -> Dict[str, Any]:
         config: Dict[str, Any] = {"api_key": self._api_key}
-        if self._audit_api_key:
-            config["audit_api_key"] = self._audit_api_key
         if self._start_date:
             config["start_date"] = self._start_date
         return config

@@ -36,10 +36,6 @@ class GranolaRequestBuilder:
     def transcript_endpoint(cls, note_id: str) -> "GranolaRequestBuilder":
         return cls(f"/v1/notes/{note_id}/transcript").with_page_size(100)
 
-    @classmethod
-    def audit_endpoint(cls) -> "GranolaRequestBuilder":
-        return cls("/v1/audit").with_page_size(30).with_action("document.hard_deleted")
-
     def with_include(self, include: str) -> "GranolaRequestBuilder":
         return self.with_query_param("include", include)
 
@@ -51,15 +47,6 @@ class GranolaRequestBuilder:
 
     def with_created_before(self, created_before: str) -> "GranolaRequestBuilder":
         return self.with_query_param("created_before", created_before)
-
-    def with_action(self, action: str) -> "GranolaRequestBuilder":
-        return self.with_query_param("action", action)
-
-    def with_occurred_after(self, occurred_after: str) -> "GranolaRequestBuilder":
-        return self.with_query_param("occurred_after", occurred_after)
-
-    def with_occurred_before(self, occurred_before: str) -> "GranolaRequestBuilder":
-        return self.with_query_param("occurred_before", occurred_before)
 
     def with_cursor(self, cursor: str) -> "GranolaRequestBuilder":
         return self.with_query_param("cursor", cursor)

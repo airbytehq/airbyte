@@ -204,97 +204,6 @@ definitions:
         schema:
           $ref: "#/schemas/note_transcripts"
 
-    deleted_notes:
-      type: DeclarativeStream
-      name: deleted_notes
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/audit_requester"
-          path: /v1/audit
-          http_method: GET
-          request_parameters:
-            action: document.hard_deleted
-            # 30 is the documented maximum page_size for /v1/audit.
-            page_size: "30"
-          # A normal notes API key gets a 404 on /v1/audit: the endpoint is
-          # Enterprise-only and needs a separate Audit API key. Fail with a
-          # config error instead of the default retry-then-fail handling.
-          error_handler:
-            $ref: "#/definitions/base_error_handler"
-            response_filters:
-              - $ref: "#/definitions/response_filters/invalid_audit_api_key"
-              - $ref: "#/definitions/response_filters/rate_limited"
-              - $ref: "#/definitions/response_filters/server_error"
-              - type: HttpResponseFilter
-                http_codes:
-                  - 404
-                action: FAIL
-                failure_type: config_error
-                error_message: >-
-                  Granola returned 404 for /v1/audit. The deleted_notes stream needs a
-                  Granola Audit API key, which is available on Enterprise plans and is
-                  created by a workspace admin (Settings > Connectors > Audit API keys).
-                  Enter it in the Audit API key field, or deselect the deleted_notes
-                  stream.
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - events
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: cursor
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('cursor') }}"
-            stop_condition: "{{ not response.get('hasMore') }}"
-      transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - note_id
-              value: "{{ (record.get('data') or {}).get('documentId') }}"
-      # /v1/audit rejects occurred_after dates outside its one-year retention window,
-      # so the start is clamped to 364 days ago. Events are returned in collected_at
-      # order and can be collected after they occurred, so the lookback re-reads a day
-      # of occurred_at to pick up late-collected deletions (deduplicated on `id`).
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: occurred_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%fZ"
-          - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        lookback_window: P1D
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%d')) }}"
-          datetime_format: "%Y-%m-%d"
-          min_datetime: "{{ (now_utc() - duration('P364D')).strftime('%Y-%m-%d') }}"
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: occurred_after
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: occurred_before
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/deleted_notes"
-
   # A stream-level `response_filters` list replaces the referenced handler's list
   # rather than merging with it, so every handler lists these shared filters
   # explicitly before its stream-specific ones.
@@ -309,18 +218,6 @@ definitions:
       error_message: >-
         Granola rejected the API key. Create a new key in the Granola desktop app
         (Settings > Connectors > API keys) and update the connector configuration.
-    invalid_audit_api_key:
-      type: HttpResponseFilter
-      http_codes:
-        - 401
-        - 403
-      action: FAIL
-      failure_type: config_error
-      error_message: >-
-        Granola rejected the Audit API key used by the deleted_notes stream. Ask a
-        workspace admin to create a new Audit API key (Settings > Connectors >
-        Audit API keys) and enter it in the Audit API key field, or deselect the
-        deleted_notes stream.
     rate_limited:
       type: HttpResponseFilter
       http_codes:
@@ -362,23 +259,10 @@ definitions:
     error_handler:
       $ref: "#/definitions/base_error_handler"
 
-  # /v1/audit is Enterprise-only and authenticates with a dedicated Audit API key
-  # created by a workspace admin. Fall back to the notes key so configs that leave
-  # `audit_api_key` unset still validate; the API answers 404 for non-audit keys.
-  audit_requester:
-    type: HttpRequester
-    url_base: https://public-api.granola.ai
-    authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config.get('audit_api_key') or config['api_key'] }}"
-    error_handler:
-      $ref: "#/definitions/base_error_handler"
-
 streams:
   - $ref: "#/definitions/streams/notes"
   - $ref: "#/definitions/streams/detailed_notes"
   - $ref: "#/definitions/streams/note_transcripts"
-  - $ref: "#/definitions/streams/deleted_notes"
 
 spec:
   type: Spec
@@ -399,16 +283,6 @@ spec:
           Settings > Workspace > General before personal keys can be created.
         airbyte_secret: true
         order: 0
-      audit_api_key:
-        type: string
-        title: Audit API key
-        description: >-
-          Optional. Granola Audit API key, used only by the deleted_notes stream.
-          The Audit API is available on Enterprise plans and keys are created by a
-          workspace admin in Settings > Connectors > Audit API keys. If left blank,
-          the connector uses the API key above.
-        airbyte_secret: true
-        order: 1
       start_date:
         type: string
         title: Start Date
@@ -420,7 +294,7 @@ spec:
         examples:
           - "2024-01-01"
         format: date
-        order: 2
+        order: 1
     additionalProperties: true
 
 metadata:
@@ -428,7 +302,6 @@ metadata:
     notes: false
     detailed_notes: false
     note_transcripts: false
-    deleted_notes: false
 
 schemas:
   notes:
@@ -529,62 +402,6 @@ schemas:
     additionalProperties: true
     required:
       - note_id
-
-  deleted_notes:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    properties:
-      id:
-        type: string
-        description: The unique identifier of the audit event.
-      object:
-        type:
-          - "null"
-          - string
-        description: The object type, always "audit_event".
-      action:
-        type:
-          - "null"
-          - string
-        description: The recorded action, always "document.hard_deleted" for this stream.
-      occurred_at:
-        type:
-          - "null"
-          - string
-        format: date-time
-        description: When the deletion occurred, in ISO 8601 format.
-      collected_at:
-        type:
-          - "null"
-          - string
-        format: date-time
-        description: When Granola recorded the audit event, in ISO 8601 format.
-      actor:
-        type:
-          - "null"
-          - object
-        description: The user or process that performed the action.
-        additionalProperties: true
-      data:
-        type:
-          - "null"
-          - object
-        description: Action-specific payload; document.hard_deleted events carry documentId.
-        additionalProperties: true
-      context:
-        type:
-          - "null"
-          - object
-        description: Additional context Granola recorded for the event.
-        additionalProperties: true
-      note_id:
-        type:
-          - "null"
-          - string
-        description: The ID of the deleted note, lifted from data.documentId.
-    additionalProperties: true
-    required:
-      - id
 
   detailed_notes:
     type: object

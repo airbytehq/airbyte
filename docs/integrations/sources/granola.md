@@ -65,7 +65,6 @@ The Granola source connector supports the following streams:
 | `notes` | Incremental | `id` |
 | `detailed_notes` | Full refresh | `id` |
 | `note_transcripts` | Full refresh | None |
-| `deleted_notes` | Incremental | `id` |
 
 ### Notes
 
@@ -74,6 +73,8 @@ The `notes` stream retrieves meeting notes from your Granola workspace using the
 For incremental syncs, the connector uses `created_at` as the cursor field and fetches notes in 30-day time windows, passing each window's bounds as second-level timestamps in the `created_after` and `created_before` query parameters. Because the cursor is the creation date, edits to an existing note aren't picked up by later incremental syncs. Run a full refresh if you need to capture changes to notes you already synced.
 
 The API only returns notes that have a generated AI summary and transcript. Notes that are still being processed or were never summarized are excluded.
+
+The Granola API doesn't return deleted notes or mark notes as deleted, so the connector can't report deletions. Notes deleted in Granola stay in your destination until you run a full refresh with overwrite.
 
 ### Detailed notes
 
@@ -92,20 +93,6 @@ The `note_transcripts` stream retrieves each note's transcript from the [`GET /v
 The stream has no primary key, so records are appended rather than deduplicated. It isn't incremental: on every sync it re-reads the full list of notes created since your start date and requests each of those notes' transcripts again, so it adds at least one request for every note in that range rather than only for new notes. The connector requests the API's maximum of 100 transcript segments per page, so a transcript longer than 100 segments costs one more request for each additional page. On a workspace with thousands of historical notes this dominates sync time, so size your sync frequency against the total note count.
 
 If Granola no longer returns a transcript for a note that the `notes` stream listed, such as a note deleted or unshared mid-sync, the API responds with `404` and the connector skips that note instead of failing the stream.
-
-### Deleted notes
-
-The `deleted_notes` stream retrieves note deletion events from the [`GET /v1/audit`](https://docs.granola.ai/api-reference/list-audit-events) endpoint, filtered to `document.hard_deleted` actions. Each record is an audit event — its `note_id` field carries the ID of the deleted note — not the note content itself.
-
-This stream has extra prerequisites:
-
-- It requires a Granola **Enterprise** plan.
-- It authenticates with an **Audit API key**, which only a workspace administrator can create in the Granola desktop app under **Settings > Connectors > Audit API keys**. Enter it in the connector's **Audit API key** field. If you leave the field empty, the connector uses your regular API key, which returns a 404 on this endpoint.
-- Granola retains audit events for one year, so syncs can't recover deletions older than that.
-
-If you don't have an Audit API key, deselect the `deleted_notes` stream; the other streams work without it.
-
-The stream is incremental on `occurred_at`, the time the deletion happened. The first sync starts at the later of `start_date` and one year ago, because Granola rejects earlier dates. Each incremental sync re-reads the previous day to catch deletions Granola records late, so use a deduplicating sync mode to avoid duplicate records. The stream isn't selected by default when you create a connection.
 
 ### Data access by key type
 
@@ -159,7 +146,6 @@ For programmatic configuration, use these parameter names:
 | Field | Required | Description |
 | :--- | :---: | :--- |
 | `api_key` | Yes | Granola API key. Use a personal API key for notes your own account can read, or a workspace API key for the workspace's shared notes. |
-| `audit_api_key` | No | Granola Audit API key, used only by the `deleted_notes` stream. Enterprise plans only; created by a workspace admin. Falls back to `api_key` when empty. |
 | `start_date` | No | Earliest note creation date to replicate, in `YYYY-MM-DD` format. Defaults to two years before the sync runs. |
 
 ## Changelog
@@ -169,7 +155,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 0.4.0 | 2026-09-22 | [86915](https://github.com/airbytehq/airbyte/pull/86915) | Add deleted_notes stream, map 401/403 to config errors, add heartbeat timeout, acceptance tests, and fix icon dimensions |
+| 0.3.4 | 2026-09-25 | [86915](https://github.com/airbytehq/airbyte/pull/86915) | Map 401/403 to config errors, add heartbeat timeout, and fix icon dimensions |
 | 0.3.3 | 2026-09-22 | [86667](https://github.com/airbytehq/airbyte/pull/86667) | Update dependencies |
 | 0.3.2 | 2026-09-15 | [86082](https://github.com/airbytehq/airbyte/pull/86082) | Update dependencies |
 | 0.3.1 | 2026-09-08 | [85516](https://github.com/airbytehq/airbyte/pull/85516) | Update dependencies |
