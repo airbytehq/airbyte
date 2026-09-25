@@ -46,3 +46,9 @@ data:
     - title: Front Status
       url: https://status.front.com/
       type: status_page
+    - title: Front API News & Updates
+      url: https://community.front.com/api-news-updates-40
+      type: api_release_history
+    - title: Front deprecation policy
+      url: https://dev.frontapp.com/docs/deprecation-policy
+      type: api_deprecations
