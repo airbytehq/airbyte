@@ -9,6 +9,7 @@ from typing import Any, Mapping
 from unittest.mock import MagicMock
 
 import pytest
+import requests
 from requests import Response
 
 from airbyte_cdk.models import FailureType
@@ -233,12 +234,28 @@ def _graphql_error(code: str, *, message: str = "GraphQL error.", user_message: 
             "Linear returned an error: x",
             id="malformed_extensions_null",
         ),
+        pytest.param(
+            200,
+            requests.exceptions.JSONDecodeError("Unterminated string", "", 0),
+            ResponseAction.RETRY,
+            FailureType.system_error,
+            "Linear returned an incomplete or unparsable response; retrying.",
+            id="unparsable_body",
+        ),
+        pytest.param(
+            200,
+            {},
+            ResponseAction.RETRY,
+            FailureType.system_error,
+            "Linear returned an incomplete or unparsable response; retrying.",
+            id="empty_object_body",
+        ),
     ],
 )
 def test_graphql_error_classification(
     error_handler: Any,
     status_code: int,
-    response_json: Mapping[str, Any],
+    response_json: Mapping[str, Any] | Exception,
     expected_action: ResponseAction,
     expected_failure_type: FailureType | None,
     expected_error_message: str | None,
@@ -246,7 +263,10 @@ def test_graphql_error_classification(
     response = MagicMock(spec=Response, status_code=status_code)
     response.ok = status_code == 200
     response.headers = {"Content-Type": "application/json", "X-RateLimit-Requests-Reset": "1600000060000"}
-    response.json.return_value = response_json
+    if isinstance(response_json, Exception):
+        response.json.side_effect = response_json
+    else:
+        response.json.return_value = response_json
 
     result = error_handler.interpret_response(response)
 
