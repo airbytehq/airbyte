@@ -15,24 +15,22 @@ per-method rate limits.
 
 ## Prerequisites
 
-- A Slack workspace and either
-  - **Sign in via Slack (OAuth)** on Airbyte Cloud, or
-  - a **bot token** (`xoxb-`) of a Slack app installed in the workspace with the scopes
-    `channels:history`, `channels:join`, `channels:read`, `groups:read`, `groups:history` and
-    `users:read`.
-- For private channels, add the bot to each channel: Slack does not let apps join private channels.
+- A Slack workspace and either **Sign in via Slack (OAuth)** on Airbyte Cloud or a **bot token**
+  (`xoxb-`) of a Slack app installed in the workspace with the scopes `channels:history`,
+  `channels:join`, `channels:read`, `groups:read`, `groups:history` and `users:read`.
+- For private channels, add the bot to each channel. Slack does not let apps join private channels.
 
 ## Setup guide
 
 1. **Start Date**: messages before this UTC instant (`2017-01-25T00:00:00Z`) are not replicated.
-2. **Threads Lookback window (Days)**: how far before the saved cursor the `channel_messages` and
-   `threads` streams look again on every sync. Replies to a thread whose parent message is older
-   than the lookback window are not detected, so set it to the age of the threads that are still
-   active in your workspace (7 to 30 days is typical). Default 0.
+2. `lookback_window` (**Threads look-back window**): how far before the saved cursor the
+   `channel_messages` and `threads` streams look again on every sync. Replies to a thread whose
+   parent message is older than this window are not detected, so set it to the age of the threads
+   that are still active in your workspace (7 to 30 days is typical). Default 0.
 3. **Join all channels**: when enabled (default), the bot joins every public channel it is not a
    member of, so that their messages can be read. Disable it to sync only the channels the bot
    was added to.
-4. **Include private channels** / **Include archived channels**: off by default.
+4. **Include private channels** and **Include archived channels** are off by default.
 5. **Channel name filter**: channel names (without `#`) to sync; empty means all channels.
 6. **Ignore messages with no replies in threads stream**: see the `threads` stream below.
 7. **Authentication mechanism**: OAuth (Airbyte Cloud) or bot token.
@@ -68,9 +66,10 @@ Records are the JSON objects Slack returns (every field, not only the ones in th
 
 ### `channel_messages`
 
-Every top-level message of every selected channel (members of the bot, or every public channel
-when "Join all channels" is on) from the start date, in date windows. Each incremental sync reads,
-per channel, from the saved cursor minus the lookback window up to the instant the sync started.
+Every top-level message of every selected channel (channels the bot is a member of, or every public
+channel when **Join all channels** is on) from the start date, in date windows. Each incremental
+sync reads, per channel, from the saved cursor minus the look-back window up to the instant the
+sync started.
 
 ### `threads`
 
@@ -79,10 +78,9 @@ replies. This is what the previous connector produced with one `conversations.re
 message. The v2 connector:
 
 - emits a message without replies as is, without a call (Slack would return just that message);
-- fetches a thread once per sync, even when it appears several times in the history (broadcast
-  replies);
-- on incremental syncs, skips threads whose `latest_reply` predates the last completed sync (minus
-  the lookback window), because their replies were all emitted already.
+- fetches a thread once per sync, even when broadcast replies repeat it in the history;
+- on incremental syncs, skips threads whose `latest_reply` predates the last completed sync,
+  because their replies were all emitted already.
 
 With **Ignore messages with no replies in threads stream** on, messages without replies are left
 out of the stream (as with the previous connector).
@@ -95,8 +93,8 @@ Slack limits every Web API method separately, per app and workspace (`conversati
 exhausted. The connector paces each method at its documented rate, halves the rate and waits for
 `Retry-After` on a 429, and restores it after a run of successful requests. Because the budgets are
 per method, the streams are read concurrently (`concurrency`, default 2): with 5 the five streams
-run side by side without competing for the same budget. Reading one stream on several threads
-would not help, so the connector never does.
+run side by side without competing for the same budget. Reading one stream on more than one
+thread would not help, so the connector never does.
 
 **Non-Marketplace apps.** Since May 2025, Slack limits `conversations.history` and
 `conversations.replies` to 1 request per minute and 15 messages per request for apps that are
@@ -113,9 +111,8 @@ history pages are shared between the two streams within a sync), `channel_member
 ## Limitations
 
 - Direct messages and group direct messages are not synced (no `im:history`/`mpim:history` scopes).
-- Edited or deleted replies do not update `latest_reply`; use the lookback window to re-read
-  recent threads.
-- Replies to a thread whose parent is older than `start_date` or the lookback window are not
+- Edited or deleted replies do not update `latest_reply` and are not synced again.
+- Replies to a thread whose parent is older than `start_date` or the look-back window are not
   detected.
 - The `users`, `channels` and `channel_members` streams are not resumable: an interrupted sync
   reads them again from the start.
@@ -123,7 +120,7 @@ history pages are shared between the two streams within a sync), `channel_member
 ## Migrating from the Slack connector
 
 The v2 connector accepts the configuration and the state of the Slack (3.x) connector unchanged;
-no reset is needed. The first sync after the switch reads every thread in the lookback window once
+no reset is needed. The first sync after the switch reads every thread in the look-back window once
 (the previous connector's cursors say nothing about which threads changed); the following syncs
 skip the unchanged ones.
 
