@@ -11,11 +11,13 @@ from typing import Any
 
 import pytest
 from conftest import base_config, get_source
+from jsonschema import ValidationError, validate
 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConcurrencyLevel as ConcurrencyLevelModel
 
 
 _DEFAULT_CONCURRENCY = 3
+_OMITTED = object()
 
 
 @pytest.mark.parametrize(
@@ -27,8 +29,8 @@ _DEFAULT_CONCURRENCY = 3
         pytest.param("  https://demo.onuptick.com  ", "https://demo.onuptick.com", id="surrounding_whitespace"),
         pytest.param("https://demo.onuptick.com/api/v2.15/", "https://demo.onuptick.com", id="path_stripped"),
         pytest.param("demo.onuptick.com", "https://demo.onuptick.com", id="bare_host"),
-        pytest.param("", "", id="empty_left_for_spec_validation"),
-        pytest.param("   ", "   ", id="whitespace_only_left_for_spec_validation"),
+        pytest.param("", "", id="empty_left_unnormalized"),
+        pytest.param("   ", "   ", id="whitespace_only_left_unnormalized"),
         pytest.param(None, None, id="null_left_for_spec_validation"),
         pytest.param(42, 42, id="non_string_left_for_spec_validation"),
     ],
@@ -73,3 +75,19 @@ def test_default_concurrency_when_num_workers_missing() -> None:
     component = source._constructor.create_component(ConcurrencyLevelModel, source.resolved_manifest["concurrency_level"], source._config)
 
     assert component.get_concurrency_level() == _DEFAULT_CONCURRENCY
+
+
+def test_max_requests_per_minute_spec_validation() -> None:
+    spec_schema = get_source(base_config()).resolved_manifest["spec"]["connection_specification"]
+
+    def _config(value: Any) -> dict:
+        config = base_config()
+        if value is not _OMITTED:
+            config["max_requests_per_minute"] = value
+        return config
+
+    validate(instance=_config(_OMITTED), schema=spec_schema)
+    validate(instance=_config(60), schema=spec_schema)
+    for invalid in (0, "60", 2.5, 601):
+        with pytest.raises(ValidationError):
+            validate(instance=_config(invalid), schema=spec_schema)

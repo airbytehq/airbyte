@@ -2,27 +2,23 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping, MutableMapping
+from typing import Any, Iterable, List, Mapping, Optional
 from unittest import mock
+from urllib.parse import parse_qsl, urlparse
 
-from source_github.streams import GithubStream
+import requests
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 
 
-def read_incremental(stream_instance: Stream, stream_state: MutableMapping[str, Any]):
-    res = []
-    slices = stream_instance.stream_slices(sync_mode=SyncMode.incremental, stream_state=stream_state)
-    for slice in slices:
-        records = stream_instance.read_records(sync_mode=SyncMode.incremental, stream_slice=slice, stream_state=stream_state)
-        for record in records:
-            stream_state = stream_instance._get_updated_state(stream_state, record)
-            res.append(record)
-    return res
+def read_full_refresh(stream_instance: Stream) -> Iterable[Mapping[str, Any]]:
+    for stream_slice in stream_instance.stream_slices(sync_mode=SyncMode.full_refresh):
+        yield from stream_instance.read_records(stream_slice=stream_slice, sync_mode=SyncMode.full_refresh)
 
 
 class ProjectsResponsesAPI:
@@ -79,20 +75,61 @@ def command_check(source: Source, config):
     return source.check(logger, config)
 
 
-class ProbeStream(GithubStream):
-    """A plain repo-scoped Python stream for tests that exercise `GithubStreamABC.read_records`'s
-    error handling or the shared authenticator through a real `HttpStream`: `GET
-    repos/{repository}/probe_stream?per_page=100`, no parent, no cache, no envelope.
+class ProbeStream(HttpStream):
+    """A minimal repo-scoped stream used to drive real HTTP traffic through the shared
+    authenticator: `GET repos/{repository}/probe_stream?per_page=<page size>`.
 
-    `Deployments` used to play this role until Step 5 moved it to the manifest. Every remaining
-    Python stream is unsuitable for one of three reasons: it is parent-driven (`PullRequestCommits`,
-    `ProjectColumns`, `TeamMembers`, ...), it is GraphQL, or it sets `use_cache = True`, which
-    replays cached pages and stops a request counter from advancing.
+    Every GitHub stream now lives in the manifest, so there is no connector stream left to
+    borrow for the authenticator tests. This stands in for one: no parent, no cache, no
+    envelope, and no error handling of its own.
     """
 
-    def __init__(self, start_date: str = "", **kwargs: Any) -> None:
-        # Accepted and ignored so the tests can pass the same arguments a semi-incremental stream took.
+    primary_key = "id"
+
+    def __init__(
+        self,
+        repositories: List[str],
+        page_size_for_large_streams: int = 10,
+        api_url: str = "https://api.github.com/",
+        start_date: str = "",
+        **kwargs: Any,
+    ) -> None:
+        # `start_date` is accepted and ignored so the tests can pass the arguments a
+        # semi-incremental stream used to take.
         super().__init__(**kwargs)
+        self.repositories = repositories
+        self.page_size = page_size_for_large_streams
+        self._api_url = api_url
+
+    @property
+    def url_base(self) -> str:
+        return self._api_url
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs: Any) -> str:
+        return f"repos/{stream_slice['repository']}/probe_stream"
+
+    def stream_slices(self, **kwargs: Any) -> Iterable[Optional[Mapping[str, Any]]]:
+        for repository in self.repositories:
+            yield {"repository": repository}
+
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs: Any) -> Mapping[str, Any]:
+        return {"per_page": self.page_size, **(next_page_token or {})}
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        # GitHub's `Link: <...>; rel="next"` pagination, kept because the quota tests need the
+        # stream to keep issuing requests until the authenticator runs its tokens down.
+        next_link = response.links.get("next", {}).get("url")
+        if not next_link:
+            return None
+        return dict(parse_qsl(urlparse(next_link).query))
+
+    def get_cursor(self) -> None:
+        # Without this, `HttpStream` hands the stream a `ResumableFullRefreshCursor` and reads a
+        # single page per slice. The quota tests need every page to be requested in one pass.
+        return None
+
+    def parse_response(self, response: requests.Response, **kwargs: Any) -> Iterable[Mapping[str, Any]]:
+        yield from response.json()
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return {"$schema": "https://json-schema.org/draft-07/schema#", "type": "object", "properties": {}}
