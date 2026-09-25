@@ -42,4 +42,19 @@ data:
     - title: PrestaShop authentication
       url: https://devdocs.prestashop-project.org/8/webservice/tutorials/creating-access/
       type: authentication_guide
+    - title: PrestaShop 9 Web Service API
+      url: https://devdocs.prestashop-project.org/9/webservice/
+      type: api_reference
+    - title: PrestaShop 9 Admin API (OAuth2 successor to the Webservice API)
+      url: https://devdocs.prestashop-project.org/9/admin-api/
+      type: api_reference
+    - title: PrestaShop 9.0 core updates and removed code
+      url: https://devdocs.prestashop-project.org/9/modules/core-updates/9.0/
+      type: api_release_history
+    - title: PrestaShop core releases
+      url: https://github.com/PrestaShop/PrestaShop/releases
+      type: api_release_history
+    - title: PrestaShop core source code
+      url: https://github.com/PrestaShop/PrestaShop
+      type: code_repository
 metadataSpecVersion: "1.0"
