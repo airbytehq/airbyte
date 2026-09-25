@@ -37,7 +37,7 @@ data:
         deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
-            impactedScopes: ["page"]
+            impactedScopes: ["page", "post"]
       2.0.0:
         message: >-
           This version updates the API version from v23 to v24. Deprecated fields have been removed and new fields have been added for the streams `Post`, `Post Insights` and `Page Insights`.

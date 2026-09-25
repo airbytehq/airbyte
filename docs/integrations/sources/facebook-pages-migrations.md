@@ -10,12 +10,12 @@ Meta deprecated these fields for New Pages Experience Pages in Graph API v26.0, 
 
 ### Who is affected?
 
-This change only affects users syncing the `page` stream. No specification, configuration, or state changes are required.
+This change affects users syncing the `page` stream and, nested under `sponsor_tags[]`, the `post` stream. No specification, configuration, or state changes are required.
 
 ### Migration steps
 
 1. Upgrade the connector to version `3.0.0`.
-2. Refresh the source schema for the `page` stream.
+2. Refresh the source schema for the `page` and `post` streams.
 3. Update downstream models or SQL that reference any of the removed columns.
 
 Clearing the `page` stream is not required.
