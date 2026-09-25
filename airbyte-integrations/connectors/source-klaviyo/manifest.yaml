@@ -30,7 +30,7 @@ definitions:
             sort: "updated"
           request_headers:
             Accept: application/json
-            Revision: "2024-10-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -113,7 +113,7 @@ definitions:
             sort: "updated"
           request_headers:
             Accept: application/json
-            Revision: "2024-10-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -225,7 +225,7 @@ definitions:
             sort: "datetime"
           request_headers:
             Accept: application/json
-            Revision: "2024-10-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -314,7 +314,7 @@ definitions:
             sort: "datetime"
           request_headers:
             Accept: application/json
-            Revision: "2024-10-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -399,7 +399,7 @@ definitions:
             sort: "updated"
           request_headers:
             Accept: application/json
-            Revision: "2024-10-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -481,7 +481,7 @@ definitions:
             sort: "updated_at"
           request_headers:
             Accept: application/json
-            Revision: "2024-10-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -582,7 +582,7 @@ definitions:
             sort: "updated_at"
           request_headers:
             Accept: application/json
-            Revision: "2024-10-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -678,7 +678,7 @@ definitions:
             sort: "updated"
           request_headers:
             Accept: application/json
-            Revision: "2024-10-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -757,7 +757,7 @@ definitions:
           http_method: GET
           request_headers:
             Accept: application/json
-            Revision: "2024-10-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -822,7 +822,7 @@ definitions:
           http_method: GET
           request_headers:
             Accept: application/json
-            Revision: "2024-10-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -878,7 +878,7 @@ definitions:
           http_method: GET
           request_headers:
             Accept: application/json
-            Revision: "2024-10-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -945,7 +945,7 @@ definitions:
             additional-fields[list]: profile_count
           request_headers:
             Accept: application/json
-            Revision: "2024-10-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -1018,7 +1018,7 @@ definitions:
           http_method: GET
           request_headers:
             Accept: application/json
-            Revision: "2024-10-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -1088,7 +1088,7 @@ definitions:
           request_parameters: {}
           request_headers:
             Accept: application/json
-            Revision: "2024-10-15"
+            Revision: "2026-01-15"
             Content-Type: application/json
           request_body_json:
             data:
@@ -1244,7 +1244,7 @@ definitions:
           request_parameters: {}
           request_headers:
             Accept: application/json
-            Revision: "2024-10-15"
+            Revision: "2026-01-15"
             Content-Type: application/json
           request_body_json:
             data:
@@ -2952,15 +2952,26 @@ schemas:
             properties:
               method:
                 type: string
-              options_static:
+              datetime:
+                type:
+                  - "null"
+                  - string
+                airbyte_type: timestamp_without_timezone
+                format: date-time
+              date:
+                type:
+                  - "null"
+                  - string
+                format: date
+              throttle_percentage:
+                type:
+                  - "null"
+                  - integer
+              options:
                 type:
                   - "null"
                   - object
                 properties:
-                  datetime:
-                    type: string
-                    airbyte_type: timestamp_without_timezone
-                    format: date-time
                   is_local:
                     type:
                       - "null"
@@ -2969,25 +2980,6 @@ schemas:
                     type:
                       - "null"
                       - boolean
-              options_sto:
-                type:
-                  - "null"
-                  - object
-                properties:
-                  date:
-                    type: string
-                    format: date
-              options_throttled:
-                type:
-                  - "null"
-                  - object
-                properties:
-                  datetime:
-                    type: string
-                    airbyte_type: timestamp_without_timezone
-                    format: date-time
-                  throttle_percentage:
-                    type: integer
           send_time:
             type:
               - "null"
@@ -3180,15 +3172,26 @@ schemas:
             properties:
               method:
                 type: string
-              options_static:
+              datetime:
+                type:
+                  - "null"
+                  - string
+                airbyte_type: timestamp_without_timezone
+                format: date-time
+              date:
+                type:
+                  - "null"
+                  - string
+                format: date
+              throttle_percentage:
+                type:
+                  - "null"
+                  - integer
+              options:
                 type:
                   - "null"
                   - object
                 properties:
-                  datetime:
-                    type: string
-                    airbyte_type: timestamp_without_timezone
-                    format: date-time
                   is_local:
                     type:
                       - "null"
@@ -3197,25 +3200,6 @@ schemas:
                     type:
                       - "null"
                       - boolean
-              options_sto:
-                type:
-                  - "null"
-                  - object
-                properties:
-                  date:
-                    type: string
-                    format: date
-              options_throttled:
-                type:
-                  - "null"
-                  - object
-                properties:
-                  datetime:
-                    type: string
-                    airbyte_type: timestamp_without_timezone
-                    format: date-time
-                  throttle_percentage:
-                    type: integer
           send_time:
             type:
               - "null"
@@ -3281,74 +3265,197 @@ schemas:
                 - "null"
                 - object
               properties:
-                channel:
-                  type:
-                    - "null"
-                    - string
-                content:
-                  type:
-                    - "null"
-                    - object
-                  properties:
-                    bcc_email:
-                      type:
-                        - "null"
-                        - string
-                    cc_email:
-                      type:
-                        - "null"
-                        - string
-                    from_email:
-                      type:
-                        - "null"
-                        - string
-                    from_label:
-                      type:
-                        - "null"
-                        - string
-                    preview_text:
-                      type:
-                        - "null"
-                        - string
-                    reply_to_email:
-                      type:
-                        - "null"
-                        - string
-                    subject:
-                      type:
-                        - "null"
-                        - string
                 created_at:
                   type:
                     - "null"
                     - string
                   airbyte_type: timestamp_without_timezone
                   format: date-time
-                label:
-                  type:
-                    - "null"
-                    - string
-                render_options:
+                definition:
                   type:
                     - "null"
                     - object
+                  additionalProperties: true
                   properties:
-                    add_info_link:
+                    channel:
                       type:
                         - "null"
-                        - boolean
-                    add_opt_out_language:
+                        - string
+                    label:
                       type:
                         - "null"
-                        - boolean
-                    add_org_prefix:
+                        - string
+                    content:
                       type:
                         - "null"
-                        - boolean
-                    shorten_links:
+                        - object
+                      additionalProperties: true
+                      properties:
+                        action_buttons:
+                          type:
+                            - "null"
+                            - array
+                          items:
+                            type:
+                              - "null"
+                              - object
+                            additionalProperties: true
+                            properties:
+                              action_type:
+                                type:
+                                  - "null"
+                                  - string
+                              android_deep_link:
+                                type:
+                                  - "null"
+                                  - string
+                              ios_deep_link:
+                                type:
+                                  - "null"
+                                  - string
+                              label:
+                                type:
+                                  - "null"
+                                  - string
+                              position:
+                                type:
+                                  - "null"
+                                  - integer
+                              url:
+                                type:
+                                  - "null"
+                                  - string
+                        bcc_email:
+                          type:
+                            - "null"
+                            - string
+                        body:
+                          type:
+                            - "null"
+                            - string
+                        cc_email:
+                          type:
+                            - "null"
+                            - string
+                        dynamic_image:
+                          type:
+                            - "null"
+                            - string
+                        from_email:
+                          type:
+                            - "null"
+                            - string
+                        from_label:
+                          type:
+                            - "null"
+                            - string
+                        media_url:
+                          type:
+                            - "null"
+                            - string
+                        preview_text:
+                          type:
+                            - "null"
+                            - string
+                        reply_to_email:
+                          type:
+                            - "null"
+                            - string
+                        subject:
+                          type:
+                            - "null"
+                            - string
+                        title:
+                          type:
+                            - "null"
+                            - string
+                    kv_pairs:
                       type:
                         - "null"
-                        - boolean
+                        - object
+                      additionalProperties: true
+                    notification_type:
+                      type:
+                        - "null"
+                        - string
+                    options:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        badge:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            display:
+                              type:
+                                - "null"
+                                - boolean
+                            badge_options:
+                              type:
+                                - "null"
+                                - object
+                              properties:
+                                badge_config:
+                                  type:
+                                    - "null"
+                                    - string
+                                set_from_property:
+                                  type:
+                                    - "null"
+                                    - string
+                                value:
+                                  type:
+                                    - "null"
+                                    - string
+                        on_open:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            android_deep_link:
+                              type:
+                                - "null"
+                                - string
+                            ios_deep_link:
+                              type:
+                                - "null"
+                                - string
+                            web_url:
+                              type:
+                                - "null"
+                                - string
+                        play_sound:
+                          type:
+                            - "null"
+                            - boolean
+                    render_options:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        add_info_link:
+                          type:
+                            - "null"
+                            - boolean
+                        add_opt_out_language:
+                          type:
+                            - "null"
+                            - boolean
+                        add_org_prefix:
+                          type:
+                            - "null"
+                            - boolean
+                        shorten_links:
+                          type:
+                            - "null"
+                            - boolean
                 send_times:
                   type:
                     - "null"
@@ -3423,6 +3530,37 @@ schemas:
                             - "null"
                             - string
                 template:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    data:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        type:
+                          type:
+                            - "null"
+                            - string
+                        id:
+                          type:
+                            - "null"
+                            - string
+                    links:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        related:
+                          type:
+                            - "null"
+                            - string
+                        self:
+                          type:
+                            - "null"
+                            - string
+                image:
                   type:
                     - "null"
                     - object
