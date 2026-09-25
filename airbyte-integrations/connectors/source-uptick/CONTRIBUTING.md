@@ -10,7 +10,7 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 The connector uses the OAuth 2.0 password grant against `{base_url}/api/oauth2/token/`: `client_id`/`client_secret` identify the OAuth application and `username`/`password` identify the Uptick user. Uptick's public API docs ([Getting started](https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started), [Postman collection](https://support.uptickhq.com/en/articles/6728183-uptick-api-sample-postman-collection)) describe only the password grant plus refresh tokens. An `{base_url}/api/oauth2/authorize/` endpoint was observed on a test tenant, but the authorization-code flow is undocumented and has not been verified end-to-end (the app-creation UI exposes no redirect-URI field), so the connector implements only the password grant. OAuth applications are registered per tenant under **Control Panel > Uptick API** and every customer runs on their own host (`<tenant>.onuptick.com`), so Airbyte cannot ship a single shared Cloud OAuth app; a Cloud button would have to build the consent URL from the user's `base_url` (tracked separately in https://github.com/airbytehq/airbyte/pull/86464).
 
-HTTP 401 fails fast as a `config_error` rather than refresh-and-retry — the authenticator already refreshes on `expires_in`, so a 401 means the credentials themselves are wrong. HTTP 403 is also a `config_error` (the user lacks permission for that endpoint).
+Bad credentials surface on the token endpoint (`invalid_grant` for a wrong username/password, `invalid_client` for a wrong client secret) and fail the token request itself as a `config_error` via the authenticator's `refresh_token_error_*` settings, before any stream request is issued. A 401 on a stream request (expired or revoked access token — Uptick returns the same body in every case) is handled with `REFRESH_TOKEN_THEN_RETRY`: the connector refreshes the token once and retries the request; a rejected refresh or a second 401 after the retry fails the sync as a `config_error` (`HTTP 401: Uptick rejected the access token.`). The CDK bounds this to a single refresh per request (airbyte-python-cdk#1173), so a rotated password causes at most one failed login per stream and cannot trigger Uptick's account lockout. HTTP 403 is also a `config_error` (the user lacks permission for that endpoint).
 
 ## Config normalization
 
@@ -30,7 +30,7 @@ All 54 JSON:API streams pass `show_deleted: "true"`, but it only has an effect o
 
 ## Rate limiting
 
-`api_budget` is a global `HTTPAPIBudget` of 60 requests/minute (`MovingWindowCallRatePolicy`). This is a conservative placeholder — Uptick's published limit is not yet confirmed with the vendor, so treat it as a provisional ceiling, not a measured value. The error handler honors `Retry-After` capped at 1800s per wait, retries up to 5 times, and `maxSecondsBetweenMessages` is 3600.
+`api_budget` is a global `HTTPAPIBudget` (`MovingWindowCallRatePolicy`) whose limit comes from the `max_requests_per_minute` config field (default 60, range 1–600). The default is a conservative placeholder — Uptick's published limit is not yet confirmed with the vendor, so treat it as a provisional ceiling, not a measured value. The error handler honors `Retry-After` capped at 1800s per wait, retries up to 5 times, and `maxSecondsBetweenMessages` is 3600.
 
 ## Permissions
 
