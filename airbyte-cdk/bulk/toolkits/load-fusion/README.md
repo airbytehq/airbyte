@@ -10,7 +10,7 @@ For the dependent connector PRs, merge the common CDK commit into each branch, t
 explicit dependency (Kotlin DSL shown; Groovy uses the same project path):
 
 ```kotlin
-implementation(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-fusion"))
+implementation(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-fusion"))
 ```
 
 Keep existing `cdkVersion` / `cdkVersionRequired` unchanged. Fusion is published with the bulk
@@ -23,7 +23,7 @@ in the connector distribution/image. The shared commit must therefore be present
 connector PR's branch; a sibling worktree or local Maven publication is insufficient.
 
 This toolkit is published as the normal load CDK artifact
-`io.airbyte.bulk-cdk:bulk-cdk-toolkit-fusion:<load-cdk-version>`. It is included in the existing
+`io.airbyte.bulk-cdk:bulk-cdk-toolkit-load-fusion:<load-cdk-version>`. It is included in the existing
 load CDK build and publication tasks:
 
 ```sh
@@ -103,7 +103,7 @@ The Java test fixtures variant provides a Kotlin helper with Java concurrency pr
 and no dependency on core CDK or coroutines:
 
 ```kotlin
-testImplementation(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-fusion")))
+testImplementation(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-fusion")))
 ```
 
 Inject `io.airbyte.cdk.fusion.testing.ControlledFusionUploader` into the connector's real
