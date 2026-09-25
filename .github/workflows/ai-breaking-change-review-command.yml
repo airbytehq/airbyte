@@ -146,10 +146,10 @@ jobs:
 
           url="${comment_url:-$PR_URL}"
 
-          text="${emoji} Breaking change review complete: \`${connector}\` ${target_version} — verdict *${verdict}*, data-loss risk *${data_loss_risk}*, ${blocking_count} blocking finding(s)\n${url}\n${signoff}"
+          line1="${emoji} Breaking change review complete: \`${connector}\` ${target_version} — verdict *${verdict}*, data-loss risk *${data_loss_risk}*, ${blocking_count} blocking finding(s)"
+          text=$(printf '%s\n%s\n%s' "$line1" "$url" "$signoff")
 
-          jq -n --arg t "$text" '$t' | tr -d '\n' | sed 's/^"//; s/"$//' > /tmp/slack_text_escaped.txt
-          echo "slack_text_json=$(cat /tmp/slack_text_escaped.txt)" >> "$GITHUB_OUTPUT"
+          echo "slack_text_json=$(jq -cn --arg t "$text" '$t')" >> "$GITHUB_OUTPUT"
           echo "ready_for_humans=$ready_for_humans" >> "$GITHUB_OUTPUT"
 
           echo "::notice::Slack payload built: verdict=$verdict blocking=$blocking_count ready_for_humans=$ready_for_humans"
@@ -165,7 +165,7 @@ jobs:
           payload: |
             {
               "username": "Breaking Change Review Bot",
-              "text": "${{ steps.parse.outputs.slack_text_json }}"
+              "text": ${{ steps.parse.outputs.slack_text_json }}
             }
 
       - name: Post failure comment
