@@ -1,6 +1,13 @@
 name: "Hydra: Stage Handoff"
 # Event-driven handoff between Hydra pipeline stages.
 #
+# Event-driven handoffs are opt-in per PR via the `hydra-autopilot` label. The
+# `optin` job below applies the label when a human posts a Hydra slash command
+# (`/ai-prove-fix`, `/ai-review`, `/ai-ready`, `/ai-resolve-conflicts`) on a PR.
+# Only labelled PRs get event-driven handoffs; PRs the daily sweep drives
+# itself are never labelled (its trigger comments come from a bot, not a
+# human). To stop the chain on a PR, remove the label or add `hydra-pause`.
+#
 # When `/ai-prove-fix` or `/ai-review` posts its result marker on a PR, or when
 # a PR's CI finishes green (covers new `/ai-fix` PRs, pushes including
 # `/ai-resolve-conflicts`, and re-prove/re-review after commits), this workflow
@@ -45,6 +52,37 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'check_suite' }}
 
 jobs:
+  optin:
+    name: Opt PR into hydra-autopilot
+    # A human posting a Hydra slash command opts the PR into event-driven handoff.
+    if: |
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      github.event.comment.user.type != 'Bot' &&
+      github.event.comment.user.login != 'airbyte-support-bot' &&
+      (startsWith(github.event.comment.body, '/ai-prove-fix') || startsWith(github.event.comment.body, '/ai-review') || startsWith(github.event.comment.body, '/ai-ready') || startsWith(github.event.comment.body, '/ai-resolve-conflicts'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v3.0.0
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte,oncall"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Apply hydra-autopilot label
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          COMMENTER: ${{ github.event.comment.user.login }}
+        run: |
+          set -euo pipefail
+          gh pr edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --add-label hydra-autopilot
+          echo "::notice::PR #$PR_NUMBER opted into hydra-autopilot by $COMMENTER"
+          echo "- Opted in: PR #$PR_NUMBER (\`hydra-autopilot\` label applied; requested by \`$COMMENTER\`)" >> "$GITHUB_STEP_SUMMARY"
+
   handoff:
     name: Launch single-PR hands-free pass
     # Only react to result markers posted by our bots on PRs (or manual dispatch).
@@ -134,16 +172,12 @@ jobs:
           [[ -z "$SKIP" && "$IS_FORK" == "true" ]] && SKIP="community (fork) PR"
           [[ -z "$SKIP" && ",$LABELS," == *",community,"* ]] && SKIP="community label"
           [[ -z "$SKIP" && ",$LABELS," == *",hydra-pause,"* ]] && SKIP="hydra-pause label"
+          [[ -z "$SKIP" && "$EVENT_NAME" != "workflow_dispatch" && ",$LABELS," != *",hydra-autopilot,"* ]] && SKIP="PR not opted in (no hydra-autopilot label)"
           [[ -z "$SKIP" && -n "$MARKER_HEAD_SHA" && "$HEAD" != "$MARKER_HEAD_SHA"* ]] && SKIP="result is for stale head $MARKER_HEAD_SHA (current $HEAD)"
 
-          # CI-completion trigger: only spend a session on Hydra/Devin PRs, and
-          # only when the rest of CI is done and green.
+          # CI-completion trigger: only spend a session once the rest of CI is
+          # done and green.
           if [[ -z "$SKIP" && "$EVENT_NAME" == "check_suite" ]]; then
-            AUTHOR=$(jq -r '.author.login' <<<"$PR_JSON")
-            HAS_HYD_LABEL=$(jq -r '[.labels[].name | startswith("hyd-")] | any' <<<"$PR_JSON")
-            if [[ "$HAS_HYD_LABEL" != "true" && "$AUTHOR" != "devin-ai-integration" && "$AUTHOR" != "app/devin-ai-integration" ]]; then
-              SKIP="not a Hydra PR"
-            fi
             if [[ -z "$SKIP" ]]; then
               # This job is itself a check run on the same head; ignore it.
               RUNNING=$(jq -r --arg self "$SELF_JOB_NAME" '[.statusCheckRollup[] | select(.__typename=="CheckRun" and .name!=$self and .status!="COMPLETED")] + [.statusCheckRollup[] | select(.__typename=="StatusContext" and .state=="PENDING")] | length' <<<"$PR_JSON")
