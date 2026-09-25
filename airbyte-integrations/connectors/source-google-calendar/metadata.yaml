@@ -2,7 +2,14 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "googleapis.com"
+      - "www.googleapis.com"
+      - "oauth2.googleapis.com"
+  maxSecondsBetweenMessages: 3600
+  suggestedStreams:
+    streams:
+      - events
+      - calendarlist
+      - settings
   registryOverrides:
     oss:
       enabled: true
@@ -17,7 +24,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c01b6259-bdf4-45ff-bcd5-66424cd2f18b
-  dockerImageTag: 0.0.53
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-google-calendar
   githubIssueLabel: source-google-calendar
   icon: icon.svg
