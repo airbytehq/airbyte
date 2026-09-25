@@ -22,19 +22,21 @@ Revisit this if Granola publishes an OAuth application model for the public API.
 
 ## Incremental Stream Considerations
 
-The Granola API connector has 3 streams: `notes` (incremental with `created_at` cursor), `detailed_notes` and `note_transcripts` (children of notes via `SubstreamPartitionRouter`). No FR parent streams remain.
+The Granola API connector has 3 streams: `notes` (incremental with `updated_at` cursor), `detailed_notes` and `note_transcripts` (children of notes via `SubstreamPartitionRouter`). No FR parent streams remain.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|
-| notes | medium | top-level parent | created_at | created_at | incremental |  |
+| notes | medium | top-level parent | updated_at | updated_at | incremental |  |
 | detailed_notes | medium | child | none | none | deferred_child |  |
 | note_transcripts | medium | child | none | none | deferred_child |  |
 
-### Slice bounds must stay second-granular
+### Cursor is `updated_at` with a single slice
 
-`GET /v1/notes` treats `created_before=<date>` as excluding that entire day — `created_after=2025-11-10&created_before=2025-11-10` returns zero records even when notes exist on that day. Day-truncated slice bounds (`datetime_format: "%Y-%m-%d"` with `cursor_granularity: P1D`) therefore silently dropped every note created on a slice boundary date, and `detailed_notes` lost the same notes because it partitions from `notes`. The cursor now uses `datetime_format: "%Y-%m-%dT%H:%M:%SZ"` with `cursor_granularity: PT1S`, which the vendor [OpenAPI spec](https://docs.granola.ai/api-reference/openapi.json) supports (`created_after`/`created_before` are `anyOf` date or date-time). Do not revert the bounds to date-only granularity.
+`GET /v1/notes` exposes `updated_after` but no `updated_before`, so the cursor sends one unbounded slice — there is no `step` or `end_time_option`, because stepped windows without an upper bound would return overlapping data. A note edited after a sync is re-emitted on the next incremental sync, and `detailed_notes` and `note_transcripts` inherit this through their `SubstreamPartitionRouter` partitions.
 
-`cursor_datetime_formats` keeps `"%Y-%m-%d"` so date-only cursor state written by versions up to 0.2.13 still parses; removing it would break resumption for existing connections.
+### Keep the start bound second-granular
+
+The cursor sends `updated_after` as a second-granular date-time (`datetime_format: "%Y-%m-%dT%H:%M:%SZ"`). The Granola API has a history of treating date-only bounds as excluding the named day (`created_before=<date>` used to drop that whole day), so do not truncate the bound to a date. `cursor_datetime_formats` keeps `"%Y-%m-%d"` so date-only cursor state written by earlier versions still parses; removing it would break resumption for existing connections.
 
 ### Future incremental stream candidates
 
