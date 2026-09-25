@@ -6,6 +6,7 @@
 from os import remove
 
 import orjson
+import pendulum as pdm
 import pytest
 import requests
 from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
@@ -417,6 +418,44 @@ def test_job_running_with_canceled_scenario(
     # clean up
     if expected:
         remove(expected)
+
+
+def test_job_self_canceled_on_checkpoint_with_no_url_retries_slice_without_checkpointing(request, requests_mock, auth_config) -> None:
+    stream = MetafieldOrders(auth_config)
+    stream.job_manager._job_check_interval = 0
+    running_response = request.getfixturevalue("bulk_job_running_with_object_count_no_url_response")
+    canceled_response = request.getfixturevalue("bulk_job_canceled_with_object_count_no_url_response")
+    stream.job_manager._job_id = running_response["data"]["node"]["id"]
+    stream.job_manager._job_created_at = pdm.now().to_rfc3339_string()
+    # the `objectCount` from the fixture is `4`, so the job is self-canceled on checkpointing
+    stream.job_manager._job_checkpoint_interval = 4
+    requests_mock.post(stream.job_manager.base_url, [{"json": running_response}, {"json": canceled_response}])
+
+    assert list(stream.job_manager.job_get_results()) == []
+    assert stream.job_manager._job_result_filename is None
+
+    slice_start = pdm.parse("2024-01-01T00:00:00Z")
+    slice_end = pdm.parse("2024-01-02T00:00:00Z")
+    # the slice is not consumed, it is re-run with the checkpointing disabled
+    assert stream.job_manager.get_adjusted_job_end(slice_start, slice_end, None, None) == slice_start
+    assert stream.job_manager._job_checkpoint_disabled is True
+    stream.job_manager._job_last_rec_count = 100
+    assert stream.job_manager._job_should_checkpoint is False
+    # the checkpointing is enabled back once the re-run slice is done
+    assert stream.job_manager.get_adjusted_job_end(slice_start, slice_end, None, None) == slice_end
+    assert stream.job_manager._job_checkpoint_disabled is False
+    assert stream.job_manager._job_should_checkpoint is True
+
+
+def test_job_failed_with_no_partial_url_for_stream_with_bulk_checkpointing(request, requests_mock, auth_config) -> None:
+    stream = MetafieldOrders(auth_config)
+    stream.job_manager._concurrent_max_retry = 1
+    stream.job_manager._concurrent_interval = 1
+    stream.job_manager._job_check_interval = 1
+    requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue("bulk_job_failed_response"))
+    with pytest.raises(ShopifyBulkExceptions.BulkJobFailed) as error:
+        list(stream.job_manager.job_get_results())
+    assert "returned no partial result" in repr(error.value)
 
 
 def test_job_read_file_invalid_filename(mocker, auth_config) -> None:

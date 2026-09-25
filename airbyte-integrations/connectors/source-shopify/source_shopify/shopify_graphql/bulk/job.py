@@ -87,6 +87,10 @@ class ShopifyBulkManager:
     _job_adjust_slice_from_checkpoint: bool = field(init=False, default=False)
     # keeps the last checkpointed cursor value for supported streams
     _job_last_checkpoint_cursor_value: str | None = field(init=False, default=None)
+    # the flag to re-run the current slice, because the checkpointed job returned no data
+    _job_retry_slice_without_checkpoint: bool = field(init=False, default=False)
+    # the flag to disable the checkpointing while the slice is re-run
+    _job_checkpoint_disabled: bool = field(init=False, default=False)
 
     # expand slice factor
     _job_size_expand_factor: int = field(init=False, default=2)
@@ -176,7 +180,9 @@ class ShopifyBulkManager:
 
     @property
     def _job_should_checkpoint(self) -> bool:
-        return self._supports_checkpointing and self._job_last_rec_count >= self._job_checkpoint_interval
+        return (
+            self._supports_checkpointing and not self._job_checkpoint_disabled and self._job_last_rec_count >= self._job_checkpoint_interval
+        )
 
     @property
     def _job_any_lines_collected(self) -> bool:
@@ -311,10 +317,19 @@ class ShopifyBulkManager:
 
     def _job_get_checkpointed_result(self, response: Optional[requests.Response]) -> None:
         if self._job_any_lines_collected or self._job_should_checkpoint:
-            # set the flag to adjust the next slice from the checkpointed cursor value
-            self._set_checkpointing()
             # fetch the collected records from CANCELED Job on checkpointing
             self._job_result_filename = self._job_get_result(response)
+            if self._job_result_filename:
+                # set the flag to adjust the next slice from the checkpointed cursor value
+                self._set_checkpointing()
+            elif self._job_should_checkpoint:
+                # the job was self-canceled on checkpointing, but the API returned no `url` / `partialDataUrl`,
+                # the slice must not be treated as consumed, it is re-run with the checkpointing disabled.
+                self._job_retry_slice_without_checkpoint = True
+                LOGGER.warning(
+                    f"Stream: `{self.http_client.name}`, the BULK Job: `{self._job_id}` was canceled on checkpointing after `{self._job_last_rec_count}` rows collected, but no result was returned by the API. "
+                    f"The slice will be re-run without checkpointing. Consider increasing the `BULK Job checkpoint (rows collected)` value in SOURCES > Your Shopify Source > SETTINGS to avoid this."
+                )
 
     def _job_update_state(self, response: Optional[requests.Response] = None) -> None:
         if response:
@@ -375,6 +390,10 @@ class ShopifyBulkManager:
             # when the Bulk Job fails, usually there is a `partialDataUrl` available,
             # we leverage the checkpointing in this case.
             self._job_get_checkpointed_result(response)
+            if not self._job_result_filename:
+                raise ShopifyBulkExceptions.BulkJobFailed(
+                    f"The BULK Job: `{self._job_id}` exited with {self._job_state} and returned no partial result, details: {response.text}",
+                )
 
     def _on_timeout_job(self, **kwargs) -> AirbyteTracedException:
         raise ShopifyBulkExceptions.BulkJobTimout(
@@ -582,6 +601,14 @@ class ShopifyBulkManager:
         checkpointed_cursor: Optional[str] = None,
         filter_checkpointed_cursor: Optional[str] = None,
     ) -> datetime:
+        if self._job_retry_slice_without_checkpoint:
+            # re-run the same slice once with the checkpointing disabled
+            self._job_retry_slice_without_checkpoint = False
+            self._job_checkpoint_disabled = True
+            return slice_start
+        # the re-run slice is done, enable the checkpointing back for the next slices
+        self._job_checkpoint_disabled = False
+
         if self._job_adjust_slice_from_checkpoint:
             # set the checkpointing to default, before the next slice is emitted, to avoid inf.loop
             self._reset_checkpointing()
