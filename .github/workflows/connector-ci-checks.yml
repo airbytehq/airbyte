@@ -275,7 +275,7 @@ jobs:
         if: matrix.connector
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.connector == 'source-posthog' && '3.10' || '3.11' }}
           check-latest: true
           update-environment: true
 
@@ -430,7 +430,7 @@ jobs:
         if: matrix.connector
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.connector == 'source-posthog' && '3.10' || '3.11' }}
           check-latest: true
           update-environment: true
       - name: Install and configure Poetry
