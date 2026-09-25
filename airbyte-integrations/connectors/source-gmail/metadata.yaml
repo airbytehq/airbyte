@@ -35,14 +35,17 @@ data:
     sl: 100
   externalDocumentationUrls:
     - title: Gmail API reference
-      url: https://developers.google.com/gmail/api/reference/rest
+      url: https://developers.google.com/workspace/gmail/api/reference/rest
       type: api_reference
     - title: Gmail authentication
-      url: https://developers.google.com/gmail/api/auth/about-auth
+      url: https://developers.google.com/workspace/gmail/api/auth/scopes
       type: authentication_guide
     - title: Gmail API quotas
-      url: https://developers.google.com/gmail/api/reference/quota
+      url: https://developers.google.com/workspace/gmail/api/reference/quota
       type: rate_limits
     - title: Google Workspace Status
-      url: https://www.google.com/appsstatus/
+      url: https://www.google.com/appsstatus/dashboard/
       type: status_page
+    - title: Gmail API release notes
+      url: https://developers.google.com/workspace/gmail/release-notes
+      type: api_release_history
