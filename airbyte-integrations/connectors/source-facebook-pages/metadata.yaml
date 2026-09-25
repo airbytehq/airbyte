@@ -32,7 +32,7 @@ data:
     breakingChanges:
       3.0.0:
         message: >-
-          Meta removed the legacy Page fields `current_location`, `genre`, `network`, `parking` and `start_info` in Graph API v26.0, with no replacement. This version stops requesting them and removes them from the `page` stream schema, and from the nested `sponsor_tags[]` page objects on the `post` stream. Users syncing the `page` or `post` streams must refresh the stream schema, and downstream models referencing those columns must be updated.
+          Meta deprecated the legacy Page fields `current_location`, `genre`, `network`, `parking` and `start_info` for New Pages Experience Pages in Graph API v26.0, with no replacement, and is rolling the change out to all API versions. This version stops requesting them and removes all five from the `page` stream schema, and removes `current_location`, `genre` and `network` from the nested page objects on the `post` stream (`sponsor_tags[]`) and on the `page` stream (`best_page`, `parent_page`). Users syncing the `page` or `post` streams must refresh the stream schema and update downstream models that reference those columns; users syncing only `page_insights` or `post_insights` are unaffected. See the [migration guide](https://docs.airbyte.com/integrations/sources/facebook-pages-migrations#upgrading-to-300).
         upgradeDeadline: "2026-10-27"
         deadlineAction: "auto_upgrade"
         scopedImpact:
