@@ -176,7 +176,8 @@ class S3ArchiveUploaderMultipartTest {
             S3ArchiveUploader.s3ClientBuilder()
                 .region(Region.US_EAST_1)
                 .credentialsProvider(credentials)
-                .endpointOverride(URI.create("http://127.0.0.1:${server.port}"))
+                // Loopback-only fixture; localhost is explicitly allowed by the HTTPS QA check.
+                .endpointOverride(URI.create("http://localhost:${server.port}"))
                 .forcePathStyle(true)
                 .build()
         return S3ArchiveUploader("archive", client, credentials, listOf(client))
@@ -216,7 +217,7 @@ class S3ArchiveUploaderMultipartTest {
         private val failOnce: Boolean = true,
     ) : AutoCloseable {
         private val workers = Executors.newFixedThreadPool(16)
-        private val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        private val server = HttpServer.create(InetSocketAddress("localhost", 0), 0)
         val port: Int
             get() = server.address.port
 
