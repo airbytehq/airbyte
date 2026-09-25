@@ -158,7 +158,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Market Countries (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/queries/markets) — Shipping configuration of shops using [market-driven shipping](#countries-and-market-driven-shipping). Requires the `read_markets` scope.
 - [Metafields (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Metafield) — Available as separate streams for: Articles, Blogs, Collections, Customers, Draft Orders, Locations, Orders, Pages, Product Images, Products, Product Variants, Shops, and Smart Collections
 - [Order Agreements (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderAgreement)
-- [Orders](https://shopify.dev/api/admin-rest/latest/resources/order#top)
+- [Orders](https://shopify.dev/api/admin-rest/latest/resources/order#top) — Each attribute of the nested `customer` object is also emitted as a top-level `customer_*` field (e.g. `customer_id`, `customer_email`) so customer attributes can be individually selected or hashed; the original `customer` object is unchanged
 - [Order Refunds](https://shopify.dev/api/admin-rest/latest/resources/refund#top)
 - [Order Risks (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderRisk)
 - [Pages](https://shopify.dev/api/admin-rest/latest/resources/page#top)
@@ -326,6 +326,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.0 | 2026-09-25 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add top-level `customer_*` fields to the `orders` stream, flattening the nested `customer` object so its attributes can be individually selected or hashed |
 | 4.1.0 | 2026-09-21 | [86493](https://github.com/airbytehq/airbyte/pull/86493) | Add `market_countries` stream for shops on market-driven shipping (requires `read_markets`); `countries` logs a warning for such shops since `deliveryProfiles` returns a frozen snapshot; `countries` and `market_countries` retry throttled pages and fail on other Shopify GraphQL `errors` responses instead of completing a partial snapshot |
 | 4.0.3 | 2026-09-16 | [86371](https://github.com/airbytehq/airbyte/pull/86371) | Fix `ValueError: year 0 is out of range` when the lookback window is applied to an empty stream state |
 | 4.0.2 | 2026-09-15 | [83335](https://github.com/airbytehq/airbyte/pull/83335) | Upgrade Shopify API version to 2026-07 |
