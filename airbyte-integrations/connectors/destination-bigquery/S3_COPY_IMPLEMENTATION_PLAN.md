@@ -4,15 +4,13 @@ Status: GCS staging and batched standard inserts are implemented on
 `johnny/bigquery-fusion-batched-inserts`. Copying is controlled by the platform environment;
 customer configuration contains no Fusion routing fields. The sections below describe the
 implementation contract and rollout requirements.
-Reviewed September 10, 2026 against the BigQuery files at repository baseline `aa28ceeac4e`.
-The connector uses CDK `1.0.25`, `core = 'load'`, and `useLegacyTaskLoader = true`, with
-`legacy-task-load-gcs`, `legacy-task-load-db`, and `legacy-task-load-s3` toolkits.
-The connector additionally depends on the source project `bulk-cdk-toolkit-fusion` from
-`johnny/fusion-copy-cdk`, without changing its legacy core CDK version. Shared configuration,
-paths, source-schema extraction, and schema/completion metadata are used directly. BigQuery
-retains its bounded multipart uploader because its cancellation contract proves file readers
-have stopped before releasing or deleting a spool; the common asynchronous uploader does not
-currently expose that guarantee. Both use the same platform assume-role configuration.
+Reviewed September 25, 2026 against the merged Fusion load CDK baseline.
+The connector uses load CDK `1.1.1`, `core = 'load'`, and `useLegacyTaskLoader = true`, with
+`legacy-task-load-gcs`, `legacy-task-load-db`, `legacy-task-load-s3`, and `load-fusion` toolkits.
+Shared configuration, paths, source-schema extraction, and schema/completion metadata are used
+directly. BigQuery retains its bounded multipart uploader because its cancellation contract proves
+file readers have stopped before releasing or deleting a spool; the common asynchronous uploader
+does not currently expose that guarantee. Both use the same platform assume-role configuration.
 
 ## 1. Load strategies
 
