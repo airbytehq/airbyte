@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.snowflake
 
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
@@ -71,6 +72,7 @@ class SnowflakeSourceMetadataQuerier(
                         while (rs.next()) {
                             val (tableName: TableName, metadata: ColumnMetadata) =
                                 columnMetadataFromResultSet(rs, isPseudoColumn = false)
+                            if (tableName.catalog != catalog || tableName.schema != schema) continue
                             val joinedTableName: TableName = joinMap[tableName] ?: continue
                             results.add(joinedTableName to metadata)
                         }
@@ -125,9 +127,15 @@ class SnowflakeSourceMetadataQuerier(
         streamID: StreamIdentifier,
     ): List<EmittedField> {
         val table: TableName = findTableName(streamID) ?: return listOf()
-        return columnMetadata(table).map {
-            EmittedField(it.label, base.fieldTypeMapper.toFieldType(it))
+        val columns: List<ColumnMetadata> = columnMetadata(table)
+        val duplicate: String? =
+            columns.groupingBy { it.label }.eachCount().entries.firstOrNull { it.value > 1 }?.key
+        if (duplicate != null) {
+            throw SystemErrorException(
+                "Discovery failed: stream '${streamID.namespace}.${streamID.name}' has more than one column named '$duplicate'."
+            )
         }
+        return columns.map { EmittedField(it.label, base.fieldTypeMapper.toFieldType(it)) }
     }
 
     fun columnMetadata(table: TableName): List<ColumnMetadata> {
