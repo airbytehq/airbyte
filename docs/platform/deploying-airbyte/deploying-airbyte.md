@@ -2,6 +2,8 @@
 products: oss-community
 ---
 
+import MinioImagePre23Helm from '@site/static/_minio_image_pre_2_3_helm.md';
+
 # Deploying Airbyte
 
 The Airbyte platform is a sophisticated data integration platform that enables you to handle large amounts of data movement.
@@ -125,6 +127,8 @@ Then you can run:
     airbyte/airbyte              2.0.0           1.6.0           Helm chart to deploy airbyte
     airbyte/airbyte-data-plane   2.0.0           2.0.0           A Helm chart for installing an Airbyte Data Plane.
     ```
+
+    <MinioImagePre23Helm />
 
 2. Install Airbyte into your namespace. In this example, you install Airbyte version 2.0.
 
