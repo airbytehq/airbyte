@@ -13,7 +13,7 @@ package-mode = false
 python = "^3.10,<3.13"
 # Matches the `source-declarative-manifest:7.26.0` base image pinned in metadata.yaml.
 airbyte-cdk = "~7.26.0"
-pytest = "^8"
+pytest = ">=8,<10"
 freezegun = "^1.4.0"
 # `airbyte_cdk.test.mock_http.mocker` imports requests_mock without declaring it.
 requests-mock = "^1.12.1"
