@@ -234,6 +234,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -242,6 +246,12 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - _embedded
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: accounting_bills
     retriever:
@@ -766,6 +776,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -784,6 +798,12 @@ streams:
           - - lines
             - "*"
             - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: accounting_charges
     retriever:
@@ -1092,6 +1112,10 @@ streams:
                 type:
                   - number
                   - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -1100,6 +1124,12 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - _embedded
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: accounting_deposits
     retriever:
@@ -1185,6 +1215,10 @@ streams:
             type:
               - array
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -1193,6 +1227,12 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - _embedded
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: accounting_deposits_payments
     retriever:
@@ -1281,11 +1321,21 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: accounting_items
     retriever:
@@ -1387,6 +1437,10 @@ streams:
             type:
               - number
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -1401,6 +1455,12 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - _embedded
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: accounting_transactions
     retriever:
@@ -2097,11 +2157,21 @@ streams:
                 type:
                   - number
                   - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: booking_fees
     retriever:
@@ -2422,11 +2492,21 @@ streams:
             type:
               - number
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: charges
     retriever:
@@ -2818,6 +2898,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -2845,6 +2929,12 @@ streams:
             - item
             - _embedded
             - taxPolicy
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: companies
     retriever:
@@ -3034,11 +3124,21 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
@@ -3300,11 +3400,21 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
@@ -3386,6 +3496,10 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -3399,6 +3513,12 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: contacts_pii_redacted
     retriever:
@@ -3646,6 +3766,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -3747,6 +3871,12 @@ streams:
             path:
               - updatedBy
             value: "{{ record['updatedBy'] | hash('md5') }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
@@ -3895,11 +4025,21 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: crm_company_attachment
     retriever:
@@ -3991,6 +4131,10 @@ streams:
               - "null"
           company_id:
             type: number
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -4002,6 +4146,12 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: crm_tasks
     retriever:
@@ -4115,6 +4265,10 @@ streams:
             type:
               - object
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -4128,6 +4282,12 @@ streams:
         field_pointers:
           - - _embedded
             - unit
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: custom_fields
     retriever:
@@ -4256,11 +4416,21 @@ streams:
                     type:
                       - boolean
                       - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: date_groups
     retriever:
@@ -4343,11 +4513,21 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: documents
     retriever:
@@ -4449,11 +4629,21 @@ streams:
             type:
               - number
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: folios
     retriever:
@@ -4643,6 +4833,10 @@ streams:
             type:
               - number
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -4676,6 +4870,12 @@ streams:
         field_pointers:
           - - _embedded
             - masterFolioRule
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: folios_logs
     retriever:
@@ -4747,6 +4947,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -4761,6 +4965,12 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - params
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: folios_rules
     retriever:
@@ -4874,11 +5084,21 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: folios_transactions
     retriever:
@@ -7234,6 +7454,10 @@ streams:
                 type:
                   - number
                   - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -7245,6 +7469,12 @@ streams:
             path:
               - folio_id
             value: "{{ stream_interval.folio_id }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: fractionals
     retriever:
@@ -7346,6 +7576,10 @@ streams:
             type:
               - number
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -7355,6 +7589,12 @@ streams:
         field_pointers:
           - - _embedded
             - unit
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: fractionals_inventory
     retriever:
@@ -9782,6 +10022,10 @@ streams:
             type:
               - number
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -9797,6 +10041,12 @@ streams:
             path:
               - fraction_id
             value: "{{ stream_partition.fraction_id }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: fractionals_owners
     retriever:
@@ -9896,6 +10146,10 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -9919,6 +10173,12 @@ streams:
             path:
               - fraction_id
             value: "{{ stream_partition.fraction_id }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: groups
     retriever:
@@ -10298,6 +10558,10 @@ streams:
             type:
               - number
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -10327,6 +10591,12 @@ streams:
         field_pointers:
           - - _embedded
             - promoCode
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: groups_blocks
     retriever:
@@ -10406,6 +10676,10 @@ streams:
             type:
               - number
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -10429,6 +10703,12 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: groups_breakdown
     retriever:
@@ -10506,6 +10786,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -10517,6 +10801,12 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: groups_tags
     retriever:
@@ -10600,6 +10890,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -10611,6 +10905,12 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: housekeeping_clean_types
     retriever:
@@ -11013,6 +11313,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -11026,6 +11330,12 @@ streams:
         field_pointers:
           - - _embedded
             - taskList
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: housekeeping_task_list
     retriever:
@@ -11155,6 +11465,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -11166,6 +11480,12 @@ streams:
             - tasks
             - "*"
             - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: housekeeping_work_orders
     retriever:
@@ -11489,6 +11809,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -11521,6 +11845,12 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - assignees
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
@@ -11600,11 +11930,21 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: lodging_types
     retriever:
@@ -11694,6 +12034,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -11707,6 +12051,12 @@ streams:
         field_pointers:
           - - _embedded
             - parent
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: maintenance_problems
     retriever:
@@ -11748,11 +12098,21 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: maintenance_work_orders
     retriever:
@@ -12192,6 +12552,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -12223,6 +12587,12 @@ streams:
         field_pointers:
           - - _embedded
             - unit
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
@@ -12574,6 +12944,10 @@ streams:
             type:
               - array
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -12595,6 +12969,12 @@ streams:
         field_pointers:
           - - _embedded
             - type
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: nodes_availability
     retriever:
@@ -12679,6 +13059,10 @@ streams:
               - "null"
           node_id:
             type: number
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -12690,6 +13074,12 @@ streams:
             path:
               - node_id
             value: "{{ stream_interval.node_id }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: nodes_types
     retriever:
@@ -12779,11 +13169,21 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: owners
     retriever:
@@ -13021,11 +13421,21 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
@@ -13174,11 +13584,21 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: owners_pii_redacted
     retriever:
@@ -13416,6 +13836,10 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -13511,6 +13935,12 @@ streams:
             path:
               - updatedBy
             value: "{{ record['updatedBy'] | hash('md5') }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
@@ -13695,6 +14125,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -13704,6 +14138,12 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: owners_statements_transactions
     retriever:
@@ -14958,6 +15398,10 @@ streams:
                 type:
                   - number
                   - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -15003,6 +15447,12 @@ streams:
           - - _embedded
             - paymentType
             - _embedded
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: owners_units
     retriever:
@@ -15098,6 +15548,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -15115,6 +15569,12 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: promo_codes
     retriever:
@@ -15376,11 +15836,21 @@ streams:
                   type:
                     - string
                     - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: quotes
     retriever:
@@ -17603,7 +18073,21 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
+    transformations:
+      - type: RemoveFields
+        field_pointers:
+          - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: rate_types
     retriever:
@@ -17874,6 +18358,10 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -17883,6 +18371,12 @@ streams:
         field_pointers:
           - - _embedded
             - parentRate
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: reservations
     retriever:
@@ -19658,6 +20152,10 @@ streams:
             type:
               - number
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -19711,6 +20209,12 @@ streams:
         field_pointers:
           - - _embedded
             - channel
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
@@ -21499,6 +22003,10 @@ streams:
             type:
               - number
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -21552,6 +22060,12 @@ streams:
         field_pointers:
           - - _embedded
             - channel
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: reservations_booking_fees
     retriever:
@@ -21665,6 +22179,10 @@ streams:
               - "null"
           reservation_id:
             type: number
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -21677,6 +22195,12 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: reservations_cancellation_policies
     retriever:
@@ -21926,11 +22450,21 @@ streams:
             type:
               - number
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: reservations_cancellation_reasons
     retriever:
@@ -22018,11 +22552,21 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: reservations_discount_reasons
     retriever:
@@ -22090,11 +22634,21 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: reservations_fees
     retriever:
@@ -22245,6 +22799,10 @@ streams:
                   - "null"
           reservation_id:
             type: number
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -22257,6 +22815,12 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: reservations_guarantee_policies
     retriever:
@@ -22449,6 +23013,10 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -22458,6 +23026,12 @@ streams:
         field_pointers:
           - - _embedded
             - dateGroup
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: reservations_logs
     retriever:
@@ -22685,6 +23259,10 @@ streams:
               - "null"
           reservation_id:
             type: number
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -22697,6 +23275,12 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: reservations_notes
     retriever:
@@ -22806,6 +23390,10 @@ streams:
               - "null"
           reservation_id:
             type: number
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -22818,6 +23406,12 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: reservations_tags
     retriever:
@@ -22935,6 +23529,10 @@ streams:
               - "null"
           reservation_id:
             type: number
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -22947,6 +23545,12 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: reservations_types
     retriever:
@@ -23132,11 +23736,21 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: reservations_v2
     retriever:
@@ -24700,6 +25314,10 @@ streams:
                   type:
                     - string
                     - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -24757,6 +25375,12 @@ streams:
         field_pointers:
           - - _embedded
             - channel
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
@@ -24985,11 +25609,21 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: roles
     retriever:
@@ -26322,11 +26956,21 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: suspend_code_reasons
     retriever:
@@ -26392,11 +27036,21 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: tags
     retriever:
@@ -26466,11 +27120,21 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: tax_districts
     retriever:
@@ -26568,6 +27232,10 @@ streams:
             type:
               - number
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -26585,6 +27253,12 @@ streams:
         field_pointers:
           - - _embedded
             - salesTaxPolicy
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: tax_policies
     retriever:
@@ -26658,6 +27332,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -26667,6 +27345,12 @@ streams:
         field_pointers:
           - - _embedded
             - taxes
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: taxes
     retriever:
@@ -26804,6 +27488,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -26813,6 +27501,12 @@ streams:
         field_pointers:
           - - _embedded
             - account
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: travel_insurance_products
     retriever:
@@ -26960,11 +27654,21 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: units
     retriever:
@@ -27450,6 +28154,10 @@ streams:
             type:
               - number
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -27487,6 +28195,12 @@ streams:
         field_pointers:
           - - _embedded
             - cleanStatus
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: units_amenities
     retriever:
@@ -27589,11 +28303,21 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: units_amenity_groups
     retriever:
@@ -27651,11 +28375,21 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: units_availability
     retriever:
@@ -27736,6 +28470,10 @@ streams:
               - "null"
           unit_id:
             type: number
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -27747,6 +28485,12 @@ streams:
             path:
               - unit_id
             value: "{{ stream_interval.unit_id }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: units_bed_types
     retriever:
@@ -27828,11 +28572,21 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
         field_pointers:
           - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: units_blocks
     retriever:
@@ -28150,6 +28904,10 @@ streams:
                 type:
                   - string
                   - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -28164,6 +28922,12 @@ streams:
           - - _embedded
             - reason
             - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: units_channel
     retriever:
@@ -29324,6 +30088,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -29335,6 +30103,12 @@ streams:
             path:
               - unit_id
             value: "{{ stream_interval.unit_id }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: units_daily_pricing_v2
     retriever:
@@ -29465,6 +30239,10 @@ streams:
             type: number
           rateTypeId:
             type: number
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -29473,6 +30251,12 @@ streams:
             path:
               - unit_id
             value: "{{ stream_partition.unit_id }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: units_taxes
     retriever:
@@ -29540,6 +30324,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -29551,6 +30339,12 @@ streams:
             path:
               - unit_id
             value: "{{ stream_interval.unit_id }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: units_taxes_parent
     retriever:
@@ -30039,6 +30833,10 @@ streams:
             type:
               - number
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -30076,6 +30874,12 @@ streams:
         field_pointers:
           - - _embedded
             - cleanStatus
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: units_types
     retriever:
@@ -30482,6 +31286,10 @@ streams:
             type:
               - object
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -30491,6 +31299,12 @@ streams:
         field_pointers:
           - - _embedded
             - lodgingType
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: units_types_daily_pricing_v2
     retriever:
@@ -30621,6 +31435,10 @@ streams:
             type: number
           unit_type_id:
             type: number
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -30629,6 +31447,12 @@ streams:
             path:
               - unit_type_id
             value: "{{ stream_partition.unit_type_id }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: users
     retriever:
@@ -30735,6 +31559,10 @@ streams:
             type:
               - object
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -30752,6 +31580,12 @@ streams:
         field_pointers:
           - - _embedded
             - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
   - type: DeclarativeStream
     name: users_pii_redacted
     retriever:
@@ -30845,6 +31679,10 @@ streams:
             type:
               - object
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -30898,6 +31736,12 @@ streams:
             path:
               - updatedBy
             value: "{{ record['updatedBy'] | hash('md5') }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_record_md5
+            value: "{{ record | hash('md5') }}"
 
 spec:
   type: Spec
