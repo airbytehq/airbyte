@@ -403,6 +403,61 @@ class InitialSnapshotHandlerTest {
   }
 
   @Test
+  void testAggregateIdFieldUsesSampling() {
+    final String testCollection = "sample_test_collection";
+    // Insert documents with ObjectId _id types
+    final List<Document> docs = new ArrayList<>();
+    for (int i = 0; i < 20; i++) {
+      docs.add(new Document(Map.of(CURSOR_FIELD, new ObjectId(), NAME_FIELD, "name" + i)));
+    }
+    insertDocuments(testCollection, docs);
+
+    final InitialSnapshotHandler handler = new InitialSnapshotHandler();
+    final MongoCollection<Document> collection = mongoClient.getDatabase(DB_NAME).getCollection(testCollection);
+
+    // Sample size smaller than total documents — should still detect the correct type
+    final List<String> idTypes = handler.aggregateIdField(collection, 5);
+    assertEquals(1, idTypes.size(), "All _id fields are ObjectId so there should be exactly one type");
+    assertEquals("objectId", idTypes.get(0));
+  }
+
+  @Test
+  void testAggregateIdFieldWithMixedTypesDetectedViaSampling() {
+    final String testCollection = "mixed_id_sample_collection";
+    // Insert documents with mixed _id types (ObjectId and String)
+    final List<Document> docs = new ArrayList<>();
+    for (int i = 0; i < 10; i++) {
+      docs.add(new Document(Map.of(CURSOR_FIELD, new ObjectId(), NAME_FIELD, "objId" + i)));
+    }
+    for (int i = 0; i < 10; i++) {
+      docs.add(new Document(Map.of(CURSOR_FIELD, "string_id_" + i, NAME_FIELD, "strId" + i)));
+    }
+    insertDocuments(testCollection, docs);
+
+    final InitialSnapshotHandler handler = new InitialSnapshotHandler();
+    final MongoCollection<Document> collection = mongoClient.getDatabase(DB_NAME).getCollection(testCollection);
+
+    // Sample all 20 documents to guarantee both types are seen
+    final List<String> idTypes = handler.aggregateIdField(collection, 20);
+    assertEquals(2, idTypes.size(), "Mixed _id types (objectId + string) should be detected");
+    assertTrue(idTypes.contains("objectId"));
+    assertTrue(idTypes.contains("string"));
+  }
+
+  @Test
+  void testAggregateIdFieldEmptyCollection() {
+    final String testCollection = "empty_sample_collection";
+    // Create an empty collection
+    mongoClient.getDatabase(DB_NAME).createCollection(testCollection);
+
+    final InitialSnapshotHandler handler = new InitialSnapshotHandler();
+    final MongoCollection<Document> collection = mongoClient.getDatabase(DB_NAME).getCollection(testCollection);
+
+    final List<String> idTypes = handler.aggregateIdField(collection, 10000);
+    assertTrue(idTypes.isEmpty(), "Empty collection should return no _id types");
+  }
+
+  @Test
   void testGetIteratorsWithOneEmptyCollection() {
     insertDocuments(COLLECTION1, List.of(
         new Document(Map.of(
