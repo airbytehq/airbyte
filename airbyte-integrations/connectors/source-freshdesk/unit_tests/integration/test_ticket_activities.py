@@ -1,5 +1,6 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+import logging
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -118,6 +119,54 @@ def test_ticket_activities_not_ready_exports_return_no_records(
     requests_mock.get(_DOWNLOAD_URL, status_code=download_response_status, json={})
 
     assert list(_retriever().read_records({}, _slice())) == []
+
+
+def test_ticket_activities_list_export_extracts_downloaded_records(requests_mock: Mocker) -> None:
+    requests_mock.get(_EXPORT_URL, json={"export": [{"created_at": "1-1-2022", "url": _DOWNLOAD_URL}]})
+    requests_mock.get(_DOWNLOAD_URL, json={"activities_data": [_activity(ticket_id=600), _activity(ticket_id=704)]})
+
+    records = list(_retriever().read_records({}, _slice()))
+
+    assert [record["ticket_id"] for record in records] == [600, 704]
+    assert requests_mock.call_count == 2
+
+
+@pytest.mark.parametrize(
+    "export_response_json",
+    [
+        {"export": []},
+        {"export": [{}]},
+        {"export": ["not-a-dict", 42]},
+        {"export": [{"created_at": "1-1-2022"}]},
+    ],
+)
+def test_ticket_activities_list_export_without_url_returns_no_records(requests_mock: Mocker, export_response_json: dict) -> None:
+    requests_mock.get(_EXPORT_URL, json=export_response_json)
+    requests_mock.get(_DOWNLOAD_URL, json={"activities_data": [_activity(ticket_id=600)]})
+
+    assert list(_retriever().read_records({}, _slice())) == []
+    assert requests_mock.call_count == 1
+
+
+def test_ticket_activities_unrecognized_export_shape_logs_warning(requests_mock: Mocker, caplog: pytest.LogCaptureFixture) -> None:
+    requests_mock.get(_EXPORT_URL, json={"export": [{"created_at": "1-1-2022", "url": None}]})
+
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        assert list(_retriever().read_records({}, _slice())) == []
+
+    warning_messages = [record.getMessage() for record in caplog.records if record.levelno == logging.WARNING]
+    assert any("unrecognized shape" in message for message in warning_messages)
+    assert all(_DOWNLOAD_URL not in message for message in warning_messages)
+
+
+def test_ticket_activities_missing_export_logs_info_not_warning(requests_mock: Mocker, caplog: pytest.LogCaptureFixture) -> None:
+    requests_mock.get(_EXPORT_URL, json={"export": {}})
+
+    with caplog.at_level(logging.INFO, logger="airbyte"):
+        assert list(_retriever().read_records({}, _slice())) == []
+
+    assert not [record for record in caplog.records if record.levelno == logging.WARNING]
+    assert any("No ticket activities export was available" in record.getMessage() for record in caplog.records)
 
 
 def test_ticket_activities_filters_downloaded_records_to_stream_slice(requests_mock: Mocker) -> None:

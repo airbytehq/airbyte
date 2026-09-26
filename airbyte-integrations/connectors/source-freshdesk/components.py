@@ -100,7 +100,14 @@ class TicketActivitiesRetriever(Retriever):
         if "activities_data" not in export_data:
             download_url = self._extract_download_url(export_payload)
             if not download_url:
-                logger.info("No ticket activities export was available for %s", export_date)
+                if export_payload.get("export"):
+                    logger.warning(
+                        "Freshdesk ticket activities export response for %s had an unrecognized shape and no download URL could be extracted: %s",
+                        export_date,
+                        self._describe_export_shape(export_payload["export"]),
+                    )
+                else:
+                    logger.info("No ticket activities export was available for %s", export_date)
                 return
             export_data = self._get_json(download_url, allow_missing=True) or {}
 
@@ -162,13 +169,24 @@ class TicketActivitiesRetriever(Retriever):
     @staticmethod
     def _extract_download_url(payload: Mapping[str, Any]) -> Optional[str]:
         export = payload.get("export")
-        if isinstance(export, Mapping) and isinstance(export.get("url"), str):
-            return export["url"]
+        export_entries = export if isinstance(export, list) else [export]
+        for entry in export_entries:
+            if isinstance(entry, Mapping) and isinstance(entry.get("url"), str):
+                return entry["url"]
         for key in ("url", "link"):
             value = payload.get(key)
             if isinstance(value, str):
                 return value
         return None
+
+    @staticmethod
+    def _describe_export_shape(export: Any) -> str:
+        if isinstance(export, Mapping):
+            return f"object with keys {sorted(export.keys())}"
+        if isinstance(export, list):
+            entry_types = sorted({type(entry).__name__ for entry in export})
+            return f"list of {len(export)} entries with types {entry_types}"
+        return type(export).__name__
 
     def _add_stable_ids(
         self, records: Iterable[Mapping[str, Any]], export_date: str, stream_slice: Optional[StreamSlice]
