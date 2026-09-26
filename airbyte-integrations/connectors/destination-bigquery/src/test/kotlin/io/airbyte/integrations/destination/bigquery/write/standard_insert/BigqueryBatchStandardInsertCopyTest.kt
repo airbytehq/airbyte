@@ -1,0 +1,845 @@
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
+package io.airbyte.integrations.destination.bigquery.write.standard_insert
+
+import com.google.cloud.RetryOption
+import com.google.cloud.bigquery.BigQuery
+import com.google.cloud.bigquery.BigQueryError
+import com.google.cloud.bigquery.BigQueryException
+import com.google.cloud.bigquery.Job
+import com.google.cloud.bigquery.JobId
+import com.google.cloud.bigquery.JobStatistics
+import com.google.cloud.bigquery.JobStatus
+import com.google.cloud.bigquery.TableDataWriteChannel
+import com.google.cloud.bigquery.TableId
+import com.google.cloud.bigquery.WriteChannelConfiguration
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.message.DestinationRecordJsonSource
+import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
+import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.TableNames
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogByDescriptor
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableNameInfo
+import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.load.write.DirectLoader
+import io.airbyte.cdk.load.write.StreamStateStore
+import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
+import io.airbyte.integrations.destination.bigquery.copy.*
+import io.airbyte.integrations.destination.bigquery.copy.BigqueryCopyContext
+import io.airbyte.integrations.destination.bigquery.copy.BigqueryS3Copy
+import io.airbyte.integrations.destination.bigquery.copy.StandardInsertArchiveBatch
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
+import io.airbyte.integrations.destination.bigquery.formatter.ProtoToBigQueryStandardInsertRecordFormatter
+import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
+import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.spec.BigqueryRegion
+import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets.UTF_8
+import java.nio.file.Files
+import java.nio.file.Path
+import java.util.UUID
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentSkipListMap
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.io.TempDir
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.EnumSource
+import org.junit.jupiter.params.provider.ValueSource
+import org.reactivestreams.Subscriber
+import org.reactivestreams.Subscription
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.core.async.AsyncRequestBody
+import software.amazon.awssdk.services.s3.S3AsyncClient
+import software.amazon.awssdk.services.s3.model.*
+
+class BigqueryBatchStandardInsertCopyTest {
+    @TempDir lateinit var directory: Path
+
+    enum class StreamingOutcome {
+        S3_PENDING,
+        BIGQUERY_PENDING,
+        S3_FAILURE,
+        BIGQUERY_FAILURE,
+    }
+
+    @ParameterizedTest
+    @EnumSource(StreamingOutcome::class)
+    fun `real streaming service and loader gate success on both uploads`(
+        outcome: StreamingOutcome
+    ) = runBlocking {
+        val fixture = Fixture()
+        every { fixture.statistics.outputRows } returns 1L
+        val client = mockk<S3AsyncClient>()
+        val partStarted = CountDownLatch(1)
+        val completing = CountDownLatch(1)
+        val bqEntered = CountDownLatch(1)
+        val releaseBq = CountDownLatch(1)
+        val completion = CompletableFuture<CompleteMultipartUploadResponse>()
+        val uploaded = ConcurrentSkipListMap<Int, ByteArray>()
+        every { client.putObject(any<PutObjectRequest>(), any<AsyncRequestBody>()) } returns
+            CompletableFuture.completedFuture(PutObjectResponse.builder().build())
+        every { client.createMultipartUpload(any<CreateMultipartUploadRequest>()) } returns
+            CompletableFuture.completedFuture(
+                CreateMultipartUploadResponse.builder().uploadId("upload").build()
+            )
+        every { client.abortMultipartUpload(any<AbortMultipartUploadRequest>()) } returns
+            CompletableFuture.completedFuture(AbortMultipartUploadResponse.builder().build())
+        every { client.completeMultipartUpload(any<CompleteMultipartUploadRequest>()) } answers
+            {
+                completing.countDown()
+                completion
+            }
+        every { client.uploadPart(any<UploadPartRequest>(), any<AsyncRequestBody>()) } answers
+            {
+                val number = firstArg<UploadPartRequest>().partNumber()
+                val response = CompletableFuture<UploadPartResponse>()
+                secondArg<AsyncRequestBody>()
+                    .subscribe(
+                        object : Subscriber<ByteBuffer> {
+                            val bytes = ByteArrayOutputStream()
+
+                            override fun onSubscribe(subscription: Subscription) {
+                                subscription.request(Long.MAX_VALUE)
+                            }
+
+                            override fun onNext(buffer: ByteBuffer) {
+                                val chunk = ByteArray(buffer.remaining())
+                                buffer.get(chunk)
+                                bytes.write(chunk)
+                            }
+
+                            override fun onError(error: Throwable) {
+                                response.completeExceptionally(error)
+                            }
+
+                            override fun onComplete() {
+                                uploaded[number] = bytes.toByteArray()
+                                response.complete(
+                                    UploadPartResponse.builder()
+                                        .eTag("part-$number")
+                                        .checksumCRC32("checksum-$number")
+                                        .build()
+                                )
+                                partStarted.countDown()
+                            }
+                        }
+                    )
+                response
+            }
+        every { fixture.job.waitFor(any<RetryOption>()) } answers
+            {
+                bqEntered.countDown()
+                check(releaseBq.await(10, TimeUnit.SECONDS))
+                if (outcome == StreamingOutcome.BIGQUERY_FAILURE)
+                    throw IOException("BigQuery rejected load")
+                fixture.job
+            }
+        val config =
+            S3CopyConfiguration(
+                bucket = "archive",
+                region = "us-east-2",
+                roleArn = "arn:aws:iam::123456789012:role/archive",
+                connectionId = UUID.randomUUID(),
+                workspaceId = UUID.randomUUID(),
+                sourceId = UUID.randomUUID(),
+                organizationId = UUID.randomUUID(),
+                destinationId = UUID.randomUUID(),
+                prefix = "fusion",
+                externalId = null,
+            )
+        val configuration = mockk<BigqueryConfiguration>()
+        every { configuration.loadingMethod } returns BatchedStandardInsertConfiguration
+        val metadata = mockk<BigqueryCopyMetadata>()
+        every { metadata.runPath(any()) } returns "fusion/test-run"
+        every { metadata.streamKey(any()) } returns "stream-key"
+        every { metadata.epochSeconds } returns 1750000000L
+        every { metadata.descriptor(any()) } returns mapOf("schema_id" to "schema-id")
+        every { metadata.serialize(any()) } answers { Jsons.writeValueAsBytes(firstArg<Any>()) }
+        val uploader =
+            S3ArchiveUploader(
+                "archive",
+                client,
+                StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test")),
+                emptyList(),
+            )
+        EnabledBigqueryS3Copy(
+                config,
+                configuration,
+                metadata,
+                UUID.randomUUID(),
+                { uploader },
+                spoolDirectory = directory,
+            )
+            .use { archive ->
+                archive.prepare(DestinationCatalog(listOf(fixture.stream)))
+                val batch = archive.startStandardInsertBatch(archive.context(fixture.stream))
+                val loader =
+                    BigqueryBatchStandardInsertsLoader(
+                        fixture.bigquery,
+                        fixture.configuration,
+                        fixture.jobId,
+                        fixture.formatter,
+                        batch,
+                    )
+                try {
+                    loader.accept(fixture.record("x".repeat(16 * 1024 * 1024)))
+                    assertTrue(
+                        partStarted.await(5, TimeUnit.SECONDS),
+                        "A full part must upload during accept, before finish/seal",
+                    )
+                    val finishing = async(Dispatchers.IO) { runCatching { loader.finish() } }
+                    try {
+                        assertTrue(bqEntered.await(5, TimeUnit.SECONDS))
+                        assertTrue(completing.await(5, TimeUnit.SECONDS))
+                        if (
+                            outcome == StreamingOutcome.BIGQUERY_PENDING ||
+                                outcome == StreamingOutcome.BIGQUERY_FAILURE
+                        ) {
+                            completion.complete(CompleteMultipartUploadResponse.builder().build())
+                            assertFalse(finishing.isCompleted, "S3 completion alone cannot ACK")
+                            releaseBq.countDown()
+                        } else {
+                            releaseBq.countDown()
+                            assertFalse(
+                                finishing.isCompleted,
+                                "BigQuery completion alone cannot ACK",
+                            )
+                            if (outcome == StreamingOutcome.S3_FAILURE)
+                                completion.completeExceptionally(
+                                    IOException("S3 rejected completion")
+                                )
+                            else
+                                completion.complete(
+                                    CompleteMultipartUploadResponse.builder().build()
+                                )
+                        }
+                        val result = withTimeout(10000) { finishing.await() }
+                        assertEquals(
+                            outcome == StreamingOutcome.S3_FAILURE ||
+                                outcome == StreamingOutcome.BIGQUERY_FAILURE,
+                            result.isFailure,
+                        )
+                        val bytes = ByteArrayOutputStream()
+                        uploaded.values.forEach { bytes.write(it) }
+                        assertArrayEquals(fixture.written.toByteArray(), bytes.toByteArray())
+                        if (outcome == StreamingOutcome.S3_FAILURE)
+                            assertFalse(
+                                archive.metadataReady(),
+                                "Archive failure must poison subsequent success",
+                            )
+                    } finally {
+                        releaseBq.countDown()
+                        completion.completeExceptionally(IOException("test cleanup"))
+                        finishing.cancelAndJoin()
+                    }
+                } finally {
+                    loader.close()
+                }
+            }
+        assertEquals(0L, Files.list(directory).use { it.count() }, "Drained parts are deleted")
+    }
+
+    @ParameterizedTest
+    @CsvSource("false,false", "false,true", "true,false", "true,true")
+    fun `buffered JSON and proto raw and direct output is archived exactly once`(
+        protobuf: Boolean,
+        raw: Boolean,
+    ) = runTest {
+        val fixture = Fixture(protobuf, raw)
+        fixture.maxWrite = 7
+        val loader = fixture.loader()
+        assertSame(DirectLoader.Incomplete, loader.accept(fixture.record("é☃\n\"\\")))
+        loader.accept(fixture.record("second"))
+        verify(exactly = 0) { fixture.bigquery.writer(any<JobId>(), any()) }
+        assertEquals(0, fixture.batch.completions.size)
+        loader.finish()
+        fixture.assertExactBytes(2)
+        assertEquals(listOf(7L), fixture.batch.completions)
+        assertEquals(1, fixture.batch.closes)
+        loader.close()
+        verify(exactly = 1) { fixture.writer.close() }
+    }
+
+    @ParameterizedTest
+    @CsvSource("false,false", "false,true", "true,false", "true,true")
+    fun `streaming transition drains partial writes without reformatting`(
+        protobuf: Boolean,
+        raw: Boolean,
+    ) = runTest {
+        val fixture = Fixture(protobuf, raw)
+        fixture.maxWrite = 1024 * 1024
+        val loader = fixture.loader()
+        loader.accept(fixture.record("before"))
+        loader.accept(fixture.record("x".repeat(15 * 1024 * 1024)))
+        verify(exactly = 1) { fixture.bigquery.writer(any<JobId>(), any()) }
+        val bytesBefore = fixture.written.size()
+        loader.accept(fixture.record("after ☃"))
+        assertTrue(fixture.written.size() > bytesBefore)
+        // The streaming channel receives the very array supplied to append().
+        assertSame(fixture.batch.appended.last(), fixture.lastWriteArray)
+        fixture.assertExactBytes(3)
+        assertTrue(fixture.batch.completions.isEmpty())
+        loader.finish()
+        fixture.assertExactBytes(3)
+    }
+
+    @Test
+    fun `15 MiB threshold stays buffered until exceeded`() = runTest {
+        val fixture = Fixture()
+        val formatter = mockk<RecordFormatter>()
+        every { formatter.formatRecord(any()) } returns
+            "x".repeat(15 * 1024 * 1024 - System.lineSeparator().toByteArray(UTF_8).size)
+        val loader = fixture.loader(formatter = formatter)
+        loader.accept(fixture.record())
+        verify(exactly = 0) { fixture.bigquery.writer(any<JobId>(), any()) }
+        every { formatter.formatRecord(any()) } returns ""
+        loader.accept(fixture.record())
+        verify(exactly = 1) { fixture.bigquery.writer(any<JobId>(), any()) }
+        loader.close()
+        assertTrue(fixture.batch.completions.isEmpty())
+    }
+
+    @Test
+    fun `finish waits for archive after successful BigQuery load`() = runTest {
+        val fixture = Fixture()
+        fixture.batch.gate = CompletableDeferred()
+        val loader = fixture.loader()
+        loader.accept(fixture.record())
+        val finish = launch(start = CoroutineStart.UNDISPATCHED) { loader.finish() }
+        assertTrue(fixture.batch.entered.isCompleted)
+        assertEquals(1, fixture.batch.seals)
+        assertFalse(finish.isCompleted)
+        verify(exactly = 1) { fixture.job.waitFor(any<RetryOption>()) }
+        assertTrue(fixture.batch.completions.isEmpty())
+        fixture.batch.gate!!.complete(Unit)
+        finish.join()
+        assertEquals(listOf(7L), fixture.batch.completions)
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `seal precedes final buffered write and BigQuery close and job wait`(streaming: Boolean) =
+        runTest {
+            val fixture = Fixture()
+            val events = mutableListOf<String>()
+            fixture.batch.onSeal = { events.add("seal") }
+            if (!streaming)
+                fixture.beforeWrite = {
+                    assertEquals(
+                        listOf("seal"),
+                        events,
+                        "Seal must precede the buffered BigQuery write",
+                    )
+                }
+            every { fixture.writer.close() } answers
+                {
+                    assertEquals(listOf("seal"), events)
+                    events.add("BigQuery close")
+                }
+            every { fixture.job.waitFor(any<RetryOption>()) } answers
+                {
+                    assertEquals(listOf("seal", "BigQuery close"), events)
+                    events.add("BigQuery wait")
+                    fixture.job
+                }
+            val loader = fixture.loader()
+            loader.accept(fixture.record(if (streaming) "x".repeat(15 * 1024 * 1024) else "small"))
+            assertEquals(0, fixture.batch.seals)
+            loader.finish()
+            assertEquals(listOf("seal", "BigQuery close", "BigQuery wait"), events)
+            assertEquals(1, fixture.batch.seals)
+            assertEquals(listOf(7L), fixture.batch.completions)
+        }
+
+    @Test
+    fun `finished S3 upload cannot acknowledge while BigQuery load is pending`() = runBlocking {
+        withTimeout(10_000) {
+            val fixture = Fixture()
+            val loadEntered = CountDownLatch(1)
+            val releaseLoad = CountDownLatch(1)
+            fixture.batch.gate = CompletableDeferred()
+            fixture.batch.onSeal = { fixture.batch.gate!!.complete(Unit) }
+            every { fixture.job.waitFor(any<RetryOption>()) } answers
+                {
+                    loadEntered.countDown()
+                    check(releaseLoad.await(5, TimeUnit.SECONDS))
+                    fixture.job
+                }
+            val loader = fixture.loader()
+            loader.accept(fixture.record())
+            val finish = async(Dispatchers.IO) { loader.finish() }
+            try {
+                withContext(Dispatchers.IO) { assertTrue(loadEntered.await(5, TimeUnit.SECONDS)) }
+                assertEquals(1, fixture.batch.seals)
+                assertTrue(fixture.batch.gate!!.isCompleted, "S3 finished before the load job")
+                assertFalse(finish.isCompleted, "No successful finish until BigQuery also succeeds")
+                assertTrue(fixture.batch.completions.isEmpty())
+                releaseLoad.countDown()
+                finish.await()
+                assertEquals(listOf(7L), fixture.batch.completions)
+            } finally {
+                releaseLoad.countDown()
+                finish.cancelAndJoin()
+                loader.close()
+            }
+        }
+    }
+
+    @Test
+    fun `seal failure aborts finish before waiting for BigQuery and cleans up both resources`() =
+        runTest {
+            val fixture = Fixture()
+            val failure = IOException("final S3 upload could not start")
+            fixture.batch.onSeal = { throw failure }
+            val loader = fixture.loader()
+            loader.accept(fixture.record())
+            assertSame(failure, assertThrows<IOException> { loader.finish() })
+            assertEquals(1, fixture.batch.seals)
+            assertEquals(1, fixture.batch.closes)
+            assertTrue(fixture.batch.completions.isEmpty())
+            verify(exactly = 0) { fixture.job.waitFor(any<RetryOption>()) }
+            verify(exactly = 0) { fixture.writer.close() }
+            verify(exactly = 0) { fixture.bigquery.writer(any<JobId>(), any()) }
+            loader.close()
+            assertEquals(1, fixture.batch.closes)
+        }
+
+    enum class LoadFailure {
+        CREATE,
+        CLOSE,
+        WAIT,
+        RELOAD,
+        JOB_ERROR,
+        BAD_RECORDS,
+        NOT_DONE,
+        MISSING_JOB,
+    }
+
+    @ParameterizedTest
+    @EnumSource(LoadFailure::class)
+    fun `BigQuery failure never completes archive`(stage: LoadFailure) = runTest {
+        val fixture = Fixture()
+        val error = IOException("BigQuery failure")
+        when (stage) {
+            LoadFailure.CREATE ->
+                every { fixture.bigquery.writer(any<JobId>(), any()) } throws
+                    BigQueryException(500, "create failed")
+            LoadFailure.CLOSE -> every { fixture.writer.close() } throws error
+            LoadFailure.WAIT -> every { fixture.job.waitFor(any<RetryOption>()) } throws error
+            LoadFailure.RELOAD -> every { fixture.job.reload() } throws error
+            LoadFailure.JOB_ERROR ->
+                every { fixture.job.status.error } returns
+                    BigQueryError("invalid", "table", "bad data")
+            LoadFailure.BAD_RECORDS -> every { fixture.statistics.badRecords } returns 1L
+            LoadFailure.NOT_DONE ->
+                every { fixture.job.status.state } returns JobStatus.State.RUNNING
+            LoadFailure.MISSING_JOB -> every { fixture.job.reload() } returns null
+        }
+        val loader = fixture.loader()
+        loader.accept(fixture.record())
+        assertThrows<Exception> { loader.finish() }
+        assertTrue(fixture.batch.completions.isEmpty())
+        assertFalse(fixture.batch.entered.isCompleted)
+        assertEquals(1, fixture.batch.closes)
+        loader.close()
+        assertEquals(1, fixture.batch.closes)
+    }
+
+    @Test
+    fun `archive failure fails finish and preserves primary cleanup errors`() = runTest {
+        val fixture = Fixture()
+        val failure = IOException("archive failed")
+        val cleanup = IOException("archive cleanup failed")
+        fixture.batch.completeFailure = failure
+        fixture.batch.closeFailure = cleanup
+        val loader = fixture.loader()
+        loader.accept(fixture.record())
+        assertSame(failure, assertThrows<IOException> { loader.finish() })
+        assertArrayEquals(arrayOf(cleanup), failure.suppressed)
+        assertEquals(1, fixture.batch.closes)
+        assertTrue(fixture.batch.completions.isEmpty())
+        verify(exactly = 1) { fixture.writer.close() }
+    }
+
+    @Test
+    fun `cancelling finish abandons archive and cannot report completion`() = runTest {
+        val fixture = Fixture()
+        fixture.batch.gate = CompletableDeferred()
+        val loader = fixture.loader()
+        loader.accept(fixture.record())
+        val finish = launch(start = CoroutineStart.UNDISPATCHED) { loader.finish() }
+        assertTrue(fixture.batch.entered.isCompleted)
+        finish.cancelAndJoin()
+        assertTrue(fixture.batch.completions.isEmpty())
+        assertEquals(1, fixture.batch.closes)
+        loader.close()
+        verify(exactly = 1) { fixture.writer.close() }
+    }
+
+    @Test
+    fun `formatter cancellation abandons buffer without opening BigQuery`() = runTest {
+        val fixture = Fixture()
+        val cancellation = CancellationException("cancelled formatter")
+        val formatter = mockk<RecordFormatter>()
+        every { formatter.formatRecord(any()) } throws cancellation
+        val loader = fixture.loader(formatter = formatter)
+        assertSame(
+            cancellation,
+            assertThrows<CancellationException> { loader.accept(fixture.record()) },
+        )
+        assertEquals(1, fixture.batch.closes)
+        assertTrue(fixture.batch.appended.isEmpty())
+        loader.close()
+        verify(exactly = 0) { fixture.bigquery.writer(any<JobId>(), any()) }
+    }
+
+    @Test
+    fun `append failure closes active writer even if both cleanup operations fail`() = runTest {
+        val fixture = Fixture()
+        val loader = fixture.loader()
+        loader.accept(fixture.record("x".repeat(15 * 1024 * 1024)))
+        val primary = IOException("append failed")
+        val archiveCleanup = IOException("archive close failed")
+        val writerCleanup = IOException("writer close failed")
+        fixture.batch.appendFailure = primary
+        fixture.batch.closeFailure = archiveCleanup
+        every { fixture.writer.close() } throws writerCleanup
+        val bytesBefore = fixture.written.size()
+        assertSame(primary, assertThrows<IOException> { loader.accept(fixture.record()) })
+        assertEquals(bytesBefore, fixture.written.size())
+        assertArrayEquals(arrayOf(archiveCleanup, writerCleanup), primary.suppressed)
+        assertEquals(1, fixture.batch.closes)
+        loader.close()
+        verify(exactly = 1) { fixture.writer.close() }
+        assertThrows<IllegalStateException> { loader.finish() }
+        assertTrue(fixture.batch.completions.isEmpty())
+    }
+
+    @Test
+    fun `transition write failure cleans up both resources`() = runTest {
+        val fixture = Fixture()
+        val failure = IOException("write failed")
+        every { fixture.writer.write(any()) } throws failure
+        val loader = fixture.loader()
+        assertSame(
+            failure,
+            assertThrows<IOException> {
+                loader.accept(fixture.record("x".repeat(15 * 1024 * 1024)))
+            },
+        )
+        assertEquals(1, fixture.batch.closes)
+        verify(exactly = 1) { fixture.writer.close() }
+        assertTrue(fixture.batch.completions.isEmpty())
+    }
+
+    @Test
+    fun `persistent lack of progress fails in bounded writes`() = runTest {
+        val fixture = Fixture()
+        // Even an inconsistent positive return value must not cause an infinite loop.
+        every { fixture.writer.write(any()) } returns 1
+        val loader = fixture.loader()
+        loader.accept(fixture.record())
+        assertThrows<IOException> { loader.finish() }
+        verify(exactly = 3) { fixture.writer.write(any()) }
+        assertEquals(1, fixture.batch.closes)
+        assertTrue(fixture.batch.completions.isEmpty())
+    }
+
+    @Test
+    fun `transient zero writes are retried and progress resets bound`() = runTest {
+        val fixture = Fixture()
+        fixture.maxWrite = 7
+        fixture.zeroWritesBetweenProgress = 2
+        val loader = fixture.loader()
+        loader.accept(fixture.record())
+        loader.finish()
+        fixture.assertExactBytes(1)
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `close abandons buffered or streaming batch and is idempotent`(streaming: Boolean) =
+        runTest {
+            val fixture = Fixture()
+            val loader = fixture.loader()
+            loader.accept(fixture.record(if (streaming) "x".repeat(15 * 1024 * 1024) else "small"))
+            loader.close()
+            loader.close()
+            assertEquals(1, fixture.batch.closes)
+            assertTrue(fixture.batch.completions.isEmpty())
+            verify(exactly = if (streaming) 1 else 0) { fixture.writer.close() }
+            assertThrows<IllegalStateException> { loader.finish() }
+        }
+
+    @Test
+    fun `empty finish completes archive with BigQuery zero count`() = runTest {
+        val fixture = Fixture()
+        every { fixture.statistics.outputRows } returns 0L
+        fixture.loader().finish()
+        assertEquals(0, fixture.written.size())
+        assertTrue(fixture.batch.appended.isEmpty())
+        assertEquals(listOf(0L), fixture.batch.completions)
+    }
+
+    @Test
+    fun `default constructor leaves archive disabled`() = runTest {
+        val fixture = Fixture()
+        val loader =
+            BigqueryBatchStandardInsertsLoader(
+                fixture.bigquery,
+                fixture.configuration,
+                fixture.jobId,
+                fixture.formatter,
+            )
+        loader.accept(fixture.record())
+        loader.finish()
+        assertArrayEquals(fixture.expectedBytes(), fixture.written.toByteArray())
+        assertTrue(fixture.batch.appended.isEmpty())
+        assertEquals(0, fixture.batch.closes)
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `factory starts batch only when catalog stream has archive context`(enabled: Boolean) =
+        runTest {
+            val fixture = Fixture()
+            val archive = mockk<BigqueryS3Copy>()
+            val context =
+                BigqueryCopyContext("stream", 42L, 42L, "schema", UUID.randomUUID(), "run/path")
+            every { archive.context(fixture.stream) } returns if (enabled) context else null
+            every { archive.startStandardInsertBatch(context) } returns fixture.batch
+            val tableName = TableName("dataset", "table")
+            val state = mockk<StreamStateStore<DirectLoadTableExecutionConfig>>()
+            every { state.get(fixture.stream.mappedDescriptor) } returns
+                DirectLoadTableExecutionConfig(tableName)
+            val config =
+                mockk<BigqueryConfiguration> {
+                    every { legacyRawTablesOnly } returns false
+                    every { projectId } returns "project"
+                    every { jobProjectId } returns "project"
+                    every { datasetLocation } returns BigqueryRegion.US
+                }
+            val factory =
+                BigqueryBatchStandardInsertsLoaderFactory(
+                    DestinationCatalog(listOf(fixture.stream)),
+                    fixture.bigquery,
+                    config,
+                    TableCatalogByDescriptor(
+                        mapOf(
+                            fixture.stream.mappedDescriptor to
+                                TableNameInfo(TableNames(null, tableName), fixture.mapping)
+                        )
+                    ),
+                    null,
+                    state,
+                    DataChannelFormat.JSONL,
+                    archive,
+                )
+            val loader = factory.create(fixture.stream.mappedDescriptor, 0)
+            loader.accept(fixture.record())
+            loader.finish()
+            verify(exactly = if (enabled) 1 else 0) { archive.startStandardInsertBatch(any()) }
+            assertEquals(if (enabled) listOf(7L) else emptyList<Long>(), fixture.batch.completions)
+        }
+
+    private class Batch : StandardInsertArchiveBatch {
+        val appended = mutableListOf<ByteArray>()
+        val completions = mutableListOf<Long>()
+        val entered = CompletableDeferred<Unit>()
+        var gate: CompletableDeferred<Unit>? = null
+        var appendFailure: Throwable? = null
+        var completeFailure: Throwable? = null
+        var closeFailure: Throwable? = null
+        var closes = 0
+        var seals = 0
+        var onSeal: () -> Unit = {}
+
+        override fun append(bytes: ByteArray) {
+            appendFailure?.let { throw it }
+            appended.add(bytes)
+        }
+
+        override fun seal() {
+            seals++
+            onSeal()
+        }
+
+        override suspend fun complete(loadedRecordCount: Long) {
+            entered.complete(Unit)
+            gate?.await()
+            completeFailure?.let { throw it }
+            completions.add(loadedRecordCount)
+        }
+
+        override fun close() {
+            closes++
+            closeFailure?.let { throw it }
+        }
+    }
+
+    private class Fixture(private val protobuf: Boolean = false, raw: Boolean = false) {
+        val stream =
+            DestinationStream(
+                unmappedNamespace = "namespace",
+                unmappedName = "stream",
+                Append,
+                ObjectType(linkedMapOf("value" to FieldType(StringType, false))),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+                namespaceMapper = NamespaceMapper(),
+            )
+        val mapping = ColumnNameMapping(mapOf("value" to "renamed_value"))
+        val bigquery = mockk<BigQuery>()
+        val writer = mockk<TableDataWriteChannel>()
+        val job = mockk<Job>(relaxed = true)
+        val statistics = mockk<JobStatistics.LoadStatistics>()
+        val jobId = JobId.of("load-job")
+        val configuration =
+            WriteChannelConfiguration.newBuilder(TableId.of("dataset", "table")).build()
+        val batch = Batch()
+        val written = ByteArrayOutputStream()
+        val formatted = mutableListOf<String>()
+        var beforeWrite: () -> Unit = {}
+        var maxWrite = 1024 * 1024
+        var lastWriteArray: ByteArray? = null
+        var zeroWritesBetweenProgress = 0
+        private var stalled = 0
+        private val delegate =
+            if (protobuf)
+                ProtoToBigQueryStandardInsertRecordFormatter(
+                    stream.airbyteValueProxyFieldAccessors,
+                    mapping,
+                    stream,
+                    raw,
+                )
+            else BigQueryRecordFormatter(mapping, raw)
+        val formatter =
+            object : RecordFormatter {
+                override fun formatRecord(record: DestinationRecordRaw): String =
+                    delegate.formatRecord(record).also { formatted.add(it) }
+            }
+
+        init {
+            every { bigquery.writer(any<JobId>(), any()) } returns writer
+            every { writer.close() } returns Unit
+            every { writer.job } returns job
+            every { writer.write(any()) } answers
+                {
+                    beforeWrite()
+                    val source = firstArg<ByteBuffer>()
+                    lastWriteArray = source.array()
+                    if (stalled++ < zeroWritesBetweenProgress) {
+                        0
+                    } else {
+                        stalled = 0
+                        val size = minOf(maxWrite, source.remaining())
+                        val bytes = ByteArray(size)
+                        source.get(bytes)
+                        written.write(bytes)
+                        size
+                    }
+                }
+            every { job.waitFor(any<RetryOption>()) } returns job
+            every { job.reload() } returns job
+            every { job.status.error } returns null
+            every { job.status.state } returns JobStatus.State.DONE
+            every { job.getStatistics<JobStatistics.LoadStatistics>() } returns statistics
+            every { statistics.outputRows } returns 7L
+            every { statistics.badRecords } returns 0L
+        }
+
+        fun loader(formatter: RecordFormatter = this.formatter) =
+            BigqueryBatchStandardInsertsLoader(bigquery, configuration, jobId, formatter, batch)
+
+        fun record(value: String = "hello ☃"): DestinationRecordRaw {
+            val source =
+                if (protobuf) {
+                    val record =
+                        io.airbyte.protocol.protobuf.AirbyteRecordMessage
+                            .AirbyteRecordMessageProtobuf
+                            .newBuilder()
+                            .setStreamName("stream")
+                            .setEmittedAtMs(1234)
+                            .addData(
+                                AirbyteValueProtobufEncoder()
+                                    .encode(value, LeafAirbyteSchemaType.STRING)
+                            )
+                            .build()
+                    DestinationRecordProtobufSource(
+                        io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
+                            .newBuilder()
+                            .setRecord(record)
+                            .build()
+                    )
+                } else {
+                    DestinationRecordJsonSource(
+                        AirbyteMessage()
+                            .withRecord(
+                                AirbyteRecordMessage()
+                                    .withEmittedAt(1234)
+                                    .withData(Jsons.valueToTree(mapOf("value" to value)))
+                            )
+                    )
+                }
+            return DestinationRecordRaw(
+                stream,
+                source,
+                serializedSizeBytes = value.length.toLong(),
+                airbyteRawId = UUID.fromString("129b0dc6-826a-4e86-a50f-33250cbf63c2"),
+            )
+        }
+
+        fun expectedBytes() =
+            formatted.joinToString("") { "$it${System.lineSeparator()}" }.toByteArray(UTF_8)
+
+        fun assertExactBytes(records: Int) {
+            assertEquals(records, formatted.size, "each record must be formatted once")
+            assertEquals(records, batch.appended.size)
+            val archived = ByteArrayOutputStream()
+            batch.appended.forEachIndexed { index, bytes ->
+                assertArrayEquals(
+                    "${formatted[index]}${System.lineSeparator()}".toByteArray(UTF_8),
+                    bytes,
+                )
+                archived.write(bytes)
+            }
+            assertArrayEquals(expectedBytes(), archived.toByteArray())
+            assertArrayEquals(archived.toByteArray(), written.toByteArray())
+        }
+    }
+}
