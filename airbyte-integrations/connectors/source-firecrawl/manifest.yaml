@@ -1,0 +1,1329 @@
+version: 7.0.4
+
+type: DeclarativeSource
+
+description: FireCrawl- Turn websites into LLM-ready data
+
+check:
+  type: CheckStream
+  stream_names:
+    - scrape_stream
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      error_handler:
+        type: CompositeErrorHandler
+        error_handlers:
+          - type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+                max_time: 60
+      request_headers:
+        Content-Type: application/json
+
+streams:
+  - type: DeclarativeStream
+    name: scrape_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: "{{ config.get('api_url', 'https:/api.firecrawl.dev') }}/v2/scrape"
+        http_method: POST
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            url: "{{ config['url'] }}"
+            proxy: "{{ config.get('proxy', 'auto') }}"
+            maxAge: "{{ config.get('max_age_ms', 172800000) }}"
+            mobile: "{{ config.get('mobile', False) }}"
+            formats: >-
+              {{ config.get('formats', ['markdown']) + (['changeTracking'] if
+              config.get('enable_change_tracking', False) else []) }}
+            timeout: "{{ config.get('timeout_ms', 30000) }}"
+            waitFor: "{{ config.get('wait_for_ms', 0) }}"
+            blockAds: "{{ config.get('block_ads', True) }}"
+            excludeTags: "{{ config.get('exclude_tags', []) }}"
+            includeTags: "{{ config.get('include_tags', []) }}"
+            storeInCache: "{{ config.get('store_in_cache', True) }}"
+            onlyMainContent: "{{ config.get('only_main_content', False) }}"
+            removeBase64Images: "{{ not config.get('include_images_in_markdown', False) }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key: []
+  - type: DeclarativeStream
+    name: batch_scrape_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: "{{ config.get('api_url', 'https:/api.firecrawl.dev') }}/v2/scrape"
+        http_method: POST
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            url: "{{ stream_slice.url }}"
+            proxy: "{{ config.get('proxy', 'auto') }}"
+            maxAge: "{{ config.get('max_age_ms', 172800000) }}"
+            mobile: "{{ config.get('mobile', False) }}"
+            formats: >-
+              {{ config.get('formats', ['markdown']) + (['changeTracking'] if
+              config.get('enable_change_tracking', False) else []) }}
+            timeout: "{{ config.get('timeout_ms', 30000) }}"
+            waitFor: "{{ config.get('wait_for_ms', 0) }}"
+            blockAds: "{{ config.get('block_ads', True) }}"
+            excludeTags: "{{ config.get('exclude_tags', []) }}"
+            includeTags: "{{ config.get('include_tags', []) }}"
+            storeInCache: "{{ config.get('store_in_cache', True) }}"
+            onlyMainContent: "{{ config.get('only_main_content', False) }}"
+            removeBase64Images: "{{ not config.get('include_images_in_markdown', False) }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        type: ListPartitionRouter
+        values: >-
+          {{ config.get('urls', [config.get('url')] if config.get('url') else
+          []) }}
+        cursor_field: url
+    primary_key: []
+  - type: DeclarativeStream
+    name: crawl_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: "{{ config.get('api_url', 'https:/api.firecrawl.dev') }}/v2/crawl"
+        http_method: POST
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            url: "{{ config['url'] }}"
+            delay: "{{ config.get('crawl_delay_seconds', 1) }}"
+            limit: "{{ config.get('limit', 100) }}"
+            sitemap: "{{ config.get('sitemap', 'include') }}"
+            excludePaths: "{{ config.get('exclude_paths', []) or [] }}"
+            includePaths: "{{ config.get('include_paths', []) or [] }}"
+            scrapeOptions:
+              proxy: "{{ config.get('proxy', 'auto') }}"
+              maxAge: "{{ config.get('max_age_ms', 172800000) }}"
+              mobile: "{{ config.get('mobile', False) }}"
+              formats: >-
+                {{ config.get('formats', ['markdown']) + (['changeTracking'] if
+                config.get('enable_change_tracking', False) else []) }}
+              timeout: "{{ config.get('timeout_ms', 30000) }}"
+              waitFor: "{{ config.get('wait_for_ms', 0) }}"
+              blockAds: "{{ config.get('block_ads', True) }}"
+              excludeTags: "{{ config.get('exclude_tags', []) }}"
+              includeTags: "{{ config.get('include_tags', []) }}"
+              storeInCache: "{{ config.get('store_in_cache', True) }}"
+              onlyMainContent: "{{ config.get('only_main_content', False) }}"
+              removeBase64Images: "{{ not config.get('include_images_in_markdown', False) }}"
+            maxConcurrency: "{{ config.get('max_concurrency', 10) }}"
+            allowSubdomains: "{{ config.get('include_subdomains', False) }}"
+            crawlEntireDomain: "{{ config.get('crawl_entire_domain', False) }}"
+            maxDiscoveryDepth: "{{ config.get('max_depth', 3) }}"
+            allowExternalLinks: "{{ config.get('allow_external_links', False) }}"
+            ignoreQueryParameters: "{{ config.get('ignore_query_parameters', False) }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - "*"
+    primary_key: []
+  - type: DeclarativeStream
+    name: search_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: "{{ config.get('api_url', 'https:/api.firecrawl.dev') }}/v2/search"
+        http_method: POST
+        request_body:
+          type: RequestBodyGraphQL
+          value:
+            tbs: "{{ config.get('search_tbs', '') }}"
+            limit: "{{ config.get('search_limit', 5) }}"
+            query: "{{ config.get('search_query', 'web search') }}"
+            country: "{{ config.get('search_country', 'US') }}"
+            sources: "{{ config.get('search_sources', ['web']) }}"
+            timeout: "{{ config.get('search_timeout_ms', 60000) }}"
+            location: "{{ config.get('search_location', '') }}"
+            categories: "{{ config.get('search_categories', []) or [] }}"
+            scrapeOptions:
+              formats: "{{ config.get('formats', ['markdown']) }}"
+              onlyMainContent: "{{ config.get('only_main_content', True) }}"
+              removeBase64Images: "{{ not config.get('include_images_in_markdown', False) }}"
+            ignoreInvalidURLs: "{{ config.get('search_ignore_invalid_urls', False) }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - web
+            - "*"
+    primary_key: []
+  - type: DeclarativeStream
+    name: map_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: "{{ config.get('api_url', 'https:/api.firecrawl.dev') }}/v2/map"
+        http_method: POST
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            url: "{{ config['url'] }}"
+            limit: "{{ config.get('map_limit', 5000) }}"
+            search: "{{ config.get('search_filter', '') }}"
+            sitemap: "{{ config.get('map_sitemap', 'include') }}"
+            timeout: "{{ config.get('map_timeout_ms', None) }}"
+            ignoreCache: "{{ config.get('map_ignore_cache', False) }}"
+            includeSubdomains: "{{ config.get('include_subdomains', True) }}"
+            ignoreQueryParameters: "{{ config.get('map_ignore_query_parameters', True) }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - links
+            - "*"
+    primary_key: []
+  - type: DeclarativeStream
+    name: extract_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: "{{ config.get('api_url', 'https:/api.firecrawl.dev') }}/v2/extract"
+        http_method: POST
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            urls: []
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - id
+  - type: DeclarativeStream
+    name: extract_results_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ config.get('api_url', 'https:/api.firecrawl.dev') }}/v2/extract/{{
+          config.get('extract_job_id', '') }}
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - id
+  - type: DeclarativeStream
+    name: batch_scrape_job_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ config.get('api_url', 'https:/api.firecrawl.dev')
+          }}/v2/batch/scrape
+        http_method: POST
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            urls: "{{ config.get('batch_scrape_urls', config.get('urls', [])) }}"
+            proxy: "{{ config.get('proxy', 'auto') }}"
+            maxAge: "{{ config.get('max_age_ms', 172800000) }}"
+            mobile: "{{ config.get('mobile', False) }}"
+            formats: "{{ config.get('formats', ['markdown']) }}"
+            timeout: "{{ config.get('timeout_ms', 30000) }}"
+            waitFor: "{{ config.get('wait_for_ms', 0) }}"
+            blockAds: "{{ config.get('block_ads', True) }}"
+            excludeTags: "{{ config.get('exclude_tags', []) }}"
+            includeTags: "{{ config.get('include_tags', []) }}"
+            storeInCache: "{{ config.get('store_in_cache', True) }}"
+            maxConcurrency: "{{ config.get('batch_scrape_max_concurrency') }}"
+            onlyMainContent: "{{ config.get('only_main_content', False) }}"
+            ignoreInvalidURLs: "{{ config.get('batch_scrape_ignore_invalid_urls', True) }}"
+            removeBase64Images: "{{ not config.get('include_images_in_markdown', False) }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "*"
+    primary_key:
+      - id
+  - type: DeclarativeStream
+    name: batch_scrape_status_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ config.get('api_url', 'https:/api.firecrawl.dev')
+          }}/v2/batch/scrape/{{ config.get('batch_scrape_job_id', '') }}
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "*"
+    primary_key: []
+  - type: DeclarativeStream
+    name: batch_scrape_errors_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ config.get('api_url', 'https:/api.firecrawl.dev')
+          }}/v2/batch/scrape/{{ config.get('batch_scrape_job_id', '') }}/errors
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "*"
+    primary_key: []
+  - type: DeclarativeStream
+    name: crawl_status_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ config.get('api_url', 'https:/api.firecrawl.dev') }}/v2/crawl/{{
+          config.get('crawl_job_id', '') }}
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "*"
+    primary_key: []
+  - type: DeclarativeStream
+    name: crawl_errors_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ config.get('api_url', 'https:/api.firecrawl.dev') }}/v2/crawl/{{
+          config.get('crawl_job_id', '') }}/errors
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "*"
+    primary_key: []
+  - type: DeclarativeStream
+    name: active_crawls_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ config.get('api_url', 'https:/api.firecrawl.dev')
+          }}/v2/crawl/active
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - crawls
+            - "*"
+    primary_key:
+      - id
+  - type: DeclarativeStream
+    name: crawl_params_preview_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ config.get('api_url', 'https:/api.firecrawl.dev')
+          }}/v2/crawl/params-preview
+        http_method: POST
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            url: "{{ config.get('crawl_preview_url', config.get('url', '')) }}"
+            prompt: >-
+              {{ config.get('crawl_preview_prompt', 'Extract information from
+              this website') }}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key: []
+  - type: DeclarativeStream
+    name: agent_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: "{{ config.get('api_url', 'https:/api.firecrawl.dev') }}/v2/agent"
+        http_method: POST
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            urls: "{{ config.get('agent_urls', []) }}"
+            model: "{{ config.get('agent_model', 'spark-1-mini') }}"
+            prompt: >-
+              {{ config.get('agent_prompt', 'Please extract information from the
+              provided URLs') }}
+            schema: "{{ config.get('agent_schema', {}) }}"
+            maxCredits: "{{ config.get('agent_max_credits', '') }}"
+            strictConstrainToURLs: "{{ config.get('agent_strict_constrain_to_urls', False) }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - id
+  - type: DeclarativeStream
+    name: agent_status_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ config.get('api_url', 'https:/api.firecrawl.dev') }}/v2/agent/{{
+          config.get('agent_job_id', '') }}
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "*"
+    primary_key: []
+  - type: DeclarativeStream
+    name: credit_usage_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ config.get('api_url', 'https:/api.firecrawl.dev')
+          }}/v2/team/credit-usage
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key: []
+  - type: DeclarativeStream
+    name: credit_usage_historical_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ config.get('api_url', 'https:/api.firecrawl.dev')
+          }}/v2/team/credit-usage/historical
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - periods
+            - "*"
+    primary_key:
+      - startDate
+      - endDate
+  - type: DeclarativeStream
+    name: token_usage_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ config.get('api_url', 'https:/api.firecrawl.dev')
+          }}/v2/team/token-usage
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key: []
+  - type: DeclarativeStream
+    name: token_usage_historical_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ config.get('api_url', 'https:/api.firecrawl.dev')
+          }}/v2/team/token-usage/historical
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - periods
+            - "*"
+    primary_key:
+      - startDate
+      - endDate
+  - type: DeclarativeStream
+    name: queue_status_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: >-
+          {{ config.get('api_url', 'https:/api.firecrawl.dev')
+          }}/v2/team/queue-status
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 3
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 2
+                  max_time: 60
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "*"
+    primary_key: []
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      url:
+        type: string
+        description: URL to scrape or crawl (required for scrape/crawl/map streams)
+        order: 2
+        title: Target URL
+      urls:
+        type: array
+        description: >-
+          List of URLs for batch_scrape_stream. If set, batch_scrape_stream uses
+          this; otherwise uses [url] when url is set.
+        items:
+          type: string
+          format: uri
+        order: 3
+        title: Target URLs (Batch Scrape)
+        minItems: 1
+      proxy:
+        type: string
+        description: >-
+          basic (fast), enhanced (anti-bot), auto (retry with enhanced if
+          needed)
+        enum:
+          - basic
+          - enhanced
+          - auto
+        order: 18
+        title: Proxy Type
+        default: auto
+      mobile:
+        type: boolean
+        description: Emulate mobile device (e.g. for mobile screenshots)
+        order: 16
+        title: Mobile Emulation
+        default: false
+      api_key:
+        type: string
+        description: Firecrawl API key for authentication
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      api_url:
+        type: string
+        description: "Firecrawl API base URL (default: https://api.firecrawl.dev)"
+        order: 1
+        title: API URL
+        default: https://api.firecrawl.dev
+      formats:
+        type: array
+        description: Content formats to extract (markdown, html, changeTracking, etc.)
+        items:
+          type: string
+          enum:
+            - markdown
+            - html
+            - rawHtml
+            - screenshot
+            - changeTracking
+        order: 6
+        title: Output Formats
+        default:
+          - markdown
+      parsers:
+        type: array
+        order: 56
+        title: parsers
+        default:
+          - pdf
+      sitemap:
+        type: string
+        description: skip, include, or only (crawl). include = sitemap + discovery.
+        enum:
+          - skip
+          - include
+          - only
+        order: 20
+        title: Crawl Sitemap Mode
+        default: include
+      block_ads:
+        type: boolean
+        description: Enable ad-blocking and cookie popup blocking
+        order: 17
+        title: Block Ads
+        default: true
+      agent_urls:
+        type: array
+        description: Optional URLs to constrain agent to
+        items:
+          type: string
+          format: uri
+        order: 52
+        title: Agent URLs
+        default: []
+      max_age_ms:
+        type: number
+        description: >-
+          Use cached page if younger than this (ms). Default 172800000 (2 days).
+          Speeds up scrapes.
+        order: 15
+        title: Cache Max Age (ms)
+        default: 172800000
+      search_tbs:
+        type: string
+        description: >-
+          Time filter: qdr:h (hour), qdr:d (day), qdr:w (week), qdr:m (month),
+          qdr:y (year)
+        order: 29
+        title: Search Time Range
+      agent_model:
+        type: string
+        description: spark-1-mini (cheaper) or spark-1-pro (higher accuracy)
+        enum:
+          - spark-1-mini
+          - spark-1-pro
+        order: 54
+        title: Agent Model
+        default: spark-1-mini
+      map_sitemap:
+        type: string
+        description: skip, include, or only for URL discovery
+        enum:
+          - skip
+          - include
+          - only
+        order: 34
+        title: Map Sitemap Mode
+        default: include
+      webhook_url:
+        type: string
+        description: >-
+          Optional webhook URL to receive crawl events (started, page,
+          completed)
+        order: 8
+        title: Webhook URL
+      agent_job_id:
+        type: string
+        description: Job ID for agent_status_stream (from agent_stream response)
+        order: 55
+        title: Agent Job ID
+      agent_prompt:
+        type: string
+        description: >-
+          Prompt for agent_stream (agentic extraction). Required for
+          agent_stream.
+        order: 51
+        title: Agent Prompt
+        minLength: 1
+      crawl_job_id:
+        type: string
+        description: >-
+          Job ID for crawl_status_stream and crawl_errors_stream (from
+          crawl_stream response)
+        order: 48
+        title: Crawl Job ID
+      exclude_tags:
+        type: array
+        description: HTML tags to exclude from extraction
+        items:
+          type: string
+        order: 12
+        title: Exclude Tags
+        default:
+          - nav
+          - footer
+          - script
+          - style
+      extract_urls:
+        type: array
+        description: >-
+          URLs to extract structured data from (required for extract_stream).
+          Glob format supported.
+        items:
+          type: string
+          format: uri
+        order: 37
+        title: Extract URLs
+        minItems: 1
+      include_tags:
+        type: array
+        description: HTML tags to include in extraction
+        items:
+          type: string
+        order: 11
+        title: Include Tags
+        default:
+          - article
+          - main
+      search_query:
+        type: string
+        description: Query for search endpoint (required for search_stream)
+        order: 4
+        title: Search Query
+      exclude_paths:
+        type: array
+        description: URL path regex patterns to exclude (e.g. ["blog/.*"])
+        items:
+          type: string
+        order: 25
+        title: Exclude Paths (Crawl)
+        default: []
+      include_paths:
+        type: array
+        description: URL path regex patterns to include only (e.g. ["docs/.*"])
+        items:
+          type: string
+        order: 26
+        title: Include Paths (Crawl)
+        default: []
+      search_filter:
+        type: string
+        description: Optional search filter for map endpoint (relevance ordering)
+        order: 14
+        title: Search Filter
+      extract_job_id:
+        type: string
+        description: >-
+          Completed extract job ID from POST /v2/extract (required for
+          extract_results_stream)
+        order: 39
+        title: Extract Job ID
+      extract_prompt:
+        type: string
+        description: Prompt to guide LLM extraction (for extract_stream)
+        order: 38
+        title: Extract Prompt
+      search_country:
+        type: string
+        description: ISO country code for search (e.g. US, DE, FR)
+        order: 31
+        title: Search Country
+        default: US
+      search_sources:
+        type: array
+        description: "Search sources: web, images, news"
+        items:
+          type: string
+          enum:
+            - web
+            - images
+            - news
+        order: 27
+        title: Search Sources
+        default:
+          - web
+      store_in_cache:
+        type: boolean
+        description: Store scraped pages in Firecrawl cache
+        order: 19
+        title: Store in Cache
+        default: true
+      webhook_events:
+        type: array
+        description: Events to subscribe to (started, page, completed)
+        items:
+          type: string
+          enum:
+            - started
+            - page
+            - completed
+        order: 9
+        title: Webhook Events
+        default:
+          - completed
+      search_location:
+        type: string
+        description: >-
+          Geo-target for search (e.g. Germany, San Francisco California United
+          States)
+        order: 30
+        title: Search Location
+      map_ignore_cache:
+        type: boolean
+        description: Bypass sitemap cache for fresh URLs
+        order: 36
+        title: Map Ignore Cache
+        default: false
+      batch_scrape_urls:
+        type: array
+        description: >-
+          URLs for batch_scrape_job_stream (POST /v2/batch/scrape). Falls back
+          to urls if not set. Required for batch scraping operations.
+        items:
+          type: string
+          format: uri
+        order: 45
+        title: Batch Scrape URLs (async)
+        minItems: 1
+      crawl_preview_url:
+        type: string
+        description: URL for crawl_params_preview_stream (natural language to params)
+        order: 49
+        title: Crawl Preview URL
+      only_main_content:
+        type: boolean
+        description: >-
+          Extract only main content, excluding navigation and footer (default:
+          true)
+        order: 10
+        title: Only Main Content
+        default: true
+      search_categories:
+        type: array
+        description: "Filter by category: github, research, pdf"
+        items:
+          type: string
+          enum:
+            - github
+            - research
+            - pdf
+        order: 28
+        title: Search Categories
+        default: []
+      search_timeout_ms:
+        type: number
+        description: Timeout for search request
+        order: 32
+        title: Search Timeout (ms)
+      include_subdomains:
+        type: boolean
+        description: "Whether to include subdomains when crawling (default: false)"
+        order: 5
+        title: Include Subdomains
+        default: false
+      batch_scrape_job_id:
+        type: string
+        description: >-
+          Job ID for batch_scrape_status_stream and batch_scrape_errors_stream
+          (from batch_scrape_job_stream response)
+        order: 46
+        title: Batch Scrape Job ID
+      crawl_delay_seconds:
+        type: number
+        description: >-
+          Delay in seconds between scrapes (rate limiting). Firecrawl API
+          requires > 0; minimum 1.
+        order: 24
+        title: Crawl Delay (seconds)
+      crawl_entire_domain:
+        type: boolean
+        description: Follow sibling/parent URLs, not just child paths
+        order: 22
+        title: Crawl Entire Domain
+        default: false
+      allow_external_links:
+        type: boolean
+        description: Follow links to external websites
+        order: 23
+        title: Allow External Links (Crawl)
+        default: false
+      crawl_preview_prompt:
+        type: string
+        description: Natural language prompt for crawl_params_preview_stream
+        order: 50
+        title: Crawl Preview Prompt
+      extract_show_sources:
+        type: boolean
+        description: Include sources used for extraction in response
+        order: 43
+        title: Extract Show Sources
+        default: false
+      enable_change_tracking:
+        type: boolean
+        description: "Enable change tracking to detect website updates (default: false)"
+        order: 7
+        title: Enable Change Tracking
+        default: false
+      extract_ignore_sitemap:
+        type: boolean
+        description: Ignore sitemap.xml during website scanning
+        order: 41
+        title: Extract Ignore Sitemap
+        default: false
+      ignore_query_parameters:
+        type: boolean
+        description: Do not re-scrape same path with different query params
+        order: 21
+        title: Ignore Query Parameters (Crawl)
+        default: false
+      extract_enable_web_search:
+        type: boolean
+        description: Use web search to find additional data during extraction
+        order: 40
+        title: Extract Enable Web Search
+        default: false
+      extract_include_subdomains:
+        type: boolean
+        description: Scan subdomains of provided URLs
+        order: 42
+        title: Extract Include Subdomains
+        default: true
+      include_images_in_markdown:
+        type: boolean
+        description: >-
+          Default false = no images (excluded). If true, markdown includes
+          base64-encoded images; if false, images are removed and replaced with
+          placeholders (alt text remains).
+        order: 13
+        title: Include Images in Markdown
+        default: false
+      search_ignore_invalid_urls:
+        type: boolean
+        description: Exclude URLs invalid for other Firecrawl endpoints
+        order: 33
+        title: Search Ignore Invalid URLs
+        default: false
+      extract_ignore_invalid_urls:
+        type: boolean
+        description: Skip invalid URLs and return them in invalidURLs instead of failing
+        order: 44
+        title: Extract Ignore Invalid URLs
+        default: true
+      map_ignore_query_parameters:
+        type: boolean
+        description: Do not return URLs with query parameters
+        order: 35
+        title: Map Ignore Query Parameters
+        default: true
+      agent_strict_constrain_to_urls:
+        type: boolean
+        description: If true, agent only visits provided URLs
+        order: 53
+        title: Agent Strict Constrain to URLs
+        default: false
+      batch_scrape_ignore_invalid_urls:
+        type: boolean
+        description: Skip invalid URLs in async batch
+        order: 47
+        title: Batch Scrape Ignore Invalid URLs
+        default: true
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    scrape_stream:
+      isStale: false
+      hasRecords: true
+      streamHash: bc5d0e6dc908590ef8a6c965892a1f422483b812
+      hasResponse: true
+      primaryKeysAreUnique: false
+      primaryKeysArePresent: false
+      responsesAreSuccessful: true
+    batch_scrape_stream:
+      streamHash: a6f57496f662536c5120a7e914b662ac86309637
+    crawl_stream:
+      streamHash: 30f7050cd387ee0ce02a2a59983954b7eb6a2a68
+    search_stream:
+      streamHash: 0d0b35ba53eb711b1a5c7b7f2f0de0c3ebcd4912
+    map_stream:
+      streamHash: fea4e40a67408b60246d526f38a890681bb72138
+    extract_stream:
+      streamHash: bcd14d0446fab06914e6f6d384f5aaf255b9a0b8
+    extract_results_stream:
+      streamHash: cbb575b8bac9ad2a92941d2b56000719adcb1238
+    batch_scrape_job_stream:
+      streamHash: 55d20cff5261ee6125e847037ded40381eb5a459
+    batch_scrape_status_stream:
+      streamHash: dcf1f773abc35250da68bc4e805f126807bdbcc7
+    batch_scrape_errors_stream:
+      streamHash: 4507e13f3045a908df4fb97419ec7006905f5534
+    crawl_status_stream:
+      streamHash: 8bc070313a7ee112c7ba64b35de1af9b0ca6929e
+    crawl_errors_stream:
+      streamHash: 24a4437c87fcaff337d9fdae4ac071c34fdc271f
+    active_crawls_stream:
+      streamHash: 5a44450679dd0f9e94713dbafc86f7ca30c33ace
+    crawl_params_preview_stream:
+      streamHash: 4449fc1292f9be8cbfcfb30c00a9ffdaf6d1d99d
+    agent_stream:
+      streamHash: 41d243aca0e1151b80b095b4df91bca597c346db
+    agent_status_stream:
+      streamHash: 001c07ec16c6432624d35a287ddb62fe20666af1
+    credit_usage_stream:
+      streamHash: 8b7076a159cb5077d5b9d7df80cabb79dfc3dc73
+    credit_usage_historical_stream:
+      streamHash: 3aba66660bceea15fab9c407e186f9372aac2a20
+    token_usage_stream:
+      streamHash: fde1362305c424bfec574599447e4e936195e4da
+    token_usage_historical_stream:
+      streamHash: c90c3865ef193bb906d02f32a695d57b255fb69f
+    queue_status_stream:
+      streamHash: 07a87f554b1f737a7b3e1736be5474f928da0b33
+  autoImportSchema: {}
+  applied_migrations:
+    - migration: HttpRequesterUrlBaseToUrl
+      to_version: "*"
+      migrated_at: "2026-02-05T14:26:33.094813+00:00"
+      from_version: 7.0.4
+    - migration: HttpRequesterPathToUrl
+      to_version: "*"
+      migrated_at: "2026-02-05T14:26:33.096780+00:00"
+      from_version: 7.0.4
+    - migration: HttpRequesterRequestBodyJsonDataToRequestBody
+      to_version: "*"
+      migrated_at: "2026-02-05T14:26:33.097883+00:00"
+      from_version: 7.0.4
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
