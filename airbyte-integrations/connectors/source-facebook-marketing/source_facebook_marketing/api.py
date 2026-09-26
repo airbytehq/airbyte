@@ -9,6 +9,7 @@ from datetime import timedelta
 from time import sleep
 
 import backoff
+import requests
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
@@ -24,7 +25,7 @@ class FacebookAPIException(Exception):
     """General class for all API errors"""
 
 
-backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+backoff_policy = retry_pattern(backoff.expo, (FacebookRequestError, requests.exceptions.ConnectionError), max_tries=5, factor=5)
 
 
 class MyFacebookAdsApi(FacebookAdsApi):
