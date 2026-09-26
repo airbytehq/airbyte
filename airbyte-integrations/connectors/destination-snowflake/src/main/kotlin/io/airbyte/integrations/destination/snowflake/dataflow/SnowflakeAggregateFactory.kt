@@ -11,6 +11,8 @@ import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.copy.DisabledSnowflakeS3Copy
+import io.airbyte.integrations.destination.snowflake.copy.SnowflakeS3Copy
 import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
@@ -25,6 +27,7 @@ class SnowflakeAggregateFactory(
     private val catalog: DestinationCatalog,
     private val columnManager: SnowflakeColumnManager,
     private val snowflakeRecordFormatter: SnowflakeRecordFormatter,
+    private val snowflakeS3Copy: SnowflakeS3Copy = DisabledSnowflakeS3Copy,
 ) : AggregateFactory {
     override fun create(key: StoreKey): Aggregate {
         val stream = catalog.getStream(key)
@@ -38,6 +41,8 @@ class SnowflakeAggregateFactory(
                 columnSchema = stream.tableSchema.columnSchema,
                 columnManager = columnManager,
                 snowflakeRecordFormatter = snowflakeRecordFormatter,
+                s3Copy = snowflakeS3Copy,
+                copyContext = snowflakeS3Copy.context(stream),
             )
         return SnowflakeAggregate(buffer = buffer)
     }
