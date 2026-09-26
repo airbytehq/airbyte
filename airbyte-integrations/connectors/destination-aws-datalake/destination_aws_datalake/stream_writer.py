@@ -126,6 +126,15 @@ class StreamWriter:
             if format == "date-time":
                 return pd.to_datetime(value, errors="coerce", utc=True)
 
+            if format == "date":
+                # Nested `date` subfields must be converted to `datetime.date` so
+                # pyarrow can map them to the Glue `date` (date32[day]) column type.
+                # Top-level date columns also benefit: `flush()` re-runs
+                # `pd.to_datetime(..., format="mixed")` and accepts `date` objects
+                # the same way it accepts strings.
+                dt = pd.to_datetime(value, errors="coerce", utc=True)
+                return dt.date() if pd.notna(dt) else None
+
             return str(value) if value and value != "" else None
 
         elif typ == "integer":
@@ -356,7 +365,13 @@ class StreamWriter:
 
                 # array with single type
                 elif item_type and not self._json_schema_type_has_mixed_types(raw_item_type):
-                    result_typ = f"array<{type_mapper[item_type]}>"
+                    item_format = items.get("format")
+                    if item_type == "string" and item_format == "date-time":
+                        result_typ = "array<timestamp>"
+                    elif item_type == "string" and item_format == "date":
+                        result_typ = "array<date>"
+                    else:
+                        result_typ = f"array<{type_mapper[item_type]}>"
 
             if result_typ is None:
                 result_typ = type_mapper.get(col_typ, "string")
