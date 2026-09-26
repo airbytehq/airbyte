@@ -8,27 +8,28 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.util.Jsons
 
-class PersonIdentifyBatchEntryAssembler : BatchEntryAssembler {
+class PersonIdentifyBatchEntryAssembler(
+    private val identifierType: IdentifierType = IdentifierType.EMAIL
+) : BatchEntryAssembler {
 
     companion object {
-        val EXPECTED_PROPERTIES: Set<String> =
-            setOf<String>(
-                "person_email",
-            )
+        val IDENTIFIER_PROPERTIES: Set<String> = setOf("person_email", "person_id", "person_cio_id")
     }
 
     override fun assemble(record: DestinationRecordRaw): ObjectNode {
         val recordAsJson = record.asJsonRecord()
-        val personEmail =
-            recordAsJson.get("person_email")?.asText()
-                ?: throw IllegalArgumentException("person_email field cannot be empty")
+        val identifierValue =
+            recordAsJson.get(identifierType.recordField)?.asText()
+                ?: throw IllegalArgumentException(
+                    "${identifierType.recordField} field cannot be empty"
+                )
         val batchEntry = Jsons.objectNode().put("type", "person").put("action", "identify")
 
-        batchEntry.putObject("identifiers").put("email", personEmail)
+        batchEntry.putObject("identifiers").put(identifierType.apiField, identifierValue)
 
         val attributes = batchEntry.putObject("attributes")
         (recordAsJson as ObjectNode).properties().forEach { (key, value) ->
-            if (key !in EXPECTED_PROPERTIES) {
+            if (key !in IDENTIFIER_PROPERTIES) {
                 attributes.replace(key, value)
             }
         }
