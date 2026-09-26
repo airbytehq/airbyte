@@ -55,17 +55,7 @@ class S3CopyMetadataTest {
         assertTrue(
             path.endsWith("/streams/public/Orders%2F%E6%97%A5%E6%9C%AC/runs/$runId/$epochSeconds/")
         )
-        val context =
-            CsvCopyContext(
-                "stream-hash",
-                42,
-                12345,
-                "schema-hash",
-                runId,
-                config.connectionId,
-                path,
-                epochSeconds
-            )
+        val context = CsvCopyContext("stream-hash", 42, 12345, "schema-hash", path)
         val schema =
             metadata.schema(
                 stream,

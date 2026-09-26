@@ -277,8 +277,10 @@ class SnowflakeStreamCompletionTest {
                 copy.prepare(DestinationCatalog(listOf(fixture.stream, billing)))
                 val publicContext = copy.context(fixture.stream)!!
                 val billingContext = copy.context(billing)!!
-                assertEquals(publicContext.runId, billingContext.runId)
-                assertEquals(publicContext.epochSeconds, billingContext.epochSeconds)
+                assertEquals(
+                    publicContext.runPath.substringAfter("/runs/"),
+                    billingContext.runPath.substringAfter("/runs/")
+                )
                 assertNotEquals(publicContext.runPath, billingContext.runPath)
                 assertTrue(
                     publicContext.runPath.contains(

@@ -32,10 +32,7 @@ data class CsvCopyContext(
     val generationId: Long,
     val syncId: Long,
     val schemaId: String,
-    val runId: UUID,
-    val connectionId: UUID,
     val runPath: String,
-    val epochSeconds: Long,
 )
 
 interface SnowflakeS3Copy : AutoCloseable {
@@ -70,6 +67,9 @@ class EnabledSnowflakeS3Copy(
     private val configuredCatalog: ConfiguredAirbyteCatalog? = null,
 ) : SnowflakeS3Copy {
     private val epochSeconds = Instant.now().epochSecond
+    // One run per connector attempt: the job ID (stream.syncId) is shared by every attempt, but
+    // each run's schema.json is immutable and consumers bind batches to (run_id, schema_id). The
+    // job ID is recorded in schema.json, batch headers, stream_complete.json, and the logs below.
     private val runId = UUID.randomUUID()
     private val metadata = S3CopyMetadata(config, runId, epochSeconds)
     private val log = KotlinLogging.logger {}
@@ -93,17 +93,11 @@ class EnabledSnowflakeS3Copy(
             val key = streamKey(stream)
             val runPath = runPaths.getValue(stream)
             putJson("${runPath}schema.json", metadata.schema(stream, schema, schemaId))
+            log.info {
+                "Fusion S3 stream prepared: run=$runId job_id=${stream.syncId} path=$runPath"
+            }
             contexts[stream] =
-                CsvCopyContext(
-                    key,
-                    stream.generationId,
-                    stream.syncId,
-                    schemaId,
-                    runId,
-                    config.connectionId,
-                    runPath,
-                    epochSeconds
-                )
+                CsvCopyContext(key, stream.generationId, stream.syncId, schemaId, runPath)
         }
     }
 
