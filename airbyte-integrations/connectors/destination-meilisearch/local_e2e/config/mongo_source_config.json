@@ -1,0 +1,8 @@
+{
+  "database_config": {
+    "cluster_type": "SELF_MANAGED_REPLICA_SET",
+    "connection_string": "mongodb://mongodb:27017/",
+    "databases": ["sales"]
+  },
+  "discover_sample_size": 100
+}
