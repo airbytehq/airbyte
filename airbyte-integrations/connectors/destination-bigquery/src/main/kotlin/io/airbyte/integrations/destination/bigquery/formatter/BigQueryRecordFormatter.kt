@@ -42,6 +42,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 
 /**
@@ -218,14 +219,22 @@ class BigQueryRecordFormatter(
         }
 
         fun formatTimestampWithTimezone(value: EnrichedAirbyteValue): String {
+            // BigQuery TIMESTAMP supports microsecond precision (6 fractional digits).
+            // Truncate to avoid "Invalid datetime string" errors from sources
+            // that provide nanosecond or higher precision (e.g. Snowflake).
             return DATETIME_WITH_TIMEZONE_FORMATTER.format(
-                (value.abValue as TimestampWithTimezoneValue).value
+                (value.abValue as TimestampWithTimezoneValue).value.truncatedTo(ChronoUnit.MICROS)
             )
         }
 
         fun formatTimestampWithoutTimezone(value: EnrichedAirbyteValue): String {
+            // BigQuery DATETIME supports microsecond precision (6 fractional digits).
+            // Truncate to avoid "Invalid datetime string" errors from sources
+            // that provide nanosecond or higher precision (e.g. Snowflake).
             return DATETIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                (value.abValue as TimestampWithoutTimezoneValue).value
+                (value.abValue as TimestampWithoutTimezoneValue)
+                    .value
+                    .truncatedTo(ChronoUnit.MICROS)
             )
         }
 
