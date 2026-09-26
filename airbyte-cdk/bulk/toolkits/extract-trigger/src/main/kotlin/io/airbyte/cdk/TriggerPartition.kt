@@ -21,6 +21,7 @@ import io.airbyte.cdk.read.JdbcSplittablePartition
 import io.airbyte.cdk.read.Lesser
 import io.airbyte.cdk.read.LesserOrEqual
 import io.airbyte.cdk.read.Limit
+import io.airbyte.cdk.read.NoOrderBy
 import io.airbyte.cdk.read.Or
 import io.airbyte.cdk.read.OrderBy
 import io.airbyte.cdk.read.SelectColumnMaxValue
@@ -175,7 +176,8 @@ sealed class TriggerSplittablePartition(
                 SelectColumns((queryTableColumns + checkpointColumns).distinct()),
                 FromSample(samplingTableName, samplingNamespace, sampleRateInvPow2, sampleSize),
                 where,
-                OrderBy(checkpointColumns),
+                //                OrderBy(checkpointColumns),
+                NoOrderBy,
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }
