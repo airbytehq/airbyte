@@ -5,46 +5,32 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 ## Upgrading to 2.0.0
 
 :::note
-This change is only breaking if you are syncing the `extensiveCalls` stream.
+This change only affects you if you sync the `extensiveCalls` stream. No other streams are impacted.
 :::
 
-This update fixes two schema bugs in the `extensiveCalls` stream to match the actual data returned by the [Gong API](https://us-66463.app.gong.io/settings/api/documentation#post-/v2/calls/extensive):
+Version 2.0.0 corrects two declared field types in the `extensiveCalls` stream schema so they match the data the [Gong API](https://us-66463.app.gong.io/settings/api/documentation#post-/v2/calls/extensive) actually returns:
 
-1. The subfield `parties.items.properties.context` changed from `object` or `"null"` to **`array`** or `"null"`.
-2. `media` lacked a data type definition and is now declared as type `object` or `null`.
+- `parties[].context` is now declared as an `array` (or `null`). It was previously declared as an `object`. Gong has always returned this field as an array, and the mismatch caused schema-validation warnings on every record.
+- `media` is now explicitly declared as an `object` (or `null`). It previously had no declared type.
 
-This release also adds previously undeclared fields (non-breaking): `users.conferencingProviders`, `scorecards.reviewMethod`, and `answeredScorecards.reviewMethod`.
+This release also declares fields that Gong returns but the schema previously omitted: `users.conferencingProviders`, `scorecards.reviewMethod`, and `answeredScorecards.reviewMethod`. These are additive and non-breaking.
 
-These schema corrections change the data types in the destination table for the `extensiveCalls` stream. Users syncing this stream must refresh the source schema and reset the stream after upgrading.
+### What this means for your destination
 
-### Migration Steps
+Because the connector already emitted these values in the corrected shape, the records written to your destination don't change. Both fields are nested inside the `parties` and `media` columns, which destinations store as JSON, so no column types, primary keys, or cursors change either.
 
-### Refresh affected schemas and reset data
+### Migration steps
 
-1. Select **Connections** in the main nav bar.
-   1. Select the connection affected by the update.
+Refresh the source schema so Airbyte stops reporting schema-validation warnings for the `extensiveCalls` stream. You don't need to clear or reset the stream.
+
+1. Select **Connections** in the main nav bar, then select the connection affected by the update.
 1. Select the **Schema** tab.
-   1. Select **Refresh source schema**.
-   1. Select **OK**.
+1. Select **Refresh source schema**, then select **OK**.
+1. Select **Save changes** at the top right of the page. Make sure the **Reset affected streams** option is **not** checked.
 
-:::note
-Any detected schema changes will be listed for your review.
+:::danger Clearing the stream is destructive and unnecessary
+Clearing the `extensiveCalls` stream deletes its data in your destination and re-syncs it from your configured **Start date**. Calls that Gong no longer serves can't be recovered. Because this upgrade doesn't change any destination data, there is no benefit to clearing the stream.
 :::
-
-1. Select **Save changes** at the top right of the page.
-   1. Ensure the **Reset affected streams** option is checked.
-
-:::note
-Depending on destination type you may not be prompted to reset your data.
-:::
-
-1. Select **Save connection**.
-
-:::note
-This will reset the data in your destination and initiate a fresh sync.
-:::
-
-For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear)
 
 ## Upgrading to 1.0.0
 

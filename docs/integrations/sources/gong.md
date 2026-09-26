@@ -79,9 +79,13 @@ This source syncs the following streams:
 | [answered scorecards](https://gong.app.gong.io/settings/api/documentation#post-/v2/stats/activity/scorecards) | Incremental | Scorecard responses with review timestamps |
 | [calls](https://gong.app.gong.io/settings/api/documentation#get-/v2/calls) | Incremental | Call metadata including participants, duration, and timestamps. Private calls are excluded. |
 | [call transcripts](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/transcript) | Incremental | Call transcript segments with speaker identification and timestamped sentences. Transcripts for private calls are excluded. |
-| [extensive calls](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/extensive) | Incremental | Detailed call data including topics, key points, trackers, interaction stats, media, and CRM context. Private calls are excluded. |
+| [extensive calls](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/extensive) | Incremental | Detailed call data including topics, key points, trackers, interaction stats, media URLs, and CRM context for the call and each participant. Private calls are excluded. |
 | [scorecards](https://gong.app.gong.io/settings/api/documentation#get-/v2/settings/scorecards) | Full Refresh | Scorecard definitions and configurations |
 | [users](https://gong.app.gong.io/settings/api/documentation#get-/v2/users) | Full Refresh | User profiles and settings |
+
+### Schema changes in the extensive calls stream
+
+Versions 1.0.0 and 2.0.0 corrected the declared types of several nested fields in the `extensive calls` stream to match what the Gong API returns. In 2.0.0, `parties[].context` is an array (previously an object) and `media` is declared as an object. The records written to your destination don't change, so you only need to refresh the source schema after upgrading; don't clear the stream. See the [migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations#upgrading-to-200) for details.
 
 ### Private calls
 
@@ -111,7 +115,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 2.0.0 | 2026-09-25 | [85373](https://github.com/airbytehq/airbyte/pull/85373) | Fix `extensiveCalls` schema: `parties[].context` is an `array` (was `object`), `media` declared as `object`. Add missing `users.conferencingProviders`, `scorecards.reviewMethod`, `answeredScorecards.reviewMethod`. See the [migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations). |
+| 2.0.0 | 2026-09-25 | [87006](https://github.com/airbytehq/airbyte/pull/87006) | Fix `extensiveCalls` schema: `parties[].context` is an `array` (was `object`), `media` declared as `object`. Add missing `users.conferencingProviders`, `scorecards.reviewMethod`, `answeredScorecards.reviewMethod`. See the [migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations). |
 | 1.4.2 | 2026-09-22 | [86644](https://github.com/airbytehq/airbyte/pull/86644) | Update dependencies |
 | 1.4.1 | 2026-09-15 | [86067](https://github.com/airbytehq/airbyte/pull/86067) | Update dependencies |
 | 1.4.0 | 2026-08-30 | [85192](https://github.com/airbytehq/airbyte/pull/85192) | Promote connector to certified |
