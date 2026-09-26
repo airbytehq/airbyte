@@ -1110,9 +1110,8 @@ definitions:
       record_selector:
         type: RecordSelector
         extractor:
-          type: DpathExtractor
-          field_path:
-          - data
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.SubscriptionUsageRecordExtractor
       partition_router:
       - type: CustomPartitionRouter
         class_name: source_declarative_manifest.components.SubscriptionUsagePartitionRouter
@@ -1416,12 +1415,11 @@ definitions:
         - billable_metric_id
         - subscription_id
     transformations:
-    - type: RemoveFields
-      field_pointers:
-      - - usage
-    - type: CustomTransformation
-      class_name: source_declarative_manifest.components.SubscriptionUsageTransformation
-      subscription_id: "{{ stream_partition.subscription_id }}"
+    - type: AddFields
+      fields:
+      - path:
+        - subscription_id
+        value: "{{ stream_partition.subscription_id }}"
     - type: AddFields
       fields:
       - path:
@@ -1803,9 +1801,8 @@ streams:
     record_selector:
       type: RecordSelector
       extractor:
-        type: DpathExtractor
-        field_path:
-        - data
+        type: CustomRecordExtractor
+        class_name: source_declarative_manifest.components.SubscriptionUsageRecordExtractor
     partition_router:
     - type: CustomPartitionRouter
       class_name: source_declarative_manifest.components.SubscriptionUsagePartitionRouter
@@ -2111,12 +2108,12 @@ streams:
       - billable_metric_id
       - subscription_id
   transformations:
-  - type: RemoveFields
-    field_pointers:
-    - - usage
-  - type: CustomTransformation
-    class_name: source_declarative_manifest.components.SubscriptionUsageTransformation
-    subscription_id: "{{ stream_partition.subscription_id }}"
+  - type: AddFields
+    fields:
+    - path:
+      - subscription_id
+      value: "{{ stream_partition.subscription_id }}"
+      type: AddedFieldDefinition
   - type: AddFields
     fields:
     - path:
