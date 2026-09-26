@@ -1,7 +1,7 @@
 # Teamtailor
 This is the setup for the Teamtailor source that ingests data from the teamtailor API.
 
-Teamtailor is a recruitment software, provding a new way to attract and hire top talent https://www.teamtailor.com/
+Teamtailor is a recruitment software, providing a new way to attract and hire top talent https://www.teamtailor.com/
 
 In order to use this source, you must first create an account on teamtailor.
 

@@ -1,6 +1,6 @@
 # OpenFDA
 OpenFDA provides access to a number of high-value, high priority and scalable structured datasets, including adverse events, drug product labeling, and recall enforcement reports.
-With this conenctor we can fetch data from the streams like Drugs , Animal and Veterinary Adverse Events and Food Adverse Events etc.
+With this connector we can fetch data from the streams like Drugs , Animal and Veterinary Adverse Events and Food Adverse Events etc.
 Docs:https://open.fda.gov/apis/
 
 ## Configuration

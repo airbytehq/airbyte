@@ -79,15 +79,15 @@ Any other data type not listed in the table above will be treated as `string`.
 
 | Environment | Supported?\(Yes/No\) | Notes                                   |
 | :---------- | :------------------- | :-------------------------------------- |
-| Production  | Yes                  | Select from exising options while setup |
-| Sandbox     | Yes                  | Select from exising options while setup |
+| Production  | Yes                  | Select from existing options while setup |
+| Sandbox     | Yes                  | Select from existing options while setup |
 
 ## Supported Data Query options
 
 | Option    | Supported?\(Yes/No\) | Notes                                                                                                                                                                                                                                                                                                 |
 | :-------- | :------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | LIVE      | Yes                  | Run data queries against Zuora live transactional databases                                                                                                                                                                                                                                           |
-| UNLIMITED | Yes                  | Run data queries against an optimized, replicated database at 12 hours freshness for high volume extraction use cases (Early Adoption, additionall access required, contact [Zuora Support](http://support.zuora.com/hc/en-us) in order to request this feature enabled for your account beforehand.) |
+| UNLIMITED | Yes                  | Run data queries against an optimized, replicated database at 12 hours freshness for high volume extraction use cases (Early Adoption, additional access required, contact [Zuora Support](http://support.zuora.com/hc/en-us) in order to request this feature enabled for your account beforehand.) |
 
 ## List of Supported Environments for Zuora
 
@@ -132,10 +132,10 @@ Usually, the very first sync operation for all of the objects inside Zuora accou
 
 ### Create an API user role
 
-1. Log in to your `Zuora acccount`.
+1. Log in to your `Zuora account`.
 2. In the top right corner of the Zuora dashboard, select `Settings` &gt; `Administration Settings`.
 3. Select `Manage User Roles`.
-4. Select `Add new role` to create a new role, and fill in neccessary information up to the form.
+4. Select `Add new role` to create a new role, and fill in necessary information up to the form.
 
 ### Assign the role to a user
 

@@ -76,14 +76,14 @@ This connector outputs the following streams:
 - [Actions](https://developers.salesloft.com/api.html#!/Actions/get_v2_actions_json)
 - [Calls](https://developers.salesloft.com/api.html#!/Calls/get_v2_activities_calls_json)
 - [Emails Templates](https://developers.salesloft.com/api.html#!/Email_Templates/get_v2_email_templates_json)
-- [Emails Template Attachements](https://developers.salesloft.com/api.html#!/Email_Template_Attachments/get_v2_email_template_attachments_json)
+- [Emails Template Attachments](https://developers.salesloft.com/api.html#!/Email_Template_Attachments/get_v2_email_template_attachments_json)
 - [Imports](https://developers.salesloft.com/api.html#!/Imports/get_v2_imports_json)
 - [Notes](https://developers.salesloft.com/api.html#!/Notes/get_v2_notes_json)
 - [Person Stages](https://developers.salesloft.com/api.html#!/Person_Stages/get_v2_person_stages_json)
 - [Phone Number Assignments](https://developers.salesloft.com/api.html#!/Phone_Number_Assignments/get_v2_phone_number_assignments_json)
 - [Steps](https://developers.salesloft.com/api.html#!/Steps/get_v2_steps_json)
 - [Team Templates](https://developers.salesloft.com/api.html#!/Team_Templates/get_v2_team_templates_json)
-- [Team Template Attachements](https://developers.salesloft.com/api.html#!/Team_Template_Attachments/get_v2_team_template_attachments_json)
+- [Team Template Attachments](https://developers.salesloft.com/api.html#!/Team_Template_Attachments/get_v2_team_template_attachments_json)
 - [CRM Activities](https://developers.salesloft.com/api.html#!/CRM_Activities/get_v2_crm_activities_json)
 - [CRM Users](https://developers.salesloft.com/api.html#!/Crm_Users/get_v2_crm_users_json)
 - [Groups](https://developers.salesloft.com/api.html#!/Groups/get_v2_groups_json)
@@ -97,7 +97,7 @@ This connector outputs the following streams:
 
 ## Performance considerations
 
-Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Topic/RateLimiting), but the Salesloft connector should not run into Salesloft API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+Salesloft has the [rate limits](https://developers.salesloft.com/api.html#!/Topic/RateLimiting), but the Salesloft connector should not run into Salesloft API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## IP allow list
 

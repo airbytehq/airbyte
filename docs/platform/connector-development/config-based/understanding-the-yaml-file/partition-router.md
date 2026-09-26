@@ -139,10 +139,10 @@ retriever:
   <...>
   requester:
     <...>
-    path: "/respositories/{{ stream_slice.repository }}/commits"
+    path: "/repositories/{{ stream_slice.repository }}/commits"
   partition_router:
     type: SubstreamPartitionRouter
-    parent_streams_configs:
+    parent_stream_configs:
       - stream: "#/repositories_stream"
         parent_key: "id"
         partition_field: "repository"
