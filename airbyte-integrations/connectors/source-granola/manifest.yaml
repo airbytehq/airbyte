@@ -113,6 +113,9 @@ definitions:
           error_handler:
             $ref: "#/definitions/base_error_handler"
             response_filters:
+              - $ref: "#/definitions/response_filters/invalid_api_key"
+              - $ref: "#/definitions/response_filters/rate_limited"
+              - $ref: "#/definitions/response_filters/server_error"
               - type: HttpResponseFilter
                 http_codes:
                   - 413
@@ -156,6 +159,9 @@ definitions:
           error_handler:
             $ref: "#/definitions/base_error_handler"
             response_filters:
+              - $ref: "#/definitions/response_filters/invalid_api_key"
+              - $ref: "#/definitions/response_filters/rate_limited"
+              - $ref: "#/definitions/response_filters/server_error"
               - type: HttpResponseFilter
                 http_codes:
                   - 404
@@ -198,9 +204,44 @@ definitions:
         schema:
           $ref: "#/schemas/note_transcripts"
 
+  # A stream-level `response_filters` list replaces the referenced handler's list
+  # rather than merging with it, so every handler lists these shared filters
+  # explicitly before its stream-specific ones.
+  response_filters:
+    invalid_api_key:
+      type: HttpResponseFilter
+      http_codes:
+        - 401
+        - 403
+      action: FAIL
+      failure_type: config_error
+      error_message: >-
+        Granola rejected the API key. Create a new key in the Granola desktop app
+        (Settings > Connectors > API keys) and update the connector configuration.
+    rate_limited:
+      type: HttpResponseFilter
+      http_codes:
+        - 429
+      action: RATE_LIMITED
+      error_message: "Granola rate limit reached; retrying after the Retry-After interval."
+    server_error:
+      type: HttpResponseFilter
+      http_codes:
+        - 500
+        - 502
+        - 503
+        - 504
+      action: RETRY
+      failure_type: transient_error
+      error_message: "Granola returned a server error; retrying."
+
   base_error_handler:
     type: DefaultErrorHandler
     max_retries: 5
+    response_filters:
+      - $ref: "#/definitions/response_filters/invalid_api_key"
+      - $ref: "#/definitions/response_filters/rate_limited"
+      - $ref: "#/definitions/response_filters/server_error"
     backoff_strategies:
       - type: WaitTimeFromHeader
         header: Retry-After

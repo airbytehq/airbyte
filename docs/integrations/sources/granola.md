@@ -74,6 +74,8 @@ For incremental syncs, the connector uses `created_at` as the cursor field and f
 
 The API only returns notes that have a generated AI summary and transcript. Notes that are still being processed or were never summarized are excluded.
 
+The Granola API doesn't return deleted notes or mark notes as deleted, so the connector can't report deletions. Notes deleted in Granola stay in your destination until you run a full refresh with overwrite.
+
 ### Detailed notes
 
 The `detailed_notes` stream retrieves each note from the `notes` stream with the [`GET /v1/notes/{note_id}`](https://docs.granola.ai/api-reference/get-note) endpoint. It includes the note metadata plus fields available only on the detail endpoint, including summaries, transcripts, attendees, calendar events, and folder membership.
@@ -115,6 +117,8 @@ The Granola API enforces rate limits. Depending on the key's access scope, limit
 
 The connector throttles itself to the documented burst limit of 25 requests per 5 seconds. If Granola still returns `429 Too Many Requests`, or a `5xx` server error, the connector retries the request up to 5 times. It waits for the interval in the `Retry-After` response header when Granola sends one, up to 60 seconds, and otherwise backs off exponentially.
 
+A `401` or `403` response means Granola rejected the API key. These fail fast as a configuration error naming the key, so check that the key is still valid and has the scopes you expect, or create a new one in the Granola desktop app.
+
 ## Troubleshooting
 
 ### Notes are missing after syncing with version 0.2.13 or earlier
@@ -151,6 +155,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.3.4 | 2026-09-25 | [86915](https://github.com/airbytehq/airbyte/pull/86915) | Map 401/403 to config errors, add heartbeat timeout, and fix icon dimensions |
 | 0.3.3 | 2026-09-22 | [86667](https://github.com/airbytehq/airbyte/pull/86667) | Update dependencies |
 | 0.3.2 | 2026-09-15 | [86082](https://github.com/airbytehq/airbyte/pull/86082) | Update dependencies |
 | 0.3.1 | 2026-09-08 | [85516](https://github.com/airbytehq/airbyte/pull/85516) | Update dependencies |

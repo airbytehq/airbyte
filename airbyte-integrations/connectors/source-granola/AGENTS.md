@@ -16,6 +16,19 @@ Vendor evidence, re-verified 2026-08-12:
 
 Revisit this if Granola publishes an OAuth application model for the public API.
 
+## HTTP error handling
+
+`base_error_handler` maps shared HTTP failures, and every stream's error handler lists the same shared filters by `$ref` plus its stream-specific one. A local `response_filters` list next to `$ref` replaces the referenced list wholesale (`evaluated_ref | evaluated_dict`), so putting the shared filters only on `base_error_handler` would silently drop them from `detailed_notes` and `note_transcripts`, which each define their own list.
+
+- `401`/`403` → `FAIL` with `failure_type: config_error`, naming the API key.
+- `429` → `RATE_LIMITED`; backoff honors `Retry-After` up to 60 seconds, then exponential backoff with factor 5, `max_retries: 5`.
+- `500`/`502`/`503`/`504` → `RETRY` with `failure_type: transient_error`.
+- `413` on `detailed_notes` and `404` on `note_transcripts` → `IGNORE` (see Oversized Transcripts).
+
+## Deletions
+
+The Granola API has no way to return deleted notes on the stream that lists them. `GET /v1/notes` has no parameter for deleted or trashed notes, note records carry no deletion field, and no webhook event fires on deletion (checked against the [OpenAPI spec](https://docs.granola.ai/api-reference/openapi.json) on 2026-09-25). Deletions only appear as `document.hard_deleted` events on the Enterprise-only `GET /v1/audit` endpoint, which needs a separate Audit API key that a workspace admin creates. The connector doesn't read `/v1/audit`: deletions belong on the stream that returns the records, not on a separate stream. If Granola adds an option to include deleted notes in `GET /v1/notes`, set it on the `notes` request.
+
 ## Oversized Transcripts
 
 `GET /v1/notes/{note_id}?include=transcript` answers `413` with `code: TRANSCRIPT_TOO_LARGE` when a transcript exceeds the size Granola returns inline. `detailed_notes` maps 413 to `IGNORE` so the note is skipped instead of retried and failed. The CDK emits the filter's `error_message` at INFO, not WARN (`HttpClient._handle_error_resolution` in `airbyte_cdk/sources/streams/http/http_client.py`), so the skip is invisible to log filters set above INFO, and the whole note record is dropped from `detailed_notes` — not just its transcript. The `note_transcripts` stream replicates those transcripts from the paged `GET /v1/notes/{note_id}/transcript` endpoint (`page_size` max 100, `cursor`/`hasMore` pagination), and maps that endpoint's documented 404 to `IGNORE` so a note deleted or unshared mid-sync does not fail the stream. `note_transcripts` emits one record per transcript segment with the parent `note_id` added by an `AddFields` transformation, and has no primary key because segments carry no stable identifier.
