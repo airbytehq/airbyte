@@ -95,7 +95,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
-| 0.2.24 | 2026-09-26 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Explain what the `uid` (User ID) setting is and where to find it in Fullstory |
+| 0.2.24 | 2026-09-26 | [87015](https://github.com/airbytehq/airbyte/pull/87015) | Explain what the `uid` (User ID) setting is and where to find it in Fullstory |
 | 0.2.23 | 2025-05-24 | [60356](https://github.com/airbytehq/airbyte/pull/60356) | Update dependencies |
 | 0.2.22 | 2025-05-10 | [59932](https://github.com/airbytehq/airbyte/pull/59932) | Update dependencies |
 | 0.2.21 | 2025-05-03 | [59376](https://github.com/airbytehq/airbyte/pull/59376) | Update dependencies |
