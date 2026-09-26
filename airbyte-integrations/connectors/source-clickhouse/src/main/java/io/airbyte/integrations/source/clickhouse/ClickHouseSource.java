@@ -27,6 +27,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,15 +38,14 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
 
   /**
    * The default implementation relies on {@link java.sql.DatabaseMetaData#getPrimaryKeys} method to
-   * get it but the ClickHouse JDBC driver returns an empty result set from the method
-   * {@link ru.yandex.clickhouse.ClickHouseDatabaseMetadata#getPrimaryKeys}. That's why we have to
-   * query the system table mentioned here
+   * get it but the ClickHouse JDBC driver returns an empty result set from its metadata method.
+   * That's why we have to query the system table mentioned here
    * https://clickhouse.tech/docs/en/operations/system-tables/columns/ to fetch the primary keys.
    */
 
-  public static final String SSL_MODE = "sslmode=none";
   public static final String HTTPS_PROTOCOL = "https";
   public static final String HTTP_PROTOCOL = "http";
+  static final Set<String> UNSUPPORTED_JDBC_URL_PARAMS = Set.of("sslmode");
 
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
@@ -82,8 +82,8 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
   /**
    * The reason we use NoOpStreamingQueryConfig(not setting auto commit to false and not setting fetch
    * size to 1000) for ClickHouse is cause method
-   * {@link ru.yandex.clickhouse.ClickHouseConnectionImpl#setAutoCommit} is empty and method
-   * {@link ru.yandex.clickhouse.ClickHouseStatementImpl#setFetchSize} is empty
+   * {@code com.clickhouse.jdbc.ClickHouseConnection#setAutoCommit} is empty and
+   * {@code com.clickhouse.jdbc.ClickHouseStatement#setFetchSize} is empty
    */
   public ClickHouseSource() {
     this(new EnvVariableFeatureFlags());
@@ -124,18 +124,12 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
 
     final boolean isAdditionalParamsExists =
         config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty();
-    final List<String> params = new ArrayList<>();
-    // assume ssl if not explicitly mentioned.
-    if (isSsl) {
-      params.add(SSL_MODE);
-    }
     if (isAdditionalParamsExists) {
-      params.add(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
-    }
-
-    if (isSsl || isAdditionalParamsExists) {
-      jdbcUrl.append("?");
-      jdbcUrl.append(String.join("&", params));
+      final String filteredParams = filterJdbcUrlParams(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+      if (!filteredParams.isEmpty()) {
+        jdbcUrl.append("?");
+        jdbcUrl.append(filteredParams);
+      }
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
@@ -147,6 +141,39 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
     }
 
     return Jsons.jsonNode(configBuilder.build());
+  }
+
+  static String filterJdbcUrlParams(final String rawParams) {
+    if (rawParams == null || rawParams.isEmpty()) {
+      return "";
+    }
+
+    final List<String> filteredParams = new ArrayList<>();
+    for (final String parameter : rawParams.split("&", -1)) {
+      if (parameter.isBlank()) {
+        continue;
+      }
+
+      final int separatorIndex = parameter.indexOf('=');
+      final String key = (separatorIndex >= 0 ? parameter.substring(0, separatorIndex) : parameter).trim();
+      if (UNSUPPORTED_JDBC_URL_PARAMS.contains(key.toLowerCase(Locale.ROOT))) {
+        LOGGER.warn("Ignoring unsupported JDBC URL parameter '{}' (not supported by the ClickHouse JDBC driver)", key);
+        continue;
+      }
+      filteredParams.add(parameter);
+    }
+    return String.join("&", filteredParams);
+  }
+
+  @Override
+  public JdbcDatabase createDatabase(final JsonNode config, final String delimiter) throws SQLException {
+    final ObjectNode filteredConfig = config.deepCopy();
+    if (filteredConfig.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
+      filteredConfig.put(
+          JdbcUtils.JDBC_URL_PARAMS_KEY,
+          filterJdbcUrlParams(filteredConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()));
+    }
+    return super.createDatabase(filteredConfig, delimiter);
   }
 
   @Override
