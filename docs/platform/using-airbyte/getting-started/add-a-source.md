@@ -25,6 +25,8 @@ Add a new source connector to Airbyte.
     - If you use a self-managed version of Airbyte, or if the AI doesn't yet support this connector, you see a setup form and documentation. In this case, fill out the form to setup your connector, then click **Set up source**. Airbyte tests the source to ensure it can make a connection.
     Once the test completes, Airbyte takes you to the New Connection page, where you can set up a new destination connector, or choose one you previously created.
 
+    - If you can't finish the form right now, click **Save draft** to keep your progress. Airbyte marks the source as **Draft** in the Status column on the Sources page, and you can't use it in a connection until you finish setting it up.
+
 <Navattic id="cmhfh6qf4000004kz0e7sa8a5" />
 
 ## Modify a source connector
@@ -38,6 +40,8 @@ After you set up a source connector, you can modify it.
 3. Configure your connector using the form on the left side of your screen. Every connector has different options and settings, but you normally enter things like authentication information and the location where you store your data. Use the documentation panel on the right side of your screen for help populating the form.
 
 4. Click **Test and save**. Airbyte tests the source to ensure it can make a connection.
+
+If the source is a draft, click **Set up source** instead. Once the connection test succeeds, the source is no longer a draft and you can use it in connections.
 
 ## Delete a source connector
 
