@@ -325,8 +325,19 @@ spec:
         order: 0
       uid:
         type: string
-        description: User ID for the fullstory.com API.
-        title: User ID
+        description: >-
+          The application-specific user identifier (uid) that your website or app assigns to a user
+          and sends to Fullstory when identifying them, e.g. via FS('setIdentity', { uid: '...' })
+          (formerly FS.identify) or the Fullstory server-side identify API. This is NOT your Fullstory
+          account login or a Fullstory-generated ID. To find one, open any identified user's profile
+          in the Fullstory app (Sessions or Users list, then click the user's name): the value shown as
+          "User ID" on the user card is the uid. The Sessions stream returns session replay URLs for this
+          single user only (it calls GET /sessions/v2?uid=...); all other streams ignore this field.
+          Because the connection test uses the Sessions stream, the uid must belong to a real identified
+          user in your Fullstory org.
+        title: User ID (uid)
+        examples:
+          - "462718483"
         airbyte_secret: true
         order: 1
     additionalProperties: true

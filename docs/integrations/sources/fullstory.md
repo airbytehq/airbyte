@@ -4,18 +4,35 @@ This page contains the setup guide and reference information for the [FullStory]
 
 ## Prerequisites
 
-API Key (which acts as bearer token) is mandate for this connector to work, It could be seen at settings (ref - https://app.fullstory.com/ui/o-1K942V-na1/settings/apikeys).
+- A FullStory **API key**, which the connector sends as a bearer token. Create one in the Fullstory app under **Settings > Integrations & API Keys > API Keys**.
+- The **User ID (`uid`)** of at least one identified user in your Fullstory org. See below for what this is and where to find it.
 
 ## Setup guide
 
-### Step 1: Set up FullStory connection
+### Step 1: Find your API key and a user ID
 
-- Get a FullStory api key via settings (ref - https://app.fullstory.com/ui/o-1K942V-na1/settings/apikeys)
-- Setup params (All params are required)
-- Available params
-  - api_key: The generated api key
-  - uid: The unique identifier which can be configured in the fullstory script, under FS.identify
-  - start_date: Date filter for eligible streams, enter
+#### API key
+
+In the Fullstory app, go to **Settings > Integrations & API Keys > API Keys** and create a key. Any role that can read sessions and settings works; the connector only performs GET requests.
+
+#### User ID (`uid`)
+
+The `uid` is **your own application's identifier for a user**, not a Fullstory login, org ID, or Fullstory-generated ID. Fullstory only knows a `uid` if your website or app sends one when it identifies a logged-in user, for example:
+
+```js
+FS('setIdentity', { uid: '462718483', properties: { displayName: 'Daniel Falko' } });
+```
+
+(Older snippets call `FS.identify('462718483', {...})`; mobile SDKs and the server-side identify API set the same value.)
+
+To find a `uid` in the Fullstory app:
+
+1. Open **Sessions** (or **Users**) and click the name of any identified user (identified users show a display name or email rather than "Anonymous").
+2. On the user card/profile, copy the value labeled **User ID**. That value is the `uid`. In Fullstory's data exports the same value appears as `UserAppKey`.
+
+If your site never identifies users, there are no `uid` values and the `sessions` stream can't return data.
+
+The `uid` is only used by the `sessions` stream, which returns the most recent session replay URLs for that single user (`GET /sessions/v2?uid=...`). The remaining streams are org-wide and ignore it. Note that the connector's connection test runs against the `sessions` stream, so the `uid` must belong to a real identified user or the test fails.
 
 ## Step 2: Set up the FullStory connector in Airbyte
 
@@ -24,14 +41,14 @@ API Key (which acts as bearer token) is mandate for this connector to work, It c
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the FullStory connector and select **FullStory** from the Source type dropdown.
-4. Enter your `api_key, uid and start_date`.
+4. Enter your API key and a user ID (`uid`).
 5. Click **Set up source**.
 
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
-3. Enter your `api_id, api_token and start_date`.
+3. Enter your API key and a user ID (`uid`).
 4. Click **Set up source**.
 
 ## Supported sync modes
@@ -48,15 +65,16 @@ The FullStory source connector supports the following [sync modes](https://docs.
 
 ## Supported Streams
 
-- calls
-- company
-- contacts
-- numbers
-- tags
-- user_availablity
-- users
-- teams
+- sessions (session replay URLs for the configured `uid`)
+- segments
+- operations
+- blockrules
+- domainsettings
+- geosettings
+- recordingfeatures
+- sessionTargetingRules
 - webhooks
+- eventDefs
 
 ## API method example
 
@@ -77,6 +95,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
+| 0.2.24 | 2026-09-26 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Explain what the `uid` (User ID) setting is and where to find it in Fullstory |
 | 0.2.23 | 2025-05-24 | [60356](https://github.com/airbytehq/airbyte/pull/60356) | Update dependencies |
 | 0.2.22 | 2025-05-10 | [59932](https://github.com/airbytehq/airbyte/pull/59932) | Update dependencies |
 | 0.2.21 | 2025-05-03 | [59376](https://github.com/airbytehq/airbyte/pull/59376) | Update dependencies |
