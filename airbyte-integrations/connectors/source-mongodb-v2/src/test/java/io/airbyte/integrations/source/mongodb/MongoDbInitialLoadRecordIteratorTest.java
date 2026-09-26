@@ -97,15 +97,15 @@ class MongoDbInitialLoadRecordIteratorTest {
   }
 
   private MongoDbInitialLoadRecordIterator iterator(final Optional<MongoDbStreamState> existingState,
-                                                  final boolean isEnforceSchema,
-                                                  final int chunkSize,
-                                                  final org.bson.conversions.Bson fields) {
+                                                    final boolean isEnforceSchema,
+                                                    final int chunkSize,
+                                                    final org.bson.conversions.Bson fields) {
     return new MongoDbInitialLoadRecordIterator(collection(), fields, existingState, isEnforceSchema, chunkSize,
         Instant.now(), Optional.empty());
   }
 
   private MongoDbInitialLoadRecordIterator iterator(final Optional<MongoDbStreamState> existingState,
-                                                  final int chunkSize) {
+                                                    final int chunkSize) {
     return iterator(existingState, true, chunkSize,
         Projections.fields(Projections.include(ID_FIELD, NAME_FIELD)));
   }
