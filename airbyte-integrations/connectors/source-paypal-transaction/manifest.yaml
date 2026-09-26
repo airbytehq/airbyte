@@ -15,13 +15,12 @@ definitions:
       primary_key:
         - transaction_id
       retriever:
-        # Reads a date window in halves when PayPal rejects it with RESULTSET_TOO_LARGE.
-        # The partition fields and datetime format must match the incremental_sync cursor below.
-        type: CustomRetriever
-        class_name: source_declarative_manifest.components.DateWindowSplittingRetriever
-        partition_field_start: start_time
-        partition_field_end: end_time
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        type: SimpleRetriever
+        # Splits the request window in halves when PayPal rejects it with RESULTSET_TOO_LARGE
+        # (see the SPLIT_REQUEST_WINDOW response filter below). Requires cursor_granularity on
+        # the incremental_sync cursor, which is what the CDK uses as the smallest splittable window.
+        request_window_splitting:
+          type: RequestWindowSplitting
         requester:
           $ref: "#/definitions/base_requester"
           path: v1/reporting/transactions
@@ -36,7 +35,7 @@ definitions:
               - type: DefaultErrorHandler
                 description: >-
                   Handle HTTP 400 with error message: Data for the given start
-                  date is not available. 
+                  date is not available.
                 response_filters:
                   - type: HttpResponseFilter
                     http_codes:
@@ -45,9 +44,17 @@ definitions:
                     predicate: >-
                       {{ 'Data for the given start date is not available' in
                       response['message']}}
-                # Asks the retriever to narrow the date window on HTTP 400 RESULTSET_TOO_LARGE.
-              - type: CustomErrorHandler
-                class_name: source_declarative_manifest.components.ResultSetTooLargeErrorHandler
+              - type: DefaultErrorHandler
+                description: >-
+                  PayPal rejects a transaction search whose result set exceeds 10,000
+                  transactions without returning any page, so pagination cannot make progress:
+                  the window itself must shrink.
+                response_filters:
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 400
+                    action: SPLIT_REQUEST_WINDOW
+                    predicate: "{{ response['name'] == 'RESULTSET_TOO_LARGE' }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -56,9 +63,6 @@ definitions:
               - transaction_details
         paginator:
           type: DefaultPaginator
-          # A custom retriever cannot pass the requester url_base to its paginator, so it is repeated here.
-          $parameters:
-            url_base: https://api-m.{{ "sandbox." if config["is_sandbox"] }}paypal.com/
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
