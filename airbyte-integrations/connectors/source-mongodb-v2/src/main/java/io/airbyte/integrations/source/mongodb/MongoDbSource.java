@@ -198,11 +198,11 @@ public class MongoDbSource extends BaseConnector implements Source {
   }
 
   /**
-   * Wraps an iterator to catch BSONObjectTooLarge errors during CDC operations and provide helpful,
-   * actionable error messages to users.
+   * Wraps an iterator to catch known MongoDB CDC errors during streaming and provide helpful,
+   * actionable error messages to users instead of generic "Something went wrong" messages.
    *
    * @param iterator The base iterator to wrap.
-   * @return A wrapped iterator that catches BSONObjectTooLarge errors.
+   * @return A wrapped iterator that catches known MongoDB CDC errors.
    */
   private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithBsonErrorHandling(
                                                                                   final AutoCloseableIterator<AirbyteMessage> iterator) {
@@ -232,6 +232,11 @@ public class MongoDbSource extends BaseConnector implements Source {
       }
 
       private RuntimeException handlePotentialBsonTooLargeError(final Exception e) {
+        if (MongoUtil.isChangeStreamFatalException(e)) {
+          LOGGER.error("ChangeStreamFatalError detected during CDC sync. The resume token references a rotated oplog entry. Original error: {}",
+              e.getMessage(), e);
+          throw new ConfigErrorException(MongoConstants.CHANGE_STREAM_FATAL_ERROR_MESSAGE, e);
+        }
         if (MongoUtil.isBsonObjectTooLargeException(e)) {
           LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
           throw new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
