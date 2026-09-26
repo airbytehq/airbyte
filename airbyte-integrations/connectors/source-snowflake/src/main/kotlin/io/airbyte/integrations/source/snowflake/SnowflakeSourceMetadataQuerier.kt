@@ -26,6 +26,7 @@ import io.airbyte.cdk.read.optimize
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.lang.RuntimeException
 import java.sql.Connection
@@ -37,14 +38,35 @@ import java.sql.Statement
 import kotlin.use
 
 /**
+ * Object error codes:
+ * 1. 2003 / 2043: "object does not exist or not authorized" (the same codes in application.yml)
+ * 2. 2037: failure during expansion of view
+ * 3. 2057: "view declared N column(s), but view query produces M column(s)"
+ */
+private val TOLERABLE_OBJECT_ERROR_CODES = setOf(2003, 2043, 2037, 2057)
+
+/**
+ * SQLSTATE classes:
+ * 1. 42601: view compilation/expansion failure, such as a view referencing an unset session
+ * variable.
+ * 2. 42501: insufficient privileges to access the object or column.
+ * 3. 02000: object does not exist or is not visible to the current user.
+ */
+private val TOLERABLE_OBJECT_SQLSTATES = setOf("42501", "42601", "02000")
+
+/**
  * Snowflake implementation of [MetadataQuerier].
  *
  * Snowflake uses a standard three-level namespace: catalog.schema.table where catalog is the
  * database name, schema is the schema name.
+ *
+ * DISCOVER can tolerate known object-level failures, such as invalid views, and skip those streams.
+ * CHECK and READ must surface these failures.
  */
 class SnowflakeSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
     val schema: String? = null,
+    val tolerateObjectLevelFailures: Boolean = false,
 ) : MetadataQuerier by base {
     private val log = KotlinLogging.logger {}
 
@@ -130,15 +152,28 @@ class SnowflakeSourceMetadataQuerier(
         }
     }
 
+    /**
+     * Verifies SELECT access via a LIMIT-0 probe when checkPrivileges is on. Returns a list of
+     * columns. Empty list means the stream should be skipped. Fatal probe errors propagate as
+     * RuntimeException.
+     */
     fun columnMetadata(table: TableName): List<ColumnMetadata> {
         val columnMetadata: List<ColumnMetadata> = memoizedColumnMetadata[table] ?: listOf()
         if (columnMetadata.isEmpty() || !base.config.checkPrivileges) {
             return columnMetadata
         }
-        val resultsFromSelectMany: List<ColumnMetadata>? =
-            queryColumnMetadata(base.conn, selectLimit0(table, columnMetadata.map { it.name }))
-        if (resultsFromSelectMany != null) {
-            return resultsFromSelectMany
+        var wholeObjectFailure = false
+        val allColumnsProbe: List<ColumnMetadata>? =
+            queryColumnMetadata(
+                base.conn,
+                selectLimit0(table, columnMetadata.map { it.name }),
+                onToleratedFailure = { wholeObjectFailure = isWholeObjectFailure(it) },
+            )
+        if (allColumnsProbe != null) {
+            return allColumnsProbe
+        }
+        if (wholeObjectFailure) {
+            return listOf()
         }
         log.info {
             "Not all columns of $table might be accessible, trying each column individually."
@@ -164,9 +199,14 @@ class SnowflakeSourceMetadataQuerier(
         return base.selectQueryGenerator.generate(querySpec.optimize()).sql
     }
 
+    /**
+     * Runs the LIMIT-0 probe [sql]. Returns null when the probe failed with a tolerated
+     * object-level error; rethrows everything else.
+     */
     private fun queryColumnMetadata(
         conn: Connection,
         sql: String,
+        onToleratedFailure: (SQLException) -> Unit = {},
     ): List<ColumnMetadata>? {
         log.info { "Querying $sql for catalog discovery." }
         conn.createStatement().use { stmt: Statement ->
@@ -196,10 +236,28 @@ class SnowflakeSourceMetadataQuerier(
                     }
                 }
             } catch (e: SQLException) {
-                throw RuntimeException("Column name discovery query failed: ${e.message}", e)
+                if (!tolerateObjectLevelFailures || !isTolerableObjectError(e)) {
+                    throw RuntimeException("Column name discovery query failed: ${e.message}", e)
+                }
+                log.debug(e) {
+                    "Tolerated object-level failure during discover. Failed query: $sql, " +
+                        "sqlState = '${e.sqlState ?: ""}', errorCode = ${e.errorCode}"
+                }
+                onToleratedFailure(e)
+                return null
             }
         }
     }
+
+    /**
+     * Returns true only when [e] is positively identified as an OBJECT-LEVEL failure of the probed
+     * table/view. Everything else is treated as fatal.
+     */
+    private fun isTolerableObjectError(e: SQLException): Boolean =
+        e.errorCode in TOLERABLE_OBJECT_ERROR_CODES || e.sqlState in TOLERABLE_OBJECT_SQLSTATES
+
+    private fun isWholeObjectFailure(e: SQLException): Boolean =
+        e.sqlState == "42601" || e.errorCode in TOLERABLE_OBJECT_ERROR_CODES
 
     fun <T> swallow(supplier: () -> T): T? {
         try {
@@ -316,6 +374,9 @@ class SnowflakeSourceMetadataQuerier(
             val selectQueryGenerator: SelectQueryGenerator,
             val fieldTypeMapper: JdbcMetadataQuerier.FieldTypeMapper,
             val checkQueries: JdbcCheckQueries,
+            // The CDK selects the running operation via this property (Operation.PROPERTY);
+            // object-level tolerance must apply to discover only.
+            @Value("\${airbyte.connector.operation:}") val operationName: String,
         ) : MetadataQuerier.Factory<SnowflakeSourceConfiguration> {
             private val log = KotlinLogging.logger {}
 
@@ -331,7 +392,11 @@ class SnowflakeSourceMetadataQuerier(
                         checkQueries,
                         jdbcConnectionFactory,
                     )
-                return SnowflakeSourceMetadataQuerier(base, config.schema)
+                return SnowflakeSourceMetadataQuerier(
+                    base,
+                    config.schema,
+                    tolerateObjectLevelFailures = operationName == "discover",
+                )
             }
         }
 
