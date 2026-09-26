@@ -35,6 +35,19 @@ def test_empty_activity_logs_extract_records(components_module):
     assert len(records) == 0
 
 
+def test_null_data_activity_extractor(caplog, components_module):
+    """Verify MondayActivityExtractor handles null `data` without crashing."""
+    response = MagicMock()
+    response_body = {"data": None, "errors": [{"message": "Some Monday API error"}]}
+
+    response.content = json.dumps(response_body).encode("utf-8")
+    extractor = components_module.MondayActivityExtractor(parameters={})
+    records = list(extractor.extract_records(response))
+
+    assert len(records) == 0
+    assert any("Monday.com API returned null data" in msg for msg in caplog.messages)
+
+
 def test_extract_records_incremental(components_module):
     # Mock the response
     response = MagicMock()
