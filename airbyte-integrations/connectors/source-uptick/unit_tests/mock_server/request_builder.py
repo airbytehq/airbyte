@@ -40,6 +40,10 @@ class UptickRequestBuilder:
             "ServiceLineItem",
             "id,servicequote,description,quantity,unit_price,billingcontract_type,index,estimated_duration,taxcode,taxrate,annual_tax,site_price,annual_subtotal,service_price,created,updated",
         ),
+        "tasks": (
+            "Task",
+            "id,created,updated,deleted,ref,description,is_active,inactive_date,extra_fields,due,due_after,pm_date,tolerance_start,tolerance_end,invoiced_date,name,scope_of_works,address,coord_lat,coord_lng,access_note,access_window,access_procedure,access_schedule,access_code,internal_note,workorder_url,technician_note,partner_uid,priority,sla_incident_notification_at,sla_due_inprogress,sla_due_inspected,charge_type,notes,invoice_note,estimated_duration,authorisation_name,authorisation_note,authorisation_ref,authorisation_amount,authorisation_date,contractor_note,status_changed_inprogress,status_changed_inspected,status_changed_complete,app_link,timezone,bulk_email_last_sent_at,contractor_authorisation_limit,category,servicegroup,client,property,billingcard,assigned_to,assigned_office,salesperson,technician,round,tags,branch,supporting_technicians,costcentre,parent_task,author,contractor,contractor_assigned_technician,updated_by,status,zone,required_accreditationtypes,project,sla,callout",
+        ),
         "servicegroups": (
             "ServiceGroup",
             "id,created,updated,name",
@@ -60,6 +64,7 @@ class UptickRequestBuilder:
         stream: str,
         page: int = 1,
         updatedsince: str = START_DATE,
+        token: str = ACCESS_TOKEN,
     ) -> HttpRequest:
         model, fields = cls.FIELDS[stream]
         query_params: dict[str, Any] = {
@@ -73,7 +78,7 @@ class UptickRequestBuilder:
         return HttpRequest(
             url=f"{cls.BASE_URL}/api/v2.15/{stream}/",
             query_params=query_params,
-            headers={"Authorization": f"Bearer {cls.ACCESS_TOKEN}"},
+            headers={"Authorization": f"Bearer {token}"},
         )
 
     @classmethod

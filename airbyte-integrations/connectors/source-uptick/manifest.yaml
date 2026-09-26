@@ -1,5 +1,6 @@
 ---
-version: 6.60.5
+# Dev pre-release of airbyte-python-cdk#1173 — replace with the released version before merge.
+version: 7.30.0.post6.dev36119801648
 type: DeclarativeSource
 description: Extract data from Uptick (field service management software).
 check:
@@ -20,14 +21,50 @@ definitions:
         refresh_request_body:
           username: '{{ config["username"] }}'
           password: '{{ config["password"] }}'
+        # Bad credentials surface on the token endpoint, not on stream requests:
+        #   wrong username/password -> 400 {"error": "invalid_grant", "error_description": "Invalid credentials given."}
+        #   wrong client_secret     -> 401 {"error": "invalid_client"}
+        # Matching them here makes the token request itself fail as `config_error` before any stream
+        # request is issued, so bad credentials fail in one round trip instead of being retried.
+        # Note: these three fields replace the CDK defaults ((400,), "error", (invalid_grant, invalid_permissions))
+        # rather than extend them; 400/invalid_grant restates the default, 401/invalid_client is the addition.
+        refresh_token_error_status_codes: [400, 401]
+        refresh_token_error_key: error
+        refresh_token_error_values: [invalid_grant, invalid_client]
       error_handler:
         type: DefaultErrorHandler
         max_retries: 5
         backoff_strategies:
           - type: WaitTimeFromHeader
             header: Retry-After
+            # A pathological Retry-After must fail the stream with a rate-limit error instead of
+            # sleeping for hours.
+            max_waiting_time_in_seconds: 1800
+          - type: ExponentialBackoffStrategy
+        response_filters:
+          # A 401 on a stream request cannot be a bad credential (those fail on the token endpoint,
+          # see the authenticator above). Uptick returns the same body for an expired, revoked or
+          # missing token: {"errors": {"detail": "Authentication credentials were not provided."}}.
+          # Tokens live 10 h, so this is an expired/revoked token mid-sync: refresh it and retry the request
+          # once. The CDK bounds this to a single refresh per request (airbyte-python-cdk#1173): a rejected
+          # refresh (password rotated mid-sync) fails immediately with the authenticator's config_error, and
+          # a second 401 after a successful refresh fails fast with the error_message below recorded in the internal error message — no backoff loop,
+          # so at most one failed login per stream and no Uptick account-lockout exposure.
+          # failure_type below is only applied by the CDK when action is FAIL; the fail-fast paths above are
+          # classified config_error by the CDK/authenticator.
+          # Pinned to a dev pre-release of the CDK containing #1173 (`version` here, `airbyte-cdk` in unit_tests/pyproject.toml, base image in metadata.yaml); all three must move to the released version before merge.
+          - type: HttpResponseFilter
+            http_codes: [401]
+            action: REFRESH_TOKEN_THEN_RETRY
+            failure_type: config_error
+            error_message: "HTTP 401: Uptick rejected the access token."
+          - type: HttpResponseFilter
+            http_codes: [403]
+            action: FAIL
+            failure_type: config_error
+            error_message: "HTTP 403: Uptick user lacks permission for the requested endpoint."
       request_headers:
-        User-Agent: Airbyte (Connector Version 1.1.0)
+        User-Agent: Airbyte
     SimpleRetriever:
       requester:
         $ref: "#/definitions/linked/HttpRequester"
@@ -81,6 +118,19 @@ definitions:
           field_path:
             - data
         schema_normalization: Default
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        # Default 60 calls/minute; the spec's max_requests_per_minute enforces the 1..600 range.
+        - limit: "{{ config.get('max_requests_per_minute', 60) }}"
+          interval: PT1M
+      matchers: []
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config['num_workers'] if (config.get('num_workers') is integer and config['num_workers'] is not boolean and config['num_workers'] >= 1) else 3 }}"
+  max_concurrency: 10
 spec:
   type: Spec
   connection_specification:
@@ -95,29 +145,58 @@ spec:
     properties:
       base_url:
         type: string
-        description: eg. https://demo-fire.onuptick.com (no trailing slash)
+        description: Root URL of the Uptick workspace, for example https://demo-fire.onuptick.com. Only the host is used; the scheme and trailing slash are normalized.
         order: 0
         title: Base Url
       client_id:
         type: string
+        description: Client ID of the OAuth application created in Uptick under Control Panel > Uptick API > Create Application.
         order: 1
         title: OAuth Client ID
         airbyte_secret: true
       client_secret:
         type: string
+        description: Client secret of that Uptick OAuth application.
         order: 2
         title: OAuth Client Secret
         airbyte_secret: true
       username:
         type: string
+        description: Email address of the Uptick user the connector signs in as. Synced data is limited to what this user can see in Uptick.
         order: 3
         title: Uptick API Account Email
       password:
         type: string
+        description: Password of that Uptick user.
         order: 4
         title: Uptick API Account Password
         airbyte_secret: true
+      num_workers:
+        type: integer
+        title: Number of Concurrent Threads
+        description: Number of concurrent requests. Higher values speed up syncs but increase the chance of Uptick rate limiting.
+        default: 3
+        minimum: 1
+        maximum: 10
+        order: 5
+      max_requests_per_minute:
+        type: integer
+        title: Maximum Requests Per Minute
+        description: Global request budget shared by all streams and threads. Uptick does not publish a numeric rate limit; 60 per minute is a conservative default. Raise it only if Uptick confirms your workspace tolerates more.
+        default: 60
+        minimum: 1
+        maximum: 600
+        order: 6
     additionalProperties: true
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    transformations:
+      - type: ConfigAddFields
+        condition: "{{ config.get('base_url') is string and (config['base_url'] | trim | length) > 0 }}"
+        fields:
+          - type: AddedFieldDefinition
+            path: ["base_url"]
+            value: "{{ 'https://' ~ (((config['base_url'] | string | trim).split('://') | last | trim('/')).split('/') | first) }}"
 streams:
   - type: DeclarativeStream
     name: tasks
