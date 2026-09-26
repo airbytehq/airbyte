@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.ImportType
@@ -91,7 +92,14 @@ class IcebergTableWriterFactory {
                     outputFileFactory = outputFileFactory,
                     format = format
                 )
-            is Dedupe ->
+            is Dedupe -> {
+                if (identifierFieldIds.isEmpty()) {
+                    throw ConfigErrorException(
+                        "Deduplication requires primary key columns that map to Iceberg identifier-compatible types. " +
+                            "Primary key columns with float or double types cannot be used as Iceberg identifier fields. " +
+                            "Use append or overwrite sync mode, or change the primary key to a non-floating-point column."
+                    )
+                }
                 newDeltaWriter(
                     table = table,
                     schema = schema,
@@ -101,6 +109,7 @@ class IcebergTableWriterFactory {
                     outputFileFactory = outputFileFactory,
                     format = format
                 )
+            }
             else -> throw IllegalArgumentException("Unsupported import type $importType")
         }
     }
