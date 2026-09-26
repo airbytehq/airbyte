@@ -48,6 +48,12 @@ jobs:
     name: Generate Connector Matrix
     runs-on: ubuntu-24.04
     steps:
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        with:
+          # 10 minute wait
+          detached: true
+
       - name: Checkout Current Branch
         id: checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
