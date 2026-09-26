@@ -831,7 +831,9 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         slice_size_message = f"Slice size: `P{round(self.job_manager._job_size, 1)}D`"
         slice_message = f"Stream: `{self.name}` requesting BULK Job for period: {slice_start} -- {slice_end}. {slice_size_message}."
 
-        if self.job_manager._supports_checkpointing:
+        if self.job_manager._job_checkpoint_disabled:
+            checkpointing_message = f" The BULK checkpointing is disabled for the rest of this sync."
+        elif self.job_manager._supports_checkpointing:
             checkpointing_message = f" The BULK checkpoint after `{self.job_manager.job_checkpoint_interval}` lines."
         else:
             checkpointing_message = f" The BULK checkpointing is not supported."
