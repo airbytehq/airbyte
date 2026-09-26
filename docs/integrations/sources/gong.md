@@ -85,7 +85,7 @@ This source syncs the following streams:
 
 ### Schema changes in the extensive calls stream
 
-Versions 1.0.0 and 2.0.0 corrected the declared types of several nested fields in the `extensive calls` stream to match what the Gong API returns. In 2.0.0, `parties[].context` is an array (previously an object) and `media` is declared as an object. If you sync this stream, refresh the source schema and reset it after upgrading. See the [migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations) for steps.
+Versions 1.0.0 and 2.0.0 corrected the declared types of several nested fields in the `extensive calls` stream to match what the Gong API returns. In 2.0.0, `parties[].context` is an array (previously an object) and `media` is declared as an object. The records written to your destination don't change, so you only need to refresh the source schema after upgrading; don't clear the stream. See the [migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations#upgrading-to-200) for details.
 
 ### Private calls
 
