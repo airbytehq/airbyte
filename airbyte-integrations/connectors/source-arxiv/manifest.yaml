@@ -1,0 +1,200 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: >-
+  Website: https://arxiv.org/
+
+  API Reference: https://info.arxiv.org/help/api/user-manual.html
+
+check:
+  type: CheckStream
+  stream_names:
+    - papers
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1
+          interval: PT3S
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/query(\\?.*)?$"
+  status_codes_for_ratelimit_hit:
+    - 429
+    - 503
+
+definitions:
+  streams:
+    papers:
+      type: DeclarativeStream
+      name: papers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: XmlDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          http_method: GET
+          request_parameters:
+            search_query: "{{ config['search_query'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                      - 503
+                    error_message: Rate limit exceeded for arXiv API.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - feed
+              - entry
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: max_results
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: "{{ config.get('page_size', 100) }}"
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/papers"
+  base_requester:
+    type: HttpRequester
+    url: https://export.arxiv.org/api/query
+    authenticator:
+      type: NoAuth
+
+streams:
+  - $ref: "#/definitions/streams/papers"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - search_query
+    properties:
+      search_query:
+        type: string
+        title: Search query
+        description: >-
+          arXiv API query string. Use prefixes such as all:, ti:, au:, abs:, co:,
+          jr:, cat:, rn:, id:, or submittedDate:. See the arXiv API user manual
+          for query syntax.
+        examples:
+          - cat:cs.AI
+          - all:electron
+          - au:"Hinton"
+        order: 0
+      page_size:
+        type: integer
+        title: Page size
+        description: Number of records to request per page.
+        default: 100
+        minimum: 1
+        maximum: 1000
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    papers: false
+  yamlComponents:
+    global:
+      - authenticator
+
+schemas:
+  papers:
+    type: object
+    $schema: http://json-schema.org/draft-04/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      updated:
+        type:
+          - "null"
+          - string
+      published:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      summary:
+        type:
+          - "null"
+          - string
+      author:
+        oneOf:
+          - type: "null"
+          - type: object
+            additionalProperties: true
+          - type: array
+            items:
+              type: object
+              additionalProperties: true
+      category:
+        oneOf:
+          - type: "null"
+          - type: object
+            additionalProperties: true
+          - type: array
+            items:
+              type: object
+              additionalProperties: true
+      link:
+        oneOf:
+          - type: "null"
+          - type: object
+            additionalProperties: true
+          - type: array
+            items:
+              type: object
+              additionalProperties: true
+      arxiv:comment:
+        type:
+          - "null"
+          - string
+      arxiv:journal_ref:
+        type:
+          - "null"
+          - string
+      arxiv:doi:
+        type:
+          - "null"
+          - string
+      arxiv:primary_category:
+        oneOf:
+          - type: "null"
+          - type: object
+            additionalProperties: true
