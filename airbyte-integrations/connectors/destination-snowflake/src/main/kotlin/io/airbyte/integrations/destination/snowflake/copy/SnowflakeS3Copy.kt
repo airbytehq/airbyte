@@ -25,10 +25,7 @@ import java.security.MessageDigest
 import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.Semaphore
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 data class CsvCopyContext(
@@ -77,16 +74,8 @@ class EnabledSnowflakeS3Copy(
     private val runId = UUID.randomUUID()
     private val metadata = S3CopyMetadata(config, runId, epochSeconds)
     private val log = KotlinLogging.logger {}
-    private val completion = Mutex()
-    private val completedStreams = mutableSetOf<DestinationStream>()
     private val slots = Semaphore(4)
-    private val closed = AtomicBoolean(false)
-    private val shutdownHook = Thread { close() }
     private val contexts = mutableMapOf<DestinationStream, CsvCopyContext>()
-
-    init {
-        Runtime.getRuntime().addShutdownHook(shutdownHook)
-    }
 
     override suspend fun prepare(catalog: DestinationCatalog) {
         catalog.streams.forEach { stream ->
@@ -130,16 +119,9 @@ class EnabledSnowflakeS3Copy(
     }
 
     override suspend fun complete(stream: DestinationStream) {
-        completion.withLock {
-            check(!closed.get()) { "Fusion archive is closed" }
-            val context =
-                checkNotNull(contexts[stream]) { "Fusion stream metadata is not prepared" }
-            if (stream in completedStreams) return
-            val key = "${context.runPath}batches/stream_complete.json"
-            withContext(Dispatchers.IO) { putJson(key, metadata.streamComplete(stream)) }
-            completedStreams.add(stream)
-            log.info { "Fusion S3 stream complete: run=$runId job_id=${stream.syncId} key=$key" }
-        }
+        val key = "${contexts.getValue(stream).runPath}batches/stream_complete.json"
+        withContext(Dispatchers.IO) { putJson(key, metadata.streamComplete(stream)) }
+        log.info { "Fusion S3 stream complete: run=$runId job_id=${stream.syncId} key=$key" }
     }
 
     override fun context(stream: DestinationStream) = contexts[stream]
@@ -230,9 +212,6 @@ class EnabledSnowflakeS3Copy(
             )
     }
     override fun close() {
-        if (closed.compareAndSet(false, true)) {
-            uploader.close()
-            runCatching { Runtime.getRuntime().removeShutdownHook(shutdownHook) }
-        }
+        uploader.close()
     }
 }

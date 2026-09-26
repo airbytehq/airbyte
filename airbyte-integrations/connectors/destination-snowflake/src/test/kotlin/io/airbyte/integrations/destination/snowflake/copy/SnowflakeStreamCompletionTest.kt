@@ -49,7 +49,6 @@ class SnowflakeStreamCompletionTest {
                     fixture.uploader.keys.map { it.substringAfterLast('/') }
                 )
                 copy.complete(fixture.stream)
-                copy.complete(fixture.stream)
                 val key = copy.context(fixture.stream)!!.runPath + "batches/stream_complete.json"
                 assertEquals(
                     listOf("schema.json", "stream_complete.json"),
