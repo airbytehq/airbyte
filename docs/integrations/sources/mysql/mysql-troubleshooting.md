@@ -99,6 +99,41 @@ SET GLOBAL thread_pool_idle_timeout = 120;
 `slave_net_timeout` was renamed to `replica_net_timeout` in MySQL 8.0.26. Use the appropriate variable depending on your MySQL version.
 :::
 
+### EOFException: Failed to read next byte from position
+
+During CDC syncs, the sync may fail while reading the binary log with an error similar to this:
+
+```text
+Caused by: java.io.EOFException: Failed to read next byte from position <binlog_position>
+```
+
+This error means your MySQL server closed the connection Airbyte uses to read the binary log. A common cause is a low `net_write_timeout` or `net_read_timeout` value on the MySQL server. MySQL closes a connection when a network write or read on it takes longer than these values allow. This happens more often with large databases and large transactions. By default, `net_write_timeout` is 60 seconds and `net_read_timeout` is 30 seconds.
+
+To resolve this error, increase **both** timeouts on your MySQL server. For large databases, start with 1 hour (3600 seconds), then increase or decrease the values depending on whether the error continues.
+
+1. Check the current values.
+
+   ```sql
+   SHOW GLOBAL VARIABLES WHERE Variable_name IN ('net_write_timeout', 'net_read_timeout');
+   ```
+
+2. Increase both values.
+
+   ```sql
+   SET GLOBAL net_write_timeout = 3600;
+   SET GLOBAL net_read_timeout = 3600;
+   ```
+
+   `SET GLOBAL` only applies to new connections, and MySQL resets the values when the server restarts. To keep the values after a restart on MySQL 8.0 and later, use `SET PERSIST` instead, or set them in your MySQL configuration file. On Amazon RDS and Aurora, set these parameters in your DB parameter group instead.
+
+3. Run the sync again.
+
+For more information, see [`net_write_timeout`](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_net_write_timeout) and [`net_read_timeout`](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_net_read_timeout) in the MySQL documentation.
+
+:::note
+If increasing these values doesn't resolve the error, also increase the timeouts described in [EventDataDeserializationException errors during initial snapshot](#eventdatadeserializationexception-errors-during-initial-snapshot), and confirm your binary log retention is long enough, as described in [Under CDC incremental mode, there are still full refresh syncs](#under-cdc-incremental-mode-there-are-still-full-refresh-syncs).
+:::
+
 ### (Advanced) Enable GTIDs
 
 Global transaction identifiers \(GTIDs\) uniquely identify transactions that occur on a server within a cluster. Though not required for a Airbyte MySQL connector, using GTIDs simplifies replication and enables you to more easily confirm if primary and replica servers are consistent. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-gtids.html#option_mysqld_gtid-mode)
