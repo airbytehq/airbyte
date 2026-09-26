@@ -6,7 +6,7 @@ import copy
 import logging
 import os
 from functools import wraps
-from typing import Any, List, Mapping, MutableMapping, Optional
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 
@@ -16,7 +16,7 @@ from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator, TokenAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
-from source_mixpanel.streams import Export
+from source_mixpanel.streams import Export, ExportRaw
 
 
 def adapt_validate_if_testing(func):
@@ -137,6 +137,11 @@ class SourceMixpanel(YamlDeclarativeSource):
             return BasicHttpAuthenticator(username=username, password=secret)
         return TokenAuthenticatorBase64(token=credentials["api_secret"])
 
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        check_config: MutableMapping[str, Any] = copy.deepcopy(dict(config))
+        check_config["streams"] = ["cohorts"]
+        return super().check_connection(logger, check_config)
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = config.get("credentials")
         if not credentials.get("option_title"):
@@ -145,12 +150,19 @@ class SourceMixpanel(YamlDeclarativeSource):
             else:
                 credentials["option_title"] = "Service Account"
 
-        streams = super().streams(config=config)
+        selected_streams = config.get("streams")
+
+        all_streams = super().streams(config=config)
 
         config_transformed = copy.deepcopy(config)
         config_transformed = self._validate_and_transform(config_transformed)
         auth = self.get_authenticator(config)
 
-        streams.append(Export(authenticator=auth, **config_transformed))
+        all_streams.append(Export(authenticator=auth, **config_transformed))
+        if config.get("enable_export_raw", False):
+            all_streams.append(ExportRaw(authenticator=auth, **config_transformed))
 
-        return streams
+        if selected_streams:
+            all_streams = [s for s in all_streams if s.name in selected_streams]
+
+        return all_streams
