@@ -46,6 +46,7 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -187,7 +188,9 @@ public class MongoUtilTest {
     assertNotNull(streams);
     assertEquals(1, streams.size());
     assertEquals(11, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
-    assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),
+    // "total" appears as both "int" (NUMBER) and "string" (STRING) across sampled documents, so
+    // polymorphic field defaults to STRING
+    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),
         streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).get("total").get(JSON_TYPE_PROPERTY_NAME).asText());
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),
         streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).get(CDC_UPDATED_AT).get(JSON_TYPE_PROPERTY_NAME).asText());
@@ -239,7 +242,9 @@ public class MongoUtilTest {
     assertNotNull(streams);
     assertEquals(1, streams.size());
     assertEquals(11, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
-    assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),
+    // "total" appears as both "int" (NUMBER) and "string" (STRING) across sampled documents, so
+    // polymorphic field defaults to STRING
+    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),
         streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).get("total").get(JSON_TYPE_PROPERTY_NAME).asText());
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),
         streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).get(CDC_UPDATED_AT).get(JSON_TYPE_PROPERTY_NAME).asText());
@@ -442,6 +447,64 @@ public class MongoUtilTest {
     assertThat(
         MongoUtil.getChunkSizeForCollection(Optional.of(new CollectionStatistics(1_000_000, 10 * QUERY_TARGET_SIZE_GB)), configuredAirbyteStream))
             .isEqualTo(100_003);
+  }
+
+  @Test
+  void testResolveFieldTypesPolymorphicFieldDefaultsToString() {
+    final Map<String, Set<JsonSchemaType>> fieldTypesMap = new HashMap<>();
+    fieldTypesMap.put("name", Set.of(JsonSchemaType.STRING));
+    fieldTypesMap.put("polymorphic", Set.of(JsonSchemaType.STRING, JsonSchemaType.OBJECT));
+    fieldTypesMap.put("count", Set.of(JsonSchemaType.NUMBER));
+
+    final Set<io.airbyte.protocol.models.Field> resolved = MongoUtil.resolveFieldTypes(fieldTypesMap, "test.collection");
+
+    assertEquals(3, resolved.size());
+    final Map<String, JsonSchemaType> fieldMap = new HashMap<>();
+    for (io.airbyte.protocol.models.Field field : resolved) {
+      fieldMap.put(field.getName(), field.getType());
+    }
+
+    assertEquals(JsonSchemaType.STRING, fieldMap.get("name"));
+    assertEquals(JsonSchemaType.STRING, fieldMap.get("polymorphic"));
+    assertEquals(JsonSchemaType.NUMBER, fieldMap.get("count"));
+  }
+
+  @Test
+  void testResolveFieldTypesMultipleTypesAllDefaultToString() {
+    final Map<String, Set<JsonSchemaType>> fieldTypesMap = new HashMap<>();
+    fieldTypesMap.put("mixed", Set.of(JsonSchemaType.NUMBER, JsonSchemaType.BOOLEAN, JsonSchemaType.STRING));
+
+    final Set<io.airbyte.protocol.models.Field> resolved = MongoUtil.resolveFieldTypes(fieldTypesMap, "test.collection");
+
+    assertEquals(1, resolved.size());
+    final io.airbyte.protocol.models.Field field = resolved.iterator().next();
+    assertEquals("mixed", field.getName());
+    assertEquals(JsonSchemaType.STRING, field.getType());
+  }
+
+  @Test
+  void testResolveFieldTypesSingleTypePreserved() {
+    final Map<String, Set<JsonSchemaType>> fieldTypesMap = new HashMap<>();
+    fieldTypesMap.put("objectField", Set.of(JsonSchemaType.OBJECT));
+    fieldTypesMap.put("arrayField", Set.of(JsonSchemaType.ARRAY));
+
+    final Set<io.airbyte.protocol.models.Field> resolved = MongoUtil.resolveFieldTypes(fieldTypesMap, "test.collection");
+
+    assertEquals(2, resolved.size());
+    final Map<String, JsonSchemaType> fieldMap = new HashMap<>();
+    for (io.airbyte.protocol.models.Field field : resolved) {
+      fieldMap.put(field.getName(), field.getType());
+    }
+
+    assertEquals(JsonSchemaType.OBJECT, fieldMap.get("objectField"));
+    assertEquals(JsonSchemaType.ARRAY, fieldMap.get("arrayField"));
+  }
+
+  @Test
+  void testResolveFieldTypesEmptyMap() {
+    final Map<String, Set<JsonSchemaType>> fieldTypesMap = new HashMap<>();
+    final Set<io.airbyte.protocol.models.Field> resolved = MongoUtil.resolveFieldTypes(fieldTypesMap, "test.collection");
+    assertTrue(resolved.isEmpty());
   }
 
   private static String formatMismatchException(final boolean isConfigSchemaEnforced,
