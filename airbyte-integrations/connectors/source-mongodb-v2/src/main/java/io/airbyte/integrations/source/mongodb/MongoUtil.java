@@ -94,8 +94,8 @@ public class MongoUtil {
      */
     final Document document = mongoClient.getDatabase(databaseName).runCommand(new Document("listCollections", 1)
         .append("authorizedCollections", true)
-        .append("nameOnly", true))
-        .append("filter", "{ 'type': 'collection' }");
+        .append("nameOnly", true)
+        .append("filter", new Document("type", "collection")));
     return document.toBsonDocument()
         .get("cursor").asDocument()
         .getArray("firstBatch")
