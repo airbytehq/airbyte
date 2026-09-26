@@ -337,7 +337,7 @@ spec:
           user in your Fullstory org.
         title: User ID (uid)
         examples:
-          - "462718483"
+          - d50a4072-0153-4357-977e-e91624f3a509
         airbyte_secret: true
         order: 1
     additionalProperties: true
