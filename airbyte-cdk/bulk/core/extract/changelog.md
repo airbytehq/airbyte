@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.13 — 2026-09-24
+
+[#85350](https://github.com/airbytehq/airbyte/pull/85350) — Fix the first concurrent snapshot partition excluding its lower bound for composite primary keys (rows sharing the minimum first-column value were skipped) in `buildWhereClause` and `TriggerPartition`.
+
 ### 1.1.12 — 2026-09-17
 
 [#86412](https://github.com/airbytehq/airbyte/pull/86412) — Return null instead of NPE when JDBC getTimestamp/getDate return null for a non-null string value (MySQL zero dates with zeroDateTimeBehavior=convertToNull).
