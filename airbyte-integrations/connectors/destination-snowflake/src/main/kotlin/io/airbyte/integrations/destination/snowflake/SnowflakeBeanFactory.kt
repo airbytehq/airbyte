@@ -6,17 +6,20 @@ package io.airbyte.integrations.destination.snowflake
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.table.TempTableNameGenerator
+import io.airbyte.integrations.destination.snowflake.auth.SnowflakeWorkloadIdentityDataSource
 import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
+import io.airbyte.integrations.destination.snowflake.spec.WorkloadIdentityAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRawRecordFormatter
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeSchemaRecordFormatter
@@ -28,6 +31,7 @@ import java.io.File
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.sql.Connection
+import java.util.Properties
 import java.util.logging.Level
 import java.util.logging.Logger
 import javax.sql.DataSource
@@ -103,7 +107,7 @@ class SnowflakeBeanFactory {
         @Value("\${airbyte.edition:COMMUNITY}") airbyteEdition: String,
     ): HikariDataSource {
         val snowflakeJdbcUrl =
-            "jdbc:snowflake://${snowflakeConfiguration.host}/?${snowflakeConfiguration.jdbcUrlParams}"
+            "jdbc:snowflake://${snowflakeConfiguration.host}/?${snowflakeConfiguration.jdbcUrlParams.orEmpty()}"
         val datasourceConfig =
             HikariConfig().apply {
                 connectionTimeout = DATA_SOURCE_CONNECTION_TIMEOUT_MS
@@ -117,8 +121,10 @@ class SnowflakeBeanFactory {
                 // This should be slightly higher than the idle timeout setting
                 // but not too high to avoid connections living for too long when unused
                 maxLifetime = DATA_SOURCE_IDLE_TIMEOUT_MS + 10000L
-                driverClassName = SnowflakeDriver::class.qualifiedName
-                jdbcUrl = snowflakeJdbcUrl
+                if (snowflakeConfiguration.authType !is WorkloadIdentityAuthConfiguration) {
+                    driverClassName = SnowflakeDriver::class.qualifiedName
+                    jdbcUrl = snowflakeJdbcUrl
+                }
                 when (snowflakeConfiguration.authType) {
                     is KeyPairAuthConfiguration -> {
                         val privateKeyFile = File.createTempFile("rsa_key_", ".p8")
@@ -142,6 +148,9 @@ class SnowflakeBeanFactory {
                     is UsernamePasswordAuthConfiguration -> {
                         username = snowflakeConfiguration.username
                         password = snowflakeConfiguration.authType.password
+                    }
+                    is WorkloadIdentityAuthConfiguration -> {
+                        // Use a physical connection factory below, never a token cached in Hikari.
                     }
                 }
 
@@ -183,6 +192,32 @@ class SnowflakeBeanFactory {
                 // If the connector crashes, snowflake should abort in-flight queries.
                 addDataSourceProperty(DATA_SOURCE_PROPERTY_ABORT_DETACHED_QUERY, "true")
             }
+
+        val auth = snowflakeConfiguration.authType
+        if (auth is WorkloadIdentityAuthConfiguration) {
+            val properties =
+                Properties().apply {
+                    putAll(datasourceConfig.dataSourceProperties)
+                    if (snowflakeConfiguration.username.isNotBlank()) {
+                        setProperty("user", snowflakeConfiguration.username)
+                    }
+                    auth.entraResource?.let { setProperty("workloadIdentityEntraResource", it) }
+                }
+            try {
+                datasourceConfig.dataSource =
+                    SnowflakeWorkloadIdentityDataSource(
+                        jdbcUrl = snowflakeJdbcUrl,
+                        connectionProperties = properties,
+                        provider = auth.provider,
+                        tokenFilePath = auth.tokenFilePath,
+                        driver = SnowflakeDriver(),
+                    )
+            } catch (e: IllegalArgumentException) {
+                // The data source's validation messages never include JDBC values or token
+                // contents.
+                throw ConfigErrorException(e.message ?: "Invalid workload identity configuration.")
+            }
+        }
 
         return HikariDataSource(datasourceConfig)
     }

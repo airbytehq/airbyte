@@ -12,9 +12,9 @@
         "title" : "Host",
         "group" : "connection",
         "order" : 0,
-        "examples" : [ "accountname.us-east-2.aws.snowflakecomputing.com", "accountname.snowflakecomputing.com" ],
-        "pattern" : "^(http(s)?:\\/\\/)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.(snowflakecomputing\\.com|localstack\\.cloud))$",
-        "pattern_descriptor" : "{account_name}.snowflakecomputing.com or {accountname}.{aws_location}.aws.snowflakecomputing.com"
+        "examples" : [ "accountname.us-east-2.aws.snowflakecomputing.com", "accountname.snowflakecomputing.com", "accountname.snowflakecomputing.cn", "accountname.snowflakecomputing.mil" ],
+        "pattern" : "^(http(s)?:\\/\\/)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.(snowflakecomputing\\.(com|cn|mil)|localstack\\.cloud))$",
+        "pattern_descriptor" : "A Snowflake account hostname ending in .snowflakecomputing.com, .snowflakecomputing.cn, or .snowflakecomputing.mil"
       },
       "role" : {
         "type" : "string",
@@ -89,7 +89,7 @@
           "title" : "Username and Password (Deprecated)",
           "type" : "object",
           "additionalProperties" : true,
-          "description" : "Deprecated: Username and password authentication is deprecated as of version 5.0.0 and will be removed in a future release. Snowflake is enforcing strong authentication on a rolling per-account basis between August and October 2026. Switch to key pair authentication instead. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake-migrations\">migration guide</a> for details.",
+          "description" : "Deprecated: Username and password authentication is deprecated as of version 5.0.0 and will be removed in a future release. Snowflake is enforcing strong authentication on a rolling per-account basis between August and October 2026. Switch to key pair authentication or workload identity federation instead. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake-migrations\">migration guide</a> for details.",
           "properties" : {
             "auth_type" : {
               "type" : "string",
@@ -105,6 +105,40 @@
             }
           },
           "required" : [ "auth_type", "password" ]
+        }, {
+          "title" : "Workload Identity Federation",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Authenticate using the destination workload's identity without storing a password or private key. Requires an identity-enabled connector runtime and a Snowflake service user configured for workload identity federation.",
+          "properties" : {
+            "auth_type" : {
+              "type" : "string",
+              "enum" : [ "Workload Identity Federation" ],
+              "default" : "Workload Identity Federation"
+            },
+            "workload_identity_provider" : {
+              "type" : "string",
+              "enum" : [ "AWS", "AZURE", "GCP", "OIDC" ],
+              "description" : "Use OIDC for projected Kubernetes service-account tokens (including AKS). AWS, AZURE, and GCP use the native identity sources supported by the Snowflake JDBC driver. AZURE uses managed identity metadata endpoints, not AKS federated token exchange.",
+              "title" : "Workload Identity Provider",
+              "order" : 0
+            },
+            "token_file_path" : {
+              "type" : "string",
+              "description" : "Required for OIDC only. Absolute path inside the destination connector container to a rotating JWT file. The file is read for every new physical connection. Mount the projected volume without subPath; do not paste a token into the connector configuration.",
+              "title" : "OIDC Token File Path",
+              "order" : 1,
+              "examples" : [ "/var/run/secrets/snowflake/token" ],
+              "pattern" : "^/.*"
+            },
+            "entra_resource" : {
+              "type" : "string",
+              "description" : "Optional for AZURE only. Resource requested from the managed identity endpoint. Leave unset to use the Snowflake JDBC driver's default Snowflake resource.",
+              "title" : "Microsoft Entra Resource",
+              "order" : 2
+            }
+          },
+          "required" : [ "auth_type", "workload_identity_provider" ]
         } ],
         "description" : "Determines the type of authentication that should be used.",
         "title" : "Authorization Method",

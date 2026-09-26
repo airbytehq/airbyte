@@ -9,7 +9,7 @@ connector using the Airbyte UI.
 This page describes the step-by-step process of setting up the Snowflake destination connector.
 
 :::danger Username and Password Authentication Deprecated
-Starting with version **5.0.0**, username and password authentication is **deprecated** and will be removed in a future release. **Key pair authentication** is now the only recommended method for connecting to Snowflake.
+Starting with version **5.0.0**, username and password authentication is **deprecated** and will be removed in a future release. Use **key pair authentication**, or use **workload identity federation** with an identity-enabled connector runtime.
 
 This change aligns with [Snowflake's deprecation of single-factor password sign-ins](https://docs.snowflake.com/en/user-guide/security-mfa-rollout). Snowflake is enforcing strong authentication for all users on a rolling per-account basis between **August and October 2026**; once enforced on your account, password-only logins from Airbyte will fail.
 
@@ -24,6 +24,10 @@ If you are currently using username and password authentication, see the [Snowfl
   administrator to set one up for you.
 
 ## Setup guide
+
+### Choose an authentication method
+
+The steps below describe key pair authentication. For passwordless authentication using a workload identity, follow the [workload identity federation guide](./snowflake-workload-identity.md) instead of generating and assigning an RSA key. That guide explains provider selection, Snowflake trust configuration, Kubernetes token projection, and the Airbyte UI fields. Database, warehouse, schema, role, and network-policy requirements still apply.
 
 ### Step 1: Set up key pair authentication
 
@@ -157,8 +161,9 @@ Make sure the database and schema have the `USAGE` privilege.
 
 ### Step 5: Set up Snowflake as a destination in Airbyte
 
-Navigate to the Airbyte UI to set up Snowflake as a destination. Use the private key you generated
-in [Step 1](#step-1-set-up-key-pair-authentication) to authenticate.
+Navigate to the Airbyte UI to set up Snowflake as a destination. Select **Key Pair Authentication**
+and use the private key from [Step 1](#step-1-set-up-key-pair-authentication), or select
+**Workload Identity Federation** and complete the [workload identity setup](./snowflake-workload-identity.md#configuring-through-the-airbyte-ui).
 
 | Field | Description |
 | :---- | :---------- |
@@ -168,7 +173,11 @@ in [Step 1](#step-1-set-up-key-pair-authentication) to authenticate.
 | [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The database you created in Step 2 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE` |
 | [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. |
 | Username | The service user you created in Step 2 to allow Airbyte to access the database. Example: `AIRBYTE_USER` |
-| Private Key | The private key from the key pair you generated in Step 1. Paste the full contents of your `rsa_key.p8` file, including the `-----BEGIN ... PRIVATE KEY-----` header and footer. |
+| Authorization Method | Select key pair authentication or workload identity federation. Workload identity requires a configured Snowflake service user and an identity-enabled destination workload. |
+| Workload Identity Provider | For workload identity only: select `OIDC`, `AWS`, `AZURE`, or `GCP`. See [Choosing a provider](./snowflake-workload-identity.md#choosing-a-provider). |
+| OIDC Token File Path | Required when the workload identity provider is `OIDC`: the absolute path to the rotating JWT file inside the destination container. Leave unset for other providers. |
+| Microsoft Entra Resource (Optional) | For the `AZURE` workload identity provider only: override the resource requested from the managed-identity endpoint. Leave unset to use the driver's default. |
+| Private Key | For key pair authentication: paste the full contents of your `rsa_key.p8` file, including the `-----BEGIN ... PRIVATE KEY-----` header and footer. Not used for workload identity federation. |
 | Passphrase (Optional) | The passphrase for the private key, if the key was generated with encryption. Leave blank if the key is unencrypted. |
 | CDC deletion mode | Whether to execute CDC deletions as hard deletes or soft deletes. Hard deletes propagate source deletions to the destination. Soft deletes leave a tombstone record in the destination. Defaults to hard deletes. |
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3` |
