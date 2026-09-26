@@ -6,7 +6,9 @@ name: "Hydra: Stage Handoff"
 # (`/ai-prove-fix`, `/ai-review`, `/ai-ready`, `/ai-resolve-conflicts`) on a PR.
 # Only labelled PRs get event-driven handoffs; PRs the daily sweep drives
 # itself are never labelled (its trigger comments come from a bot, not a
-# human). To stop the chain on a PR, remove the label or add `hydra-pause`.
+# human). A Devin `/ai-fix` PR also inherits the label from a `Resolves`-linked
+# oncall issue that carries `hydra-autopilot`, on its first green CI. To stop
+# the chain on a PR, remove the label or add `hydra-pause`.
 #
 # When `/ai-prove-fix` or `/ai-review` posts its result marker on a PR, or when
 # a PR's CI finishes green (covers new `/ai-fix` PRs, pushes including
@@ -157,10 +159,11 @@ jobs:
           MARKER_HEAD_SHA: ${{ steps.marker.outputs.head_sha }}
           EVENT_NAME: ${{ github.event_name }}
           SELF_JOB_NAME: Launch single-PR hands-free pass
+          VAR_DRY_RUN: ${{ vars.HYDRA_HANDOFF_DRY_RUN }}
         run: |
           set -euo pipefail
           PR_JSON=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
-            --json state,isCrossRepository,headRefOid,labels,author,isDraft,statusCheckRollup)
+            --json state,isCrossRepository,headRefOid,labels,author,isDraft,statusCheckRollup,body)
           STATE=$(jq -r '.state' <<<"$PR_JSON")
           IS_FORK=$(jq -r '.isCrossRepository' <<<"$PR_JSON")
           HEAD=$(jq -r '.headRefOid' <<<"$PR_JSON")
@@ -172,6 +175,31 @@ jobs:
           [[ -z "$SKIP" && "$IS_FORK" == "true" ]] && SKIP="community (fork) PR"
           [[ -z "$SKIP" && ",$LABELS," == *",community,"* ]] && SKIP="community label"
           [[ -z "$SKIP" && ",$LABELS," == *",hydra-pause,"* ]] && SKIP="hydra-pause label"
+
+          # A Devin-authored /ai-fix PR inherits hydra-autopilot from a
+          # Resolves-linked oncall issue that already carries it (check_suite only).
+          if [[ -z "$SKIP" && "$EVENT_NAME" == "check_suite" && ",$LABELS," != *",hydra-autopilot,"* ]]; then
+            AUTHOR=$(jq -r '.author.login' <<<"$PR_JSON")
+            if [[ "$AUTHOR" == "devin-ai-integration" || "$AUTHOR" == "devin-ai-integration[bot]" ]]; then
+              BODY=$(jq -r '.body' <<<"$PR_JSON")
+              while IFS= read -r N; do
+                [[ -z "$N" ]] && continue
+                ISSUE_LABELS=$(gh issue view "$N" --repo airbytehq/oncall --json labels -q '[.labels[].name]|join(",")' || true)
+                if [[ ",$ISSUE_LABELS," == *",hydra-autopilot,"* ]]; then
+                  if [[ "$VAR_DRY_RUN" == "true" ]]; then
+                    echo "WOULD inherit hydra-autopilot from oncall issue #$N"
+                  else
+                    gh pr edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --add-label hydra-autopilot
+                  fi
+                  LABELS="${LABELS},hydra-autopilot"
+                  echo "::notice::PR #$PR_NUMBER inherited hydra-autopilot from oncall issue #$N"
+                  echo "- Inherited: PR #$PR_NUMBER got \`hydra-autopilot\` from oncall issue #$N" >> "$GITHUB_STEP_SUMMARY"
+                  break
+                fi
+              done < <(printf '%s' "$BODY" | grep -oE 'Resolves https://github.com/airbytehq/oncall/issues/[0-9]+' | grep -oE '[0-9]+$' | sort -u)
+            fi
+          fi
+
           [[ -z "$SKIP" && "$EVENT_NAME" != "workflow_dispatch" && ",$LABELS," != *",hydra-autopilot,"* ]] && SKIP="PR not opted in (no hydra-autopilot label)"
           [[ -z "$SKIP" && -n "$MARKER_HEAD_SHA" && "$HEAD" != "$MARKER_HEAD_SHA"* ]] && SKIP="result is for stale head $MARKER_HEAD_SHA (current $HEAD)"
 
