@@ -4,21 +4,26 @@ This topic explains how to title and describe your pull requests, and how to han
 
 ## Pull request title conventions
 
-When creating a pull request, follow the naming conventions depending on the change you're making. In general, the pull request title starts with an emoji, the the connector name, then the changes. For example: ✨ Source E-Commerce: add new stream `Users`.
+When creating a pull request, use a [Conventional Commit](https://www.conventionalcommits.org/) title:
 
-Airbyte uses this pattern to automatically assign team reviews and build the product release notes.
+```text
+type(optional-scope): concise summary
+```
 
-| Pull Request Type                      | Emoji | Examples                                                |
-| -------------------------------------- | ----- | ------------------------------------------------------- |
-| New Connector (Source or Destination)  | 🎉   | 🎉 New Destination: Database                           |
-| Add a feature to an existing connector | ✨    | ✨ Source E-Commerce: add new stream `Users`            |
-| Fix a bug                              | 🐛   | 🐛 Source E-Commerce: fix start date parameter in spec |
-| Documentation (updates or new entries) | 📝   | 📝 Fix Database connector changelog                    |
-| It's a breaking change                 | 🚨   | 🚨🚨🐛 Source Kafka: fix a complex bug               |
+Airbyte validates pull request titles in CI and uses the title format for release notes and changelog automation. Supported title types include `build`, `chore`, `ci`, `deps`, `docs`, `feat`, `fix`, `perf`, `refactor`, `release`, `revert`, `style`, and `test`.
+
+| Pull Request Type                      | Example                                                    |
+| -------------------------------------- | ---------------------------------------------------------- |
+| New Connector (Source or Destination)  | `feat(source-e-commerce): add users stream`                |
+| Add a feature to an existing connector | `feat(source-e-commerce): add users stream`                |
+| Fix a bug                              | `fix(source-e-commerce): handle missing start date`        |
+| Documentation (updates or new entries) | `docs: update database connector changelog`                |
+| CI or build tooling                    | `ci: update connector test workflow`                       |
+| Dependency updates                     | `deps(source-github): update dependencies [2026-01-15]`    |
+| Connector release                      | `release(source-stripe): promote 5.15.18`                  |
+| Breaking change                        | `feat(source-kafka)!: remove unsupported legacy auth mode` |
 
 [More information about breaking changes](#breaking-changes-to-connectors). A maintainer can help and instruct you about possible breaking changes.
-
-Don't add an emoji to any refactors, cleanups, etc. that aren't visible improvements to connector users.
 
 If your code change is doing more than one change type at once, break it into multiple pull requests. This helps maintainers to review and merge your contribution.
 
