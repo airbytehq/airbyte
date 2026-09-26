@@ -7,6 +7,11 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.2.0 — 2026-10-12
+
+Add configurable path-style and virtual-hosted-style addressing to the S3 load toolkit. Part of
+[#88472](https://github.com/airbytehq/airbyte/issues/88472).
+
 ### 1.1.1 — 2026-09-24
 
 Add the Fusion archive toolkit to the published bulk load CDK toolkits.
