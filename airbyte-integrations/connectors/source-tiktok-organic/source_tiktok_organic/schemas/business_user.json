@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "date": { "type": ["null", "string"], "format": "date" },
+    "display_name": { "type": ["null", "string"] },
+    "username": { "type": ["null", "string"] },
+    "profile_image": { "type": ["null", "string"] },
+    "is_verified": { "type": ["null", "boolean"] },
+    "followers_count": { "type": ["null", "integer"] },
+    "following_count": { "type": ["null", "integer"] },
+    "videos_count": { "type": ["null", "integer"] },
+    "total_likes": { "type": ["null", "integer"] },
+    "bio_description": { "type": ["null", "string"] },
+    "profile_deep_link": { "type": ["null", "string"] },
+    "is_business_account": { "type": ["null", "boolean"] },
+    "address_clicks": { "type": ["null", "integer"] },
+    "app_download_clicks": { "type": ["null", "integer"] },
+    "bio_link_clicks": { "type": ["null", "integer"] },
+    "comments": { "type": ["null", "integer"] },
+    "daily_lost_followers": { "type": ["null", "integer"] },
+    "daily_new_followers": { "type": ["null", "integer"] },
+    "daily_total_followers": { "type": ["null", "integer"] },
+    "email_clicks": { "type": ["null", "integer"] },
+    "engaged_audience": { "type": ["null", "integer"] },
+    "engagement_rate": { "type": ["null", "number"] },
+    "likes": { "type": ["null", "integer"] },
+    "phone_number_clicks": { "type": ["null", "integer"] },
+    "profile_views": { "type": ["null", "integer"] },
+    "shares": { "type": ["null", "integer"] },
+    "unique_video_views": { "type": ["null", "integer"] },
+    "video_views": { "type": ["null", "integer"] },
+    "lead_submissions": { "type": ["null", "integer"] },
+    "audience_countries": {
+      "type": ["null", "array"],
+      "items": { "type": "object" }
+    },
+    "audience_genders": {
+      "type": ["null", "array"],
+      "items": { "type": "object" }
+    },
+    "audience_ages": {
+      "type": ["null", "array"],
+      "items": { "type": "object" }
+    },
+    "audience_cities": {
+      "type": ["null", "array"],
+      "items": { "type": "object" }
+    },
+    "audience_activity": {
+      "type": ["null", "array"],
+      "items": { "type": "object" }
+    }
+  }
+}
