@@ -40,7 +40,7 @@ Scaling a data plane comes down to a few dimensions.
 
 Airbyte recommends deploying to Amazon EKS, Google Kubernetes Engine, or Azure Kubernetes Service across 2 or more availability zones. See [Infrastructure prerequisites](../enterprise-flex/data-plane.md#infrastructure-prerequisites) for supported platforms.
 
-Each sync runs at least two pods: one for the source and one for the destination. As a rule of thumb, make sure the cluster can schedule `2 x <maximum concurrent syncs>` pods at once.
+Each sync runs as one pod with three containers: the source, the destination, and an orchestrator that moves data between them. Checks and schema discovery run in their own short-lived pods. As a rule of thumb, make sure the cluster can schedule at least `<maximum concurrent syncs>` sync pods at once, plus headroom for check and discover pods.
 
 Start with a mid-sized cluster (for example, nodes with 4 or 8 cores) and tune from there based on the usage you observe. Connector images are around 300 MB each, and long-running syncs produce logs, so allocate at least 30 GB of disk per node.
 
@@ -58,7 +58,7 @@ Data planes only make outbound requests to the control plane, so adding a data p
 Two settings determine how many jobs run at once.
 
 - **Data workers.** Your organization has a contracted number of data workers, allocated per region. When a region's data workers are all in use, new syncs in that region queue until capacity is available. You can move capacity between regions and enable on-demand capacity for critical connections. See [Manage and monitor data workers](../cloud/managing-airbyte-cloud/manage-data-workers.md).
-- **Launcher parallelism.** Each data plane's workload launcher starts up to `workloadLauncher.parallelism` jobs at once (default: 10). Raise it in your data plane's Helm values if the launcher, not the cluster, is the bottleneck. Adding `workloadLauncher.replicaCount` replicas provides resilience for the launcher itself.
+- **Launcher parallelism.** Each data plane's workload launcher claims and starts up to `workloadLauncher.parallelism` jobs at once (default: 10). This limits how many jobs one launcher replica is starting concurrently, not how many can run. Raise it in your data plane's Helm values if jobs are waiting to start while the cluster still has room. To scale the launcher horizontally or make it resilient, raise `workloadLauncher.replicaCount`; replicas share the claim queue.
 
 Concurrency only helps if the cluster has room for the resulting pods. Raise launcher parallelism and cluster capacity together.
 
@@ -66,17 +66,17 @@ Concurrency only helps if the cluster has room for the resulting pods. Raise lau
 
 Connector pods request CPU and memory from the cluster. Too little and syncs slow down or fail with out-of-memory errors. Too much and the cluster runs fewer pods than it could.
 
-Set instance-wide defaults for job pods in your data plane's Helm values under `jobs.resources.requests` and `jobs.resources.limits`, and tune individual job types (`check`, `discover`, `replication`, `sidecar`) under `workloads.resources`. To override resources for one connector type or one connection, see [Configuring connector resources](configuring-connector-resources.md).
+By default, Airbyte applies per-connector resource defaults that it maintains (`workloads.resources.useConnectorResourceDefaults: true`). Set your own data plane-wide defaults for connector containers in your Helm values under `workloads.resources.mainContainer`, and tune the other containers under `workloads.resources.check`, `workloads.resources.discover`, `workloads.resources.replication` (the orchestrator container in sync pods), and `workloads.resources.sidecar`. Each takes `cpu` and `memory` with `request` and `limit` keys. To override resources for one connector type or one connection, see [Configuring connector resources](configuring-connector-resources.md).
 
-Memory is the most common constraint. Sources buffer up to 10,000 records before sending them to the destination, so database tables with large rows need more memory. A table with an average row size of 0.5 MB can require about 5 GB of memory for the source pod.
+Memory is the most common constraint. The orchestrator buffers records between the source and destination, so database tables with large rows or wide schemas need more memory than the defaults provide. For how Kubernetes applies requests and limits, see [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).
 
 ## Use node pools and auto-scaling
 
 Job pods are short-lived and spiky, which makes them a good fit for a dedicated node pool that scales automatically.
 
 - Use `jobs.kube.nodeSelector` and `jobs.kube.tolerations` in your Helm values to place job pods on a node pool that's separate from the data plane's long-running services.
-- Enable auto-scaling for that node pool in your cloud provider so nodes are added when syncs queue and removed when they finish. Set the pool's maximum size high enough to hold `2 x <maximum concurrent syncs>` pods.
-- Keep pod resource requests accurate. Kubernetes decides when to add nodes based on requests, not actual usage.
+- Enable [node auto-scaling](https://kubernetes.io/docs/concepts/cluster-administration/node-autoscaling/) for that node pool in your cloud provider so nodes are added when pods are pending and removed when they finish. Set the pool's maximum size high enough to hold your peak number of concurrent sync pods.
+- Keep pod resource requests accurate. Kubernetes adds and removes nodes based on pod requests, not actual usage. Requests that are too low cause pods to be scheduled onto nodes that can't sustain them; requests that are too high leave nodes underused.
 
 ## Monitor and adjust
 
