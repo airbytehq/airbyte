@@ -1,16 +1,76 @@
 ---
 products: enterprise-flex
-sidebar_label: Log Collection
+sidebar_label: Logs
 ---
 
-# Collect Logs from a Flex Data Plane
+# Logs from a Flex Data Plane
 
-This guide explains how to collect logs from an Airbyte Flex data plane running in your Kubernetes cluster.
+This guide explains where the logs from an Airbyte Flex data plane go, how to view sync logs in Airbyte's user interface, and how to collect logs from your Kubernetes cluster into your own observability stack.
 
 These logs describe the work your data plane does: sync, check, discover, and spec jobs. To review who changed your Airbyte configuration, see [Audit logs](/platform/access-management/audit-logs) instead.
 
+## Choose where your logs go
+
+In Enterprise Flex, the control plane Airbyte manages never has direct access to your cluster. That means Airbyte can't show you job logs in the user interface unless your data plane sends those logs to Airbyte. You have two options, and you can use both at the same time.
+
+| Option | Where logs are stored | Who can see them | How to set it up |
+| --- | --- | --- | --- |
+| [View job logs in Airbyte](#airbyte-ui) | Airbyte-managed storage in the control plane | You, in Airbyte's UI and API. Airbyte's support team, when you ask for help. | Contact Airbyte support to enable it for your organization. Off by default. |
+| [Keep logs in your own infrastructure](#own-infrastructure) | Your object storage bucket, your observability backend, or both | Only you. Airbyte can't see them. | Configure a `storage` bucket in your data plane's `values.yaml`, run a log collector in your cluster, or both. |
+
+Whichever option you choose, logging never causes a job to fail. If the data plane can't deliver a job's logs, the job continues and only the logs are affected.
+
+:::info Which logs this affects
+This choice controls the logs for sync, check, and discover jobs. Spec jobs and the workload launcher always log only to your cluster.
+:::
+
+## View job logs in Airbyte {#airbyte-ui}
+
+When Airbyte enables this option for your organization, workloads in your data plane upload their job logs to storage that Airbyte manages. You then see logs for syncs, connection tests (check), and schema discovery in Airbyte's user interface and API exactly as you would for a Cloud data plane.
+
+### Why you might want this
+
+- You can troubleshoot syncs from the Airbyte UI without going to your cluster or your observability tool.
+- Airbyte's support team can investigate issues directly. Support cases resolve faster when Airbyte can see the logs.
+
+### Why you might not want this
+
+Job logs leave your environment and are stored in Airbyte's control plane. Logs don't contain the records you sync, and Airbyte masks secrets and personally identifiable information before writing them, but connector log lines can still reveal information you consider sensitive, like table names, hostnames, query text, or error messages that quote data. If you chose Enterprise Flex to keep all workload output inside your infrastructure or a specific region, you may prefer to keep logs in your own infrastructure instead. You can still work with Airbyte support in that case. See [Support without logs in Airbyte](#support).
+
+### How it works
+
+- Airbyte enables this option per organization, on request. It's off by default, and it never turns on without you asking for it.
+- Your data plane authenticates to Airbyte's control plane as usual. For each eligible job, the control plane issues the workload a short-lived credential that can only create objects under that job's own path in Airbyte's log storage. The credential can't read, list, or delete anything, and it can't touch other jobs' logs.
+- The workload uploads its logs directly to Airbyte's log storage. Log data doesn't pass through the control plane's API, and the credential is held only in memory by the orchestrator or sidecar container, never in your connector containers.
+- If the workload can't get a credential or can't upload, it falls back to logging the way it did before, and the job continues.
+- You don't add any storage credentials or Helm values for this option. Airbyte turns it on for you.
+
+### Request or disable it
+
+To turn this option on or off, [contact Airbyte support](https://support.airbyte.com/) and tell them the organization you want to change. After Airbyte enables it, run a sync and open its logs in the Airbyte UI to confirm they load. To turn it off, contact support again. Jobs that start after Airbyte turns it off log only to your cluster.
+
+:::note
+Your data plane needs Helm chart version **2.3.0** or later for this option. Upgrade your data plane before you ask Airbyte to enable it.
+:::
+
+## Keep logs in your own infrastructure {#own-infrastructure}
+
+If you don't enable Airbyte-hosted logs, your job logs stay in your cluster. You have two ways to keep them.
+
+**Store job logs in your own bucket.** Set the `storage` section in your data plane's `values.yaml` to an S3, GCS, or Azure Blob Storage bucket, as shown in [Deploy a data plane](data-plane#step-4). The orchestrator and sidecar write each job's logs to `job-logging/` in the `storage.bucket.log` bucket. If you don't configure `storage`, the data plane has nowhere to write job logs and silently discards them after each job. The logs are still on the containers' stdout while the pod runs, so a log collector can still capture them.
+
+**Collect container stdout.** Run a log collector in your cluster and ship logs to your own observability backend. The rest of this guide explains how.
+
+### Support without logs in Airbyte {#support}
+
+If your logs stay in your infrastructure, Airbyte's support team can't see them. When you open a support case, Airbyte may ask you to share the relevant logs. Have them ready:
+
+- If you store job logs in your own bucket, download the objects under `job-logging/` for the affected job and attempt.
+- If you collect stdout, export the log entries for the affected job. Filter on the `job_id`, `attempt_id`, or `connection_id` [pod labels](#pod-labels).
+- If you do neither, run `kubectl logs` on the workload pod's `orchestrator` or `sidecar` container while it's running. See [Container reference](#container-reference).
+
 :::info
-Requires data plane Helm chart version **2.1.0** or later. Structured JSON logging to stdout is enabled by default starting in 2.1.0. Earlier chart versions emit plaintext logs and do not propagate the log format setting to all containers.
+Collecting stdout requires data plane Helm chart version **2.1.0** or later. Structured JSON logging to stdout is enabled by default starting in 2.1.0. Earlier chart versions emit plaintext logs and do not propagate the log format setting to all containers.
 :::
 
 ## How Airbyte Emits Logs
@@ -42,7 +102,7 @@ The data plane Helm chart sets `PLATFORM_LOG_FORMAT=json` by default (starting i
 | `caller` | Class, method, line number, and thread name |
 | `throwable` | Stack trace (when applicable, otherwise null) |
 
-### Pod Labels
+### Pod Labels {#pod-labels}
 
 Airbyte workload pods carry labels that your log collector can use for filtering and correlation:
 
@@ -189,6 +249,6 @@ You should see JSON log lines with `logSource` values of `source`, `destination`
 
 In your observability backend, verify that pod labels (`job_id`, `connection_id`, etc.) appear as metadata on the log entries. If log entries appear but without any Kubernetes labels, the most common cause is the log collector's Kubernetes API buffer being too small -- see the `Buffer_Size` note in the Fluent Bit section above.
 
-## Container Reference
+## Container Reference {#container-reference}
 
 Not all containers in a workload pod have useful logs. In sync pods, the `source` and `destination` containers have empty stdout (it's used for Airbyte protocol messages via named pipes). The `orchestrator` container aggregates all human-readable logs. In check/discover/spec pods, the `sidecar` container has the relevant output. The `init` container in all pod types only emits workload initialization logs.
