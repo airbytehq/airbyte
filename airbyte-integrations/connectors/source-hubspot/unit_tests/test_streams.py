@@ -14,6 +14,7 @@ from airbyte_cdk.models import (
     AirbyteStateType,
     AirbyteStreamState,
     ConfiguredAirbyteCatalogSerializer,
+    FailureType,
     StreamDescriptor,
     SyncMode,
 )
@@ -754,6 +755,131 @@ def test_streams_raise_error_message_if_scopes_missing(stream, scopes, url, meth
         f"Verify your scopes: {scopes} to access stream {stream}. "
         f"See details: https://docs.airbyte.com/integrations/sources/hubspot#step-2-configure-the-scopes-for-your-streams-private-app-only"
     )
+
+
+@pytest.mark.parametrize(
+    "stream, url, method",
+    [
+        # base_error_handler
+        ("owners", "https://api.hubapi.com/crm/v3/owners", "GET"),
+        # error_handler_ignore_403 (properties_stream iterates the `objectType`
+        # partition values in order, so the first request hits `/crm/v3/properties/company`)
+        ("properties", "https://api.hubapi.com/crm/v3/properties/company", "GET"),
+        # error_handler_ignore_invalid_object_type_for_list (the parent
+        # contact_lists search response is mocked below)
+        ("list_memberships", "https://api.hubapi.com/crm/v3/lists/30/memberships", "GET"),
+    ],
+)
+def test_streams_raise_specific_error_message_on_400_with_json_body(
+    stream, url, method, requests_mock, config, mock_dynamic_schema_requests
+):
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    requests_mock.register_uri(
+        "POST",
+        "https://api.hubapi.com/crm/v3/lists/search",
+        json={
+            "lists": [
+                {
+                    "listId": "30",
+                    "objectTypeId": "0-1",
+                    "createdAt": "2022-01-01T00:00:00Z",
+                    "updatedAt": "2022-01-01T00:00:00Z",
+                },
+            ],
+        },
+    )
+    requests_mock.register_uri(
+        method,
+        url,
+        status_code=400,
+        json={
+            "status": "error",
+            "message": "There was a problem with the request.",
+            "category": "VALIDATION_ERROR",
+            "subCategory": "SomeSubCategory",
+            "correlationId": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        },
+    )
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": stream, "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = StateBuilder().with_stream_state(stream, {}).build()
+    source_hubspot = get_source(config)
+    output = read(source_hubspot, config=config, catalog=catalog, state=state)
+    assert output.errors[0].trace.error.message == (
+        f"HubSpot rejected the request for stream '{stream}' with HTTP 400 (not an authentication error): "
+        "There was a problem with the request. "
+        "[category: VALIDATION_ERROR, subCategory: SomeSubCategory, correlationId: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee]. "
+        "If the error persists, contact HubSpot support with the correlation ID."
+    )
+    assert output.errors[0].trace.error.failure_type == FailureType.system_error
+
+
+def test_streams_raise_specific_error_message_on_400_with_non_json_body(requests_mock, config, mock_dynamic_schema_requests):
+    stream = "owners"
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    requests_mock.register_uri(
+        "GET",
+        "https://api.hubapi.com/crm/v3/owners",
+        status_code=400,
+        text="<html>Bad Request</html>",
+    )
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": stream, "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = StateBuilder().with_stream_state(stream, {}).build()
+    source_hubspot = get_source(config)
+    output = read(source_hubspot, config=config, catalog=catalog, state=state)
+    assert output.errors[0].trace.error.message == (
+        f"HubSpot rejected the request for stream '{stream}' with HTTP 400 (not an authentication error): "
+        "HubSpot returned no error details [category: unknown]."
+    )
+    assert output.errors[0].trace.error.failure_type == FailureType.system_error
+
+
+def test_custom_object_stream_raises_specific_error_message_on_400(
+    requests_mock, config, custom_object_schema, mock_dynamic_schema_requests
+):
+    """Custom object streams are DynamicDeclarativeStreams whose `parameters.name` is populated by the
+    components resolver; a 400 on the incremental (search) sub-stream must name the resolved stream."""
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={"results": [custom_object_schema]}, status_code=200)
+    requests_mock.register_uri(
+        "POST",
+        "https://api.hubapi.com/crm/v3/objects/p19936848_Animal/search",
+        status_code=400,
+        json={
+            "status": "error",
+            "message": "There was a problem with the request.",
+            "category": "VALIDATION_ERROR",
+            "subCategory": "SomeSubCategory",
+            "correlationId": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        },
+    )
+    state = StateBuilder().with_stream_state("animals", {"updatedAt": "2021-01-10T00:00:00.000Z"}).build()
+    output = read_from_stream(config, "animals", SyncMode.incremental, state, expecting_exception=True)
+    assert output.errors[0].trace.error.message == (
+        "HubSpot rejected the request for stream 'animals' with HTTP 400 (not an authentication error): "
+        "There was a problem with the request. "
+        "[category: VALIDATION_ERROR, subCategory: SomeSubCategory, correlationId: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee]. "
+        "If the error persists, contact HubSpot support with the correlation ID."
+    )
+    assert output.errors[0].trace.error.failure_type == FailureType.system_error
 
 
 def test_discover_if_scopes_missing(config, requests_mock, mock_dynamic_schema_requests):
