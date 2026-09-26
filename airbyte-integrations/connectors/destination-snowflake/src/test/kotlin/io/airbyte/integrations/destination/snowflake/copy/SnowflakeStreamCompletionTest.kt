@@ -305,11 +305,10 @@ class SnowflakeStreamCompletionTest {
                             fixture.uploader.json.getValue(billingContext.runPath + "schema.json")
                         )["source_schema"]
                 )
-                val batchId = UUID.randomUUID()
                 val path = java.nio.file.Files.createTempFile("namespace-copy", ".csv.gz")
                 try {
-                    copy.upload(path, publicContext, 1, batchId)
-                    copy.upload(path, billingContext, 1, batchId)
+                    copy.upload(path, publicContext, 1)
+                    copy.upload(path, billingContext, 1)
                 } finally {
                     java.nio.file.Files.deleteIfExists(path)
                 }
@@ -318,9 +317,14 @@ class SnowflakeStreamCompletionTest {
                 assertEquals(6, fixture.uploader.keys.size)
                 assertEquals(6, fixture.uploader.keys.toSet().size)
                 listOf(publicContext, billingContext).forEach { context ->
-                    assertTrue(
-                        fixture.uploader.keys.contains(context.runPath + "batches/$batchId.csv.gz")
-                    )
+                    val batch =
+                        fixture.uploader.keys.single {
+                            it.startsWith(context.runPath + "batches/") && it.endsWith(".csv.gz")
+                        }
+                    val batchId =
+                        batch.removePrefix(context.runPath + "batches/").removeSuffix(".csv.gz")
+                    assertEquals(batchId, UUID.fromString(batchId).toString())
+                    assertEquals(batchId, fixture.uploader.metadata.getValue(batch)["batch-id"])
                     assertTrue(
                         fixture.uploader.keys.contains(
                             context.runPath + "batches/stream_complete.json"
@@ -415,6 +419,7 @@ class SnowflakeStreamCompletionTest {
     private class FakeUploader : FusionUploader {
         val keys = mutableListOf<String>()
         val json = mutableMapOf<String, String>()
+        val metadata = mutableMapOf<String, Map<String, String>>()
         var markerResult: CompletableFuture<*> = CompletableFuture.completedFuture(Unit)
         override fun upload(
             path: Path,
@@ -422,6 +427,7 @@ class SnowflakeStreamCompletionTest {
             metadata: Map<String, String>
         ): CompletableFuture<*> {
             keys.add(key)
+            this.metadata[key] = metadata
             return CompletableFuture.completedFuture(Unit)
         }
         override fun uploadJson(bytes: ByteArray, key: String): CompletableFuture<*> {

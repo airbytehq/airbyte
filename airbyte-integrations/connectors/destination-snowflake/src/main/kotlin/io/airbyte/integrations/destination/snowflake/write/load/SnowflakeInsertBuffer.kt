@@ -89,7 +89,6 @@ class SnowflakeInsertBuffer(
                 logger.info {
                     "Beginning insert into ${tableName.toPrettyString(quote = QUOTE)}..."
                 }
-                val batchId = java.util.UUID.randomUUID()
                 coroutineScope {
                     val snowflake =
                         async(kotlinx.coroutines.Dispatchers.IO) {
@@ -104,7 +103,7 @@ class SnowflakeInsertBuffer(
                             )
                         }
                     val archive = async {
-                        copyContext?.let { s3Copy.upload(filePath, it, recordCount, batchId) }
+                        copyContext?.let { s3Copy.upload(filePath, it, recordCount) }
                     }
                     var failure: Throwable? = null
                     try {

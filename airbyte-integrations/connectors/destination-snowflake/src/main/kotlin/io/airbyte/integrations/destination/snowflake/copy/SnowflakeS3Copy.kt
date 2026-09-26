@@ -39,19 +39,14 @@ interface SnowflakeS3Copy : AutoCloseable {
     suspend fun prepare(catalog: DestinationCatalog)
     suspend fun complete(stream: DestinationStream)
     fun context(stream: DestinationStream): CsvCopyContext?
-    suspend fun upload(path: Path, context: CsvCopyContext, recordCount: Int, batchId: UUID)
+    suspend fun upload(path: Path, context: CsvCopyContext, recordCount: Int)
 }
 
 object DisabledSnowflakeS3Copy : SnowflakeS3Copy {
     override suspend fun prepare(catalog: DestinationCatalog) = Unit
     override suspend fun complete(stream: DestinationStream) = Unit
     override fun context(stream: DestinationStream): CsvCopyContext? = null
-    override suspend fun upload(
-        path: Path,
-        context: CsvCopyContext,
-        recordCount: Int,
-        batchId: UUID
-    ) = Unit
+    override suspend fun upload(path: Path, context: CsvCopyContext, recordCount: Int) = Unit
     override fun close() = Unit
 }
 
@@ -109,12 +104,10 @@ class EnabledSnowflakeS3Copy(
 
     override fun context(stream: DestinationStream) = contexts[stream]
 
-    override suspend fun upload(
-        path: Path,
-        context: CsvCopyContext,
-        recordCount: Int,
-        batchId: UUID
-    ) {
+    override suspend fun upload(path: Path, context: CsvCopyContext, recordCount: Int) {
+        // The Fusion contract names batch objects by a canonical UUID that matches the batch-id
+        // header; local temp file names do not fit that contract.
+        val batchId = UUID.randomUUID()
         withContext(Dispatchers.IO) {
             slots.acquire()
             try {

@@ -330,7 +330,7 @@ internal class SnowflakeInsertBufferDualUploadTest {
                     }
                 }
             if (simulatedReader)
-                coEvery { archive.upload(path, copyContext, 1, any()) } coAnswers
+                coEvery { archive.upload(path, copyContext, 1) } coAnswers
                     {
                         try {
                             GZIPInputStream(Files.newInputStream(path)).use { reader ->
@@ -385,8 +385,7 @@ internal class SnowflakeInsertBufferDualUploadTest {
         fun verifyUploads() {
             verify(exactly = 1) { client.putInStage(table, path.toString()) }
             verify(exactly = 1) { client.copyFromStage(table, path.fileName.toString(), columns) }
-            if (simulatedReader)
-                coVerify(exactly = 1) { archive.upload(path, copyContext, 1, any()) }
+            if (simulatedReader) coVerify(exactly = 1) { archive.upload(path, copyContext, 1) }
         }
 
         private fun assertReadablePayload() {
