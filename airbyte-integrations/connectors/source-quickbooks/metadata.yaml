@@ -23,10 +23,8 @@ data:
   registryOverrides:
     cloud:
       enabled: true
-      dockerImageTag: 4.0.4 # previous stable version here
     oss:
       enabled: true
-      dockerImageTag: 4.0.4 # previous stable version here
   suggestedStreams:
     streams:
       - invoices
@@ -38,7 +36,12 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
     breakingChanges:
       3.0.0:
         message:
