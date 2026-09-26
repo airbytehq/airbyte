@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.snowflake.copy
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.fusion.FusionConfiguration
 import io.airbyte.cdk.fusion.FusionPaths
 import io.airbyte.cdk.fusion.FusionSchema
@@ -78,16 +77,6 @@ class EnabledSnowflakeS3Copy(
     private val contexts = mutableMapOf<DestinationStream, CsvCopyContext>()
 
     override suspend fun prepare(catalog: DestinationCatalog) {
-        catalog.streams.forEach { stream ->
-            if (
-                stream.minimumGenerationId != 0L &&
-                    stream.minimumGenerationId != stream.generationId
-            ) {
-                throw SystemErrorException(
-                    "Cannot execute a hybrid refresh - current generation ${stream.generationId}; minimum generation ${stream.minimumGenerationId}"
-                )
-            }
-        }
         val runPaths =
             catalog.streams.associateWith { stream ->
                 FusionPaths.run(
