@@ -97,6 +97,22 @@ class EndOfStreamPaginationStrategy(PaginationStrategy):
         response["end_of_stream"] = False
 
 
+class LiteralAfterUrlPaginationStrategy(PaginationStrategy):
+    """Sets a literal `after_url` exactly as Zendesk returns it, plus `end_of_stream: false`.
+
+    Real Incremental Ticket Export responses echo the request's `per_page` in `after_url`,
+    which EndOfStreamPaginationStrategy cannot produce (it only appends `cursor=`).
+    """
+
+    def __init__(self, after_url: str) -> None:
+        self._after_url = after_url
+
+    def update(self, response: Dict[str, Any]) -> None:
+        response["next_page"] = self._after_url
+        response["after_url"] = self._after_url
+        response["end_of_stream"] = False
+
+
 # Base Record Builder
 
 
@@ -585,11 +601,17 @@ class TicketMetricsResponseBuilder(HttpResponseBuilder):
 
 class TicketsResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def tickets_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketsResponseBuilder":
+    def tickets_response(
+        cls, url: Optional[str] = None, cursor: Optional[str] = None, after_url: Optional[str] = None
+    ) -> "TicketsResponseBuilder":
+        if after_url is not None:
+            pagination_strategy: Optional[PaginationStrategy] = LiteralAfterUrlPaginationStrategy(after_url)
+        else:
+            pagination_strategy = EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None
         return cls(
             find_template("tickets", __file__),
             FieldPath("tickets"),
-            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
+            pagination_strategy,
         )
 
 
