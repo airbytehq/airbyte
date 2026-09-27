@@ -274,7 +274,7 @@ jobs:
       # The guard comment must not survive a failed launch: it would suppress
       # the next retry. Delete it so a re-run can relaunch.
       - name: Clean up guard comment on failed launch
-        if: failure() && steps.guard.outputs.comment_id != ''
+        if: (failure() || cancelled()) && steps.guard.outputs.comment_id != ''
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
           COMMENT_ID: ${{ steps.guard.outputs.comment_id }}
