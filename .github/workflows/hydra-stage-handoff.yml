@@ -24,8 +24,11 @@ name: "Hydra: Stage Handoff"
 # session only report what it WOULD do.
 
 on:
+  # `edited` is required: /ai-prove-fix and /ai-review write their result
+  # marker by PATCHing their living status comment, not by posting a new one.
+  # Repeated edits are deduped by the idempotency guard below.
   issue_comment:
-    types: [created]
+    types: [created, edited]
   # workflow_run (not check_suite): check_suite never fires for
   # Actions-created suites. `pull_requests` on workflow_run is only populated
   # for same-repo branches, so forks never reach this job.
