@@ -12,8 +12,8 @@ This connector uses the [YouTube Data API v3](https://developers.google.com/yout
 
 - One or more YouTube Channel IDs you want to sync data from
 <!-- env:oss -->
-- (For Airbyte Open Source) One of the following authentication methods:
-  - A Google API Key with the YouTube Data API v3 enabled
+- (For Airbyte Open Source) A Google Cloud project with the YouTube Data API v3 enabled, and one of the following authentication methods from that project:
+  - A Google API Key (public data only)
   - OAuth 2.0 credentials (Client ID, Client Secret, and Refresh Token)
 <!-- /env:oss -->
 
@@ -22,8 +22,10 @@ This connector uses the [YouTube Data API v3](https://developers.google.com/yout
 ### Find your YouTube Channel IDs
 
 1. Go to [YouTube](https://www.youtube.com/) and navigate to the channel you want to sync.
-2. The Channel ID is in the URL: `https://www.youtube.com/channel/CHANNEL_ID`.
+2. The Channel ID is in the URL: `https://www.youtube.com/channel/CHANNEL_ID`. Channel IDs are 24 characters long and start with `UC`. A handle URL such as `https://www.youtube.com/@handle` isn't a Channel ID.
 3. Alternatively, you can find it in YouTube Studio under **Settings** > **Channel** > **Advanced settings**.
+
+The connector fails the connection check if any Channel ID doesn't resolve to an existing channel, so verify each ID before you set up the source.
 
 <!-- env:cloud -->
 
@@ -85,8 +87,10 @@ You can authenticate using either an API Key or OAuth 2.0.
 
 The YouTube Data API source connector supports the following sync modes:
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Full Refresh - Overwrite](/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
+
+No stream supports incremental sync. Each sync re-reads all data for the configured channels, so the quota behavior described in [Limitations and considerations](#limitations-and-considerations) applies to every sync. If you use Full Refresh - Append, `video` and `channels` records differ between syncs because YouTube updates their statistics (view, like, comment, and subscriber counts) in place; deduplicate on the primary key in your destination if you only want the latest values.
 
 ## Supported streams
 
@@ -100,11 +104,13 @@ The YouTube Data API source connector supports the following sync modes:
 
 ### Stream descriptions
 
-- **video**: Detailed information about videos from the specified channels. This stream uses the `videos` parent stream to first discover video IDs, then fetches full video details for each. Data includes snippet information (title, description, thumbnails, publish date, tags, category, language settings), content details (duration, dimension, definition, caption availability, region restrictions), statistics (view count, like count, comment count), player information (embed HTML), and status (upload status, privacy status, license, embeddable, made for kids).
-- **videos**: A list of video IDs discovered by searching the specified channels. This stream is used internally by the `video` and `comments` streams to identify which videos to fetch data for.
-- **channels**: Information about the specified YouTube channels. Data includes snippet information (title, description, custom URL, country, thumbnails), content details (related playlists), statistics (subscriber count, view count, video count), branding settings (channel keywords, trailer, default language), topic details (topic categories), status (privacy status, made for kids), localizations, and content owner details.
-- **comments**: Comment threads on individual videos from the specified channels. For each video discovered in the channel, this stream fetches the top-level comments and their replies.
-- **channel_comments**: All comment threads related to the specified channels, including comments on the channel's videos and comments that mention the channel. This provides a broader view of channel engagement than the `comments` stream.
+- **video**: Detailed information about videos from the specified channels, from [`videos.list`](https://developers.google.com/youtube/v3/docs/videos/list). This stream uses the `videos` parent stream to first discover video IDs, then fetches full video details for each. Data includes snippet information (title, description, thumbnails, publish date, tags, category, language settings), content details (duration, dimension, definition, caption availability, region restrictions), statistics (view count, like count, comment count), player information (embed HTML), and status (upload status, privacy status, license, embeddable, made for kids). Each record also includes a `datetime` field that the connector sets to the time it fetched the record. It isn't a YouTube timestamp; use it to tell snapshots apart in Full Refresh - Append mode.
+- **videos**: The IDs of videos published by the specified channels, discovered with [`search.list`](https://developers.google.com/youtube/v3/docs/search/list) filtered to `type=video`. Each record contains only the search result's `id` object: `kind` (always `youtube#video`) and `videoId`, which is the primary key. The `video` and `comments` streams use this stream as their parent to identify which videos to fetch. YouTube returns at most 500 results per channel from this search, so channels with more than 500 videos are truncated in `videos`, `video`, and `comments`.
+- **channels**: Information about the specified YouTube channels, from [`channels.list`](https://developers.google.com/youtube/v3/docs/channels/list). Data includes snippet information (title, description, custom URL, country, thumbnails), content details (related playlists), statistics (subscriber count, view count, video count), branding settings (channel keywords, trailer, default language), topic details (topic categories), status (privacy status, made for kids), localizations, and content owner details.
+- **comments**: Comment threads on individual videos from the specified channels, from [`commentThreads.list`](https://developers.google.com/youtube/v3/docs/commentThreads/list) filtered by `videoId`. For each video discovered by the `videos` stream, this stream fetches the comment threads. Each record is one thread's `snippet`: the top-level comment is in `topLevelComment`, `totalReplyCount` gives the number of replies, and the connector copies the top-level comment's ID into a top-level `id` field to serve as part of the primary key. The replies themselves aren't included in the records. Videos with comments disabled and videos that no longer exist are skipped without failing the sync.
+- **channel_comments**: All comment threads related to the specified channels, from `commentThreads.list` filtered by `allThreadsRelatedToChannelId`. This includes comments on the channel's videos and on the channel page itself, so it provides a broader view of channel engagement than the `comments` stream. Because it doesn't depend on the `videos` search, it isn't subject to the 500-video limit. Records have the same shape as `comments`, including the copied `id` field.
+
+Comment records carry `publishedAt` and `updatedAt` timestamps only inside the nested `topLevelComment.snippet` object; there's no top-level timestamp field.
 
 ## YouTube API Services usage disclosure
 
@@ -116,10 +122,28 @@ When using OAuth 2.0 authentication, this connector accesses authorized user dat
 
 ## Limitations and considerations
 
-- The YouTube Data API has [quota limits](https://developers.google.com/youtube/v3/getting-started#quota). Each API request costs a certain number of quota units, and the default quota is 10,000 units per day. The search endpoint used by the `videos` stream has a higher quota cost (100 units per request) compared to other endpoints.
+### Quota and rate limiting
+
+The YouTube Data API enforces a daily [quota](https://developers.google.com/youtube/v3/getting-started#quota) per Google Cloud project. Google's documented default allocation is 100 `search.list` calls per day plus 10,000 quota units per day for all other endpoints; `channels.list`, `videos.list`, and `commentThreads.list` each cost 1 unit per request. Google notes that defaults are subject to change, so check the **Quotas** page for the YouTube Data API in the Google Cloud console to see what applies to your project. If you need more, [request a quota extension](https://support.google.com/youtube/contact/yt_api_form) from Google.
+
+The `videos` stream, and therefore the `video` and `comments` streams that depend on it, uses `search.list`. Each search request returns up to 50 video IDs, so a project with the default 100-call allocation can enumerate at most about 5,000 videos per day across all channels and syncs that share the project.
+
+The connector also paces its own requests as a burst guard: at most 3 `search.list` requests per minute, and at most 100 requests per minute combined to the `channels`, `videos`, and `commentThreads` endpoints. A request that would exceed these limits waits for the next free slot rather than failing. If YouTube still returns a quota or rate-limit error (`quotaExceeded`, `dailyLimitExceeded`, `rateLimitExceeded`, `userRateLimitExceeded`, or HTTP 429), the connector retries with backoff. A sync that exhausts the daily quota fails after the retries run out; run it again after the quota resets.
+
+The connector's pacing applies to each Airbyte source separately, but Google meters quota per Google Cloud project. If several sources use API keys or OAuth clients from the same project, their requests add up against one quota. Use a separate project for each source, or request more quota.
+
+### Authentication
+
 - API keys can only access public data. To access private data, you must use OAuth 2.0 authentication.
 - When using OAuth 2.0, the connector requests the `youtube.force-ssl` scope, which provides read and write access to YouTube resources. This scope is required even though the connector only reads data.
+- When using OAuth 2.0, the connector refreshes the access token and retries if YouTube returns HTTP 401. If the 401 persists, the sync fails with a configuration error; re-authenticate with Google from the source settings. With an API key there's no token to refresh, so a persistent 401 fails the same way.
+- The connector fails with a configuration error, rather than retrying, when YouTube reports that the API key is invalid, the token lacks the `youtube.force-ssl` scope, the YouTube Data API v3 isn't enabled for the project, or a configured Channel ID doesn't exist. Fix the credentials or Channel IDs and run the sync again.
 - The connector does not support service account authentication because the YouTube Data API does not support this method for most operations.
+
+### Data coverage
+
+- The `videos` stream returns at most 500 videos per channel because of a YouTube `search.list` limit. Channels with more videos are truncated in `videos`, `video`, and `comments`. `channels` and `channel_comments` aren't affected.
+- The `comments` stream skips videos with comments disabled and deleted videos without producing records or errors.
 
 ## IP allow list
 
@@ -132,8 +156,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 1.0.3 | 2026-09-22 | [86891](https://github.com/airbytehq/airbyte/pull/86891) | Update dependencies |
+| 1.0.2 | 2026-09-21 | [86466](https://github.com/airbytehq/airbyte/pull/86466) | Fix authentication failures (HTTP 401) on channels with many videos: refresh the access token and retry on 401, and shorten API budget windows so syncs no longer wait past the token lifetime |
 | 1.0.1 | 2026-09-15 | [86306](https://github.com/airbytehq/airbyte/pull/86306) | Update dependencies |
-| 1.0.0 | 2026-08-31 | [85214](https://github.com/airbytehq/airbyte/pull/85214) | Breaking: promote connector to certified — declare primary keys and timestamp formats and restrict `videos` to video results (see the [migration guide](/integrations/sources/youtube-data-migrations)) |
+| 1.0.0 | 2026-09-10 | [85214](https://github.com/airbytehq/airbyte/pull/85214) | Breaking: promote connector to certified — declare primary keys and timestamp formats and restrict `videos` to video results (see the [migration guide](/integrations/sources/youtube-data-migrations)) |
 | 0.0.66 | 2026-09-08 | [85721](https://github.com/airbytehq/airbyte/pull/85721) | Update dependencies |
 | 0.0.65 | 2026-08-18 | [84813](https://github.com/airbytehq/airbyte/pull/84813) | Update dependencies |
 | 0.0.64 | 2026-08-11 | [84181](https://github.com/airbytehq/airbyte/pull/84181) | Update dependencies |
@@ -149,7 +175,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.0.54 | 2026-04-28 | [77496](https://github.com/airbytehq/airbyte/pull/77496) | Update dependencies |
 | 0.0.53 | 2026-04-21 | [76818](https://github.com/airbytehq/airbyte/pull/76818) | Update dependencies |
 | 0.0.52 | 2026-04-08 | [75185](https://github.com/airbytehq/airbyte/pull/75185) | Replace connector icon with updated YouTube logo |
-| 0.0.52 | 2026-03-19 | [75185](https://github.com/airbytehq/airbyte/pull/75185) | Replace connector icon with updated YouTube logo |
 | 0.0.51 | 2026-03-17 | [74392](https://github.com/airbytehq/airbyte/pull/74392) | Migrate to scopes object array format |
 | 0.0.50 | 2026-03-17 | [74698](https://github.com/airbytehq/airbyte/pull/74698) | Update dependencies |
 | 0.0.49 | 2026-03-03 | [73914](https://github.com/airbytehq/airbyte/pull/73914) | Update dependencies |

@@ -19,6 +19,8 @@ os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 @pytest.fixture(autouse=True)
 def time_sleep_mock(mocker):
     time_mock = mocker.patch("time.sleep", lambda x: None)
+    # `source_shopify.utils` binds `sleep` at import time (`from time import sleep`), patch that name too
+    mocker.patch("source_shopify.utils.sleep", lambda x: None)
     yield time_mock
 
 

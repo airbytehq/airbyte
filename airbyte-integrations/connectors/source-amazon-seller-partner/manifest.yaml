@@ -1361,7 +1361,7 @@ definitions:
     get_flat_file_all_orders_data_by_order_date_general:
       type: DeclarativeStream
       name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
-      primary_key: ["amazon-order-id"]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: last-updated-date
@@ -1397,7 +1397,7 @@ definitions:
     get_flat_file_all_orders_data_by_last_update_general:
       type: DeclarativeStream
       name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL
-      primary_key: ["amazon-order-id"]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: last-updated-date
@@ -3942,6 +3942,11 @@ schemas:
         type:
         - 'null'
         - string
+      order-item-id:
+        description: Unique identifier for the order item on Amazon platform
+        type:
+        - 'null'
+        - string
       purchase-date:
         description: Timestamp of the order purchase date
         type:
@@ -4119,6 +4124,11 @@ schemas:
       merchant-order-id:
         description: The unique identifier for the merchant's order.
         type: string
+      order-item-id:
+        description: The unique identifier for the Amazon order item.
+        type:
+        - 'null'
+        - string
       purchase-date:
         description: The date and time of the order purchase.
         type:

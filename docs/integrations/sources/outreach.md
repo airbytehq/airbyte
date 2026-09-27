@@ -49,6 +49,14 @@ List of available streams:
 - Templates
 - Snippets
 
+:::warning Upcoming change to the Prospects stream
+Starting **October 1, 2026**, Outreach will no longer include the `contactHistogram` attribute in the default response of the `/prospects` endpoint. See the [Outreach deprecated features page](https://developers.outreach.io/api/deprecated-features/) for details.
+
+After that date, the `contactHistogram` column in the `Prospects` stream will be `null` for newly synced records. Syncs will continue to run normally, and no other fields, the primary key (`id`), or the cursor (`updatedAt`) are affected. Historical values already in your destination are unchanged.
+
+If you rely on `contactHistogram`, retrieve it directly from the Outreach API by requesting it explicitly with the `fields[prospect]` parameter.
+:::
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -60,6 +68,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.1.45 | 2026-09-22 | [86761](https://github.com/airbytehq/airbyte/pull/86761) | Update dependencies |
 | 1.1.44 | 2026-09-15 | [86167](https://github.com/airbytehq/airbyte/pull/86167) | Update dependencies |
 | 1.1.43 | 2026-09-08 | [85592](https://github.com/airbytehq/airbyte/pull/85592) | Update dependencies |
 | 1.1.42 | 2026-08-18 | [84700](https://github.com/airbytehq/airbyte/pull/84700) | Update dependencies |
