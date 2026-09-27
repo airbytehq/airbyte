@@ -114,6 +114,9 @@ The Stripe source connector supports the following streams:
 - [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
 - [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
 - [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines) \(Incremental\)
+  :::note
+  During incremental syncs, this stream reads line items from the invoice object embedded in `invoice.created`, `invoice.updated`, and `invoice.deleted` events. Stripe embeds at most 10 line items in that payload. When an invoice has more, the connector requests the rest from `/v1/invoices/{invoice_id}/lines`, so each invoice's line items are complete. Before version 6.0.19, incremental syncs kept only the first 10 line items of each invoice. If you synced invoices with more than 10 line items on an earlier version, run a full refresh of this stream to repair the existing data.
+  :::
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
 - [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
@@ -317,6 +320,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.20 | 2026-09-22 | [86838](https://github.com/airbytehq/airbyte/pull/86838) | Update dependencies |
+| 6.0.19 | 2026-09-21 | [85087](https://github.com/airbytehq/airbyte/pull/85087) | Fix truncated `invoice_line_items` on incremental syncs: fetch the complete line item list from `invoices/{id}/lines` when the event payload embeds only the first page. Existing destination data for invoices with more than 10 line items requires a Full Refresh to repair. |
 | 6.0.18 | 2026-09-15 | [86254](https://github.com/airbytehq/airbyte/pull/86254) | Update dependencies |
 | 6.0.17 | 2026-09-11 | [85799](https://github.com/airbytehq/airbyte/pull/85799) | Prevent the events-based `invoice_line_items` and `subscription_items` transformations from running when `original_record` is missing or empty. |
 | 6.0.16 | 2026-09-08 | [85672](https://github.com/airbytehq/airbyte/pull/85672) | Update dependencies |

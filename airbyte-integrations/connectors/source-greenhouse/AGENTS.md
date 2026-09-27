@@ -4,7 +4,7 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Harvest v3 stream behavior
 
-This connector uses Greenhouse Harvest v3 with a single OAuth Authorization Code authentication branch. The `OAuthAuthenticator` uses the `refresh_token` grant, HTTP Basic authentication, `expires_at` with `token_expiry_date_format`, and `refresh_token_updater` to persist each rotated refresh token. The `advanced_auth` predicate must remain `[credentials, auth_type]` with `predicate_value: Client`. The `credentials` `oneOf` shape is deliberately retained so a `ClientCredentials` branch can be added additively in a follow-up. Connections idle longer than the approximately 24-hour refresh-token lifetime require manual reauthentication. Cursor follow-up requests use the opaque URL from the `Link` header and must not repeat first-request-only parameters such as `per_page`, date filters, parent filters, or static filters. The legacy `applied_at` watermark is discarded during the 1.0.0 upgrade so `applications` backfills once on the new `updated_at` cursor.
+This connector uses Greenhouse Harvest v3 with a `SelectiveAuthenticator` that chooses between two OAuth branches using `[credentials, auth_type]`. The `Client` branch uses the Authorization Code `refresh_token` grant, HTTP Basic authentication, `expires_at` with `token_expiry_date_format`, and `refresh_token_updater` to persist each rotated refresh token. The `ClientCredentials` branch uses the `client_credentials` grant for customer-created custom integrations, has no rotating refresh token or `refresh_token_updater`, and may include the optional Site Admin `sub`. These grants are not interchangeable per Greenhouse application type: partner OAuth apps reject `client_credentials`, while custom integrations reject `authorization_code`. The `advanced_auth` predicate must remain `[credentials, auth_type]` with `predicate_value: Client`. Connections using the `Client` branch idle longer than the approximately 24-hour refresh-token lifetime require manual reauthentication. Cursor follow-up requests use the opaque URL from the `Link` header and must not repeat first-request-only parameters such as `per_page`, date filters, parent filters, or static filters. The legacy `applied_at` watermark is discarded during the 1.0.0 upgrade so `applications` backfills once on the new `updated_at` cursor.
 All streams use the v3 cursor paginator with a first-page `per_page` value of 500 (the v3 maximum; the server default is 100).
 
 v3 invariants a future edit must not break:
@@ -79,3 +79,23 @@ That is, `updated_at=gte|{datetime}|lte|{datetime}`, with `|` separating operato
 | tags | top-level | updated_at | updated_at | incremental |
 | user_roles | top-level | updated_at | updated_at | incremental |
 | user_permissions | top-level | updated_at | updated_at | incremental |
+| application_stages | top-level | updated_at | updated_at | incremental |
+| applied_candidate_tags | top-level | updated_at | updated_at | incremental |
+| attachments | top-level | updated_at | updated_at | incremental |
+| candidate_educations | top-level | updated_at | updated_at | incremental |
+| candidate_employments | top-level | updated_at | updated_at | incremental |
+| prospect_details | top-level | updated_at | updated_at | incremental |
+| referrers | top-level | updated_at | updated_at | incremental |
+| rejection_details | top-level | updated_at | updated_at | incremental |
+| interview_kits | top-level | updated_at | updated_at | incremental |
+| interviewer_tags | top-level | updated_at | updated_at | incremental |
+| interviewers | top-level | updated_at | updated_at | incremental |
+| job_interviews | top-level | updated_at | updated_at | incremental |
+| scorecard_candidate_attributes | top-level | updated_at | updated_at | incremental |
+| scorecard_questions | top-level | updated_at | updated_at | incremental |
+| approver_groups | top-level | updated_at | updated_at | incremental |
+| approvers | top-level | updated_at | updated_at | incremental |
+| job_hiring_managers | top-level | updated_at | updated_at | incremental |
+| job_owners | top-level | updated_at | updated_at | incremental |
+| prospect_pool_stages | top-level | updated_at | updated_at | incremental |
+| user_emails | top-level | updated_at | updated_at | incremental |

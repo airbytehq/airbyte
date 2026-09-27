@@ -53,15 +53,15 @@ This connector supports the following entities and actions. For more details, se
 | Entity | Actions |
 |--------|---------|
 | Current User | [Get](./REFERENCE.md#current-user-get) |
-| Ad Accounts | [List](./REFERENCE.md#ad-accounts-list), [Get](./REFERENCE.md#ad-accounts-get), [Context Store Search](./REFERENCE.md#ad-accounts-context-store-search) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Create](./REFERENCE.md#campaigns-create), [Get](./REFERENCE.md#campaigns-get), [Update](./REFERENCE.md#campaigns-update), [Context Store Search](./REFERENCE.md#campaigns-context-store-search) |
-| Ad Sets | [List](./REFERENCE.md#ad-sets-list), [Create](./REFERENCE.md#ad-sets-create), [Get](./REFERENCE.md#ad-sets-get), [Update](./REFERENCE.md#ad-sets-update), [Context Store Search](./REFERENCE.md#ad-sets-context-store-search) |
-| Ads | [List](./REFERENCE.md#ads-list), [Create](./REFERENCE.md#ads-create), [Get](./REFERENCE.md#ads-get), [Update](./REFERENCE.md#ads-update), [Context Store Search](./REFERENCE.md#ads-context-store-search) |
-| Ad Creatives | [List](./REFERENCE.md#ad-creatives-list), [Context Store Search](./REFERENCE.md#ad-creatives-context-store-search), [Semantic Search](./REFERENCE.md#ad-creatives-semantic-search) |
-| Ads Insights | [List](./REFERENCE.md#ads-insights-list), [Context Store Search](./REFERENCE.md#ads-insights-context-store-search) |
-| Custom Conversions | [List](./REFERENCE.md#custom-conversions-list), [Context Store Search](./REFERENCE.md#custom-conversions-context-store-search) |
-| Images | [List](./REFERENCE.md#images-list), [Context Store Search](./REFERENCE.md#images-context-store-search) |
-| Videos | [List](./REFERENCE.md#videos-list), [Context Store Search](./REFERENCE.md#videos-context-store-search) |
+| Ad Accounts | [List](./REFERENCE.md#ad-accounts-list), [Get](./REFERENCE.md#ad-accounts-get), [Context Store Search](./REFERENCE.md#ad-accounts-context-store-search), [Context Store SQL Query](./REFERENCE.md#ad-accounts-context-store-sql-query) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Create](./REFERENCE.md#campaigns-create), [Get](./REFERENCE.md#campaigns-get), [Update](./REFERENCE.md#campaigns-update), [Context Store Search](./REFERENCE.md#campaigns-context-store-search), [Context Store SQL Query](./REFERENCE.md#campaigns-context-store-sql-query) |
+| Ad Sets | [List](./REFERENCE.md#ad-sets-list), [Create](./REFERENCE.md#ad-sets-create), [Get](./REFERENCE.md#ad-sets-get), [Update](./REFERENCE.md#ad-sets-update), [Context Store Search](./REFERENCE.md#ad-sets-context-store-search), [Context Store SQL Query](./REFERENCE.md#ad-sets-context-store-sql-query) |
+| Ads | [List](./REFERENCE.md#ads-list), [Create](./REFERENCE.md#ads-create), [Get](./REFERENCE.md#ads-get), [Update](./REFERENCE.md#ads-update), [Context Store Search](./REFERENCE.md#ads-context-store-search), [Context Store SQL Query](./REFERENCE.md#ads-context-store-sql-query) |
+| Ad Creatives | [List](./REFERENCE.md#ad-creatives-list), [Context Store Search](./REFERENCE.md#ad-creatives-context-store-search), [Context Store SQL Query](./REFERENCE.md#ad-creatives-context-store-sql-query), [Semantic Search](./REFERENCE.md#ad-creatives-semantic-search) |
+| Ads Insights | [List](./REFERENCE.md#ads-insights-list), [Context Store Search](./REFERENCE.md#ads-insights-context-store-search), [Context Store SQL Query](./REFERENCE.md#ads-insights-context-store-sql-query) |
+| Custom Conversions | [List](./REFERENCE.md#custom-conversions-list), [Context Store Search](./REFERENCE.md#custom-conversions-context-store-search), [Context Store SQL Query](./REFERENCE.md#custom-conversions-context-store-sql-query) |
+| Images | [List](./REFERENCE.md#images-list), [Context Store Search](./REFERENCE.md#images-context-store-search), [Context Store SQL Query](./REFERENCE.md#images-context-store-sql-query) |
+| Videos | [List](./REFERENCE.md#videos-list), [Context Store Search](./REFERENCE.md#videos-context-store-search), [Context Store SQL Query](./REFERENCE.md#videos-context-store-sql-query) |
 | Pixels | [List](./REFERENCE.md#pixels-list), [Get](./REFERENCE.md#pixels-get) |
 | Pixel Stats | [List](./REFERENCE.md#pixel-stats-list) |
 | Ad Library | [List](./REFERENCE.md#ad-library-list) |
@@ -146,6 +146,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -213,9 +217,91 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `FacebookMarketingConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.facebook_marketing import FacebookMarketingConnector
+
+connector = connect("facebook-marketing", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@FacebookMarketingConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="facebook_marketing_inspect",
+    docs_tool="facebook_marketing_read_docs",
+)
+async def facebook_marketing_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@FacebookMarketingConnector.agent_tool(framework="pydantic_ai")
+async def facebook_marketing_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@FacebookMarketingConnector.agent_tool(framework="pydantic_ai")
+async def facebook_marketing_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.facebook_marketing import FacebookMarketingConnector
+
+connector = connect("facebook-marketing", workspace_name="<your_workspace_name>")
+
+@FacebookMarketingConnector.agent_tool(
+    inspect_tool="facebook_marketing_inspect",
+    docs_tool="facebook_marketing_read_docs",
+)
+async def facebook_marketing_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@FacebookMarketingConnector.agent_tool()
+async def facebook_marketing_inspect():
+    return await connector.inspect_connector()
+
+@FacebookMarketingConnector.agent_tool()
+async def facebook_marketing_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (facebook_marketing_inspect, facebook_marketing_read_docs, facebook_marketing_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `FacebookMarketingConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `FacebookMarketingConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `FacebookMarketingConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -402,6 +488,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -485,9 +575,99 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `FacebookMarketingConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.facebook_marketing import FacebookMarketingConnector
+from airbyte_agent_sdk.connectors.facebook_marketing.models import FacebookMarketingServiceAccountKeyAuthenticationAuthConfig
+
+connector = FacebookMarketingConnector(
+    auth_config=FacebookMarketingServiceAccountKeyAuthenticationAuthConfig(
+        account_key="<Facebook long-lived access token for Service Account authentication>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@FacebookMarketingConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="facebook_marketing_inspect",
+    docs_tool="facebook_marketing_read_docs",
+)
+async def facebook_marketing_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@FacebookMarketingConnector.agent_tool(framework="pydantic_ai")
+async def facebook_marketing_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@FacebookMarketingConnector.agent_tool(framework="pydantic_ai")
+async def facebook_marketing_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.facebook_marketing import FacebookMarketingConnector
+from airbyte_agent_sdk.connectors.facebook_marketing.models import FacebookMarketingServiceAccountKeyAuthenticationAuthConfig
+
+connector = FacebookMarketingConnector(
+    auth_config=FacebookMarketingServiceAccountKeyAuthenticationAuthConfig(
+        account_key="<Facebook long-lived access token for Service Account authentication>"
+    )
+)
+
+@FacebookMarketingConnector.agent_tool(
+    inspect_tool="facebook_marketing_inspect",
+    docs_tool="facebook_marketing_read_docs",
+)
+async def facebook_marketing_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@FacebookMarketingConnector.agent_tool()
+async def facebook_marketing_inspect():
+    return await connector.inspect_connector()
+
+@FacebookMarketingConnector.agent_tool()
+async def facebook_marketing_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (facebook_marketing_inspect, facebook_marketing_read_docs, facebook_marketing_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `FacebookMarketingConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `FacebookMarketingConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `FacebookMarketingConnector.agent_tool` above.
 
 **Pydantic AI**
 
