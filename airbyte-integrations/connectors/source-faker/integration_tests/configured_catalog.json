@@ -110,6 +110,37 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "reviews",
+        "json_schema": {
+          "properties": {
+            "id": { "type": "integer" },
+            "purchase_id": { "type": "integer" },
+            "user_id": { "type": "integer" },
+            "product_id": { "type": "integer" },
+            "rating": { "type": "integer" },
+            "title": { "type": "string" },
+            "body": { "type": "string" },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

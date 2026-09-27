@@ -8,7 +8,7 @@ None. This connector generates data locally and does not connect to an external 
 
 ## Supported streams
 
-This source has three streams: `users`, `products`, and `purchases`. All streams support full refresh and incremental sync, with `id` as the primary key and `updated_at` as the cursor field.
+This source has four streams: `users`, `products`, `purchases`, and `reviews`. All streams support full refresh and incremental sync, with `id` as the primary key and `updated_at` as the cursor field.
 
 ### Users
 
@@ -21,6 +21,10 @@ Product records represent vehicles with fields: `id`, `make`, `model`, `year`, `
 ### Purchases
 
 Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `updated_at`, `added_to_cart_at`, `purchased_at`, and `returned_at`. Items added to a cart have a 70% chance of being purchased, and purchased items have a 15% chance of being returned. The `purchased_at` and `returned_at` fields are nullable. The connector generates roughly one purchase per user, so the total number of purchases scales with `count`.
+
+### Reviews
+
+Each review record includes: `id`, `purchase_id`, `user_id`, `product_id`, `rating`, `title`, `body`, `created_at`, and `updated_at`. The connector generates exactly one review per purchase, with the review's `id` equal to its `purchase_id`, so the total number of reviews scales with `count` the same way purchases do.
 
 ## Features
 
@@ -47,6 +51,7 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
+| 7.3.0 | 2026-09-27 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Added `reviews` stream (one review per purchase, incremental on `updated_at`) |
 | 7.2.1 | 2026-07-10 | [81653](https://github.com/airbytehq/airbyte/pull/81653) | chore(source-faker): dummy version bump for progressive rollout (autopilot) testing |
 | 7.2.0 | 2026-07-09 | [81556](https://github.com/airbytehq/airbyte/pull/81556) | Promoted release candidate to GA |
 | 7.2.0-rc.2 | 2026-06-24 | [80776](https://github.com/airbytehq/airbyte/pull/80776) | Test autopilot progressive rollout lifecycle |

@@ -2,9 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
+
 import jsonschema
 import pytest
 from source_faker import SourceFaker
+from source_faker.review_generator import purchase_ids_for_user
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
 
@@ -45,7 +48,7 @@ def test_source_streams():
     catalog = AirbyteMessageSerializer.dump(AirbyteMessage(type=Type.CATALOG, catalog=catalog))
     schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
 
-    assert len(schemas) == 3
+    assert len(schemas) == 4
     assert schemas[1]["properties"] == {
         "id": {"type": "integer"},
         "created_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
@@ -270,3 +273,146 @@ def test_ensure_no_purchases_without_users():
         state = {}
         iterator = source.read(logger, config, catalog, state)
         iterator.__next__()
+
+
+def test_reviews_schema():
+    source = SourceFaker()
+    config = {"count": 1, "parallelism": 1}
+    catalog = source.discover(None, config)
+    catalog = AirbyteMessageSerializer.dump(AirbyteMessage(type=Type.CATALOG, catalog=catalog))
+    reviews = [stream for stream in catalog["catalog"]["streams"] if stream["name"] == "reviews"]
+
+    assert len(reviews) == 1
+    assert reviews[0]["json_schema"]["properties"] == {
+        "id": {"type": "integer"},
+        "purchase_id": {"type": "integer"},
+        "user_id": {"type": "integer"},
+        "product_id": {"type": "integer"},
+        "rating": {"type": "integer"},
+        "title": {"type": "string"},
+        "body": {"type": "string"},
+        "created_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
+        "updated_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
+    }
+
+
+def _reviews_catalog():
+    stream_dict = {
+        "stream": {"name": "reviews", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    return ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+
+
+def test_read_reviews():
+    source = SourceFaker()
+    config = {"count": 100, "seed": 7, "parallelism": 1, "records_per_slice": 25}
+    catalog = _reviews_catalog()
+    iterator = source.read(logger, config, catalog, {})
+
+    records = []
+    state_rows_count = 0
+    for row in iterator:
+        if row.type is Type.RECORD:
+            records.append(row.record.data)
+        if row.type is Type.STATE:
+            state_rows_count += 1
+
+    expected_ids = [pid for user_id in range(100) for pid in purchase_ids_for_user(user_id)]
+    assert len(expected_ids) == 100
+    assert len(records) == len(expected_ids)
+
+    seen_ids = set()
+    for record in records:
+        assert isinstance(record["id"], int)
+        assert isinstance(record["purchase_id"], int)
+        assert isinstance(record["user_id"], int)
+        assert isinstance(record["product_id"], int)
+        assert record["id"] == record["purchase_id"]
+        assert 1 <= record["rating"] <= 5
+        assert isinstance(record["title"], str)
+        assert isinstance(record["body"], str)
+        datetime.datetime.fromisoformat(record["created_at"])
+        seen_ids.add(record["id"])
+
+    assert seen_ids == set(expected_ids)
+    assert state_rows_count > 1
+
+
+def test_reviews_deterministic_across_parallelism():
+    source = SourceFaker()
+    catalog = _reviews_catalog()
+
+    def read_reviews(parallelism):
+        config = {"count": 100, "seed": 7, "parallelism": parallelism, "records_per_slice": 25}
+        iterator = source.read(logger, config, catalog, {})
+        records = []
+        for row in iterator:
+            if row.type is Type.RECORD:
+                data = dict(row.record.data)
+                data.pop("updated_at")
+                records.append(data)
+        return sorted(records, key=lambda r: r["id"])
+
+    assert read_reviews(1) == read_reviews(3)
+
+
+def test_reviews_ids_match_purchases():
+    source = SourceFaker()
+    config = {"count": 50, "seed": 5, "parallelism": 1}
+    stream_dicts = [
+        {
+            "stream": {"name": "purchases", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+            "sync_mode": "incremental",
+            "destination_sync_mode": "overwrite",
+        },
+        {
+            "stream": {"name": "reviews", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+            "sync_mode": "incremental",
+            "destination_sync_mode": "overwrite",
+        },
+    ]
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(d) for d in stream_dicts])
+
+    purchases = {}
+    reviews = {}
+    for row in source.read(logger, config, catalog, {}):
+        if row.type is Type.RECORD:
+            if row.record.stream == "purchases":
+                purchases[row.record.data["id"]] = row.record.data["user_id"]
+            elif row.record.stream == "reviews":
+                reviews[row.record.data["purchase_id"]] = row.record.data["user_id"]
+
+    assert set(purchases.keys()) == set(reviews.keys())
+    for purchase_id, user_id in reviews.items():
+        assert purchases[purchase_id] == user_id
+
+
+def test_reviews_always_updated_false_with_state():
+    source = SourceFaker()
+    config = {"count": 10, "parallelism": 1, "always_updated": False}
+    catalog = _reviews_catalog()
+    iterator = source.read(logger, config, catalog, {})
+
+    record_rows_count = 0
+    for row in iterator:
+        if row.type is Type.RECORD:
+            record_rows_count = record_rows_count + 1
+
+    assert record_rows_count > 0
+
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
+
+    stream_descriptor = StreamDescriptor(name="reviews", namespace=None)
+    stream_state = AirbyteStreamState(stream_descriptor=stream_descriptor, stream_state=AirbyteStateBlob(updated_at="something"))
+    state = [AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream_state)]
+    iterator = source.read(logger, config, catalog, state)
+
+    record_rows_count = 0
+    for row in iterator:
+        if row.type is Type.RECORD:
+            record_rows_count = record_rows_count + 1
+
+    assert record_rows_count == 0
