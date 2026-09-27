@@ -1,12 +1,11 @@
 name: "Hydra: Stage Handoff"
 # Event-driven handoff between Hydra pipeline stages.
 #
-# Event-driven handoffs are opt-in per PR via the `hydra-autopilot` label. The
-# `optin` job below applies the label when a human posts a Hydra slash command
-# (`/ai-prove-fix`, `/ai-review`, `/ai-ready`, `/ai-resolve-conflicts`) on a PR.
-# Only labelled PRs get event-driven handoffs; PRs the daily sweep drives
-# itself are never labelled (its trigger comments come from a bot, not a
-# human). A Devin `/ai-fix` PR also inherits the label from a `Resolves`-linked
+# Event-driven handoffs are opt-in per PR via the `hydra-autopilot` label,
+# applied when a human runs `!daily_hands_free_triage for <issue|PR>` or adds
+# the label manually. A one-off `/ai-prove-fix`, `/ai-review`, `/ai-ready`, or
+# `/ai-resolve-conflicts` comment from an engineer does NOT opt the PR in.
+# A Devin `/ai-fix` PR also inherits the label from a `Resolves`-linked
 # oncall issue that carries `hydra-autopilot`, on its first green CI. To stop
 # the chain on a PR, remove the label or add `hydra-pause`.
 #
@@ -54,37 +53,6 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'check_suite' }}
 
 jobs:
-  optin:
-    name: Opt PR into hydra-autopilot
-    # A human posting a Hydra slash command opts the PR into event-driven handoff.
-    if: |
-      github.event_name == 'issue_comment' &&
-      github.event.issue.pull_request &&
-      github.event.comment.user.type != 'Bot' &&
-      github.event.comment.user.login != 'airbyte-support-bot' &&
-      (startsWith(github.event.comment.body, '/ai-prove-fix') || startsWith(github.event.comment.body, '/ai-review') || startsWith(github.event.comment.body, '/ai-ready') || startsWith(github.event.comment.body, '/ai-resolve-conflicts'))
-    runs-on: ubuntu-latest
-    steps:
-      - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@v3.0.0
-        id: get-app-token
-        with:
-          owner: "airbytehq"
-          repositories: "airbyte,oncall"
-          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
-          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
-
-      - name: Apply hydra-autopilot label
-        env:
-          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
-          PR_NUMBER: ${{ github.event.issue.number }}
-          COMMENTER: ${{ github.event.comment.user.login }}
-        run: |
-          set -euo pipefail
-          gh pr edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --add-label hydra-autopilot
-          echo "::notice::PR #$PR_NUMBER opted into hydra-autopilot by $COMMENTER"
-          echo "- Opted in: PR #$PR_NUMBER (\`hydra-autopilot\` label applied; requested by \`$COMMENTER\`)" >> "$GITHUB_STEP_SUMMARY"
-
   handoff:
     name: Launch single-PR hands-free pass
     # Only react to result markers posted by our bots on PRs (or manual dispatch).
