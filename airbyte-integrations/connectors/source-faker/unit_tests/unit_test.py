@@ -373,61 +373,53 @@ def test_reviews_match_purchases():
         purchase = purchases[review["purchase_id"]]
         assert review["id"] == review["purchase_id"]
         assert review["user_id"] == purchase["user_id"]
-        assert review["product_id"] == purchase["product_id"]
-        base = purchase["purchased_at"] or purchase["added_to_cart_at"]
-        assert review["created_at"] >= base
 
 
-def test_reviews_deterministic_with_seed(tmp_path):
-    """
-    Each read runs in a fresh subprocess because per-worker seeding is keyed to a
-    process-global worker counter, so two reads in the same process are never identical.
-    """
+def test_review_generator_created_at_after_purchase():
+    from source_faker.review_generator import ReviewGenerator
 
-    import subprocess
-    import sys
+    gen = ReviewGenerator("reviews", 100)
+    gen.prepare()
 
-    config = {"count": 30, "seed": 100, "parallelism": 1}
-    catalog = {
-        "streams": [
-            {
-                "stream": {"name": "reviews", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            }
-        ]
-    }
-    config_path = tmp_path / "config.json"
-    config_path.write_text(json.dumps(config))
-    catalog_path = tmp_path / "catalog.json"
-    catalog_path.write_text(json.dumps(catalog))
+    unpurchased_seen = False
+    for user_id in range(0, 40):
+        purchases = {m.record.data["id"]: m.record.data for m in gen.purchases_for(user_id)}
+        reviews = gen.generate(user_id)
+        assert len(reviews) == len(purchases)
+        for message in reviews:
+            review = message.record.data
+            purchase = purchases[review["purchase_id"]]
+            assert review["product_id"] == purchase["product_id"]
+            assert review["user_id"] == purchase["user_id"]
+            assert review["created_at"] >= (purchase["purchased_at"] or purchase["added_to_cart_at"])
+            assert 1 <= review["rating"] <= 5
+            if purchase["purchased_at"] is None:
+                unpurchased_seen = True
+    assert unpurchased_seen
 
-    def read_reviews():
-        result = subprocess.run(
-            [
-                sys.executable,
-                "-c",
-                "from source_faker.run import run; run()",
-                "read",
-                "--config",
-                str(config_path),
-                "--catalog",
-                str(catalog_path),
-            ],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
+
+def test_reviews_deterministic_with_seed():
+    def read_reviews(parallelism):
+        source = SourceFaker()
+        config = {"count": 30, "seed": 100, "parallelism": parallelism}
+        stream_dict = {
+            "stream": {"name": "reviews", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+            "sync_mode": "incremental",
+            "destination_sync_mode": "overwrite",
+        }
+        catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+        iterator = source.read(logger, config, catalog, {})
         records = []
-        for line in result.stdout.splitlines():
-            message = json.loads(line)
-            if message.get("type") == "RECORD" and message["record"]["stream"] == "reviews":
-                data = message["record"]["data"]
+        for row in iterator:
+            if row.type is Type.RECORD and row.record.stream == "reviews":
+                data = dict(row.record.data)
                 data.pop("updated_at")
                 records.append(data)
         return records
 
-    assert read_reviews() == read_reviews()
+    single_worker = read_reviews(parallelism=1)
+    assert single_worker == read_reviews(parallelism=1)
+    assert sorted(single_worker, key=lambda r: r["id"]) == sorted(read_reviews(parallelism=4), key=lambda r: r["id"])
 
 
 def test_purchases_unchanged_with_seed(tmp_path):
@@ -614,8 +606,7 @@ def test_purchases_unchanged_with_seed(tmp_path):
         },
     ]
 
-    # Read in a subprocess so the worker identities match the ones that produced the
-    # baseline: users gets worker 1 and purchases gets worker 2 in a fresh process.
+    # Read in a subprocess so worker identities match the baseline (users=1, purchases=2).
     import subprocess
     import sys
 

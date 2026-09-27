@@ -24,7 +24,7 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 
 ### Reviews
 
-Each review record includes: `id`, `purchase_id`, `user_id`, `product_id`, `rating`, `title`, `body`, `created_at`, and `updated_at`. The connector generates exactly one review per purchase, so the number of reviews matches the number of purchases. A review's `rating` is an integer between 1 and 5, and its `created_at` is 0-30 days after the purchase's `purchased_at` (or `added_to_cart_at` when the item was never purchased).
+Each review record includes: `id`, `purchase_id`, `user_id`, `product_id`, `rating`, `title`, `body`, `created_at`, and `updated_at`. The connector generates exactly one review per purchase, so the number of reviews matches the number of purchases, and `purchase_id`/`user_id` line up with the purchases stream. `product_id` and the dates are derived from a deterministic regeneration of the purchase for the configured seed. A review's `rating` is an integer between 1 and 5, and its `created_at` is 0-30 days after the purchase's `purchased_at` (or `added_to_cart_at` when the item was never purchased).
 
 ## Features
 

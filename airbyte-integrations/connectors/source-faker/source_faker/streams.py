@@ -197,7 +197,7 @@ class Reviews(Stream, IncrementalMixin):
         self.records_per_slice = records_per_slice
         self.parallelism = parallelism
         self.always_updated = always_updated
-        self.generator = ReviewGenerator(self.name, self.seed, self.parallelism)
+        self.generator = ReviewGenerator(self.name, self.seed)
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
