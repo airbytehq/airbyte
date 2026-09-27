@@ -1,18 +1,18 @@
 name: "Hydra: Stage Handoff"
 # Event-driven handoff between Hydra pipeline stages.
 #
-# Event-driven handoffs are opt-in per PR via the `hydra-autopilot` label,
-# applied when a human runs `!daily_hands_free_triage for <issue|PR>` or adds
-# the label manually. A one-off `/ai-prove-fix`, `/ai-review`, `/ai-ready`, or
+# Event-driven handoffs are opt-in per PR via the `hyd-chain` label, applied
+# when a human runs `!daily_hands_free_triage for <issue|PR>` or adds the
+# label manually. A one-off `/ai-prove-fix`, `/ai-review`, `/ai-ready`, or
 # `/ai-resolve-conflicts` comment from an engineer does NOT opt the PR in.
 # A Devin `/ai-fix` PR also inherits the label from a `Resolves`-linked
-# oncall issue that carries `hydra-autopilot`, on its first green CI. To stop
-# the chain on a PR, remove the label or add `hydra-pause`.
+# oncall issue that carries `hyd-chain`, on its first green CI. To stop
+# the chain on a PR, remove the label or add `hyd-pause`.
 #
 # When `/ai-prove-fix` or `/ai-review` posts its result marker on a PR, or when
-# a PR's CI finishes green (covers new `/ai-fix` PRs, pushes including
-# `/ai-resolve-conflicts`, and re-prove/re-review after commits), this workflow
-# launches the existing `daily_hands_free_triage` playbook
+# a PR's Connector CI run finishes green (covers new `/ai-fix` PRs, pushes
+# including `/ai-resolve-conflicts`, and re-prove/re-review after commits),
+# this workflow launches the existing `daily_hands_free_triage` playbook
 # (airbytehq/ai-skills) scoped to that single PR. The playbook re-reads the
 # PR's current state, applies its normal decision tree, and triggers the next
 # stage if the PR is ready -- the same logic the 5am UTC sweep uses, minus the
@@ -26,7 +26,11 @@ name: "Hydra: Stage Handoff"
 on:
   issue_comment:
     types: [created]
-  check_suite:
+  # workflow_run (not check_suite): check_suite never fires for
+  # Actions-created suites. `pull_requests` on workflow_run is only populated
+  # for same-repo branches, so forks never reach this job.
+  workflow_run:
+    workflows: ["Connector CI"]
     types: [completed]
   workflow_dispatch:
     inputs:
@@ -40,28 +44,28 @@ on:
         type: boolean
         default: true
 
-run-name: "Hydra stage handoff for PR #${{ github.event.issue.number || github.event.check_suite.pull_requests[0].number || inputs.pr }}"
+run-name: "Hydra stage handoff for PR #${{ github.event.issue.number || github.event.workflow_run.pull_requests[0].number || inputs.pr }}"
 
-permissions:
-  checks: read
-  contents: read
-  issues: write
-  pull-requests: read
+# GITHUB_TOKEN is unused: all writes go through the Octavia app token.
+permissions: {}
 
 concurrency:
-  group: hydra-stage-handoff-${{ github.event_name == 'check_suite' && 'ci' || 'marker' }}-${{ github.event.issue.number || github.event.check_suite.pull_requests[0].number || inputs.pr }}
-  cancel-in-progress: ${{ github.event_name == 'check_suite' }}
+  # cancel-in-progress is deliberately false: cancelling a run after the Devin
+  # API call would leave a live session behind.
+  group: hydra-stage-handoff-${{ github.event_name == 'workflow_run' && 'ci' || 'marker' }}-${{ github.event.issue.number || github.event.workflow_run.pull_requests[0].number || inputs.pr }}
+  cancel-in-progress: false
 
 jobs:
   handoff:
     name: Launch single-PR hands-free pass
-    # Only react to result markers posted by our bots on PRs (or manual dispatch).
+    # Only react to result markers posted by our bots on PRs, a green Connector
+    # CI run on a PR, or manual dispatch.
     if: |
       github.event_name == 'workflow_dispatch' ||
       (
-        github.event_name == 'check_suite' &&
-        github.event.check_suite.conclusion == 'success' &&
-        github.event.check_suite.pull_requests[0] != null
+        github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.pull_requests[0] != null
       ) ||
       (
         github.event.issue.pull_request &&
@@ -78,16 +82,16 @@ jobs:
           COMMENT_BODY: ${{ github.event.comment.body }}
           PR_INPUT: ${{ inputs.pr }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
-          CS_PR_NUMBER: ${{ github.event.check_suite.pull_requests[0].number }}
-          CS_HEAD_SHA: ${{ github.event.check_suite.head_sha }}
-          CS_CONCLUSION: ${{ github.event.check_suite.conclusion }}
+          WR_PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+          WR_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          WR_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
         run: |
           set -euo pipefail
-          if [[ "$EVENT_NAME" == "check_suite" ]]; then
-            echo "pr=$CS_PR_NUMBER" | tee -a "$GITHUB_OUTPUT"
+          if [[ "$EVENT_NAME" == "workflow_run" ]]; then
+            echo "pr=$WR_PR_NUMBER" | tee -a "$GITHUB_OUTPUT"
             echo "stage=ci" | tee -a "$GITHUB_OUTPUT"
-            echo "result=$CS_CONCLUSION" | tee -a "$GITHUB_OUTPUT"
-            echo "head_sha=$CS_HEAD_SHA" | tee -a "$GITHUB_OUTPUT"
+            echo "result=$WR_CONCLUSION" | tee -a "$GITHUB_OUTPUT"
+            echo "head_sha=$WR_HEAD_SHA" | tee -a "$GITHUB_OUTPUT"
             exit 0
           fi
           if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
@@ -137,52 +141,50 @@ jobs:
           HEAD=$(jq -r '.headRefOid' <<<"$PR_JSON")
           LABELS=$(jq -r '[.labels[].name] | join(",")' <<<"$PR_JSON")
           echo "state=$STATE fork=$IS_FORK head=$HEAD labels=$LABELS"
+          echo "head=$HEAD" >> "$GITHUB_OUTPUT"
 
           SKIP=""
           [[ "$STATE" != "OPEN" ]] && SKIP="PR is $STATE"
           [[ -z "$SKIP" && "$IS_FORK" == "true" ]] && SKIP="community (fork) PR"
           [[ -z "$SKIP" && ",$LABELS," == *",community,"* ]] && SKIP="community label"
-          [[ -z "$SKIP" && ",$LABELS," == *",hydra-pause,"* ]] && SKIP="hydra-pause label"
+          [[ -z "$SKIP" && ",$LABELS," == *",hyd-pause,"* ]] && SKIP="hyd-pause label"
 
-          # A Devin-authored /ai-fix PR inherits hydra-autopilot from a
-          # Resolves-linked oncall issue that already carries it (check_suite only).
-          if [[ -z "$SKIP" && "$EVENT_NAME" == "check_suite" && ",$LABELS," != *",hydra-autopilot,"* ]]; then
+          # A Devin-authored /ai-fix PR inherits hyd-chain from a
+          # Resolves-linked oncall issue that already carries it
+          # (workflow_run only).
+          if [[ -z "$SKIP" && "$EVENT_NAME" == "workflow_run" && ",$LABELS," != *",hyd-chain,"* ]]; then
             AUTHOR=$(jq -r '.author.login' <<<"$PR_JSON")
-            if [[ "$AUTHOR" == "devin-ai-integration" || "$AUTHOR" == "devin-ai-integration[bot]" ]]; then
+            if [[ "$AUTHOR" == "app/devin-ai-integration" || "$AUTHOR" == "devin-ai-integration" || "$AUTHOR" == "devin-ai-integration[bot]" ]]; then
               BODY=$(jq -r '.body' <<<"$PR_JSON")
               while IFS= read -r N; do
                 [[ -z "$N" ]] && continue
                 ISSUE_LABELS=$(gh issue view "$N" --repo airbytehq/oncall --json labels -q '[.labels[].name]|join(",")' || true)
-                if [[ ",$ISSUE_LABELS," == *",hydra-autopilot,"* ]]; then
+                if [[ ",$ISSUE_LABELS," == *",hyd-chain,"* ]]; then
                   if [[ "$VAR_DRY_RUN" == "true" ]]; then
-                    echo "WOULD inherit hydra-autopilot from oncall issue #$N"
+                    echo "WOULD inherit hyd-chain from oncall issue #$N"
                   else
-                    gh pr edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --add-label hydra-autopilot
+                    gh pr edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --add-label hyd-chain
                   fi
-                  LABELS="${LABELS},hydra-autopilot"
-                  echo "::notice::PR #$PR_NUMBER inherited hydra-autopilot from oncall issue #$N"
-                  echo "- Inherited: PR #$PR_NUMBER got \`hydra-autopilot\` from oncall issue #$N" >> "$GITHUB_STEP_SUMMARY"
+                  LABELS="${LABELS},hyd-chain"
+                  echo "::notice::PR #$PR_NUMBER inherited hyd-chain from oncall issue #$N"
+                  echo "- Inherited: PR #$PR_NUMBER got \`hyd-chain\` from oncall issue #$N" >> "$GITHUB_STEP_SUMMARY"
                   break
                 fi
               done < <(printf '%s' "$BODY" | grep -oE 'Resolves https://github.com/airbytehq/oncall/issues/[0-9]+' | grep -oE '[0-9]+$' | sort -u)
             fi
           fi
 
-          [[ -z "$SKIP" && "$EVENT_NAME" != "workflow_dispatch" && ",$LABELS," != *",hydra-autopilot,"* ]] && SKIP="PR not opted in (no hydra-autopilot label)"
+          [[ -z "$SKIP" && "$EVENT_NAME" != "workflow_dispatch" && ",$LABELS," != *",hyd-chain,"* ]] && SKIP="PR not opted in (no hyd-chain label)"
           [[ -z "$SKIP" && -n "$MARKER_HEAD_SHA" && "$HEAD" != "$MARKER_HEAD_SHA"* ]] && SKIP="result is for stale head $MARKER_HEAD_SHA (current $HEAD)"
 
-          # CI-completion trigger: only spend a session once the rest of CI is
-          # done and green.
-          if [[ -z "$SKIP" && "$EVENT_NAME" == "check_suite" ]]; then
-            if [[ -z "$SKIP" ]]; then
-              # This job is itself a check run on the same head; ignore it.
-              RUNNING=$(jq -r --arg self "$SELF_JOB_NAME" '[.statusCheckRollup[] | select(.__typename=="CheckRun" and .name!=$self and .status!="COMPLETED")] + [.statusCheckRollup[] | select(.__typename=="StatusContext" and .state=="PENDING")] | length' <<<"$PR_JSON")
-              [[ "$RUNNING" != "0" ]] && SKIP="CI still running"
-            fi
-            if [[ -z "$SKIP" ]]; then
-              FAILING=$(jq -r --arg self "$SELF_JOB_NAME" '[.statusCheckRollup[] | select(.__typename=="CheckRun" and .name!=$self and (.conclusion=="FAILURE" or .conclusion=="TIMED_OUT" or .conclusion=="CANCELLED" or .conclusion=="ACTION_REQUIRED"))] + [.statusCheckRollup[] | select(.__typename=="StatusContext" and (.state=="FAILURE" or .state=="ERROR"))] | length' <<<"$PR_JSON")
-              [[ "$FAILING" != "0" ]] && SKIP="CI failing"
-            fi
+          # CI-completion trigger: skip when other checks already failed. No
+          # "still running" check -- pending StatusContexts (e.g. CodeRabbit,
+          # Vercel) can finish last with no Actions event and would strand the
+          # push; the playbook re-reads CI anyway.
+          if [[ -z "$SKIP" && "$EVENT_NAME" == "workflow_run" ]]; then
+            # This job is itself a check run on the same head; ignore it.
+            FAILING=$(jq -r --arg self "$SELF_JOB_NAME" '[.statusCheckRollup[] | select(.__typename=="CheckRun" and .name!=$self and (.conclusion=="FAILURE" or .conclusion=="TIMED_OUT" or .conclusion=="CANCELLED" or .conclusion=="ACTION_REQUIRED"))] + [.statusCheckRollup[] | select(.__typename=="StatusContext" and (.state=="FAILURE" or .state=="ERROR"))] | length' <<<"$PR_JSON")
+            [[ "$FAILING" != "0" ]] && SKIP="CI failing"
           fi
 
           if [[ -n "$SKIP" ]]; then
@@ -191,6 +193,40 @@ jobs:
           else
             echo "eligible=true" | tee -a "$GITHUB_OUTPUT"
           fi
+
+      # ---------- Idempotency guard ----------
+      # Post a unique marker comment before launching so a retriggered event
+      # for the same stage/result/head doesn't spawn a second session. The
+      # comment doubles as the start comment; its `<!-- hydra_handoff:` key
+      # never matches the job `if` (which looks for `_result:` markers), so it
+      # cannot retrigger this workflow.
+      - name: Idempotency guard
+        id: guard
+        if: steps.eligibility.outputs.eligible == 'true' && github.event_name != 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ steps.marker.outputs.pr }}
+          STAGE: ${{ steps.marker.outputs.stage }}
+          RESULT: ${{ steps.marker.outputs.result }}
+          HEAD: ${{ steps.eligibility.outputs.head }}
+          VAR_DRY_RUN: ${{ vars.HYDRA_HANDOFF_DRY_RUN }}
+        run: |
+          set -euo pipefail
+          KEY="<!-- hydra_handoff: stage=${STAGE}; result=${RESULT}; head_sha=${HEAD} -->"
+          EXISTING=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate -q '.[].body' | grep -cF "$KEY" || true)
+          if [[ "$EXISTING" != "0" ]]; then
+            echo "::notice::Skipping handoff: already launched for this key"
+            echo "launch=false" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          BODY="${KEY}
+          ↪️ Hydra stage handoff: launching a scoped hands-free pass (trigger: \`${STAGE}\` → \`${RESULT}\`, head \`${HEAD}\`). [Workflow run](https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
+          if [[ "$VAR_DRY_RUN" == "true" ]]; then
+            echo "WOULD post handoff guard comment on PR #$PR_NUMBER"
+          else
+            gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" -f body="$BODY"
+          fi
+          echo "launch=true" | tee -a "$GITHUB_OUTPUT"
 
       - name: Resolve dry-run mode
         id: mode
@@ -207,7 +243,7 @@ jobs:
 
       # ---------- Launch the scoped hands-free session ----------
       - name: Launch hands-free triage for this PR
-        if: steps.eligibility.outputs.eligible == 'true'
+        if: steps.eligibility.outputs.eligible == 'true' && steps.guard.outputs.launch != 'false'
         id: devin
         uses: aaronsteers/devin-action@main
         with:
@@ -239,6 +275,7 @@ jobs:
         if: always()
         env:
           ELIGIBLE: ${{ steps.eligibility.outputs.eligible }}
+          LAUNCHED: ${{ steps.guard.outputs.launch }}
           DRY_RUN: ${{ steps.mode.outputs.dry_run }}
           SESSION_URL: ${{ steps.devin.outputs.session-url }}
           PR_NUMBER: ${{ steps.marker.outputs.pr }}
@@ -250,6 +287,7 @@ jobs:
             echo "- PR: #${PR_NUMBER}"
             echo "- Trigger: \`${STAGE}\` → \`${RESULT:-n/a}\`"
             echo "- Eligible: ${ELIGIBLE}"
+            echo "- Launched: ${LAUNCHED:-n/a}"
             echo "- Dry run: ${DRY_RUN}"
             [[ -n "$SESSION_URL" ]] && echo "- Session: ${SESSION_URL}"
             true
