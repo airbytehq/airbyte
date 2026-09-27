@@ -148,6 +148,43 @@ class TestOAuthRefreshFlowWithExpiredToken(TestCase):
 
         assert len(output.records) == 1
 
+    @HttpMocker()
+    def test_given_empty_token_expiry_date_when_read_then_refresh_request_issued(self, http_mocker):
+        """When `token_expiry_date` is empty/absent, the connector issues a refresh on the first read.
+
+        An empty expiry makes the CDK treat the access token as already expired (`now - 1 day`), so it
+        POSTs to `/oauth/tokens` before the very first API call — consuming and rotating Zendesk's
+        single-use refresh token (the pre-fix failure mode, oncall #13130). Requesting `expires_in` on
+        the authorization-code exchange and extracting it persists a future `token_expiry_date`, which
+        avoids this premature refresh (see `test_given_valid_token_when_read_then_no_refresh_needed`).
+        """
+        config = _build_oauth_refresh_config(
+            refresh_token=_INITIAL_REFRESH_TOKEN,
+            access_token=_INITIAL_ACCESS_TOKEN,
+            token_expiry_date="",
+        )
+
+        # Register OAuth token refresh endpoint directly on requests_mock
+        # to bypass HttpMocker's JSON-only body matcher, and capture the matcher
+        # so we can assert a refresh request was actually issued.
+        token_refresh_matcher = http_mocker._mocker.post(
+            _OAUTH_TOKEN_URL,
+            text=_build_token_refresh_response_json(_NEW_ACCESS_TOKEN, _ROTATED_REFRESH_TOKEN),
+            status_code=200,
+        )
+
+        oauth_authenticator = OAuthBearerAuthenticator(_NEW_ACCESS_TOKEN)
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.tags_endpoint(oauth_authenticator).with_page_size(100).build(),
+            TagsResponseBuilder.tags_response().with_record(TagsRecordBuilder.tags_record()).build(),
+        )
+
+        output = read_stream("tags", SyncMode.full_refresh, config)
+
+        assert token_refresh_matcher.called
+        assert token_refresh_matcher.call_count == 1
+        assert len(output.records) == 1
+
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestOAuthRefreshTokenRotation(TestCase):

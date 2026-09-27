@@ -15,12 +15,13 @@ import pandas as pd
 import sqlalchemy
 import ulid
 from airbyte import exceptions as exc
+from airbyte import progress
 from airbyte._util.name_normalizers import LowerCaseNormalizer
 from airbyte.constants import AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN, AB_RAW_ID_COLUMN, DEBUG_MODE
-from airbyte.progress import progress
+from airbyte.records import StreamRecordHandler
 from airbyte.strategies import WriteStrategy
 from airbyte.types import SQLTypeConverter
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from airbyte_cdk.models import DestinationSyncMode
 from pandas import Index
 from pydantic import BaseModel
 from sqlalchemy import Column, Table, and_, create_engine, insert, null, select, text, update
@@ -33,7 +34,7 @@ if TYPE_CHECKING:
     from collections.abc import Generator
 
     from airbyte._batch_handles import BatchHandle
-    from airbyte._processors.file.base import FileWriterBase
+    from airbyte._writers.file_writers import FileWriterBase
     from airbyte.secrets.base import SecretString
     from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStateMessage
     from sqlalchemy.engine import Connection, Engine
@@ -218,7 +219,8 @@ class SqlProcessorBase(RecordProcessorBase):
     def process_record_message(
         self,
         record_msg: AirbyteRecordMessage,
-        stream_schema: dict,
+        stream_record_handler: StreamRecordHandler,
+        progress_tracker: progress.ProgressTracker,
     ) -> None:
         """Write a record to the cache.
 
@@ -229,7 +231,8 @@ class SqlProcessorBase(RecordProcessorBase):
         """
         self.file_writer.process_record_message(
             record_msg,
-            stream_schema=stream_schema,
+            stream_record_handler=stream_record_handler,
+            progress_tracker=progress_tracker,
         )
 
     # Protected members (non-public interface):
@@ -460,6 +463,7 @@ class SqlProcessorBase(RecordProcessorBase):
         self,
         stream_name: str,
         write_strategy: WriteStrategy,
+        progress_tracker: progress.ProgressTracker,
     ) -> list[BatchHandle]:
         """Finalize all uncommitted batches.
 
@@ -472,9 +476,12 @@ class SqlProcessorBase(RecordProcessorBase):
               although this is a fairly rare edge case we can ignore in V1.
         """
         # Flush any pending writes
-        self.file_writer.flush_active_batches()
+        self.file_writer.flush_active_batches(progress_tracker=progress_tracker)
 
-        with self.finalizing_batches(stream_name) as batches_to_finalize:
+        with self.finalizing_batches(
+            stream_name,
+            progress_tracker=progress_tracker,
+        ) as batches_to_finalize:
             # Make sure the target schema and target table exist.
             self._ensure_schema_exists()
             final_table_name = self._ensure_final_table_exists(
@@ -508,7 +515,7 @@ class SqlProcessorBase(RecordProcessorBase):
             finally:
                 self._drop_temp_table(temp_table_name, if_exists=True)
 
-        progress.log_stream_finalized(stream_name)
+        progress_tracker.log_stream_finalized(stream_name)
 
         # Return the batch handles as measure of work completed.
         return batches_to_finalize
@@ -525,6 +532,7 @@ class SqlProcessorBase(RecordProcessorBase):
     def finalizing_batches(
         self,
         stream_name: str,
+        progress_tracker: progress.ProgressTracker,
     ) -> Generator[list[BatchHandle], str, None]:
         """Context manager to use for finalizing batches, if applicable.
 
@@ -536,10 +544,10 @@ class SqlProcessorBase(RecordProcessorBase):
         ].copy()
         self._pending_state_messages[stream_name].clear()
 
-        progress.log_batches_finalizing(stream_name, len(batches_to_finalize))
+        progress_tracker.log_batches_finalizing(stream_name, len(batches_to_finalize))
         yield batches_to_finalize
         self._finalize_state_messages(state_messages_to_finalize)
-        progress.log_batches_finalized(stream_name, len(batches_to_finalize))
+        progress_tracker.log_batches_finalized(stream_name, len(batches_to_finalize))
 
         for batch_handle in batches_to_finalize:
             batch_handle.finalized = True

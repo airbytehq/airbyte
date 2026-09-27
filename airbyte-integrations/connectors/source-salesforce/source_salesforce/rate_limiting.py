@@ -21,6 +21,8 @@ from airbyte_cdk.sources.streams.http.error_handlers import (
 )
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
+from .exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING
+
 
 if TYPE_CHECKING:
     from source_salesforce.api import SalesforceTokenProvider
@@ -56,10 +58,8 @@ _RETRYABLE_400_STATUS_CODES = {
     420,
     codes.too_many_requests,
 }
-_AUTHENTICATION_ERROR_MESSAGE_MAPPING = {
-    "expired access/refresh token": "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce."
-}
-
+_NO_SUCH_COLUMN_PATTERN = re.compile(r"No such column '(?P<field>[^']+)' on entity")
+_BULK_COMPOUND_DATA_ERROR_MESSAGE = "Selecting compound data not supported in Bulk Query"
 
 logger = logging.getLogger("airbyte")
 
@@ -107,6 +107,14 @@ class SalesforceErrorHandler(ErrorHandler):
                 if error_code == "INVALID_SESSION_ID":
                     if self._token_provider is not None:
                         self._token_provider.force_refresh()
+                        if self._token_provider.credentials_permanently_failed:
+                            # The session is dead and the grant cannot mint a new one; retrying
+                            # floods the token endpoint from every stream.
+                            return ErrorResolution(
+                                ResponseAction.FAIL,
+                                FailureType.config_error,
+                                AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"],
+                            )
                     return ErrorResolution(
                         ResponseAction.RETRY,
                         FailureType.transient_error,
@@ -126,11 +134,14 @@ class SalesforceErrorHandler(ErrorHandler):
                     ResponseAction.FAIL,
                     FailureType.config_error,
                     (
-                        _AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(error_message)
-                        if error_message in _AUTHENTICATION_ERROR_MESSAGE_MAPPING
+                        AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(error_message)
+                        if error_message in AUTHENTICATION_ERROR_MESSAGE_MAPPING
                         else f"An error occurred: {response.content.decode()}"
                     ),
                 )
+
+            if error_code == "INVALID_FIELD" and error_message != _BULK_COMPOUND_DATA_ERROR_MESSAGE:
+                return self._handle_invalid_field(error_message)
 
             if self._is_bulk_job_creation(response) and response.status_code in [
                 codes.FORBIDDEN,
@@ -164,6 +175,22 @@ class SalesforceErrorHandler(ErrorHandler):
             f"An error occurred: {response.content.decode()}",
         )
 
+    def _handle_invalid_field(self, error_message: str) -> ErrorResolution:
+        """`INVALID_FIELD` means the org can no longer resolve a field the query asks for: the field was
+        deleted or renamed, or field-level read access was revoked for the authenticated user. The
+        selected fields come from the sObject describe, so this is a customer-side change rather than an
+        Airbyte failure and must not be reported as a system error.
+        """
+        logger.error(f"Salesforce returned INVALID_FIELD for stream '{self._stream_name}': {error_message}")
+        field_match = _NO_SUCH_COLUMN_PATTERN.search(error_message)
+        field_reference = f"Field '{field_match.group('field')}'" if field_match else "A field"
+        return ErrorResolution(
+            ResponseAction.FAIL,
+            FailureType.config_error,
+            f"{field_reference} requested by stream '{self._stream_name}' does not exist in Salesforce or is not visible to the "
+            "authenticated user. Restore the field or grant it field-level read access, then refresh the connection schema.",
+        )
+
     @staticmethod
     def _is_bulk_job_status_check(response: requests.Response) -> bool:
         """Regular string ensures format used only for job status: /services/data/vXX.X/jobs/query/<queryJobId>,
@@ -191,7 +218,7 @@ class SalesforceErrorHandler(ErrorHandler):
         #        updated query: "Select Name, (Select Subject,ActivityType from ActivityHistories) from Contact"
         #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
         #    And the main problem is these subqueries doesn't support CSV response format.
-        if error_message == "Selecting compound data not supported in Bulk Query" or (
+        if error_message == _BULK_COMPOUND_DATA_ERROR_MESSAGE or (
             error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
         ):
             logger.error(

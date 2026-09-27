@@ -37,3 +37,22 @@ Use `src/test-performance/sql/create_mysql_benchmarks.sql` to create a benchmark
    ```
 
 The script creates the configured number of tables with names from `test_0` through `test_<table count minus 1>`.
+
+## Reproducing bugs locally
+
+Use the generic
+[`source-mysql-e2e-tests`](.agents/skills/source-mysql-e2e-tests/SKILL.md)
+skill for standard local sweeps and the
+[`source-mysql-e2e-cdc-tests`](.agents/skills/source-mysql-e2e-cdc-tests/SKILL.md)
+skill for binlog CDC cases. Both delegate orchestration to
+[`airbyte-integrations/db-harness-lib/`](../../db-harness-lib/); the CDC skill
+reuses the generic backend, which is already binlog and GTID ready.
+
+```bash
+GENERIC=airbyte-integrations/connectors/source-mysql/.agents/skills/source-mysql-e2e-tests
+CDC=airbyte-integrations/connectors/source-mysql/.agents/skills/source-mysql-e2e-cdc-tests
+
+"$GENERIC/scripts/start-backend.sh"
+"$CDC/cases/initial-load.sh"
+"$CDC/cases/incremental-replay.sh"
+```

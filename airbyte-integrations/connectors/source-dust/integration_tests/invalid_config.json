@@ -1,0 +1,5 @@
+{
+  "bearer_token": "sk-invalid-token",
+  "workspace_id": "invalid-workspace",
+  "start_date": "2026-08-01"
+}

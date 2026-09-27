@@ -46,8 +46,8 @@ maintenance/upgrades are owned by the customer.
 **Marketplace** connectors are maintained by Airbyte's community members. These connectors:
 
 - Are not maintained by Airbyte.
-- Do not have support SLAs.
-- Should be used with caution in production.
+- Are not covered by Airbyte support SLAs.
+- Should be tested before production use.
 - Might not be feature complete and may experience backward-incompatible, breaking changes with no notice.
 - Are available to everyone.
 - Can [be improved by people like you](/community/contributing-to-airbyte/).
