@@ -256,10 +256,13 @@ jobs:
           tags: |
             ai-oncall
             hydra-stage-handoff
+          # devin-action interpolates prompt-text verbatim into a bash [[ ]] test and
+          # an array literal, so the text must not contain double quotes, backticks,
+          # or unescaped $ — they break the shell or get command-substituted.
           prompt-text: |
-            SINGLE-ITEM HANDOFF MODE (see "Single-Item Handoff Mode" in the playbook).
+            SINGLE-ITEM HANDOFF MODE (see the Single-Item Handoff Mode section of the playbook).
 
-            Trigger: `${{ steps.marker.outputs.stage }}` posted result `${{ steps.marker.outputs.result }}` for head `${{ steps.marker.outputs.head_sha }}` on
+            Trigger: stage ${{ steps.marker.outputs.stage }} posted result ${{ steps.marker.outputs.result }} for head ${{ steps.marker.outputs.head_sha }} on
             https://github.com/${{ github.repository }}/pull/${{ steps.marker.outputs.pr }}
             Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
