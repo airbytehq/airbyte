@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
+
 import jsonschema
 import pytest
 from source_faker import SourceFaker
@@ -45,7 +47,7 @@ def test_source_streams():
     catalog = AirbyteMessageSerializer.dump(AirbyteMessage(type=Type.CATALOG, catalog=catalog))
     schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
 
-    assert len(schemas) == 3
+    assert len(schemas) == 4
     assert schemas[1]["properties"] == {
         "id": {"type": "integer"},
         "created_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
@@ -270,3 +272,407 @@ def test_ensure_no_purchases_without_users():
         state = {}
         iterator = source.read(logger, config, catalog, state)
         iterator.__next__()
+
+
+def test_reviews_schema():
+    source = SourceFaker()
+    config = {"count": 1, "parallelism": 1}
+    catalog = source.discover(None, config)
+    catalog = AirbyteMessageSerializer.dump(AirbyteMessage(type=Type.CATALOG, catalog=catalog))
+
+    reviews_stream = next(stream for stream in catalog["catalog"]["streams"] if stream["name"] == "reviews")
+    assert reviews_stream["json_schema"]["properties"] == {
+        "id": {"type": "integer"},
+        "purchase_id": {"type": "integer"},
+        "user_id": {"type": "integer"},
+        "product_id": {"type": "integer"},
+        "rating": {"type": "integer"},
+        "title": {"type": "string"},
+        "body": {"type": "string"},
+        "created_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
+        "updated_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
+    }
+    assert reviews_stream["source_defined_primary_key"] == [["id"]]
+    assert reviews_stream["default_cursor_field"] == ["updated_at"]
+
+
+def test_read_reviews():
+    source = SourceFaker()
+    config = {"count": 100, "seed": 100, "parallelism": 1, "records_per_slice": 10}
+    stream_dicts = [
+        {
+            "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+            "sync_mode": "incremental",
+            "destination_sync_mode": "overwrite",
+        },
+        {
+            "stream": {"name": "reviews", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+            "sync_mode": "incremental",
+            "destination_sync_mode": "overwrite",
+        },
+    ]
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict) for stream_dict in stream_dicts])
+    state = {}
+    iterator = source.read(logger, config, catalog, state)
+
+    record_rows_count = 0
+    state_rows = []
+    for row in iterator:
+        if row.type is Type.RECORD:
+            if row.record.stream == "reviews":
+                record_rows_count = record_rows_count + 1
+                assert 1 <= row.record.data["rating"] <= 5
+                assert row.record.data["title"]
+                assert row.record.data["body"]
+        if row.type is Type.STATE:
+            if row.state.stream.stream_descriptor.name == "reviews":
+                state_rows.append(row)
+
+    assert record_rows_count == 100
+    assert len(state_rows) >= 10
+    last_state = state_rows[-1].state.stream.stream_state
+    assert last_state.updated_at
+    assert last_state.loop_offset == 100
+
+
+def test_reviews_match_purchases():
+    source = SourceFaker()
+    config = {"count": 100, "seed": 100, "parallelism": 1, "records_per_slice": 10}
+    stream_dicts = [
+        {
+            "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+            "sync_mode": "incremental",
+            "destination_sync_mode": "overwrite",
+        },
+        {
+            "stream": {"name": "purchases", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+            "sync_mode": "incremental",
+            "destination_sync_mode": "overwrite",
+        },
+        {
+            "stream": {"name": "reviews", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+            "sync_mode": "incremental",
+            "destination_sync_mode": "overwrite",
+        },
+    ]
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict) for stream_dict in stream_dicts])
+    state = {}
+    iterator = source.read(logger, config, catalog, state)
+
+    purchases = {}
+    reviews = []
+    for row in iterator:
+        if row.type is Type.RECORD:
+            if row.record.stream == "purchases":
+                purchases[row.record.data["id"]] = row.record.data
+            elif row.record.stream == "reviews":
+                reviews.append(row.record.data)
+
+    assert {r["purchase_id"] for r in reviews} == set(purchases.keys())
+    for review in reviews:
+        purchase = purchases[review["purchase_id"]]
+        assert review["id"] == review["purchase_id"]
+        assert review["user_id"] == purchase["user_id"]
+        assert review["product_id"] == purchase["product_id"]
+        base = purchase["purchased_at"] or purchase["added_to_cart_at"]
+        assert review["created_at"] >= base
+
+
+def test_reviews_deterministic_with_seed(tmp_path):
+    """
+    Each read runs in a fresh subprocess because per-worker seeding is keyed to a
+    process-global worker counter, so two reads in the same process are never identical.
+    """
+
+    import subprocess
+    import sys
+
+    config = {"count": 30, "seed": 100, "parallelism": 1}
+    catalog = {
+        "streams": [
+            {
+                "stream": {"name": "reviews", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+                "sync_mode": "incremental",
+                "destination_sync_mode": "overwrite",
+            }
+        ]
+    }
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps(config))
+    catalog_path = tmp_path / "catalog.json"
+    catalog_path.write_text(json.dumps(catalog))
+
+    def read_reviews():
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                "from source_faker.run import run; run()",
+                "read",
+                "--config",
+                str(config_path),
+                "--catalog",
+                str(catalog_path),
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        records = []
+        for line in result.stdout.splitlines():
+            message = json.loads(line)
+            if message.get("type") == "RECORD" and message["record"]["stream"] == "reviews":
+                data = message["record"]["data"]
+                data.pop("updated_at")
+                records.append(data)
+        return records
+
+    assert read_reviews() == read_reviews()
+
+
+def test_purchases_unchanged_with_seed(tmp_path):
+    expected_purchases = [
+        {
+            "id": 1,
+            "product_id": 19,
+            "user_id": 1,
+            "created_at": "2004-11-20 11:10:35.747117",
+            "added_to_cart_at": "2020-01-21T11:10:35+00:00",
+            "purchased_at": None,
+            "returned_at": None,
+        },
+        {
+            "id": 2,
+            "product_id": 46,
+            "user_id": 2,
+            "created_at": "2018-10-02 23:33:34.649758",
+            "added_to_cart_at": "2020-08-27T23:33:34+00:00",
+            "purchased_at": None,
+            "returned_at": None,
+        },
+        {
+            "id": 3,
+            "product_id": 92,
+            "user_id": 3,
+            "created_at": "2014-04-17 04:05:51.055432",
+            "added_to_cart_at": "2018-05-20T04:05:51+00:00",
+            "purchased_at": "2021-08-31T04:05:51+00:00",
+            "returned_at": None,
+        },
+        {
+            "id": 4,
+            "product_id": 55,
+            "user_id": 4,
+            "created_at": "2019-07-21 15:42:04.258410",
+            "added_to_cart_at": "2025-11-25T15:42:04+00:00",
+            "purchased_at": None,
+            "returned_at": None,
+        },
+        {
+            "id": 5,
+            "product_id": 6,
+            "user_id": 5,
+            "created_at": "2016-07-24 19:27:53.417790",
+            "added_to_cart_at": "2024-09-06T19:27:53+00:00",
+            "purchased_at": "2026-03-16T19:27:53+00:00",
+            "returned_at": None,
+        },
+        {
+            "id": 6,
+            "product_id": 96,
+            "user_id": 6,
+            "created_at": "2004-03-12 06:04:37.248771",
+            "added_to_cart_at": "2012-07-04T06:04:37+00:00",
+            "purchased_at": None,
+            "returned_at": None,
+        },
+        {
+            "id": 7,
+            "product_id": 49,
+            "user_id": 8,
+            "created_at": "2020-09-15 20:55:32.716593",
+            "added_to_cart_at": "2025-08-28T20:55:32+00:00",
+            "purchased_at": "2026-05-16T20:55:32+00:00",
+            "returned_at": None,
+        },
+        {
+            "id": 8,
+            "product_id": 11,
+            "user_id": 9,
+            "created_at": "2006-07-08 23:13:38.615482",
+            "added_to_cart_at": "2024-09-08T23:13:38+00:00",
+            "purchased_at": "2026-08-15T23:13:38+00:00",
+            "returned_at": None,
+        },
+        {
+            "id": 9,
+            "product_id": 78,
+            "user_id": 9,
+            "created_at": "2001-07-04 15:55:11.322265",
+            "added_to_cart_at": "2021-04-27T15:55:11+00:00",
+            "purchased_at": "2026-01-06T15:55:11+00:00",
+            "returned_at": None,
+        },
+        {
+            "id": 10,
+            "product_id": 92,
+            "user_id": 10,
+            "created_at": "2005-04-17 13:08:09.629238",
+            "added_to_cart_at": "2017-03-10T13:08:09+00:00",
+            "purchased_at": "2018-10-26T13:08:09+00:00",
+            "returned_at": None,
+        },
+        {
+            "id": 11,
+            "product_id": 80,
+            "user_id": 11,
+            "created_at": "2008-03-04 03:49:09.004539",
+            "added_to_cart_at": "2017-05-31T03:49:09+00:00",
+            "purchased_at": None,
+            "returned_at": None,
+        },
+        {
+            "id": 12,
+            "product_id": 62,
+            "user_id": 12,
+            "created_at": "2013-05-11 08:46:28.434504",
+            "added_to_cart_at": "2014-11-23T08:46:28+00:00",
+            "purchased_at": "2016-12-15T08:46:28+00:00",
+            "returned_at": None,
+        },
+        {
+            "id": 13,
+            "product_id": 49,
+            "user_id": 13,
+            "created_at": "2023-11-07 00:29:12.845865",
+            "added_to_cart_at": "2024-12-09T00:29:12+00:00",
+            "purchased_at": "2026-02-19T00:29:12+00:00",
+            "returned_at": None,
+        },
+        {
+            "id": 14,
+            "product_id": 78,
+            "user_id": 14,
+            "created_at": "2008-02-06 22:24:42.878164",
+            "added_to_cart_at": "2017-10-07T22:24:42+00:00",
+            "purchased_at": "2019-04-06T22:24:42+00:00",
+            "returned_at": None,
+        },
+        {
+            "id": 15,
+            "product_id": 47,
+            "user_id": 15,
+            "created_at": "2007-12-06 02:40:07.497866",
+            "added_to_cart_at": "2012-07-30T02:40:07+00:00",
+            "purchased_at": "2025-10-13T02:40:07+00:00",
+            "returned_at": None,
+        },
+        {
+            "id": 16,
+            "product_id": 81,
+            "user_id": 16,
+            "created_at": "2003-03-09 22:49:10.762837",
+            "added_to_cart_at": "2016-05-30T22:49:10+00:00",
+            "purchased_at": "2017-11-04T22:49:10+00:00",
+            "returned_at": None,
+        },
+        {
+            "id": 17,
+            "product_id": 79,
+            "user_id": 18,
+            "created_at": "2002-06-18 04:29:58.826481",
+            "added_to_cart_at": "2022-03-23T04:29:58+00:00",
+            "purchased_at": None,
+            "returned_at": None,
+        },
+        {
+            "id": 18,
+            "product_id": 99,
+            "user_id": 19,
+            "created_at": "2014-11-08 04:45:00.273470",
+            "added_to_cart_at": "2020-11-04T04:45:00+00:00",
+            "purchased_at": "2026-02-11T04:45:00+00:00",
+            "returned_at": None,
+        },
+        {
+            "id": 19,
+            "product_id": 69,
+            "user_id": 19,
+            "created_at": "2000-05-17 15:35:37.627331",
+            "added_to_cart_at": "2020-06-06T15:35:37+00:00",
+            "purchased_at": None,
+            "returned_at": None,
+        },
+        {
+            "id": 20,
+            "product_id": 66,
+            "user_id": 20,
+            "created_at": "2005-08-09 08:06:57.727600",
+            "added_to_cart_at": "2020-12-06T08:06:57+00:00",
+            "purchased_at": "2025-04-24T08:06:57+00:00",
+            "returned_at": None,
+        },
+    ]
+
+    # Read in a subprocess so the worker identities match the ones that produced the
+    # baseline: users gets worker 1 and purchases gets worker 2 in a fresh process.
+    import subprocess
+    import sys
+
+    config = {"count": 20, "seed": 100, "parallelism": 1}
+    catalog = {
+        "streams": [
+            {
+                "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+                "sync_mode": "incremental",
+                "destination_sync_mode": "overwrite",
+            },
+            {
+                "stream": {
+                    "name": "purchases",
+                    "json_schema": {"type": "object", "properties": {}},
+                    "supported_sync_modes": ["incremental"],
+                },
+                "sync_mode": "incremental",
+                "destination_sync_mode": "overwrite",
+            },
+        ]
+    }
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps(config))
+    catalog_path = tmp_path / "catalog.json"
+    catalog_path.write_text(json.dumps(catalog))
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "from source_faker.run import run; run()",
+            "read",
+            "--config",
+            str(config_path),
+            "--catalog",
+            str(catalog_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    actual_purchases = []
+    for line in result.stdout.splitlines():
+        message = json.loads(line)
+        if message.get("type") == "RECORD" and message["record"]["stream"] == "purchases":
+            data = message["record"]["data"]
+            actual_purchases.append(
+                {
+                    "id": data["id"],
+                    "product_id": data["product_id"],
+                    "user_id": data["user_id"],
+                    "created_at": data["created_at"].replace("T", " "),
+                    "added_to_cart_at": data["added_to_cart_at"],
+                    "purchased_at": data.get("purchased_at"),
+                    "returned_at": data.get("returned_at"),
+                }
+            )
+
+    assert actual_purchases == expected_purchases
