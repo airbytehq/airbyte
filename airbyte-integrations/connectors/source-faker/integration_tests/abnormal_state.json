@@ -31,5 +31,16 @@
         "name": "products"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": 11
+      },
+      "stream_descriptor": {
+        "name": "reviews"
+      }
+    }
   }
 ]
