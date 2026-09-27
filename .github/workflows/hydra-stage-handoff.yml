@@ -52,7 +52,7 @@ permissions: {}
 concurrency:
   # cancel-in-progress is deliberately false: cancelling a run after the Devin
   # API call would leave a live session behind.
-  group: hydra-stage-handoff-${{ github.event_name == 'workflow_run' && 'ci' || 'marker' }}-${{ github.event.issue.number || github.event.workflow_run.pull_requests[0].number || inputs.pr }}
+  group: hydra-stage-handoff-${{ github.event.issue.number || github.event.workflow_run.pull_requests[0].number || inputs.pr }}
   cancel-in-progress: false
 
 jobs:
@@ -130,7 +130,6 @@ jobs:
           PR_NUMBER: ${{ steps.marker.outputs.pr }}
           MARKER_HEAD_SHA: ${{ steps.marker.outputs.head_sha }}
           EVENT_NAME: ${{ github.event_name }}
-          SELF_JOB_NAME: Launch single-PR hands-free pass
           VAR_DRY_RUN: ${{ vars.HYDRA_HANDOFF_DRY_RUN }}
         run: |
           set -euo pipefail
@@ -182,8 +181,7 @@ jobs:
           # Vercel) can finish last with no Actions event and would strand the
           # push; the playbook re-reads CI anyway.
           if [[ -z "$SKIP" && "$EVENT_NAME" == "workflow_run" ]]; then
-            # This job is itself a check run on the same head; ignore it.
-            FAILING=$(jq -r --arg self "$SELF_JOB_NAME" '[.statusCheckRollup[] | select(.__typename=="CheckRun" and .name!=$self and (.conclusion=="FAILURE" or .conclusion=="TIMED_OUT" or .conclusion=="CANCELLED" or .conclusion=="ACTION_REQUIRED"))] + [.statusCheckRollup[] | select(.__typename=="StatusContext" and (.state=="FAILURE" or .state=="ERROR"))] | length' <<<"$PR_JSON")
+            FAILING=$(jq -r '[.statusCheckRollup[] | select(.__typename=="CheckRun" and (.conclusion=="FAILURE" or .conclusion=="TIMED_OUT" or .conclusion=="CANCELLED" or .conclusion=="ACTION_REQUIRED"))] + [.statusCheckRollup[] | select(.__typename=="StatusContext" and (.state=="FAILURE" or .state=="ERROR"))] | length' <<<"$PR_JSON")
             [[ "$FAILING" != "0" ]] && SKIP="CI failing"
           fi
 
@@ -221,11 +219,13 @@ jobs:
           fi
           BODY="${KEY}
           ↪️ Hydra stage handoff: launching a scoped hands-free pass (trigger: \`${STAGE}\` → \`${RESULT}\`, head \`${HEAD}\`). [Workflow run](https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
+          COMMENT_ID=""
           if [[ "$VAR_DRY_RUN" == "true" ]]; then
             echo "WOULD post handoff guard comment on PR #$PR_NUMBER"
           else
-            gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" -f body="$BODY"
+            COMMENT_ID=$(gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" -f body="$BODY" -q .id)
           fi
+          echo "comment_id=$COMMENT_ID" >> "$GITHUB_OUTPUT"
           echo "launch=true" | tee -a "$GITHUB_OUTPUT"
 
       - name: Resolve dry-run mode
@@ -270,6 +270,19 @@ jobs:
             re-trigger this workflow. Do not post the
             Phase 3 summary to #hands-free-ai-triage; per-item status via send_to_user is enough.
             ${{ steps.mode.outputs.dry_run == 'true' && 'DRY RUN MODE: state what you WOULD do, take no action.' || '' }}
+
+      # The guard comment must not survive a failed launch: it would suppress
+      # the next retry. Delete it so a re-run can relaunch.
+      - name: Clean up guard comment on failed launch
+        if: failure() && steps.guard.outputs.comment_id != ''
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          COMMENT_ID: ${{ steps.guard.outputs.comment_id }}
+          PR_NUMBER: ${{ steps.marker.outputs.pr }}
+        run: |
+          set -euo pipefail
+          gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/comments/$COMMENT_ID"
+          echo "::warning::Removed guard comment $COMMENT_ID on PR #$PR_NUMBER after failed launch so a re-run can relaunch"
 
       - name: Summarize
         if: always()
