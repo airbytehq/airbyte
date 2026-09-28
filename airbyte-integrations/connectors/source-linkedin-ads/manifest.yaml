@@ -1734,7 +1734,7 @@ definitions:
   # the entire record
   analytics_query_properties:
     type: QueryProperties
-    property_list: &analytics_query_property_list
+    property_list:
       - actionClicks
       - adUnitClicks
       - approximateMemberReach
@@ -1845,7 +1845,8 @@ definitions:
       type: JsonSchemaPropertySelector
   impression_device_analytics_query_properties:
     type: QueryProperties
-    property_list: *analytics_query_property_list
+    property_list:
+      $ref: "#/definitions/analytics_query_properties/property_list"
     always_include_properties:
       - dateRange
       - pivotValues
