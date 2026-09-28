@@ -16,7 +16,10 @@ _TOKEN_REQUEST_BODY = "grant_type=refresh_token&refresh_token=test-refresh-token
 _ADS_URL = "https://ads-api.reddit.com/api/v3/ad_accounts/a2_abc123/ads"
 
 
-def _mock_token(http_mocker: HttpMocker, response: HttpResponse | None = None) -> HttpRequest:
+def _mock_token(
+    http_mocker: HttpMocker,
+    response: HttpResponse | list[HttpResponse] | None = None,
+) -> HttpRequest:
     request = HttpRequest(_TOKEN_URL, body=_TOKEN_REQUEST_BODY)
     http_mocker.post(
         request,
@@ -25,7 +28,10 @@ def _mock_token(http_mocker: HttpMocker, response: HttpResponse | None = None) -
     return request
 
 
-def _read_ads(response: HttpResponse | list[HttpResponse], token_response: HttpResponse | None = None):
+def _read_ads(
+    response: HttpResponse | list[HttpResponse],
+    token_response: HttpResponse | list[HttpResponse] | None = None,
+):
     config = base_config()
     catalog = CatalogBuilder().with_stream("ad", SyncMode.full_refresh).build()
     with HttpMocker() as http_mocker:
@@ -39,6 +45,61 @@ def _read_ads(response: HttpResponse | list[HttpResponse], token_response: HttpR
 def _first_error(output):
     assert output.errors, "expected an error trace"
     return output.errors[0].trace.error
+
+
+@pytest.mark.parametrize(
+    "status_code,body",
+    [
+        (400, '{"message": "Bad Request", "error": 400}'),
+        (401, '{"message": "Unauthorized", "error": 401}'),
+    ],
+)
+def test_rejected_refresh_token_is_config_error(status_code: int, body: str) -> None:
+    token_response = HttpResponse(body=body, status_code=status_code)
+    output, http_mocker, token_request, ads_request = _read_ads(
+        HttpResponse(body='{"data":[]}', status_code=200),
+        token_response,
+    )
+    error = _first_error(output)
+
+    assert error.failure_type == FailureType.config_error
+    assert "Refresh token was rejected by the OAuth provider" in error.message
+    http_mocker.assert_number_of_calls(token_request, 1)
+    http_mocker.assert_number_of_calls(ads_request, 0)
+
+
+def test_other_token_endpoint_400_is_system_error() -> None:
+    token_response = HttpResponse(
+        body='{"message": "Something else", "error": 400}',
+        status_code=400,
+    )
+    output, http_mocker, token_request, ads_request = _read_ads(
+        HttpResponse(body='{"data":[]}', status_code=200),
+        token_response,
+    )
+    error = _first_error(output)
+
+    assert error.failure_type == FailureType.system_error
+    http_mocker.assert_number_of_calls(token_request, 1)
+    http_mocker.assert_number_of_calls(ads_request, 0)
+
+
+def test_token_endpoint_503_is_retried(monkeypatch) -> None:
+    monkeypatch.setattr("time.sleep", lambda _: None)
+    token_responses = [
+        HttpResponse(body='{"message": "Service Unavailable"}', status_code=503),
+        HttpResponse(body='{"access_token":"test-access-token","expires_in":3600}', status_code=200),
+    ]
+    ad_response = HttpResponse(
+        body='{"data":[{"id":"ad-1","modified_at":"2026-09-27T00:00:00Z","ad_account_id":"a2_abc123"}]}',
+        status_code=200,
+    )
+    output, http_mocker, token_request, ads_request = _read_ads(ad_response, token_responses)
+
+    assert output.errors == []
+    assert [message.record.data["id"] for message in output.records] == ["ad-1"]
+    http_mocker.assert_number_of_calls(token_request, 2)
+    http_mocker.assert_number_of_calls(ads_request, 1)
 
 
 @pytest.mark.parametrize(
