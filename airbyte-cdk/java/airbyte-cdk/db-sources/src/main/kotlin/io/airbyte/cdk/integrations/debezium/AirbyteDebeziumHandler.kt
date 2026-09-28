@@ -22,6 +22,7 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
 private val LOGGER = KotlinLogging.logger {}
@@ -37,20 +38,55 @@ class AirbyteDebeziumHandler<T>(
     private val queueSize: Int,
     private val addDbNameToOffsetState: Boolean
 ) {
+    /**
+     * A [LinkedBlockingQueue] that periodically logs how full it is.
+     *
+     * The queue is bounded by element **count** only. That is deliberate: connectors that carry
+     * large change events (e.g. MongoDB documents captured with pre-images) size the count so that
+     * `count * max_event_size` fits comfortably in the heap, rather than relying on a byte
+     * estimate. The byte figures below are therefore **telemetry, not a bound** -- they exist so
+     * that a heap problem is diagnosable from one log line instead of requiring a fresh
+     * investigation. The accounting is intentionally lock-free and never blocks a producer or
+     * consumer; being slightly stale or slightly off does not matter for a log line.
+     *
+     * Note that the byte estimate counts only the JSON value string. Each queued element is a
+     * `io.debezium.embedded.EmbeddedEngineChangeEvent`, which also retains the key and the original
+     * Kafka Connect `SourceRecord`, so true retained heap is meaningfully higher than what is
+     * reported here.
+     */
     internal inner class CapacityReportingBlockingQueue<E>(capacity: Int) :
         LinkedBlockingQueue<E>(capacity) {
         private var lastReport: Instant = Instant.MIN
         private var puts = AtomicLong()
         private var polls = AtomicLong()
+        private val estimatedBytes = AtomicLong()
 
-        private fun reportQueueUtilization(put: Long = 0L, poll: Long = 0L) {
+        /**
+         * Approximate heap footprint of a queued element, in bytes, from the length of its JSON
+         * value (UTF-16, 2 bytes per char). Returns 0 for anything unrecognised so that this can
+         * never throw on the hot path.
+         */
+        private fun estimateBytes(e: E?): Long =
+            when (e) {
+                is ChangeEvent<*, *> -> ((e.value() as? String)?.length?.toLong() ?: 0L) * 2L
+                else -> 0L
+            }
+
+        private fun reportQueueUtilization() {
             if (Duration.between(lastReport, Instant.now()) > REPORT_DURATION) {
+                val size = this.size
+                val bytes = estimatedBytes.get()
+                val runtime = Runtime.getRuntime()
                 LOGGER.info {
                     "CDC events queue stats: " +
-                        "size=${this.size}, " +
+                        "size=$size, " +
                         "cap=${this.remainingCapacity()}, " +
-                        "puts=${puts.addAndGet(put)}, " +
-                        "polls=${polls.addAndGet(poll)}"
+                        "estimatedBytes=$bytes, " +
+                        "avgBytesPerEvent=${if (size > 0) bytes / size else 0}, " +
+                        "heapUsed=${runtime.totalMemory() - runtime.freeMemory()}, " +
+                        "heapMax=${runtime.maxMemory()}, " +
+                        "puts=${puts.get()}, " +
+                        "polls=${polls.get()}"
                 }
                 synchronized(this) { lastReport = Instant.now() }
             }
@@ -58,13 +94,31 @@ class AirbyteDebeziumHandler<T>(
 
         @Throws(InterruptedException::class)
         override fun put(e: E) {
-            reportQueueUtilization(put = 1L)
-            super.put(e)
+            puts.incrementAndGet()
+            estimatedBytes.addAndGet(estimateBytes(e))
+            reportQueueUtilization()
+            try {
+                super.put(e)
+            } catch (ex: InterruptedException) {
+                estimatedBytes.addAndGet(-estimateBytes(e))
+                throw ex
+            }
         }
 
-        override fun poll(): E {
-            reportQueueUtilization(poll = 1L)
-            return super.poll()
+        override fun poll(): E? = onRemoved(super.poll())
+
+        @Throws(InterruptedException::class)
+        override fun poll(timeout: Long, unit: TimeUnit): E? = onRemoved(super.poll(timeout, unit))
+
+        @Throws(InterruptedException::class) override fun take(): E = onRemoved(super.take())!!
+
+        private fun onRemoved(e: E?): E? {
+            if (e != null) {
+                polls.incrementAndGet()
+                estimatedBytes.addAndGet(-estimateBytes(e))
+            }
+            reportQueueUtilization()
+            return e
         }
     }
 

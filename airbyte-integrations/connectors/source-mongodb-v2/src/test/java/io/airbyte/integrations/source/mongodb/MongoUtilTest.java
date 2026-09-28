@@ -324,6 +324,27 @@ public class MongoUtilTest {
     assertEquals(MAX_QUEUE_SIZE, MongoUtil.getDebeziumEventQueueSize(missingQueueSizeConfiguration));
   }
 
+  /**
+   * Collections with large documents need a small queue size to stay inside the container heap, so
+   * values well below the old 1000 floor must now pass through un-clamped.
+   */
+  @Test
+  void testGetDebeziumEventQueueSizeAllowsSmallValues() {
+    assertEquals(10, queueSizeFor(10));
+    assertEquals(64, queueSizeFor(64));
+    assertEquals(MIN_QUEUE_SIZE, queueSizeFor(MIN_QUEUE_SIZE));
+
+    // Still clamped at both ends.
+    assertEquals(MIN_QUEUE_SIZE, queueSizeFor(MIN_QUEUE_SIZE - 1));
+    assertEquals(MAX_QUEUE_SIZE, queueSizeFor(MAX_QUEUE_SIZE + 1));
+  }
+
+  private static int queueSizeFor(final int configuredQueueSize) {
+    return MongoUtil.getDebeziumEventQueueSize(new MongoDbSourceConfig(
+        Jsons.jsonNode(Map.of(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY, configuredQueueSize,
+            DATABASE_CONFIG_CONFIGURATION_KEY, Map.of()))));
+  }
+
   @Test
   void testGetCollectionStatistics() throws IOException {
     final String collectionName = "test-collection";

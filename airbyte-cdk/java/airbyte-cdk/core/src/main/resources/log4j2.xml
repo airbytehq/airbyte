@@ -10,6 +10,17 @@
     </Console>
   </Appenders>
   <Loggers>
+    <!-- The Debezium MongoDB connector prefetches change events into a buffer whose capacity is
+         max.batch.size. When that buffer is full its fetcher thread logs a WARN per failed 100ms
+         tryAcquire - up to ~10/s, indefinitely - and the buffer is full for the whole of any sync
+         that is consumer-bound. Rate-limit it to a burst of 10 then ~1 per 20s: still an obvious
+         saturation signal, without tens of thousands of lines per hour.
+         BurstFilter only filters events at or below the configured level, so the ERROR-level
+         "Fetcher thread has failed" / "Fetcher thread interrupted" messages on this same logger are
+         never throttled. -->
+    <Logger name="io.debezium.connector.mongodb.events.BufferingChangeStreamCursor">
+      <BurstFilter level="WARN" rate="0.05" maxBurst="10"/>
+    </Logger>
     <Root level="${sys:LOG_LEVEL:-${env:LOG_LEVEL:-INFO}}" additivity="false">
       <AppenderRef ref="ConsoleJSONAppender"/>
     </Root>
