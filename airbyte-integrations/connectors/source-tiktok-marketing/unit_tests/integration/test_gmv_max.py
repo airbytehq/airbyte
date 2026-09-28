@@ -2,8 +2,12 @@
 
 import json
 from unittest import TestCase
+from unittest.mock import patch
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.constant_backoff_strategy import (
+    ConstantBackoffStrategy,
+)
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -15,6 +19,7 @@ from .config_builder import ConfigBuilder
 
 BASE_URL = "https://business-api.tiktok.com/open_api/v1.3/"
 ADVERTISER_ID = "872746382648"
+SECOND_ADVERTISER_ID = "872746382649"
 PRODUCT_METRICS = [
     "cost",
     "net_cost",
@@ -67,6 +72,25 @@ def report_response(campaign_id: str):
     }
 
 
+def mock_advertisers(http_mocker: HttpMocker, cfg, advertiser_ids):
+    http_mocker.get(
+        HttpRequest(
+            url=f"{BASE_URL}oauth2/advertiser/get/",
+            query_params={"secret": cfg["credentials"]["secret"], "app_id": cfg["credentials"]["app_id"]},
+        ),
+        HttpResponse(
+            body=json.dumps(
+                {
+                    "code": 0,
+                    "message": "ok",
+                    "data": {"list": [{"advertiser_id": advertiser_id} for advertiser_id in advertiser_ids]},
+                }
+            ),
+            status_code=200,
+        ),
+    )
+
+
 def mock_stores(http_mocker: HttpMocker, advertiser_id: str, stores):
     http_mocker.get(
         HttpRequest(
@@ -78,7 +102,16 @@ def mock_stores(http_mocker: HttpMocker, advertiser_id: str, stores):
 
 
 def mock_report(
-    http_mocker: HttpMocker, advertiser_id: str, store_id: str, metrics, promotion_type: str, campaign_id: str, response_body=None
+    http_mocker: HttpMocker,
+    advertiser_id: str,
+    store_id: str,
+    metrics,
+    promotion_type: str,
+    campaign_id: str,
+    response_body=None,
+    start_date: str = "2024-01-01",
+    end_date: str = "2024-01-02",
+    response_bodies=None,
 ):
     request = HttpRequest(
         url=f"{BASE_URL}gmv_max/report/get/",
@@ -88,14 +121,15 @@ def mock_report(
             "dimensions": json.dumps(["campaign_id", "stat_time_day"]),
             "metrics": json.dumps(metrics),
             "filtering": json.dumps({"gmv_max_promotion_types": [promotion_type]}),
-            "start_date": "2024-01-01",
-            "end_date": "2024-01-02",
+            "start_date": start_date,
+            "end_date": end_date,
             "page_size": 1000,
         },
     )
+    bodies = response_bodies or [response_body or report_response(campaign_id)]
     http_mocker.get(
         request,
-        HttpResponse(body=json.dumps(response_body or report_response(campaign_id)), status_code=200),
+        [HttpResponse(body=json.dumps(body), status_code=200) for body in bodies],
     )
     return request
 
@@ -158,6 +192,22 @@ class TestGmvMaxStores(TestCase):
 
         assert len(output.records) == 2
         assert {record.record.data["store_id"] for record in output.records} == {"111", "222"}
+        assert {record.record.data["advertiser_id"] for record in output.records} == {ADVERTISER_ID}
+
+    @HttpMocker()
+    def test_same_store_under_two_advertisers_emits_distinct_records(self, http_mocker: HttpMocker):
+        cfg = config()
+        mock_advertisers(http_mocker, cfg, [ADVERTISER_ID, SECOND_ADVERTISER_ID])
+        mock_stores(http_mocker, ADVERTISER_ID, [{"store_id": "111", "is_gmv_max_available": True}])
+        mock_stores(http_mocker, SECOND_ADVERTISER_ID, [{"store_id": "111", "is_gmv_max_available": False}])
+
+        output = read(get_source(config=cfg, state=None), cfg, catalog("gmv_max_stores"))
+
+        assert len(output.records) == 2
+        assert {
+            (record.record.data["advertiser_id"], record.record.data["store_id"], record.record.data["is_gmv_max_available"])
+            for record in output.records
+        } == {(ADVERTISER_ID, "111", True), (SECOND_ADVERTISER_ID, "111", False)}
 
 
 class TestGmvMaxProductReports(TestCase):
@@ -225,6 +275,37 @@ class TestGmvMaxProductReports(TestCase):
             ("222", "c2"),
         }
 
+    @HttpMocker()
+    def test_start_date_before_gmv_max_data_availability_is_clamped(self, http_mocker: HttpMocker):
+        cfg = ConfigBuilder().with_end_date("2023-09-02").build()
+        cfg["start_date"] = "2016-09-01"
+        mock_advertisers_slices(http_mocker, cfg)
+        mock_stores(http_mocker, ADVERTISER_ID, [{"store_id": "111", "is_gmv_max_available": True}])
+        report_request = mock_report(
+            http_mocker, ADVERTISER_ID, "111", PRODUCT_METRICS, "PRODUCT", "c1", start_date="2023-09-01", end_date="2023-09-02"
+        )
+
+        output = read(get_source(config=cfg, state=None), cfg, catalog("gmv_max_product_campaign_reports_daily"))
+
+        assert len(output.records) == 1
+        # HttpMocker fails on unmatched requests, so no window before 2023-09-01 was requested.
+        http_mocker.assert_number_of_calls(report_request, 1)
+
+    @HttpMocker()
+    def test_start_date_after_gmv_max_data_availability_is_respected(self, http_mocker: HttpMocker):
+        cfg = ConfigBuilder().with_end_date("2024-06-02").build()
+        cfg["start_date"] = "2024-06-01"
+        mock_advertisers_slices(http_mocker, cfg)
+        mock_stores(http_mocker, ADVERTISER_ID, [{"store_id": "111", "is_gmv_max_available": True}])
+        report_request = mock_report(
+            http_mocker, ADVERTISER_ID, "111", PRODUCT_METRICS, "PRODUCT", "c1", start_date="2024-06-01", end_date="2024-06-02"
+        )
+
+        output = read(get_source(config=cfg, state=None), cfg, catalog("gmv_max_product_campaign_reports_daily"))
+
+        assert len(output.records) == 1
+        http_mocker.assert_number_of_calls(report_request, 1)
+
 
 class TestGmvMaxLiveReports(TestCase):
     @HttpMocker()
@@ -271,3 +352,31 @@ class TestGmvMaxReportErrors(TestCase):
         assert len(output.records) == 0
         assert output.errors
         assert "40002" in output.errors[-1].trace.error.message
+
+    @HttpMocker()
+    def test_advertiser_rate_limit_is_retried(self, http_mocker: HttpMocker):
+        mock_advertisers_slices(http_mocker, config())
+        mock_stores(http_mocker, ADVERTISER_ID, [{"store_id": "111", "is_gmv_max_available": True}])
+        report_request = mock_report(
+            http_mocker,
+            ADVERTISER_ID,
+            "111",
+            PRODUCT_METRICS,
+            "PRODUCT",
+            "c1",
+            response_bodies=[
+                {"code": 40133, "message": "The number of requests from this advertiser has exceeded the limit."},
+                report_response("c1"),
+            ],
+        )
+
+        with patch.object(ConstantBackoffStrategy, "backoff_time", return_value=0):
+            output = read(
+                get_source(config=config(), state=None),
+                config(),
+                catalog("gmv_max_product_campaign_reports_daily"),
+            )
+
+        assert len(output.records) == 1
+        assert not output.errors
+        http_mocker.assert_number_of_calls(report_request, 2)

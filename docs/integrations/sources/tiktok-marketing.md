@@ -131,10 +131,10 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 | AdsReportsByCountryHourly                 | Prod         | ad_id, stat_time_hour, country_code        | Yes         |
 | AdGroupsReportsByCountryDaily              | Prod         | adgroup_id, stat_time_day, country_code    | Yes         |
 | AdGroupsReportsByCountryHourly             | Prod         | adgroup_id, stat_time_hour, country_code   | Yes         |
-| GmvMaxStores                              | Prod         | store_id                                   | No          |
-| GmvMaxCampaigns                            | Prod         | campaign_id                                | Yes         |
-| GmvMaxProductCampaignReportsDaily          | Prod         | store_id, campaign_id, stat_time_day       | Yes         |
-| GmvMaxLiveCampaignReportsDaily             | Prod         | store_id, campaign_id, stat_time_day       | Yes         |
+| GmvMaxStores                              | Prod         | advertiser_id, store_id                    | No          |
+| GmvMaxCampaigns                           | Prod         | campaign_id                                | Yes         |
+| GmvMaxProductCampaignReportsDaily         | Prod         | store_id, campaign_id, stat_time_day       | Yes         |
+| GmvMaxLiveCampaignReportsDaily            | Prod         | store_id, campaign_id, stat_time_day       | Yes         |
 
 Streams marked **Prod** only are available when you authenticate with `OAuth2.0`. They don't appear in the connector's catalog when you authenticate with a `Sandbox Access Token`.
 
