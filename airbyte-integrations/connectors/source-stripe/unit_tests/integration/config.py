@@ -30,6 +30,10 @@ class ConfigBuilder:
         self._config["lookback_window_days"] = number_of_days
         return self
 
+    def with_api_retention_streams(self, stream_names: list) -> "ConfigBuilder":
+        self._config["api_retention_streams"] = stream_names
+        return self
+
     def with_slice_range_in_days(self, number_of_days: int) -> "ConfigBuilder":
         self._config["slice_range"] = number_of_days
         return self
