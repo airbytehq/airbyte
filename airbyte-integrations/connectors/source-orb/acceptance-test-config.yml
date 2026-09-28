@@ -21,7 +21,9 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         fail_on_extra_columns: false
-        empty_streams: ["credits_ledger_entries"]
+        empty_streams:
+          - name: "credits_ledger_entries"
+            bypass_reason: "Sandbox account cannot seed this stream"
       - config_path: "secrets/config_credits_ledger_entries.json"
         configured_catalog_path: "integration_tests/configured_catalog_credits.json"
   incremental:
