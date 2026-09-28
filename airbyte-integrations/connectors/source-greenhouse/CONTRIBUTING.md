@@ -43,6 +43,10 @@ curl --request GET \
 
 That is, `updated_at=gte|{datetime}|lte|{datetime}`, with `|` separating operator and value, and it is the shape every cursor-field date filter here uses (`submitted_at` for `eeoc`). Do not rewrite it into repeated parameters, `updated_at[gte]`-style brackets, or a lower bound alone because the reference text does not mention it; build the request in the docs page first and match what it produces.
 
+`lte` is exclusive at an exact boundary value, while `gte` is inclusive. Measured on 2026-09-28 against 12 `job_notes` records: `gte|{oldest}|lte|{newest}` returns 11, omitting the record whose `updated_at` equals `{newest}` exactly, and raising the bound by a fraction of a second returns all 12. It is exclusivity rather than sub-second truncation of the bound - with three records inside one second, `lte` set to the latest of the three still returns the other two, which truncation would have dropped as well.
+
+This needs no compensation in the manifest and none is present. Because `gte` is inclusive, a record sitting exactly on a slice boundary is read by the next slice, and on the next sync by the state cursor's own lower bound. Do not widen `lte` to "fix" it: that would re-read the boundary record in both slices instead.
+
 | Stream | Relationship | Cursor field | Request filter | Status |
 |---|---|---|---|---|
 | applications | top-level | updated_at | updated_at | incremental |
