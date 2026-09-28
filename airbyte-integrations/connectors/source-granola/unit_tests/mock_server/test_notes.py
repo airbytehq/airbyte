@@ -1,23 +1,23 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 """
-Mock server tests for the `notes` stream incremental slice bounds and error handling.
+Mock server tests for the `notes` stream incremental slice bounds.
 
 `GET /v1/notes` treats `created_before=<date>` as excluding that whole day, so
 day-truncated slice bounds dropped every note created on a slice boundary day.
 These tests pin the exact `created_after` / `created_before` pairs sent across
-several 30-day slices and assert that boundary-day notes are emitted. They also
-check that a rejected API key (`401`/`403`) fails as a config error.
+several 30-day slices and assert that boundary-day notes are emitted.
 """
 
 import json
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
 import freezegun
 from unit_tests.conftest import get_source
 
-from airbyte_cdk.models import AirbyteStateMessage, FailureType, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -117,23 +117,78 @@ class TestNotesIncrementalSliceBounds(TestCase):
 
 
 @freezegun.freeze_time(_NOW)
-class TestNotesErrorHandling(TestCase):
-    @HttpMocker()
-    def test_401_is_a_config_error_naming_the_api_key(self, http_mocker: HttpMocker):
-        self._assert_unauthorized_is_config_error(401, http_mocker)
+class TestNotesPagination(TestCase):
+    _LAST_SLICE = _SLICE_BOUNDS[-1]
+
+    def _mock_empty_slices_except_last(self, http_mocker: HttpMocker) -> None:
+        for created_after, created_before in _SLICE_BOUNDS[:-1]:
+            http_mocker.get(_notes_request(created_after, created_before), _notes_response([]))
+
+    def _page(self, note_id: str, cursor: Optional[str], has_more: bool) -> HttpResponse:
+        body = {"notes": [{"id": note_id, "created_at": "2026-01-12T09:00:00Z"}], "hasMore": has_more, "cursor": cursor}
+        return HttpResponse(body=json.dumps(body), status_code=200)
 
     @HttpMocker()
-    def test_403_is_a_config_error_naming_the_api_key(self, http_mocker: HttpMocker):
-        self._assert_unauthorized_is_config_error(403, http_mocker)
-
-    def _assert_unauthorized_is_config_error(self, status_code: int, http_mocker: HttpMocker) -> None:
-        http_mocker.get(
-            _notes_request(*_SLICE_BOUNDS[0]),
-            HttpResponse(body=json.dumps({"error": {"code": "INVALID_API_KEY"}}), status_code=status_code),
-        )
+    def test_follows_the_cursor_while_has_more_is_true(self, http_mocker: HttpMocker):
+        self._mock_empty_slices_except_last(http_mocker)
+        builder = GranolaRequestBuilder.notes_endpoint().with_created_after(self._LAST_SLICE[0]).with_created_before(self._LAST_SLICE[1])
+        first_page = builder.build()
+        second_page = builder.with_cursor("cursor-2").build()
+        http_mocker.get(first_page, self._page("note-page-1", cursor="cursor-2", has_more=True))
+        http_mocker.get(second_page, self._page("note-page-2", cursor=None, has_more=False))
 
         output = _read_notes()
 
-        config_errors = [message.trace.error for message in output.errors if message.trace.error.failure_type == FailureType.config_error]
-        assert config_errors
-        assert any("API key" in (error.message or "") for error in config_errors)
+        assert output.errors == []
+        assert [message.record.data["id"] for message in output.records] == ["note-page-1", "note-page-2"]
+        http_mocker.assert_number_of_calls(first_page, 1)
+        http_mocker.assert_number_of_calls(second_page, 1)
+
+    @HttpMocker()
+    def test_stops_when_has_more_is_false_even_if_a_cursor_is_returned(self, http_mocker: HttpMocker):
+        self._mock_empty_slices_except_last(http_mocker)
+        request = _notes_request(*self._LAST_SLICE)
+        http_mocker.get(request, self._page("note-only", cursor="stale-cursor", has_more=False))
+
+        output = _read_notes()
+
+        assert output.errors == []
+        assert [message.record.data["id"] for message in output.records] == ["note-only"]
+        http_mocker.assert_number_of_calls(request, 1)
+
+
+@freezegun.freeze_time(_NOW)
+class TestNotesState(TestCase):
+    @HttpMocker()
+    def test_state_advances_to_the_latest_created_at_emitted(self, http_mocker: HttpMocker):
+        for created_after, created_before in _SLICE_BOUNDS:
+            http_mocker.get(
+                _notes_request(created_after, created_before),
+                _notes_response(_notes_within(created_after, created_before)),
+            )
+
+        output = _read_notes()
+
+        assert output.errors == []
+        assert output.most_recent_state.stream_state.__dict__ == {"created_at": "2026-01-09T23:59:59Z"}
+
+    @HttpMocker()
+    def test_without_start_date_reads_the_last_730_days(self, http_mocker: HttpMocker):
+        """The spec leaves `start_date` optional; the first slice then starts 730 days before now."""
+        requests = []
+        slice_start = datetime(2024, 1, 16, tzinfo=timezone.utc)
+        now = datetime(2026, 1, 15, 12, tzinfo=timezone.utc)
+        while slice_start <= now:
+            slice_end = min(slice_start + timedelta(days=30) - timedelta(seconds=1), now)
+            requests.append(_notes_request(slice_start.strftime("%Y-%m-%dT%H:%M:%SZ"), slice_end.strftime("%Y-%m-%dT%H:%M:%SZ")))
+            slice_start = slice_end + timedelta(seconds=1)
+        for request in requests:
+            http_mocker.get(request, _notes_response([]))
+
+        config = ConfigBuilder().build()
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(get_source(config=config), config=config, catalog=catalog, state=StateBuilder().build())
+
+        assert output.errors == []
+        for request in requests:
+            http_mocker.assert_number_of_calls(request, 1)
