@@ -25,10 +25,10 @@ The Uptick user account needs read access to each module you want to sync; in pr
 
 | Input | Type | Description | Default Value |
 | ------- | ------ | ------------- | --------------- |
-| `base_url` | `string` | Root URL of your Uptick workspace, for example `https://yourcompany.onuptick.com`. Only the host is used; the scheme, any path, and a trailing slash are normalized automatically. | |
-| `client_id` | `string` | OAuth Client ID generated from Control Panel > Uptick API. | |
-| `client_secret` | `string` | OAuth Client Secret generated from Control Panel > Uptick API. | |
-| `username` | `string` | Email address for an Uptick user account with API access. | |
+| `base_url` | `string` | Root URL of your Uptick workspace, for example `https://yourcompany.onuptick.com`. The connector keeps only the host and always connects over HTTPS, so any scheme, path, or trailing slash you enter is ignored. | |
+| `client_id` | `string` | OAuth Client ID generated from **Control Panel > Uptick API**. | |
+| `client_secret` | `string` | OAuth Client Secret generated from **Control Panel > Uptick API**. | |
+| `username` | `string` | Email address for an Uptick user account with API access. Synced data is limited to what this user can see in Uptick. | |
 | `password` | `string` | Password for the Uptick user account. | |
 | `num_workers` | `integer` | Number of concurrent requests. Higher values speed up syncs but increase the chance of Uptick rate limiting. Allowed range 1–10. | `3` |
 | `max_requests_per_minute` | `integer` | Global request budget shared by all streams and threads. Uptick publishes no numeric limit; 60 is a conservative default. Allowed range 1–600. | `60` |
@@ -230,11 +230,13 @@ Avoid incremental sync for the streams marked `❌ (no soft delete)`: their Upti
 
 ### Permission errors (403)
 
-If the Uptick user account lacks permission for an endpoint, the sync fails with `HTTP 403: Uptick user lacks permission for the requested endpoint.` Uptick doesn't publish a per-endpoint permission list; in production this has been seen on `task_profitability` (resolved by granting the Intelligence reports permission) and on `billingcontractlineitems`. Grant the missing module permission in Uptick or deselect the stream.
+If the Uptick user account lacks permission for an endpoint, the sync fails with `HTTP 403: Uptick user lacks permission for the requested endpoint.` Uptick doesn't publish a per-endpoint permission list; in production this has been seen on `task_profitability` (resolved by granting the Intelligence reports permission) and on `billingcontractlineitems`. The connector fails with a configuration error instead of retrying. Grant the missing module permission in Uptick or deselect the stream.
 
 ### Authentication errors (401)
 
-If Uptick rejects the client credentials or user login on the token endpoint (`invalid_grant` / `invalid_client`), the sync fails with a configuration error: `Refresh token was rejected by the OAuth provider (invalid, expired, or already used). Re-authenticate this source's credentials in its connection settings.` Check the Client ID, Client Secret, username, and password in the source configuration. If a stream request returns 401 mid-sync (the access token expired or was revoked), the connector refreshes the token once and retries the request; if the refresh is rejected the sync fails with the same configuration error, and if the retried request is still 401 it fails with `HTTP 401: Uptick rejected the access token.`
+Uptick rejects a wrong username or password with `invalid_grant`, and a wrong client ID or client secret with `invalid_client`. The connector reports these as a configuration error without retrying: `Refresh token was rejected by the OAuth provider (invalid, expired, or already used). Re-authenticate this source's credentials in its connection settings.` Check the four credential fields in the source configuration, and confirm that the OAuth application still exists under **Control Panel > Uptick API**.
+
+Uptick access tokens can also expire or be revoked during a long sync. If a stream request returns 401 mid-sync, the connector refreshes the token once and retries the request; if the refresh is rejected (for example because the password changed during the sync) the sync fails with the same configuration error, and if the retried request is still 401 it fails with `HTTP 401: Uptick rejected the access token.` Update the credentials and run the sync again.
 
 ### Deleted records
 
@@ -242,7 +244,16 @@ Streams marked `❌ (no soft delete)` in the table above don't report deletions,
 
 ### Rate limits
 
-Uptick enforces rate limits and reasonable-use guidelines on its API and may revoke API access for violating them, but doesn't publish a numeric limit. The connector budgets requests with the `max_requests_per_minute` field (default 60, allowed range 1–600), a conservative Airbyte-chosen value shared by all streams and threads that is the throughput ceiling for the whole sync. Lower it if Uptick returns 429s; raise it only if Uptick support confirms your tenant tolerates a higher limit. Because the default is conservative, large tenants (millions of records) may see slower syncs than on 1.2.1; raise `max_requests_per_minute` if Uptick tolerates it. If a throttled response carries a `Retry-After` header, the connector waits the indicated time before retrying (a wait of 30 minutes or more fails the sync with a rate-limit error instead of blocking); otherwise it backs off exponentially, for up to five retries after the initial request. The connector runs `num_workers` concurrent requests (default 3, maximum 10); a higher `num_workers` only helps while per-request latency exceeds `num_workers` seconds, because the requests-per-minute budget still applies. To stay within these limits, sync only the streams and fields you need and schedule syncs no more frequently than your reporting requires.
+Uptick enforces rate limits and reasonable-use guidelines on its API but doesn't publish a numeric limit. Uptick states that it can revoke API access without notice for applications that violate these limits, so raise the connector's request rate cautiously.
+
+Two settings control how fast the connector reads from Uptick:
+
+- `max_requests_per_minute` sets a single request budget that all streams and threads share (allowed range 1–600). The default of 60 requests per minute is a conservative value that Airbyte chose, and it's the throughput ceiling for the whole sync. Large workspaces with millions of records can sync more slowly than they did before version 1.3.0. If Uptick confirms your workspace tolerates more traffic, raise this value. If Uptick returns HTTP 429 responses, lower it.
+- `num_workers` sets how many requests run at the same time. The default is 3 and the maximum is 10. Because every request still counts against `max_requests_per_minute`, adding workers only speeds up a sync when slow API responses keep the connector from using its full per-minute budget.
+
+When Uptick throttles a request and returns a `Retry-After` header, the connector waits the indicated time before retrying. If the header asks for a wait of 30 minutes or longer, the connector fails the stream with a rate-limit error instead of waiting. Without a `Retry-After` header, the connector backs off exponentially. The connector retries a failed request up to five times.
+
+To reduce API usage, sync only the streams you need and schedule syncs no more often than your reporting requires.
 
 ### IP allow list
 
@@ -255,7 +266,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
-| 1.3.0 | 2026-09-22 | [86356](https://github.com/airbytehq/airbyte/pull/86356) | Add configurable max_requests_per_minute budget (default 60/min), refresh expired tokens mid-sync, and normalize base_url. The default `max_requests_per_minute` (60) is conservative; large tenants (millions of records) may see slower syncs than 1.2.1 — raise the value if Uptick tolerates it |
+| 1.3.0 | 2026-09-28 | [86356](https://github.com/airbytehq/airbyte/pull/86356) | Add configurable max_requests_per_minute budget (default 60/min), refresh expired tokens mid-sync, and normalize base_url. The default `max_requests_per_minute` (60) is conservative; large tenants (millions of records) may see slower syncs than 1.2.1 — raise the value if Uptick tolerates it |
 | 1.2.1 | 2026-09-22 | [86843](https://github.com/airbytehq/airbyte/pull/86843) | Update dependencies |
 | 1.2.0 | 2026-09-21 | [86363](https://github.com/airbytehq/airbyte/pull/86363) | Emit attribute values verbatim (preserve decimal strings and nulls) and allow null on attribute fields; `servicegroups`/`accreditationtypes` now honour incremental state client-side (Uptick ignores `updatedsince`) — previously every sync re-emitted the full table, so append-only destinations will see fewer duplicate rows per sync |
 | 1.1.3 | 2026-09-15 | [86280](https://github.com/airbytehq/airbyte/pull/86280) | Update dependencies |

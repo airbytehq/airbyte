@@ -35,6 +35,7 @@ Both methods need the same scopes. With OAuth, the consent flow requests them; a
 - `harvest:approver_groups:list`
 - `harvest:approvers:list`
 - `harvest:attachments:list`
+- `harvest:candidate_attribute_types:list`
 - `harvest:candidate_educations:list`
 - `harvest:candidate_employments:list`
 - `harvest:candidate_tags:list`
@@ -56,6 +57,7 @@ Both methods need the same scopes. With OAuth, the consent flow requests them; a
 - `harvest:job_hiring_managers:list`
 - `harvest:job_interview_stages:list`
 - `harvest:job_interviews:list`
+- `harvest:job_notes:list`
 - `harvest:job_owners:list`
 - `harvest:job_posts:list`
 - `harvest:jobs:list`
@@ -130,6 +132,7 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | [`approver_groups`](https://harvestdocs.greenhouse.io/reference/get_v3-approver-groups) | Incremental (`updated_at`) | The steps of an approval chain, per approval flow |
 | [`approvers`](https://harvestdocs.greenhouse.io/reference/get_v3-approvers) | Incremental (`updated_at`) | Individual approvers and their status within a group |
 | [`attachments`](https://harvestdocs.greenhouse.io/reference/get_v3-attachments) | Incremental (`updated_at`) | One file per application. `url` is a download link Greenhouse expires after seven days |
+| [`candidate_attribute_types`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-attribute-types) | Incremental (`updated_at`) | The scorecard attribute dictionary, defined per job |
 | [`candidate_educations`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-educations) | Incremental (`updated_at`) | School, degree and discipline history per candidate |
 | [`candidate_employments`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-employments) | Incremental (`updated_at`) | Employer and title history per candidate |
 | [`candidates`](https://harvestdocs.greenhouse.io/reference/get_v3-candidates) | Incremental (`updated_at`) | |
@@ -153,6 +156,7 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | [`interviews`](https://harvestdocs.greenhouse.io/reference/get_v3-interviews) | Incremental (`updated_at`) | |
 | [`job_hiring_managers`](https://harvestdocs.greenhouse.io/reference/get_v3-job-hiring-managers) | Incremental (`updated_at`) | One row per hiring manager on a job |
 | [`job_interviews`](https://harvestdocs.greenhouse.io/reference/get_v3-job-interviews) | Incremental (`updated_at`) | The interview plan for each job stage |
+| [`job_notes`](https://harvestdocs.greenhouse.io/reference/get_v3-job-notes) | Incremental (`updated_at`) | Free-text notes on jobs |
 | [`job_owners`](https://harvestdocs.greenhouse.io/reference/get_v3-job-owners) | Incremental (`updated_at`) | Recruiter, sourcer and coordinator per job, with a `responsible` flag |
 | [`job_posts`](https://harvestdocs.greenhouse.io/reference/get_v3-job-posts) | Incremental (`updated_at`) | Includes deleted posts |
 | [`job_stages`](https://harvestdocs.greenhouse.io/reference/get_v3-job-interview-stages) | Incremental (`updated_at`) | |
@@ -176,6 +180,14 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | [`user_permissions`](https://harvestdocs.greenhouse.io/reference/get_v3-user-job-permissions) | Incremental (`updated_at`) | Job permissions across all users |
 | [`user_roles`](https://harvestdocs.greenhouse.io/reference/get_v3-user-roles) | Incremental (`updated_at`) | |
 | [`users`](https://harvestdocs.greenhouse.io/reference/get_v3-users) | Incremental (`updated_at`) | Includes integration service users |
+
+### Streams added in 1.4.0
+
+Version 1.4.0 added these 2 streams, both incremental on `updated_at`, completing coverage of the Harvest v3 detail endpoints:
+
+`candidate_attribute_types`, `job_notes`
+
+Both are disabled by default on new and existing connections. Each one needs its own Harvest v3 scope, so on a source you authorized before 1.4.0, re-run the consent flow before enabling either of them. See [Prerequisites](#prerequisites).
 
 ### Streams added in 1.2.0
 
@@ -273,6 +285,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.4.0 | 2026-09-28 | [86478](https://github.com/airbytehq/airbyte/pull/86478) | Add the `candidate_attribute_types` and `job_notes` streams, completing Harvest v3 parity - see [Streams added in 1.4.0](#streams-added-in-140). The consent flow requests two new scopes; enabling either stream on a source authorized before 1.4.0 requires re-running the consent flow |
 | 1.3.0 | 2026-09-24 | [85178](https://github.com/airbytehq/airbyte/pull/85178) | Add client-credentials authentication for Greenhouse custom integrations and self-managed deployments. |
 | 1.2.0 | 2026-09-21 | [86477](https://github.com/airbytehq/airbyte/pull/86477) | Add 20 Harvest v3 detail streams - see [Streams added in 1.2.0](#streams-added-in-120). The consent flow requests 20 new scopes; existing connections keep syncing unchanged, but enabling a new stream on a source authorized before 1.2.0 requires re-running the consent flow |
 | 1.1.0 | 2026-09-17 | [85841](https://github.com/airbytehq/airbyte/pull/85841) | Sync 18 previously full-refresh streams incrementally on `updated_at`. Not breaking, but **Start date** now applies to those 18 streams in every sync mode, including full refresh, where before they always read full history - see [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110). Also read `activity_feed`, `jobs_openings`, and `user_permissions` directly instead of once per 50 parents, and suggest 10 streams for new connections |
