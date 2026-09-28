@@ -100,6 +100,33 @@ class MongoDbSourceReadTest {
     }
 
     @Test
+    fun testWassSnapshotYieldsToCdcAndResumes() {
+        // Negative budget => the incremental snapshot yields to CDC right after the first record.
+        System.setProperty(MAX_SNAPSHOT_DURATION_PROPERTY, "-1")
+        val sync1: BufferingOutputConsumer =
+            try {
+                read(incrementalCatalog())
+            } finally {
+                System.clearProperty(MAX_SNAPSHOT_DURATION_PROPERTY)
+            }
+        // It yielded before finishing: fewer than all 3 records and an IN_PROGRESS checkpoint.
+        val readInSync1: Int = recordCountFor(sync1, PEOPLE)
+        Assertions.assertTrue(readInSync1 in 1..2, "expected a partial snapshot, got $readInSync1")
+        Assertions.assertEquals(
+            MongoDbSnapshotStatus.IN_PROGRESS,
+            lastStreamStateFor(sync1, PEOPLE).status,
+        )
+
+        // The next sync (no budget) resumes from the checkpoint and completes the snapshot.
+        val sync2: BufferingOutputConsumer = read(incrementalCatalog(), sync1.states())
+        Assertions.assertEquals(
+            MongoDbSnapshotStatus.COMPLETE,
+            lastStreamStateFor(sync2, PEOPLE).status,
+        )
+        Assertions.assertEquals(3, readInSync1 + recordCountFor(sync2, PEOPLE))
+    }
+
+    @Test
     fun testCdcCapturesInsertsUpdatesDeletes() {
         // Use a dedicated collection so mutations do not disturb the shared `people` snapshot
         // tests.
@@ -303,6 +330,8 @@ class MongoDbSourceReadTest {
         const val EMPTY = "empty_coll"
         const val CDC = "cdc_coll"
         const val MAX_RECORDS_PROPERTY = "airbyte.connector.extract.mongodb.max-records-per-run"
+        const val MAX_SNAPSHOT_DURATION_PROPERTY =
+            "airbyte.connector.extract.mongodb.max-snapshot-duration-ms"
 
         lateinit var replicaSet: MongoDBContainer
 

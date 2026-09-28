@@ -49,9 +49,12 @@ class MongoDbPartitionsCreatorFactory(
                 val id: StreamIdentifier = feedBootstrap.feed.id
                 if (
                     snapshotAlreadyComplete(feedBootstrap) ||
-                        sharedState.completedSnapshots.contains(id)
+                        sharedState.completedSnapshots.contains(id) ||
+                        sharedState.snapshotYielded.contains(id)
                 ) {
-                    log.info { "No snapshot partition for $id (already complete or read)." }
+                    log.info {
+                        "No snapshot partition for $id (complete, read, or yielded to CDC)."
+                    }
                     CreateNoPartitions
                 } else {
                     MongoDbSnapshotPartitionsCreator(streamState)

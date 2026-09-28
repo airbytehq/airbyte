@@ -78,6 +78,11 @@ class MongoDbSnapshotPartitionReader(
                     log.info { "Reached max-records-per-run ($maxRecords); checkpointing." }
                     return
                 }
+                if (shouldYieldToCdc()) {
+                    sharedState.snapshotYielded.add(stream.id)
+                    log.info { "WASS snapshot budget reached for ${stream.id}; yielding to CDC." }
+                    return
+                }
                 val document: Document = cursor.next()
                 val (payload: NativeRecordPayload, rawId: Any?) =
                     converter.toPayloadWithId(document)
@@ -90,6 +95,16 @@ class MongoDbSnapshotPartitionReader(
         }
         log.info { "Finished ${stream.namespace}.${stream.name}: ${numRecords.get()} records." }
     }
+
+    /**
+     * WASS: an incremental snapshot yields once past the shared snapshot deadline, but only after
+     * emitting at least one record so it always makes forward progress. Full-refresh streams never
+     * yield (there is no change stream to drain, and the destination expects the whole snapshot).
+     */
+    private fun shouldYieldToCdc(): Boolean =
+        !streamState.isFullRefresh &&
+            numRecords.get() > 0 &&
+            java.time.Instant.now().isAfter(sharedState.snapshotDeadline())
 
     /**
      * The `_id` to resume after, or null for a fresh read (no state, or an already-complete one).
