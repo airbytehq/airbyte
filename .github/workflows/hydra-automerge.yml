@@ -42,6 +42,9 @@ on:
 run-name: "Auto-merge eval for PR #${{ inputs.pr }}"
 
 # All repo operations use GitHub App tokens, not GITHUB_TOKEN.
+env:
+  SENTRY_ENVIRONMENT: gitops-prod
+
 permissions: {}
 
 jobs:

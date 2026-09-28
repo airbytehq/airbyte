@@ -1,5 +1,17 @@
 # Airbyte Agents release notes
 
+## September 22, 2026
+
+Connectors
+
+- The Zoho CRM connector is available again. Your agents can read your leads, contacts, accounts, deals, campaigns, tasks, events, calls, products, quotes, invoices, and notes, and can search them by their attributes, such as deal stage, amount, or lead source. Connect it with your Zoho account from any Zoho data center region, and it's also available in the SDK. This connector is read-only, so your agents can't create or update records.
+
+## September 18, 2026
+
+Connectors
+
+- A new Reddit Ads connector is now available. Your agents can read your Reddit advertising structure, including businesses, ad accounts, campaigns, ad groups, and ads, and can search campaigns and ads by their attributes, such as status, objective, or spend cap. Connect it with your Reddit account, and it's also available in the SDK. Performance metrics like impressions, clicks, and spend aren't included.
+
 ## September 16, 2026
 
 SDK
