@@ -10,8 +10,12 @@ Connector for the Amplitude Analytics API. Provides access to core analytics dat
 The Amplitude connector is optimized to handle prompts like these.
 
 - List all chart annotations in Amplitude
+- Show me the details of the most recent annotation
 - Show me all cohorts
+- Show me the details of the first cohort
 - List all event types
+- How many daily active users did I have recently?
+- What is the average session length in Amplitude?
 - Which cohorts have more than 1000 users?
 - What are the most popular event types by total count?
 - Show me annotations created in the last month
