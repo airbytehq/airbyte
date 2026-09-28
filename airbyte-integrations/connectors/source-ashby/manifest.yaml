@@ -89,7 +89,8 @@ streams:
           password: ""
         path: /application.list
         http_method: POST
-        error_handler: {"$ref": "#/definitions/error_handler"}
+        error_handler:
+          $ref: "#/definitions/error_handler"
         request_body_json:
           createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
       record_selector:
@@ -320,7 +321,8 @@ streams:
           password: ""
         path: /applicationFeedback.list
         http_method: POST
-        error_handler: {"$ref": "#/definitions/error_handler"}
+        error_handler:
+          $ref: "#/definitions/error_handler"
         request_body_json:
           createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
       record_selector:
@@ -538,7 +540,8 @@ streams:
           password: ""
         path: /archiveReason.list
         http_method: POST
-        error_handler: {"$ref": "#/definitions/error_handler"}
+        error_handler:
+          $ref: "#/definitions/error_handler"
         request_body_json:
           includeArchived: true
       record_selector:
@@ -599,7 +602,8 @@ streams:
           password: ""
         path: /candidateTag.list
         http_method: POST
-        error_handler: {"$ref": "#/definitions/error_handler"}
+        error_handler:
+          $ref: "#/definitions/error_handler"
         request_body_json:
           includeArchived: true
       record_selector:
@@ -656,7 +660,8 @@ streams:
           password: ""
         path: /candidate.list
         http_method: POST
-        error_handler: {"$ref": "#/definitions/error_handler"}
+        error_handler:
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -965,7 +970,8 @@ streams:
           password: ""
         path: /customField.list
         http_method: POST
-        error_handler: {"$ref": "#/definitions/error_handler"}
+        error_handler:
+          $ref: "#/definitions/error_handler"
         request_body_json:
           includeArchived: true
       record_selector:
@@ -1060,7 +1066,8 @@ streams:
           password: ""
         path: /department.list
         http_method: POST
-        error_handler: {"$ref": "#/definitions/error_handler"}
+        error_handler:
+          $ref: "#/definitions/error_handler"
         request_body_json:
           includeArchived: true
       record_selector:
@@ -1139,7 +1146,8 @@ streams:
           password: ""
         path: /feedbackFormDefinition.list
         http_method: POST
-        error_handler: {"$ref": "#/definitions/error_handler"}
+        error_handler:
+          $ref: "#/definitions/error_handler"
         request_body_json:
           includeArchived: true
       record_selector:
@@ -1219,7 +1227,8 @@ streams:
           password: ""
         path: /interviewSchedule.list
         http_method: POST
-        error_handler: {"$ref": "#/definitions/error_handler"}
+        error_handler:
+          $ref: "#/definitions/error_handler"
         request_body_json:
           createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
       record_selector:
@@ -1410,7 +1419,8 @@ streams:
           password: ""
         path: /interview.list
         http_method: POST
-        error_handler: {"$ref": "#/definitions/error_handler"}
+        error_handler:
+          $ref: "#/definitions/error_handler"
         request_body_json:
           includeNonSharedInterviews: true
           includeArchived: true
@@ -1561,7 +1571,8 @@ streams:
           password: ""
         path: /interviewStage.list
         http_method: POST
-        error_handler: {"$ref": "#/definitions/error_handler"}
+        error_handler:
+          $ref: "#/definitions/error_handler"
         request_body_json:
           interviewPlanId: "{{ stream_partition.interview_plan_id }}"
       record_selector:
@@ -1592,7 +1603,8 @@ streams:
                     password: ""
                   path: /interviewPlan.list
                   http_method: POST
-                  error_handler: {"$ref": "#/definitions/error_handler"}
+                  error_handler:
+                    $ref: "#/definitions/error_handler"
                   request_body_json:
                     includeArchived: true
                 record_selector:
@@ -1677,7 +1689,8 @@ streams:
           password: ""
         path: /jobPosting.list
         http_method: POST
-        error_handler: {"$ref": "#/definitions/error_handler"}
+        error_handler:
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1810,7 +1823,8 @@ streams:
           password: ""
         path: /job.list
         http_method: POST
-        error_handler: {"$ref": "#/definitions/error_handler"}
+        error_handler:
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1984,7 +1998,8 @@ streams:
           password: ""
         path: /location.list
         http_method: POST
-        error_handler: {"$ref": "#/definitions/error_handler"}
+        error_handler:
+          $ref: "#/definitions/error_handler"
         request_body_json:
           includeArchived: true
       record_selector:
@@ -2074,7 +2089,8 @@ streams:
           password: ""
         path: /offer.list
         http_method: POST
-        error_handler: {"$ref": "#/definitions/error_handler"}
+        error_handler:
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -2195,7 +2211,8 @@ streams:
           password: ""
         path: /source.list
         http_method: POST
-        error_handler: {"$ref": "#/definitions/error_handler"}
+        error_handler:
+          $ref: "#/definitions/error_handler"
         request_body_json:
           includeArchived: true
       record_selector:
@@ -2269,7 +2286,8 @@ streams:
           password: ""
         path: /user.list
         http_method: POST
-        error_handler: {"$ref": "#/definitions/error_handler"}
+        error_handler:
+          $ref: "#/definitions/error_handler"
         request_body_json:
           includeDeactivated: true
       record_selector:
@@ -2352,7 +2370,8 @@ streams:
           password: ""
         path: /application.listCriteriaEvaluations
         http_method: POST
-        error_handler: {"$ref": "#/definitions/error_handler"}
+        error_handler:
+          $ref: "#/definitions/error_handler"
         request_body_json:
           applicationId: "{{ stream_partition.application_id }}"
       record_selector:
@@ -2396,7 +2415,8 @@ streams:
                     password: ""
                   path: /application.list
                   http_method: POST
-                  error_handler: {"$ref": "#/definitions/error_handler"}
+                  error_handler:
+                    $ref: "#/definitions/error_handler"
                   request_body_json:
                     createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
                 record_selector:
@@ -2644,7 +2664,8 @@ streams:
                     password: ""
                   path: /application.list
                   http_method: POST
-                  error_handler: {"$ref": "#/definitions/error_handler"}
+                  error_handler:
+                    $ref: "#/definitions/error_handler"
                   request_body_json:
                     createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
                 record_selector:
