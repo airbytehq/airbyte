@@ -444,6 +444,54 @@ public class MongoUtilTest {
             .isEqualTo(100_003);
   }
 
+  @Test
+  void testIsChangeStreamFatalExceptionWithErrorCode280() {
+    final MongoCommandException mongoException = new MongoCommandException(
+        new BsonDocument("ok", new org.bson.BsonInt32(0))
+            .append("errmsg", new org.bson.BsonString("ChangeStreamFatalError"))
+            .append("code", new org.bson.BsonInt32(280)),
+        new ServerAddress());
+    assertTrue(MongoUtil.isChangeStreamFatalException(mongoException));
+  }
+
+  @Test
+  void testIsChangeStreamFatalExceptionWrappedInRuntimeException() {
+    final MongoCommandException mongoException = new MongoCommandException(
+        new BsonDocument("ok", new org.bson.BsonInt32(0))
+            .append("errmsg", new org.bson.BsonString("ChangeStreamFatalError"))
+            .append("code", new org.bson.BsonInt32(280)),
+        new ServerAddress());
+    final RuntimeException wrappedException = new RuntimeException("An exception occurred in the change event producer.", mongoException);
+    assertTrue(MongoUtil.isChangeStreamFatalException(wrappedException));
+  }
+
+  @Test
+  void testIsChangeStreamFatalExceptionWithMessageMatch() {
+    final RuntimeException exception = new RuntimeException("ChangeStreamFatalError: resume token was not found");
+    assertTrue(MongoUtil.isChangeStreamFatalException(exception));
+  }
+
+  @Test
+  void testIsChangeStreamFatalExceptionWithResumeTokenNotFoundMessage() {
+    final RuntimeException exception = new RuntimeException("cannot resume stream; the resume token was not found");
+    assertTrue(MongoUtil.isChangeStreamFatalException(exception));
+  }
+
+  @Test
+  void testIsChangeStreamFatalExceptionReturnsFalseForOtherErrors() {
+    final MongoCommandException mongoException = new MongoCommandException(
+        new BsonDocument("ok", new org.bson.BsonInt32(0))
+            .append("errmsg", new org.bson.BsonString("some other error"))
+            .append("code", new org.bson.BsonInt32(999)),
+        new ServerAddress());
+    assertFalse(MongoUtil.isChangeStreamFatalException(mongoException));
+  }
+
+  @Test
+  void testIsChangeStreamFatalExceptionReturnsFalseForNull() {
+    assertFalse(MongoUtil.isChangeStreamFatalException(null));
+  }
+
   private static String formatMismatchException(final boolean isConfigSchemaEnforced,
                                                 final boolean isCatalogSchemaEnforcing,
                                                 final boolean isStateSchemaEnforced) {
