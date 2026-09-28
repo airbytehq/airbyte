@@ -8,7 +8,7 @@ None. This connector generates data locally and does not connect to an external 
 
 ## Supported streams
 
-This source has three streams: `users`, `products`, and `purchases`. All streams support full refresh and incremental sync, with `id` as the primary key and `updated_at` as the cursor field.
+This source has four streams: `users`, `products`, `purchases`, and `payments`. All streams support full refresh and incremental sync, with `id` as the primary key and `updated_at` as the cursor field.
 
 ### Users
 
@@ -21,6 +21,10 @@ Product records represent vehicles with fields: `id`, `make`, `model`, `year`, `
 ### Purchases
 
 Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `updated_at`, `added_to_cart_at`, `purchased_at`, and `returned_at`. Items added to a cart have a 70% chance of being purchased, and purchased items have a 15% chance of being returned. The `purchased_at` and `returned_at` fields are nullable. The connector generates roughly one purchase per user, so the total number of purchases scales with `count`.
+
+### Payments
+
+Each payment record includes: `id`, `purchase_id`, `user_id`, `amount`, `currency`, `method`, `status`, `paid_at`, `created_at`, and `updated_at`. One payment is generated for every completed purchase (a cart whose `purchased_at` is set); the amount matches the purchased product's price and the status is `refunded` when the purchase was returned, `captured` otherwise.
 
 ## Features
 
@@ -47,6 +51,7 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
+| 7.3.0 | 2026-09-28 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add `payments` stream with one synthetic payment per completed purchase |
 | 7.2.1 | 2026-07-10 | [81653](https://github.com/airbytehq/airbyte/pull/81653) | chore(source-faker): dummy version bump for progressive rollout (autopilot) testing |
 | 7.2.0 | 2026-07-09 | [81556](https://github.com/airbytehq/airbyte/pull/81556) | Promoted release candidate to GA |
 | 7.2.0-rc.2 | 2026-06-24 | [80776](https://github.com/airbytehq/airbyte/pull/80776) | Test autopilot progressive rollout lifecycle |

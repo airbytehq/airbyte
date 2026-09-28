@@ -110,6 +110,47 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "payments",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": { "type": "integer" },
+            "purchase_id": { "type": "integer" },
+            "user_id": { "type": "integer" },
+            "amount": { "type": "number" },
+            "currency": { "type": "string", "enum": ["USD", "EUR", "GBP"] },
+            "method": {
+              "type": "string",
+              "enum": ["card", "paypal", "bank_transfer", "apple_pay", "google_pay"]
+            },
+            "status": { "type": "string", "enum": ["captured", "refunded"] },
+            "paid_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created_at"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

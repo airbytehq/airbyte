@@ -40,6 +40,9 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: created_at
               bypass_reason: "dynamic field"
+          payments:
+            - name: updated_at
+              bypass_reason: "dynamic field"
   incremental:
     tests:
       - config_path: secrets/config.json

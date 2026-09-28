@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "purchase_id": { "type": "integer" },
+    "user_id": { "type": "integer" },
+    "amount": { "type": "number" },
+    "currency": { "type": "string", "enum": ["USD", "EUR", "GBP"] },
+    "method": {
+      "type": "string",
+      "enum": ["card", "paypal", "bank_transfer", "apple_pay", "google_pay"]
+    },
+    "status": { "type": "string", "enum": ["captured", "refunded"] },
+    "paid_at": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    }
+  }
+}

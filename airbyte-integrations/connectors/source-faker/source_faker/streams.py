@@ -7,11 +7,14 @@ import os
 from multiprocessing import Pool
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
+from airbyte_cdk.models import AirbyteRecordMessage, Type
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 
+from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
+from .payment_generator import PaymentGenerator
 from .purchase_generator import PurchaseGenerator
 from .user_generator import UserGenerator
-from .utils import format_airbyte_time, generate_estimate, read_json
+from .utils import format_airbyte_time, generate_estimate, now_millis, read_json
 
 
 class Products(Stream, IncrementalMixin):
@@ -177,6 +180,73 @@ class Purchases(Stream, IncrementalMixin):
                     for purchase in purchases:
                         updated_at = purchase.record.data["updated_at"]
                         yield purchase
+                if records_remaining_this_loop == 0:
+                    break
+
+                self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
+
+            self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
+
+
+class Payments(Stream, IncrementalMixin):
+    primary_key = "id"
+    cursor_field = "updated_at"
+
+    def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
+        super().__init__(**kwargs)
+        self.count = count
+        self.seed = seed
+        self.records_per_slice = records_per_slice
+        self.parallelism = parallelism
+        self.always_updated = always_updated
+        self.generator = PaymentGenerator(self.name, self.seed)
+
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        return self.records_per_slice
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        if hasattr(self, "_state"):
+            return self._state
+        else:
+            return {}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._state = value
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """
+        This is a multi-process implementation of read_records.
+        We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
+        """
+
+        if "updated_at" in self.state and not self.always_updated:
+            return iter([])
+
+        updated_at = ""
+
+        # payments only exist for completed purchases, so roughly 70% of carts produce one
+        median_record_byte_size = 200
+        yield generate_estimate(self.name, (self.count) * 0.7, median_record_byte_size)
+
+        payment_id = 0
+        loop_offset = 0
+        with Pool(initializer=self.generator.prepare, processes=self.parallelism) as pool:
+            while loop_offset < self.count:
+                records_remaining_this_loop = min(self.records_per_slice, (self.count - loop_offset))
+                carts = pool.map(self.generator.generate, range(loop_offset, loop_offset + records_remaining_this_loop))
+                for payments in carts:
+                    loop_offset += 1
+                    for payment in payments:
+                        updated_at = payment["updated_at"]
+                        payment_id += 1
+                        data = {"id": payment_id, **payment}
+                        yield AirbyteMessageWithCachedJSON(
+                            type=Type.RECORD,
+                            record=AirbyteRecordMessage(stream=self.name, data=data, emitted_at=now_millis()),
+                        )
                 if records_remaining_this_loop == 0:
                     break
 
