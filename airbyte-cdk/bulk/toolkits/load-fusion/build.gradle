@@ -2,9 +2,6 @@ plugins {
     id 'java-test-fixtures'
 }
 
-// Independently versioned; compatible with both legacy and bulk CDK connectors.
-version = '0.1.0-fusion.1'
-
 dependencies {
     api 'com.fasterxml.jackson.core:jackson-databind'
     implementation platform('software.amazon.awssdk:bom:2.31.54')
