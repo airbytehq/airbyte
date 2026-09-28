@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mongodbv3
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Aggregates
@@ -10,7 +11,9 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.EmittedField
+import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetadataQuerier
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
@@ -46,6 +49,13 @@ class MongoDbSourceMetadataQuerier(
      * `check`, and sampling up to `discover_sample_size` documents there would be slow.
      */
     private val skipFieldDiscovery: Boolean = false,
+    /**
+     * When set, [fields] is served from this configured catalog instead of by sampling. At READ
+     * time the CDK re-validates the catalog by calling [fields]; re-sampling would be slow and
+     * could drop or re-type fields whose values vary between documents, so we echo the configured
+     * schema.
+     */
+    private val readModeCatalog: ConfiguredAirbyteCatalog? = null,
 ) : MetadataQuerier {
 
     /** Collections are sampled concurrently, like the legacy connector's `parallelStream()`. */
@@ -100,6 +110,9 @@ class MongoDbSourceMetadataQuerier(
         if (skipFieldDiscovery) {
             return emptyList()
         }
+        readModeCatalog?.let {
+            return fieldsFromConfiguredCatalog(streamID, it)
+        }
         val namespace: String = streamID.namespace ?: return emptyList()
         if (prefetchedNamespaces.add(namespace)) {
             for (otherStreamID in streamNames(namespace)) {
@@ -111,6 +124,30 @@ class MongoDbSourceMetadataQuerier(
         } catch (e: ExecutionException) {
             throw e.cause ?: e
         }
+    }
+
+    /**
+     * Reconstructs a stream's fields from the configured catalog's JSON schema, dropping the
+     * `_ab_*` meta fields (the CDK adds those back). A stream absent from the catalog yields no
+     * fields.
+     */
+    private fun fieldsFromConfiguredCatalog(
+        streamID: StreamIdentifier,
+        catalog: ConfiguredAirbyteCatalog,
+    ): List<EmittedField> {
+        val configuredStream =
+            catalog.streams.firstOrNull {
+                it.stream.name == streamID.name && it.stream.namespace == streamID.namespace
+            }
+                ?: return emptyList()
+        val properties: JsonNode =
+            configuredStream.stream.jsonSchema?.get("properties") ?: return emptyList()
+        return properties
+            .fields()
+            .asSequence()
+            .filterNot { (name, _) -> name.startsWith(MetaField.META_PREFIX) }
+            .map { (name, schema) -> EmittedField(name, MongoDbFieldType.fromJsonSchema(schema)) }
+            .toList()
     }
 
     private fun scheduleFieldDiscovery(streamID: StreamIdentifier): Future<List<EmittedField>> =
@@ -265,6 +302,8 @@ class MongoDbSourceMetadataQuerier(
     @Inject
     constructor(
         @Value("\${${Operation.PROPERTY}:discover}") private val operation: String = "discover",
+        /** Present at READ time; empty for spec/check/discover. */
+        private val configuredCatalog: ConfiguredAirbyteCatalog? = null,
     ) : MetadataQuerier.Factory<MongoDbSourceConfiguration> {
         /**
          * The [MongoDbSourceConfiguration] is deliberately not injected in order to support tests.
@@ -274,6 +313,7 @@ class MongoDbSourceMetadataQuerier(
                 config,
                 MongoDbClientFactory.create(config),
                 skipFieldDiscovery = operation == CHECK_OPERATION,
+                readModeCatalog = if (operation == READ_OPERATION) configuredCatalog else null,
             )
     }
 
@@ -283,6 +323,7 @@ class MongoDbSourceMetadataQuerier(
         const val DATA_FIELD = "data"
         private const val ID_TYPE_FIELD = "_idType"
         private const val CHECK_OPERATION = "check"
+        private const val READ_OPERATION = "read"
 
         /** Collection name prefixes which are never exposed as streams. */
         val IGNORED_COLLECTION_PREFIXES: Set<String> = setOf("system.", "replset.", "oplog.")

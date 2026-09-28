@@ -329,7 +329,11 @@ class StateManagerFactory(
     private fun airbyteTypeFromJsonSchema(jsonSchema: JsonNode): AirbyteSchemaType {
         fun value(key: String): String = jsonSchema[key]?.asText() ?: ""
         return when (value("type")) {
-            "array" -> ArrayAirbyteSchemaType(airbyteTypeFromJsonSchema(jsonSchema["items"]))
+            "array" ->
+                ArrayAirbyteSchemaType(
+                    jsonSchema["items"]?.let { airbyteTypeFromJsonSchema(it) }
+                        ?: LeafAirbyteSchemaType.JSONB,
+                )
             "null" -> LeafAirbyteSchemaType.NULL
             "boolean" -> LeafAirbyteSchemaType.BOOLEAN
             "number" ->

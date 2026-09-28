@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mongodbv3
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.data.AirbyteSchemaType
 import io.airbyte.cdk.data.AnyEncoder
@@ -60,6 +61,22 @@ enum class MongoDbFieldType(
                 "array" -> ARRAY
                 "object",
                 "javascriptWithScope" -> OBJECT
+                "null" -> NULL
+                else -> STRING
+            }
+
+        /**
+         * Recovers the field type from a catalog property's JSON schema (`{"type": ...}`), the
+         * inverse of [jsonSchema]. Used at READ time to serve [fields]
+         * [MongoDbSourceMetadataQuerier] from the configured catalog rather than re-sampling
+         * documents.
+         */
+        fun fromJsonSchema(property: JsonNode): MongoDbFieldType =
+            when (property["type"]?.asText()) {
+                "boolean" -> BOOLEAN
+                "number" -> NUMBER
+                "array" -> ARRAY
+                "object" -> OBJECT
                 "null" -> NULL
                 else -> STRING
             }

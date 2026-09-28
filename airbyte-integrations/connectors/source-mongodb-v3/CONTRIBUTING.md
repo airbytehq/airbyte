@@ -75,3 +75,28 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
 - `check` does not sample documents (the legacy `check` only ran `listCollections`);
   `MongoDbSourceMetadataQuerier.Factory` reads `airbyte.connector.operation` and returns no fields
   during `check`.
+
+## Read (Stage 3 + Stage 4 initial sync)
+
+`read` performs an initial full snapshot of each collection:
+
+- `MongoDbPartitionsCreatorFactory` plans the READ. Each `Stream` feed gets one
+  `MongoDbSnapshotPartitionsCreator` (one partition per collection, no concurrent `_id` splitting
+  yet); the `Global` feed (change stream / CDC) returns `CreateNoPartitions` for now.
+- `MongoDbSnapshotPartitionReader` reads the whole collection ordered by `_id` and emits every
+  document; `MongoDbRecordConverter` reproduces the legacy record shape (ObjectId hex, `Date`
+  always with milliseconds, `Binary` as Base64, `BsonRegularExpression` as `(options)pattern`,
+  `CodeWithScope` as an object, `MinKey`/`MaxKey` omitted, the `BsonTimestamp` epoch-millis quirk).
+- The per-collection checkpoint is the legacy `MongoDbStreamStateValue` shape
+  (`{id, status, idType, binarySubType}`): `COMPLETE` for an incremental stream once its snapshot
+  finishes, `FULL_REFRESH` for a full-refresh stream. At READ time the metadata querier serves
+  `fields()` from the configured catalog rather than re-sampling.
+- Still to do (later stages): mid-collection checkpoint/resume, legacy GLOBAL/CDC state translation,
+  the change-stream reader, protobuf/socket output, and record/state Docker parity against
+  `source-mongodb-v2`.
+
+> **CDK version:** this branch pins `cdkVersion=local` and bumps
+> `airbyte-cdk/bulk/core/extract/version.properties` to `1.1.12` because READ-time catalog
+> validation NPE'd on `{"type":"array"}` without `items` (MongoDB arrays) up to 1.1.11. The one-line
+> fix in `StateManagerFactory.airbyteTypeFromJsonSchema` must be published as `1.1.12` and the
+> connector re-pinned to that version before this leaves draft — CI rejects `cdkVersion=local`.
