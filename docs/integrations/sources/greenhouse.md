@@ -82,7 +82,7 @@ Both methods need the same scopes. With OAuth, the consent flow requests them; a
 
 Harvest v3 rejects requests to its list endpoints from any user who isn't a Site Admin or a custom integration's service user, and the connector fails the sync with a configuration error. A missing scope produces the same failure for the streams that depend on it, so grant every scope in the list unless you plan to leave the corresponding streams disabled. Grant `harvest:users:list` in every case: the connection check reads the `users` stream, so the source fails to set up without it even if you never sync that stream.
 
-With OAuth, Greenhouse ties the scopes to the refresh token it issued when you approved the consent flow. If you set up the source with OAuth before version 1.2.0, your token doesn't include the 20 scopes that version added, and enabling any of the [streams added in 1.2.0](#streams-added-in-120) fails with a `403` error until you open the source settings, click **Authenticate**, and approve the consent flow again. Streams you already sync keep working without re-authenticating.
+With OAuth, Greenhouse ties the scopes to the refresh token it issued when you approved the consent flow. Versions 1.2.0 and 1.4.0 each added streams that need new scopes. If you set up the source with OAuth before one of those versions, your token doesn't include the scopes it added, and enabling any of the [streams added in 1.2.0](#streams-added-in-120) or [streams added in 1.4.0](#streams-added-in-140) fails with a `403` error until you open the source settings, click **Authenticate**, and approve the consent flow again. Streams you already sync keep working without re-authenticating. With Client Credentials, grant the new scopes to the credential in Greenhouse instead.
 
 ## Setup guide
 
@@ -156,7 +156,7 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | [`interviews`](https://harvestdocs.greenhouse.io/reference/get_v3-interviews) | Incremental (`updated_at`) | |
 | [`job_hiring_managers`](https://harvestdocs.greenhouse.io/reference/get_v3-job-hiring-managers) | Incremental (`updated_at`) | One row per hiring manager on a job |
 | [`job_interviews`](https://harvestdocs.greenhouse.io/reference/get_v3-job-interviews) | Incremental (`updated_at`) | The interview plan for each job stage |
-| [`job_notes`](https://harvestdocs.greenhouse.io/reference/get_v3-job-notes) | Incremental (`updated_at`) | Free-text notes on jobs |
+| [`job_notes`](https://harvestdocs.greenhouse.io/reference/get_v3-job-notes) | Incremental (`updated_at`) | Free-text notes on jobs, separate from the candidate notes in `activity_feed` |
 | [`job_owners`](https://harvestdocs.greenhouse.io/reference/get_v3-job-owners) | Incremental (`updated_at`) | Recruiter, sourcer and coordinator per job, with a `responsible` flag |
 | [`job_posts`](https://harvestdocs.greenhouse.io/reference/get_v3-job-posts) | Incremental (`updated_at`) | Includes deleted posts |
 | [`job_stages`](https://harvestdocs.greenhouse.io/reference/get_v3-job-interview-stages) | Incremental (`updated_at`) | |
@@ -183,11 +183,11 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 
 ### Streams added in 1.4.0
 
-Version 1.4.0 added these 2 streams, both incremental on `updated_at`, completing coverage of the Harvest v3 detail endpoints:
+Version 1.4.0 added these 2 streams, both incremental on `updated_at`:
 
 `candidate_attribute_types`, `job_notes`
 
-Both are disabled by default on new and existing connections. Each one needs its own Harvest v3 scope, so on a source you authorized before 1.4.0, re-run the consent flow before enabling either of them. See [Prerequisites](#prerequisites).
+Both are disabled by default on new and existing connections. Each one needs its own Harvest v3 scope. On an OAuth source you authorized before 1.4.0, re-run the consent flow before enabling either of them. With Client Credentials, grant `harvest:candidate_attribute_types:list` and `harvest:job_notes:list` to the credential in Greenhouse. See [Scopes](#scopes).
 
 ### Streams added in 1.2.0
 
@@ -195,7 +195,7 @@ Version 1.2.0 added these 20 streams, all incremental on `updated_at`. They carr
 
 `application_stages`, `applied_candidate_tags`, `approver_groups`, `approvers`, `attachments`, `candidate_educations`, `candidate_employments`, `interview_kits`, `interviewer_tags`, `interviewers`, `job_hiring_managers`, `job_interviews`, `job_owners`, `prospect_details`, `prospect_pool_stages`, `referrers`, `rejection_details`, `scorecard_candidate_attributes`, `scorecard_questions`, `user_emails`
 
-All 20 are disabled by default on new and existing connections. Each one needs its own Harvest v3 scope, so on a source you authorized before 1.2.0, re-run the consent flow before enabling any of them. See [Prerequisites](#prerequisites).
+All 20 are disabled by default on new and existing connections. Each one needs its own Harvest v3 scope. On an OAuth source you authorized before 1.2.0, re-run the consent flow before enabling any of them. With Client Credentials, grant the corresponding scopes to the credential in Greenhouse. See [Scopes](#scopes).
 
 ### Streams that became incremental in 1.1.0
 
@@ -266,7 +266,7 @@ With Client Credentials the connector requests a new access token from Greenhous
 
 ### Sync fails with a `403` configuration error on a stream
 
-The authorizing user isn't a Site Admin, or the consent flow didn't include the scope for that stream. This is expected when you enable one of the [streams added in 1.2.0](#streams-added-in-120) on a source you authorized before that version. Compare the scopes in [Prerequisites](#prerequisites) with the ones you approved, then open the source settings, click **Authenticate**, and re-run the consent flow as a Site Admin. With Client Credentials, grant the missing scope to the credential in Greenhouse, and check that **Site Admin user ID** is blank or belongs to a Site Admin.
+The authorizing user isn't a Site Admin, or the consent flow didn't include the scope for that stream. This is expected when you enable one of the [streams added in 1.2.0](#streams-added-in-120) or [streams added in 1.4.0](#streams-added-in-140) on a source you authorized before that version. Compare the scopes in [Prerequisites](#prerequisites) with the ones you approved, then open the source settings, click **Authenticate**, and re-run the consent flow as a Site Admin. With Client Credentials, grant the missing scope to the credential in Greenhouse, and check that **Site Admin user ID** is blank or belongs to a Site Admin.
 
 ### A stream returns fewer records after upgrading to 1.1.0
 
@@ -285,7 +285,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.4.0 | 2026-09-28 | [86478](https://github.com/airbytehq/airbyte/pull/86478) | Add the `candidate_attribute_types` and `job_notes` streams, completing Harvest v3 parity - see [Streams added in 1.4.0](#streams-added-in-140). The consent flow requests two new scopes; enabling either stream on a source authorized before 1.4.0 requires re-running the consent flow |
+| 1.4.0 | 2026-09-28 | [86478](https://github.com/airbytehq/airbyte/pull/86478) | Add the `candidate_attribute_types` and `job_notes` streams - see [Streams added in 1.4.0](#streams-added-in-140). The consent flow requests two new scopes; enabling either stream on a source authorized before 1.4.0 requires re-running the consent flow |
 | 1.3.0 | 2026-09-24 | [85178](https://github.com/airbytehq/airbyte/pull/85178) | Add client-credentials authentication for Greenhouse custom integrations and self-managed deployments. |
 | 1.2.0 | 2026-09-21 | [86477](https://github.com/airbytehq/airbyte/pull/86477) | Add 20 Harvest v3 detail streams - see [Streams added in 1.2.0](#streams-added-in-120). The consent flow requests 20 new scopes; existing connections keep syncing unchanged, but enabling a new stream on a source authorized before 1.2.0 requires re-running the consent flow |
 | 1.1.0 | 2026-09-17 | [85841](https://github.com/airbytehq/airbyte/pull/85841) | Sync 18 previously full-refresh streams incrementally on `updated_at`. Not breaking, but **Start date** now applies to those 18 streams in every sync mode, including full refresh, where before they always read full history - see [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110). Also read `activity_feed`, `jobs_openings`, and `user_permissions` directly instead of once per 50 parents, and suggest 10 streams for new connections |
