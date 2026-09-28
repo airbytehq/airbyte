@@ -18,9 +18,9 @@ Revisit this if Granola publishes an OAuth application model for the public API.
 
 `base_error_handler` maps shared HTTP failures, and every stream's error handler lists the same shared filters by `$ref` plus its stream-specific one. A local `response_filters` list next to `$ref` replaces the referenced list wholesale (`evaluated_ref | evaluated_dict`), so putting the shared filters only on `base_error_handler` would silently drop them from `detailed_notes` and `note_transcripts`, which each define their own list.
 
-- `401`/`403` → `FAIL` with `failure_type: config_error`, naming the API key.
+- `401` and `403` → `FAIL` with `failure_type: config_error`, with separate messages: `401` means Granola rejected the key, `403` means the key lacks access.
 - `429` → `RATE_LIMITED`; backoff honors `Retry-After` up to 60 seconds, then exponential backoff with factor 5, `max_retries: 5`.
-- `500`/`502`/`503`/`504` → `RETRY` with `failure_type: transient_error`.
+- `500`/`502`/`503`/`504` → `RETRY`, failing as `transient_error` once retries run out. The CDK applies an `HttpResponseFilter`'s `failure_type` only when the action is `FAIL`. For `RETRY` it uses its default mapping (`HttpResponseFilter.matches` in `airbyte_cdk/sources/declarative/requesters/error_handlers/http_response_filter.py`), which covers only these four codes. Any other 5xx, such as `501` or `507`, still retries but fails as `system_error`, and adding it to the filter would not change that.
 - `413` on `detailed_notes` and `404` on `note_transcripts` → `IGNORE` (see Oversized Transcripts).
 
 ## Deletions

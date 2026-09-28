@@ -117,7 +117,7 @@ The Granola API enforces rate limits. Depending on the key's access scope, limit
 
 The connector throttles itself to the documented burst limit of 25 requests per 5 seconds. If Granola still returns `429 Too Many Requests`, or a `5xx` server error, the connector retries the request up to 5 times. It waits for the interval in the `Retry-After` response header when Granola sends one, up to 60 seconds, and otherwise backs off exponentially.
 
-A `401` or `403` response means Granola rejected the API key. These fail fast as a configuration error naming the key, so check that the key is still valid and has the scopes you expect, or create a new one in the Granola desktop app.
+A `401` response means Granola rejected the API key, and a `403` response means the key doesn't have access to the requested data. Both fail the sync immediately as a configuration error. Check that the key is still valid and has the access you expect, or create a new one in the Granola desktop app.
 
 ## Troubleshooting
 
