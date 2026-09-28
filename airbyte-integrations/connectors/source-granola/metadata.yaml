@@ -28,7 +28,6 @@ data:
     streams:
       - notes
       - detailed_notes
-      - note_transcripts
   supportLevel: community
   tags:
     - cdk:low-code
