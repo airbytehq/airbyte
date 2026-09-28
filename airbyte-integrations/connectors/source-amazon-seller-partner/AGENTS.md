@@ -154,6 +154,12 @@ it retries and then fails with "Async job failed after exhausting all retry atte
 nothing. `ReportPollingRequester` (wired as the `basic_async_retriever.polling_requester`) fetches that document,
 logs Amazon's reason at ERROR, and raises a `config_error` when the reason points at report options.
 
+The `config_error` message only tells the user to add options when Amazon says one is missing
+(`_MISSING_REPORT_OPTION_MARKERS`). A reason that merely mentions an option, such as a rejected value or a `WEEK`
+period whose dates are not Sunday-aligned, means the option is already set, so the message quotes Amazon and asks
+the user to check the value instead. The polling requester is shared by every report stream, so keep those
+markers narrow: a bare "requires" would also match value errors.
+
 `AsyncJobOrchestrator._is_breaking_exception` treats a `config_error` as breaking, so that path aborts the sync
 immediately rather than waiting out `failed_retry_wait_time_in_seconds` (default 1800s) per retry. Every other
 case - no document, a fetch failure, an unrecognised payload - must leave the response untouched so the existing

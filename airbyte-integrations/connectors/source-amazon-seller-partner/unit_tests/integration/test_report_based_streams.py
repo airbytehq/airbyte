@@ -1492,18 +1492,78 @@ class TestFatalReportErrorSurfacing:
         assert "archived in 2024" not in error_messages
         assert self._DOC_URL in error_messages
 
+    # Amazon's verbatim wordings for FATAL reasons that are not report-options problems.
+    @pytest.mark.parametrize(
+        "amazon_reason",
+        [
+            # Captured from the #85294 canary: the trailing day had not been published yet.
+            pytest.param("The report data for the requested date range is not yet available", id="not_yet_available"),
+            # Captured from the #85294 canary, also in amzn/selling-partner-api-models discussion #3785.
+            pytest.param("dataStartTime and dataEndTime must be supplied", id="no_date_window"),
+            # amzn/selling-partner-api-models#4701: a weekly report request that went FATAL. Amazon's
+            # generic parameter error names no option, so it must not be classified as one.
+            pytest.param(
+                "A client error occurred. Please double check that your parameters are valid and fulfill the "
+                "requirements of the report type.",
+                id="generic_client_error",
+            ),
+        ],
+    )
     @freezegun.freeze_time(NOW.isoformat(), tick=True)
     @HttpMocker()
-    def test_given_fatal_unrelated_error_when_read_then_reason_logged_and_not_config_error(self, http_mocker: HttpMocker) -> None:
+    def test_given_fatal_unrelated_error_when_read_then_reason_logged_and_not_config_error(
+        self, amazon_reason: str, http_mocker: HttpMocker
+    ) -> None:
         """An unrelated FATAL reason is logged but must not be reported as a report-options problem."""
-        amazon_reason = "Report data is not yet available for the requested date range."
+        # Default attempts=3: the failure is not breaking, so the CDK still retries it.
         self._mock_fatal_flow(http_mocker, json.dumps({"errorDetails": amazon_reason}))
 
         output = self._read(self._STREAM_NAME, config().with_failed_retry_wait_time_in_seconds(1))
 
         assert_message_in_log_output(amazon_reason, output, log_level=Level.ERROR)
+        # The stream fails through the CDK's retry-exhausted path, typed system_error. The CDK's
+        # trailing "streams did not sync successfully" summary is always config_error, so the
+        # failure type is asserted on the stream's own error rather than across output.errors.
+        retry_exhausted = [
+            error
+            for error in output.errors
+            if error.trace.error.message == "One or more async jobs failed after exhausting all retry attempts."
+        ]
+        assert retry_exhausted and all(error.trace.error.failure_type == FailureType.system_error for error in retry_exhausted)
+        assert not any(error.trace.error.message.startswith("Amazon rejected") for error in output.errors)
         error_messages = " ".join(error.trace.error.message for error in output.errors)
         assert "Add the options under Report Options" not in error_messages
+
+    # Illustrative wordings: Amazon's exact text for these cases has not been captured live. Each
+    # mentions an option because its value was rejected, not because it is missing.
+    @pytest.mark.parametrize(
+        "amazon_reason",
+        [
+            pytest.param("Invalid reportPeriod WEEK: dataStartTime must fall on a Sunday.", id="misaligned_week"),
+            pytest.param("reportPeriod WEEK requires dataStartTime to be a Sunday.", id="misaligned_week_requires"),
+            pytest.param("MANUFACTURING is not a valid distributorView for this vendor group.", id="invalid_distributor_view"),
+        ],
+    )
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
+    def test_given_fatal_invalid_report_option_value_when_read_then_config_error_without_add_advice(
+        self, amazon_reason: str, http_mocker: HttpMocker
+    ) -> None:
+        """An option Amazon rejected was already set, so the user must not be told to add it."""
+        # attempts=1: still a config error, so the sync aborts without burning retries.
+        self._mock_fatal_flow(http_mocker, json.dumps({"errorDetails": amazon_reason}), attempts=1)
+
+        output = self._read(self._STREAM_NAME, config().with_failed_retry_wait_time_in_seconds(1))
+
+        error = next(error.trace.error for error in output.errors if error.trace.error.message.startswith("Amazon rejected"))
+        message = error.message
+        assert amazon_reason in message
+        # Asserted on our own error: the CDK's trailing summary is config_error regardless.
+        assert error.failure_type == FailureType.config_error
+        assert "Add the options under Report Options" not in message
+        assert "Amazon documents" not in message
+        assert f"Check the values set for {self._STREAM_NAME} under Report Options" in message
+        assert self._DOC_URL in message
 
     @freezegun.freeze_time(NOW.isoformat(), tick=True)
     @HttpMocker()
