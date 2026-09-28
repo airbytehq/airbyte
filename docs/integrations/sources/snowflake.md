@@ -259,6 +259,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.1   | 2026-09-25 | [86998](https://github.com/airbytehq/airbyte/pull/86998) | Fix duplicate-column discovery failure when a schema name contains `_` or `%`, and report the affected stream and column when duplicates are found. |
 | 2.0.0   | 2026-09-03 | [85331](https://github.com/airbytehq/airbyte/pull/85331) | Deprecate username/password authentication; key pair authentication or a programmatic access token is now recommended. Username/password will be removed in a future release. |
 | 1.1.2   | 2026-08-21 | [84927](https://github.com/airbytehq/airbyte/pull/84927) | Bump Bulk CDK extract version from 1.0.1 to 1.1.10                                                                                        |
 | 1.1.1   | 2026-07-21 | [82705](https://github.com/airbytehq/airbyte/pull/82705) | Fix incremental sync silently dropping rows at the cursor's upper bound by rounding timestamp precision up instead of down                |
