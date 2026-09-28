@@ -135,6 +135,7 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 | GmvMaxCampaigns                           | Prod         | campaign_id                                | Yes         |
 | GmvMaxProductCampaignReportsDaily         | Prod         | store_id, campaign_id, stat_time_day       | Yes         |
 | GmvMaxLiveCampaignReportsDaily            | Prod         | store_id, campaign_id, stat_time_day       | Yes         |
+| GmvMaxAdvertiserReportsDaily              | Prod         | advertiser_id, store_id, stat_time_day     | Yes         |
 
 Streams marked **Prod** only are available when you authenticate with `OAuth2.0`. They don't appear in the connector's catalog when you authenticate with a `Sandbox Access Token`.
 
@@ -153,6 +154,18 @@ The TikTok Reporting API has [data latency](https://ads.tiktok.com/marketing_api
 ### Report Aggregation
 
 Reports synced by this connector can use either hourly, daily, or lifetime granularities for aggregating performance data. For example, if you select the daily-aggregation flavor of a report, the report will contain a row for each day for the duration of the report. Each row will indicate the number of impressions recorded on that day.
+
+### GMV Max streams
+
+The GMV Max streams sync TikTok Shop GMV Max data. They're available only when you authenticate with `OAuth2.0`.
+
+- The TikTok developer app must be authorized for GMV Max (TikTok Shop) access. Without it, TikTok returns a permission error (40001) and the sync fails.
+- `GmvMaxStores` lists the TikTok Shop stores linked to each advertiser. The report streams only request data for stores where `is_gmv_max_available` is `true`.
+- `GmvMaxCampaigns` lists Product GMV Max and LIVE GMV Max campaigns. Incremental sync is client-side: each sync reads all campaigns from the API and emits only campaigns with a `modify_time` later than the saved cursor.
+- `GmvMaxProductCampaignReportsDaily` and `GmvMaxLiveCampaignReportsDaily` are daily per-campaign reports for Product GMV Max and LIVE GMV Max campaigns. The LIVE report adds live-view metrics: `live_views`, `cost_per_live_view`, `10_second_live_views`, `cost_per_10_second_live_view`, and `live_follows`.
+- `GmvMaxAdvertiserReportsDaily` is a daily ad account-level report for each store that combines Product GMV Max and LIVE GMV Max campaigns.
+- Report data starts no earlier than 2023-09-01, regardless of the configured start date.
+- The GMV Max report streams fail the sync on error 40002 instead of skipping the resource, because TikTok also returns this code for invalid request parameters.
 
 ## Performance considerations
 
@@ -184,7 +197,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.2.0 | 2026-09-22 | [85316](https://github.com/airbytehq/airbyte/pull/85316) | Add GMV Max streams: `gmv_max_stores`, `gmv_max_campaigns`, `gmv_max_product_campaign_reports_daily`, `gmv_max_live_campaign_reports_daily` |
+| 5.2.0 | 2026-09-22 | [85316](https://github.com/airbytehq/airbyte/pull/85316) | Add GMV Max streams: `gmv_max_stores`, `gmv_max_campaigns`, `gmv_max_product_campaign_reports_daily`, `gmv_max_live_campaign_reports_daily`, `gmv_max_advertiser_reports_daily` |
 | 5.1.18 | 2026-09-22 | [86854](https://github.com/airbytehq/airbyte/pull/86854) | Update dependencies |
 | 5.1.17 | 2026-09-21 | [79183](https://github.com/airbytehq/airbyte/pull/79183) | Classify TikTok API error code 40001 (PERMISSION_ERROR) as config_error instead of system_error |
 | 5.1.16 | 2026-09-15 | [86277](https://github.com/airbytehq/airbyte/pull/86277) | Update dependencies |

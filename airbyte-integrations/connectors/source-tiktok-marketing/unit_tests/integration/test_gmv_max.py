@@ -35,6 +35,14 @@ LIVE_METRICS = PRODUCT_METRICS + [
     "cost_per_10_second_live_view",
     "live_follows",
 ]
+ADVERTISER_METRICS = [
+    "cost",
+    "orders",
+    "cost_per_order",
+    "gross_revenue",
+    "roi",
+    "net_cost",
+]
 
 
 def catalog(stream_name: str):
@@ -64,6 +72,29 @@ def report_response(campaign_id: str):
                         "cost_per_order": "1.25",
                         "gross_revenue": "25.0",
                         "roi": "2.0",
+                    },
+                }
+            ],
+            "page_info": {"total_number": 1, "page": 1, "page_size": 1000, "total_page": 1},
+        },
+    }
+
+
+def advertiser_report_response(advertiser_id: str):
+    return {
+        "code": 0,
+        "message": "ok",
+        "data": {
+            "list": [
+                {
+                    "dimensions": {"advertiser_id": advertiser_id, "stat_time_day": "2024-01-01 00:00:00"},
+                    "metrics": {
+                        "cost": "12.5",
+                        "orders": "-",
+                        "cost_per_order": "1.25",
+                        "gross_revenue": "25.0",
+                        "roi": "2.0",
+                        "net_cost": "10.0",
                     },
                 }
             ],
@@ -130,6 +161,32 @@ def mock_report(
     http_mocker.get(
         request,
         [HttpResponse(body=json.dumps(body), status_code=200) for body in bodies],
+    )
+    return request
+
+
+def mock_advertiser_report(
+    http_mocker: HttpMocker,
+    advertiser_id: str,
+    store_id: str,
+    start_date: str = "2024-01-01",
+    end_date: str = "2024-01-02",
+):
+    request = HttpRequest(
+        url=f"{BASE_URL}gmv_max/report/get/",
+        query_params={
+            "advertiser_id": advertiser_id,
+            "store_ids": json.dumps([store_id]),
+            "dimensions": json.dumps(["advertiser_id", "stat_time_day"]),
+            "metrics": json.dumps(ADVERTISER_METRICS),
+            "start_date": start_date,
+            "end_date": end_date,
+            "page_size": 1000,
+        },
+    )
+    http_mocker.get(
+        request,
+        HttpResponse(body=json.dumps(advertiser_report_response(advertiser_id)), status_code=200),
     )
     return request
 
@@ -322,6 +379,57 @@ class TestGmvMaxLiveReports(TestCase):
 
         assert len(output.records) == 1
         assert output.records[0].record.data["campaign_id"] == "c1"
+
+
+class TestGmvMaxAdvertiserReports(TestCase):
+    @HttpMocker()
+    def test_requests_advertiser_dimensions_without_filtering(self, http_mocker: HttpMocker):
+        mock_advertisers_slices(http_mocker, config())
+        mock_stores(
+            http_mocker,
+            ADVERTISER_ID,
+            [
+                {"store_id": "111", "is_gmv_max_available": True},
+                {"store_id": "222", "is_gmv_max_available": False},
+            ],
+        )
+        report_request = mock_advertiser_report(http_mocker, ADVERTISER_ID, "111")
+
+        output = read(
+            get_source(config=config(), state=None),
+            config(),
+            catalog("gmv_max_advertiser_reports_daily"),
+        )
+
+        assert len(output.records) == 1
+        record = output.records[0].record.data
+        assert record["advertiser_id"] == ADVERTISER_ID
+        assert record["store_id"] == "111"
+        assert record["stat_time_day"] == "2024-01-01 00:00:00"
+        assert record["metrics"]["orders"] is None
+        # HttpMocker matches query params exactly and fails on unmatched requests, so this
+        # also proves store 222 was not queried and no filtering param was sent.
+        http_mocker.assert_number_of_calls(report_request, 1)
+
+    @HttpMocker()
+    def test_same_store_under_two_advertisers_emits_distinct_records(self, http_mocker: HttpMocker):
+        cfg = config()
+        mock_advertisers(http_mocker, cfg, [ADVERTISER_ID, SECOND_ADVERTISER_ID])
+        mock_stores(http_mocker, ADVERTISER_ID, [{"store_id": "111", "is_gmv_max_available": True}])
+        mock_stores(http_mocker, SECOND_ADVERTISER_ID, [{"store_id": "111", "is_gmv_max_available": True}])
+        mock_advertiser_report(http_mocker, ADVERTISER_ID, "111")
+        mock_advertiser_report(http_mocker, SECOND_ADVERTISER_ID, "111")
+
+        output = read(get_source(config=cfg, state=None), cfg, catalog("gmv_max_advertiser_reports_daily"))
+
+        assert len(output.records) == 2
+        assert {
+            (record.record.data["advertiser_id"], record.record.data["store_id"], record.record.data["stat_time_day"])
+            for record in output.records
+        } == {
+            (ADVERTISER_ID, "111", "2024-01-01 00:00:00"),
+            (SECOND_ADVERTISER_ID, "111", "2024-01-01 00:00:00"),
+        }
 
 
 class TestGmvMaxReportErrors(TestCase):

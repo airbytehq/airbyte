@@ -2687,6 +2687,62 @@ definitions:
       schema:
         $ref: "#/definitions/schemas/gmv_max_live_campaign_reports_daily"
 
+  gmv_max_advertiser_reports_daily_stream:
+    type: DeclarativeStream
+    name: gmv_max_advertiser_reports_daily
+    $parameters:
+      path: "gmv_max/report/get/"
+    primary_key:
+      - advertiser_id
+      - store_id
+      - stat_time_day
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          $ref: "#/definitions/gmv_max_report_error_handler"
+        request_parameters:
+          advertiser_id: "{{ stream_slice.parent_slice['advertiser_id'] }}"
+          store_ids: '{{ [stream_slice["store_id"]] | string }}'
+          dimensions: '{{ ["advertiser_id", "stat_time_day"] | string }}'
+          metrics: '{{ ["cost","orders","cost_per_order","gross_revenue","roi","net_cost"] | string }}'
+          start_date: "{{ stream_interval['start_time'] }}"
+          end_date: "{{ stream_interval['end_time'] }}"
+      record_selector:
+        $ref: "#/definitions/record_selector"
+      paginator:
+        $ref: "#/definitions/paginator_page_increment"
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 1000
+          start_from_page: 1
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: store_id
+            partition_field: store_id
+            stream:
+              $ref: "#/definitions/gmv_max_stores_filtered_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["advertiser_id"]
+            value: "{{ record.dimensions.advertiser_id }}"
+          - path: ["store_id"]
+            value: "{{ stream_slice['store_id'] }}"
+      - type: CustomTransformation
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
+    incremental_sync:
+      $ref: "#/definitions/gmv_max_report_daily_incremental_sync"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/gmv_max_advertiser_reports_daily"
+
   schemas:
     gmv_max_stores:
       $schema: http://json-schema.org/draft-07/schema#
@@ -2918,6 +2974,64 @@ definitions:
                 - "null"
                 - string
             live_follows:
+              type:
+                - "null"
+                - string
+
+    gmv_max_advertiser_reports_daily:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        store_id:
+          type: string
+        advertiser_id:
+          type: string
+        stat_time_day:
+          type: string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        dimensions:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            advertiser_id:
+              type:
+                - "null"
+                - string
+            stat_time_day:
+              type:
+                - "null"
+                - string
+        metrics:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            cost:
+              type:
+                - "null"
+                - string
+            orders:
+              type:
+                - "null"
+                - string
+            cost_per_order:
+              type:
+                - "null"
+                - string
+            gross_revenue:
+              type:
+                - "null"
+                - string
+            roi:
+              type:
+                - "null"
+                - string
+            net_cost:
               type:
                 - "null"
                 - string
@@ -6518,6 +6632,7 @@ streams:
     - $ref: "#/definitions/gmv_max_campaigns_stream"
     - $ref: "#/definitions/gmv_max_product_campaign_reports_daily_stream"
     - $ref: "#/definitions/gmv_max_live_campaign_reports_daily_stream"
+    - $ref: "#/definitions/gmv_max_advertiser_reports_daily_stream"
 
 spec:
   type: Spec
