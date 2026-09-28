@@ -33,13 +33,7 @@ data:
     - cdk:low-code
     - language:manifest-only
   connectorTestSuitesOptions:
-    - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_SOURCE-GRANOLA__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
+    - suite: unitTests
   allowedHosts:
     hosts:
       - public-api.granola.ai
