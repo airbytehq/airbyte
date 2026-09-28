@@ -51,7 +51,7 @@ Each payment record includes: `id`, `purchase_id`, `user_id`, `amount`, `currenc
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
-| 7.3.0 | 2026-09-28 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add `payments` stream with one synthetic payment per completed purchase |
+| 7.3.0 | 2026-09-28 | [87041](https://github.com/airbytehq/airbyte/pull/87041) | Add `payments` stream with one synthetic payment per completed purchase |
 | 7.2.1 | 2026-07-10 | [81653](https://github.com/airbytehq/airbyte/pull/81653) | chore(source-faker): dummy version bump for progressive rollout (autopilot) testing |
 | 7.2.0 | 2026-07-09 | [81556](https://github.com/airbytehq/airbyte/pull/81556) | Promoted release candidate to GA |
 | 7.2.0-rc.2 | 2026-06-24 | [80776](https://github.com/airbytehq/airbyte/pull/80776) | Test autopilot progressive rollout lifecycle |
