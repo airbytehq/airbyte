@@ -2,6 +2,8 @@
 package io.airbyte.cdk.jdbc
 
 import io.airbyte.cdk.h2.H2TestFixture
+import io.mockk.every
+import io.mockk.mockk
 import java.math.BigDecimal
 import java.nio.ByteBuffer
 import java.sql.Connection
@@ -298,6 +300,24 @@ class JdbcAccessorTest {
             updateToNull()
             Assertions.assertEquals(null, select())
         }
+    }
+
+    @Test
+    fun testTimestampAccessorZeroDateConvertedToNull() {
+        val rs = mockk<ResultSet>()
+        every { rs.getString(1) } returns "0000-00-00 00:00:00"
+        every { rs.wasNull() } returns false
+        every { rs.getTimestamp(1) } returns null
+        Assertions.assertNull(TimestampAccessor.get(rs, 1))
+    }
+
+    @Test
+    fun testDateAccessorZeroDateConvertedToNull() {
+        val rs = mockk<ResultSet>()
+        every { rs.getString(1) } returns "0000-00-00"
+        every { rs.wasNull() } returns false
+        every { rs.getDate(1) } returns null
+        Assertions.assertNull(DateAccessor.get(rs, 1))
     }
 
     @Test
