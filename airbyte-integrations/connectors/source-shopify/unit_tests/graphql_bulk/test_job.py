@@ -6,9 +6,11 @@
 from os import remove
 
 import orjson
+import pendulum as pdm
 import pytest
 import requests
 from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
+from source_shopify.shopify_graphql.bulk.retry import bulk_retry_on_exception
 from source_shopify.shopify_graphql.bulk.status import ShopifyBulkJobStatus
 from source_shopify.streams.streams import (
     Collections,
@@ -27,7 +29,7 @@ from source_shopify.streams.streams import (
     TransactionsGraphql,
 )
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 
 
 _ANY_SLICE = {}
@@ -237,6 +239,108 @@ def test_job_failed_for_stream_with_no_bulk_checkpointing(
 
 
 @pytest.mark.parametrize(
+    "job_response, object_count",
+    [
+        ("bulk_job_failed_without_result_url_response", "432"),
+        ("bulk_job_failed_with_partial_url_response", "0"),
+    ],
+    ids=["no_result_url", "partial_url_with_no_rows_collected"],
+)
+def test_job_failed_without_result_for_stream_with_bulk_checkpointing(
+    request, requests_mock, auth_config, job_response, object_count
+) -> None:
+    stream = MetafieldOrders(auth_config)
+    assert stream.job_manager._supports_checkpointing
+    # modify the sleep time for the test
+    stream.job_manager._concurrent_max_retry = 1
+    stream.job_manager._concurrent_interval = 1
+    stream.job_manager._job_check_interval = 1
+    # mocking the response for STATUS CHECKS: FAILED with nothing downloaded to checkpoint from
+    failed_response = request.getfixturevalue(job_response)
+    failed_response["data"]["node"]["objectCount"] = object_count
+    requests_mock.post(stream.job_manager.base_url, json=failed_response)
+    with pytest.raises(ShopifyBulkExceptions.BulkJobFailed) as error:
+        # nothing to checkpoint from, the failure must not be masked as a checkpoint
+        list(stream.job_manager.job_get_results())
+    assert "exited with FAILED" in repr(error.value)
+    # the failure is on the Shopify side, the platform should retry the attempt
+    assert error.value.failure_type == FailureType.system_error
+    # the signed result URL must not leak into the error, the user sees the Shopify `errorCode`
+    assert "https://" not in error.value.internal_message
+    assert "INTERNAL_SERVER_ERROR" in error.value.message
+
+
+@pytest.mark.parametrize(
+    "checkpointed_cursor",
+    [None, "2024-01-01T12:00:00+00:00"],
+    ids=["no_checkpoint_cursor", "with_checkpoint_cursor"],
+)
+def test_job_failed_with_partial_result_resumes_only_from_checkpoint_cursor(
+    request, requests_mock, auth_config, checkpointed_cursor
+) -> None:
+    stream = MetafieldOrders(auth_config)
+    failed_response = request.getfixturevalue("bulk_job_failed_with_partial_url_response")
+    requests_mock.post(stream.job_manager.base_url, json=failed_response)
+    # the partial result has no records, e.g. only the `Order` lines without metafields
+    requests_mock.get(failed_response["data"]["node"]["partialDataUrl"], text="")
+    assert list(stream.job_manager.job_get_results()) == []
+
+    slice_start, slice_end = pdm.parse("2024-01-01T00:00:00Z"), pdm.parse("2024-01-02T00:00:00Z")
+    if checkpointed_cursor:
+        assert stream.job_manager.get_adjusted_job_end(slice_start, slice_end, checkpointed_cursor) == pdm.parse(checkpointed_cursor)
+        # the flag must not leak into the next checkpoint
+        assert stream.job_manager._job_checkpoint_from_failed_job is False
+    else:
+        # nothing to resume from, the rest of the slice must not be skipped
+        with pytest.raises(ShopifyBulkExceptions.BulkJobFailed) as error:
+            stream.job_manager.get_adjusted_job_end(slice_start, slice_end, checkpointed_cursor)
+        assert error.value.failure_type == FailureType.system_error
+
+
+def test_job_failed_with_access_denied_is_config_error(request, requests_mock, auth_config) -> None:
+    stream = MetafieldOrders(auth_config)
+    failed_response = request.getfixturevalue("bulk_job_failed_with_partial_url_response")
+    failed_response["data"]["node"]["errorCode"] = "ACCESS_DENIED"
+    requests_mock.post(stream.job_manager.base_url, json=failed_response)
+    # the missing access scopes can only be granted by the user, retrying or checkpointing does not help
+    with pytest.raises(ShopifyBulkExceptions.BulkJobAccessDenied) as error:
+        list(stream.job_manager.job_get_results())
+    assert error.value.failure_type == FailureType.config_error
+
+
+def test_job_expired(request, requests_mock, auth_config) -> None:
+    stream = MetafieldOrders(auth_config)
+    expired_response = request.getfixturevalue("bulk_job_failed_response")
+    expired_response["data"]["node"]["status"] = "EXPIRED"
+    requests_mock.post(stream.job_manager.base_url, json=expired_response)
+    with pytest.raises(ShopifyBulkExceptions.BulkJobFailed) as error:
+        list(stream.job_manager.job_get_results())
+    assert "exited with EXPIRED" in repr(error.value)
+
+
+def test_bulk_exception_shows_internal_message_to_the_user() -> None:
+    error = ShopifyBulkExceptions.BulkJobCheckpointCollisionError("Try to increase the `BULK Job checkpoint (rows collected)`.")
+    assert error.message == "Try to increase the `BULK Job checkpoint (rows collected)`."
+
+
+def test_bulk_retry_on_exception_retries_more_exceptions(mocker) -> None:
+    class _Job:
+        _job_max_retries = 1
+        _job_backoff_time = 0
+        http_client = mocker.Mock()
+        calls = 0
+
+        @bulk_retry_on_exception(more_exceptions=(ValueError,))
+        def run(self) -> str:
+            self.calls += 1
+            if self.calls == 1:
+                raise ValueError("transient")
+            return "done"
+
+    assert _Job().run() == "done"
+
+
+@pytest.mark.parametrize(
     "job_response, job_state, error_type, max_retry, expected_msg, call_count_expected",
     [
         # No retry - dead end
@@ -287,6 +391,48 @@ def test_retry_on_job_creation_exception(
 
     # we expect different call_count, because we set the different max_retries
     assert expected_msg in repr(error.value) and requests_mock.call_count == call_count_expected
+
+
+@pytest.mark.parametrize(
+    "job_response, expected_error_type, expected_failure_type, expected_msg",
+    [
+        pytest.param(
+            "bulk_response_with_auth_error",
+            ShopifyBulkExceptions.BulkJobAuthFailedError,
+            FailureType.config_error,
+            "Shopify access token is invalid or has expired.",
+            id="auth_error_from_server_errors_string",
+        ),
+        pytest.param(
+            "bulk_response_with_auth_error_in_user_errors",
+            ShopifyBulkExceptions.BulkJobAuthFailedError,
+            FailureType.config_error,
+            "Shopify access token is invalid or has expired.",
+            id="auth_error_from_user_errors_dict",
+        ),
+        pytest.param(
+            "bulk_successful_response_with_errors",
+            ShopifyBulkExceptions.BulkJobNonHandableError,
+            FailureType.system_error,
+            "Non-handable error occured",
+            id="non_auth_error_stays_system_error",
+        ),
+    ],
+)
+def test_auth_error_classified_as_config_error(
+    request, requests_mock, auth_config, job_response, expected_error_type, expected_failure_type, expected_msg
+) -> None:
+    stream = MetafieldOrders(auth_config)
+    stream.job_manager._job_backoff_time = 0
+    stream.job_manager._job_max_retries = 0
+
+    requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue(job_response))
+
+    with pytest.raises(expected_error_type) as error:
+        stream.job_manager.create_job(_ANY_SLICE, _ANY_FILTER_FIELD)
+
+    assert expected_msg in str(error.value)
+    assert error.value.failure_type == expected_failure_type
 
 
 @pytest.mark.parametrize(

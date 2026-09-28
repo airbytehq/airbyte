@@ -167,6 +167,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.6.2 | 2026-09-22 | [86830](https://github.com/airbytehq/airbyte/pull/86830) | Update dependencies |
+| 1.6.1 | 2026-09-15 | [85692](https://github.com/airbytehq/airbyte/pull/85692) | Update dependencies |
 | 1.6.0 | 2026-09-09 | [85759](https://github.com/airbytehq/airbyte/pull/85759) | Promoted release candidate to GA |
 | 1.6.0-rc.1 | 2026-08-24 | [76912](https://github.com/airbytehq/airbyte/pull/76912) | Add `coupon_used_local` and `coupon_used_usd` spend fields to ads, ad squads, and campaigns stats streams |
 | 1.5.47 | 2026-08-18 | [84742](https://github.com/airbytehq/airbyte/pull/84742) | Update dependencies |

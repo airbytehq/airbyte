@@ -24,6 +24,8 @@ MNTN is a platform that lets brands of any size create and launch TV commercials
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.9 | 2026-09-22 | [86728](https://github.com/airbytehq/airbyte/pull/86728) | Update dependencies |
+| 0.0.8 | 2026-09-15 | [86150](https://github.com/airbytehq/airbyte/pull/86150) | Update dependencies |
 | 0.0.7 | 2026-09-08 | [85583](https://github.com/airbytehq/airbyte/pull/85583) | Update dependencies |
 | 0.0.6 | 2026-08-25 | [85027](https://github.com/airbytehq/airbyte/pull/85027) | Enable acceptance test suite with GSM test secrets |
 | 0.0.5 | 2026-08-18 | [84647](https://github.com/airbytehq/airbyte/pull/84647) | Update dependencies |

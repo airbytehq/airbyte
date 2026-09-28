@@ -22,6 +22,7 @@ import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
+import io.airbyte.integrations.destination.postgres.sql.TABLE_IS_EMPTY_ALIAS
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
@@ -81,6 +82,15 @@ class PostgresAirbyteClient(
                 }
                 throw e
             }
+        }
+
+    /**
+     * Answers the emptiness question with an existence check instead of `COUNT(*)`, which scales
+     * with table size.
+     */
+    override suspend fun tableIsEmpty(tableName: TableName): Boolean =
+        executeQuery(sqlGenerator.tableIsEmpty(tableName)) { resultSet ->
+            !resultSet.next() || resultSet.getBoolean(TABLE_IS_EMPTY_ALIAS)
         }
 
     override suspend fun namespaceExists(namespace: String): Boolean {

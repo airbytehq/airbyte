@@ -19,6 +19,7 @@ import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
+import io.airbyte.integrations.destination.postgres.sql.TABLE_IS_EMPTY_ALIAS
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -32,7 +33,9 @@ import java.sql.Statement
 import javax.sql.DataSource
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -178,6 +181,82 @@ internal class PostgresAirbyteClientTest {
         every { sqlGenerator.countTable(tableName) } returns MOCK_SQL_QUERY
 
         runBlocking { assertNull(client.countTable(tableName)) }
+    }
+
+    @Test
+    fun testTableIsEmpty() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val resultSet =
+            mockk<ResultSet> {
+                every { next() } returns true
+                every { getBoolean(TABLE_IS_EMPTY_ALIAS) } returns true
+                every { close() } just Runs
+            }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.tableIsEmpty(tableName) } returns MOCK_SQL_QUERY
+
+        runBlocking {
+            assertTrue(client.tableIsEmpty(tableName))
+            verify(exactly = 1) { mockConnection.close() }
+        }
+    }
+
+    @Test
+    fun testTableIsNotEmpty() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val resultSet =
+            mockk<ResultSet> {
+                every { next() } returns true
+                every { getBoolean(TABLE_IS_EMPTY_ALIAS) } returns false
+                every { close() } just Runs
+            }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.tableIsEmpty(tableName) } returns MOCK_SQL_QUERY
+
+        runBlocking {
+            assertFalse(client.tableIsEmpty(tableName))
+            verify(exactly = 1) { mockConnection.close() }
+        }
+    }
+
+    @Test
+    fun testTableIsEmptyConnectionError() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val exception = SQLException("connection failure", "08006")
+        val statement = mockk<Statement> { every { executeQuery(any()) } throws exception }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.tableIsEmpty(tableName) } returns MOCK_SQL_QUERY
+
+        val thrown = assertThrows<SQLException> { runBlocking { client.tableIsEmpty(tableName) } }
+        assertEquals(exception, thrown)
     }
 
     @Test

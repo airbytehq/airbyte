@@ -104,7 +104,8 @@ This connector outputs the following streams:
 - [Jobs](https://docs.gitlab.com/api/jobs/) (child of Pipelines — one request per pipeline)
 - [Merge Request Commits](https://docs.gitlab.com/api/merge_requests/) (child of Merge Requests — one request per merge request)
 - [Merge Requests](https://docs.gitlab.com/api/merge_requests/) (Incremental)
-- [Pipelines](https://docs.gitlab.com/api/pipelines/) (Incremental)
+- [Pipelines](https://docs.gitlab.com/api/pipelines/) (Incremental; includes child pipelines, which GitLab only returns when queried with `source=parent_pipeline`)
+- [Pipeline Trigger Jobs](https://docs.gitlab.com/api/jobs/#list-pipeline-trigger-jobs) (bridge jobs that trigger downstream pipelines, child of Pipelines — one request per pipeline)
 - [Pipelines Extended](https://docs.gitlab.com/api/pipelines/) (detailed per-pipeline info, child of Pipelines)
 - [Project Labels](https://docs.gitlab.com/api/labels/)
 - [Project Members](https://docs.gitlab.com/api/members/)
@@ -123,6 +124,12 @@ This connector uses GitLab API v4. It works with both GitLab.com and self-hosted
 ### Incremental sync window
 
 Incremental streams filter on `updated_at` and request data in 180-day windows, so a first sync of a long-lived project issues many requests. If you leave **Start date** blank, incremental streams start from 2014-01-01, which is effectively all history for most projects. Set a start date to cut the initial sync short.
+
+### Child pipelines on very large instances
+
+Since version 4.4.41, `pipelines` reads each project twice: once for regular pipelines and once with `source=parent_pipeline` for child pipelines. Existing connections keep their per-project cursor for regular pipelines and backfill child pipelines from **Start date** automatically.
+
+The backfill is not guaranteed when the stream tracks more than 10,000 partitions (more than roughly 5,000 projects, since each project now has two partitions). Above that limit the connector stores a single shared cursor for the whole stream instead of one per project, and child pipelines older than that cursor are not read. If your connection is that large, reset the `pipelines`, `pipelines_extended`, and `jobs` streams once after upgrading to load historical child pipelines.
 
 ### Rate limits
 
@@ -164,8 +171,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
+| Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.41 | 2026-09-24 | [86933](https://github.com/airbytehq/airbyte/pull/86933) | Include child pipelines in the `pipelines` stream (and therefore `pipelines_extended` and `jobs`) and add the `pipeline_trigger_jobs` stream |
+| 4.4.40 | 2026-09-22 | [86599](https://github.com/airbytehq/airbyte/pull/86599) | Update dependencies |
+| 4.4.39 | 2026-09-15 | [86063](https://github.com/airbytehq/airbyte/pull/86063) | Update dependencies |
 | 4.4.38 | 2026-09-08 | [85485](https://github.com/airbytehq/airbyte/pull/85485) | Update dependencies |
 | 4.4.37 | 2026-08-18 | [84568](https://github.com/airbytehq/airbyte/pull/84568) | Update dependencies |
 | 4.4.36 | 2026-08-11 | [83941](https://github.com/airbytehq/airbyte/pull/83941) | Update dependencies |

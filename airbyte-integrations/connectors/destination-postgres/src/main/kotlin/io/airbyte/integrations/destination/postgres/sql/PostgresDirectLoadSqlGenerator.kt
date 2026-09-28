@@ -19,6 +19,7 @@ import jakarta.inject.Singleton
 import kotlin.collections.forEach
 
 internal const val COUNT_TOTAL_ALIAS = "total"
+internal const val TABLE_IS_EMPTY_ALIAS = "is_empty"
 
 private const val CURSOR_INDEX_PREFIX = "idx_cursor_"
 private const val PRIMARY_KEY_INDEX_PREFIX = "idx_pk_"
@@ -507,6 +508,10 @@ class PostgresDirectLoadSqlGenerator(
 
     fun countTable(tableName: TableName): String {
         return "SELECT COUNT(*) AS \"$COUNT_TOTAL_ALIAS\" FROM ${getFullyQualifiedName(tableName)};"
+    }
+
+    fun tableIsEmpty(tableName: TableName): String {
+        return "SELECT NOT EXISTS(SELECT 1 FROM ${getFullyQualifiedName(tableName)} LIMIT 1) AS \"$TABLE_IS_EMPTY_ALIAS\";"
     }
 
     fun createNamespace(namespace: String): String {
