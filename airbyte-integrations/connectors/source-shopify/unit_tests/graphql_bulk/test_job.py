@@ -236,19 +236,33 @@ def test_job_failed_for_stream_with_no_bulk_checkpointing(
     assert expected in repr(error.value)
 
 
-def test_job_failed_without_result_url_for_stream_with_bulk_checkpointing(request, requests_mock, auth_config) -> None:
+@pytest.mark.parametrize(
+    "job_response, object_count",
+    [
+        ("bulk_job_failed_without_result_url_response", "432"),
+        ("bulk_job_failed_with_partial_url_response", "0"),
+    ],
+    ids=["no_result_url", "partial_url_with_no_rows_collected"],
+)
+def test_job_failed_without_result_for_stream_with_bulk_checkpointing(
+    request, requests_mock, auth_config, job_response, object_count
+) -> None:
     stream = MetafieldOrders(auth_config)
     assert stream.job_manager._supports_checkpointing
     # modify the sleep time for the test
     stream.job_manager._concurrent_max_retry = 1
     stream.job_manager._concurrent_interval = 1
     stream.job_manager._job_check_interval = 1
-    # mocking the response for STATUS CHECKS: FAILED with no `url` and no `partialDataUrl`
-    requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue("bulk_job_failed_without_result_url_response"))
+    # mocking the response for STATUS CHECKS: FAILED with nothing downloaded to checkpoint from
+    failed_response = request.getfixturevalue(job_response)
+    failed_response["data"]["node"]["objectCount"] = object_count
+    requests_mock.post(stream.job_manager.base_url, json=failed_response)
     with pytest.raises(ShopifyBulkExceptions.BulkJobFailed) as error:
         # nothing to checkpoint from, the failure must not be masked as a checkpoint
         list(stream.job_manager.job_get_results())
     assert "exited with FAILED" in repr(error.value)
+    # the failure is on the Shopify side, the platform should retry the attempt
+    assert error.value.failure_type == FailureType.system_error
 
 
 @pytest.mark.parametrize(

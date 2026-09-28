@@ -36,6 +36,8 @@ class ShopifyBulkExceptions:
     class BulkJobFailed(BaseBulkException):
         """Raised when BULK Job has FAILED status"""
 
+        failure_type: FailureType = FailureType.system_error
+
     class BulkJobCanceled(BaseBulkException):
         """Raised when BULK Job has CANCELED status"""
 

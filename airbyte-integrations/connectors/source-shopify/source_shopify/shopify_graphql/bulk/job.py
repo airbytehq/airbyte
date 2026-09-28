@@ -367,10 +367,7 @@ class ShopifyBulkManager:
         self._job_result_filename = self._job_get_result(response)
 
     def _on_failed_job(self, response: requests.Response) -> AirbyteTracedException | None:
-        job_node = response.json().get("data", {}).get("node", {})
-        # without any result URL there is nothing to checkpoint from, the failure should not be masked
-        has_result_url = bool(job_node.get("url") or job_node.get("partialDataUrl"))
-        if not self._supports_checkpointing or not has_result_url:
+        if not self._supports_checkpointing:
             raise ShopifyBulkExceptions.BulkJobFailed(
                 f"The BULK Job: `{self._job_id}` exited with {self._job_state}, details: {response.text}",
             )
@@ -378,6 +375,10 @@ class ShopifyBulkManager:
             # when the Bulk Job fails, usually there is a `partialDataUrl` available,
             # we leverage the checkpointing in this case.
             self._job_get_checkpointed_result(response)
+            if not self._job_result_filename:
+                raise ShopifyBulkExceptions.BulkJobFailed(
+                    f"The BULK Job: `{self._job_id}` exited with {self._job_state} and returned no partial result, details: {response.text}",
+                )
 
     def _on_timeout_job(self, **kwargs) -> AirbyteTracedException:
         raise ShopifyBulkExceptions.BulkJobTimout(
