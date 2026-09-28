@@ -1,0 +1,12 @@
+# TEMPORARY: remove once airbytehq/airbyte-python-cdk#1174 is released.
+#
+# The standard integration tests (`airbyte-cdk connector test`) run the connector in-process with
+# the CDK CLI, which the shared manifest-only tasks install at the latest release. The
+# `workflow_runs` `stop_condition` reads `stream_interval`, which only the #1174 prerelease exposes
+# to the paginator, so the CLI is pinned to the same prerelease as `baseImage`.
+include = [
+    "${POE_GIT_DIR}/poe-tasks/manifest-only-connector-tasks.toml",
+]
+
+[tasks]
+install-cdk-cli = "uv tool install --upgrade 'airbyte-cdk[dev]==7.30.0.post1.dev35881419701'"
