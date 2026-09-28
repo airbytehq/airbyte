@@ -132,7 +132,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 ## Changelog
 
-
 <details>
   <summary>Expand to review</summary>
 
