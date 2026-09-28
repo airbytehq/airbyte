@@ -2,7 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import itertools
+import multiprocessing.process
+
 import jsonschema
+import pytest
 from source_faker import SourceFaker
 from source_faker.payment_generator import CURRENCIES, METHODS, PaymentGenerator
 from source_faker.purchase_generator import PurchaseGenerator
@@ -27,6 +31,13 @@ class MockLogger:
 
 
 logger = MockLogger()
+
+
+@pytest.fixture(autouse=True)
+def isolate_worker_identities(monkeypatch):
+    # the generators seed their RNGs with seed + pool worker identity, and identities
+    # come from this global counter; isolate it so we don't shift seeds in other tests
+    monkeypatch.setattr(multiprocessing.process, "_process_counter", itertools.count(1))
 
 
 def test_payment_generator_matches_purchase_generator():
