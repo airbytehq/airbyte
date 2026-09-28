@@ -323,10 +323,12 @@ public class MongoUtil {
                 : null);
   }
 
-  private static Set<Field> getFieldsInCollection(final MongoCollection<Document> collection,
-                                                  final Integer sampleSize,
-                                                  final Integer discoverTimeout) {
-    final Set<Field> discoveredFields = new HashSet<>();
+  @VisibleForTesting
+  static Set<Field> getFieldsInCollection(final MongoCollection<Document> collection,
+                                          final Integer sampleSize,
+                                          final Integer discoverTimeout) {
+    final Map<String, Set<JsonSchemaType>> fieldTypesMap = new HashMap<>();
+    final String collectionName = collection.getNamespace() != null ? collection.getNamespace().getFullName() : "unknown";
     final Map<String, Object> fieldsMap = Map.of("input", Map.of("$objectToArray", "$$ROOT"),
         "as", "each",
         "in", Map.of("k", "$$each.k", "v", Map.of("$type", "$$each.v")));
@@ -358,12 +360,31 @@ public class MongoUtil {
       while (cursor.hasNext()) {
         @SuppressWarnings("unchecked")
         final Map<String, String> fields = (Map<String, String>) cursor.next().get("_id");
-        discoveredFields.addAll(fields.entrySet().stream()
-            .map(e -> new MongoField(e.getKey(), convertToSchemaType(e.getValue())))
-            .collect(Collectors.toSet()));
+        for (final Map.Entry<String, String> entry : fields.entrySet()) {
+          fieldTypesMap.computeIfAbsent(entry.getKey(), k -> new HashSet<>())
+              .add(convertToSchemaType(entry.getValue()));
+        }
       }
     } catch (Exception e) {
-      LOGGER.warn("Running discovery for document: {}. Error processing cursor: {}", collection.getNamespace().getFullName(), e.getMessage());
+      LOGGER.warn("Running discovery for document: {}. Error processing cursor: {}", collectionName, e.getMessage());
+    }
+
+    return resolveFieldTypes(fieldTypesMap, collectionName);
+  }
+
+  @VisibleForTesting
+  static Set<Field> resolveFieldTypes(final Map<String, Set<JsonSchemaType>> fieldTypesMap, final String collectionName) {
+    final Set<Field> discoveredFields = new HashSet<>();
+    for (final Map.Entry<String, Set<JsonSchemaType>> entry : fieldTypesMap.entrySet()) {
+      final JsonSchemaType type;
+      if (entry.getValue().size() > 1) {
+        LOGGER.warn("Field '{}' in collection '{}' has multiple types {} across sampled documents. Defaulting to STRING.",
+            entry.getKey(), collectionName, entry.getValue());
+        type = JsonSchemaType.STRING;
+      } else {
+        type = entry.getValue().iterator().next();
+      }
+      discoveredFields.add(new MongoField(entry.getKey(), type));
     }
     return discoveredFields;
   }
