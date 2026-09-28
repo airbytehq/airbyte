@@ -79,6 +79,7 @@ class LegacyConfigTransformer:
                 "filetype": "csv",
                 "delimiter": format_options.delimiter,
                 "quote_char": format_options.quote_char,
+                "encoding": format_options.encoding,
                 "double_quote": format_options.double_quote,
                 "newlines_in_values": format_options.newlines_in_values,
                 # values taken from https://github.com/apache/arrow/blob/43c05c56b37daa93e76b94bc3e6952d56d1ea3f2/cpp/src/arrow/csv/options.cc#L41-L45
@@ -112,8 +113,6 @@ class LegacyConfigTransformer:
 
             if format_options.escape_char:
                 csv_options["escape_char"] = format_options.escape_char
-            if format_options.encoding:
-                csv_options["encoding"] = format_options.encoding
             if skip_rows := advanced_options.pop("skip_rows", None):
                 csv_options["skip_rows_before_header"] = skip_rows
             if skip_rows_after_names := advanced_options.pop("skip_rows_after_names", None):
