@@ -2,14 +2,14 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "7.30.0.post11.dev35881573973"
+version = "7.30.1.post18.dev36448921091"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.14,>=3.10"
 groups = ["main"]
 files = [
-    {file = "airbyte_cdk-7.30.0.post11.dev35881573973-py3-none-any.whl", hash = "sha256:4efee4476ef29ad0e6820b040fc2013c5c0164f276c5c6af6e91e27f69474d71"},
-    {file = "airbyte_cdk-7.30.0.post11.dev35881573973.tar.gz", hash = "sha256:2285aac01e7473d2ab0197def9e0d55421064e29fad93b9983852ce00c2332fc"},
+    {file = "airbyte_cdk-7.30.1.post18.dev36448921091-py3-none-any.whl", hash = "sha256:645cea01301c4293479cf5e441b0276dd0b1965dca030e29afecd22cd4704f5d"},
+    {file = "airbyte_cdk-7.30.1.post18.dev36448921091.tar.gz", hash = "sha256:0ffc6b91c7697978fbfb2bd629b78810ec22a0dd597c0cf6a7ee1e8b10b1fee8"},
 ]
 
 [package.dependencies]
@@ -48,7 +48,7 @@ requests_cache = "*"
 rich = "*"
 rich-click = ">=1.8.8,<2.0.0"
 serpyco-rs = ">=1.10.2,<2.0.0"
-setuptools = ">=80.9.0,<81.0.0"
+setuptools = ">=80.9.0"
 typing-extensions = "*"
 unidecode = ">=1.3.8,<2.0.0"
 wcmatch = "10.0"
@@ -3363,4 +3363,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.14"
-content-hash = "84d2c293e525087df2c5532802ef0fbd91d53b48e6a646a1c31fcf884b9f9ac8"
+content-hash = "f20ac52edcc7b7a535371ed8c14b5914b58bea275c8bd46e2cae9cf404c6f8e4"
