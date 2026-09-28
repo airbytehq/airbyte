@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Optional
 
 import pendulum
 
@@ -66,6 +66,18 @@ class ConfigBuilder:
 
     def with_report_options_list(self, options_list: list) -> ConfigBuilder:
         self._config["report_options_list"] = options_list
+        return self
+
+    def with_inbound_rolling_days(self, days: int) -> ConfigBuilder:
+        self._config["inbound_replication_mode"] = "rolling_days"
+        self._config["inbound_rolling_days"] = days
+        return self
+
+    def with_inbound_fixed_window(self, start_datetime: datetime, end_datetime: Optional[datetime] = None) -> ConfigBuilder:
+        self._config["inbound_replication_mode"] = "fixed"
+        self._config["inbound_start_datetime"] = start_datetime.strftime(TIME_FORMAT)
+        if end_datetime is not None:
+            self._config["inbound_end_datetime"] = end_datetime.strftime(TIME_FORMAT)
         return self
 
     def build(self) -> Dict[str, str]:

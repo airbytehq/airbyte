@@ -65,13 +65,21 @@ jobs:
           HEAD_REF=$(echo "$PR_INFO" | jq -r '.head.ref')
           IS_DRAFT=$(echo "$PR_INFO" | jq -r '.draft')
           NODE_ID=$(echo "$PR_INFO" | jq -r '.node_id')
+          SUPPORT_BOT_ASSIGNED=$(echo "$PR_INFO" | jq -r 'any(.assignees[]; .login == "airbyte-support-bot")')
           echo "head-sha=$HEAD_SHA" | tee -a $GITHUB_OUTPUT
           echo "head-ref=$HEAD_REF" | tee -a $GITHUB_OUTPUT
           echo "is-draft=$IS_DRAFT" | tee -a $GITHUB_OUTPUT
           echo "node-id=$NODE_ID" | tee -a $GITHUB_OUTPUT
+          echo "support-bot-assigned=$SUPPORT_BOT_ASSIGNED" | tee -a $GITHUB_OUTPUT
+
+      - name: Keep PR in draft -- 'airbyte-support-bot' not assigned
+        if: steps.pr-details.outputs.is-draft == 'true' && steps.pr-details.outputs.support-bot-assigned != 'true'
+        run: |
+          echo "PR is a draft and 'airbyte-support-bot' is not assigned; leaving draft status to the author."
+          echo "Reviewing the PR as-is. Assign 'airbyte-support-bot' to let the hands-free pipeline advance it."
 
       - name: Mark PR as ready for review
-        if: steps.pr-details.outputs.is-draft == 'true'
+        if: steps.pr-details.outputs.is-draft == 'true' && steps.pr-details.outputs.support-bot-assigned == 'true'
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
           NODE_ID: ${{ steps.pr-details.outputs.node-id }}

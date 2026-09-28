@@ -41,6 +41,10 @@ Both roles can create and modify connections, and both can run syncs. Neither ro
 - At the workspace level, assign higher roles for individual workspaces as needed to override organization role within that workspace.
 - Don't assign admin roles frivolously. Once someone is an admin, you can't demote them.
 
+## Permissions from user groups
+
+Group permissions combine with a person's individual permissions. Airbyte uses the highest permission from the person's own permissions and the permissions from all their groups. The person must still be an organization member for group permissions to apply. For more information, see [User groups](user-groups).
+
 ## Setting roles
 
 1. In the navigation bar, click **Workspace settings** or **Organization settings** > **Members**.

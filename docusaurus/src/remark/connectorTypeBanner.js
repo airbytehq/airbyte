@@ -1,14 +1,12 @@
 const { toAttributes } = require("../helpers/objects");
+const { discoverAgentConnectorSlugs } = require("../plugins/agentConnectors");
 const { isDocsPage } = require("./utils");
 
 let agentConnectorSlugs = null;
 
 function loadAgentConnectorSlugs() {
-  if (agentConnectorSlugs !== null) return agentConnectorSlugs;
-  try {
-    agentConnectorSlugs = require("../data/agent_connectors.json");
-  } catch {
-    agentConnectorSlugs = [];
+  if (agentConnectorSlugs === null) {
+    agentConnectorSlugs = discoverAgentConnectorSlugs();
   }
   return agentConnectorSlugs;
 }

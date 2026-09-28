@@ -19,6 +19,8 @@ os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 @pytest.fixture(autouse=True)
 def time_sleep_mock(mocker):
     time_mock = mocker.patch("time.sleep", lambda x: None)
+    # `source_shopify.utils` binds `sleep` at import time (`from time import sleep`), patch that name too
+    mocker.patch("source_shopify.utils.sleep", lambda x: None)
     yield time_mock
 
 
@@ -209,6 +211,56 @@ def bulk_successful_response_with_errors():
                 "userErrors": [
                     {
                         "message": "something wrong with the job",
+                    },
+                ],
+            },
+        },
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 10,
+                "actualQueryCost": 10,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 990,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
+
+
+@pytest.fixture
+def bulk_response_with_auth_error():
+    return {
+        "data": {
+            "bulkOperationRunQuery": {
+                "userErrors": [],
+            },
+        },
+        "errors": "[API] Invalid API key or access token (unrecognized login or wrong password)",
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 10,
+                "actualQueryCost": 10,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 990,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
+
+
+@pytest.fixture
+def bulk_response_with_auth_error_in_user_errors():
+    return {
+        "data": {
+            "bulkOperationRunQuery": {
+                "userErrors": [
+                    {
+                        "message": "Invalid API key or access token",
+                        "code": "INVALID",
                     },
                 ],
             },

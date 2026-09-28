@@ -45,9 +45,15 @@ The only streams that allow for slicing (and hence may perform more concurrent H
 
 **Why this matters:** Streams sharing the same endpoint share the same rate limit budget. Running `profiles` and `global_exclusions` simultaneously means both compete for the same M-tier limit. The `events` and `events_detailed` streams are the most impactful — both share the XL-tier endpoint AND support datetime slicing, so the total concurrent requests equals the sum of both streams' active slices.
 
+### Retry-After wait cap
+
+The manifest caps every `Retry-After` wait at 600 seconds. Daily-quota 429 responses can return multi-hour wait values that outlive the platform heartbeat, so the connector fails fast with a rate-limit error instead of sleeping until the next daily reset.
+
 ## Incremental Stream Considerations
 
 The Klaviyo API supports cursor-based pagination and `filter` parameters with `greater-than` on `datetime` and `updated` fields for high-volume endpoints (profiles, events, campaigns, flows, lists, segments, etc.), which the connector already uses for 13 incremental streams. The single remaining FR parent stream (`metrics_for_reporting`) is a config-style lookup that lists available metric definitions without date-based filtering.
+
+The `global_exclusions` stream pins its cursor start to the Unix epoch so `start_date` does not bound it. A stateless read therefore returns the full suppression list. It also carries a one-hour `lookback_window`, because the cursor field `updated` does not track every suppression write. Profile-level suppression (`USER_SUPPRESSED` via the suppression endpoint) bumps `updated` at the suppression moment (verified on a profile untouched since 2022-05-31; visible to the filtered read within 0.43 s). API unsubscribes (`reason: UNSUBSCRIBE`) do not move `updated` at write time — it stayed unchanged for 300 s while `greater-than(updated,T)` returned 0 rows on every poll — and only a periodic Klaviyo job later bumps it, when it sets `last_event_date` (observed 23–29 minutes after the write, 59–62 minutes in older cases). Hard bounces never move `updated`: the `Bounced Email` event does not touch `last_event_date`, and the captured integration fixtures show the `HARD_BOUNCE` entry landing 15.8 s and 49 s after `updated` with no later bump. A one-second window would cover the strict `greater-than` tie at the stored cursor value but would drop bounce-driven suppressions; one hour covers every gap observed with wide margin at a cost of roughly 14 re-read records per sync. The lookback re-reads records already emitted by the previous sync, so an incremental sync emits the last hour of suppression changes again; deduplicating destinations upsert them on the `id` primary key, while append-only destinations keep them as duplicate rows.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|

@@ -61,6 +61,14 @@ class RequestBuilder:
     def vendor_orders_status_endpoint(cls) -> RequestBuilder:
         return cls("vendor/orders/v1/purchaseOrdersStatus")
 
+    @classmethod
+    def fba_inbound_shipments_endpoint(cls) -> RequestBuilder:
+        return cls("fba/inbound/v0/shipments")
+
+    @classmethod
+    def fba_inbound_shipment_items_endpoint(cls, shipment_id: str) -> RequestBuilder:
+        return cls(f"fba/inbound/v0/shipments/{shipment_id}/items")
+
     def __init__(self, resource: str) -> None:
         self._resource = resource
         self._base_url = "https://sellingpartnerapi-na.amazon.com"
