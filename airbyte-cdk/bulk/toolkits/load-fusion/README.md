@@ -10,11 +10,11 @@ For the dependent connector PRs, merge the common CDK commit into each branch, t
 explicit dependency (Kotlin DSL shown; Groovy uses the same project path):
 
 ```kotlin
-implementation(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-fusion"))
+implementation(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-fusion"))
 ```
 
-Keep existing `cdkVersion` / `cdkVersionRequired` unchanged. Do not add `fusion` to the bulk
-connector `toolkits` list: that mechanism uses the connector's core CDK version.
+Keep existing `cdkVersion` / `cdkVersionRequired` unchanged. Fusion is published with the bulk
+load CDK and uses the load CDK version.
 
 The connector prerelease workflow checks out `refs/pull/{pr}/head`, then the Java publishing
 script runs the connector's Gradle `assemble` task from the full repository checkout. The
@@ -22,18 +22,17 @@ explicit project dependency builds this toolkit and includes its JAR and runtime
 in the connector distribution/image. The shared commit must therefore be present in each
 connector PR's branch; a sibling worktree or local Maven publication is insufficient.
 
-This toolkit is independently versioned as
-`io.airbyte.bulk-cdk:bulk-cdk-toolkit-fusion:0.1.0-fusion.1`. It inherits the bulk CDK CloudRepo
-publication configuration. To publish only this module with the standard CloudRepo credentials:
+This toolkit is published as the normal load CDK artifact
+`io.airbyte.bulk-cdk:bulk-cdk-toolkit-load-fusion:<load-cdk-version>`. It is included in the existing
+load CDK build and publication tasks:
 
 ```sh
-./gradlew :airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-fusion:publish
+./gradlew :airbyte-cdk:bulk:loadCdkBuild
+./gradlew :airbyte-cdk:bulk:loadCdkPublish
 ```
 
-Only after that artifact has been published can a connector replace the project dependency
-with those Maven coordinates. Existing base/extract/load aggregate publishing workflows do
-not publish this independently versioned module. No publication is required for the project
-consumption described above.
+After the load CDK artifact has been published, connectors can replace the project dependency
+with those Maven coordinates. No separate Fusion publication is required.
 
 ## Configuration and APIs
 
@@ -104,7 +103,7 @@ The Java test fixtures variant provides a Kotlin helper with Java concurrency pr
 and no dependency on core CDK or coroutines:
 
 ```kotlin
-testImplementation(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-fusion")))
+testImplementation(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-fusion")))
 ```
 
 Inject `io.airbyte.cdk.fusion.testing.ControlledFusionUploader` into the connector's real
