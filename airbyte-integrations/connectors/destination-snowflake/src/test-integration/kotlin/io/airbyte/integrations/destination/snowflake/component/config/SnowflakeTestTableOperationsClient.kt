@@ -22,7 +22,6 @@ import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertB
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
-import java.sql.Timestamp
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
@@ -101,7 +100,7 @@ class SnowflakeTestTableOperationsClient(
                                                     // Some timestamps are returned as
                                                     // java.sql.Timestamp,
                                                     // so we just assume UTC.
-                                                    is Timestamp ->
+                                                    else ->
                                                         it.toLocalDateTime()
                                                             .atOffset(ZoneOffset.UTC)
                                                 }
