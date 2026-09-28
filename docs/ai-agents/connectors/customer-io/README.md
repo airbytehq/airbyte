@@ -10,28 +10,30 @@ Connector for the Customer.io App API, providing read access to campaigns, newsl
 The Customer-Io connector is optimized to handle prompts like these.
 
 - List all campaigns in Customer.io
+- Get the details of the first campaign in my workspace
+- List the actions for the first campaign in my workspace
+- Show me the details of the first action of my most recent campaign
 - Show me all newsletters
+- Show me the details of the most recent newsletter
 - What segments are defined in my workspace?
-- Get the details of campaign 42
+- Show me the details of the first segment
 - List all sender identities
+- Show me the details of the first sender identity
 - Show me all reporting webhooks
 - What snippets do we have?
 - List all collections
 - Show recent activities
+- List recent messages
+- List all transactional message templates
+- Show me the details of the first transactional message template
+- Show the content variants of the first transactional template
 - Create a snippet called 'footer' with content '\<p\>Thanks!\</p\>'
 - Update the snippet 'header' to say 'Welcome back!'
 - Create a new collection called 'products'
 - Create a reporting webhook for email events
 - Create a manual segment called 'VIP Customers'
 - Export all customers matching a segment
-- Send a transactional email to user@example.com
-- Send an SMS notification to +15551234567
-- Send a push notification to user 123
-- Trigger broadcast campaign 42
-- List all transactional message templates
-- Get the details of transactional message 5
-- Show the content variants of transactional template 3
-- Update the subject of transactional content 139 in template 3
+- Send a transactional email using the first transactional message template to the email address of the first sender identity
 - Which campaigns are currently active?
 - Find newsletters sent in the last month
 - What are the most recent email deliveries?
