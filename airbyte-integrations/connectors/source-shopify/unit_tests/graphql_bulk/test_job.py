@@ -265,9 +265,9 @@ def test_job_failed_without_result_for_stream_with_bulk_checkpointing(
     assert "exited with FAILED" in repr(error.value)
     # the failure is on the Shopify side, the platform should retry the attempt
     assert error.value.failure_type == FailureType.system_error
-    # the signed result URL must not leak into the error, the user gets an actionable message
+    # the signed result URL must not leak into the error, the user sees the Shopify `errorCode`
     assert "https://" not in error.value.internal_message
-    assert "next sync attempt" in error.value.message
+    assert "INTERNAL_SERVER_ERROR" in error.value.message
 
 
 @pytest.mark.parametrize(
@@ -288,6 +288,8 @@ def test_job_failed_with_partial_result_resumes_only_from_checkpoint_cursor(
     slice_start, slice_end = pdm.parse("2024-01-01T00:00:00Z"), pdm.parse("2024-01-02T00:00:00Z")
     if checkpointed_cursor:
         assert stream.job_manager.get_adjusted_job_end(slice_start, slice_end, checkpointed_cursor) == pdm.parse(checkpointed_cursor)
+        # the flag must not leak into the next checkpoint
+        assert stream.job_manager._job_checkpoint_from_failed_job is False
     else:
         # nothing to resume from, the rest of the slice must not be skipped
         with pytest.raises(ShopifyBulkExceptions.BulkJobFailed) as error:

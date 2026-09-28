@@ -371,10 +371,7 @@ class ShopifyBulkManager:
         self._job_result_filename = self._job_get_result(response)
 
     def _raise_job_without_result(self, details: str) -> None:
-        raise ShopifyBulkExceptions.BulkJobFailed(
-            f"The BULK Job: `{self._job_id}` {details}.",
-            message=f"Shopify returned no data to resume the stream `{self.http_client.name}` from. This period will be read again on the next sync attempt.",
-        )
+        raise ShopifyBulkExceptions.BulkJobFailed(f"The BULK Job: `{self._job_id}` {details}.")
 
     def _on_failed_job(self, response: requests.Response) -> AirbyteTracedException | None:
         error_code = response.json().get("data", {}).get("node", {}).get("errorCode")
@@ -390,7 +387,7 @@ class ShopifyBulkManager:
                 self._job_checkpoint_from_failed_job = True
                 return None
         self._raise_job_without_result(
-            f"exited with {self._job_state} and returned no partial result, errorCode: `{error_code}`, objectCount: `{self._job_last_rec_count}`"
+            f"exited with {self._job_state} and returned no partial result to resume from, errorCode: `{error_code}`, objectCount: `{self._job_last_rec_count}`"
         )
 
     def _on_expired_job(self, **kwargs) -> AirbyteTracedException:
