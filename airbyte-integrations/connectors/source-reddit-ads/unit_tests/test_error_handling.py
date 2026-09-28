@@ -25,7 +25,7 @@ def _mock_token(http_mocker: HttpMocker, response: HttpResponse | None = None) -
     return request
 
 
-def _read_ads(response: HttpResponse, token_response: HttpResponse | None = None):
+def _read_ads(response: HttpResponse | list[HttpResponse], token_response: HttpResponse | None = None):
     config = base_config()
     catalog = CatalogBuilder().with_stream("ad", SyncMode.full_refresh).build()
     with HttpMocker() as http_mocker:
@@ -123,22 +123,20 @@ def test_normal_page_with_ad_account_id_fields_syncs() -> None:
     http_mocker.assert_number_of_calls(ads_request, 1)
 
 
-def test_invalid_grant_from_token_endpoint_is_config_error() -> None:
-    token_response = HttpResponse(body='{"error":"invalid_grant"}', status_code=400)
-    output, http_mocker, token_request, ads_request = _read_ads(HttpResponse(body='{"data":[]}', status_code=200), token_response)
-    error = _first_error(output)
+@pytest.mark.parametrize("status_code", [429, 503])
+def test_retryable_http_errors_with_ad_account_message_are_retried(status_code: int, monkeypatch) -> None:
+    monkeypatch.setattr("time.sleep", lambda _: None)
+    retry_response = HttpResponse(
+        body='{"error":{"message":"Failed to load ad account data"}}',
+        status_code=status_code,
+        headers={"ratelimit-remaining": "399"} if status_code == 429 else {},
+    )
+    success_response = HttpResponse(
+        body='{"data":[{"id":"ad-1","modified_at":"2026-09-27T00:00:00Z","ad_account_id":"a2_abc123"}]}',
+        status_code=200,
+    )
+    output, http_mocker, _, ads_request = _read_ads([retry_response, success_response])
 
-    assert error.failure_type == FailureType.config_error
-    assert "Refresh token was rejected by the OAuth provider" in error.message
-    http_mocker.assert_number_of_calls(token_request, 1)
-    http_mocker.assert_number_of_calls(ads_request, 0)
-
-
-def test_numeric_401_token_error_does_not_match_invalid_grant_handler() -> None:
-    token_response = HttpResponse(body='{"message":"Unauthorized","error":401}', status_code=401)
-    output, _, _, _ = _read_ads(HttpResponse(body='{"data":[]}', status_code=200), token_response)
-
-    error = _first_error(output)
-    assert error.failure_type == FailureType.system_error
-    assert "HTTPError" in error.message
-    assert "401" in error.internal_message
+    assert output.errors == []
+    assert [message.record.data["id"] for message in output.records] == ["ad-1"]
+    http_mocker.assert_number_of_calls(ads_request, 2)

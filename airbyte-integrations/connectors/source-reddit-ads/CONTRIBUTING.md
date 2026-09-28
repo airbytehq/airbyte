@@ -25,18 +25,22 @@ request.
 
 ## Limits and errors
 
-The API budget models Reddit's published per-process limits: 400 calls per
-minute for ads/campaign reads and 60 calls per minute for reports. Concurrency
-defaults to 3 workers, configurable with `num_workers` up to 10.
+The API budget is configured to Reddit's documented per-policy quotas:
+`ads-campaign-management-read` 400 requests per 60 seconds for `/ads` and
+`/campaigns` (https://ads-api.reddit.com/docs/v3/api/list-campaigns) and
+`ads-reporting` 60 requests per 60 seconds for `/reports`
+(https://ads-api.reddit.com/docs/v3/api/get-a-report). The budget is per
+connector process, so other clients using the same Reddit credentials are not
+accounted for. Concurrency defaults to 3 workers, configurable with
+`num_workers` up to 10.
 
 | Response | Classification and handling |
 | --- | --- |
 | API 401 | Refresh the access token and retry |
-| Token 400 `invalid_grant` | `config_error`; the refresh token was rejected |
+| API 429/500/502/503/504 | Retry with backoff before classifying ad-account 400, 403, 404, or other 400 responses |
 | API 400 ad-account error | `config_error`; check the ad account ID |
-| Other API 400 | `system_error`; the request was invalid |
 | API 403 or 404 | `config_error`; permissions or ad account are incorrect |
-| API 429 or 5xx | Retry with backoff |
+| Other API 400 | `system_error`; the request was invalid |
 
 ## Deletions
 

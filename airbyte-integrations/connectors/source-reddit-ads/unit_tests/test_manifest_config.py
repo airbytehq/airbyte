@@ -74,15 +74,16 @@ def test_concurrency_resolves_default_configured_and_clamped_values() -> None:
         assert concurrency.get_concurrency_level() == expected_workers
 
 
-def test_spec_fields_are_human_readable_and_do_not_mask_account_or_user_agent() -> None:
+def test_spec_fields_are_human_readable_and_keep_sensitive_fields_secret() -> None:
     source = get_source()
     properties = source.resolved_manifest["spec"]["connection_specification"]["properties"]
 
     assert properties["ad_account_id"]["title"] == "Ad Account ID"
     assert "shown in Reddit Ads Manager" in properties["ad_account_id"]["description"]
     assert properties["start_time"]["title"] == "Start Date"
-    assert "airbyte_secret" not in properties["ad_account_id"]
-    assert "airbyte_secret" not in properties["user_agent"]
+    assert properties["ad_account_id"]["airbyte_secret"] is True
+    assert properties["user_agent"]["title"] == "User Agent"
+    assert properties["user_agent"]["airbyte_secret"] is True
     assert properties["num_workers"]["title"] == "Number of Concurrent Workers"
     assert properties["num_workers"]["type"] == "integer"
     assert properties["num_workers"]["order"] == 6

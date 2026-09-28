@@ -149,6 +149,38 @@ def test_campaign_report_posts_exact_body_for_two_three_day_slices() -> None:
 
 
 @freeze_time("2026-09-28T00:00:00Z")
+def test_campaign_report_retries_503_with_ad_account_message(monkeypatch) -> None:
+    monkeypatch.setattr("time.sleep", lambda _: None)
+    config = base_config(start_time="2026-09-26T00:00:00Z")
+    catalog = CatalogBuilder().with_stream("campaign_report", SyncMode.incremental).build()
+    report_request = HttpRequest(
+        _REPORT_URL,
+        body=_report_body("2026-09-26T00:00:00Z", "2026-09-28T00:00:00Z"),
+    )
+
+    with HttpMocker() as http_mocker:
+        http_mocker.post(
+            report_request,
+            [
+                HttpResponse(
+                    body='{"error":{"message":"Failed to load ad account data"}}',
+                    status_code=503,
+                ),
+                HttpResponse(
+                    body='{"data":{"metrics":[{"campaign_id":"campaign-1","date":"2026-09-27"}]}}',
+                    status_code=200,
+                ),
+            ],
+        )
+        _mock_token(http_mocker)
+        output = read(get_source(config, catalog), config, catalog)
+
+    assert output.errors == []
+    assert [message.record.data["campaign_id"] for message in output.records] == ["campaign-1"]
+    http_mocker.assert_number_of_calls(report_request, 2)
+
+
+@freeze_time("2026-09-28T00:00:00Z")
 def test_campaign_report_decodes_pagination_token_in_next_request() -> None:
     config = base_config(start_time="2026-09-25T00:00:00Z")
     catalog = CatalogBuilder().with_stream("campaign_report", SyncMode.full_refresh).build()

@@ -15,7 +15,6 @@ data:
       packageName: airbyte-source-reddit-ads
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.30.1@sha256:2794da4d612dbf071bfed31f2a3ef8ea24c5951ca00f59361b66f3b4e04a6d6d
-  maxSecondsBetweenMessages: 3600
   suggestedStreams:
     streams:
       - campaign

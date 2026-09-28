@@ -30,12 +30,6 @@ definitions:
           Authorization: >-
             Basic {{ (config['client_id'] ~ ':' ~ config['client_secret']) |
             base64encode }}
-        refresh_token_error_status_codes:
-          - 400
-          - 401
-        refresh_token_error_key: error
-        refresh_token_error_values:
-          - invalid_grant
       error_handler:
         type: DefaultErrorHandler
         max_retries: 10
@@ -45,10 +39,6 @@ definitions:
             http_codes:
               - 401
             error_message: Token expired, refreshing...
-          - $ref: "#/definitions/linked/BadAdAccount400Filter"
-          - $ref: "#/definitions/linked/Forbidden403Filter"
-          - $ref: "#/definitions/linked/NotFound404Filter"
-          - $ref: "#/definitions/linked/Generic400Filter"
           - type: HttpResponseFilter
             action: RETRY
             http_codes:
@@ -57,6 +47,10 @@ definitions:
               - 502
               - 503
               - 504
+          - $ref: "#/definitions/linked/BadAdAccount400Filter"
+          - $ref: "#/definitions/linked/Forbidden403Filter"
+          - $ref: "#/definitions/linked/NotFound404Filter"
+          - $ref: "#/definitions/linked/Generic400Filter"
         backoff_strategies:
           - type: ExponentialBackoffStrategy
             factor: 5
@@ -456,10 +450,6 @@ streams:
               http_codes:
                 - 401
               error_message: Token expired, refreshing...
-            - $ref: "#/definitions/linked/BadAdAccount400Filter"
-            - $ref: "#/definitions/linked/Forbidden403Filter"
-            - $ref: "#/definitions/linked/NotFound404Filter"
-            - $ref: "#/definitions/linked/Generic400Filter"
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
@@ -471,6 +461,10 @@ streams:
               backoff_strategy:
                 type: ConstantBackoffStrategy
                 backoff_time_in_seconds: 60
+            - $ref: "#/definitions/linked/BadAdAccount400Filter"
+            - $ref: "#/definitions/linked/Forbidden403Filter"
+            - $ref: "#/definitions/linked/NotFound404Filter"
+            - $ref: "#/definitions/linked/Generic400Filter"
           backoff_strategies:
             - type: ExponentialBackoffStrategy
               factor: 5
@@ -797,6 +791,7 @@ spec:
           requests.
         order: 1
         title: User Agent
+        airbyte_secret: true
       ad_account_id:
         type: string
         order: 2
@@ -804,6 +799,7 @@ spec:
         description: >-
           The Reddit Ads account ID to sync, shown in Reddit Ads Manager, for
           example a2_abc123.
+        airbyte_secret: true
       client_secret:
         type: string
         name: client_secret

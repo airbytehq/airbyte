@@ -115,7 +115,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.0 | 2026-09-28 | [87043](https://github.com/airbytehq/airbyte/pull/87043) | Show actionable errors for invalid ad account IDs, missing permissions, and revoked refresh tokens; respect Reddit's API rate limits; and no longer mask the ad account ID and user agent |
+| 0.1.0 | 2026-09-28 | [87043](https://github.com/airbytehq/airbyte/pull/87043) | Show actionable errors for invalid ad account IDs and 400/403/404 responses, add a client-side API budget and configurable concurrency, add suggested streams, make spec titles human-readable, and add unit tests |
 | 0.0.11 | 2026-09-22 | [86789](https://github.com/airbytehq/airbyte/pull/86789) | Update dependencies |
 | 0.0.10 | 2026-09-15 | [86198](https://github.com/airbytehq/airbyte/pull/86198) | Update dependencies |
 | 0.0.9 | 2026-09-09 | [84850](https://github.com/airbytehq/airbyte/pull/84850) | Fix pagination so every stream syncs all pages instead of only the first |
@@ -124,7 +124,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.0.6 | 2026-08-18 | [84725](https://github.com/airbytehq/airbyte/pull/84725) | Update dependencies |
 | 0.0.5 | 2026-08-11 | [84089](https://github.com/airbytehq/airbyte/pull/84089) | Update dependencies |
 | 0.0.4 | 2026-08-04 | [83603](https://github.com/airbytehq/airbyte/pull/83603) | Update dependencies |
-| 0.0.3 | 2026-08-04 | [83266](https://github.com/airbytehq/airbyte/pull/83266) | Refresh the access token only when it expires, make start_time optional with a 24-month default, and clamp campaign_report to Reddit's 24-month reporting window |
+| 0.0.3 | 2026-08-04 | [83266](https://github.com/airbytehq/airbyte/pull/83266) | Stop refreshing the access token before every request, and refresh it before retrying a 401. Make `start_time` optional, apply it to all three streams, and default it to 24 months before the sync; clamp `campaign_report` to Reddit's 24-month reporting window |
 | 0.0.2 | 2026-07-28 | [83100](https://github.com/airbytehq/airbyte/pull/83100) | Update dependencies |
 | 0.0.1 | 2026-07-27 | [81399](https://github.com/airbytehq/airbyte/pull/81399) | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
 
