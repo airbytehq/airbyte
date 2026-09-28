@@ -79,25 +79,25 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
   protected Document computeNext() {
     if (cdcInitialLoadTimeout.isPresent()
         && Duration.between(startInstant, Instant.now()).compareTo(cdcInitialLoadTimeout.get()) > 0) {
-      final String cdcInitialLoadTimeoutMessage = String.format(
-          "Initial load for table %s has taken longer than %s, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
+      LOGGER.info(
+          "Initial load for table {} has taken longer than {}, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
           collection.getNamespace(), cdcInitialLoadTimeout.get());
-      LOGGER.info(cdcInitialLoadTimeoutMessage);
       AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcSnapshotForceShutdownMessage());
-      throw new TransientErrorException(cdcInitialLoadTimeoutMessage);
+      throw new TransientErrorException(
+          String.format("Initial load for table %s has taken longer than %s", collection.getNamespace(), cdcInitialLoadTimeout.get()));
     }
     if (shouldBuildNextQuery()) {
-      final String currentId = currentId();
-      LOGGER.info("Finishing subquery number : {}, processing at id : {}", numSubqueries, currentId);
+      numSubqueries++;
+      final String currentId = currentIdForLogging();
+      LOGGER.info("Starting subquery number : {}, processing at id : {}", numSubqueries, currentId);
       try {
         currentIterator.close();
         currentIterator = buildNewQueryIterator();
       } catch (final Exception e) {
-        LOGGER.error("Failed to start subquery number {} for collection {} at id {}", numSubqueries + 1,
+        LOGGER.error("Failed to start subquery number {} for collection {} at id {}", numSubqueries,
             collection.getNamespace(), currentId, e);
         throw e;
       }
-      numSubqueries++;
       if (!currentIterator.hasNext()) {
         return endOfData();
       }
@@ -108,7 +108,7 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
     return next;
   }
 
-  private String currentId() {
+  private String currentIdForLogging() {
     return currentState.map(MongoDbStreamState::id).orElse(NO_PRIOR_STATE);
   }
 
