@@ -125,7 +125,13 @@
             "currency": { "type": "string", "enum": ["USD", "EUR", "GBP"] },
             "method": {
               "type": "string",
-              "enum": ["card", "paypal", "bank_transfer", "apple_pay", "google_pay"]
+              "enum": [
+                "card",
+                "paypal",
+                "bank_transfer",
+                "apple_pay",
+                "google_pay"
+              ]
             },
             "status": { "type": "string", "enum": ["captured", "refunded"] },
             "paid_at": {
