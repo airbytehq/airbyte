@@ -103,6 +103,7 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
             error_mapping=DEFAULT_ERROR_MAPPING | ShopifyNonRetryableErrors("orders"),
         )
         super().__init__(config)
+        self._customer_fields = tuple(self.get_json_schema()["properties"]["customer"]["properties"])
 
     def request_params(self, stream_state=None, next_page_token=None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
@@ -116,9 +117,10 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
 
     def flatten_customer(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         customer = record.get("customer")
-        if isinstance(customer, Mapping):
-            for key, value in customer.items():
-                record[f"{self.customer_prefix}{key}"] = value
+        if not self.config.get("populate_orders_customer_fields", False) or not isinstance(customer, Mapping):
+            customer = {}
+        for field in self._customer_fields:
+            record[f"{self.customer_prefix}{field}"] = customer.get(field)
         return record
 
     def produce_records(self, records=None):
