@@ -76,24 +76,52 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
   `MongoDbSourceMetadataQuerier.Factory` reads `airbyte.connector.operation` and returns no fields
   during `check`.
 
-## Read (Stage 3 + Stage 4 initial sync)
+## Read
 
-`read` performs an initial full snapshot of each collection:
+`read` supports full-refresh and incremental (snapshot + CDC) syncs.
 
 - `MongoDbPartitionsCreatorFactory` plans the READ. Each `Stream` feed gets one
-  `MongoDbSnapshotPartitionsCreator` (one partition per collection, no concurrent `_id` splitting
-  yet); the `Global` feed (change stream / CDC) returns `CreateNoPartitions` for now.
-- `MongoDbSnapshotPartitionReader` reads the whole collection ordered by `_id` and emits every
-  document; `MongoDbRecordConverter` reproduces the legacy record shape (ObjectId hex, `Date`
+  `MongoDbSnapshotPartitionsCreator` (one partition per collection, no concurrent `_id` splitting —
+  see "Concurrency" below); the `Global` feed gets one `MongoDbCdcPartitionsCreator`.
+- **Snapshot** (`MongoDbSnapshotPartitionReader`): reads a collection ordered by `_id` and emits
+  every document. `MongoDbRecordConverter` reproduces the legacy record shape (ObjectId hex, `Date`
   always with milliseconds, `Binary` as Base64, `BsonRegularExpression` as `(options)pattern`,
   `CodeWithScope` as an object, `MinKey`/`MaxKey` omitted, the `BsonTimestamp` epoch-millis quirk).
-- The per-collection checkpoint is the legacy `MongoDbStreamStateValue` shape
+  It **resumes** from the checkpointed `_id` (`_id > lastSeen`), respects the
+  `checkpointTargetInterval` timeout, and completes via `MongoDbSharedState.completedSnapshots`. The
+  per-collection checkpoint is the legacy `MongoDbStreamStateValue` shape
   (`{id, status, idType, binarySubType}`): `COMPLETE` for an incremental stream once its snapshot
   finishes, `FULL_REFRESH` for a full-refresh stream. At READ time the metadata querier serves
   `fields()` from the configured catalog rather than re-sampling.
-- Still to do (later stages): mid-collection checkpoint/resume, legacy GLOBAL/CDC state translation,
-  the change-stream reader, protobuf/socket output, and record/state Docker parity against
-  `source-mongodb-v2`.
+- **CDC** (`MongoDbCdcPartitionReader`, the `Global` feed): reads the replica-set change stream with
+  the native driver `watch()` — **not Debezium**. Cold start captures a resume token before the
+  snapshot; warm start drains available changes (insert/update/replace as upserts, delete with
+  `_ab_cdc_deleted_at`) and checkpoints the new token in `MongoDbCdcState`. `update_capture_mode`
+  selects `UPDATE_LOOKUP` vs `REQUIRED` (post-image, MongoDB 6.0+).
+- **WASS**: an incremental snapshot that exceeds `maxSnapshotReadDuration`
+  (`initial_load_timeout_hours`) yields for the rest of the READ so the next sync's change-stream
+  read advances the resume token before the snapshot resumes.
+
+### Concurrency
+
+One partition per collection, read on one thread (collections are still read in parallel with each
+other by the CDK). Splitting a single collection into concurrent `_id` ranges is **not** implemented:
+there is no evidence that two parallel range reads beat one ordered scan on a replica set, and the
+`_id` boundaries cannot be computed without a scan (`$sample`/`splitVector` are approximate). This is
+a later optimization gated on a measured speed-up (SKILL.md Phase 1, "Concurrency"; Stage 5).
+
+### Remaining work
+
+- **Debezium-format CDC state:** the native `watch()` reader uses its own resume-token state, so
+  existing `source-mongodb-v2` CDC connections cannot resume from their persisted Debezium offset and
+  must be reset. Snapshot state stays v2-compatible. Preserving CDC-offset parity would require the
+  `extract-cdc` (Debezium) toolkit instead of `watch()` — an owner decision.
+- **Protobuf / socket data channel** (speed channel): deferred. MongoDB's dynamic values collide with
+  the schema-driven protobuf encoder (needs per-field coercion + `FieldValueChange`), and the pinned
+  CDK has protobuf-consumer bugs fixed only in 1.1.13 (unpublished). Enable once 1.1.13 is available.
+- **Terabyte-scale validation** (Stage 5): bounded-memory, kill/resume and throughput vs
+  `source-mongodb-v2` on a very large collection — needs infrastructure not available here.
+- **Record/state Docker parity** against `source-mongodb-v2` via `databases/mongodb/parity/`.
 
 > **CDK version:** this branch pins `cdkVersion=local` and bumps
 > `airbyte-cdk/bulk/core/extract/version.properties` to `1.1.12` because READ-time catalog
