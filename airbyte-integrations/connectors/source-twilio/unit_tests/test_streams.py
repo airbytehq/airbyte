@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime, timedelta
+from threading import Lock
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import pytest
@@ -37,6 +39,44 @@ ACCOUNTS_JSON = {
 def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exception: bool = False) -> EntrypointOutput:
     catalog = CatalogBuilder().with_stream(stream, sync_mode).build()
     return read(get_source(cfg, state), cfg, catalog, state, expecting_exception)
+
+
+def _register_alerts_callback(requests_mock):
+    requests = []
+    response_handler = {"callback": None}
+    requests_lock = Lock()
+
+    def _callback(request, context):
+        query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+        request_info = {key: query[key][0] for key in ("StartDate", "EndDate", "PageSize", "PageToken", "Page") if key in query}
+        with requests_lock:
+            requests.append(request_info)
+        response, status_code = response_handler["callback"](request_info)
+        context.status_code = status_code
+        return response
+
+    requests_mock.get(f"{MONITOR_BASE}/Alerts", json=_callback)
+    return requests, response_handler
+
+
+def _alerts_response(records=(), next_page_url=None):
+    return {"alerts": list(records), "meta": {"next_page_url": next_page_url}}, 200
+
+
+def _alert_record(sid, date_generated):
+    return {"sid": sid, "date_generated": date_generated}
+
+
+def _alert_window(request):
+    return request.get("StartDate"), request.get("EndDate")
+
+
+def _parse_alert_date(value):
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def _alert_state_date(output):
+    return output.most_recent_state.stream_state.__dict__["date_generated"]
 
 
 class TestTwilioStream:
@@ -276,24 +316,246 @@ class TestIncrementalTwilioStream:
         )
 
     @freeze_time("2022-11-16 12:03:11+00:00")
-    def test_alerts_pagination_limit_error_message(self, requests_mock):
-        requests_mock.get(
-            f"{MONITOR_BASE}/Alerts",
-            json={
-                "code": 400,
-                "message": "Invalid page and pageSize combination, data is limited to 10,000 results",
-            },
-            status_code=400,
+    def test_alerts_split_request_window_one_level(self, requests_mock):
+        config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
+        parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")
+        child1 = ("2022-11-15T00:00:00Z", "2022-11-15T11:59:59Z")
+        child2 = ("2022-11-15T12:00:00Z", "2022-11-15T23:59:59Z")
+        partition2 = ("2022-11-16T00:00:00Z", "2022-11-16T12:03:11Z")
+        next_page_url = (
+            "https://monitor.twilio.com/v1/Alerts?StartDate=2022-11-15T00:00:00Z"
+            "&EndDate=2022-11-15T23:59:59Z&PageSize=1000&Page=1&PageToken=PT1"
         )
+        parent_record = _alert_record("parent-page-1", "2022-11-15T01:00:00Z")
+        child1_record = _alert_record("child-1", "2022-11-15T05:00:00Z")
+        child2_record = _alert_record("child-2", "2022-11-15T20:00:00Z")
+        partition2_record = _alert_record("partition-2", "2022-11-16T12:03:11Z")
+        requests, response_handler = _register_alerts_callback(requests_mock)
 
-        output = read_from_stream(TEST_CONFIG, "alerts", SyncMode.incremental, expecting_exception=True)
+        def split_response(request):
+            window = _alert_window(request)
+            if window == parent and request.get("PageToken") == "PT1":
+                return (
+                    {
+                        "code": 400,
+                        "message": "Invalid page and pageSize combination, data is limited to 10,000 results",
+                    },
+                    400,
+                )
+            if window == parent:
+                return _alerts_response([parent_record], next_page_url)
+            if window == child1:
+                return _alerts_response([parent_record, child1_record])
+            if window == child2:
+                return _alerts_response([child2_record])
+            if window == partition2:
+                return _alerts_response([partition2_record])
+            raise AssertionError(f"Unexpected Alerts request: {request}")
+
+        response_handler["callback"] = split_response
+        output = read_from_stream(config, "alerts", SyncMode.incremental)
+
+        expected_windows = {parent, child1, child2, partition2}
+        first_page_requests = [request for request in requests if not request.get("PageToken") and not request.get("Page")]
+        assert {_alert_window(request) for request in first_page_requests} == expected_windows
+        assert all(request.get("PageSize") == "1000" for request in first_page_requests)
+        page_token_requests = [request for request in requests if request.get("PageToken")]
+        assert len(page_token_requests) == 1
+        assert page_token_requests[0].get("PageToken") == "PT1"
+        assert _alert_window(page_token_requests[0]) == parent
+        assert _parse_alert_date(child1[1]) + timedelta(seconds=1) == _parse_alert_date(child2[0])
+        assert _parse_alert_date(parent[0]) == _parse_alert_date(child1[0])
+        assert _parse_alert_date(child2[1]) == _parse_alert_date(parent[1])
+        assert not output.errors
+        emitted_sids = [message.record.data["sid"] for message in output.records]
+        assert {"parent-page-1", "child-1", "child-2", "partition-2"} <= set(emitted_sids)
+
+        split_state = _alert_state_date(output)
+        assert split_state == "2022-11-16T12:03:11Z"
+
+        def baseline_response(request):
+            window = _alert_window(request)
+            if window == parent:
+                return _alerts_response([parent_record, child1_record, child2_record])
+            if window == partition2:
+                return _alerts_response([partition2_record])
+            raise AssertionError(f"Unexpected baseline Alerts request: {request}")
+
+        response_handler["callback"] = baseline_response
+        baseline_output = read_from_stream(config, "alerts", SyncMode.incremental)
+        assert not baseline_output.errors
+        assert _alert_state_date(baseline_output) == split_state
+        assert split_state == "2022-11-16T12:03:11Z"
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_alerts_split_request_window_nested(self, requests_mock):
+        config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
+        parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")
+        child1 = ("2022-11-15T00:00:00Z", "2022-11-15T11:59:59Z")
+        grandchild1 = ("2022-11-15T00:00:00Z", "2022-11-15T05:59:59Z")
+        grandchild2 = ("2022-11-15T06:00:00Z", "2022-11-15T11:59:59Z")
+        child2 = ("2022-11-15T12:00:00Z", "2022-11-15T23:59:59Z")
+        partition2 = ("2022-11-16T00:00:00Z", "2022-11-16T12:03:11Z")
+        next_page_url = (
+            "https://monitor.twilio.com/v1/Alerts?StartDate=2022-11-15T00:00:00Z"
+            "&EndDate=2022-11-15T23:59:59Z&PageSize=1000&Page=1&PageToken=PT1"
+        )
+        parent_record = _alert_record("parent-page-1", "2022-11-15T01:00:00Z")
+        grandchild1_record = _alert_record("grandchild-1", "2022-11-15T03:00:00Z")
+        grandchild2_record = _alert_record("grandchild-2", "2022-11-15T10:00:00Z")
+        child2_record = _alert_record("child-2", "2022-11-15T20:00:00Z")
+        partition2_record = _alert_record("partition-2", "2022-11-16T12:03:11Z")
+        requests, response_handler = _register_alerts_callback(requests_mock)
+
+        def split_response(request):
+            window = _alert_window(request)
+            if window == parent and request.get("PageToken") == "PT1":
+                return (
+                    {
+                        "code": 400,
+                        "message": "Invalid page and pageSize combination, data is limited to 10,000 results",
+                    },
+                    400,
+                )
+            if window == parent:
+                return _alerts_response([parent_record], next_page_url)
+            if window == child1:
+                return (
+                    {
+                        "code": 400,
+                        "message": "Invalid page and pageSize combination, data is limited to 10,000 results",
+                    },
+                    400,
+                )
+            if window == grandchild1:
+                return _alerts_response([parent_record, grandchild1_record])
+            if window == grandchild2:
+                return _alerts_response([grandchild2_record])
+            if window == child2:
+                return _alerts_response([child2_record])
+            if window == partition2:
+                return _alerts_response([partition2_record])
+            raise AssertionError(f"Unexpected Alerts request: {request}")
+
+        response_handler["callback"] = split_response
+        output = read_from_stream(config, "alerts", SyncMode.incremental)
+
+        expected_windows = {parent, child1, grandchild1, grandchild2, child2, partition2}
+        first_page_requests = [request for request in requests if not request.get("PageToken") and not request.get("Page")]
+        assert {_alert_window(request) for request in first_page_requests} == expected_windows
+        assert all(request.get("PageSize") == "1000" for request in first_page_requests)
+        page_token_requests = [request for request in requests if request.get("PageToken")]
+        assert len(page_token_requests) == 1
+        assert _alert_window(page_token_requests[0]) == parent
+        assert _parse_alert_date(grandchild1[1]) + timedelta(seconds=1) == _parse_alert_date(grandchild2[0])
+        assert _parse_alert_date(grandchild2[1]) + timedelta(seconds=1) == _parse_alert_date(child2[0])
+        assert _parse_alert_date(parent[0]) == _parse_alert_date(grandchild1[0])
+        assert _parse_alert_date(child2[1]) == _parse_alert_date(parent[1])
+        assert not output.errors
+        emitted_sids = {message.record.data["sid"] for message in output.records}
+        assert {
+            "parent-page-1",
+            "grandchild-1",
+            "grandchild-2",
+            "child-2",
+            "partition-2",
+        } <= emitted_sids
+        split_state = _alert_state_date(output)
+        assert split_state == "2022-11-16T12:03:11Z"
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_alerts_split_request_window_exhausted_at_min_window(self, requests_mock):
+        incoming_cursor = "2022-11-16T12:03:08Z"
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "alerts",
+                {"states": [{"partition": {}, "cursor": {"date_generated": incoming_cursor}}]},
+            )
+            .build()
+        )
+        requests, response_handler = _register_alerts_callback(requests_mock)
+
+        def always_fail(_request):
+            return (
+                {
+                    "code": 400,
+                    "message": "Invalid page and pageSize combination, data is limited to 10,000 results",
+                },
+                400,
+            )
+
+        response_handler["callback"] = always_fail
+        output = read_from_stream(TEST_CONFIG, "alerts", SyncMode.incremental, state, expecting_exception=True)
 
         assert not output.records
         assert output.errors
-        assert output.errors[0].trace.error.failure_type == FailureType.config_error
-        assert "Twilio Alerts request exceeds the 10,000-result pagination limit." in output.get_formatted_error_message()
-        assert "in the source configuration" in output.get_formatted_error_message()
-        assert "fewer Alert records per slice" in output.get_formatted_error_message()
+        assert output.errors[0].trace.error.failure_type == FailureType.transient_error
+        assert "The Twilio Alerts API returns at most 10,000 Alert records per request." in output.get_formatted_error_message()
+        windows = [_alert_window(request) for request in requests]
+        assert all(start <= end for start, end in windows)
+        assert any(start == end for start, end in windows)
+        assert windows[-1] == (incoming_cursor, incoming_cursor)
+        state_dates = [
+            message.state.stream.stream_state.__dict__.get("date_generated")
+            for message in output.state_messages
+            if message.state and message.state.stream
+        ]
+        assert all(date is None or date <= incoming_cursor for date in state_dates)
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_alerts_split_request_window_exhausted_at_max_depth(self, requests_mock):
+        config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
+        requests, response_handler = _register_alerts_callback(requests_mock)
+
+        def always_fail(_request):
+            return (
+                {
+                    "code": 400,
+                    "message": "Invalid page and pageSize combination, data is limited to 10,000 results",
+                },
+                400,
+            )
+
+        response_handler["callback"] = always_fail
+        output = read_from_stream(config, "alerts", SyncMode.incremental, expecting_exception=True)
+
+        assert not output.records
+        assert output.errors
+        assert output.errors[0].trace.error.failure_type == FailureType.transient_error
+        assert "The Twilio Alerts API returns at most 10,000 Alert records per request." in output.get_formatted_error_message()
+        window_count = len({_alert_window(request) for request in requests})
+        assert window_count == 22
+        assert window_count < 100
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_alerts_other_400_is_not_split(self, requests_mock):
+        config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
+        parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")
+        partition2 = ("2022-11-16T00:00:00Z", "2022-11-16T12:03:11Z")
+        requests, response_handler = _register_alerts_callback(requests_mock)
+
+        def response_for_request(request):
+            if _alert_window(request) == parent:
+                return {"code": 400, "message": "Invalid StartDate"}, 400
+            if _alert_window(request) == partition2:
+                return _alerts_response()
+            raise AssertionError(f"Unexpected Alerts request: {request}")
+
+        response_handler["callback"] = response_for_request
+        output = read_from_stream(config, "alerts", SyncMode.incremental, expecting_exception=True)
+
+        assert output.errors
+        failure = output.errors[0].trace.error
+        formatted_error = output.get_formatted_error_message()
+        assert not (failure.failure_type == FailureType.config_error and "10,000" in formatted_error)
+        assert failure.failure_type == FailureType.system_error
+        requested_windows = {_alert_window(request) for request in requests}
+        assert requested_windows <= {parent, partition2}
+        assert (
+            "2022-11-15T00:00:00Z",
+            "2022-11-15T11:59:59Z",
+        ) not in requested_windows
 
 
 class TestConferenceParticipantsStream:

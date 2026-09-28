@@ -126,7 +126,7 @@ By default, the connector syncs with 3 concurrent threads. Increase **Number of 
 
 ### Alerts pagination limit
 
-The [Alerts API](https://www.twilio.com/docs/usage/monitor-alert) limits each request to 10,000 Alert resources. If the `alerts` stream fails because a time window contains more than 10,000 Alert records, reduce **Slice Step Duration** to sync fewer Alert records per request.
+The [Alerts API](https://www.twilio.com/docs/usage/monitor-alert) limits each request to 10,000 Alert resources. When a time window contains more than 10,000 Alert records, the connector automatically splits that window into smaller windows and reads each one, so no manual action is needed. Because Twilio can reject a window after the connector has already read some of its records, those records can be emitted again after the split. Sync modes that deduplicate by primary key (`sid`) remove these duplicates; append-only sync modes can contain them. If the `alerts` stream still fails after splitting, decrease **Slice Step Duration**.
 
 ### Tuning the slice step duration
 
@@ -167,6 +167,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.3 | 2026-09-28 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Automatically split Alerts time windows that exceed Twilio's 10,000-result limit instead of failing the sync |
 | 1.1.2 | 2026-09-22 | [86857](https://github.com/airbytehq/airbyte/pull/86857) | Update dependencies |
 | 1.1.1 | 2026-09-15 | [84774](https://github.com/airbytehq/airbyte/pull/84774) | Update dependencies |
 | 1.1.0 | 2026-09-08 | [85748](https://github.com/airbytehq/airbyte/pull/85748) | Promoting release candidate 1.1.0-rc.1 to a main version. |
