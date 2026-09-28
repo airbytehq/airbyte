@@ -650,6 +650,20 @@ definitions:
   # Deconstruct the reportOptions in the config and pass them in the report creation request body.
   # When no options are configured for the stream, the reportOptions key is omitted entirely
   # (rendering None drops the key), matching the pre-migration Python behavior.
+  # Defined once and referenced by every report stream that forwards options, so the matching rules
+  # (stream_name or report_name, case-sensitive option names) only ever exist in one place.
+  report_options_from_config: >-
+    {%- set rt = parameters.report_type -%}
+    {%- set opts = {} -%}
+    {%- for ro in config.get('report_options_list', []) -%}
+      {%- if ro.get('stream_name') == rt or ro.get('report_name') == rt -%}
+        {%- for item in ro.get('options_list', []) -%}
+          {%- set _ = opts.update({ item['option_name']: item['option_value'] }) -%}
+        {%- endfor -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {{ opts if opts else None }}
+
   creation_requester_with_report_options:
     $ref: "#/definitions/basic_async_retriever/creation_requester"
     request_body_json:
@@ -657,17 +671,72 @@ definitions:
       marketplaceIds: '{{ [config["marketplace_id"]] }}'
       dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
       dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
-      reportOptions: >-
-        {%- set rt = parameters.report_type -%}
-        {%- set opts = {} -%}
-        {%- for ro in config.get('report_options_list', []) -%}
-          {%- if ro.get('stream_name') == rt or ro.get('report_name') == rt -%}
-            {%- for item in ro.get('options_list', []) -%}
-              {%- set _ = opts.update({ item['option_name']: item['option_value'] }) -%}
-            {%- endfor -%}
-          {%- endif -%}
-        {%- endfor -%}
-        {{ opts if opts else None }}
+      reportOptions:
+        $ref: "#/definitions/report_options_from_config"
+
+  # ── Vendor retail analytics reports (GET_VENDOR_SALES / INVENTORY / TRAFFIC /
+  #    NET_PURE_PRODUCT_MARGIN) ──────────────────────────────────────────────────────────────
+  # These four streams are identical apart from their report type and the key their records are
+  # extracted from, so their cursor, creation requester and cursor-stamping transformation are
+  # defined once here. GET_VENDOR_REAL_TIME_INVENTORY_REPORT is deliberately not one of them: it is
+  # published hourly rather than daily and takes no report options.
+
+  # Amazon publishes the data availability SLA for these reports as "72 hours after the close of the
+  # period" for the DAY reportPeriod:
+  # https://developer-docs.amazon/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports
+  # Slices are calendar days, so the slice for day D closes at D 23:59:59 and Amazon publishes it 72
+  # hours after that. Holding back four days keeps the newest requested day published whatever time
+  # of day the sync runs; three days is only safe for a sync that starts at midnight UTC. Asking for
+  # a day Amazon has not published yet makes the report FATAL ("The report data for the requested
+  # date range is not yet available"), which fails the stream rather than skipping the day, so the
+  # holdback is deliberately conservative. The data is not lost, just picked up by a later sync.
+  # An explicitly configured replication_end_date is honoured as-is, matching the pre-migration
+  # Python connector, where availability_sla_days only ever moved the "now" bound.
+  vendor_analytics_daily_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: endDate
+    cursor_datetime_formats:
+      - "%Y-%m-%d"
+      - "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    step: "P1D"
+    cursor_granularity: "PT1S"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc() - duration('P4D'), '%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+  # Anchor the report window to the slice's calendar day. When a sync ends mid-day the slice bounds
+  # drift off midnight; the API then rounds an off-midnight window outward to every calendar day it
+  # spans and sums them, inflating the day's metrics. Deriving the window from the slice start day
+  # keeps every request a single, correct calendar day. A sibling request_body_json replaces the
+  # shared requester's one wholesale rather than merging into it, so a stream that does not declare
+  # the window sends no date range at all — see the "Report Streams Must Declare Their Own
+  # dataStartTime/dataEndTime" section in AGENTS.md.
+  vendor_analytics_creation_requester:
+    $ref: "#/definitions/basic_async_retriever/creation_requester"
+    request_body_json:
+      reportType: "{{ parameters.report_type }}"
+      dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
+      dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
+      marketplaceIds: '{{ [config["marketplace_id"]] }}'
+      # Forward the options configured for this stream; omit the key entirely when there are none.
+      # Amazon documents reportPeriod / distributorView / sellingProgram as required for some of
+      # these report types, but the connector does not invent values for them — ReportPollingRequester
+      # surfaces Amazon's rejection instead.
+      reportOptions:
+        $ref: "#/definitions/report_options_from_config"
+
+  # Day-align the cursor value too, so destination dedup compares stable per-day values.
+  vendor_analytics_end_date_transformation:
+    type: AddFields
+    fields:
+      - path: ["endDate"]
+        value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
 
   orders_authenticator:
     type: CustomAuthenticator
@@ -3237,41 +3306,21 @@ definitions:
         schema:
           $ref: "#/schemas/get_sales_and_traffic_report_by_date"
 
+    # The four vendor retail analytics report streams below differ only in their report type and the
+    # key their records are extracted from; everything else comes from the shared
+    # vendor_analytics_* definitions above.
     get_vendor_sales_report:
       type: DeclarativeStream
       name: GET_VENDOR_SALES_REPORT
       primary_key: []
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: endDate
-        cursor_datetime_formats:
-          - "%Y-%m-%d"
-          - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "P1D"
-        cursor_granularity: "PT1S"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/vendor_analytics_daily_cursor"
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
-          $ref: "#/definitions/basic_async_retriever/creation_requester"
-          request_body_json:
-            reportType: GET_VENDOR_SALES_REPORT
-            # Anchor the report window to the slice's calendar day (see GET_SALES_AND_TRAFFIC_REPORT):
-            # override the shared requester's raw slice bounds so an off-midnight window is not
-            # rounded outward and summed by the API. The day-alignment is applied per stream rather
-            # than on the shared requester, since non-daily report streams need their raw
-            # multi-day/month windows.
-            dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
-            dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
-            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+          $ref: "#/definitions/vendor_analytics_creation_requester"
+          $parameters:
+            report_type: GET_VENDOR_SALES_REPORT
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
@@ -3279,11 +3328,7 @@ definitions:
           type: DpathExtractor
           field_path: ["salesByAsin"]
       transformations:
-        - type: AddFields
-          fields:
-            # Day-align the cursor value too, so destination dedup compares stable per-day values.
-            - path: ["endDate"]
-              value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
+        - $ref: "#/definitions/vendor_analytics_end_date_transformation"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -3293,19 +3338,22 @@ definitions:
       type: DeclarativeStream
       name: GET_VENDOR_INVENTORY_REPORT
       primary_key: []
+      incremental_sync:
+        $ref: "#/definitions/vendor_analytics_daily_cursor"
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
-          $ref: "#/definitions/basic_async_retriever/creation_requester"
-          request_body_json:
-            reportType: GET_VENDOR_INVENTORY_REPORT
-            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+          $ref: "#/definitions/vendor_analytics_creation_requester"
+          $parameters:
+            report_type: GET_VENDOR_INVENTORY_REPORT
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
         download_extractor:
           type: DpathExtractor
           field_path: ["inventoryByAsin"]
+      transformations:
+        - $ref: "#/definitions/vendor_analytics_end_date_transformation"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -3316,36 +3364,13 @@ definitions:
       name: GET_VENDOR_TRAFFIC_REPORT
       primary_key: []
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: endDate
-        cursor_datetime_formats:
-          - "%Y-%m-%d"
-          - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "P1D"
-        cursor_granularity: "PT1S"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/vendor_analytics_daily_cursor"
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
-          $ref: "#/definitions/basic_async_retriever/creation_requester"
-          request_body_json:
-            reportType: GET_VENDOR_TRAFFIC_REPORT
-            # Anchor the report window to the slice's calendar day. A sibling request_body_json replaces
-            # the shared requester's one wholesale rather than merging into it, so without an explicit
-            # window the createReport call carries no date range at all: Amazon falls back to its own
-            # default period while the record is still labelled with the slice's date. See the
-            # "Report Streams Must Declare Their Own dataStartTime/dataEndTime" section in AGENTS.md.
-            dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
-            dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
-            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+          $ref: "#/definitions/vendor_analytics_creation_requester"
+          $parameters:
+            report_type: GET_VENDOR_TRAFFIC_REPORT
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
@@ -3353,11 +3378,7 @@ definitions:
           type: DpathExtractor
           field_path: ["trafficByAsin"]
       transformations:
-        - type: AddFields
-          fields:
-            # Day-align the cursor value too, so destination dedup compares stable per-day values.
-            - path: ["endDate"]
-              value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
+        - $ref: "#/definitions/vendor_analytics_end_date_transformation"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -3368,32 +3389,13 @@ definitions:
       name: GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT
       primary_key: []
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: endDate
-        cursor_datetime_formats:
-          - "%Y-%m-%d"
-          - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "P1D"
-        cursor_granularity: "PT1S"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        $ref: "#/definitions/vendor_analytics_daily_cursor"
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
-          $ref: "#/definitions/basic_async_retriever/creation_requester"
-          request_body_json:
-            reportType: GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT
-            # Day-aligned report window (see GET_VENDOR_TRAFFIC_REPORT above).
-            dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
-            dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
-            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+          $ref: "#/definitions/vendor_analytics_creation_requester"
+          $parameters:
+            report_type: GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
@@ -3401,10 +3403,7 @@ definitions:
           type: DpathExtractor
           field_path: ["netPureProductMarginByAsin"]
       transformations:
-        - type: AddFields
-          fields:
-            - path: ["endDate"]
-              value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
+        - $ref: "#/definitions/vendor_analytics_end_date_transformation"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -3534,7 +3533,10 @@ definitions:
                 default_backoff_time: 60
 
     polling_requester:
-      type: HttpRequester
+      # CustomRequester (not HttpRequester) so a FATAL report surfaces Amazon's own reason instead of
+      # the CDK's generic "Async job failed after exhausting all retry attempts." system error.
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.ReportPollingRequester
       path: reports/2021-06-30/reports/{{creation_response['reportId']}}
       url_base: "{{ config['endpoint'] }}"
       authenticator: "#/definitions/authenticator"
