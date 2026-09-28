@@ -2,6 +2,18 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## September 25, 2026
+
+Connections
+
+- You can now save a source or destination as a draft while you're setting it up. Use the new "Save draft" button to keep an incomplete configuration, come back to it later, and finish when you're ready. Drafts are marked with a "Draft" tag in your source and destination lists and become fully active only after a successful connection test. You can't use a draft in a connection or sync until then.
+- When you connect a Shopify source with OAuth, Airbyte now requests permission to view your store's markets. This lets you sync Shopify market data as the Shopify connector adds support for it. Existing Shopify sources keep working without any action, and the new permission is granted the next time you re-authenticate.
+
+Platform
+
+- If you use Okta single sign-on, signing in to Airbyte Cloud from the Airbyte tile on your Okta dashboard now works again. Previously, this could fail with an "Invalid parameter: redirect_uri" error, while signing in from the Airbyte login page continued to work.
+- Schema change notifications for sources with very large schemas now reach Slack reliably. If the list of changes is too long for a single Slack message, the notification is shortened and points you to the connection in Airbyte to see all changes.
+
 ## September 23, 2026
 
 Connections
