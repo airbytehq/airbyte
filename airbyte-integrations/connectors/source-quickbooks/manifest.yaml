@@ -4,7 +4,81 @@ check:
   type: CheckStream
   stream_names:
   - accounts
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+  - type: MovingWindowCallRatePolicy
+    rates:
+    - limit: 10
+      interval: PT1S
+    - limit: 500
+      interval: PT1M
+    matchers: []
+  status_codes_for_ratelimit_hit:
+  - 429
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 4
+  max_concurrency: 40
 definitions:
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    response_filters:
+    - type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      predicate: >-
+        {{ (response is mapping) and (((response.get('Fault') or
+        response.get('fault') or {}).get('Error') or (response.get('Fault') or
+        response.get('fault') or {}).get('error') or [{}])[0].get('code') or 0)
+        | int == 3200 }}
+      error_message: QuickBooks rejected the app credentials backing this connection.
+    - type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      predicate: >-
+        {{ (response is mapping) and (((response.get('Fault') or
+        response.get('fault') or {}).get('Error') or (response.get('Fault') or
+        response.get('fault') or {}).get('error') or [{}])[0].get('code') or 0)
+        | int == 3201 }}
+      error_message: The QuickBooks user has not authorized this app for the configured company.
+    - type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+      - 401
+      failure_type: config_error
+      error_message: The QuickBooks OAuth grant is expired or revoked, so the source must be re-authenticated.
+    - type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+      - 403
+      failure_type: config_error
+      error_message: The QuickBooks OAuth grant lacks the accounting scope for the configured company.
+    - type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+      - 404
+      failure_type: config_error
+      error_message: QuickBooks does not recognize the configured Realm ID.
+    - type: HttpResponseFilter
+      action: RATE_LIMITED
+      http_codes:
+      - 429
+      failure_type: transient_error
+      error_message: QuickBooks throttled the request; retrying after a backoff.
+    - type: HttpResponseFilter
+      action: RETRY
+      http_codes:
+      - 500
+      - 502
+      - 503
+      - 504
+      failure_type: transient_error
+      error_message: QuickBooks returned a retryable throttling or server error.
+    backoff_strategies:
+    - type: ExponentialBackoffStrategy
+      factor: 5
   streams:
     accounts:
       type: DeclarativeStream
@@ -34,6 +108,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -48,6 +129,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -180,6 +263,183 @@ definitions:
               type:
               - "null"
               - boolean
+    attachables:
+      type: DeclarativeStream
+      name: attachables
+      primary_key:
+      - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: >-
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+            'https://quickbooks.api.intuit.com' }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config['client_id'] }}"
+            client_secret: "{{ config['client_secret'] }}"
+            refresh_token: "{{ config['refresh_token'] }}"
+            expires_in_name: expires_in
+            access_token_name: access_token
+            refresh_token_updater:
+              refresh_token_name: refresh_token
+              access_token_config_path:
+              - access_token
+              token_expiry_date_config_path:
+              - token_expiry_date
+              refresh_token_config_path:
+              - refresh_token
+            token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
+          path: /v3/company/{{ config.realm_id }}/query
+          http_method: GET
+          request_parameters:
+            query: >-
+              SELECT * FROM Attachable WHERE Metadata.LastUpdatedTime > '{{
+              stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+              }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+              + ":" + stream_slice.start_time[-2:] }}'
+              ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+              (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+              (config.max_results or '200') | int }}
+          request_headers:
+            Accept: application/json
+            User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - QueryResponse
+            - Attachable
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 5
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P30D
+        cursor_field: airbyte_cursor
+        end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+        start_datetime: "{{ config.start_date }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        cursor_granularity: PT0S
+      transformations:
+      - type: AddFields
+        fields:
+        - path:
+          - airbyte_cursor
+          value: "{{ record.MetaData.LastUpdatedTime }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+          - "null"
+          - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            AttachableRef:
+              type:
+              - "null"
+              - array
+            Category:
+              type:
+              - "null"
+              - string
+            ContentType:
+              type:
+              - "null"
+              - string
+            FileAccessUri:
+              type:
+              - "null"
+              - string
+            FileName:
+              type:
+              - "null"
+              - string
+            Id:
+              type:
+              - "null"
+              - string
+            Lat:
+              type:
+              - "null"
+              - string
+            Long:
+              type:
+              - "null"
+              - string
+            MetaData:
+              type:
+              - "null"
+              - object
+              properties:
+                CreateTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+                LastUpdatedTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+            Note:
+              type:
+              - "null"
+              - string
+            PlaceName:
+              type:
+              - "null"
+              - string
+            Size:
+              type:
+              - "null"
+              - number
+            SyncToken:
+              type:
+              - "null"
+              - string
+            Tag:
+              type:
+              - "null"
+              - string
+            TempDownloadUri:
+              type:
+              - "null"
+              - string
+            ThumbnailFileAccessUri:
+              type:
+              - "null"
+              - string
+            ThumbnailTempDownloadUri:
+              type:
+              - "null"
+              - string
+            airbyte_cursor:
+              type:
+              - "null"
+              - string
+            domain:
+              type:
+              - "null"
+              - string
+            sparse:
+              type:
+              - "null"
+              - boolean
     bill_payments:
       type: DeclarativeStream
       name: bill_payments
@@ -208,6 +468,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -222,6 +489,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -463,6 +732,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -477,6 +753,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -813,6 +1091,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -827,6 +1112,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1017,6 +1304,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -1031,6 +1325,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1126,6 +1422,346 @@ definitions:
               type:
               - "null"
               - string
+    company_info:
+      type: DeclarativeStream
+      name: company_info
+      primary_key:
+      - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: >-
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+            'https://quickbooks.api.intuit.com' }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config['client_id'] }}"
+            client_secret: "{{ config['client_secret'] }}"
+            refresh_token: "{{ config['refresh_token'] }}"
+            expires_in_name: expires_in
+            access_token_name: access_token
+            refresh_token_updater:
+              refresh_token_name: refresh_token
+              access_token_config_path:
+              - access_token
+              token_expiry_date_config_path:
+              - token_expiry_date
+              refresh_token_config_path:
+              - refresh_token
+            token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
+          path: /v3/company/{{ config.realm_id }}/query
+          http_method: GET
+          request_parameters:
+            query: >-
+              SELECT * FROM CompanyInfo
+          request_headers:
+            Accept: application/json
+            User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - QueryResponse
+            - CompanyInfo
+        paginator:
+          type: NoPagination
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+          - "null"
+          - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            CompanyAddr:
+              type:
+              - "null"
+              - object
+            CompanyName:
+              type:
+              - "null"
+              - string
+            CompanyStartDate:
+              type:
+              - "null"
+              - string
+              format: date
+            Country:
+              type:
+              - "null"
+              - string
+            CustomerCommunicationAddr:
+              type:
+              - "null"
+              - object
+            CustomerCommunicationEmailAddr:
+              type:
+              - "null"
+              - object
+            DefaultTimeZone:
+              type:
+              - "null"
+              - string
+            Email:
+              type:
+              - "null"
+              - object
+            FiscalYearStartMonth:
+              type:
+              - "null"
+              - string
+            Id:
+              type:
+              - "null"
+              - string
+            LegalAddr:
+              type:
+              - "null"
+              - object
+            LegalName:
+              type:
+              - "null"
+              - string
+            MetaData:
+              type:
+              - "null"
+              - object
+              properties:
+                CreateTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+                LastUpdatedTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+            NameValue:
+              type:
+              - "null"
+              - array
+            PrimaryPhone:
+              type:
+              - "null"
+              - object
+            SupportedLanguages:
+              type:
+              - "null"
+              - string
+            SyncToken:
+              type:
+              - "null"
+              - string
+            WebAddr:
+              type:
+              - "null"
+              - object
+            domain:
+              type:
+              - "null"
+              - string
+            sparse:
+              type:
+              - "null"
+              - boolean
+    credit_card_payments:
+      type: DeclarativeStream
+      name: credit_card_payments
+      primary_key:
+      - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: >-
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+            'https://quickbooks.api.intuit.com' }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config['client_id'] }}"
+            client_secret: "{{ config['client_secret'] }}"
+            refresh_token: "{{ config['refresh_token'] }}"
+            expires_in_name: expires_in
+            access_token_name: access_token
+            refresh_token_updater:
+              refresh_token_name: refresh_token
+              access_token_config_path:
+              - access_token
+              token_expiry_date_config_path:
+              - token_expiry_date
+              refresh_token_config_path:
+              - refresh_token
+            token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
+          path: /v3/company/{{ config.realm_id }}/query
+          http_method: GET
+          request_parameters:
+            query: >-
+              SELECT * FROM CreditCardPaymentTxn WHERE Metadata.LastUpdatedTime > '{{
+              stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+              }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+              + ":" + stream_slice.start_time[-2:] }}'
+              ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+              (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+              (config.max_results or '200') | int }}
+          request_headers:
+            Accept: application/json
+            User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - QueryResponse
+            - CreditCardPaymentTxn
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 5
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P30D
+        cursor_field: airbyte_cursor
+        end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+        start_datetime: "{{ config.start_date }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        cursor_granularity: PT0S
+      transformations:
+      - type: AddFields
+        fields:
+        - path:
+          - airbyte_cursor
+          value: "{{ record.MetaData.LastUpdatedTime }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+          - "null"
+          - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            Amount:
+              type:
+              - "null"
+              - number
+            BankAccountRef:
+              type:
+              - "null"
+              - object
+              properties:
+                name:
+                  type:
+                  - "null"
+                  - string
+                value:
+                  type:
+                  - "null"
+                  - string
+            CheckNum:
+              type:
+              - "null"
+              - string
+            CreditCardAccountRef:
+              type:
+              - "null"
+              - object
+              properties:
+                name:
+                  type:
+                  - "null"
+                  - string
+                value:
+                  type:
+                  - "null"
+                  - string
+            Id:
+              type:
+              - "null"
+              - string
+            Memo:
+              type:
+              - "null"
+              - string
+            MetaData:
+              type:
+              - "null"
+              - object
+              properties:
+                CreateTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+                LastUpdatedTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+            PrintStatus:
+              type:
+              - "null"
+              - string
+            PrivateNote:
+              type:
+              - "null"
+              - string
+            SyncToken:
+              type:
+              - "null"
+              - string
+            TxnDate:
+              type:
+              - "null"
+              - string
+              format: date
+            VendorRef:
+              type:
+              - "null"
+              - object
+              properties:
+                name:
+                  type:
+                  - "null"
+                  - string
+                value:
+                  type:
+                  - "null"
+                  - string
+            airbyte_cursor:
+              type:
+              - "null"
+              - string
+            domain:
+              type:
+              - "null"
+              - string
+            sparse:
+              type:
+              - "null"
+              - boolean
     credit_memos:
       type: DeclarativeStream
       name: credit_memos
@@ -1154,6 +1790,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -1168,6 +1811,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1543,6 +2188,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -1557,6 +2209,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1899,6 +2553,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -1913,6 +2574,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2036,6 +2699,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -2050,6 +2720,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2325,6 +2997,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -2339,6 +3018,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2528,6 +3209,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -2542,6 +3230,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2938,6 +3628,138 @@ definitions:
               type:
               - "null"
               - boolean
+    exchange_rates:
+      type: DeclarativeStream
+      name: exchange_rates
+      primary_key:
+      - SourceCurrencyCode
+      - TargetCurrencyCode
+      - AsOfDate
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: >-
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+            'https://quickbooks.api.intuit.com' }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config['client_id'] }}"
+            client_secret: "{{ config['client_secret'] }}"
+            refresh_token: "{{ config['refresh_token'] }}"
+            expires_in_name: expires_in
+            access_token_name: access_token
+            refresh_token_updater:
+              refresh_token_name: refresh_token
+              access_token_config_path:
+              - access_token
+              token_expiry_date_config_path:
+              - token_expiry_date
+              refresh_token_config_path:
+              - refresh_token
+            token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
+          path: /v3/company/{{ config.realm_id }}/query
+          http_method: GET
+          request_parameters:
+            query: >-
+              SELECT * FROM ExchangeRate WHERE Metadata.LastUpdatedTime > '{{
+              stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+              }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+              + ":" + stream_slice.start_time[-2:] }}'
+              ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+              (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+              (config.max_results or '200') | int }}
+          request_headers:
+            Accept: application/json
+            User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - QueryResponse
+            - ExchangeRate
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 5
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P30D
+        cursor_field: airbyte_cursor
+        end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+        start_datetime: "{{ config.start_date }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        cursor_granularity: PT0S
+      transformations:
+      - type: AddFields
+        fields:
+        - path:
+          - airbyte_cursor
+          value: "{{ record.MetaData.LastUpdatedTime }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+          - "null"
+          - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            AsOfDate:
+              type:
+              - "null"
+              - string
+              format: date
+            MetaData:
+              type:
+              - "null"
+              - object
+              properties:
+                CreateTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+                LastUpdatedTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+            Rate:
+              type:
+              - "null"
+              - number
+            SourceCurrencyCode:
+              type:
+              - "null"
+              - string
+            TargetCurrencyCode:
+              type:
+              - "null"
+              - string
+            airbyte_cursor:
+              type:
+              - "null"
+              - string
+            domain:
+              type:
+              - "null"
+              - string
+            sparse:
+              type:
+              - "null"
+              - boolean
     invoices:
       type: DeclarativeStream
       name: invoices
@@ -2966,6 +3788,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -2980,6 +3809,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -3520,6 +4351,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -3534,6 +4372,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -3720,6 +4560,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -3734,6 +4581,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4040,6 +4889,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -4054,6 +4910,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4164,6 +5022,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -4178,6 +5043,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4432,6 +5299,140 @@ definitions:
               type:
               - "null"
               - boolean
+    preferences:
+      type: DeclarativeStream
+      name: preferences
+      primary_key:
+      - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: >-
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+            'https://quickbooks.api.intuit.com' }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config['client_id'] }}"
+            client_secret: "{{ config['client_secret'] }}"
+            refresh_token: "{{ config['refresh_token'] }}"
+            expires_in_name: expires_in
+            access_token_name: access_token
+            refresh_token_updater:
+              refresh_token_name: refresh_token
+              access_token_config_path:
+              - access_token
+              token_expiry_date_config_path:
+              - token_expiry_date
+              refresh_token_config_path:
+              - refresh_token
+            token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
+          path: /v3/company/{{ config.realm_id }}/query
+          http_method: GET
+          request_parameters:
+            query: >-
+              SELECT * FROM Preferences
+          request_headers:
+            Accept: application/json
+            User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - QueryResponse
+            - Preferences
+        paginator:
+          type: NoPagination
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+          - "null"
+          - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            AccountingInfoPrefs:
+              type:
+              - "null"
+              - object
+            CurrencyPrefs:
+              type:
+              - "null"
+              - object
+            EmailMessagesPrefs:
+              type:
+              - "null"
+              - object
+            Id:
+              type:
+              - "null"
+              - string
+            MetaData:
+              type:
+              - "null"
+              - object
+              properties:
+                CreateTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+                LastUpdatedTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+            OtherPrefs:
+              type:
+              - "null"
+              - object
+            ProductAndServicesPrefs:
+              type:
+              - "null"
+              - object
+            ReportPrefs:
+              type:
+              - "null"
+              - object
+            SalesFormsPrefs:
+              type:
+              - "null"
+              - object
+            SyncToken:
+              type:
+              - "null"
+              - string
+            TaxPrefs:
+              type:
+              - "null"
+              - object
+            TimeTrackingPrefs:
+              type:
+              - "null"
+              - object
+            VendorAndPurchasesPrefs:
+              type:
+              - "null"
+              - object
+            domain:
+              type:
+              - "null"
+              - string
+            sparse:
+              type:
+              - "null"
+              - boolean
     purchase_orders:
       type: DeclarativeStream
       name: purchase_orders
@@ -4460,6 +5461,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -4474,6 +5482,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4908,6 +5918,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -4922,6 +5939,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -5302,6 +6321,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -5316,6 +6342,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -5623,6 +6651,186 @@ definitions:
               type:
               - "null"
               - boolean
+    reimburse_charges:
+      type: DeclarativeStream
+      name: reimburse_charges
+      primary_key:
+      - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: >-
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+            'https://quickbooks.api.intuit.com' }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config['client_id'] }}"
+            client_secret: "{{ config['client_secret'] }}"
+            refresh_token: "{{ config['refresh_token'] }}"
+            expires_in_name: expires_in
+            access_token_name: access_token
+            refresh_token_updater:
+              refresh_token_name: refresh_token
+              access_token_config_path:
+              - access_token
+              token_expiry_date_config_path:
+              - token_expiry_date
+              refresh_token_config_path:
+              - refresh_token
+            token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
+          path: /v3/company/{{ config.realm_id }}/query
+          http_method: GET
+          request_parameters:
+            query: >-
+              SELECT * FROM ReimburseCharge WHERE Metadata.LastUpdatedTime > '{{
+              stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+              }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+              + ":" + stream_slice.start_time[-2:] }}'
+              ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+              (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+              (config.max_results or '200') | int }}
+          request_headers:
+            Accept: application/json
+            User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - QueryResponse
+            - ReimburseCharge
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 5
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P30D
+        cursor_field: airbyte_cursor
+        end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+        start_datetime: "{{ config.start_date }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        cursor_granularity: PT0S
+      transformations:
+      - type: AddFields
+        fields:
+        - path:
+          - airbyte_cursor
+          value: "{{ record.MetaData.LastUpdatedTime }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type:
+          - "null"
+          - object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            Amount:
+              type:
+              - "null"
+              - number
+            CurrencyRef:
+              type:
+              - "null"
+              - object
+              properties:
+                name:
+                  type:
+                  - "null"
+                  - string
+                value:
+                  type:
+                  - "null"
+                  - string
+            CustomerRef:
+              type:
+              - "null"
+              - object
+              properties:
+                name:
+                  type:
+                  - "null"
+                  - string
+                value:
+                  type:
+                  - "null"
+                  - string
+            ExchangeRate:
+              type:
+              - "null"
+              - number
+            HasBeenInvoiced:
+              type:
+              - "null"
+              - boolean
+            HomeTotalAmt:
+              type:
+              - "null"
+              - number
+            Id:
+              type:
+              - "null"
+              - string
+            Line:
+              type:
+              - "null"
+              - array
+            LinkedTxn:
+              type:
+              - "null"
+              - array
+            MetaData:
+              type:
+              - "null"
+              - object
+              properties:
+                CreateTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+                LastUpdatedTime:
+                  type:
+                  - "null"
+                  - string
+                  format: date-time
+            PrivateNote:
+              type:
+              - "null"
+              - string
+            SyncToken:
+              type:
+              - "null"
+              - string
+            TxnDate:
+              type:
+              - "null"
+              - string
+              format: date
+            airbyte_cursor:
+              type:
+              - "null"
+              - string
+            domain:
+              type:
+              - "null"
+              - string
+            sparse:
+              type:
+              - "null"
+              - boolean
     sales_receipts:
       type: DeclarativeStream
       name: sales_receipts
@@ -5651,6 +6859,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -5665,6 +6880,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -6088,6 +7305,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -6102,6 +7326,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -6216,6 +7442,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -6230,6 +7463,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -6392,6 +7627,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -6406,6 +7648,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -6579,6 +7823,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -6593,6 +7844,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -6727,6 +7980,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -6741,6 +8001,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -6911,6 +8173,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -6925,6 +8194,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -7075,6 +8346,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -7089,6 +8367,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -7338,6 +8618,13 @@ definitions:
               refresh_token_config_path:
               - refresh_token
             token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+            refresh_token_error_status_codes:
+            - 400
+            - 401
+            refresh_token_error_key: error
+            refresh_token_error_values:
+            - invalid_grant
+            - invalid_client
           path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
@@ -7352,6 +8639,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -7595,6 +8884,13 @@ definitions:
         refresh_token_config_path:
         - refresh_token
       token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+      refresh_token_error_status_codes:
+      - 400
+      - 401
+      refresh_token_error_key: error
+      refresh_token_error_values:
+      - invalid_grant
+      - invalid_client
 streams:
 - type: DeclarativeStream
   name: accounts
@@ -7623,6 +8919,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -7637,6 +8940,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -7771,6 +9076,183 @@ streams:
           - "null"
           - boolean
 - type: DeclarativeStream
+  name: attachables
+  primary_key:
+  - Id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: >-
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+        'https://quickbooks.api.intuit.com' }}
+      authenticator:
+        type: OAuthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        refresh_token: "{{ config['refresh_token'] }}"
+        expires_in_name: expires_in
+        access_token_name: access_token
+        refresh_token_updater:
+          refresh_token_name: refresh_token
+          access_token_config_path:
+          - access_token
+          token_expiry_date_config_path:
+          - token_expiry_date
+          refresh_token_config_path:
+          - refresh_token
+        token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
+      path: /v3/company/{{ config.realm_id }}/query
+      http_method: GET
+      request_parameters:
+        query: >-
+          SELECT * FROM Attachable WHERE Metadata.LastUpdatedTime > '{{
+          stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+          }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+          + ":" + stream_slice.start_time[-2:] }}'
+          ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+          (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+          (config.max_results or '200') | int }}
+      request_headers:
+        Accept: application/json
+        User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - QueryResponse
+        - Attachable
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: OffsetIncrement
+        page_size: 5
+  incremental_sync:
+    type: DatetimeBasedCursor
+    step: P30D
+    cursor_field: airbyte_cursor
+    end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+    start_datetime: "{{ config.start_date }}"
+    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    cursor_granularity: PT0S
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - airbyte_cursor
+      value: "{{ record.MetaData.LastUpdatedTime }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type:
+      - "null"
+      - object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        AttachableRef:
+          type:
+          - "null"
+          - array
+        Category:
+          type:
+          - "null"
+          - string
+        ContentType:
+          type:
+          - "null"
+          - string
+        FileAccessUri:
+          type:
+          - "null"
+          - string
+        FileName:
+          type:
+          - "null"
+          - string
+        Id:
+          type:
+          - "null"
+          - string
+        Lat:
+          type:
+          - "null"
+          - string
+        Long:
+          type:
+          - "null"
+          - string
+        MetaData:
+          type:
+          - "null"
+          - object
+          properties:
+            CreateTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+            LastUpdatedTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+        Note:
+          type:
+          - "null"
+          - string
+        PlaceName:
+          type:
+          - "null"
+          - string
+        Size:
+          type:
+          - "null"
+          - number
+        SyncToken:
+          type:
+          - "null"
+          - string
+        Tag:
+          type:
+          - "null"
+          - string
+        TempDownloadUri:
+          type:
+          - "null"
+          - string
+        ThumbnailFileAccessUri:
+          type:
+          - "null"
+          - string
+        ThumbnailTempDownloadUri:
+          type:
+          - "null"
+          - string
+        airbyte_cursor:
+          type:
+          - "null"
+          - string
+        domain:
+          type:
+          - "null"
+          - string
+        sparse:
+          type:
+          - "null"
+          - boolean
+- type: DeclarativeStream
   name: bill_payments
   primary_key:
   - Id
@@ -7797,6 +9279,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -7811,6 +9300,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -8052,6 +9543,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -8066,6 +9564,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -8402,6 +9902,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -8416,6 +9923,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -8606,6 +10115,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -8620,6 +10136,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -8717,6 +10235,345 @@ streams:
           - "null"
           - string
 - type: DeclarativeStream
+  name: company_info
+  primary_key:
+  - Id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: >-
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+        'https://quickbooks.api.intuit.com' }}
+      authenticator:
+        type: OAuthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        refresh_token: "{{ config['refresh_token'] }}"
+        expires_in_name: expires_in
+        access_token_name: access_token
+        refresh_token_updater:
+          refresh_token_name: refresh_token
+          access_token_config_path:
+          - access_token
+          token_expiry_date_config_path:
+          - token_expiry_date
+          refresh_token_config_path:
+          - refresh_token
+        token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
+      path: /v3/company/{{ config.realm_id }}/query
+      http_method: GET
+      request_parameters:
+        query: >-
+          SELECT * FROM CompanyInfo
+      request_headers:
+        Accept: application/json
+        User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - QueryResponse
+        - CompanyInfo
+    paginator:
+      type: NoPagination
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type:
+      - "null"
+      - object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        CompanyAddr:
+          type:
+          - "null"
+          - object
+        CompanyName:
+          type:
+          - "null"
+          - string
+        CompanyStartDate:
+          type:
+          - "null"
+          - string
+          format: date
+        Country:
+          type:
+          - "null"
+          - string
+        CustomerCommunicationAddr:
+          type:
+          - "null"
+          - object
+        CustomerCommunicationEmailAddr:
+          type:
+          - "null"
+          - object
+        DefaultTimeZone:
+          type:
+          - "null"
+          - string
+        Email:
+          type:
+          - "null"
+          - object
+        FiscalYearStartMonth:
+          type:
+          - "null"
+          - string
+        Id:
+          type:
+          - "null"
+          - string
+        LegalAddr:
+          type:
+          - "null"
+          - object
+        LegalName:
+          type:
+          - "null"
+          - string
+        MetaData:
+          type:
+          - "null"
+          - object
+          properties:
+            CreateTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+            LastUpdatedTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+        NameValue:
+          type:
+          - "null"
+          - array
+        PrimaryPhone:
+          type:
+          - "null"
+          - object
+        SupportedLanguages:
+          type:
+          - "null"
+          - string
+        SyncToken:
+          type:
+          - "null"
+          - string
+        WebAddr:
+          type:
+          - "null"
+          - object
+        domain:
+          type:
+          - "null"
+          - string
+        sparse:
+          type:
+          - "null"
+          - boolean
+- type: DeclarativeStream
+  name: credit_card_payments
+  primary_key:
+  - Id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: >-
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+        'https://quickbooks.api.intuit.com' }}
+      authenticator:
+        type: OAuthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        refresh_token: "{{ config['refresh_token'] }}"
+        expires_in_name: expires_in
+        access_token_name: access_token
+        refresh_token_updater:
+          refresh_token_name: refresh_token
+          access_token_config_path:
+          - access_token
+          token_expiry_date_config_path:
+          - token_expiry_date
+          refresh_token_config_path:
+          - refresh_token
+        token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
+      path: /v3/company/{{ config.realm_id }}/query
+      http_method: GET
+      request_parameters:
+        query: >-
+          SELECT * FROM CreditCardPaymentTxn WHERE Metadata.LastUpdatedTime > '{{
+          stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+          }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+          + ":" + stream_slice.start_time[-2:] }}'
+          ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+          (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+          (config.max_results or '200') | int }}
+      request_headers:
+        Accept: application/json
+        User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - QueryResponse
+        - CreditCardPaymentTxn
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: OffsetIncrement
+        page_size: 5
+  incremental_sync:
+    type: DatetimeBasedCursor
+    step: P30D
+    cursor_field: airbyte_cursor
+    end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+    start_datetime: "{{ config.start_date }}"
+    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    cursor_granularity: PT0S
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - airbyte_cursor
+      value: "{{ record.MetaData.LastUpdatedTime }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type:
+      - "null"
+      - object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        Amount:
+          type:
+          - "null"
+          - number
+        BankAccountRef:
+          type:
+          - "null"
+          - object
+          properties:
+            name:
+              type:
+              - "null"
+              - string
+            value:
+              type:
+              - "null"
+              - string
+        CheckNum:
+          type:
+          - "null"
+          - string
+        CreditCardAccountRef:
+          type:
+          - "null"
+          - object
+          properties:
+            name:
+              type:
+              - "null"
+              - string
+            value:
+              type:
+              - "null"
+              - string
+        Id:
+          type:
+          - "null"
+          - string
+        Memo:
+          type:
+          - "null"
+          - string
+        MetaData:
+          type:
+          - "null"
+          - object
+          properties:
+            CreateTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+            LastUpdatedTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+        PrintStatus:
+          type:
+          - "null"
+          - string
+        PrivateNote:
+          type:
+          - "null"
+          - string
+        SyncToken:
+          type:
+          - "null"
+          - string
+        TxnDate:
+          type:
+          - "null"
+          - string
+          format: date
+        VendorRef:
+          type:
+          - "null"
+          - object
+          properties:
+            name:
+              type:
+              - "null"
+              - string
+            value:
+              type:
+              - "null"
+              - string
+        airbyte_cursor:
+          type:
+          - "null"
+          - string
+        domain:
+          type:
+          - "null"
+          - string
+        sparse:
+          type:
+          - "null"
+          - boolean
+- type: DeclarativeStream
   name: credit_memos
   primary_key:
   - Id
@@ -8743,6 +10600,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -8757,6 +10621,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -9132,6 +10998,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -9146,6 +11019,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -9488,6 +11363,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -9502,6 +11384,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -9625,6 +11509,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -9639,6 +11530,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -9914,6 +11807,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -9928,6 +11828,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -10117,6 +12019,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -10131,6 +12040,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -10529,6 +12440,138 @@ streams:
           - "null"
           - boolean
 - type: DeclarativeStream
+  name: exchange_rates
+  primary_key:
+  - SourceCurrencyCode
+  - TargetCurrencyCode
+  - AsOfDate
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: >-
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+        'https://quickbooks.api.intuit.com' }}
+      authenticator:
+        type: OAuthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        refresh_token: "{{ config['refresh_token'] }}"
+        expires_in_name: expires_in
+        access_token_name: access_token
+        refresh_token_updater:
+          refresh_token_name: refresh_token
+          access_token_config_path:
+          - access_token
+          token_expiry_date_config_path:
+          - token_expiry_date
+          refresh_token_config_path:
+          - refresh_token
+        token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
+      path: /v3/company/{{ config.realm_id }}/query
+      http_method: GET
+      request_parameters:
+        query: >-
+          SELECT * FROM ExchangeRate WHERE Metadata.LastUpdatedTime > '{{
+          stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+          }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+          + ":" + stream_slice.start_time[-2:] }}'
+          ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+          (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+          (config.max_results or '200') | int }}
+      request_headers:
+        Accept: application/json
+        User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - QueryResponse
+        - ExchangeRate
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: OffsetIncrement
+        page_size: 5
+  incremental_sync:
+    type: DatetimeBasedCursor
+    step: P30D
+    cursor_field: airbyte_cursor
+    end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+    start_datetime: "{{ config.start_date }}"
+    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    cursor_granularity: PT0S
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - airbyte_cursor
+      value: "{{ record.MetaData.LastUpdatedTime }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type:
+      - "null"
+      - object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        AsOfDate:
+          type:
+          - "null"
+          - string
+          format: date
+        MetaData:
+          type:
+          - "null"
+          - object
+          properties:
+            CreateTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+            LastUpdatedTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+        Rate:
+          type:
+          - "null"
+          - number
+        SourceCurrencyCode:
+          type:
+          - "null"
+          - string
+        TargetCurrencyCode:
+          type:
+          - "null"
+          - string
+        airbyte_cursor:
+          type:
+          - "null"
+          - string
+        domain:
+          type:
+          - "null"
+          - string
+        sparse:
+          type:
+          - "null"
+          - boolean
+- type: DeclarativeStream
   name: invoices
   primary_key:
   - Id
@@ -10555,6 +12598,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -10569,6 +12619,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -11109,6 +13161,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -11123,6 +13182,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -11309,6 +13370,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -11323,6 +13391,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -11629,6 +13699,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -11643,6 +13720,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -11753,6 +13832,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -11767,6 +13853,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -12023,6 +14111,139 @@ streams:
           - "null"
           - boolean
 - type: DeclarativeStream
+  name: preferences
+  primary_key:
+  - Id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: >-
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+        'https://quickbooks.api.intuit.com' }}
+      authenticator:
+        type: OAuthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        refresh_token: "{{ config['refresh_token'] }}"
+        expires_in_name: expires_in
+        access_token_name: access_token
+        refresh_token_updater:
+          refresh_token_name: refresh_token
+          access_token_config_path:
+          - access_token
+          token_expiry_date_config_path:
+          - token_expiry_date
+          refresh_token_config_path:
+          - refresh_token
+        token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
+      path: /v3/company/{{ config.realm_id }}/query
+      http_method: GET
+      request_parameters:
+        query: >-
+          SELECT * FROM Preferences
+      request_headers:
+        Accept: application/json
+        User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - QueryResponse
+        - Preferences
+    paginator:
+      type: NoPagination
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type:
+      - "null"
+      - object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        AccountingInfoPrefs:
+          type:
+          - "null"
+          - object
+        CurrencyPrefs:
+          type:
+          - "null"
+          - object
+        EmailMessagesPrefs:
+          type:
+          - "null"
+          - object
+        Id:
+          type:
+          - "null"
+          - string
+        MetaData:
+          type:
+          - "null"
+          - object
+          properties:
+            CreateTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+            LastUpdatedTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+        OtherPrefs:
+          type:
+          - "null"
+          - object
+        ProductAndServicesPrefs:
+          type:
+          - "null"
+          - object
+        ReportPrefs:
+          type:
+          - "null"
+          - object
+        SalesFormsPrefs:
+          type:
+          - "null"
+          - object
+        SyncToken:
+          type:
+          - "null"
+          - string
+        TaxPrefs:
+          type:
+          - "null"
+          - object
+        TimeTrackingPrefs:
+          type:
+          - "null"
+          - object
+        VendorAndPurchasesPrefs:
+          type:
+          - "null"
+          - object
+        domain:
+          type:
+          - "null"
+          - string
+        sparse:
+          type:
+          - "null"
+          - boolean
+- type: DeclarativeStream
   name: purchase_orders
   primary_key:
   - Id
@@ -12049,6 +14270,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -12063,6 +14291,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -12497,6 +14727,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -12511,6 +14748,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -12891,6 +15130,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -12905,6 +15151,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -13214,6 +15462,186 @@ streams:
           - "null"
           - boolean
 - type: DeclarativeStream
+  name: reimburse_charges
+  primary_key:
+  - Id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: >-
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
+        'https://quickbooks.api.intuit.com' }}
+      authenticator:
+        type: OAuthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        refresh_token: "{{ config['refresh_token'] }}"
+        expires_in_name: expires_in
+        access_token_name: access_token
+        refresh_token_updater:
+          refresh_token_name: refresh_token
+          access_token_config_path:
+          - access_token
+          token_expiry_date_config_path:
+          - token_expiry_date
+          refresh_token_config_path:
+          - refresh_token
+        token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
+      path: /v3/company/{{ config.realm_id }}/query
+      http_method: GET
+      request_parameters:
+        query: >-
+          SELECT * FROM ReimburseCharge WHERE Metadata.LastUpdatedTime > '{{
+          stream_slice.start_time[:-2] + ":" + stream_slice.start_time[-2:]
+          }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time[:-2]
+          + ":" + stream_slice.start_time[-2:] }}'
+          ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{
+          (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{
+          (config.max_results or '200') | int }}
+      request_headers:
+        Accept: application/json
+        User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - QueryResponse
+        - ReimburseCharge
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: OffsetIncrement
+        page_size: 5
+  incremental_sync:
+    type: DatetimeBasedCursor
+    step: P30D
+    cursor_field: airbyte_cursor
+    end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+    start_datetime: "{{ config.start_date }}"
+    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    cursor_granularity: PT0S
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - airbyte_cursor
+      value: "{{ record.MetaData.LastUpdatedTime }}"
+      type: AddedFieldDefinition
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type:
+      - "null"
+      - object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        Amount:
+          type:
+          - "null"
+          - number
+        CurrencyRef:
+          type:
+          - "null"
+          - object
+          properties:
+            name:
+              type:
+              - "null"
+              - string
+            value:
+              type:
+              - "null"
+              - string
+        CustomerRef:
+          type:
+          - "null"
+          - object
+          properties:
+            name:
+              type:
+              - "null"
+              - string
+            value:
+              type:
+              - "null"
+              - string
+        ExchangeRate:
+          type:
+          - "null"
+          - number
+        HasBeenInvoiced:
+          type:
+          - "null"
+          - boolean
+        HomeTotalAmt:
+          type:
+          - "null"
+          - number
+        Id:
+          type:
+          - "null"
+          - string
+        Line:
+          type:
+          - "null"
+          - array
+        LinkedTxn:
+          type:
+          - "null"
+          - array
+        MetaData:
+          type:
+          - "null"
+          - object
+          properties:
+            CreateTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+            LastUpdatedTime:
+              type:
+              - "null"
+              - string
+              format: date-time
+        PrivateNote:
+          type:
+          - "null"
+          - string
+        SyncToken:
+          type:
+          - "null"
+          - string
+        TxnDate:
+          type:
+          - "null"
+          - string
+          format: date
+        airbyte_cursor:
+          type:
+          - "null"
+          - string
+        domain:
+          type:
+          - "null"
+          - string
+        sparse:
+          type:
+          - "null"
+          - boolean
+- type: DeclarativeStream
   name: sales_receipts
   primary_key:
   - Id
@@ -13240,6 +15668,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -13254,6 +15689,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -13677,6 +16114,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -13691,6 +16135,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -13805,6 +16251,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -13819,6 +16272,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -13981,6 +16436,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -13995,6 +16457,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -14168,6 +16632,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -14182,6 +16653,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -14316,6 +16789,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -14330,6 +16810,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -14500,6 +16982,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -14514,6 +17003,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -14664,6 +17155,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -14678,6 +17176,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -14927,6 +17427,13 @@ streams:
           refresh_token_config_path:
           - refresh_token
         token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+        refresh_token_error_status_codes:
+        - 400
+        - 401
+        refresh_token_error_key: error
+        refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       path: /v3/company/{{ config.realm_id }}/query
       http_method: GET
       request_parameters:
@@ -14941,6 +17448,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -15166,6 +17675,50 @@ streams:
           - string
 spec:
   type: Spec
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Flatten the pre-4.0.0 nested `credentials` object into root-level fields.
+        transformations:
+          - type: ConfigAddFields
+            condition: "{{ config.get('credentials') is mapping and value }}"
+            fields:
+              - type: AddedFieldDefinition
+                path: ["client_id"]
+                value: "{{ config.get('client_id') or (config.get('credentials') or {}).get('client_id') }}"
+                value_type: string
+              - type: AddedFieldDefinition
+                path: ["client_secret"]
+                value: "{{ config.get('client_secret') or (config.get('credentials') or {}).get('client_secret') }}"
+                value_type: string
+              - type: AddedFieldDefinition
+                path: ["refresh_token"]
+                value: "{{ config.get('refresh_token') or (config.get('credentials') or {}).get('refresh_token') }}"
+                value_type: string
+              - type: AddedFieldDefinition
+                path: ["realm_id"]
+                value: "{{ config.get('realm_id') or (config.get('credentials') or {}).get('realm_id') }}"
+                value_type: string
+              - type: AddedFieldDefinition
+                path: ["access_token"]
+                value: "{{ config.get('access_token') or (config.get('credentials') or {}).get('access_token') }}"
+                value_type: string
+              - type: AddedFieldDefinition
+                path: ["token_expiry_date"]
+                value: "{{ config.get('token_expiry_date') or (config.get('credentials') or {}).get('token_expiry_date') }}"
+                value_type: string
+          - type: ConfigAddFields
+            condition: "{{ config.get('auth_type') is none }}"
+            fields:
+              - type: AddedFieldDefinition
+                path: ["auth_type"]
+                value: "oauth2.0"
+                value_type: string
+          - type: ConfigRemoveFields
+            condition: "{{ config.get('credentials') is mapping }}"
+            field_pointers:
+              - ["credentials"]
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -15173,19 +17726,17 @@ spec:
     - client_id
     - client_secret
     - refresh_token
-    - access_token
-    - token_expiry_date
     - realm_id
     - start_date
-    - sandbox
     properties:
       realm_id:
         type: string
         order: 0
         title: Realm ID
         description: >-
-          Labeled Company ID. The Make API Calls panel is populated with
-          the realm id and the current access token.
+          Labeled Company ID of the QuickBooks company to sync. It is shown
+          in the Make API Calls panel of the Intuit developer portal, and in
+          the QuickBooks UI under Settings > Additional Information.
         airbyte_secret: true
       auth_type:
         type: string
@@ -15204,7 +17755,10 @@ spec:
         type: string
         order: 3
         title: Access Token
-        description: Access token for making authenticated requests.
+        description: >-
+          Access token for making authenticated requests. Optional: the
+          connector obtains and refreshes it from the refresh token, and
+          persists the current value here.
         airbyte_secret: true
       client_secret:
         type: string
@@ -15225,7 +17779,9 @@ spec:
         order: 6
         title: Token Expiry Date
         format: date-time
-        description: The date-time when the access token should be refreshed.
+        description: >-
+          The date-time when the access token should be refreshed. Optional:
+          the connector maintains this value after each token refresh.
       start_date:
         type: string
         order: 7
@@ -15244,28 +17800,92 @@ spec:
         title: Sandbox
         default: false
         description: Determines whether to use the sandbox or production environment.
+      max_results:
+        type: integer
+        order: 9
+        title: Page Size
+        default: 200
+        minimum: 1
+        maximum: 1000
+        description: >-
+          Number of records requested per query page (Intuit's `MAXRESULTS`).
+          Raising it reduces the number of requests on companies with long
+          histories; 1,000 is the maximum Intuit accepts.
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+    - auth_type
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+            - access_token
+          refresh_token:
+            type: string
+            path_in_connector_config:
+            - refresh_token
+          token_expiry_date:
+            type: string
+            format: date-time
+            path_in_connector_config:
+            - token_expiry_date
+          realm_id:
+            type: string
+            path_in_connector_config:
+            - realm_id
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+            - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+            - client_secret
 metadata:
   autoImportSchema:
     accounts: false
+    attachables: false
     bill_payments: false
     bills: false
     budgets: false
     classes: false
+    company_info: false
+    credit_card_payments: false
     credit_memos: false
     customers: false
     departments: false
     deposits: false
     employees: false
     estimates: false
+    exchange_rates: false
     invoices: false
     items: false
     journal_entries: false
     payment_methods: false
     payments: false
+    preferences: false
     purchase_orders: false
     purchases: false
     refund_receipts: false
+    reimburse_charges: false
     sales_receipts: false
     tax_agencies: false
     tax_codes: false
@@ -15279,6 +17899,8 @@ metadata:
     streams:
       accounts:
       - incrementalSync
+      attachables:
+      - incrementalSync
       bill_payments:
       - incrementalSync
       bills:
@@ -15286,6 +17908,8 @@ metadata:
       budgets:
       - incrementalSync
       classes:
+      - incrementalSync
+      credit_card_payments:
       - incrementalSync
       credit_memos:
       - incrementalSync
@@ -15298,6 +17922,8 @@ metadata:
       employees:
       - incrementalSync
       estimates:
+      - incrementalSync
+      exchange_rates:
       - incrementalSync
       invoices:
       - incrementalSync
@@ -15314,6 +17940,8 @@ metadata:
       purchases:
       - incrementalSync
       refund_receipts:
+      - incrementalSync
+      reimburse_charges:
       - incrementalSync
       sales_receipts:
       - incrementalSync
@@ -17248,6 +19876,11 @@ schemas:
             type:
             - "null"
             - string
+          DeliveryTime:
+            type:
+            - "null"
+            - string
+            format: date-time
       DocNumber:
         type:
         - "null"
@@ -17260,6 +19893,11 @@ schemas:
         type:
         - "null"
         - number
+      ExpirationDate:
+        type:
+        - "null"
+        - string
+        format: date
       HomeTotalAmt:
         type:
         - "null"
