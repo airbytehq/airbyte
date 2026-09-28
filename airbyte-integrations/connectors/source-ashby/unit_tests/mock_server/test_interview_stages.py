@@ -3,8 +3,11 @@
 """
 Mock server tests for the `interview_stages` stream on `source-ashby`.
 
-`POST /interviewStage.list` paginates with `cursor` and `limit` in the JSON body, and
-the tests assert the exact request bodies the connector sends for each page.
+`POST /interviewStage.list` requires an `interviewPlanId` in the request body and
+returns every stage of that plan without pagination, so `interview_stages` is a
+substream of `POST /interviewPlan.list` (which paginates with `cursor`/`limit`).
+The tests assert the exact request bodies the connector sends for the parent
+pages and for each partition's single child request.
 """
 
 import json
@@ -51,8 +54,50 @@ def _page(records: List[Dict[str, Any]], next_cursor: str = None) -> HttpRespons
     return HttpResponse(body=json.dumps(body), status_code=200)
 
 
-def _first_page_request() -> HttpRequest:
-    return AshbyRequestBuilder.interview_stages_endpoint().with_api_key("test-api-key").with_limit(100).build()
+def _error_body(code: str, message: str) -> str:
+    return json.dumps(
+        {
+            "success": False,
+            "errors": [code],
+            "errorInfo": {"code": code, "message": message, "requestId": "req-1"},
+        }
+    )
+
+
+def _plans_first_page_request() -> HttpRequest:
+    return (
+        AshbyRequestBuilder.endpoint("/interviewPlan.list")
+        .with_api_key("test-api-key")
+        .with_body_field("includeArchived", True)
+        .with_limit(100)
+        .build()
+    )
+
+
+def _plans_second_page_request() -> HttpRequest:
+    return (
+        AshbyRequestBuilder.endpoint("/interviewPlan.list")
+        .with_api_key("test-api-key")
+        .with_body_field("includeArchived", True)
+        .with_limit(100)
+        .with_cursor("c2")
+        .build()
+    )
+
+
+def _stages_request(plan_id: str) -> HttpRequest:
+    return AshbyRequestBuilder.interview_stages_endpoint().with_api_key("test-api-key").with_body_field("interviewPlanId", plan_id).build()
+
+
+def _mock_parent_pages(http_mocker: HttpMocker) -> List[HttpRequest]:
+    plans_page1 = _plans_first_page_request()
+    plans_page2 = _plans_second_page_request()
+    http_mocker.post(
+        plans_page1,
+        _page([{"id": "plan-1"}, {"id": "plan-2"}], next_cursor="c2"),
+    )
+    http_mocker.post(plans_page2, _page([{"id": "plan-3"}]))
+    return [plans_page1, plans_page2]
 
 
 def _read() -> EntrypointOutput:
@@ -63,21 +108,35 @@ def _read() -> EntrypointOutput:
 
 class TestInterviewStages(TestCase):
     @HttpMocker()
-    def test_reads_all_pages_with_exact_request_bodies(self, http_mocker: HttpMocker):
-        """Each page is a POST whose JSON body is exactly `limit` and the returned cursor."""
-        first_page = _first_page_request()
-        second_page = (
-            AshbyRequestBuilder.interview_stages_endpoint().with_api_key("test-api-key").with_limit(100).with_cursor("cursor-2").build()
-        )
-        http_mocker.post(first_page, _page([_stage_record("stage-1"), _stage_record("stage-2")], next_cursor="cursor-2"))
-        http_mocker.post(second_page, _page([_stage_record("stage-3")]))
+    def test_reads_stages_for_every_interview_plan(self, http_mocker: HttpMocker):
+        """The connector paginates `interviewPlan.list`, then calls `interviewStage.list` once per plan."""
+        plans_requests = _mock_parent_pages(http_mocker)
+        stages_requests = {}
+        for plan_id, stage_ids in {"plan-1": ["stage-1", "stage-2"], "plan-2": ["stage-3"], "plan-3": ["stage-4"]}.items():
+            stages_requests[plan_id] = _stages_request(plan_id)
+            http_mocker.post(stages_requests[plan_id], _page([_stage_record(s, interviewPlanId=plan_id) for s in stage_ids]))
 
         output = _read()
 
         assert output.errors == []
-        assert [message.record.data["id"] for message in output.records] == ["stage-1", "stage-2", "stage-3"]
-        http_mocker.assert_number_of_calls(first_page, 1)
-        http_mocker.assert_number_of_calls(second_page, 1)
+        assert {message.record.data["id"] for message in output.records} == {"stage-1", "stage-2", "stage-3", "stage-4"}
+        for request in plans_requests:
+            http_mocker.assert_number_of_calls(request, 1)
+        for request in stages_requests.values():
+            http_mocker.assert_number_of_calls(request, 1)
+
+    @HttpMocker()
+    def test_success_false_response_fails_sync_with_ashby_message(self, http_mocker: HttpMocker):
+        """An HTTP 200 `success: false` error from `interviewStage.list` fails instead of syncing empty."""
+        _mock_parent_pages(http_mocker)
+        message = "interviewPlanId: Invalid input: expected string, received undefined"
+        for plan_id in ("plan-1", "plan-2", "plan-3"):
+            http_mocker.post(_stages_request(plan_id), HttpResponse(body=_error_body("invalid_input", message), status_code=200))
+
+        output = _read()
+
+        assert output.errors != []
+        assert any(message in error.trace.error.message for error in output.errors)
 
     def test_discover_declares_interview_stages_stream(self):
         """Discovery declares the stream with `id` primary key and full_refresh only."""
