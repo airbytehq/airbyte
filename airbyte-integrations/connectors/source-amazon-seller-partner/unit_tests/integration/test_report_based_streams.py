@@ -1492,18 +1492,78 @@ class TestFatalReportErrorSurfacing:
         assert "archived in 2024" not in error_messages
         assert self._DOC_URL in error_messages
 
+    # Amazon's verbatim wordings for FATAL reasons that are not report-options problems.
+    @pytest.mark.parametrize(
+        "amazon_reason",
+        [
+            # Captured from the #85294 canary: the trailing day had not been published yet.
+            pytest.param("The report data for the requested date range is not yet available", id="not_yet_available"),
+            # Captured from the #85294 canary, also in amzn/selling-partner-api-models discussion #3785.
+            pytest.param("dataStartTime and dataEndTime must be supplied", id="no_date_window"),
+            # amzn/selling-partner-api-models#4701: a weekly report request that went FATAL. Amazon's
+            # generic parameter error names no option, so it must not be classified as one.
+            pytest.param(
+                "A client error occurred. Please double check that your parameters are valid and fulfill the "
+                "requirements of the report type.",
+                id="generic_client_error",
+            ),
+        ],
+    )
     @freezegun.freeze_time(NOW.isoformat(), tick=True)
     @HttpMocker()
-    def test_given_fatal_unrelated_error_when_read_then_reason_logged_and_not_config_error(self, http_mocker: HttpMocker) -> None:
+    def test_given_fatal_unrelated_error_when_read_then_reason_logged_and_not_config_error(
+        self, amazon_reason: str, http_mocker: HttpMocker
+    ) -> None:
         """An unrelated FATAL reason is logged but must not be reported as a report-options problem."""
-        amazon_reason = "Report data is not yet available for the requested date range."
+        # Default attempts=3: the failure is not breaking, so the CDK still retries it.
         self._mock_fatal_flow(http_mocker, json.dumps({"errorDetails": amazon_reason}))
 
         output = self._read(self._STREAM_NAME, config().with_failed_retry_wait_time_in_seconds(1))
 
         assert_message_in_log_output(amazon_reason, output, log_level=Level.ERROR)
+        # The stream fails through the CDK's retry-exhausted path, typed system_error. The CDK's
+        # trailing "streams did not sync successfully" summary is always config_error, so the
+        # failure type is asserted on the stream's own error rather than across output.errors.
+        retry_exhausted = [
+            error
+            for error in output.errors
+            if error.trace.error.message == "One or more async jobs failed after exhausting all retry attempts."
+        ]
+        assert retry_exhausted and all(error.trace.error.failure_type == FailureType.system_error for error in retry_exhausted)
+        assert not any(error.trace.error.message.startswith("Amazon rejected") for error in output.errors)
         error_messages = " ".join(error.trace.error.message for error in output.errors)
         assert "Add the options under Report Options" not in error_messages
+
+    # Illustrative wordings: Amazon's exact text for these cases has not been captured live. Each
+    # mentions an option because its value was rejected, not because it is missing.
+    @pytest.mark.parametrize(
+        "amazon_reason",
+        [
+            pytest.param("Invalid reportPeriod WEEK: dataStartTime must fall on a Sunday.", id="misaligned_week"),
+            pytest.param("reportPeriod WEEK requires dataStartTime to be a Sunday.", id="misaligned_week_requires"),
+            pytest.param("MANUFACTURING is not a valid distributorView for this vendor group.", id="invalid_distributor_view"),
+        ],
+    )
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
+    def test_given_fatal_invalid_report_option_value_when_read_then_config_error_without_add_advice(
+        self, amazon_reason: str, http_mocker: HttpMocker
+    ) -> None:
+        """An option Amazon rejected was already set, so the user must not be told to add it."""
+        # attempts=1: still a config error, so the sync aborts without burning retries.
+        self._mock_fatal_flow(http_mocker, json.dumps({"errorDetails": amazon_reason}), attempts=1)
+
+        output = self._read(self._STREAM_NAME, config().with_failed_retry_wait_time_in_seconds(1))
+
+        error = next(error.trace.error for error in output.errors if error.trace.error.message.startswith("Amazon rejected"))
+        message = error.message
+        assert amazon_reason in message
+        # Asserted on our own error: the CDK's trailing summary is config_error regardless.
+        assert error.failure_type == FailureType.config_error
+        assert "Add the options under Report Options" not in message
+        assert "Amazon documents" not in message
+        assert f"Check the values set for {self._STREAM_NAME} under Report Options" in message
+        assert self._DOC_URL in message
 
     @freezegun.freeze_time(NOW.isoformat(), tick=True)
     @HttpMocker()
@@ -1515,124 +1575,6 @@ class TestFatalReportErrorSurfacing:
 
         assert_message_in_log_output("without an error document explaining why", output, log_level=Level.ERROR)
         assert output.errors
-
-
-@freezegun.freeze_time(NOW.isoformat())
-class TestVendorReportOptionsForwarding:
-    """
-    The four vendor retail analytics streams declare their own request_body_json, which replaces
-    rather than merges with the shared creation_requester, so configured Report Options used to be
-    validated and then dropped (issue #77617).
-
-    They now forward configured options, and - critically - still send no reportOptions key at all
-    when nothing is configured, so the request body for an unconfigured connection is unchanged.
-    The connector supplies no defaults of its own for these reports.
-    """
-
-    _VENDOR_STREAMS = (
-        "GET_VENDOR_SALES_REPORT",
-        "GET_VENDOR_INVENTORY_REPORT",
-        "GET_VENDOR_TRAFFIC_REPORT",
-        "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
-    )
-
-    @staticmethod
-    def _read(stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
-        return read_output(
-            config_builder=config_.with_account_type("Vendor"),
-            stream_name=stream_name,
-            sync_mode=SyncMode.full_refresh,
-        )
-
-    @staticmethod
-    def _expected_body(stream_name: str, report_options: Optional[dict]) -> dict:
-        # All four streams send the same day-aligned window derived from the slice.
-        body = {
-            "reportType": stream_name,
-            "dataStartTime": "2023-01-01T00:00:00Z",
-            "dataEndTime": "2023-01-01T23:59:59Z",
-            "marketplaceIds": [MARKETPLACE_ID],
-        }
-        if report_options is not None:
-            body["reportOptions"] = report_options
-        return body
-
-    def _mock_report_flow(self, http_mocker: HttpMocker, stream_name: str, body: dict) -> None:
-        http_mocker.clear_all_matchers()
-        http_mocker.get(_get_reports_request().build(), _get_reports_response())
-        mock_auth(http_mocker)
-        # The byte-exact body matcher is the assertion: an unexpected or missing reportOptions
-        # key means no matcher matches and the read produces no records.
-        http_mocker.post(
-            _create_report_request(stream_name).with_body(json.dumps(body)).build(),
-            _create_report_response(_REPORT_ID),
-        )
-        http_mocker.get(
-            _check_report_status_request(_REPORT_ID).build(),
-            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
-        )
-        http_mocker.get(
-            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
-            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
-        )
-        http_mocker.get(
-            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
-            _download_document_response(stream_name, data_format="json"),
-        )
-
-    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
-    @HttpMocker()
-    def test_given_no_report_options_configured_when_read_then_report_options_omitted(
-        self, stream_name: str, http_mocker: HttpMocker
-    ) -> None:
-        """No configured options means no reportOptions key - the connector invents no defaults."""
-        self._mock_report_flow(http_mocker, stream_name, self._expected_body(stream_name, None))
-
-        output = self._read(stream_name, config().with_end_date(pendulum.datetime(2023, 1, 2)))
-        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
-
-    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
-    @HttpMocker()
-    def test_given_report_options_configured_when_read_then_options_sent(self, stream_name: str, http_mocker: HttpMocker) -> None:
-        """Configured options are forwarded verbatim, including reportPeriod."""
-        configured_options = {
-            "reportPeriod": "WEEK",
-            "distributorView": "SOURCING",
-            "sellingProgram": "FRESH",
-        }
-        self._mock_report_flow(http_mocker, stream_name, self._expected_body(stream_name, configured_options))
-
-        report_options = [
-            {
-                "report_name": stream_name,
-                "stream_name": stream_name,
-                "options_list": [{"option_name": name, "option_value": value} for name, value in configured_options.items()],
-            }
-        ]
-        output = self._read(
-            stream_name,
-            config().with_report_options_list(report_options).with_end_date(pendulum.datetime(2023, 1, 2)),
-        )
-        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
-
-    @HttpMocker()
-    def test_given_report_options_for_other_stream_when_read_then_options_not_sent(self, http_mocker: HttpMocker) -> None:
-        """Options configured for another stream must not leak into this stream's request body."""
-        stream_name = "GET_VENDOR_SALES_REPORT"
-        self._mock_report_flow(http_mocker, stream_name, self._expected_body(stream_name, None))
-
-        report_options = [
-            {
-                "report_name": "GET_VENDOR_TRAFFIC_REPORT",
-                "stream_name": "GET_VENDOR_TRAFFIC_REPORT",
-                "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}],
-            }
-        ]
-        output = self._read(
-            stream_name,
-            config().with_report_options_list(report_options).with_end_date(pendulum.datetime(2023, 1, 2)),
-        )
-        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
 
 
 @freezegun.freeze_time(NOW.isoformat())

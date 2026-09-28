@@ -907,6 +907,18 @@ _REPORT_OPTIONS_ERROR_MARKERS = (
     "missing required option",
 )
 
+# Lower-cased substrings that mean Amazon wants an option the request did not send, as opposed to one
+# that was sent with a value Amazon rejected. Deliberately narrower than _REPORT_OPTIONS_ERROR_MARKERS:
+# a bare "requires" would also match value errors such as a WEEK period whose dates are not
+# Sunday-aligned, and telling that user to add options they already set would be wrong.
+_MISSING_REPORT_OPTION_MARKERS = (
+    "to be specified",
+    "must be specified",
+    "is missing",
+    "missing required",
+    "required reportoption",
+)
+
 # Amazon's error text still refers users to amzn/selling-partner-api-docs, archived in June 2024.
 _REPORT_OPTIONS_DOC_URL = "https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics"
 
@@ -1101,22 +1113,40 @@ class ReportPollingRequester(HttpRequester):
         return any(marker in lowered for marker in _REPORT_OPTIONS_ERROR_MARKERS)
 
     @staticmethod
+    def _is_missing_report_option_error(reason: str) -> bool:
+        lowered = reason.lower()
+        return any(marker in lowered for marker in _MISSING_REPORT_OPTION_MARKERS)
+
+    @staticmethod
     def _report_options_error_message(report_type: str, reason: str) -> str:
         """
         Quote Amazon once, then say what to do once. Amazon's reason normally names the options it
         wants, so REQUIRED_REPORT_OPTIONS is only a fallback for when it does not: restating a
         hardcoded list alongside Amazon's own would contradict the quote the moment the two diverge.
+
+        Advice to add options is only given when Amazon says one is missing. A reason that merely
+        mentions an option, such as a rejected value, means the user already set it, so point them
+        at the values instead.
         """
         lowered = reason.lower()
+        # Amazon's own text may point at its retired GitHub docs, so correct that where it appears.
+        doc_reference = "Amazon's GitHub docs were archived in 2024; see " if "github" in lowered else "See "
+        quote = f'Amazon rejected the {report_type} report request. Amazon\'s reason: "{reason}" '
+
+        if not ReportPollingRequester._is_missing_report_option_error(reason):
+            return (
+                f"{quote}"
+                f"Check the values set for {report_type} under Report Options in the source settings. "
+                f"Names and values are case-sensitive. {doc_reference}{_REPORT_OPTIONS_DOC_URL}"
+            )
+
         documented = REQUIRED_REPORT_OPTIONS.get(report_type, ())
         if documented and not any(option.lower() in lowered for option in documented):
             which = f"Amazon documents {', '.join(documented)} as required for this report. "
         else:
             which = ""
-        # Amazon's own text may point at its retired GitHub docs, so correct that where it appears.
-        doc_reference = "Amazon's GitHub docs were archived in 2024; see " if "github" in lowered else "See "
         return (
-            f'Amazon rejected the {report_type} report request. Amazon\'s reason: "{reason}" '
+            f"{quote}"
             f"{which}"
             f"Add the options under Report Options in the source settings: set Report Name and "
             f"Stream Name to {report_type}, then one Name/Value pair per option. Names and values "
