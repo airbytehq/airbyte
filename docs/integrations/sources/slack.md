@@ -32,7 +32,7 @@ To create a Slack app, read this [tutorial](https://api.slack.com/tutorials/trac
 4. In the navigation menu, select **OAuth & Permissions**.
 5. Under **Scopes** > **Bot Token Scopes**, add the scopes the connector uses:
 
-   ```
+   ```text
    channels:history
    channels:join
    channels:read
@@ -205,6 +205,7 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 ##### Rate limits for the Channel Messages and Threads streams
 
 **OAuth authentication:** For apps authenticated via OAuth, the connector enforces a stricter budget on:
+
 - [`conversations.replies`](https://api.slack.com/methods/conversations.replies)
 - [`conversations.history`](https://api.slack.com/methods/conversations.history)
 
@@ -229,7 +230,7 @@ The connector reads channel conversations only. Direct messages, group direct me
 
 ### Troubleshooting
 
-- Check out common troubleshooting issues for the Slack source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+- For common issues, search [GitHub Discussions](https://github.com/airbytehq/airbyte/discussions) for the Slack source connector.
 
 #### Threads stream performance
 
