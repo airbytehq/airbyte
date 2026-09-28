@@ -12,6 +12,7 @@ import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 
 private val log = KotlinLogging.logger {}
 
@@ -20,8 +21,7 @@ private val log = KotlinLogging.logger {}
  * - `Stream` feeds: one snapshot partition per collection, unless the collection's persisted state
  * says its snapshot is already `COMPLETE` (an incremental stream that has moved to the change
  * stream), in which case no partitions are created.
- * - The `Global` feed (change stream / CDC): declined for now with [CreateNoPartitions]; the change
- * stream reader is a later stage.
+ * - The `Global` feed: one [MongoDbCdcPartitionReader] that reads the replica-set change stream.
  */
 @Singleton
 class MongoDbPartitionsCreatorFactory(
@@ -30,23 +30,27 @@ class MongoDbPartitionsCreatorFactory(
 
     private val streamStates = ConcurrentHashMap<StreamIdentifier, MongoDbStreamState>()
 
-    /**
-     * Streams whose single snapshot partition has already been produced in this READ. The CDK asks
-     * the factory again after each round completes; without this guard a full-refresh stream (whose
-     * terminal state is not `COMPLETE`) would be re-read from the start forever.
-     */
-    private val snapshotStarted: MutableSet<StreamIdentifier> = ConcurrentHashMap.newKeySet()
+    /** Re-planning guard for the single Global (change-stream) feed. */
+    private val cdcStarted = AtomicBoolean(false)
 
     override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator? {
         return when (feedBootstrap) {
-            is GlobalFeedBootstrap -> CreateNoPartitions
+            is GlobalFeedBootstrap ->
+                if (cdcStarted.compareAndSet(false, true)) {
+                    MongoDbCdcPartitionsCreator(sharedState, feedBootstrap)
+                } else {
+                    CreateNoPartitions
+                }
             is StreamFeedBootstrap -> {
                 val streamState: MongoDbStreamState =
                     streamStates.getOrPut(feedBootstrap.feed.id) {
                         MongoDbStreamState(sharedState, feedBootstrap)
                     }
                 val id: StreamIdentifier = feedBootstrap.feed.id
-                if (snapshotAlreadyComplete(feedBootstrap) || !snapshotStarted.add(id)) {
+                if (
+                    snapshotAlreadyComplete(feedBootstrap) ||
+                        sharedState.completedSnapshots.contains(id)
+                ) {
                     log.info { "No snapshot partition for $id (already complete or read)." }
                     CreateNoPartitions
                 } else {

@@ -2,16 +2,16 @@
 package io.airbyte.integrations.source.mongodbv3
 
 import com.mongodb.client.MongoCollection
+import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Sorts
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
-import io.airbyte.cdk.read.Resource
 import io.airbyte.cdk.read.ResourceType
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamRecordConsumer
-import io.airbyte.cdk.read.UnlimitedTimePartitionReader
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.currentCoroutineContext
@@ -21,16 +21,19 @@ import org.bson.Document
 private val log = KotlinLogging.logger {}
 
 /**
- * Reads a whole collection in one pass, ordered by `_id` ascending, and emits every document as a
- * record. This is the v1 initial-snapshot reader; splitting a collection into concurrent `_id`
- * ranges is a deliberate later optimization (see SKILL.md, Phase 1 "Concurrency").
+ * Reads a collection ordered by `_id` ascending and emits every document as a record.
  *
- * It is an [UnlimitedTimePartitionReader] because it does not yet resume mid-collection: it reads
- * to the end and checkpoints once, with the terminal snapshot status and the last `_id` seen.
+ * Resumable: it starts after the `_id` recorded in the feed's current state (`_id > lastSeen`), and
+ * checkpoints the last `_id` it read. If it reads the collection to the end it checkpoints the
+ * terminal status (`COMPLETE` for an incremental snapshot, `FULL_REFRESH` for a full refresh) and
+ * marks the stream complete for this READ; otherwise (cut short by the `checkpointTargetInterval`
+ * timeout or the `max-records-per-run` test hook) it checkpoints `IN_PROGRESS`/`FULL_REFRESH` so
+ * the next round continues. Splitting a collection into concurrent `_id` ranges is a later
+ * optimization.
  */
 class MongoDbSnapshotPartitionReader(
     private val streamState: MongoDbStreamState,
-) : UnlimitedTimePartitionReader {
+) : PartitionReader {
 
     private val sharedState: MongoDbSharedState = streamState.sharedState
     private val stream: Stream = streamState.stream
@@ -38,14 +41,12 @@ class MongoDbSnapshotPartitionReader(
 
     private val numRecords = AtomicLong(0L)
     private val lastId = AtomicReference<Any?>(null)
+    private val finished = AtomicBoolean(false)
 
-    interface AcquiredResource : AutoCloseable {
-        val resource: Resource.Acquired?
-    }
-    private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResource>>()
+    private val acquiredResources = AtomicReference<Map<ResourceType, ReaderAcquiredResource>>()
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
-        val resources: Map<ResourceType, AcquiredResource> =
+        val resources: Map<ResourceType, ReaderAcquiredResource> =
             sharedState.tryAcquireResourcesForReader(listOf(ResourceType.RESOURCE_DB_CONNECTION))
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
         acquiredResources.set(resources)
@@ -56,35 +57,68 @@ class MongoDbSnapshotPartitionReader(
         val recordConsumer: StreamRecordConsumer =
             streamState.streamFeedBootstrap.streamRecordConsumers()[stream.id]
                 ?: throw IllegalStateException("No record consumer for stream ${stream.id}")
+        val startId: Any? = resumeFromId()
+        lastId.set(startId)
         val collection: MongoCollection<Document> =
             sharedState.client.getDatabase(stream.namespace!!).getCollection(stream.name)
-        log.info { "Reading collection ${stream.namespace}.${stream.name} ordered by _id." }
-        collection
-            .find()
-            .sort(Sorts.ascending(MongoDbSourceMetadataQuerier.ID_FIELD))
-            .cursor()
-            .use { cursor ->
-                while (cursor.hasNext()) {
-                    currentCoroutineContext().ensureActive()
-                    val document: Document = cursor.next()
-                    val (payload: NativeRecordPayload, rawId: Any?) =
-                        converter.toPayloadWithId(document)
-                    recordConsumer.accept(payload, null)
-                    lastId.set(rawId)
-                    numRecords.incrementAndGet()
-                }
-            }
+        var find = collection.find()
+        if (startId != null) {
+            find = find.filter(Filters.gt(MongoDbSourceMetadataQuerier.ID_FIELD, startId))
+        }
+        val maxRecords: Long = sharedState.maxRecordsPerRun
         log.info {
-            "Finished collection ${stream.namespace}.${stream.name}: ${numRecords.get()} records."
+            "Reading ${stream.namespace}.${stream.name} ordered by _id" +
+                (startId?.let { " resuming after $it" } ?: "") +
+                "."
+        }
+        find.sort(Sorts.ascending(MongoDbSourceMetadataQuerier.ID_FIELD)).cursor().use { cursor ->
+            while (cursor.hasNext()) {
+                currentCoroutineContext().ensureActive()
+                if (maxRecords in 1..numRecords.get()) {
+                    log.info { "Reached max-records-per-run ($maxRecords); checkpointing." }
+                    return
+                }
+                val document: Document = cursor.next()
+                val (payload: NativeRecordPayload, rawId: Any?) =
+                    converter.toPayloadWithId(document)
+                recordConsumer.accept(payload, null)
+                lastId.set(rawId)
+                numRecords.incrementAndGet()
+            }
+            finished.set(true)
+            sharedState.completedSnapshots.add(stream.id)
+        }
+        log.info { "Finished ${stream.namespace}.${stream.name}: ${numRecords.get()} records." }
+    }
+
+    /**
+     * The `_id` to resume after, or null for a fresh read (no state, or an already-complete one).
+     */
+    private fun resumeFromId(): Any? {
+        val state = streamState.streamFeedBootstrap.currentState ?: return null
+        return try {
+            val value = MongoDbStreamStateValue.fromOpaqueStateValue(state)
+            if (value.status == MongoDbSnapshotStatus.COMPLETE) null else value.resumeIdValue()
+        } catch (e: Exception) {
+            log.warn(e) { "Ignoring unparseable state for ${stream.id}." }
+            null
         }
     }
 
-    override fun checkpoint(): PartitionReadCheckpoint =
-        PartitionReadCheckpoint(
-            MongoDbStreamStateValue.fromLastId(lastId.get(), streamState.terminalStatus)
-                .toOpaqueStateValue(),
+    override fun checkpoint(): PartitionReadCheckpoint {
+        val status: MongoDbSnapshotStatus =
+            if (finished.get()) {
+                streamState.terminalStatus
+            } else if (streamState.isFullRefresh) {
+                MongoDbSnapshotStatus.FULL_REFRESH
+            } else {
+                MongoDbSnapshotStatus.IN_PROGRESS
+            }
+        return PartitionReadCheckpoint(
+            MongoDbStreamStateValue.fromLastId(lastId.get(), status).toOpaqueStateValue(),
             numRecords.get(),
         )
+    }
 
     override fun releaseResources() {
         acquiredResources.getAndSet(null)?.forEach { it.value.close() }

@@ -4,6 +4,7 @@ package io.airbyte.integrations.source.mongodbv3
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.data.JsonEncoder
+import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.util.Jsons
@@ -38,6 +39,21 @@ object MongoDbJsonNodeEncoder : JsonEncoder<JsonNode> {
  * then fills them with `null`), and `_id` is always included.
  */
 class MongoDbRecordConverter(private val schemaEnforced: Boolean) {
+
+    /**
+     * Builds a payload for a change-stream event. For inserts/updates/replaces [document] is the
+     * full document and [deletedAt] is null; for deletes [document] is the `{_id}` key and
+     * [deletedAt] is the change's cluster time, which overrides the `_ab_cdc_deleted_at` the record
+     * consumer would otherwise set to null.
+     */
+    fun changePayload(document: Document, deletedAt: String?): NativeRecordPayload {
+        val payload: NativeRecordPayload = toPayloadWithId(document).first
+        if (deletedAt != null) {
+            payload[CommonMetaField.CDC_DELETED_AT.id] =
+                FieldValueEncoder(Jsons.textNode(deletedAt), MongoDbJsonNodeEncoder)
+        }
+        return payload
+    }
 
     /** Converts a document to a payload, returning the raw `_id` value for state checkpointing. */
     fun toPayloadWithId(document: Document): Pair<NativeRecordPayload, Any?> {

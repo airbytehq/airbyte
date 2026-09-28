@@ -47,6 +47,21 @@ data class MongoDbStreamStateValue(
 ) {
     fun toOpaqueStateValue(): OpaqueStateValue = Jsons.valueToTree(this)
 
+    /**
+     * The checkpointed `_id` reconstructed as its native BSON type, for a `_id > lastSeen` resume
+     * query. Returns null when there is no checkpoint yet (fresh read).
+     */
+    fun resumeIdValue(): Any? =
+        id?.let {
+            when (idType) {
+                MongoDbIdType.OBJECT_ID -> ObjectId(it)
+                MongoDbIdType.INT -> it.toInt()
+                MongoDbIdType.LONG -> it.toLong()
+                MongoDbIdType.STRING -> it
+                MongoDbIdType.BINARY -> reconstructBinary(it, binarySubType)
+            }
+        }
+
     companion object {
         fun fromOpaqueStateValue(state: OpaqueStateValue): MongoDbStreamStateValue =
             Jsons.treeToValue(state, MongoDbStreamStateValue::class.java)
@@ -72,6 +87,20 @@ data class MongoDbStreamStateValue(
                         binarySubType = lastId.type.toInt(),
                     )
                 else -> MongoDbStreamStateValue(lastId.toString(), status, MongoDbIdType.STRING)
+            }
+
+        /** Inverse of [binaryIdToString]: rebuilds a [Binary] `_id` from its stored text form. */
+        private fun reconstructBinary(id: String, subType: Int): Binary =
+            if (subType == UUID_SUBTYPE) {
+                val uuid = java.util.UUID.fromString(id)
+                val bytes =
+                    java.nio.ByteBuffer.allocate(UUID_BYTE_LENGTH)
+                        .putLong(uuid.mostSignificantBits)
+                        .putLong(uuid.leastSignificantBits)
+                        .array()
+                Binary(subType.toByte(), bytes)
+            } else {
+                Binary(subType.toByte(), Base64.getDecoder().decode(id))
             }
 
         /** UUID text for the standard-UUID subtype (4), Base64 for any other binary subtype. */

@@ -3,6 +3,8 @@ package io.airbyte.integrations.source.mongodbv3
 
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoClients
+import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Updates
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
@@ -76,27 +78,109 @@ class MongoDbSourceReadTest {
         Assertions.assertEquals("650000000000000000000003", peopleState.id)
     }
 
+    @Test
+    fun testSnapshotResumesFromCheckpoint() {
+        // Force a checkpoint every 2 records so the 3-document people collection needs two rounds.
+        System.setProperty(MAX_RECORDS_PROPERTY, "2")
+        try {
+            val result: BufferingOutputConsumer = read(fullRefreshCatalog())
+            Assertions.assertEquals(3, recordCountFor(result, PEOPLE))
+            val peopleState: MongoDbStreamStateValue = lastStreamStateFor(result, PEOPLE)
+            Assertions.assertEquals(MongoDbSnapshotStatus.FULL_REFRESH, peopleState.status)
+            Assertions.assertEquals("650000000000000000000003", peopleState.id)
+            // An intermediate checkpoint at the 2nd _id proves the read resumed rather than
+            // restarted.
+            Assertions.assertTrue(
+                allStreamStateIdsFor(result, PEOPLE).contains("650000000000000000000002"),
+                "expected an intermediate checkpoint at the 2nd _id",
+            )
+        } finally {
+            System.clearProperty(MAX_RECORDS_PROPERTY)
+        }
+    }
+
+    @Test
+    fun testCdcCapturesInsertsUpdatesDeletes() {
+        // Use a dedicated collection so mutations do not disturb the shared `people` snapshot
+        // tests.
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            val coll = client.getDatabase(TEST_DB).getCollection(CDC)
+            coll.drop()
+            coll.insertMany(
+                listOf(
+                    Document("_id", ObjectId("660000000000000000000001")).append("name", "alice"),
+                    Document("_id", ObjectId("660000000000000000000002")).append("name", "bob"),
+                ),
+            )
+        }
+
+        // Sync 1: cold-start snapshot; the Global feed captures a resume token before the snapshot.
+        val sync1: BufferingOutputConsumer = read(incrementalCatalog(setOf(CDC)))
+        Assertions.assertEquals(2, recordCountFor(sync1, CDC))
+        val stateAfterSync1: List<AirbyteStateMessage> = sync1.states()
+
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            val coll = client.getDatabase(TEST_DB).getCollection(CDC)
+            coll.insertOne(
+                Document("_id", ObjectId("660000000000000000000004")).append("name", "dave"),
+            )
+            coll.updateOne(
+                Filters.eq("_id", ObjectId("660000000000000000000001")),
+                Updates.set("age", 31),
+            )
+            coll.deleteOne(Filters.eq("_id", ObjectId("660000000000000000000002")))
+        }
+
+        // Sync 2: warm start resumes from the token and emits the 3 changes; no snapshot re-read.
+        val sync2: BufferingOutputConsumer = read(incrementalCatalog(setOf(CDC)), stateAfterSync1)
+        val changes: List<Map<String, Any?>> = recordDataFor(sync2, CDC)
+        Assertions.assertEquals(3, changes.size, "expected insert + update + delete")
+        Assertions.assertEquals(
+            "dave",
+            changes.first { it["_id"] == "660000000000000000000004" }["name"],
+        )
+        Assertions.assertEquals(
+            31,
+            changes.first { it["_id"] == "660000000000000000000001" }["age"],
+        )
+        Assertions.assertNotNull(
+            changes.first { it["_id"] == "660000000000000000000002" }["_ab_cdc_deleted_at"],
+            "a delete must set _ab_cdc_deleted_at",
+        )
+    }
+
     private fun read(
         catalog: ConfiguredAirbyteCatalog,
         state: List<AirbyteStateMessage> = emptyList(),
     ): BufferingOutputConsumer = CliRunner.source("read", config(), catalog, state).run()
 
     private fun fullRefreshCatalog(): ConfiguredAirbyteCatalog =
-        configuredCatalog(SyncMode.FULL_REFRESH, DestinationSyncMode.OVERWRITE, includeEmpty = true)
+        configuredCatalog(
+            SyncMode.FULL_REFRESH,
+            DestinationSyncMode.OVERWRITE,
+            setOf(PEOPLE, EMPTY),
+            includeEmpty = true,
+        )
 
-    private fun incrementalCatalog(): ConfiguredAirbyteCatalog =
-        configuredCatalog(SyncMode.INCREMENTAL, DestinationSyncMode.APPEND, includeEmpty = false)
+    private fun incrementalCatalog(names: Set<String> = setOf(PEOPLE)): ConfiguredAirbyteCatalog =
+        configuredCatalog(
+            SyncMode.INCREMENTAL,
+            DestinationSyncMode.APPEND,
+            names,
+            includeEmpty = false
+        )
 
     /** Builds a configured catalog from the connector's own discover output. */
     private fun configuredCatalog(
         syncMode: SyncMode,
         destinationSyncMode: DestinationSyncMode,
+        names: Set<String>,
         includeEmpty: Boolean,
     ): ConfiguredAirbyteCatalog {
         val discovered = CliRunner.source("discover", config()).run().catalogs().first()
         val streams: List<ConfiguredAirbyteStream> =
             discovered.streams
-                .filter { it.name == PEOPLE || it.name == EMPTY }
+                .filter { it.name in names }
                 .map { stream ->
                     ConfiguredAirbyteStream()
                         .withStream(stream)
@@ -190,10 +274,35 @@ class MongoDbSourceReadTest {
         return MongoDbStreamStateValue.fromOpaqueStateValue(streamState.streamState)
     }
 
+    /**
+     * All snapshot-checkpoint `_id`s emitted for a stream, in order, to observe resume progress.
+     */
+    private fun allStreamStateIdsFor(
+        result: BufferingOutputConsumer,
+        stream: String,
+    ): List<String?> =
+        result
+            .states()
+            .flatMap { message ->
+                when {
+                    message.global != null -> message.global.streamStates
+                    message.stream != null -> listOf(message.stream)
+                    else -> emptyList()
+                }
+            }
+            .filter { it.streamDescriptor.name == stream }
+            .filter { it.streamState != null && !it.streamState.isNull }
+            .mapNotNull {
+                runCatching { MongoDbStreamStateValue.fromOpaqueStateValue(it.streamState).id }
+                    .getOrNull()
+            }
+
     companion object {
         const val TEST_DB = "test_db"
         const val PEOPLE = "people"
         const val EMPTY = "empty_coll"
+        const val CDC = "cdc_coll"
+        const val MAX_RECORDS_PROPERTY = "airbyte.connector.extract.mongodb.max-records-per-run"
 
         lateinit var replicaSet: MongoDBContainer
 
