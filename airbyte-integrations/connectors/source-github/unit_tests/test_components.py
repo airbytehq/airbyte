@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-"""Unit tests for the custom low-code components in `source_github.components`.
+"""Unit tests for the custom low-code components in `components.py` (loaded as `source_declarative_manifest.components`).
 
 The pagination strategies are tested directly rather than through a read because the property
 that matters most is not observable from a single request: all traversal state lives in the
@@ -15,7 +15,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from source_github.components import (
+from components import (
     DeepNestedGraphQLPaginationStrategy,
     DeepNestedGraphQLRecordExtractor,
     NestedGraphQLPaginationStrategy,
@@ -573,11 +573,11 @@ def test_releases_transformation_uses_the_configured_api_url():
     [
         pytest.param(None, None, id="unset"),
         pytest.param(25, 25, id="integer"),
-        pytest.param("{{ config['page_size_for_large_streams'] }}", 40, id="interpolated"),
+        pytest.param("{{ config['num_workers'] }}", 40, id="interpolated"),
     ],
 )
 def test_resolve_page_size_returns_a_whole_number(page_size, expected):
-    assert _resolve_page_size(page_size, {"page_size_for_large_streams": 40}) == expected
+    assert _resolve_page_size(page_size, {"num_workers": 40}) == expected
 
 
 @pytest.mark.parametrize(
@@ -591,11 +591,10 @@ def test_resolve_page_size_returns_a_whole_number(page_size, expected):
     ],
 )
 def test_resolve_page_size_reports_a_bad_value_as_a_config_error(page_size):
-    """`page_size_for_large_streams` left the spec in 1.0.1 but is still honored, so nothing
-    validates it before it gets here. A bare `int()` would surface as a `ValueError` from the
-    middle of a sync instead of naming the option the user has to fix."""
+    """Nothing validates a page size before it gets here. A bare `int()` would surface as a
+    `ValueError` from the middle of a sync instead of stating what went wrong."""
     with pytest.raises(AirbyteTracedException) as exception:
         _resolve_page_size(page_size, {})
 
     assert exception.value.failure_type == FailureType.config_error
-    assert "page_size_for_large_streams" in exception.value.message
+    assert "page size" in exception.value.message

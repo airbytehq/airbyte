@@ -27,7 +27,7 @@ For API-first use cases, create a connector with OAuth credentials directly.
 | `client_id` | `str` | Yes | OAuth2 client ID from Google Cloud Console |
 | `client_secret` | `str` | Yes | OAuth2 client secret from Google Cloud Console |
 | `refresh_token` | `str` | Yes | OAuth2 refresh token |
-| `developer_token` | `str` | Yes | Google Ads API developer token |
+| `developer_token` | `str` | Yes | Legacy Google Ads API developer token. Google sunset developer tokens on 2026-09-09 and now ignores this value; any non-empty string is accepted. Existing tokens keep working unchanged. |
 
 `replication_config` fields you need:
 
@@ -51,7 +51,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
       "client_id": "<OAuth2 client ID from Google Cloud Console>",
       "client_secret": "<OAuth2 client secret from Google Cloud Console>",
       "refresh_token": "<OAuth2 refresh token>",
-      "developer_token": "<Google Ads API developer token>"
+      "developer_token": "<Legacy Google Ads API developer token. Google sunset developer tokens on 2026-09-09 and now ignores this value; any non-empty string is accepted. Existing tokens keep working unchanged.>"
     },
     "replication_config": {
       "customer_id": "<Comma-separated list of Google Ads customer IDs (10 digits each, no dashes).>",
@@ -477,7 +477,7 @@ In open source mode, provide API credentials directly to the connector.
 | `client_id` | `str` | Yes | OAuth2 client ID from Google Cloud Console |
 | `client_secret` | `str` | Yes | OAuth2 client secret from Google Cloud Console |
 | `refresh_token` | `str` | Yes | OAuth2 refresh token |
-| `developer_token` | `str` | Yes | Google Ads API developer token |
+| `developer_token` | `str` | Yes | Legacy Google Ads API developer token. Google sunset developer tokens on 2026-09-09 and now ignores this value; any non-empty string is accepted. Existing tokens keep working unchanged. |
 
 Example request:
 
@@ -490,7 +490,7 @@ connector = GoogleAdsConnector(
         client_id="<OAuth2 client ID from Google Cloud Console>",
         client_secret="<OAuth2 client secret from Google Cloud Console>",
         refresh_token="<OAuth2 refresh token>",
-        developer_token="<Google Ads API developer token>"
+        developer_token="<Legacy Google Ads API developer token. Google sunset developer tokens on 2026-09-09 and now ignores this value; any non-empty string is accepted. Existing tokens keep working unchanged.>"
     )
 )
 ```
