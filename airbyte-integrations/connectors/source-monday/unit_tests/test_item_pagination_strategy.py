@@ -28,6 +28,12 @@ import pytest
             None,
             id="test_end_pagination",
         ),
+        pytest.param(
+            {"data": None, "errors": [{"message": "API error"}]},
+            [],
+            None,
+            id="test_null_data_stops_pagination",
+        ),
     ],
 )
 def test_item_pagination_strategy(components_module, response_json, last_records, expected):
@@ -79,6 +85,12 @@ def test_item_pagination_strategy(components_module, response_json, last_records
             [],
             None,
             id="test_end_pagination",
+        ),
+        pytest.param(
+            {"data": None, "errors": [{"message": "API error"}]},
+            [],
+            None,
+            id="test_null_data_stops_pagination",
         ),
     ],
 )
