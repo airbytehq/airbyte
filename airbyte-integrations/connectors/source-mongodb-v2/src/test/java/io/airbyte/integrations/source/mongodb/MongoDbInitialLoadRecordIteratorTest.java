@@ -30,7 +30,6 @@ import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -121,7 +120,6 @@ class MongoDbInitialLoadRecordIteratorTest {
     insertDocuments(docs);
 
     final var iterator = iterator(Optional.empty(), 2);
-    assertEquals(Optional.of(new AirbyteStreamNameNamespacePair(COLLECTION_NAME, DB_NAME)), iterator.getAirbyteStream());
 
     final List<Document> results = new ArrayList<>();
     while (iterator.hasNext()) {
@@ -274,7 +272,7 @@ class MongoDbInitialLoadRecordIteratorTest {
   }
 
   @Test
-  void testCdcInitialLoadTimeoutWithStream() {
+  void testCdcInitialLoadTimeout() {
     final MockFind mockFind = mockFind();
     when(mockFind.collection().getNamespace()).thenReturn(new MongoNamespace("db", "coll"));
 
@@ -283,23 +281,9 @@ class MongoDbInitialLoadRecordIteratorTest {
         Instant.now().minus(Duration.ofMinutes(10)), Optional.of(Duration.ofMinutes(1)));
 
     final TransientErrorException exception = assertThrows(TransientErrorException.class, iterator::hasNext);
-    assertTrue(exception.getMessage().contains("db"));
-    assertTrue(exception.getMessage().contains("coll"));
+    assertTrue(exception.getMessage().contains("db.coll"));
     assertTrue(exception.getMessage().contains(Duration.ofMinutes(1).toString()));
     verify(mockFind.collection(), never()).find();
-  }
-
-  @Test
-  void testCdcInitialLoadTimeoutWithoutStream() {
-    final MockFind mockFind = mockFind();
-    when(mockFind.collection().getNamespace()).thenReturn(null);
-
-    final var iterator = new MongoDbInitialLoadRecordIterator(mockFind.collection(),
-        Projections.include(ID_FIELD), Optional.empty(), true, 10,
-        Instant.now().minus(Duration.ofMinutes(10)), Optional.of(Duration.ofMinutes(1)));
-
-    final TransientErrorException exception = assertThrows(TransientErrorException.class, iterator::hasNext);
-    assertTrue(exception.getMessage().contains("<unknown stream>"));
   }
 
   @Test

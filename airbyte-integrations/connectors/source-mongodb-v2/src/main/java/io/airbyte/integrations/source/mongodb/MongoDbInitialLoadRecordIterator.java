@@ -10,7 +10,6 @@ import static io.airbyte.integrations.source.mongodb.state.IdType.parseBinaryIdS
 import static io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus.IN_PROGRESS;
 
 import com.google.common.collect.AbstractIterator;
-import com.mongodb.MongoNamespace;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -22,7 +21,6 @@ import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
@@ -78,17 +76,29 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
   }
 
   @Override
-  public Optional<AirbyteStreamNameNamespacePair> getAirbyteStream() {
-    final MongoNamespace namespace = collection.getNamespace();
-    return Optional.ofNullable(namespace)
-        .map(ns -> new AirbyteStreamNameNamespacePair(ns.getCollectionName(), ns.getDatabaseName()));
-  }
-
-  @Override
   protected Document computeNext() {
-    checkCdcInitialLoadTimeout();
+    if (cdcInitialLoadTimeout.isPresent()
+        && Duration.between(startInstant, Instant.now()).compareTo(cdcInitialLoadTimeout.get()) > 0) {
+      final String cdcInitialLoadTimeoutMessage = String.format(
+          "Initial load for table %s has taken longer than %s, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
+          collection.getNamespace(), cdcInitialLoadTimeout.get());
+      LOGGER.info(cdcInitialLoadTimeoutMessage);
+      AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcSnapshotForceShutdownMessage());
+      throw new TransientErrorException(cdcInitialLoadTimeoutMessage);
+    }
     if (shouldBuildNextQuery()) {
-      if (!startNextSubquery()) {
+      final String currentId = currentId();
+      LOGGER.info("Finishing subquery number : {}, processing at id : {}", numSubqueries, currentId);
+      try {
+        currentIterator.close();
+        currentIterator = buildNewQueryIterator();
+      } catch (final Exception e) {
+        LOGGER.error("Failed to start subquery number {} for collection {} at id {}", numSubqueries + 1,
+            collection.getNamespace(), currentId, e);
+        throw e;
+      }
+      numSubqueries++;
+      if (!currentIterator.hasNext()) {
         return endOfData();
       }
     }
@@ -98,45 +108,8 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
     return next;
   }
 
-  /**
-   * Fails the sync with a {@link TransientErrorException} when the initial load has exceeded the
-   * configured CDC initial load timeout, so that CDC replication can catch up on the next attempt.
-   */
-  private void checkCdcInitialLoadTimeout() {
-    if (cdcInitialLoadTimeout.isEmpty()) {
-      return;
-    }
-    final Duration timeout = cdcInitialLoadTimeout.get();
-    if (Duration.between(startInstant, Instant.now()).compareTo(timeout) <= 0) {
-      return;
-    }
-    final String cdcInitialLoadTimeoutMessage = String.format(
-        "Initial load for table %s has taken longer than %s, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
-        getAirbyteStream().map(AirbyteStreamNameNamespacePair::toString).orElse("<unknown stream>"), timeout);
-    LOGGER.info(cdcInitialLoadTimeoutMessage);
-    AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcSnapshotForceShutdownMessage());
-    throw new TransientErrorException(cdcInitialLoadTimeoutMessage);
-  }
-
-  /**
-   * Closes the exhausted cursor and opens the cursor for the next sub-query.
-   *
-   * @return true if the next sub-query has at least one document, false if the collection has been
-   *         fully read.
-   */
-  private boolean startNextSubquery() {
-    final String currentId = currentState.map(MongoDbStreamState::id).orElse(NO_PRIOR_STATE);
-    LOGGER.info("Finishing subquery number : {}, processing at id : {}", numSubqueries, currentId);
-    try {
-      currentIterator.close();
-      currentIterator = buildNewQueryIterator();
-    } catch (final Exception e) {
-      LOGGER.error("Failed to start subquery number {} for collection {} at id {}", numSubqueries + 1,
-          collection.getNamespace(), currentId, e);
-      throw e;
-    }
-    numSubqueries++;
-    return currentIterator.hasNext();
+  private String currentId() {
+    return currentState.map(MongoDbStreamState::id).orElse(NO_PRIOR_STATE);
   }
 
   private Optional<MongoDbStreamState> getCurrentState(Object currentId) {
@@ -166,9 +139,9 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
   }
 
   private MongoCursor<Document> buildNewQueryIterator() {
-    final FindIterable<Document> find = collection.find().filter(buildFilter());
+    FindIterable<Document> find = collection.find().filter(buildFilter());
     if (isEnforceSchema) {
-      find.projection(fields);
+      find = find.projection(fields);
     }
     return find
         .limit(chunkSize)
