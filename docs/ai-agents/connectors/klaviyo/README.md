@@ -26,6 +26,7 @@ The Klaviyo connector is optimized to handle prompts like these.
 - Show me details for a recent flow
 - List all email templates
 - Show me details for a recent email template
+- Show me the most recent tracked event in my account
 
 ## Unsupported prompts
 

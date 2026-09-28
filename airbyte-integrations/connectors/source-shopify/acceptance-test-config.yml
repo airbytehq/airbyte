@@ -41,6 +41,8 @@ acceptance_tests:
             bypass_reason: The stream requires real purchases to fill in the data.
           - name: disputes
             bypass_reason: The stream requires real purchases to fill in the data.
+          - name: market_countries
+            bypass_reason: The stream emits records only for shops with market-driven shipping enabled; the test shop uses legacy delivery profiles.
       - config_path: "secrets/config.json"
         timeout_seconds: 4800
         expect_records:
@@ -52,6 +54,8 @@ acceptance_tests:
             bypass_reason: The stream requires real purchases to fill in the data.
           - name: disputes
             bypass_reason: The stream requires real purchases to fill in the data.
+          - name: market_countries
+            bypass_reason: The stream emits records only for shops with market-driven shipping enabled; the test shop uses legacy delivery profiles.
   incremental:
     tests:
       - config_path: "secrets/config.json"
