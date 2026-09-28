@@ -1193,6 +1193,15 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
+      decoder:
+        type: JsonItemsDecoder
+        items_path: tickets
+        spool_to_disk: true
+      record_selector:
+        $ref: "#/definitions/retriever/record_selector"
+        extractor:
+          type: DpathExtractor
+          field_path: []
       paginator:
         $ref: "#/definitions/after_url_paginator"
     state_migrations:
