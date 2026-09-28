@@ -22,11 +22,6 @@ PRODUCT_METRICS = [
     "cost_per_order",
     "gross_revenue",
     "roi",
-    "product_impressions",
-    "product_clicks",
-    "product_click_rate",
-    "ad_click_rate",
-    "ad_conversion_rate",
 ]
 LIVE_METRICS = PRODUCT_METRICS + [
     "live_views",
@@ -64,11 +59,6 @@ def report_response(campaign_id: str):
                         "cost_per_order": "1.25",
                         "gross_revenue": "25.0",
                         "roi": "2.0",
-                        "product_impressions": "100",
-                        "product_clicks": "10",
-                        "product_click_rate": "0.1",
-                        "ad_click_rate": "0.2",
-                        "ad_conversion_rate": "0.05",
                     },
                 }
             ],
@@ -87,7 +77,9 @@ def mock_stores(http_mocker: HttpMocker, advertiser_id: str, stores):
     )
 
 
-def mock_report(http_mocker: HttpMocker, advertiser_id: str, store_id: str, metrics, promotion_type: str, campaign_id: str):
+def mock_report(
+    http_mocker: HttpMocker, advertiser_id: str, store_id: str, metrics, promotion_type: str, campaign_id: str, response_body=None
+):
     request = HttpRequest(
         url=f"{BASE_URL}gmv_max/report/get/",
         query_params={
@@ -103,7 +95,7 @@ def mock_report(http_mocker: HttpMocker, advertiser_id: str, store_id: str, metr
     )
     http_mocker.get(
         request,
-        HttpResponse(body=json.dumps(report_response(campaign_id)), status_code=200),
+        HttpResponse(body=json.dumps(response_body or report_response(campaign_id)), status_code=200),
     )
     return request
 
@@ -249,3 +241,33 @@ class TestGmvMaxLiveReports(TestCase):
 
         assert len(output.records) == 1
         assert output.records[0].record.data["campaign_id"] == "c1"
+
+
+class TestGmvMaxReportErrors(TestCase):
+    @HttpMocker()
+    def test_parameter_error_fails_sync_instead_of_returning_no_records(self, http_mocker: HttpMocker):
+        # TikTok returns 40002 for request parameter errors, e.g. metrics that are not
+        # supported at campaign level. Ignoring it turned every request into a green
+        # sync with zero records, so GMV Max report streams must surface it.
+        mock_advertisers_slices(http_mocker, config())
+        mock_stores(http_mocker, ADVERTISER_ID, [{"store_id": "111", "is_gmv_max_available": True}])
+        mock_report(
+            http_mocker,
+            ADVERTISER_ID,
+            "111",
+            PRODUCT_METRICS,
+            "PRODUCT",
+            "c1",
+            response_body={"code": 40002, "message": "Invalid metric(s): '[product_impressions]'. Please remove those metrics and retry."},
+        )
+
+        output = read(
+            get_source(config=config(), state=None),
+            config(),
+            catalog("gmv_max_product_campaign_reports_daily"),
+            expecting_exception=True,
+        )
+
+        assert len(output.records) == 0
+        assert output.errors
+        assert "40002" in output.errors[-1].trace.error.message

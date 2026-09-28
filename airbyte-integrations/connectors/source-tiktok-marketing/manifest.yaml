@@ -461,6 +461,50 @@ definitions:
         action: FAIL
         error_message: "{{ response['message'] }}"
 
+  # GMV Max reports must not IGNORE 40002: TikTok uses it for parameter errors
+  # (e.g. metrics unsupported at campaign level), which would otherwise surface
+  # only as an INFO log and a green sync with zero records.
+  gmv_max_report_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 9
+    backoff_strategies:
+      - type: ConstantBackoffStrategy
+        backoff_time_in_seconds: 60
+    response_filters:
+      - predicate: "{{ response.get('code') == 40100 }}"
+        action: RATE_LIMITED
+        error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 60001 }}"
+        action: RETRY
+        error_message: "TikTok Marketing API is undergoing service maintenance on their side (error 60001). The connector will retry automatically, but if the issue persists you may need to re-sync after 30 minutes to a few hours. {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 50000 }}"
+        action: RETRY
+        error_message: "TikTok Marketing API returned a transient server-side error (code 50000). The connector will retry automatically. {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 51041 }}"
+        action: RETRY
+        error_message: "TikTok Marketing API returned a transient server-side error (code 51041). The connector will retry automatically. {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 51004 }}"
+        action: RETRY
+        error_message: "TikTok Marketing API returned a transient server-side error (code 51004). The connector will retry automatically. {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 51002 }}"
+        action: RETRY
+        error_message: "TikTok Marketing API returned a transient server-side error (code 51002). The connector will retry automatically. {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 40002 }}"
+        action: FAIL
+        failure_type: system_error
+        error_message: "TikTok Marketing API rejected the GMV Max report request (error 40002). {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 40001 }}"
+        action: FAIL
+        failure_type: config_error
+        error_message: "Insufficient permissions for this endpoint (error 40001). Verify that the access token has the required scopes and re-authorize the API app. {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 40067 }}"
+        action: FAIL
+        failure_type: config_error
+        error_message: "TikTok Marketing API query size limit exceeded (error 40067). Reduce the 'Daily Reports Date Step' in your connector settings to a smaller value (e.g., 7 or 1) and retry."
+      - predicate: "{{ response.get('code') != 0 }}"
+        action: FAIL
+        error_message: "{{ response['message'] }}"
+
   base_report_retriever:
     type: SimpleRetriever
     requester:
@@ -2526,12 +2570,12 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         error_handler:
-          $ref: "#/definitions/report_daily_error_handler"
+          $ref: "#/definitions/gmv_max_report_error_handler"
         request_parameters:
           advertiser_id: "{{ stream_slice.parent_slice['advertiser_id'] }}"
           store_ids: '{{ [stream_slice["store_id"]] | string }}'
           dimensions: '{{ ["campaign_id", "stat_time_day"] | string }}'
-          metrics: '{{ ["cost","net_cost","orders","cost_per_order","gross_revenue","roi","product_impressions","product_clicks","product_click_rate","ad_click_rate","ad_conversion_rate"] | string }}'
+          metrics: '{{ ["cost","net_cost","orders","cost_per_order","gross_revenue","roi"] | string }}'
           filtering: '{{ {"gmv_max_promotion_types": ["PRODUCT"]} | string }}'
           start_date: "{{ stream_interval['start_time'] }}"
           end_date: "{{ stream_interval['end_time'] }}"
@@ -2583,12 +2627,12 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         error_handler:
-          $ref: "#/definitions/report_daily_error_handler"
+          $ref: "#/definitions/gmv_max_report_error_handler"
         request_parameters:
           advertiser_id: "{{ stream_slice.parent_slice['advertiser_id'] }}"
           store_ids: '{{ [stream_slice["store_id"]] | string }}'
           dimensions: '{{ ["campaign_id", "stat_time_day"] | string }}'
-          metrics: '{{ ["cost","net_cost","orders","cost_per_order","gross_revenue","roi","product_impressions","product_clicks","product_click_rate","ad_click_rate","ad_conversion_rate","live_views","cost_per_live_view","10_second_live_views","cost_per_10_second_live_view","live_follows"] | string }}'
+          metrics: '{{ ["cost","net_cost","orders","cost_per_order","gross_revenue","roi","live_views","cost_per_live_view","10_second_live_views","cost_per_10_second_live_view","live_follows"] | string }}'
           filtering: '{{ {"gmv_max_promotion_types": ["LIVE"]} | string }}'
           start_date: "{{ stream_interval['start_time'] }}"
           end_date: "{{ stream_interval['end_time'] }}"
@@ -2780,26 +2824,6 @@ definitions:
               type:
                 - "null"
                 - string
-            product_impressions:
-              type:
-                - "null"
-                - string
-            product_clicks:
-              type:
-                - "null"
-                - string
-            product_click_rate:
-              type:
-                - "null"
-                - string
-            ad_click_rate:
-              type:
-                - "null"
-                - string
-            ad_conversion_rate:
-              type:
-                - "null"
-                - string
 
     gmv_max_live_campaign_reports_daily:
       $schema: http://json-schema.org/draft-07/schema#
@@ -2855,26 +2879,6 @@ definitions:
                 - "null"
                 - string
             roi:
-              type:
-                - "null"
-                - string
-            product_impressions:
-              type:
-                - "null"
-                - string
-            product_clicks:
-              type:
-                - "null"
-                - string
-            product_click_rate:
-              type:
-                - "null"
-                - string
-            ad_click_rate:
-              type:
-                - "null"
-                - string
-            ad_conversion_rate:
               type:
                 - "null"
                 - string
