@@ -1069,7 +1069,9 @@ def _deep_node(typename, node):
         ),
     ],
 )
-def test_pull_request_comment_reactions_reads_every_drilldown_root(listing_pull_request, drilldown, rate_limit_mock_response, requests_mock):
+def test_pull_request_comment_reactions_reads_every_drilldown_root(
+    listing_pull_request, drilldown, rate_limit_mock_response, requests_mock
+):
     """Each root the traversal re-roots at nests the comments at a different depth."""
     _mock_repository_resolution(requests_mock)
     requests_mock.post(GRAPHQL_URL, [{"json": _deep_listing([listing_pull_request])}, {"json": drilldown}])
