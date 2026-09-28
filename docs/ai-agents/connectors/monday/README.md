@@ -10,11 +10,19 @@ Connector for the Monday.com platform API. Monday.com is a work operating system
 The Monday connector is optimized to handle prompts like these.
 
 - List all users in the Monday.com account
+- Show me the details of the first user
 - Show me all boards
-- Get the details of board 18395979459
+- Get the details of my first board
+- List the items on my first board
+- Show me the details of the first item on my first board
 - List all teams
+- Show me the details of the first team
 - Show me all tags
 - List recent updates
+- Show me the details of the most recent update
+- List all workspaces
+- Show me the details of the first workspace
+- Show me the activity logs for my first board
 - Which boards were updated in the last week?
 - Find all items assigned to a specific group
 - What are the most active boards by update count?
