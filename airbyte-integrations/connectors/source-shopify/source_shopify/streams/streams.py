@@ -117,7 +117,7 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
 
     def flatten_customer(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         customer = record.get("customer")
-        if not self.config.get("populate_orders_customer_fields", False) or not isinstance(customer, Mapping):
+        if not self.config.get("populate_top_level_orders_customer_fields", False) or not isinstance(customer, Mapping):
             customer = {}
         for field in self._customer_fields:
             record[f"{self.customer_prefix}{field}"] = customer.get(field)

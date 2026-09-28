@@ -19,7 +19,7 @@ def customer_field_names(auth_config: dict[str, Any]) -> set[str]:
 
 @pytest.mark.parametrize("input_shape", ["list", "dict", "generator"])
 def test_produce_records_populates_customer_fields_when_enabled(auth_config: dict[str, Any], input_shape: str) -> None:
-    stream = Orders(auth_config | {"populate_orders_customer_fields": True})
+    stream = Orders(auth_config | {"populate_top_level_orders_customer_fields": True})
     customer = {
         "id": 7,
         "email": "test@example.invalid",
@@ -43,7 +43,7 @@ def test_produce_records_populates_customer_fields_when_enabled(auth_config: dic
     assert output["shop_url"] == auth_config["shop"]
 
 
-@pytest.mark.parametrize("toggle_config", [{}, {"populate_orders_customer_fields": False}], ids=["omitted", "disabled"])
+@pytest.mark.parametrize("toggle_config", [{}, {"populate_top_level_orders_customer_fields": False}], ids=["omitted", "disabled"])
 @pytest.mark.parametrize("input_shape", ["list", "dict", "generator"])
 def test_produce_records_defaults_customer_fields_to_null(
     auth_config: dict[str, Any], customer_field_names: set[str], toggle_config: dict[str, bool], input_shape: str
@@ -67,7 +67,7 @@ def test_produce_records_defaults_customer_fields_to_null(
 def test_produce_records_unavailable_customer_fields_are_null(
     auth_config: dict[str, Any], customer_field_names: set[str], enabled: bool, customer_record: dict[str, Any]
 ) -> None:
-    stream = Orders(auth_config | {"populate_orders_customer_fields": enabled})
+    stream = Orders(auth_config | {"populate_top_level_orders_customer_fields": enabled})
     output = list(stream.produce_records([{"id": 1} | customer_record]))[0]
 
     assert {field: output[field] for field in customer_field_names} == dict.fromkeys(customer_field_names)
@@ -77,7 +77,7 @@ def test_produce_records_unavailable_customer_fields_are_null(
 
 @pytest.mark.parametrize("enabled", [False, True])
 def test_customer_population_preserves_native_fields_and_ignores_unknown_attributes(auth_config: dict[str, Any], enabled: bool) -> None:
-    stream = Orders(auth_config | {"populate_orders_customer_fields": enabled})
+    stream = Orders(auth_config | {"populate_top_level_orders_customer_fields": enabled})
     customer = {"id": 7, "locale": "fr", "unexpected": "value"}
     output = list(stream.produce_records([{"id": 1, "customer_locale": "en", "customer": customer}]))[0]
 
@@ -89,8 +89,8 @@ def test_customer_population_preserves_native_fields_and_ignores_unknown_attribu
 def test_orders_schema_is_identical_for_all_toggle_settings(auth_config: dict[str, Any]) -> None:
     default_schema = Orders(auth_config).get_json_schema()
 
-    assert Orders(auth_config | {"populate_orders_customer_fields": False}).get_json_schema() == default_schema
-    assert Orders(auth_config | {"populate_orders_customer_fields": True}).get_json_schema() == default_schema
+    assert Orders(auth_config | {"populate_top_level_orders_customer_fields": False}).get_json_schema() == default_schema
+    assert Orders(auth_config | {"populate_top_level_orders_customer_fields": True}).get_json_schema() == default_schema
 
 
 def test_orders_schema_has_flattened_customer_fields() -> None:
@@ -109,8 +109,8 @@ def test_orders_schema_has_flattened_customer_fields() -> None:
 
 def test_customer_population_config_is_optional_and_defaults_to_false(logger: logging.Logger) -> None:
     spec = SourceShopify().spec(logger).connectionSpecification
-    field = spec["properties"]["populate_orders_customer_fields"]
+    field = spec["properties"]["populate_top_level_orders_customer_fields"]
 
     assert field["type"] == "boolean"
     assert field["default"] is False
-    assert "populate_orders_customer_fields" not in spec.get("required", [])
+    assert "populate_top_level_orders_customer_fields" not in spec.get("required", [])
