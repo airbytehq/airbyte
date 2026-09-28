@@ -7,25 +7,21 @@ acceptance_tests:
       - spec_path: "manifest.yaml"
   connection:
     tests:
-      - config_path: "secrets/config.json"
-        status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
   discovery:
-    tests:
-      - config_path: "secrets/config.json"
+    bypass_reason:
+      "No Airbyte-managed sandbox credentials yet. Auth, pagination, partitioning and
+      incremental requests are covered by the mock-server tests in unit_tests/"
   basic_read:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams:
-          - name: conversions
-            bypass_reason: "The sandbox account has no conversion events yet"
+    bypass_reason:
+      "No Airbyte-managed sandbox credentials yet. Auth, pagination, partitioning and
+      incremental requests are covered by the mock-server tests in unit_tests/"
   incremental:
     bypass_reason:
       "The `clicks` cursor is a calendar day with a 2-day lookback, so the last
       records are re-emitted on sequential reads by design"
   full_refresh:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+    bypass_reason:
+      "No Airbyte-managed sandbox credentials yet. Auth, pagination, partitioning and
+      incremental requests are covered by the mock-server tests in unit_tests/"
