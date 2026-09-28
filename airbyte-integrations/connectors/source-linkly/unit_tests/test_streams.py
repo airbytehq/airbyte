@@ -8,8 +8,9 @@
 - `workspaces` is the parent of every other stream: each child stream requests once per
   workspace, and the `domains`, `clicks` and `conversions` records carry that `workspace_id`
 - `links` pages with `page` / `page_size=1000` and stops on a short page
-- `conversions` is scoped through the `workspace_id` query parameter, without which the
-  endpoint answers 401
+- `conversions` is scoped through the `workspace_id` query parameter (without it the
+  endpoint answers 401), pages with `after` = the last id while `has_more` is true, and
+  syncs incrementally on `inserted_at` via `since`, re-reading the hour before the cursor
 - `clicks` requests the daily series from `start_date` to today, re-reads two days before
   the saved cursor, and drops buckets without a day
 """
@@ -123,7 +124,7 @@ def test_rate_limited_requests_are_retried(no_backoff_sleep):
     assert len(requests_to(mocker.request_history, WORKSPACES_PATH)) == 2
 
 
-def test_links_paginate_per_workspace_and_stop_on_a_short_page():
+def test_links_paginate_per_workspace_and_stop_on_a_short_page(no_backoff_sleep):
     full_page = [_link(link_id, 7) for link_id in range(1, 1001)]
 
     with requests_mock.Mocker() as mocker:
@@ -162,19 +163,76 @@ def test_domains_carry_the_workspace_they_were_read_from():
     assert by_name["l.acme.io"]["workspace_id"] == 9
 
 
-def test_conversions_are_scoped_by_the_workspace_id_query_parameter():
-    conversion = {"id": "01M3CFTESDXFAEC1TMDNSJZBNM", "link_id": 42, "event_type": "lead", "event_name": "form_submission"}
+def _conversion(conversion_id: str, inserted_at: str) -> dict:
+    return {
+        "id": conversion_id,
+        "link_id": 42,
+        "event_type": "sale",
+        "event_name": "purchase",
+        "occurred_at": "2026-08-30T09:00:00.000000Z",
+        "inserted_at": inserted_at,
+    }
+
+
+@freeze_time("2026-09-10T12:00:00Z")
+def test_conversions_page_oldest_first_from_start_date_until_has_more_is_false(no_backoff_sleep):
+    first_page = [
+        _conversion("01K4A0000000000000000000A1", "2026-09-02T10:00:00"),
+        _conversion("01K4A0000000000000000000A2", "2026-09-03T10:00:00"),
+    ]
+    last_page = [_conversion("01K4A0000000000000000000A3", "2026-09-04T10:00:00")]
 
     with requests_mock.Mocker() as mocker:
         mocker.get(WORKSPACES_URL, json=[{"id": 7}])
-        mocker.get(CONVERSIONS_URL, json={"conversions": [conversion]})
-        output = read_stream("conversions")
+        mocker.get(
+            CONVERSIONS_URL,
+            [
+                {"json": {"conversions": first_page, "has_more": True}},
+                {"json": {"conversions": last_page, "has_more": False}},
+                # A stop condition that ignored has_more would ask again; fail fast if it does.
+                {"status_code": 400, "json": {}},
+            ],
+        )
+        output = read_stream("conversions", sync_mode=SyncMode.incremental)
 
-    assert records(output) == [{**conversion, "workspace_id": 7}]
+    assert [record["id"] for record in records(output)] == [c["id"] for c in first_page + last_page]
+    assert all(record["workspace_id"] == 7 for record in records(output))
+
+    requests = [query_params(request) for request in requests_to(mocker.request_history, CONVERSIONS_PATH)]
+    assert requests == [
+        {"workspace_id": "7", "since": "2026-09-01T00:00:00", "limit": "1000"},
+        {"workspace_id": "7", "since": "2026-09-01T00:00:00", "limit": "1000", "after": "01K4A0000000000000000000A2"},
+    ]
+
+
+@freeze_time("2026-09-10T12:00:00Z")
+def test_conversions_incremental_sync_rereads_the_hour_before_the_cursor(no_backoff_sleep):
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "conversions",
+            {"states": [{"partition": {"workspace_id": 7, "parent_slice": {}}, "cursor": {"inserted_at": "2026-09-09T10:00:00"}}]},
+        )
+        .build()
+    )
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get(WORKSPACES_URL, json=[{"id": 7}])
+        mocker.get(
+            CONVERSIONS_URL,
+            [
+                {"json": {"conversions": [_conversion("01K4A0000000000000000000B1", "2026-09-09T11:00:00")], "has_more": False}},
+                # Without this, a paginator that ignored has_more would loop on the same page forever.
+                {"status_code": 400, "json": {}},
+            ],
+        )
+        output = read_stream("conversions", sync_mode=SyncMode.incremental, state=state)
+
+    assert [record["id"] for record in records(output)] == ["01K4A0000000000000000000B1"]
 
     requests = requests_to(mocker.request_history, CONVERSIONS_PATH)
     assert len(requests) == 1
-    assert query_params(requests[0]) == {"workspace_id": "7", "limit": "1000"}
+    assert query_params(requests[0])["since"] == "2026-09-09T09:00:00", "the lookback must cover late-committed conversions"
 
 
 @freeze_time("2026-09-10T12:00:00Z")

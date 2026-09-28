@@ -13,5 +13,20 @@
         ]
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "conversions" },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "workspace_id": 1, "parent_slice": {} },
+            "cursor": { "inserted_at": "2024-01-01T00:00:00" }
+          }
+        ]
+      }
+    }
   }
 ]

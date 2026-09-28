@@ -221,15 +221,48 @@ definitions:
           request_parameters:
             # The endpoint is workspace-scoped: without workspace_id it answers 401.
             workspace_id: "{{ stream_partition['workspace_id'] }}"
-            limit: "1000"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - conversions
+        # With `since` the API returns conversions oldest first; each next page
+        # starts after the last id of the previous one.
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ not response.get('has_more') }}"
+            page_size: 1000
         partition_router:
           $ref: "#/definitions/workspace_partition_router"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        # When Linkly recorded the conversion, not when it happened: a sale
+        # reported days late by a billing webhook still lands after the cursor.
+        cursor_field: inserted_at
+        # inserted_at is UTC without an offset, which is also how `since` is sent.
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: since
+        # Covers a conversion committed just after a sync read past its second.
+        lookback_window: PT1H
       transformations:
         - $ref: "#/definitions/add_workspace_id"
       schema_loader:
@@ -267,7 +300,8 @@ spec:
         title: Start date
         description: >-
           UTC date (YYYY-MM-DD) from which to replicate the daily click time
-          series in the `clicks` stream. Other streams are not date-bounded.
+          series in the `clicks` stream and the conversions in the
+          `conversions` stream. Other streams are not date-bounded.
         format: date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         pattern_descriptor: YYYY-MM-DD
@@ -701,7 +735,10 @@ schemas:
         type:
           - string
           - "null"
+        description: >-
+          When Linkly recorded the conversion, in UTC without an offset
+          (YYYY-MM-DDTHH:MM:SS). The incremental cursor.
         format: date-time
-        airbyte_type: timestamp_with_timezone
+        airbyte_type: timestamp_without_timezone
     required:
       - id
