@@ -55,6 +55,9 @@ data:
     - title: Changelog
       url: https://developers.ashbyhq.com/changelog
       type: api_release_history
+    - title: API Versions
+      url: https://developers.ashbyhq.com/docs/api-versions
+      type: api_deprecations
   releases:
     breakingChanges:
       1.0.0:
