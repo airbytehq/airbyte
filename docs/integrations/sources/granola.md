@@ -151,6 +151,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.3.3 | 2026-09-22 | [86667](https://github.com/airbytehq/airbyte/pull/86667) | Update dependencies |
 | 0.3.2 | 2026-09-15 | [86082](https://github.com/airbytehq/airbyte/pull/86082) | Update dependencies |
 | 0.3.1 | 2026-09-08 | [85516](https://github.com/airbytehq/airbyte/pull/85516) | Update dependencies |
 | 0.3.0 | 2026-08-21 | [84907](https://github.com/airbytehq/airbyte/pull/84907) | Add note_transcripts stream for transcripts of any size. Notes whose transcript is too large to return inline are now skipped in detailed_notes, producing no record for those notes, instead of failing the sync |
