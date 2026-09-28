@@ -321,11 +321,28 @@ Two things that do not help:
 
 If the stream still collides at 1,000,000, or if raising the value does not change the behavior, [contact Airbyte Support](https://docs.airbyte.com/community/getting-support) — the affected cursor value is in the sync logs, on the line reading `Stream <stream_name>, continue from checkpoint:`.
 
+#### Failed and expired BULK jobs
+
+GraphQL Bulk streams run each date range as a Shopify [bulk operation](https://shopify.dev/docs/api/usage/bulk-operations/queries). When an operation ends with a `FAILED` or `EXPIRED` [status](https://shopify.dev/docs/api/admin-graphql/latest/enums/BulkOperationStatus), the connector handles it as follows:
+
+- **`FAILED` with error code `ACCESS_DENIED`**: The app is missing an access scope that the stream needs. The sync fails with a configuration error asking you to check your permissions for the stream. With **OAuth2.0**, re-authenticate the source. With **API Password**, add the missing `read_` scope to your custom app. See [Custom app scopes](#custom-app-scopes).
+- **`FAILED` with another error code, such as `INTERNAL_SERVER_ERROR` or `TIMEOUT`**: For incremental streams that checkpoint, if Shopify returns a partial result that contains records, the connector syncs those records and starts the next job from the last cursor value it read. Otherwise, the sync fails with a system error instead of skipping the rest of the date range. For example:
+
+  ```text
+  The BULK Job: `<job_id>` exited with FAILED and returned no partial result to resume from, errorCode: `<error_code>`, objectCount: `<count>`.
+  ```
+
+  Shopify describes these errors as [possibly intermittent](https://shopify.dev/docs/api/admin-graphql/latest/enums/BulkOperationErrorCode), so a later sync attempt may succeed without any configuration change.
+- **`EXPIRED`**: The operation's result URL has expired, so the connector can't download the data. The sync fails with a system error. Shopify result URLs expire after seven days. Run the sync again to create a new bulk operation.
+
+Before version 4.1.1, some failed BULK jobs that returned no usable partial result let the stream continue past that date range, which could leave gaps in the synced data. If you suspect missing records in a GraphQL Bulk stream synced on an earlier version, clear the affected stream and run a sync to backfill data. Clearing a stream deletes the data Airbyte wrote for that stream in your destination. For more information, see [Clearing your data](/platform/operator-guides/clear).
+
 ### Troubleshooting
 
 - If you encounter access errors while using **OAuth2.0** authentication, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the client's store first. Once the access is granted, you should be able to proceed with **OAuth2.0** authentication.
 - If you receive a "The BULK job couldn't be created at this time, since another job is running." error, please [check your operation's progress](https://shopify.dev/docs/api/usage/bulk-operations/queries#check-an-operations-progress) with the `Shopify GraphQL BULK` api.
 - If you receive a "checkpoint collision is detected" error for a stream, see [BULK job checkpoint collisions](#bulk-job-checkpoint-collisions) above to tell a self-clearing failure from a blocked stream.
+- If a sync fails with a "The BULK Job: `<job_id>` exited with FAILED" or "exited with EXPIRED" error, see [Failed and expired BULK jobs](#failed-and-expired-bulk-jobs).
 - If you need to cancel a `Shopify GraphQL BULK`job, please follow [these steps](https://shopify.dev/docs/api/usage/bulk-operations/queries#canceling-an-operation).  You will need the current in-progress job ID to cancel.
 - Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
