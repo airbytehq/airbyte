@@ -42,6 +42,17 @@ If your Pinterest account has limited permissions, some streams may not return d
 validates your connection using the `user_account_analytics` stream, which requires only the
 `user_accounts:read` scope. This scope is available to all authenticated Pinterest users.
 
+### Pinner data access for apps registered on or after September 14, 2026
+
+If you use your own Pinterest app and it was registered on or after September 14, 2026, Pinterest
+may return `403 PINNER_DATA_ACCESS_DENIED` for the `board_sections`, `board_pins`, and
+`board_section_pins` streams until Pinterest approves the app for pinner data access. This can
+happen when the connector reads boards that don't belong to the account that authorized the app,
+for example boards returned for a business ad account set in **Account ID**. Reading the boards and
+Pins of the authorizing account doesn't require extra approval, and apps registered before that date
+aren't affected. To request approval, contact your Pinterest account manager. For details, see the
+[Pinterest changelog](https://developers.pinterest.com/docs/changelog/changelog/#pinner-data-access-denial-error).
+
 ## Setup guide
 
 <!-- env:cloud -->
