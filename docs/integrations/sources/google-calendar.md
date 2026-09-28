@@ -92,7 +92,7 @@ The Google Calendar source connector supports the following [sync modes](https:/
 The `events`, `acl`, and `freebusy` streams sync once per calendar. When **Calendar Id** is configured, only that calendar is synced — it is read directly, so it does not need to appear in the account's calendar list; otherwise every calendar in the account's calendar list is synced.
 
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|--------------------|-----------------------|
+| ----------- | ----------- | ---------- | ------------------ | --------------------- |
 | colors | calendar.event | No pagination | ✅ | ❌ |
 | settings | id | DefaultPaginator | ✅ | ❌ |
 | calendarlist | id | DefaultPaginator | ✅ | ❌ |
@@ -136,8 +136,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date | Pull Request | Subject |
+| ------- | ---- | ------------ | ------- |
 | 0.3.0 | 2026-09-21 | [86470](https://github.com/airbytehq/airbyte/pull/86470) | Add `acl` and `freebusy` streams, partition `events`/`acl`/`freebusy` over all calendars, make `calendarid` optional |
 | 0.2.0 | 2026-09-21 | [86468](https://github.com/airbytehq/airbyte/pull/86468) | Add error handling, API budget, concurrency, incremental `events`, and enable acceptance tests |
 | 0.1.0 | 2026-09-21 | [86469](https://github.com/airbytehq/airbyte/pull/86469) | Add declarative OAuth (`advanced_auth`); legacy flat credentials migrate to the custom-app `credentials` option |
