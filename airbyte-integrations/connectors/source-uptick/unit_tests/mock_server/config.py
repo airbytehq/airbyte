@@ -32,6 +32,7 @@ class ConfigBuilder:
             self._config.pop(field, None)
         self._config["credentials"] = {
             "auth_type": "oauth2.0",
+            "workspace": "test-tenant",
             "client_id": "test-client-id",
             "client_secret": "test-client-secret",
             "refresh_token": refresh_token,

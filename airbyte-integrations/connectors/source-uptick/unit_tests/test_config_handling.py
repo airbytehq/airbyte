@@ -100,11 +100,18 @@ def test_spec_declares_oauth_advanced_auth() -> None:
     assert spec["advanced_auth"]["predicate_value"] == "oauth2.0"
     credentials = spec["connection_specification"]["properties"]["credentials"]
     assert [variant["properties"]["auth_type"]["const"] for variant in credentials["oneOf"]] == ["oauth2.0", "password"]
+    oauth_variant = credentials["oneOf"][0]
+    assert "workspace" in oauth_variant["required"]
+    assert oauth_variant["properties"]["workspace"]["pattern"] == "^[a-z0-9-]+$"
     assert spec["connection_specification"]["required"] == ["base_url"]
     assert "pattern" not in spec["connection_specification"]["properties"]["base_url"]
+    user_input = spec["advanced_auth"]["oauth_config_specification"]["oauth_user_input_from_connector_config_specification"]
+    assert user_input["properties"]["workspace"]["path_in_connector_config"] == ["credentials", "workspace"]
     oauth_input = spec["advanced_auth"]["oauth_config_specification"]["oauth_connector_input_specification"]
-    assert oauth_input["consent_url"].startswith("{{ base_url | regex_replace('/+$', '') }}/api/oauth2/")
-    assert oauth_input["access_token_url"].startswith("{{ base_url | regex_replace('/+$', '') }}/api/oauth2/")
+    assert oauth_input["consent_url"].startswith("https://{{ workspace | urlencode }}.onuptick.com/api/oauth2/")
+    assert oauth_input["access_token_url"].startswith("https://{{ workspace | urlencode }}.onuptick.com/api/oauth2/")
+    assert "regex_replace" not in oauth_input["consent_url"]
+    assert "regex_replace" not in oauth_input["access_token_url"]
 
 
 @pytest.mark.parametrize(
@@ -126,3 +133,30 @@ def test_legacy_top_level_config_validates() -> None:
     spec_schema = get_source(base_config()).resolved_manifest["spec"]["connection_specification"]
 
     validate(instance=base_config(), schema=spec_schema)
+    # The config the connector actually runs with: migrated legacy credentials.
+    validate(instance=get_source(base_config())._config, schema=spec_schema)
+
+
+@pytest.mark.parametrize("credential_value", ["S3cret!", "12345678", "True", "1e5"])
+def test_migrated_legacy_config_validates_against_spec(credential_value: str) -> None:
+    spec_schema = get_source(base_config()).resolved_manifest["spec"]["connection_specification"]
+    config = base_config(password=credential_value, client_id=credential_value)
+
+    migrated = get_source(config)._config
+
+    validate(instance=migrated, schema=spec_schema)
+    credentials = migrated["credentials"]
+    assert credentials["auth_type"] == "password"
+    for field in ("client_id", "client_secret", "username", "password"):
+        assert isinstance(credentials[field], str)
+        assert field not in migrated
+
+
+@pytest.mark.parametrize("workspace", ["evil.com/", "UPPER", "bad host", "tenant.example.org"])
+def test_oauth_workspace_rejects_non_workspace_values(workspace: str) -> None:
+    oauth_user_input_schema = get_source(base_config()).resolved_manifest["spec"]["advanced_auth"]["oauth_config_specification"][
+        "oauth_user_input_from_connector_config_specification"
+    ]
+
+    with pytest.raises(ValidationError):
+        validate(instance={"workspace": workspace}, schema=oauth_user_input_schema)
