@@ -250,7 +250,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.2.2 | 2026-09-15 | [86321](https://github.com/airbytehq/airbyte/pull/86321) | Fix the `videos` stream aborting the whole sync on Message Ads (Sponsored InMail) creatives: the skip predicate now also matches LinkedIn's `UGC_VALIDATIONS_FAILED` response, whose invalid-URN detail is nested in `errorDetails` rather than in `message` |
+| 6.2.4 | 2026-09-29 | [86321](https://github.com/airbytehq/airbyte/pull/86321) | Fix the `videos` stream aborting the whole sync on Message Ads (Sponsored InMail) creatives: the skip predicate now also matches LinkedIn's `UGC_VALIDATIONS_FAILED` response, whose invalid-URN detail is nested in `errorDetails` rather than in `message` |
+| 6.2.3 | 2026-09-29 | [87239](https://github.com/airbytehq/airbyte/pull/87239) | Update dependencies |
+| 6.2.2 | 2026-09-22 | [86716](https://github.com/airbytehq/airbyte/pull/86716) | Update dependencies |
 | 6.2.1 | 2026-09-15 | [84019](https://github.com/airbytehq/airbyte/pull/84019) | Update dependencies |
 | 6.2.0 | 2026-09-14 | [76087](https://github.com/airbytehq/airbyte/pull/76087) | Add `organizations` stream via the `organizationAcls` endpoint |
 | 6.1.0 | 2026-09-14 | [81509](https://github.com/airbytehq/airbyte/pull/81509) | Add `videos` stream |

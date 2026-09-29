@@ -68,7 +68,7 @@ jobs:
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
       - name: Run AI Triage
-        uses: aaronsteers/devin-action@main
+        uses: airbytehq/devin-action@main
         with:
           issue-number: ${{ github.event.issue.number }}
           playbook-macro: "!oss_issue_triage"

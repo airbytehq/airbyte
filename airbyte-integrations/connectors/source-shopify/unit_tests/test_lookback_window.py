@@ -4,7 +4,7 @@
 
 import pytest
 from freezegun import freeze_time
-from source_shopify.streams.streams import Orders, TransactionsGraphql
+from source_shopify.streams.streams import CustomCollections, Orders, TransactionsGraphql
 
 
 def _make_stream(config):
@@ -52,6 +52,13 @@ def test_apply_lookback_window(lookback_days, state_value, start_date, expected_
     assert expected_substring in result
 
 
+def test_apply_lookback_window_with_empty_state_value():
+    """Verify an empty state value is returned unchanged."""
+    stream = _make_stream(_base_config(lookback_window_in_days=3))
+
+    assert stream._apply_lookback_window("") == ""
+
+
 @pytest.mark.parametrize(
     "lookback_days,stream_state,expected_filter_substring",
     [
@@ -88,6 +95,15 @@ def test_request_params_with_lookback(lookback_days, stream_state, expected_filt
         assert expected_filter_substring in filter_value
 
 
+def test_request_params_with_lookback_and_empty_state():
+    """Verify an empty deleted-events state value does not raise."""
+    stream = CustomCollections(_base_config(lookback_window_in_days=3))
+
+    params = stream.request_params(stream_state={"deleted": {"deleted_at": "2026-05-20T22:21:21-07:00"}, "updated_at": ""})
+
+    assert params[stream.filter_field] == ""
+
+
 @freeze_time("2025-03-20T00:00:00Z")
 def test_graphql_bulk_stream_slices_apply_lookback_window():
     """Verify `stream_slices` applies lookback for GraphQL BULK incremental streams."""
@@ -98,4 +114,16 @@ def test_graphql_bulk_stream_slices_apply_lookback_window():
     first_slice = next(stream.stream_slices(stream_state={"created_at": "2025-03-15T00:00:00Z"}))
 
     assert first_slice["start"] == "2025-03-13T00:00:00+00:00"
+    assert first_slice["end"] == "2025-03-20T00:00:00+00:00"
+
+
+@freeze_time("2025-03-20T00:00:00Z")
+def test_graphql_bulk_stream_slices_with_empty_state_falls_back_to_start_date():
+    """Verify an empty state value falls back to the configured start date."""
+    stream = TransactionsGraphql(_base_config(lookback_window_in_days=2))
+    stream.job_manager._job_size = 1000
+
+    first_slice = next(stream.stream_slices(stream_state={"created_at": ""}))
+
+    assert first_slice["start"] == "2023-01-01T00:00:00+00:00"
     assert first_slice["end"] == "2025-03-20T00:00:00+00:00"

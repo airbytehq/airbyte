@@ -123,6 +123,7 @@ Sub-modules
 * [airbyte_agent_sdk.config](/ai-agents/reference/sdk/airbyte_agent_sdk/airbyte_agent_sdk-config)
 * [airbyte_agent_sdk.connectors](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors)
 * [airbyte_agent_sdk.constants](/ai-agents/reference/sdk/airbyte_agent_sdk/airbyte_agent_sdk-constants)
+* [airbyte_agent_sdk.deprecated_action_aliases](/ai-agents/reference/sdk/airbyte_agent_sdk/airbyte_agent_sdk-deprecated_action_aliases)
 * [airbyte_agent_sdk.executor](/ai-agents/reference/sdk/airbyte_agent_sdk/executor)
 * [airbyte_agent_sdk.http_client](/ai-agents/reference/sdk/airbyte_agent_sdk/airbyte_agent_sdk-http_client)
 * [airbyte_agent_sdk.secrets_aws](/ai-agents/reference/sdk/airbyte_agent_sdk/airbyte_agent_sdk-secrets_aws)
