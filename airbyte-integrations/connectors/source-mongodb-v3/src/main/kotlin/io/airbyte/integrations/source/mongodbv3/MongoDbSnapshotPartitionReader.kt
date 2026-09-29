@@ -1,21 +1,14 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mongodbv3
 
-import com.mongodb.client.MongoCollection
+import com.mongodb.client.FindIterable
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Sorts
-import io.airbyte.cdk.output.DataChannelMedium
-import io.airbyte.cdk.output.OutputMessageRouter
-import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.PartitionReadCheckpoint
-import io.airbyte.cdk.read.PartitionReader
-import io.airbyte.cdk.read.ResourceType
 import io.airbyte.cdk.read.Stream
-import io.airbyte.cdk.read.generatePartitionId
+import io.airbyte.integrations.source.mongodbv3.MongoDbSourceMetadataQuerier.Companion.ID_FIELD
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.atomic.AtomicReference
+import java.time.Instant
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import org.bson.Document
@@ -29,93 +22,59 @@ private val log = KotlinLogging.logger {}
  * checkpoints the last `_id` it read. If it reads the collection to the end it checkpoints the
  * terminal status (`COMPLETE` for an incremental snapshot, `FULL_REFRESH` for a full refresh) and
  * marks the stream complete for this READ; otherwise (cut short by the `checkpointTargetInterval`
- * timeout or the `max-records-per-run` test hook) it checkpoints `IN_PROGRESS`/`FULL_REFRESH` so
- * the next round continues. Splitting a collection into concurrent `_id` ranges is a later
- * optimization.
+ * timeout, the WASS budget, or the `max-records-per-run` test hook) it checkpoints
+ * `IN_PROGRESS`/`FULL_REFRESH` so the next round continues. Splitting a collection into concurrent
+ * `_id` ranges is a later optimization.
  */
 class MongoDbSnapshotPartitionReader(
     private val streamState: MongoDbStreamState,
-) : PartitionReader {
+) : MongoDbPartitionReaderBase(streamState.sharedState, streamState.streamFeedBootstrap) {
 
-    private val sharedState: MongoDbSharedState = streamState.sharedState
     private val stream: Stream = streamState.stream
     private val converter =
         MongoDbRecordConverter(sharedState.configuration.schemaEnforced, schemaFieldTypesOf(stream))
 
-    private val numRecords = AtomicLong(0L)
-    private val lastId = AtomicReference<Any?>(null)
-    private val finished = AtomicBoolean(false)
-    private var partitionId: String = generatePartitionId(4)
-    private lateinit var outputMessageRouter: OutputMessageRouter
-
-    private val acquiredResources = AtomicReference<Map<ResourceType, ReaderAcquiredResource>>()
-
-    override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
-        val feedBootstrap = streamState.streamFeedBootstrap
-        val resourceTypes: List<ResourceType> =
-            when (feedBootstrap.dataChannelMedium) {
-                DataChannelMedium.STDIO -> listOf(ResourceType.RESOURCE_DB_CONNECTION)
-                DataChannelMedium.SOCKET ->
-                    listOf(ResourceType.RESOURCE_DB_CONNECTION, ResourceType.RESOURCE_OUTPUT_SOCKET)
-            }
-        val resources: Map<ResourceType, ReaderAcquiredResource> =
-            sharedState.tryAcquireResourcesForReader(resourceTypes)
-                ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
-        acquiredResources.set(resources)
-        outputMessageRouter =
-            OutputMessageRouter(
-                feedBootstrap.dataChannelMedium,
-                feedBootstrap.dataChannelFormat,
-                feedBootstrap.outputConsumer,
-                mapOf("partition_id" to partitionId),
-                feedBootstrap,
-                resources.mapNotNull { (type, r) -> r.resource?.let { type to it } }.toMap(),
-            )
-        return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
-    }
+    // `checkpoint()` may run on another thread than `run()` after a timeout, hence volatile.
+    @Volatile private var numRecords = 0L
+    @Volatile private var lastId: Any? = null
+    @Volatile private var finished = false
 
     override suspend fun run() {
-        val outputRoute =
-            outputMessageRouter.recordAcceptors[stream.id]
-                ?: throw IllegalStateException("No record acceptor for stream ${stream.id}")
+        val emit: RecordAcceptor =
+            checkNotNull(recordAcceptorFor(stream.id)) { "No record acceptor for ${stream.id}" }
         val startId: Any? = resumeFromId()
-        lastId.set(startId)
-        val collection: MongoCollection<Document> =
-            sharedState.client.getDatabase(stream.namespace!!).getCollection(stream.name)
-        var find = collection.find()
-        if (startId != null) {
-            find = find.filter(Filters.gt(MongoDbSourceMetadataQuerier.ID_FIELD, startId))
-        }
-        val maxRecords: Long = sharedState.maxRecordsPerRun
-        log.info {
-            "Reading ${stream.namespace}.${stream.name} ordered by _id" +
-                (startId?.let { " resuming after $it" } ?: "") +
-                "."
-        }
-        find.sort(Sorts.ascending(MongoDbSourceMetadataQuerier.ID_FIELD)).cursor().use { cursor ->
+        lastId = startId
+        log.info { "Reading ${stream.namespace}.${stream.name} after _id=$startId." }
+
+        query(startId).cursor().use { cursor ->
             while (cursor.hasNext()) {
                 currentCoroutineContext().ensureActive()
-                if (maxRecords in 1..numRecords.get()) {
-                    log.info { "Reached max-records-per-run ($maxRecords); checkpointing." }
-                    return
-                }
+                if (reachedRecordLimit()) return
                 if (shouldYieldToCdc()) {
                     sharedState.snapshotYielded.add(stream.id)
-                    log.info { "WASS snapshot budget reached for ${stream.id}; yielding to CDC." }
                     return
                 }
-                val document: Document = cursor.next()
-                val (payload: NativeRecordPayload, rawId: Any?) =
-                    converter.toPayloadWithId(document)
-                outputRoute(payload, null)
-                lastId.set(rawId)
-                numRecords.incrementAndGet()
+                val (payload, rawId) = converter.toPayloadWithId(cursor.next())
+                emit(payload, null)
+                lastId = rawId
+                numRecords++
             }
-            finished.set(true)
-            sharedState.completedSnapshots.add(stream.id)
         }
-        log.info { "Finished ${stream.namespace}.${stream.name}: ${numRecords.get()} records." }
+        finished = true
+        sharedState.completedSnapshots.add(stream.id)
+        log.info { "Finished ${stream.namespace}.${stream.name}: $numRecords records." }
     }
+
+    private fun query(startId: Any?): FindIterable<Document> {
+        val collection =
+            sharedState.client.getDatabase(stream.namespace!!).getCollection(stream.name)
+        val find: FindIterable<Document> = collection.find()
+        startId?.let { find.filter(Filters.gt(ID_FIELD, it)) }
+        return find.sort(Sorts.ascending(ID_FIELD))
+    }
+
+    /** Test hook: stop after `max-records-per-run` records so resume can be exercised quickly. */
+    private fun reachedRecordLimit(): Boolean = sharedState.maxRecordsPerRun in 1..numRecords
 
     /**
      * WASS: an incremental snapshot yields once past the shared snapshot deadline, but only after
@@ -124,43 +83,30 @@ class MongoDbSnapshotPartitionReader(
      */
     private fun shouldYieldToCdc(): Boolean =
         !streamState.isFullRefresh &&
-            numRecords.get() > 0 &&
-            java.time.Instant.now().isAfter(sharedState.snapshotDeadline())
+            numRecords > 0 &&
+            Instant.now().isAfter(sharedState.snapshotDeadline)
 
     /**
-     * The `_id` to resume after, or null for a fresh read (no state, or an already-complete one).
+     * The `_id` to resume after, or null for a fresh read (no usable state, or one already
+     * complete).
      */
-    private fun resumeFromId(): Any? {
-        val state = streamState.streamFeedBootstrap.currentState ?: return null
-        return try {
-            val value = MongoDbStreamStateValue.fromOpaqueStateValue(state)
-            if (value.status == MongoDbSnapshotStatus.COMPLETE) null else value.resumeIdValue()
-        } catch (e: Exception) {
-            log.warn(e) { "Ignoring unparseable state for ${stream.id}." }
-            null
-        }
-    }
+    private fun resumeFromId(): Any? =
+        MongoDbStreamStateValue.fromOpaqueStateValueOrNull(
+                streamState.streamFeedBootstrap.currentState
+            )
+            ?.takeUnless { it.status == MongoDbSnapshotStatus.COMPLETE }
+            ?.resumeIdValue()
 
     override fun checkpoint(): PartitionReadCheckpoint {
         val status: MongoDbSnapshotStatus =
-            if (finished.get()) {
-                streamState.terminalStatus
-            } else if (streamState.isFullRefresh) {
-                MongoDbSnapshotStatus.FULL_REFRESH
-            } else {
-                MongoDbSnapshotStatus.IN_PROGRESS
+            when {
+                finished -> streamState.terminalStatus
+                streamState.isFullRefresh -> MongoDbSnapshotStatus.FULL_REFRESH
+                else -> MongoDbSnapshotStatus.IN_PROGRESS
             }
         return PartitionReadCheckpoint(
-            MongoDbStreamStateValue.fromLastId(lastId.get(), status).toOpaqueStateValue(),
-            numRecords.get(),
+            MongoDbStreamStateValue.fromLastId(lastId, status).toOpaqueStateValue(),
+            numRecords,
         )
-    }
-
-    override fun releaseResources() {
-        if (::outputMessageRouter.isInitialized) {
-            outputMessageRouter.close()
-        }
-        acquiredResources.getAndSet(null)?.forEach { it.value.close() }
-        partitionId = generatePartitionId(4)
     }
 }

@@ -63,8 +63,9 @@ class MongoDbRecordConverter(
         when {
             !schemaEnforced -> {
                 // Schemaless mode emits `_id` plus the whole document under a single `data` field.
-                payload[ID_FIELD] =
-                    FieldValueEncoder(toJsonNode(rawId), codecFor(ID_FIELD, MongoStringValueCodec))
+                val idCodec: MongoDbValueCodec =
+                    schemaFieldTypes[ID_FIELD]?.valueCodec ?: MongoStringValueCodec
+                payload[ID_FIELD] = FieldValueEncoder(toJsonNode(rawId), idCodec)
                 payload[DATA_FIELD] =
                     FieldValueEncoder(documentToObject(document), MongoJsonbValueCodec)
             }
@@ -86,9 +87,6 @@ class MongoDbRecordConverter(
         }
         return payload to rawId
     }
-
-    private fun codecFor(field: String, default: MongoDbValueCodec): MongoDbValueCodec =
-        schemaFieldTypes[field]?.valueCodec ?: default
 
     private fun documentToObject(document: Document): ObjectNode {
         val node: ObjectNode = Jsons.objectNode()

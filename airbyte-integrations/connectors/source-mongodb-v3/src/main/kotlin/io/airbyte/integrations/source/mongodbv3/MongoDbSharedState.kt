@@ -13,7 +13,6 @@ import jakarta.inject.Singleton
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Holds the state shared by all partition creators and readers of a READ: the configuration, a
@@ -22,8 +21,8 @@ import java.util.concurrent.atomic.AtomicReference
 @Singleton
 class MongoDbSharedState(
     val configuration: MongoDbSourceConfiguration,
-    val concurrencyResource: ConcurrencyResource,
-    val resourceAcquirer: ResourceAcquirer,
+    private val concurrencyResource: ConcurrencyResource,
+    private val resourceAcquirer: ResourceAcquirer,
     /**
      * Test hook: cap the records a snapshot partition reads per `run()` so mid-collection resume
      * can be exercised without waiting for the `checkpointTargetInterval` timeout. `0` means
@@ -34,10 +33,11 @@ class MongoDbSharedState(
     /**
      * Test hook: override the WASS snapshot time budget (see [snapshotDeadline]) in milliseconds so
      * the yield behaviour can be exercised quickly. `0` means use [MongoDbSourceConfiguration]'s
-     * `maxSnapshotReadDuration`.
+     * `maxSnapshotReadDuration`; a negative value puts the deadline in the past so an incremental
+     * snapshot yields right after its first record.
      */
     @Value("\${airbyte.connector.extract.mongodb.max-snapshot-duration-ms:0}")
-    val maxSnapshotDurationMsOverride: Long = 0,
+    private val maxSnapshotDurationMsOverride: Long = 0,
 ) {
     /** One client for the whole READ; MongoDB pools connections internally. */
     val client: MongoClient by lazy { MongoDbClientFactory.create(configuration) }
@@ -54,57 +54,28 @@ class MongoDbSharedState(
      */
     val snapshotYielded: MutableSet<StreamIdentifier> = ConcurrentHashMap.newKeySet()
 
-    private val deadline = AtomicReference<Instant?>()
-
     /**
      * The wall-clock instant after which an incremental snapshot should yield to CDC (WASS). Fixed
      * on first access for the whole READ; effectively unlimited when no cap is configured.
      */
-    fun snapshotDeadline(): Instant =
-        deadline.updateAndGet { it ?: Instant.now().plus(effectiveSnapshotDuration()) }!!
-
-    private fun effectiveSnapshotDuration(): Duration =
-        when {
-            // Negative override => deadline already in the past: yield right after the first
-            // record.
-            maxSnapshotDurationMsOverride < 0 -> Duration.ofMillis(-1)
-            maxSnapshotDurationMsOverride > 0 -> Duration.ofMillis(maxSnapshotDurationMsOverride)
-            configuration.maxSnapshotReadDuration != null -> configuration.maxSnapshotReadDuration
-            else -> Duration.ofDays(3650)
-        }
-
-    fun tryAcquireResourcesForCreator(): CreatorAcquiredResources? {
-        val acquiredThread: ConcurrencyResource.AcquiredThread =
-            concurrencyResource.tryAcquire() ?: return null
-        return CreatorAcquiredResources { acquiredThread.close() }
+    val snapshotDeadline: Instant by lazy {
+        val budget: Duration =
+            when {
+                maxSnapshotDurationMsOverride != 0L ->
+                    Duration.ofMillis(maxSnapshotDurationMsOverride)
+                else -> configuration.maxSnapshotReadDuration ?: Duration.ofDays(3650)
+            }
+        Instant.now().plus(budget)
     }
+
+    fun tryAcquireResourcesForCreator(): AutoCloseable? = concurrencyResource.tryAcquire()
 
     fun tryAcquireResourcesForReader(
         resourceTypes: List<ResourceType>,
-    ): Map<ResourceType, ReaderAcquiredResource>? {
-        val acquiredResources: Map<ResourceType, Resource.Acquired> =
-            resourceAcquirer.tryAcquire(resourceTypes) ?: return null
-        return acquiredResources
-            .map { (type: ResourceType, acquired: Resource.Acquired) ->
-                type to
-                    object : ReaderAcquiredResource {
-                        override val resource: Resource.Acquired = acquired
-                        override fun close() = acquired.close()
-                    }
-            }
-            .toMap()
-    }
+    ): Map<ResourceType, Resource.Acquired>? = resourceAcquirer.tryAcquire(resourceTypes)
 
     @PreDestroy
     fun close() {
         client.close()
     }
-}
-
-/** Resource a partitions creator holds while planning (one [ConcurrencyResource] permit). */
-fun interface CreatorAcquiredResources : AutoCloseable
-
-/** Resource a partition reader holds while reading (a DB connection / output socket slot). */
-interface ReaderAcquiredResource : AutoCloseable {
-    val resource: Resource.Acquired?
 }

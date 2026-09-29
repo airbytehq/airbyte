@@ -66,15 +66,15 @@ data class MongoDbStreamStateValue(
         fun fromOpaqueStateValue(state: OpaqueStateValue): MongoDbStreamStateValue =
             Jsons.treeToValue(state, MongoDbStreamStateValue::class.java)
 
-        /** Builds a checkpoint from the last `_id` value emitted for a collection. */
+        /** Lenient parse: null for a missing or unparseable state (treated as "no checkpoint"). */
+        fun fromOpaqueStateValueOrNull(state: OpaqueStateValue?): MongoDbStreamStateValue? =
+            state?.let { runCatching { fromOpaqueStateValue(it) }.getOrNull() }
+
+        /**
+         * Builds a checkpoint from the last `_id` value emitted for a collection (null if none).
+         */
         fun fromLastId(lastId: Any?, status: MongoDbSnapshotStatus): MongoDbStreamStateValue =
             when (lastId) {
-                null ->
-                    MongoDbStreamStateValue(
-                        id = null,
-                        status = status,
-                        idType = MongoDbIdType.STRING
-                    )
                 is ObjectId ->
                     MongoDbStreamStateValue(lastId.toHexString(), status, MongoDbIdType.OBJECT_ID)
                 is Int -> MongoDbStreamStateValue(lastId.toString(), status, MongoDbIdType.INT)
@@ -86,7 +86,7 @@ data class MongoDbStreamStateValue(
                         idType = MongoDbIdType.BINARY,
                         binarySubType = lastId.type.toInt(),
                     )
-                else -> MongoDbStreamStateValue(lastId.toString(), status, MongoDbIdType.STRING)
+                else -> MongoDbStreamStateValue(lastId?.toString(), status, MongoDbIdType.STRING)
             }
 
         /** Inverse of [binaryIdToString]: rebuilds a [Binary] `_id` from its stored text form. */
