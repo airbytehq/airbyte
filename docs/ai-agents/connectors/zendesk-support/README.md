@@ -15,13 +15,52 @@ The Zendesk-Support connector is optimized to handle prompts like these.
 
 - Show me the tickets assigned to me last week
 - List all unresolved tickets
-- Show me the details of recent tickets
+- Show me the details of the most recent ticket
+- List the comments on the most recent ticket
+- Show me the audits for the most recent ticket
+- List ticket metrics for my tickets
+- List all deleted tickets
+- List all ticket fields
+- Show me the details of the first ticket field
+- List all ticket forms
+- Show me the details of the first ticket form
+- List all users
+- Show me the details of the first user
+- List all groups
+- Show me the details of the first group
+- List all group memberships
+- List all organizations
+- Show me the details of the first organization
+- List all organization memberships
+- List all views
+- Show me the details of the first view
+- List all macros
+- Show me the details of the first macro
+- List all triggers
+- Show me the details of the first trigger
+- List all automations
+- Show me the details of the first automation
+- List all brands
+- Show me the details of the first brand
+- List all SLA policies
+- Show me the details of the first SLA policy
+- List all satisfaction ratings
+- Show me the details of the first satisfaction rating
+- List all tags
+- List all help center articles
+- Show me the details of the first article
+- List the attachments on the first article
+- Show me the details of the first article attachment
+- Download the first attachment from the first article
+- Show me the details of the first attachment on the most recent ticket comment
+- Download the first attachment on the most recent ticket
 - Create a new ticket with subject 'Login issue' and priority high
-- Update ticket 12345 to status solved
-- Add a comment to ticket 12345 saying 'This has been resolved'
-- Set the priority of ticket 12345 to urgent and assign it to agent 98765
-- Create a new end-user named 'Jane Doe' with email jane@example.com
-- Update user 54321 with notes 'VIP customer'
+- Update the most recent ticket to status solved
+- Add a comment to the most recent ticket saying 'This has been resolved'
+- Set the priority of the most recent ticket to urgent and assign it to the first agent
+- Bulk update the priority of my two most recent tickets to normal
+- Create a new end-user named 'Jane Doe'
+- Update the first user with notes 'VIP customer'
 - What are the top 5 support issues our organization has faced this month?
 - Analyze the satisfaction ratings for our support team in the last 30 days
 - Compare ticket resolution times across different support groups
