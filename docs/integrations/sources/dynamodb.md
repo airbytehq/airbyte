@@ -103,6 +103,8 @@ The connector also reads the state saved by versions 0.3.x. A stream with such s
 
 The connector reads a large table with a [parallel scan](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Scan.html), where DynamoDB divides the table into segments by hashing each item's partition key and the connector scans each segment on its own. The segments cost nothing to compute and consume the same read capacity as one sequential scan. The number of segments comes from the table size that `DescribeTable` reports, one segment per 64 MB, up to 128 segments per table, so a table under 64 MB is still read by a single scan. DynamoDB refreshes that size about every six hours, so a table loaded since the last refresh reports zero bytes; the connector then uses as many segments as **Concurrency**.
 
+The connector asks DynamoDB to compress its responses (`Accept-Encoding: gzip`). A scan page is 1 MB of DynamoDB JSON, and moving it over one connection is most of a page's latency, so compression makes every scan faster at no extra read cost; how much depends on how compressible the items are.
+
 **Concurrency** sets how many scans run at the same time across all tables. With the default of 1 the segments of a table are read one after another and tables one after another, which is as fast as a single sequential scan. Raise it to read segments and tables in parallel; the speed-up is close to linear until the table's read capacity or the network is saturated. Each running scan holds one page of up to 1 MB in memory.
 
 Segments can be uneven. All items with the same partition key land in the same segment, so a table with few partition keys, or a few large item collections, has segments of different sizes; the larger ones just finish later.
