@@ -8,6 +8,7 @@ import freezegun
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
+from airbyte_cdk.test.state_builder import StateBuilder
 
 from . import HubspotTestCase
 from .request_builders.streams import EngagementsTaskPipelinesStreamRequestBuilder
@@ -27,8 +28,9 @@ class TestEngagementsTaskPipelinesStream(HubspotTestCase):
         return EngagementsTaskPipelinesStreamRequestBuilder()
 
     def response(self) -> HttpResponse:
-        # The stream is client-side incremental, so the pipeline has to be newer than the
-        # config's start date or the cursor filters it out before it reaches the output.
+        # The stream is client-side incremental, so the cursor keeps only records with
+        # start_date <= updatedAt <= now. The fixture's real updatedAt (2026-09-14) is after the
+        # frozen clock (2024-03-03), so pin it to a day before "now" to keep it in range.
         body = copy.deepcopy(find_template(self.STREAM_NAME, __file__))
         body["results"][0][self.CURSOR_FIELD] = self.dt_str(self.updated_at())
         return HttpResponse(json.dumps(body), 200)
@@ -80,3 +82,23 @@ class TestEngagementsTaskPipelinesStream(HubspotTestCase):
         by_label = {stage["label"]: stage["metadata"] for stage in stages}
         assert by_label["Not Started"] == {"isClosed": "false", "state": "OPEN"}
         assert by_label["Completed"] == {"isClosed": "true", "state": "CLOSED"}
+
+    @HttpMocker()
+    def test_given_no_state_when_read_incremental_then_state_is_latest_updated_at(self, http_mocker: HttpMocker):
+        self.mock_custom_objects(http_mocker)
+        self.mock_response(http_mocker, self.request().build(), self.response())
+
+        output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), self.STREAM_NAME, SyncMode.incremental)
+
+        assert [record.record.data["id"] for record in output.records] == ["3d314325-1b2a-4225-9388-375f49c57ec3"]
+        assert output.most_recent_state.stream_state.__dict__ == {self.CURSOR_FIELD: "2024-03-02T14:42:00.000000Z"}
+
+    @HttpMocker()
+    def test_given_state_after_pipeline_updated_at_when_read_incremental_then_no_records(self, http_mocker: HttpMocker):
+        self.mock_custom_objects(http_mocker)
+        self.mock_response(http_mocker, self.request().build(), self.response())
+        state = StateBuilder().with_stream_state(self.STREAM_NAME, {self.CURSOR_FIELD: "2024-03-03T00:00:00.000000Z"}).build()
+
+        output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), self.STREAM_NAME, SyncMode.incremental, state=state)
+
+        assert output.records == []

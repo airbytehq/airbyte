@@ -85,7 +85,7 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
 | `email_subscriptions`       | `content`                                                                                                    |
 | `engagements`               | `crm.objects.companies.read`, `crm.objects.contacts.read`, `crm.objects.deals.read`, `tickets`, `e-commerce` |
 | `engagements_emails`        | `sales-email-read`                                                                                           |
-| `engagements_task_pipelines` | Any CRM object read scope, for example `crm.objects.contacts.read`                                           |
+| `engagements_task_pipelines` | `crm.objects.contacts.read`                                                                                  |
 | `forms`                     | `forms`                                                                                                      |
 | `form_submissions`          | `forms`                                                                                                      |
 | `goals`                     | `crm.objects.goals.read`                                                                                     |

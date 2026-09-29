@@ -1828,6 +1828,7 @@ definitions:
       - id
     $parameters:
       name: engagements_task_pipelines
+      required_scopes: crm.objects.contacts.read
     retriever:
       # `/crm/v3/pipelines/tasks` returns every pipeline in a single response, so the shared
       # offset paginator would only add a meaningless `limit` parameter to the request.
@@ -5639,11 +5640,6 @@ schemas:
                 - "null"
                 - string
               format: date-time
-            active:
-              description: Indicates if the stage is actively being used.
-              type:
-                - "null"
-                - boolean
             archived:
               description: Indicates if the stage is archived or not.
               type:
