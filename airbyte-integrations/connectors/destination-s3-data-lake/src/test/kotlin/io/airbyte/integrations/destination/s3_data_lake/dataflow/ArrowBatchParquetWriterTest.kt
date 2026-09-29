@@ -185,7 +185,8 @@ internal class ArrowBatchParquetWriterTest {
             }
             root.rowCount = rowCount
 
-            val writer = ArrowBatchFileWriter(table, stream)
+            val generationIdSuffix = "ab-generation-id-${stream.generationId}-e"
+            val writer = ArrowBatchFileWriter(table, stream, generationIdSuffix)
             writer.write(
                 ArrowBatchDTO(
                     root = root,
@@ -199,6 +200,7 @@ internal class ArrowBatchParquetWriterTest {
             val dataFiles = writer.complete()
             assertEquals(1, dataFiles.size)
             assertEquals(FileFormat.PARQUET, dataFiles.single().format())
+            assertTrue(dataFiles.all { it.location().contains(generationIdSuffix) })
             table.newAppend().appendFile(dataFiles.single()).commit()
 
             IcebergGenerics.read(table).build().use { records ->

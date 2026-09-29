@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.UUIDGenerator
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.util.UUID
 import java.util.stream.Stream
 import org.apache.arrow.vector.BigIntVector
 import org.apache.arrow.vector.BitVector
@@ -30,6 +31,7 @@ import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties.WRITE_TARGET_FILE_SIZE_BYTES
 import org.apache.iceberg.TableProperties.WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT
 import org.apache.iceberg.io.FileAppender
+import org.apache.iceberg.io.OutputFileFactory
 import org.apache.iceberg.parquet.Parquet
 import org.apache.iceberg.parquet.ParquetValueWriter
 import org.apache.iceberg.parquet.ParquetValueWriters
@@ -439,8 +441,16 @@ class ArrowBatchParquetWriter(
 class ArrowBatchFileWriter(
     private val table: Table,
     private val stream: DestinationStream,
+    private val generationIdSuffix: String,
     private val uuidGenerator: UUIDGenerator = UUIDGenerator(),
 ) : AutoCloseable {
+    private val outputFileFactory =
+        OutputFileFactory.builderFor(table, 0, 1L)
+            .defaultSpec(table.spec())
+            .operationId(UUID.randomUUID().toString())
+            .format(FileFormat.PARQUET)
+            .suffix(generationIdSuffix)
+            .build()
     private val targetFileSize =
         PropertyUtil.propertyAsLong(
             table.properties(),
@@ -451,6 +461,7 @@ class ArrowBatchFileWriter(
     private var currentAppender: FileAppender<Int>? = null
     private var currentPath: String? = null
     private var currentWriter: ArrowBatchParquetWriter? = null
+    private var currentFileRowCount = 0
     private var closed = false
 
     fun write(batch: ArrowBatchDTO) {
@@ -463,7 +474,8 @@ class ArrowBatchFileWriter(
         currentWriter!!.setBatch(batch)
         for (rowIndex in 0 until root.rowCount) {
             currentAppender!!.add(rowIndex)
-            if (currentAppender!!.length() >= targetFileSize) {
+            currentFileRowCount++
+            if (currentFileRowCount % 1000 == 0 && currentAppender!!.length() >= targetFileSize) {
                 if (rowIndex < root.rowCount - 1) {
                     closeCurrentAppender()
                     ensureAppender()
@@ -491,12 +503,11 @@ class ArrowBatchFileWriter(
         if (currentAppender != null) {
             return
         }
-        val filename = "${uuidGenerator.v7()}.parquet"
-        val path = table.locationProvider().newDataLocation(filename)
-        currentPath = path
+        val outputFile = outputFileFactory.newOutputFile().encryptingOutputFile()
+        currentPath = outputFile.location()
         var writer: ArrowBatchParquetWriter? = null
         currentAppender =
-            Parquet.write(table.io().newOutputFile(path))
+            Parquet.write(outputFile)
                 .forTable(table)
                 .createWriterFunc { messageType ->
                     ArrowBatchParquetWriter(messageType, stream, table.schema(), uuidGenerator)
@@ -522,5 +533,6 @@ class ArrowBatchFileWriter(
         currentAppender = null
         currentPath = null
         currentWriter = null
+        currentFileRowCount = 0
     }
 }

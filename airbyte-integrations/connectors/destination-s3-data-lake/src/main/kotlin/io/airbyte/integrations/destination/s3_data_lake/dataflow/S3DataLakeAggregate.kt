@@ -65,7 +65,13 @@ class S3DataLakeAggregate(
             stream.tableSchema.importType is Append || stream.tableSchema.importType == Overwrite
         ) { "ARROW batches only support append and overwrite syncs" }
         val arrowBatchWriter =
-            arrowWriter ?: ArrowBatchFileWriter(table, stream).also { arrowWriter = it }
+            arrowWriter
+                ?: ArrowBatchFileWriter(
+                        table,
+                        stream,
+                        icebergUtil.constructGenerationIdSuffix(stream.generationId),
+                    )
+                    .also { arrowWriter = it }
         arrowBatchWriter.write(batch)
     }
 
