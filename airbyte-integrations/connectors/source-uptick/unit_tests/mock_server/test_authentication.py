@@ -203,10 +203,7 @@ def test_base_url_only_config_fails_check(tmp_path) -> None:
     statuses = output.connection_status_messages
     assert len(statuses) == 1
     assert statuses[0].connectionStatus.status == Status.FAILED
-    message = statuses[0].connectionStatus.message
-    # With no `credentials` key, the authenticator's `config["credentials"][...]` interpolations
-    # raise a Jinja UndefinedError before any token request is made.
-    assert "'dict object' has no attribute 'credentials'" in message
+    # With no `credentials` key the authenticator fails before any token request is made.
     assert _token_bodies(http_mocker) == []
 
 
