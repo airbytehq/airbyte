@@ -580,8 +580,7 @@ definitions:
     # Internal parent stream for `videos`; not exposed in the `streams` list.
     # Resolves each creative's sponsored-content reference (urn:li:share / urn:li:ugcPost)
     # to the underlying post, and keeps only the posts whose media is a video.
-    # Creatives without a `content.reference` (e.g. text ads), or with a null one,
-    # produce no partition.
+    # Creatives without a `content.reference` (e.g. text ads) produce no partition.
     videos_creative_posts:
       type: DeclarativeStream
       name: videos_creative_posts
@@ -610,17 +609,6 @@ definitions:
                   - 404
                 action: IGNORE
                 error_message: "Skipping a creative's post that is deleted or not readable by the authenticated user; the videos it references will not be synced."
-              # A creative's `content.reference` can also be an urn:li:adInMailContent
-              # (Message Ads), which is not a post URN and cannot reference a video, so
-              # skip it. LinkedIn documents this rejection as a restli 400 naming the URN
-              # in `message` (INVALID_URN_TYPE), but the API returns UGC_VALIDATIONS_FAILED,
-              # whose `message` is generic and whose offending URN appears only under
-              # `errorDetails`. Match both. The errorDetails clause matches only an
-              # `urn:li:adInMailContent:` URN, the one non-post reference type LinkedIn
-              # documents for creatives, so a UGC_VALIDATIONS_FAILED 400 that echoes a
-              # share or ugcPost URN for any other reason still fails the stream.
-              # The `message` clause keeps its original bare "URN" substring test, which
-              # means a 400 whose message merely contains "returned" is skipped as well.
               - type: HttpResponseFilter
                 predicate: >-
                   {{ response.get('status') == 400
@@ -648,11 +636,6 @@ definitions:
             - type: ParentStreamConfig
               parent_key: content/reference
               partition_field: post_urn
-              # The router skips a creative with no `content.reference` key but still
-              # emits a partition for an explicitly null one, which would request the
-              # literal path posts/None (LinkedIn: 400 "Key parameter value 'None' is
-              # invalid"). Drop those creatives before partitioning. The filter applies
-              # only to this parent, not to the exposed `creatives` stream.
               stream:
                 $ref: "#/definitions/streams/creatives"
                 retriever:
