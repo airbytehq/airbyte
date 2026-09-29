@@ -236,7 +236,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
-| 1.4.0 | 2026-09-28 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add OAuth 2.0 authorization-code (PKCE) "Authenticate with Uptick" flow; move credentials under `credentials` (legacy top-level fields still accepted) |
+| 1.4.0 | 2026-09-28 | [87436](https://github.com/airbytehq/airbyte/pull/87436) | Add OAuth 2.0 authorization-code (PKCE) "Authenticate with Uptick" flow; move credentials under `credentials` (legacy top-level fields still accepted) |
 | 1.3.1 | 2026-09-29 | [87373](https://github.com/airbytehq/airbyte/pull/87373) | Update dependencies |
 | 1.3.0 | 2026-09-28 | [86356](https://github.com/airbytehq/airbyte/pull/86356) | Add configurable max_requests_per_minute budget (default 60/min), refresh expired tokens mid-sync, and normalize base_url. The default `max_requests_per_minute` (60) is conservative; large tenants (millions of records) may see slower syncs than 1.2.1 — raise the value if Uptick tolerates it |
 | 1.2.1 | 2026-09-22 | [86843](https://github.com/airbytehq/airbyte/pull/86843) | Update dependencies |
