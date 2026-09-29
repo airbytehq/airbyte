@@ -37,6 +37,7 @@
 # -----------------------------------------------------------------------------
 /airbyte-integrations/connectors/source-*/ @airbytehq/dbsources
 /airbyte-integrations/connectors/source-pipedrive/ @airbytehq/dev-apis
+/airbyte-integrations/connectors/source-uptick/ @airbytehq/dev-apis
 
 # -----------------------------------------------------------------------------
 # DESTINATION CONNECTORS (certified + JDK-based only)

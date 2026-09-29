@@ -6793,7 +6793,7 @@
       },
       "SkillKind": {
         "type": "string",
-        "enum": ["static", "connector_source"],
+        "enum": ["static", "connector_source", "connector_destination"],
         "title": "SkillKind"
       },
       "SkillListResponse": {

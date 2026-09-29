@@ -650,6 +650,20 @@ definitions:
   # Deconstruct the reportOptions in the config and pass them in the report creation request body.
   # When no options are configured for the stream, the reportOptions key is omitted entirely
   # (rendering None drops the key), matching the pre-migration Python behavior.
+  # Defined once and referenced by every report stream that forwards options, so the matching rules
+  # (stream_name or report_name, case-sensitive option names) only ever exist in one place.
+  report_options_from_config: >-
+    {%- set rt = parameters.report_type -%}
+    {%- set opts = {} -%}
+    {%- for ro in config.get('report_options_list', []) -%}
+      {%- if ro.get('stream_name') == rt or ro.get('report_name') == rt -%}
+        {%- for item in ro.get('options_list', []) -%}
+          {%- set _ = opts.update({ item['option_name']: item['option_value'] }) -%}
+        {%- endfor -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {{ opts if opts else None }}
+
   creation_requester_with_report_options:
     $ref: "#/definitions/basic_async_retriever/creation_requester"
     request_body_json:
@@ -657,17 +671,8 @@ definitions:
       marketplaceIds: '{{ [config["marketplace_id"]] }}'
       dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
       dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
-      reportOptions: >-
-        {%- set rt = parameters.report_type -%}
-        {%- set opts = {} -%}
-        {%- for ro in config.get('report_options_list', []) -%}
-          {%- if ro.get('stream_name') == rt or ro.get('report_name') == rt -%}
-            {%- for item in ro.get('options_list', []) -%}
-              {%- set _ = opts.update({ item['option_name']: item['option_value'] }) -%}
-            {%- endfor -%}
-          {%- endif -%}
-        {%- endfor -%}
-        {{ opts if opts else None }}
+      reportOptions:
+        $ref: "#/definitions/report_options_from_config"
 
   orders_authenticator:
     type: CustomAuthenticator
@@ -1361,7 +1366,7 @@ definitions:
     get_flat_file_all_orders_data_by_order_date_general:
       type: DeclarativeStream
       name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
-      primary_key: ["amazon-order-id"]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: last-updated-date
@@ -1397,7 +1402,7 @@ definitions:
     get_flat_file_all_orders_data_by_last_update_general:
       type: DeclarativeStream
       name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL
-      primary_key: ["amazon-order-id"]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: last-updated-date
@@ -3262,6 +3267,8 @@ definitions:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
+          $parameters:
+            report_type: GET_VENDOR_SALES_REPORT
           request_body_json:
             reportType: GET_VENDOR_SALES_REPORT
             # Anchor the report window to the slice's calendar day (see GET_SALES_AND_TRAFFIC_REPORT):
@@ -3272,6 +3279,8 @@ definitions:
             dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
             dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            reportOptions:
+              $ref: "#/definitions/report_options_from_config"
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
@@ -3297,9 +3306,13 @@ definitions:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
+          $parameters:
+            report_type: GET_VENDOR_INVENTORY_REPORT
           request_body_json:
             reportType: GET_VENDOR_INVENTORY_REPORT
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            reportOptions:
+              $ref: "#/definitions/report_options_from_config"
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
@@ -3336,6 +3349,8 @@ definitions:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
+          $parameters:
+            report_type: GET_VENDOR_TRAFFIC_REPORT
           request_body_json:
             reportType: GET_VENDOR_TRAFFIC_REPORT
             # Anchor the report window to the slice's calendar day. A sibling request_body_json replaces
@@ -3346,6 +3361,8 @@ definitions:
             dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
             dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            reportOptions:
+              $ref: "#/definitions/report_options_from_config"
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
@@ -3388,12 +3405,16 @@ definitions:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
+          $parameters:
+            report_type: GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT
           request_body_json:
             reportType: GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT
             # Day-aligned report window (see GET_VENDOR_TRAFFIC_REPORT above).
             dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
             dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            reportOptions:
+              $ref: "#/definitions/report_options_from_config"
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
