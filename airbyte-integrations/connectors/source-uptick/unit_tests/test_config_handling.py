@@ -103,6 +103,7 @@ def test_spec_declares_oauth_advanced_auth() -> None:
     oauth_variant = credentials["oneOf"][0]
     assert "workspace" in oauth_variant["required"]
     assert oauth_variant["properties"]["workspace"]["pattern"] == "^[a-z0-9-]+$"
+    assert oauth_variant["properties"]["workspace"]["pattern_descriptor"] == "acme"
     assert spec["connection_specification"]["required"] == []
     assert "pattern" not in spec["connection_specification"]["properties"]["base_url"]
     user_input = spec["advanced_auth"]["oauth_config_specification"]["oauth_user_input_from_connector_config_specification"]

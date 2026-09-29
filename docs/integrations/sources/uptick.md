@@ -9,7 +9,7 @@ Extract data from Uptick, a field service management platform designed for the f
 
 ### OAuth 2.0 (recommended)
 
-On Airbyte Cloud, choose **OAuth 2.0 (Authenticate with Uptick)** under Authentication, enter your **Uptick workspace** (the `<workspace>` part of `https://<workspace>.onuptick.com`), click **Authenticate**, and approve the consent page that Uptick shows. The connector stores the resulting tokens in your connection's `credentials` block.
+On Airbyte Cloud, choose **OAuth 2.0 (Authenticate with Uptick)** under Authentication, enter only the subdomain of your Uptick URL (for `https://acme.onuptick.com` enter `acme`), click **Authenticate**, and approve the consent page that Uptick shows. The connector stores the resulting tokens in your connection's `credentials` block.
 
 On self-hosted Airbyte (OSS), first create an OAuth application in Uptick under **Control Panel > Uptick API > Create Application** with your Airbyte instance's redirect URI `https://<airbyte-host>/auth_flow`, using the authorization-code grant with PKCE (S256). Then choose **OAuth 2.0 (Authenticate with Uptick)**, enter your Uptick workspace plus the application's Client ID and Client Secret, and complete the flow.
 
@@ -225,6 +225,7 @@ To reduce API usage, sync only the streams you need and schedule syncs no more o
 - **Invalid credentials.** Uptick rejects a wrong username or password with `invalid_grant`, and a wrong client ID or client secret with `invalid_client`. The connector reports these as configuration errors without retrying. Check the four credential fields, and confirm that the OAuth application still exists under **Control Panel > Uptick API**.
 - **HTTP 401 during a sync.** Uptick access tokens can expire or be revoked during a long sync. When a stream request returns HTTP 401, the connector requests a new token and retries the request once. If the retry also fails, or if Uptick rejects the new token request because the password changed during the sync, the sync fails with a configuration error. Update the credentials and run the sync again.
 - **HTTP 403.** The Uptick user that the connector signs in as doesn't have permission to read the endpoint behind a stream. The connector fails with a configuration error instead of retrying. Grant the user access to that data in Uptick, or deselect the stream.
+- **`403 Access denied … required licenses (FIELD, DESK, CONTRACTOR)` after logging in during "Authenticate with Uptick".** The Uptick user you signed in with has no licence in that workspace. Ask your Uptick administrator to grant one (for example, DESK), or use username/password authentication instead.
 
 ## IP allow list
 

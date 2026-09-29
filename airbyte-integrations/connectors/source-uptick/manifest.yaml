@@ -188,9 +188,9 @@ spec:
               workspace:
                 type: string
                 title: Uptick workspace
-                description: The <workspace> part of https://<workspace>.onuptick.com (lowercase letters, digits, hyphens). The Base Url is derived from it when left empty.
+                description: The subdomain of your Uptick URL only — for https://acme.onuptick.com enter acme (no https://, no .onuptick.com). The Base Url is derived from it when left empty.
                 pattern: "^[a-z0-9-]+$"
-                pattern_descriptor: "<workspace>"
+                pattern_descriptor: acme
                 order: 1
               client_id:
                 type: string
