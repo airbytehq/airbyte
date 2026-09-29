@@ -155,7 +155,8 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 0.3.4 | 2026-09-25 | [86915](https://github.com/airbytehq/airbyte/pull/86915) | Add Granola-specific messages for 401, 403, 429, and 5xx errors, add heartbeat timeout, suggest `notes` and `detailed_notes`, and fix icon dimensions |
+| 0.3.5 | 2026-09-29 | [86915](https://github.com/airbytehq/airbyte/pull/86915) | Add Granola-specific messages for 401, 403, 429, and 5xx errors, add heartbeat timeout, suggest `notes` and `detailed_notes`, and fix icon dimensions |
+| 0.3.4 | 2026-09-29 | [87192](https://github.com/airbytehq/airbyte/pull/87192) | Update dependencies |
 | 0.3.3 | 2026-09-22 | [86667](https://github.com/airbytehq/airbyte/pull/86667) | Update dependencies |
 | 0.3.2 | 2026-09-15 | [86082](https://github.com/airbytehq/airbyte/pull/86082) | Update dependencies |
 | 0.3.1 | 2026-09-08 | [85516](https://github.com/airbytehq/airbyte/pull/85516) | Update dependencies |
