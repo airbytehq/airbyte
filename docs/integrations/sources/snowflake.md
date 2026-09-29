@@ -248,6 +248,16 @@ SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
 
 To read more, please check the official [Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#).
 
+### Troubleshooting
+
+- **`check` or discovery is very slow, or lists tables from other schemas.** The Snowflake JDBC driver
+  treats `_` and `%` in the **Schema** option as `LIKE` wildcards and then scans the whole database
+  (`SCHEMA_A` also matches `SCHEMAXA`). Until the connector escapes the name itself, add
+  `ENABLE_WILDCARDS_IN_SHOW_METADATA_COMMANDS=false` to **JDBC URL Params**.
+- **Incremental sync on a `TIMESTAMP_NTZ` cursor misses rows.** Snowflake sessions default to the
+  `America/Los_Angeles` time zone, which shifts the cursor bound. Add `TIMEZONE=UTC` to
+  **JDBC URL Params** as a workaround.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
