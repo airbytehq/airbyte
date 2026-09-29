@@ -160,12 +160,11 @@ spec:
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    required:
-      - base_url
+    required: []
     properties:
       base_url:
         type: string
-        description: Root URL of the Uptick workspace in the form https://<workspace>.onuptick.com (https, host only, no path or trailing slash); syncs normalize the value automatically. For OAuth 2.0 it must refer to the same workspace as the Uptick workspace field.
+        description: API URL, e.g. https://<workspace>.onuptick.com. Required for username/password; leave empty for OAuth (derived from the workspace).
         order: 0
         title: Base Url
       credentials:
@@ -189,7 +188,7 @@ spec:
               workspace:
                 type: string
                 title: Uptick workspace
-                description: The <workspace> part of https://<workspace>.onuptick.com (lowercase letters, digits, hyphens). Must be the same workspace as Base Url.
+                description: The <workspace> part of https://<workspace>.onuptick.com (lowercase letters, digits, hyphens). The Base Url is derived from it when left empty.
                 pattern: "^[a-z0-9-]+$"
                 pattern_descriptor: "<workspace>"
                 order: 1
@@ -340,6 +339,16 @@ spec:
   config_normalization_rules:
     type: ConfigNormalizationRules
     transformations:
+      # For OAuth configs saved without a Base Url, derive it from the workspace. Runs before the
+      # https normalization below so the derived value is normalized like a typed one; a user-set
+      # base_url always wins (no mismatch check).
+      - type: ConfigAddFields
+        condition: "{{ config.get('credentials', {}).get('workspace') and not (config.get('base_url') or '').strip() }}"
+        fields:
+          - type: AddedFieldDefinition
+            path: ["base_url"]
+            value: "{{ 'https://' ~ config.get('credentials', {}).get('workspace') ~ '.onuptick.com' }}"
+            value_type: string
       - type: ConfigAddFields
         condition: "{{ config.get('base_url') is string and (config['base_url'] | trim | length) > 0 }}"
         fields:

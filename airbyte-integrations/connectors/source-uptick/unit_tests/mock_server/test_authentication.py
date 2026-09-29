@@ -207,6 +207,89 @@ def test_base_url_only_config_fails_check(tmp_path) -> None:
     assert _token_bodies(http_mocker) == []
 
 
+def test_oauth_config_without_base_url_derives_it_from_workspace(tmp_path) -> None:
+    config = ConfigBuilder().with_oauth_credentials().build()
+    del config["base_url"]
+    check_request = UptickRequestBuilder.collection(_CHECK_STREAM)
+    source, migration_controls = _source_with_migration_controls(config)
+
+    # Config normalization derives base_url from credentials.workspace.
+    assert source._config["base_url"] == "https://test-tenant.onuptick.com"
+    assert migration_controls == []
+
+    with HttpMocker() as http_mocker:
+        http_mocker._mocker.post(
+            _TOKEN_URL,
+            json={"access_token": "tok", "expires_in": 3600},
+        )
+        http_mocker.get(check_request, _tasks_page())
+
+        output = _run_command(
+            source,
+            ["check", "--config", make_file(tmp_path / "config.json", config)],
+        )
+
+    statuses = output.connection_status_messages
+    assert len(statuses) == 1
+    assert statuses[0].connectionStatus.status == Status.SUCCEEDED
+    token_bodies = _token_bodies(http_mocker)
+    assert len(token_bodies) == 1
+    assert token_bodies[0]["grant_type"] == ["refresh_token"]
+    http_mocker.assert_number_of_calls(check_request, 1)
+
+
+def test_oauth_config_with_explicit_base_url_uses_it_for_api_requests(tmp_path) -> None:
+    config = ConfigBuilder().with_oauth_credentials().build()
+    config["base_url"] = "https://other-host.onuptick.com"
+
+    class _OtherHostRequestBuilder(UptickRequestBuilder):
+        BASE_URL = "https://other-host.onuptick.com"
+
+    check_request = _OtherHostRequestBuilder.collection(_CHECK_STREAM)
+    source, _ = _source_with_migration_controls(config)
+    assert source._config["base_url"] == "https://other-host.onuptick.com"
+
+    with HttpMocker() as http_mocker:
+        http_mocker._mocker.post(
+            _TOKEN_URL,
+            json={"access_token": "tok", "expires_in": 3600},
+        )
+        http_mocker.get(check_request, _tasks_page())
+
+        output = _run_command(
+            source,
+            ["check", "--config", make_file(tmp_path / "config.json", config)],
+        )
+
+    statuses = output.connection_status_messages
+    assert len(statuses) == 1
+    assert statuses[0].connectionStatus.status == Status.SUCCEEDED
+    # API requests go to the explicit base_url; the token refresh still goes to the workspace host.
+    http_mocker.assert_number_of_calls(check_request, 1)
+    assert len(_token_bodies(http_mocker)) == 1
+
+
+def test_empty_config_fails_check_without_token_request(tmp_path) -> None:
+    config: dict = {}
+    source, _ = _source_with_migration_controls(config)
+
+    with HttpMocker() as http_mocker:
+        http_mocker._mocker.post(
+            _TOKEN_URL,
+            json={"access_token": "tok", "expires_in": 3600},
+        )
+
+        output = _run_command(
+            source,
+            ["check", "--config", make_file(tmp_path / "config.json", config)],
+        )
+
+    statuses = output.connection_status_messages
+    assert len(statuses) == 1
+    assert statuses[0].connectionStatus.status == Status.FAILED
+    assert _token_bodies(http_mocker) == []
+
+
 def test_legacy_top_level_credentials_with_empty_credentials_object(tmp_path) -> None:
     config = {**ConfigBuilder().build(), "credentials": {}}
     check_request = UptickRequestBuilder.collection(_CHECK_STREAM)

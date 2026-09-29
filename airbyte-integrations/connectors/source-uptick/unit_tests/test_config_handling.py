@@ -103,7 +103,7 @@ def test_spec_declares_oauth_advanced_auth() -> None:
     oauth_variant = credentials["oneOf"][0]
     assert "workspace" in oauth_variant["required"]
     assert oauth_variant["properties"]["workspace"]["pattern"] == "^[a-z0-9-]+$"
-    assert spec["connection_specification"]["required"] == ["base_url"]
+    assert spec["connection_specification"]["required"] == []
     assert "pattern" not in spec["connection_specification"]["properties"]["base_url"]
     user_input = spec["advanced_auth"]["oauth_config_specification"]["oauth_user_input_from_connector_config_specification"]
     assert user_input["properties"]["workspace"]["path_in_connector_config"] == ["credentials", "workspace"]
@@ -150,6 +150,23 @@ def test_migrated_legacy_config_validates_against_spec(credential_value: str) ->
     for field in ("client_id", "client_secret", "username", "password"):
         assert isinstance(credentials[field], str)
         assert field not in migrated
+
+
+def test_oauth_config_without_base_url_validates_against_spec() -> None:
+    spec_schema = get_source(base_config()).resolved_manifest["spec"]["connection_specification"]
+    config = {
+        "credentials": {
+            "auth_type": "oauth2.0",
+            "workspace": "test-tenant",
+            "client_id": "test-client-id",
+            "client_secret": "test-client-secret",
+            "refresh_token": "test-refresh-token",
+        }
+    }
+
+    validate(instance=config, schema=spec_schema)
+    # The connector derives base_url from the workspace at construction.
+    assert get_source(config)._config["base_url"] == "https://test-tenant.onuptick.com"
 
 
 @pytest.mark.parametrize("workspace", ["evil.com/", "UPPER", "bad host", "tenant.example.org"])
