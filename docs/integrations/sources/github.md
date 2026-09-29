@@ -62,7 +62,7 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 6. **GitHub Repositories** - Add one entry per repository, for example `airbytehq/airbyte`. To sync every repository in an organization, enter `airbytehq/*`. To sync the repositories whose names start with a prefix, enter a pattern such as `airbytehq/a*`.
 
    :::caution
-   Repositories with the wrong name or repositories that do not exist or have the wrong name format will be skipped with `WARN` message in the logs.
+   The connector skips repositories that don't exist or that your token can't read, and logs a message for each one. Check the sync logs if a repository you expect is missing from the output.
    :::
 
 7. **Start date (Optional)** - The date from which you'd like to replicate data for streams. For streams which support this configuration, only data generated on or after the start date will be replicated.
@@ -79,7 +79,7 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 
 11. **Number of Concurrent Threads (Optional)** - How many partitions (repositories, organizations, or parent records, depending on the stream) the connector reads in parallel. The default is 4 and the maximum is 25. As of version 2.7.0 this applies to every stream. Raising it speeds up syncs but increases the risk of hitting GitHub's secondary rate limits.
 
-### For Airbyte Open Source:
+### For Airbyte Open Source
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click Sources and then click + New source.
