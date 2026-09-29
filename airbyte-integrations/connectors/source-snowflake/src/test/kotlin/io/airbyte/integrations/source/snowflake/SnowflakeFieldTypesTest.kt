@@ -221,4 +221,21 @@ class SnowflakeFieldTypesTest {
 
         verify(stmt).setString(1, "13:14:15.123457")
     }
+
+    @Test
+    fun `SnowflakeLocalDateTimeAccessor caps the end-of-time sentinel instead of rolling into year 10000`() {
+        val endOfTime = LocalDateTime.of(9999, 12, 31, 23, 59, 59, 999999999)
+        val rs = mock(ResultSet::class.java)
+        `when`(rs.getTimestamp(1)).thenReturn(Timestamp.valueOf(endOfTime))
+        `when`(rs.wasNull()).thenReturn(false)
+
+        assertEquals(
+            LocalDateTime.of(9999, 12, 31, 23, 59, 59, 999999000),
+            SnowflakeLocalDateTimeAccessor.get(rs, 1)
+        )
+        assertEquals(
+            LocalDateTime.of(9999, 12, 31, 23, 59, 59, 999999000),
+            SnowflakeOffsetDateTimeFieldType.jdbcGetter.get(rs, 1)?.toLocalDateTime()
+        )
+    }
 }

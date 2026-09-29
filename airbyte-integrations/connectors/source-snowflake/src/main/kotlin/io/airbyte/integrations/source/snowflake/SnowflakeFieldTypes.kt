@@ -129,12 +129,17 @@ object SnowflakeLocalTimeFieldType :
 // higher value that we should include in the WHERE clause of the subsequent sync.
 private fun roundUpToMicros(localDateTime: LocalDateTime): LocalDateTime {
     val remainderNanos = localDateTime.nano % 1000
-    return if (remainderNanos == 0) {
-        localDateTime
-    } else {
-        localDateTime.plusNanos((1000 - remainderNanos).toLong())
+    return when {
+        remainderNanos == 0 -> localDateTime
+        // 9999-12-31 23:59:59.999999999 is a common "end of time" sentinel; rounding it up would
+        // produce year 10000, which destinations reject ("time zone displacement out of range").
+        localDateTime > MAX_MICROS_DATE_TIME -> MAX_MICROS_DATE_TIME
+        else -> localDateTime.plusNanos((1000 - remainderNanos).toLong())
     }
 }
+
+private val MAX_MICROS_DATE_TIME: LocalDateTime =
+    LocalDateTime.of(9999, 12, 31, 23, 59, 59, 999_999_000)
 
 private val MAX_MICROS_TIME: LocalTime = LocalTime.of(23, 59, 59, 999_999_000)
 
