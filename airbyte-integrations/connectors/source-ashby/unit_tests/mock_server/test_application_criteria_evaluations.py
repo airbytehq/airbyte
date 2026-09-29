@@ -40,23 +40,33 @@ def _application_record(application_id: str, **overrides) -> Dict[str, Any]:
 
 
 def _evaluation_record(record_id: str, **overrides) -> Dict[str, Any]:
+    """An `ApplicationCriteriaEvaluation`, shaped like the success example in Ashby's `application.listCriteriaEvaluations` reference."""
     record = {
         "id": record_id,
-        "assessmentType": "criteria",
-        "criterionName": "Communication",
-        "evaluatedAt": "2024-06-01T12:00:00Z",
-        "outcome": "DefinitelyYes",
-        "status": "Complete",
+        "criterion": {
+            "id": "criterion-1",
+            "title": "Location",
+            "type": "ResumePrompt",
+            "prompt": "Evaluate if the candidate's location aligns with the job requirements.",
+            "applicationFormDefinitionId": None,
+            "applicationFormFieldPath": None,
+        },
+        "status": "Completed",
+        "outcome": "Meets",
+        "reasoning": "The candidate's location aligns with the job's location requirement.",
+        "skipReason": None,
+        "outcomeNumber": 0.85,
+        "evaluatedAt": "2024-06-01T12:00:00.000Z",
     }
     record.update(overrides)
     return record
 
 
-def _page(records: List[Dict[str, Any]], next_cursor: str = None) -> HttpResponse:
+def _page(records: List[Dict[str, Any]], next_cursor: str = None, more_data_available: bool = None) -> HttpResponse:
     body = {
         "success": True,
         "results": records,
-        "moreDataAvailable": next_cursor is not None,
+        "moreDataAvailable": next_cursor is not None if more_data_available is None else more_data_available,
     }
     if next_cursor is not None:
         body["nextCursor"] = next_cursor
@@ -114,7 +124,8 @@ class TestApplicationCriteriaEvaluations(TestCase):
             app1_page1,
             _page([_evaluation_record("eval-1"), _evaluation_record("eval-2")], next_cursor="c2"),
         )
-        http_mocker.post(app1_page2, _page([_evaluation_record("eval-3")]))
+        # The last page still carries a cursor; only `moreDataAvailable: false` may end pagination.
+        http_mocker.post(app1_page2, _page([_evaluation_record("eval-3")], next_cursor="c3", more_data_available=False))
         http_mocker.post(app2_page1, _page([_evaluation_record("eval-4")]))
 
         output = _read()

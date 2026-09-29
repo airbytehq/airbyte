@@ -73,7 +73,7 @@ class TestRequestBodies(TestCase):
 
         assert "brandId" in streams_by_name["applications"].json_schema["properties"]["job"]["properties"]
         assert "referenceIdentifier" in streams_by_name["candidates"].json_schema["properties"]["customFields"]["items"]["properties"]
-        for field in ("isDateOnlyField", "isEditableOnlyViaPublicApi", "referencedObjectType"):
+        for field in ("isDateOnlyField", "isEditableOnlyViaPublicApi", "referenceIdentifier", "referencedObjectType"):
             assert field in streams_by_name["custom_fields"].json_schema["properties"]
 
         interview_event = streams_by_name["interview_schedules"].json_schema["properties"]["interviewEvents"]["items"]["properties"]
@@ -87,6 +87,8 @@ class TestRequestBodies(TestCase):
         spec = get_source(config=config).spec(logging.getLogger("airbyte"))
         assert spec.connectionSpecification["properties"]["start_date"]["description"] == (
             "Only applications, application feedback, and interview schedules "
-            "created on or after this date are replicated. All other streams are "
-            "read in full on every sync. Format: 2017-01-25T00:00:00Z."
+            "created on or after this date are replicated, and application history "
+            "and application criteria evaluations are read only for those "
+            "applications. All other streams are read in full on every sync. "
+            "Format: 2017-01-25T00:00:00Z."
         )

@@ -1,57 +1,72 @@
 version: 4.3.0
 type: DeclarativeSource
 definitions:
+  response_filters:
+    rate_limited:
+      type: HttpResponseFilter
+      action: RATE_LIMITED
+      http_codes: [429]
+    server_error:
+      type: HttpResponseFilter
+      action: RETRY
+      http_codes: [500, 502, 503, 504]
+    unauthorized:
+      type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      http_codes: [401]
+      error_message: >-
+        Ashby rejected the API key (HTTP 401 Unauthorized). Check that the API key in the
+        source settings is correct and still active, or generate a new key in Ashby under
+        Admin > API Keys.
+    missing_endpoint_permission:
+      type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      predicate: >-
+        {{ response.get('success', true) == false and
+        response.get('errorInfo', {}).get('code') == 'missing_endpoint_permission' }}
+      error_message: >-
+        The Ashby API key lacks a module permission this stream needs:
+        {{ response.get('errorInfo', {}).get('message', 'missing_endpoint_permission') }}.
+        Enable the permission on the key in Ashby under Admin > API Keys, or deselect the stream.
+    forbidden:
+      type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      http_codes: [403]
+      error_message: >-
+        Ashby refused the request (HTTP 403 Forbidden). The API key may be deactivated or
+        lack access; generate a new key in Ashby under Admin > API Keys.
+    success_false:
+      type: HttpResponseFilter
+      action: FAIL
+      predicate: "{{ response.get('success', true) == false }}"
+      error_message: >-
+        {%- set info = response.get('errorInfo') or {} -%}
+        {%- set first = (response.get('errors') or [{}])[0] -%}
+        Ashby returned an error
+        ({{ info.get('code') or (first.get('code') if first is mapping else first) or 'unknown' }}):
+        {{ info.get('message') or (first.get('message') if first is mapping else first) or 'no message provided' }}
+        (request ID: {{ info.get('requestId') or 'unavailable' }}).
   error_handler:
     type: DefaultErrorHandler
-    max_retries: 8
+    max_retries: 6
     backoff_strategies:
       - type: WaitTimeFromHeader
         header: Retry-After
       - type: ExponentialBackoffStrategy
         factor: 5
     response_filters:
-      - type: HttpResponseFilter
-        action: RATE_LIMITED
-        http_codes: [429]
-      - type: HttpResponseFilter
-        action: RETRY
-        http_codes: [500, 502, 503, 504]
-      - type: HttpResponseFilter
-        action: FAIL
-        failure_type: config_error
-        http_codes: [401]
-        error_message: >-
-          Ashby rejected the API key (HTTP 401 Unauthorized). Check that the API key in the
-          source settings is correct and still active, or generate a new key in Ashby under
-          Admin > API Keys.
-      - type: HttpResponseFilter
-        action: FAIL
-        failure_type: config_error
-        http_codes: [403]
-        error_message: >-
-          Ashby refused the request (HTTP 403 Forbidden). The API key may be deactivated or
-          lack access; generate a new key in Ashby under Admin > API Keys.
-      - type: HttpResponseFilter
-        action: FAIL
-        failure_type: config_error
-        predicate: >-
-          {{ response.get('success', true) == false and
-          response.get('errorInfo', {}).get('code') == 'missing_endpoint_permission' }}
-        error_message: >-
-          The Ashby API key lacks a module permission this stream needs:
-          {{ response.get('errorInfo', {}).get('message', 'missing_endpoint_permission') }}.
-          Enable the permission on the key in Ashby under Admin > API Keys, or deselect the stream.
-      - type: HttpResponseFilter
-        action: FAIL
-        predicate: "{{ response.get('success', true) == false }}"
-        error_message: >-
-          Ashby returned an error ({{ response.get('errorInfo', {}).get('code', 'unknown') }}):
-          {{ response.get('errorInfo', {}).get('message') or 'no message provided' }}
-          (request ID: {{ response.get('errorInfo', {}).get('requestId', 'unavailable') }}).
+      - $ref: "#/definitions/response_filters/rate_limited"
+      - $ref: "#/definitions/response_filters/server_error"
+      - $ref: "#/definitions/response_filters/unauthorized"
+      - $ref: "#/definitions/response_filters/missing_endpoint_permission"
+      - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/success_false"
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 2
-  max_concurrency: 4
 api_budget:
   type: HTTPAPIBudget
   policies:
@@ -182,6 +197,10 @@ streams:
                   type:
                     - "null"
                     - boolean
+                referenceIdentifier:
+                  type:
+                    - "null"
+                    - string
                 title:
                   type:
                     - "null"
@@ -1037,6 +1056,10 @@ streams:
             type:
               - "null"
               - string
+          referenceIdentifier:
+            type:
+              - "null"
+              - string
           referencedObjectType:
             type:
               - "null"
@@ -1347,6 +1370,10 @@ streams:
                     - "null"
                     - object
                   additionalProperties: true
+                interview:
+                  type:
+                    - "null"
+                    - object
                 interviewers:
                   type:
                     - "null"
@@ -1387,6 +1414,24 @@ streams:
                           - "null"
                           - string
                         format: date-time
+                      managerId:
+                        type:
+                          - "null"
+                          - string
+                      trainingRole:
+                        type:
+                          - "null"
+                          - string
+                      interviewerPool:
+                        type:
+                          - "null"
+                          - object
+                      customFields:
+                        type:
+                          - "null"
+                          - array
+                        items:
+                          type: object
           interviewStageId:
             type:
               - "null"
@@ -1639,6 +1684,15 @@ streams:
                       type: string
             parent_key: id
             partition_field: interview_plan_id
+            extra_fields:
+              - - isArchived
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - interview_plan_is_archived
+            value: "{{ stream_slice.extra_fields['isArchived'] }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1650,6 +1704,10 @@ streams:
             type:
               - "null"
               - string
+          interview_plan_is_archived:
+            type:
+              - "null"
+              - boolean
           interviewPlanId:
             type:
               - "null"
@@ -2372,6 +2430,22 @@ streams:
         http_method: POST
         error_handler:
           $ref: "#/definitions/error_handler"
+          response_filters:
+            - $ref: "#/definitions/response_filters/rate_limited"
+            - $ref: "#/definitions/response_filters/server_error"
+            - $ref: "#/definitions/response_filters/unauthorized"
+            - $ref: "#/definitions/response_filters/missing_endpoint_permission"
+            - $ref: "#/definitions/response_filters/forbidden"
+            - type: HttpResponseFilter
+              action: IGNORE
+              predicate: >-
+                {{ response.get('success', true) == false and
+                response.get('errorInfo', {}).get('code') == 'application_not_found' }}
+              error_message: >-
+                application.listCriteriaEvaluations skipped this application's evaluations
+                (Ashby request ID:
+                {{ response.get('errorInfo', {}).get('requestId', 'unavailable') }}).
+            - $ref: "#/definitions/response_filters/success_false"
         request_body_json:
           applicationId: "{{ stream_partition.application_id }}"
       record_selector:
@@ -2559,52 +2633,13 @@ streams:
         request_body_json:
           applicationId: "{{ stream_partition.application_id }}"
         error_handler:
-          type: DefaultErrorHandler
-          max_retries: 8
-          backoff_strategies:
-            - type: WaitTimeFromHeader
-              header: Retry-After
-            - type: ExponentialBackoffStrategy
-              factor: 5
+          $ref: "#/definitions/error_handler"
           response_filters:
-            - type: HttpResponseFilter
-              action: RATE_LIMITED
-              http_codes:
-                - 429
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
-                - 500
-                - 502
-                - 503
-                - 504
-            - type: HttpResponseFilter
-              action: FAIL
-              failure_type: config_error
-              http_codes:
-                - 401
-              error_message: >-
-                Ashby rejected the API key (HTTP 401 Unauthorized). Check that the API key in the
-                source settings is correct and still active, or generate a new key in Ashby under
-                Admin > API Keys.
-            - type: HttpResponseFilter
-              action: FAIL
-              failure_type: config_error
-              http_codes:
-                - 403
-              error_message: >-
-                Ashby refused the request (HTTP 403 Forbidden). The API key may be deactivated or
-                lack access; generate a new key in Ashby under Admin > API Keys.
-            - type: HttpResponseFilter
-              action: FAIL
-              failure_type: config_error
-              predicate: >-
-                {{ response.get('success', true) == false and
-                response.get('errorInfo', {}).get('code') == 'missing_endpoint_permission' }}
-              error_message: >-
-                The Ashby API key lacks a module permission this stream needs:
-                {{ response.get('errorInfo', {}).get('message', 'missing_endpoint_permission') }}.
-                Enable the permission on the key in Ashby under Admin > API Keys, or deselect the stream.
+            - $ref: "#/definitions/response_filters/rate_limited"
+            - $ref: "#/definitions/response_filters/server_error"
+            - $ref: "#/definitions/response_filters/unauthorized"
+            - $ref: "#/definitions/response_filters/missing_endpoint_permission"
+            - $ref: "#/definitions/response_filters/forbidden"
             - type: HttpResponseFilter
               action: IGNORE
               predicate: >-
@@ -2614,15 +2649,7 @@ streams:
                 application.listHistory skipped this application's history
                 (Ashby request ID:
                 {{ response.get('errorInfo', {}).get('requestId', 'unavailable') }}).
-            - type: HttpResponseFilter
-              action: FAIL
-              predicate: "{{ response.get('success', true) == false }}"
-              error_message: >-
-                application.listHistory failed with code
-                {{ response.get('errorInfo', {}).get('code', 'unknown') }}:
-                {{ response.get('errorInfo', {}).get('message') or
-                (response.get('errors') and response.get('errors')[0].get('message')) or
-                'Unknown error' }}.
+            - $ref: "#/definitions/response_filters/success_false"
       record_selector:
         type: RecordSelector
         extractor:
@@ -2798,8 +2825,10 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         description: >-
           Only applications, application feedback, and interview schedules
-          created on or after this date are replicated. All other streams are
-          read in full on every sync. Format: 2017-01-25T00:00:00Z.
+          created on or after this date are replicated, and application history
+          and application criteria evaluations are read only for those
+          applications. All other streams are read in full on every sync.
+          Format: 2017-01-25T00:00:00Z.
         examples:
           - "2017-01-25T00:00:00Z"
         order: 1

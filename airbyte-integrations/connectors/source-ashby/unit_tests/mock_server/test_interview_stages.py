@@ -37,17 +37,16 @@ def _stage_record(record_id: str, **overrides) -> Dict[str, Any]:
         "orderInInterviewPlan": 2,
         "interviewPlanId": "plan-1",
         "interviewStageGroupId": "group-1",
-        "isArchived": False,
     }
     record.update(overrides)
     return record
 
 
-def _page(records: List[Dict[str, Any]], next_cursor: str = None) -> HttpResponse:
+def _page(records: List[Dict[str, Any]], next_cursor: str = None, more_data_available: bool = None) -> HttpResponse:
     body = {
         "success": True,
         "results": records,
-        "moreDataAvailable": next_cursor is not None,
+        "moreDataAvailable": next_cursor is not None if more_data_available is None else more_data_available,
     }
     if next_cursor is not None:
         body["nextCursor"] = next_cursor
@@ -94,9 +93,10 @@ def _mock_parent_pages(http_mocker: HttpMocker) -> List[HttpRequest]:
     plans_page2 = _plans_second_page_request()
     http_mocker.post(
         plans_page1,
-        _page([{"id": "plan-1"}, {"id": "plan-2"}], next_cursor="c2"),
+        _page([{"id": "plan-1", "isArchived": True}, {"id": "plan-2", "isArchived": False}], next_cursor="c2"),
     )
-    http_mocker.post(plans_page2, _page([{"id": "plan-3"}]))
+    # The last page still carries a cursor; only `moreDataAvailable: false` may end pagination.
+    http_mocker.post(plans_page2, _page([{"id": "plan-3", "isArchived": False}], next_cursor="c3", more_data_available=False))
     return [plans_page1, plans_page2]
 
 
@@ -119,7 +119,12 @@ class TestInterviewStages(TestCase):
         output = _read()
 
         assert output.errors == []
-        assert {message.record.data["id"] for message in output.records} == {"stage-1", "stage-2", "stage-3", "stage-4"}
+        records_by_id = {message.record.data["id"]: message.record.data for message in output.records}
+        assert set(records_by_id) == {"stage-1", "stage-2", "stage-3", "stage-4"}
+        assert records_by_id["stage-1"]["interview_plan_is_archived"] is True
+        assert records_by_id["stage-2"]["interview_plan_is_archived"] is True
+        assert records_by_id["stage-3"]["interview_plan_is_archived"] is False
+        assert records_by_id["stage-4"]["interview_plan_is_archived"] is False
         for request in plans_requests:
             http_mocker.assert_number_of_calls(request, 1)
         for request in stages_requests.values():
