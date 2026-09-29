@@ -51,10 +51,8 @@ definitions:
                   the window itself must shrink.
                 response_filters:
                   - type: HttpResponseFilter
-                    http_codes:
-                      - 400
                     action: SPLIT_REQUEST_WINDOW
-                    predicate: "{{ response['name'] == 'RESULTSET_TOO_LARGE' }}"
+                    predicate: "{{ response.get('name') == 'RESULTSET_TOO_LARGE' }}"
         record_selector:
           type: RecordSelector
           extractor:
