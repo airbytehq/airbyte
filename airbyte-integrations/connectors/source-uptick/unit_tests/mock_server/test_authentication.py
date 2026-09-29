@@ -130,6 +130,56 @@ def test_oauth_credentials_use_refresh_grant_and_emit_control() -> None:
     assert credentials["refresh_token"] == "rotated-refresh-token"
 
 
+def test_base_url_only_config_fails_check_with_auth_method_message(tmp_path) -> None:
+    config = {"base_url": "https://test-tenant.onuptick.com"}
+
+    with HttpMocker() as http_mocker:
+        http_mocker._mocker.post(
+            _TOKEN_URL,
+            json={"access_token": "tok", "expires_in": 3600},
+        )
+
+        output = _run_command(
+            get_source(config=config),
+            ["check", "--config", make_file(tmp_path / "config.json", config)],
+        )
+
+    statuses = output.connection_status_messages
+    assert len(statuses) == 1
+    assert statuses[0].connectionStatus.status == Status.FAILED
+    message = statuses[0].connectionStatus.message
+    # The spec requires either `credentials` or the legacy top-level fields, so this fails spec
+    # validation as a config_error before any authenticator interpolation runs.
+    assert "is not valid under any of the given schemas" in message
+    assert "has no attribute 'credentials'" not in message
+    assert _token_bodies(http_mocker) == []
+
+
+def test_legacy_top_level_credentials_with_empty_credentials_object(tmp_path) -> None:
+    config = {**ConfigBuilder().build(), "credentials": {}}
+    check_request = UptickRequestBuilder.collection(_CHECK_STREAM)
+
+    with HttpMocker() as http_mocker:
+        http_mocker._mocker.post(
+            _TOKEN_URL,
+            json={"access_token": "tok", "expires_in": 3600},
+        )
+        http_mocker.get(check_request, _tasks_page())
+
+        output = _run_command(
+            get_source(config=config),
+            ["check", "--config", make_file(tmp_path / "config.json", config)],
+        )
+
+    statuses = output.connection_status_messages
+    assert len(statuses) == 1
+    assert statuses[0].connectionStatus.status == Status.SUCCEEDED
+    token_bodies = _token_bodies(http_mocker)
+    assert len(token_bodies) == 1
+    assert token_bodies[0]["grant_type"] == ["password"]
+    assert _control_messages(output) == []
+
+
 def test_oauth_credentials_keep_refresh_token_when_response_omits_it() -> None:
     config = ConfigBuilder().with_oauth_credentials().build()
     catalog = CatalogBuilder().with_stream("servicegroups", SyncMode.full_refresh).build()

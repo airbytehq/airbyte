@@ -162,6 +162,14 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - base_url
+    # A config needs either the `credentials` object (OAuth or username & password) or the legacy
+    # top-level fields (which normalization maps into `credentials`); base_url alone fails spec
+    # validation as a config_error instead of reaching the authenticator's Jinja interpolations.
+    anyOf:
+      - required:
+          - credentials
+      - required:
+          - username
     properties:
       base_url:
         type: string
