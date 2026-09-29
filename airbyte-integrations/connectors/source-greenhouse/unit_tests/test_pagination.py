@@ -990,6 +990,16 @@ DOCUMENTED_V3_EXAMPLES = {
         "created_at": "2024-01-01T12:30:30.000Z",
         "updated_at": "2024-01-01T12:30:30.000Z",
     },
+    "job_candidate_attributes": {
+        "id": 1,
+        "name": "JavaScript",
+        "active": True,
+        "candidate_attribute_type_id": 1,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "sort_order": 2,
+        "job_id": 1,
+    },
     "job_post_locations": {
         "id": 1,
         "plain_text_location": "New York, NY",
@@ -1418,6 +1428,7 @@ PARITY_STREAM_ENDPOINTS = {
     "scorecard_question_options": "https://harvest.greenhouse.io/v3/scorecard_question_options",
     "scorecard_question_answer_options": "https://harvest.greenhouse.io/v3/scorecard_question_answer_options",
     "job_post_locations": "https://harvest.greenhouse.io/v3/job_post_locations",
+    "job_candidate_attributes": "https://harvest.greenhouse.io/v3/job_candidate_attributes",
 }
 
 

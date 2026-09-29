@@ -107,5 +107,6 @@ This needs no compensation in the manifest and none is present. Because `gte` is
 | job_notes | top-level | updated_at | updated_at | incremental |
 | job_owners | top-level | updated_at | updated_at | incremental |
 | job_post_locations | top-level | updated_at | updated_at | incremental |
+| job_candidate_attributes | top-level | updated_at | updated_at | incremental |
 | prospect_pool_stages | top-level | updated_at | updated_at | incremental |
 | user_emails | top-level | updated_at | updated_at | incremental |
