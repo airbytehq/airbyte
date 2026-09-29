@@ -378,6 +378,26 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                     "\"((0.0,0.0),(1.0,0.0),(1.0,1.0))\""
             )
         )
+
+        // User-defined non-array type whose name starts with an underscore must not be
+        // mistaken for an array type. The type lives in the public schema (on the search_path)
+        // so the driver reports its bare, unqualified name, e.g. "_load_type".
+        add(
+            testCase(
+                "public.\"$UNDERSCORE_ENUM\"",
+                LeafAirbyteSchemaType.STRING,
+                mapOf("null" to "null", "'FCL'" to "\"FCL\"", "'LCL'" to "\"LCL\""),
+                "UNDERSCORE PREFIXED ENUM"
+            )
+        )
+        add(
+            testCase(
+                "public.\"$UNDERSCORE_ENUM\"[]",
+                ArrayAirbyteSchemaType(LeafAirbyteSchemaType.STRING),
+                mapOf("array['FCL', 'LCL']::public.\"$UNDERSCORE_ENUM\"[]" to "[\"FCL\",\"LCL\"]"),
+                "UNDERSCORE PREFIXED ENUM ARRAY"
+            )
+        )
     }
 
     companion object {
@@ -423,10 +443,14 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 "'-Infinity'" to "null",
             )
         private val nulledNaN = mapOf("'NaN'" to "null")
+        private const val UNDERSCORE_ENUM = "_load_type"
     }
 
     override val setupDdl: List<String> =
-        listOf("CREATE SCHEMA \"$schema\"")
+        listOf(
+                "CREATE SCHEMA \"$schema\"",
+                "CREATE TYPE public.\"$UNDERSCORE_ENUM\" AS ENUM ('FCL', 'LCL')",
+            )
             .plus(
                 testCases.map {
                     """

@@ -125,7 +125,21 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
     }
 
     class PgSystemType(systemType: SystemType) {
-        val isArray: Boolean = systemType.typeName!!.startsWith("_")
+        // A column is an array only if BOTH hold:
+        //
+        // 1. The driver reports JDBCType.ARRAY. pgjdbc derives this from the catalog
+        //    (typinput = array_in), so it is the reliable signal. The name alone is not: Postgres
+        //    names array types "_<element>", but users can also create non-array types whose
+        //    names start with an underscore, e.g. `CREATE TYPE _status AS ENUM (...)`. Such
+        //    a column must map to its scalar type, not to an array (oncall#13562).
+        //
+        // 2. The name starts with an underscore. JDBCType.ARRAY alone says nothing about the
+        //    element type; we derive it from the name below by stripping the leading "_"
+        //    ("_int4" -> "int4"). For array types outside the search_path the driver returns a
+        //    quoted, schema-qualified name (e.g. "s2"."_kind") that cannot be parsed this way,
+        //    so those columns keep their existing (non-array) mapping.
+        val isArray: Boolean =
+            systemType.jdbcType == JDBCType.ARRAY && systemType.typeName!!.startsWith("_")
         val scalarTypeName =
             if (isArray) systemType.typeName!!.substring(1) else systemType.typeName!!
         val scalarJdbcType: JDBCType =
