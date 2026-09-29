@@ -25,13 +25,13 @@ class MsSqlServerStateMigrationTest {
         }
         """.trimIndent()
 
-        val parsed = MsSqlServerStateMigration.parseStateValue(Jsons.readTree(newState))
+        val parsed = MsSqlServerStateMigration.parseStateValue(Jsons.readTree(newState))!!
 
-        assertEquals("2024-01-01T00:00:00", parsed!!.cursor?.asText())
-        assertEquals("cursor_based", parsed!!.stateType)
-        assertEquals(listOf("created_at"), parsed!!.cursorField)
-        assertEquals(0, parsed!!.cursorRecordCount)
-        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed!!.version)
+        assertEquals("2024-01-01T00:00:00", parsed.cursor?.asText())
+        assertEquals("cursor_based", parsed.stateType)
+        assertEquals(listOf("created_at"), parsed.cursorField)
+        assertEquals(0, parsed.cursorRecordCount)
+        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed.version)
     }
 
     @Test
@@ -56,21 +56,18 @@ class MsSqlServerStateMigrationTest {
         """.trimIndent()
 
         val parsed =
-            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyOrderedColumnState))
+            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyOrderedColumnState))!!
 
         // Should be converted to primary_key state
-        assertEquals("primary_key", parsed!!.stateType)
-        assertEquals("id", parsed!!.pkName)
-        assertEquals("12345", parsed!!.pkValue?.asText())
-        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed!!.version)
+        assertEquals("primary_key", parsed.stateType)
+        assertEquals("id", parsed.pkName)
+        assertEquals("12345", parsed.pkValue?.asText())
+        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed.version)
 
         // Should preserve incremental state
-        assertNotNull(parsed!!.incrementalState)
+        assertNotNull(parsed.incrementalState)
         val incrementalState =
-            Jsons.treeToValue(
-                parsed!!.incrementalState,
-                MsSqlServerJdbcStreamStateValue::class.java
-            )
+            Jsons.treeToValue(parsed.incrementalState, MsSqlServerJdbcStreamStateValue::class.java)
         assertEquals("cursor_based", incrementalState.stateType)
         // Stream name and namespace are not tracked in the state value
         assertEquals(listOf("created_at"), incrementalState.cursorField)
@@ -92,14 +89,14 @@ class MsSqlServerStateMigrationTest {
         }
         """.trimIndent()
 
-        val parsed = MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyCursorState))
+        val parsed = MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyCursorState))!!
 
-        assertEquals("cursor_based", parsed!!.stateType)
+        assertEquals("cursor_based", parsed.stateType)
         // Stream name and namespace are not tracked in the state value
-        assertEquals(listOf("created_at"), parsed!!.cursorField)
-        assertEquals("2024-01-01T00:00:00", parsed!!.cursor?.asText())
-        assertEquals(1, parsed!!.cursorRecordCount)
-        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed!!.version)
+        assertEquals(listOf("created_at"), parsed.cursorField)
+        assertEquals("2024-01-01T00:00:00", parsed.cursor?.asText())
+        assertEquals(1, parsed.cursorRecordCount)
+        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed.version)
     }
 
     @Test
@@ -114,12 +111,12 @@ class MsSqlServerStateMigrationTest {
         """.trimIndent()
 
         val parsed =
-            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyStateWithoutStateType))
+            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyStateWithoutStateType))!!
 
-        assertEquals("primary_key", parsed!!.stateType)
-        assertEquals("id", parsed!!.pkName)
-        assertEquals("12345", parsed!!.pkValue?.asText())
-        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed!!.version)
+        assertEquals("primary_key", parsed.stateType)
+        assertEquals("id", parsed.pkName)
+        assertEquals("12345", parsed.pkValue?.asText())
+        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed.version)
     }
 
     @Test
@@ -135,13 +132,13 @@ class MsSqlServerStateMigrationTest {
         """.trimIndent()
 
         val parsed =
-            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyStateWithoutStateType))
+            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyStateWithoutStateType))!!
 
-        assertEquals("cursor_based", parsed!!.stateType)
+        assertEquals("cursor_based", parsed.stateType)
         // Stream name is not tracked in the state value
-        assertEquals(listOf("created_at"), parsed!!.cursorField)
-        assertEquals("2024-01-01T00:00:00", parsed!!.cursor?.asText())
-        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed!!.version)
+        assertEquals(listOf("created_at"), parsed.cursorField)
+        assertEquals("2024-01-01T00:00:00", parsed.cursor?.asText())
+        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed.version)
     }
 
     @Test
@@ -179,13 +176,13 @@ class MsSqlServerStateMigrationTest {
         """.trimIndent()
 
         val parsed =
-            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyOrderedColumnState))
+            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyOrderedColumnState))!!
 
-        assertEquals("primary_key", parsed!!.stateType)
-        assertEquals("id", parsed!!.pkName)
-        assertEquals("12345", parsed!!.pkValue?.asText())
-        assertNull(parsed!!.incrementalState)
-        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed!!.version)
+        assertEquals("primary_key", parsed.stateType)
+        assertEquals("id", parsed.pkName)
+        assertEquals("12345", parsed.pkValue?.asText())
+        assertNull(parsed.incrementalState)
+        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed.version)
     }
 
     @Test
@@ -201,14 +198,15 @@ class MsSqlServerStateMigrationTest {
         }
         """.trimIndent()
 
-        val parsed = MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyStateWithNulls))
+        val parsed =
+            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyStateWithNulls))!!
 
-        assertEquals("cursor_based", parsed!!.stateType)
+        assertEquals("cursor_based", parsed.stateType)
         // Stream name is not tracked in the state value
-        assertEquals(emptyList<String>(), parsed!!.cursorField)
-        assertNull(parsed!!.cursor)
-        assertEquals(0, parsed!!.cursorRecordCount)
-        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed!!.version)
+        assertEquals(emptyList<String>(), parsed.cursorField)
+        assertNull(parsed.cursor)
+        assertEquals(0, parsed.cursorRecordCount)
+        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed.version)
     }
 
     @Test
@@ -229,13 +227,13 @@ class MsSqlServerStateMigrationTest {
         val parsed =
             MsSqlServerStateMigration.parseStateValue(
                 Jsons.readTree(legacyOrderedColumnStateWithNullIncremental)
-            )
+            )!!
 
         // Should successfully migrate without NPE
-        assertEquals("primary_key", parsed!!.stateType)
-        assertEquals("id", parsed!!.pkName)
-        assertEquals("23", parsed!!.pkValue?.asText())
-        assertNull(parsed!!.incrementalState)
-        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed!!.version)
+        assertEquals("primary_key", parsed.stateType)
+        assertEquals("id", parsed.pkName)
+        assertEquals("23", parsed.pkValue?.asText())
+        assertNull(parsed.incrementalState)
+        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed.version)
     }
 }
