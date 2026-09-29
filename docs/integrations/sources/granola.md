@@ -101,7 +101,7 @@ The set of notes the connector can read depends on the key you configure:
 | Key type | Data scope |
 | :--- | :--- |
 | **Personal API key** | The scopes selected when the key was created. **Personal notes** covers notes you own, notes shared directly with you, and notes in private folders shared with you. **Public notes** covers notes visible to everyone in the workspace, such as notes in the Team space. |
-| **Workspace API key** | Public notes in the workspace, plus notes in spaces where an administrator turned on **Allow Granola API access**. Private notes and folders that weren't shared this way are excluded. |
+| **Workspace API key** | Public notes in the workspace, plus notes in spaces where **Allow Granola API access** is turned on. Granola turns this setting on by default for new spaces, and administrators can change it in **Settings > Spaces**. If an administrator turned off **Allow public folders** for the workspace, the key can't read public notes. Private notes and folders that weren't shared this way are excluded. |
 
 Notes in Granola are private by default, so a key with only **Public notes** access returns nothing until notes are placed in a folder that everyone in the workspace can see. If a sync returns no records, check the key's scopes first. For more information, refer to the [Granola API documentation](https://docs.granola.ai/help-center/sharing/integrations/granola-api).
 
@@ -117,9 +117,14 @@ The Granola API enforces rate limits. Depending on the key's access scope, limit
 
 The connector throttles itself to the documented burst limit of 25 requests per 5 seconds. If Granola still returns `429 Too Many Requests`, or a `5xx` server error, the connector retries the request up to 5 times. It waits for the interval in the `Retry-After` response header when Granola sends one, up to 60 seconds, and otherwise backs off exponentially.
 
-A `401` response means Granola rejected the API key, and a `403` response means the key doesn't have access to the requested data. Both fail the sync immediately as a configuration error. Check that the key is still valid and has the access you expect, or create a new one in the Granola desktop app.
-
 ## Troubleshooting
+
+### Syncs fail with a `401` or `403` error
+
+When Granola returns `401` or `403`, the connector fails the sync immediately as a configuration error instead of retrying.
+
+- `401 Unauthorized` means Granola rejected the API key. The key may be mistyped, revoked, or expired. Workspace API keys don't expire, but personal API keys can. Create a new key in the Granola desktop app and update the connector's **API Key**.
+- `403 Forbidden` means Granola accepted the key but denied access to the requested data. Check the key's access scopes against [Data access by key type](#data-access-by-key-type).
 
 ### Notes are missing after syncing with version 0.2.13 or earlier
 
