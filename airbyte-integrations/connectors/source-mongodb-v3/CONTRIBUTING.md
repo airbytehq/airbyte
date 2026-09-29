@@ -97,7 +97,23 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
   the native driver `watch()` — **not Debezium**. Cold start captures a resume token before the
   snapshot; warm start drains available changes (insert/update/replace as upserts, delete with
   `_ab_cdc_deleted_at`) and checkpoints the new token in `MongoDbCdcState`. `update_capture_mode`
-  selects `UPDATE_LOOKUP` vs `REQUIRED` (post-image, MongoDB 6.0+).
+  selects `UPDATE_LOOKUP` vs `REQUIRED` (post-image, MongoDB 6.0+). A saved token the server rejects
+  (oplog rolled past it — `ChangeStreamHistoryLost` — or unparseable) honours
+  `invalid_cdc_cursor_position_behavior`: `Fail sync` raises the legacy "Saved offset is not valid…"
+  config error; `Re-sync data` resets the CDC and snapshot state and re-snapshots. Note the server
+  accepts any *well-formed* token, even for a nonsensical cluster time, and resumes from the oplog
+  start — only a rejected token can be detected.
+- **Consistency guards** (ported from v2, run when planning the READ): the `schema_enforced` mode must
+  agree between the configuration, the configured catalog and the saved CDC state; and each stream's
+  configured sync mode must agree with its saved snapshot status (`INCREMENTAL` ↔
+  `IN_PROGRESS`/`COMPLETE`, `FULL_REFRESH` ↔ `FULL_REFRESH`). Both raise an actionable config error
+  telling the user to reset.
+- **Wire projection**: under `schema_enforced` the snapshot `find()` projects only the catalog's
+  fields, so documents' extra fields never cross the network.
+- **TLS**: `ATLAS_REPLICA_SET` enables TLS on the client (Atlas requires it; v2 forced
+  `mongodb.ssl.enabled=true` on its CDC path). Self-managed clusters honour the connection string.
+- **`BSONObjectTooLarge`** (server error 10334, a change event over 16MB) is mapped by an
+  `application.yml` classifier rule to the legacy actionable message.
 - **WASS**: an incremental snapshot that exceeds `maxSnapshotReadDuration`
   (`initial_load_timeout_hours`) yields for the rest of the READ so the next sync's change-stream
   read advances the resume token before the snapshot resumes.
@@ -121,8 +137,10 @@ a later optimization gated on a measured speed-up (SKILL.md Phase 1, "Concurrenc
 ### Testing
 
 - Unit + Testcontainers tests cover spec/check/discover, full-refresh and incremental snapshot,
-  mid-collection resume, native CDC (insert/update/delete), WASS, the record conversions, and the
-  protobuf encoding path (`MongoDbProtobufEncodingTest`).
+  mid-collection resume, native CDC (insert/update/delete), WASS, the record conversions, the
+  protobuf encoding path (`MongoDbProtobufEncodingTest`), the invalid-resume-token behaviours, the
+  schema-mode and sync-mode guards, and the exception-classifier rules
+  (`MongoDbExceptionClassifierTest`).
 - `MongoDbSourceAcceptanceTest` is the end-to-end acceptance flow (spec → check → discover → read with
   a datatype matrix); the Python CAT in `acceptance-test-config.yml` is bypassed (deprecated).
 

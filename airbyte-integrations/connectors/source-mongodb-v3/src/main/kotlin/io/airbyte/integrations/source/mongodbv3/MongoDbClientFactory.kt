@@ -25,6 +25,11 @@ object MongoDbClientFactory {
         if (connectionString.readPreference == null) {
             settings.readPreference(ReadPreference.secondaryPreferred())
         }
+        // Atlas always requires TLS; the legacy connector forced `mongodb.ssl.enabled=true` on its
+        // CDC path. Self-managed clusters keep whatever the connection string says (`tls=true`).
+        if (configuration.clusterType == MongoDbClusterType.ATLAS_REPLICA_SET) {
+            settings.applyToSslSettings { it.enabled(true) }
+        }
         configuration.credential?.let { (username: String, password: String) ->
             // The legacy connector URL-encodes the username before handing it to the driver;
             // kept as-is for parity.

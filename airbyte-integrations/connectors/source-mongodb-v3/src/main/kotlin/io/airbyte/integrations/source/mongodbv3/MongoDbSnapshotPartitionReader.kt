@@ -3,6 +3,7 @@ package io.airbyte.integrations.source.mongodbv3
 
 import com.mongodb.client.FindIterable
 import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Projections
 import com.mongodb.client.model.Sorts
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.Stream
@@ -65,11 +66,19 @@ class MongoDbSnapshotPartitionReader(
         log.info { "Finished ${stream.namespace}.${stream.name}: $numRecords records." }
     }
 
+    /**
+     * Ordered `_id` scan resuming after [startId]. Under `schema_enforced` only the catalog's
+     * fields are projected so documents' extra fields never cross the wire (the record consumer
+     * would drop them anyway); schemaless mode needs the whole document for its `data` field.
+     */
     private fun query(startId: Any?): FindIterable<Document> {
         val collection =
             sharedState.client.getDatabase(stream.namespace!!).getCollection(stream.name)
         val find: FindIterable<Document> = collection.find()
         startId?.let { find.filter(Filters.gt(ID_FIELD, it)) }
+        if (sharedState.configuration.schemaEnforced) {
+            find.projection(Projections.include(schemaFieldTypesOf(stream).keys.toList()))
+        }
         return find.sort(Sorts.ascending(ID_FIELD))
     }
 

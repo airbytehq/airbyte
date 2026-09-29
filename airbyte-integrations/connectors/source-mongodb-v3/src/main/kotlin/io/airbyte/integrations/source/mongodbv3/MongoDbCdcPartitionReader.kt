@@ -1,12 +1,15 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mongodbv3
 
+import com.mongodb.MongoChangeStreamException
+import com.mongodb.MongoCommandException
 import com.mongodb.client.ChangeStreamIterable
 import com.mongodb.client.model.Aggregates
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.changestream.ChangeStreamDocument
 import com.mongodb.client.model.changestream.FullDocument
 import com.mongodb.client.model.changestream.OperationType
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
@@ -58,13 +61,47 @@ class MongoDbCdcPartitionReader(
     override suspend fun run() {
         val priorToken: BsonDocument? =
             MongoDbCdcState.fromOpaqueStateValue(feedBootstrap.currentState)?.resumeTokenBson()
+        if (priorToken == null) {
+            drain(resumeAfter = null)
+            return
+        }
+        try {
+            drain(resumeAfter = priorToken)
+        } catch (e: Exception) {
+            if (!isInvalidResumeToken(e)) throw e
+            when (configuration.invalidCdcCursorPositionBehavior) {
+                InvalidCdcCursorPositionBehavior.FAIL_SYNC ->
+                    throw ConfigErrorException(
+                        "Saved offset is not valid. Please reset the connection, and then increase " +
+                            "oplog retention and/or increase sync frequency to prevent this from " +
+                            "happening in the future. See " +
+                            "https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-oplog-and-change-streams " +
+                            "for more details",
+                        e,
+                    )
+                InvalidCdcCursorPositionBehavior.RESYNC_DATA -> {
+                    log.warn(e) { "Saved resume token is not valid; resetting state to re-sync." }
+                    // Clears the CDC token and every incremental stream's snapshot state, so the
+                    // Stream feeds (planned after this Global feed) re-snapshot from scratch.
+                    feedBootstrap.resetAll()
+                    drain(resumeAfter = null)
+                }
+            }
+        }
+    }
+
+    /**
+     * Opens the change stream and, on a **cold start** ([resumeAfter] null), polls once to
+     * establish the current position without emitting; on a **warm start**, resumes after the token
+     * and emits every available change. Either way the cursor's final position becomes the new
+     * resume token. A stale/invalid [resumeAfter] fails here, on open or on the first poll.
+     */
+    private suspend fun drain(resumeAfter: BsonDocument?) {
         val changeStream: ChangeStreamIterable<Document> =
             sharedState.client.watch(pipeline()).fullDocument(fullDocumentMode())
-        priorToken?.let { changeStream.resumeAfter(it) }
-
+        resumeAfter?.let { changeStream.resumeAfter(it) }
         changeStream.cursor().use { cursor ->
-            if (priorToken == null) {
-                // Cold start: one poll establishes the position; emit nothing.
+            if (resumeAfter == null) {
                 cursor.tryNext()
             } else {
                 while (true) {
@@ -75,10 +112,26 @@ class MongoDbCdcPartitionReader(
             resumeToken = cursor.resumeToken
         }
         log.info {
-            if (priorToken == null) "CDC cold start; captured resume token."
+            if (resumeAfter == null) "CDC cold start; captured resume token."
             else "CDC read drained $numRecords change(s)."
         }
     }
+
+    /**
+     * Whether the failure means the saved resume token can no longer be resumed from. Covers the
+     * production case — `ChangeStreamHistoryLost` (286): the oplog rolled past the token — plus
+     * `ChangeStreamFatalError` (280), `InvalidResumeToken` (260), the server's token parse errors
+     * (`FailedToParse` 9, empty token 40649, KeyString format 50811), and the driver's own
+     * [MongoChangeStreamException]. Note the server *accepts* any well-formed token, even one for a
+     * nonsensical cluster time, and simply resumes from the start of the oplog.
+     */
+    private fun isInvalidResumeToken(e: Throwable): Boolean =
+        generateSequence(e) { it.cause }
+            .any {
+                it is MongoChangeStreamException ||
+                    (it is MongoCommandException &&
+                        it.errorCode in INVALID_RESUME_TOKEN_ERROR_CODES)
+            }
 
     private fun emit(event: ChangeStreamDocument<Document>) {
         val namespace = event.namespace ?: return
@@ -137,4 +190,12 @@ class MongoDbCdcPartitionReader(
             MongoDbCdcState.of(resumeToken, configuration.schemaEnforced).toOpaqueStateValue(),
             numRecords,
         )
+
+    companion object {
+        /**
+         * ChangeStreamHistoryLost, ChangeStreamFatalError, InvalidResumeToken, FailedToParse, empty
+         * resume token, KeyString format error.
+         */
+        val INVALID_RESUME_TOKEN_ERROR_CODES: Set<Int> = setOf(286, 280, 260, 9, 40649, 50811)
+    }
 }

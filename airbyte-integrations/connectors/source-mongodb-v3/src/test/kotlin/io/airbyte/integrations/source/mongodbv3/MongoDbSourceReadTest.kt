@@ -5,16 +5,21 @@ import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoClients
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
+import io.airbyte.cdk.ConnectorUncleanExitException
+import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.protocol.models.v0.SyncMode
 import java.math.BigDecimal
 import org.bson.Document
@@ -176,10 +181,114 @@ class MongoDbSourceReadTest {
         )
     }
 
+    @Test
+    fun testSyncModeMismatchWithSavedStateIsAConfigError() {
+        // Saved as a completed FULL_REFRESH snapshot, but now configured INCREMENTAL.
+        val state = globalState(peopleStatus = MongoDbSnapshotStatus.FULL_REFRESH)
+        assertReadFails(
+            incrementalCatalog(),
+            state,
+            "Stream $PEOPLE is INCREMENTAL but the saved status FULL_REFRESH doesn't match",
+        )
+    }
+
+    @Test
+    fun testSchemaModeMismatchWithSavedStateIsAConfigError() {
+        // Config and catalog are schema-enforced, but the saved CDC state was captured schemaless.
+        val state = globalState(MongoDbSnapshotStatus.COMPLETE, schemaEnforced = false)
+        assertReadFails(
+            incrementalCatalog(),
+            state,
+            "Mismatch between schema enforcing mode in sync configuration (true), catalog (true) " +
+                "and saved state (false). Please reset your data.",
+        )
+    }
+
+    @Test
+    fun testInvalidResumeTokenFailsSyncByDefault() {
+        val state = globalState(MongoDbSnapshotStatus.COMPLETE, resumeToken = BOGUS_RESUME_TOKEN)
+        assertReadFails(incrementalCatalog(), state, "Saved offset is not valid")
+    }
+
+    @Test
+    fun testInvalidResumeTokenResyncsWhenConfigured() {
+        val resync =
+            MongoDbSourceCheckTest.config(
+                replicaSet.connectionString,
+                listOf(TEST_DB),
+                extraRootProperties =
+                    mapOf("invalid_cdc_cursor_position_behavior" to "Re-sync data"),
+            )
+        val state = globalState(MongoDbSnapshotStatus.COMPLETE, resumeToken = BOGUS_RESUME_TOKEN)
+        val result: BufferingOutputConsumer = read(incrementalCatalog(), state, resync)
+        // State was reset, so the collection is re-snapshotted in full and a fresh token captured.
+        Assertions.assertEquals(3, recordCountFor(result, PEOPLE))
+        Assertions.assertEquals(
+            MongoDbSnapshotStatus.COMPLETE,
+            lastStreamStateFor(result, PEOPLE).status,
+        )
+        val cdcState = result.states().mapNotNull { it.global?.sharedState }.last()
+        val newToken = cdcState["resumeToken"]?.get("_data")?.asText()
+        Assertions.assertNotNull(newToken, "expected a fresh resume token, got $cdcState")
+        Assertions.assertNotEquals(BOGUS_RESUME_TOKEN, newToken)
+    }
+
     private fun read(
         catalog: ConfiguredAirbyteCatalog,
         state: List<AirbyteStateMessage> = emptyList(),
-    ): BufferingOutputConsumer = CliRunner.source("read", config(), catalog, state).run()
+        config: MongoDbSourceConfigurationSpecification = config(),
+    ): BufferingOutputConsumer = CliRunner.source("read", config, catalog, state).run()
+
+    /** Runs a read expected to fail and asserts the error trace contains [expectedMessage]. */
+    private fun assertReadFails(
+        catalog: ConfiguredAirbyteCatalog,
+        state: List<AirbyteStateMessage>,
+        expectedMessage: String,
+    ) {
+        val runnable: CliRunnable = CliRunner.source("read", config(), catalog, state)
+        Assertions.assertThrows(ConnectorUncleanExitException::class.java) { runnable.run() }
+        val errors: List<String> =
+            runnable.results
+                .traces()
+                .filter { it.type == AirbyteTraceMessage.Type.ERROR }
+                .map { it.error.message }
+        Assertions.assertTrue(
+            errors.any { it.contains(expectedMessage) },
+            "expected an error containing '$expectedMessage', got $errors",
+        )
+    }
+
+    /** A GLOBAL input state: one `people` stream state plus the CDC shared state. */
+    private fun globalState(
+        peopleStatus: MongoDbSnapshotStatus,
+        schemaEnforced: Boolean = true,
+        resumeToken: String? = null,
+    ): List<AirbyteStateMessage> {
+        val cdc =
+            MongoDbCdcState(
+                resumeToken = resumeToken?.let { Jsons.readTree("""{"_data":"$it"}""") },
+                schemaEnforced = schemaEnforced,
+            )
+        val people =
+            AirbyteStreamState()
+                .withStreamDescriptor(StreamDescriptor().withName(PEOPLE).withNamespace(TEST_DB))
+                .withStreamState(
+                    MongoDbStreamStateValue.fromLastId(
+                            ObjectId("650000000000000000000003"),
+                            peopleStatus,
+                        )
+                        .toOpaqueStateValue(),
+                )
+        return listOf(
+            AirbyteStateMessage()
+                .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                .withGlobal(
+                    AirbyteGlobalState()
+                        .withSharedState(cdc.toOpaqueStateValue())
+                        .withStreamStates(listOf(people)),
+                ),
+        )
+    }
 
     private fun fullRefreshCatalog(): ConfiguredAirbyteCatalog =
         configuredCatalog(
@@ -329,6 +438,12 @@ class MongoDbSourceReadTest {
         const val PEOPLE = "people"
         const val EMPTY = "empty_coll"
         const val CDC = "cdc_coll"
+        /**
+         * A `_data` the server rejects (`FailedToParse`, not a hex string). Note that any
+         * *well-formed* token is accepted and resumed from the oplog start, so a rejected token is
+         * the only way to exercise the invalid-token path against a live replica set.
+         */
+        const val BOGUS_RESUME_TOKEN = "garbage"
         const val MAX_RECORDS_PROPERTY = "airbyte.connector.extract.mongodb.max-records-per-run"
         const val MAX_SNAPSHOT_DURATION_PROPERTY =
             "airbyte.connector.extract.mongodb.max-snapshot-duration-ms"
