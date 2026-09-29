@@ -17,7 +17,9 @@ An engine shim must export:
   `stop-backend.sh` is optional; the library's default is used when it is
   absent.
 - `DEFAULT_CONFIG_TEMPLATE`: engine's default config template, required
-  unless `--config-template` is supplied.
+  unless `--config-template` is supplied. In remote mode, an engine's own
+  `render-config.sh` renders from a secret rather than host substitution; see
+  [Remote backend mode](#remote-backend-mode).
 - `DEFAULT_FIXTURE`: engine's default SQL fixture, required unless an
   explicit `--fixture` is supplied or `--skip-fixtures` is used.
 - `BACKEND_MODE`: `local` (default) or `remote`.

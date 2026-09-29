@@ -21,6 +21,7 @@ in the shared Snowflake integration account.
 ```
 source-snowflake-e2e-tests/
 ├── SKILL.md
+├── ../../../poe_tasks.toml (connector-root entrypoint)
 ├── scripts/
 │   ├── run.sh, sf.py
 │   ├── fetch-config.sh, render-config.sh
@@ -43,6 +44,10 @@ source-snowflake-e2e-tests/
 - Teardown drops the schema in the run's exit trap.
 - `scripts/sweep-orphans.sh` lists or drops old `PROVEFIX_*` schemas, defaulting
   to four hours.
+
+The default run id is
+`YYYYMMDDhhmmss_<six-digit-host-checksum>_<pid>`, producing a
+schema-safe `PROVEFIX_<run_id>` name.
 
 The schema is owned by the scripts, while `sf.py` is the only code that talks
 to Snowflake. The default config comes from GSM secret
@@ -80,3 +85,5 @@ compared through the session TIMEZONE; with the account default
 The harness sets `jdbc_url_params=TIMEZONE=UTC` so the canary isolates #82705;
 this session-timezone behavior appears to be a separate connector bug worth
 its own issue.
+The `--catalog` CDC guard (#85752) never fires here: source-snowflake has no
+CDC replication method.

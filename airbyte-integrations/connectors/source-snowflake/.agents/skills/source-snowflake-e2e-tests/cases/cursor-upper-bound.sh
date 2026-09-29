@@ -3,7 +3,7 @@ set -euo pipefail
 
 SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export REPRO_OUT="${REPRO_OUT:-/tmp/source-snowflake-repro}"
-export PROVEFIX_RUN_ID="${PROVEFIX_RUN_ID:-$(date +%Y%m%d%H%M%S)_$$}"
+export PROVEFIX_RUN_ID="${PROVEFIX_RUN_ID:-$(date +%Y%m%d%H%M%S)_$(hostname | cksum | cut -c1-6)_$$}"
 export PROVEFIX_SCHEMA="PROVEFIX_${PROVEFIX_RUN_ID}"
 export SNOWFLAKE_CONFIG_FILE="${SNOWFLAKE_CONFIG_FILE:-$REPRO_OUT/.snowflake-config.json}"
 TARGET="${1:-1.1.1}"
@@ -72,7 +72,7 @@ fi
 count_boundary() {
   local output="$1"
   [[ -f "$output" ]] || { echo 0; return; }
-  grep -cE '"NAME":\s*"boundary"' "$output" 2>/dev/null || true
+  grep -cE '"NAME":\s*"boundary"' "$output" 2>/dev/null || echo 0
 }
 
 control_boundary="$(count_boundary "$REPRO_OUT/canary-incremental/control/read/stdout.txt")"
