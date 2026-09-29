@@ -167,7 +167,8 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.1.3 | 2026-09-28 | [87049](https://github.com/airbytehq/airbyte/pull/87049) | Automatically split Alerts time windows that exceed Twilio's 10,000-result limit instead of failing the sync |
+| 1.1.4 | 2026-09-29 | [87049](https://github.com/airbytehq/airbyte/pull/87049) | Automatically split Alerts time windows that exceed Twilio's 10,000-result limit instead of failing the sync |
+| 1.1.3 | 2026-09-29 | [87367](https://github.com/airbytehq/airbyte/pull/87367) | Update dependencies |
 | 1.1.2 | 2026-09-22 | [86857](https://github.com/airbytehq/airbyte/pull/86857) | Update dependencies |
 | 1.1.1 | 2026-09-15 | [84774](https://github.com/airbytehq/airbyte/pull/84774) | Update dependencies |
 | 1.1.0 | 2026-09-08 | [85748](https://github.com/airbytehq/airbyte/pull/85748) | Promoting release candidate 1.1.0-rc.1 to a main version. |
