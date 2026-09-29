@@ -550,6 +550,42 @@ def test_job_self_canceled_on_checkpoint_with_no_url_retries_slice_without_check
     assert stream.job_manager._job_should_checkpoint is False
 
 
+@pytest.mark.parametrize(
+    "checkpointed_cursor",
+    [None, "2024-01-01T12:00:00+00:00"],
+    ids=["no_checkpoint_cursor", "with_checkpoint_cursor"],
+)
+def test_job_self_canceled_on_checkpoint_with_url_resumes_only_from_checkpoint_cursor(
+    request, requests_mock, auth_config, checkpointed_cursor
+) -> None:
+    stream = MetafieldOrders(auth_config)
+    stream.job_manager._job_check_interval = 0
+    running_response = request.getfixturevalue("bulk_job_running_with_object_count_and_url_response")
+    canceled_response = request.getfixturevalue("bulk_job_canceled_with_object_count_and_url_response")
+    stream.job_manager._job_id = running_response["data"]["node"]["id"]
+    stream.job_manager._job_created_at = pdm.now().to_rfc3339_string()
+    # the `objectCount` from the fixture is `15`, so the job is self-canceled on checkpointing
+    stream.job_manager._job_checkpoint_interval = 15
+    requests_mock.post(stream.job_manager.base_url, [{"json": running_response}, {"json": canceled_response}])
+    # the result has no records, e.g. only the `Order` lines without metafields
+    requests_mock.get(canceled_response["data"]["node"]["url"], text="")
+    assert list(stream.job_manager.job_get_results()) == []
+
+    slice_start, slice_end = pdm.parse("2024-01-01T00:00:00Z"), pdm.parse("2024-01-02T00:00:00Z")
+    if checkpointed_cursor:
+        assert stream.job_manager.get_adjusted_job_end(slice_start, slice_end, checkpointed_cursor) == pdm.parse(checkpointed_cursor)
+        # the flag must not leak into the next checkpoint
+        assert stream.job_manager._job_checkpoint_from_self_cancel is False
+        assert stream.job_manager._job_checkpoint_disabled is False
+    else:
+        # nothing to resume from, the slice is re-run with the checkpointing disabled
+        assert stream.job_manager.get_adjusted_job_end(slice_start, slice_end, checkpointed_cursor) == slice_start
+        assert stream.job_manager._job_checkpoint_from_self_cancel is False
+        assert stream.job_manager._job_checkpoint_disabled is True
+        # the re-run slice is not re-run again
+        assert stream.job_manager.get_adjusted_job_end(slice_start, slice_end, None, None) == slice_end
+
+
 @pytest.mark.parametrize("object_count", ["0", "20000"], ids=["no_rows_collected", "rows_collected_above_checkpoint"])
 def test_job_failed_with_no_partial_url_for_stream_with_bulk_checkpointing(request, requests_mock, auth_config, object_count) -> None:
     stream = MetafieldOrders(auth_config)

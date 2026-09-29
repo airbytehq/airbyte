@@ -265,7 +265,17 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
         """
         self._assert_slice_rerun_after_checkpoint_without_url(canceled_object_count="1700")
 
-    def _assert_slice_rerun_after_checkpoint_without_url(self, canceled_object_count: str) -> None:
+    def test_given_checkpointed_job_canceled_with_url_but_no_records_when_read_then_rerun_slice_without_checkpointing(self) -> None:
+        """
+        The job is self-canceled on checkpointing and the API returns the `url`, but the result has no records,
+        so there is no checkpointed cursor to resume from. The same slice is expected to be requested again.
+        """
+        canceled_result_url = _JOB_RESULT_URL.replace("bulk-4476008693949.jsonl", "bulk-4476008693948.jsonl")
+        self._assert_slice_rerun_after_checkpoint_without_url(canceled_object_count="16000", canceled_result_url=canceled_result_url)
+
+    def _assert_slice_rerun_after_checkpoint_without_url(
+        self, canceled_object_count: str, canceled_result_url: Optional[str] = None
+    ) -> None:
         job_created_at = (_INCREMENTAL_JOB_END_DATE - timedelta(minutes=5)).strftime("%Y-%m-%dT%H:%M:%SZ")
         next_bulk_operation_id = "gid://shopify/BulkOperation/4472588009771"
         # both jobs are requested for the same slice
@@ -276,14 +286,19 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
                 JobCreationResponseBuilder(job_created_at=job_created_at).with_bulk_operation_id(next_bulk_operation_id).build(),
             ],
         )
-        # 1st job: self-canceled on checkpointing, no result is returned
+        # 1st job: self-canceled on checkpointing, no result (or a result with no records) is returned
         self._http_mocker.post(
             create_job_status_request(_SHOP_NAME, _BULK_OPERATION_ID),
             [
                 JobStatusResponseBuilder().with_running_status(_BULK_OPERATION_ID, object_count="16000").build(),
-                JobStatusResponseBuilder().with_canceled_status(_BULK_OPERATION_ID, None, object_count=canceled_object_count).build(),
+                JobStatusResponseBuilder()
+                .with_canceled_status(_BULK_OPERATION_ID, canceled_result_url, object_count=canceled_object_count)
+                .build(),
             ],
         )
+        if canceled_result_url:
+            # the result of the 1st job has no records to checkpoint from
+            self._http_mocker.get(HttpRequest(canceled_result_url), MetafieldOrdersJobResponseBuilder().build())
         self._http_mocker.post(create_job_cancel_request(_SHOP_NAME, _BULK_OPERATION_ID), [HttpResponse(json.dumps({}), status_code=200)])
         # 2nd job: passes the checkpoint threshold, but is not canceled (no cancel request is mocked for it) and completes
         self._http_mocker.post(
