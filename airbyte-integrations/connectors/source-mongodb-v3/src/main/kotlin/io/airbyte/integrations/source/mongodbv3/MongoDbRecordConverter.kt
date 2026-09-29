@@ -3,7 +3,6 @@ package io.airbyte.integrations.source.mongodbv3
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
@@ -23,22 +22,24 @@ import org.bson.types.MinKey
 import org.bson.types.ObjectId
 import org.bson.types.Symbol
 
-/** Passes a pre-built [JsonNode] straight through, so record values can be encoded once here. */
-object MongoDbJsonNodeEncoder : JsonEncoder<JsonNode> {
-    override fun encode(decoded: JsonNode): JsonNode = decoded
-}
-
 /**
  * Converts a BSON [Document] into a [NativeRecordPayload] (`fieldName -> encoder`) that the CDK's
- * record consumer serializes to JSON.
+ * record consumer serializes to JSONL or protobuf.
  *
  * The per-type conversions reproduce the legacy `source-mongodb-v2` record shape (see
  * `databases/mongodb/README.md`, Stage 4): `ObjectId` as hex, `Date` always with milliseconds,
  * `Binary` as Base64, `BsonRegularExpression` as `(options)pattern`, `CodeWithScope` as an object,
- * `MinKey`/`MaxKey` omitted, etc. Fields absent from the document are omitted (the CDK consumer
- * then fills them with `null`), and `_id` is always included.
+ * `MinKey`/`MaxKey` omitted, etc.
+ *
+ * When [schemaFieldTypes] is provided (the READ path), the payload carries **every** schema field —
+ * `null` for those absent from the document — each wrapped in the codec matching its declared type,
+ * so protobuf output over the socket channel encodes each value to the right type. When it is empty
+ * (unit tests) only the document's own fields are emitted, wrapped in a passthrough codec.
  */
-class MongoDbRecordConverter(private val schemaEnforced: Boolean) {
+class MongoDbRecordConverter(
+    private val schemaEnforced: Boolean,
+    private val schemaFieldTypes: Map<String, MongoDbFieldType> = emptyMap(),
+) {
 
     /**
      * Builds a payload for a change-stream event. For inserts/updates/replaces [document] is the
@@ -50,7 +51,7 @@ class MongoDbRecordConverter(private val schemaEnforced: Boolean) {
         val payload: NativeRecordPayload = toPayloadWithId(document).first
         if (deletedAt != null) {
             payload[CommonMetaField.CDC_DELETED_AT.id] =
-                FieldValueEncoder(Jsons.textNode(deletedAt), MongoDbJsonNodeEncoder)
+                FieldValueEncoder(Jsons.textNode(deletedAt), MongoStringValueCodec)
         }
         return payload
     }
@@ -59,21 +60,35 @@ class MongoDbRecordConverter(private val schemaEnforced: Boolean) {
     fun toPayloadWithId(document: Document): Pair<NativeRecordPayload, Any?> {
         val rawId: Any? = document[ID_FIELD]
         val payload: NativeRecordPayload = mutableMapOf()
-        if (schemaEnforced) {
-            for ((name: String, value: Any?) in document) {
-                val node: JsonNode = toJsonNode(value) ?: continue
-                payload[name] = FieldValueEncoder(node, MongoDbJsonNodeEncoder)
+        when {
+            !schemaEnforced -> {
+                // Schemaless mode emits `_id` plus the whole document under a single `data` field.
+                payload[ID_FIELD] =
+                    FieldValueEncoder(toJsonNode(rawId), codecFor(ID_FIELD, MongoStringValueCodec))
+                payload[DATA_FIELD] =
+                    FieldValueEncoder(documentToObject(document), MongoJsonbValueCodec)
             }
-        } else {
-            // Schemaless mode emits `_id` plus the whole document under a single `data` field.
-            toJsonNode(rawId)?.let {
-                payload[ID_FIELD] = FieldValueEncoder(it, MongoDbJsonNodeEncoder)
+            schemaFieldTypes.isEmpty() -> {
+                // No schema (unit tests): emit only the document's own fields, passthrough codec.
+                for ((name: String, value: Any?) in document) {
+                    val node: JsonNode = toJsonNode(value) ?: continue
+                    payload[name] = FieldValueEncoder(node, MongoJsonbValueCodec)
+                }
             }
-            payload[DATA_FIELD] =
-                FieldValueEncoder(documentToObject(document), MongoDbJsonNodeEncoder)
+            else -> {
+                // READ path: emit every schema field (null when absent) with its typed codec.
+                for ((name: String, type: MongoDbFieldType) in schemaFieldTypes) {
+                    val node: JsonNode? =
+                        if (document.containsKey(name)) toJsonNode(document[name]) else null
+                    payload[name] = FieldValueEncoder(node, type.valueCodec)
+                }
+            }
         }
         return payload to rawId
     }
+
+    private fun codecFor(field: String, default: MongoDbValueCodec): MongoDbValueCodec =
+        schemaFieldTypes[field]?.valueCodec ?: default
 
     private fun documentToObject(document: Document): ObjectNode {
         val node: ObjectNode = Jsons.objectNode()

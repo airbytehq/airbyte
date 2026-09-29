@@ -4,7 +4,6 @@ package io.airbyte.integrations.source.mongodbv3
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.data.AirbyteSchemaType
-import io.airbyte.cdk.data.AnyEncoder
 import io.airbyte.cdk.data.ArrayAirbyteSchemaType
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
@@ -27,18 +26,24 @@ import io.airbyte.cdk.util.Jsons
 enum class MongoDbFieldType(
     override val airbyteSchemaType: AirbyteSchemaType,
     private val jsonSchemaTemplate: ObjectNode,
+    /** Codec matching this type's `airbyteSchemaType` for JSONL and protobuf output. */
+    val valueCodec: MongoDbValueCodec,
 ) : FieldType {
-    STRING(LeafAirbyteSchemaType.STRING, legacyJsonSchema("string")),
-    NUMBER(LeafAirbyteSchemaType.NUMBER, legacyJsonSchema("number")),
-    BOOLEAN(LeafAirbyteSchemaType.BOOLEAN, legacyJsonSchema("boolean")),
+    STRING(LeafAirbyteSchemaType.STRING, legacyJsonSchema("string"), MongoStringValueCodec),
+    NUMBER(LeafAirbyteSchemaType.NUMBER, legacyJsonSchema("number"), MongoNumberValueCodec),
+    BOOLEAN(LeafAirbyteSchemaType.BOOLEAN, legacyJsonSchema("boolean"), MongoBooleanValueCodec),
     /** The legacy connector emits arrays without an `items` schema. */
-    ARRAY(ArrayAirbyteSchemaType(LeafAirbyteSchemaType.JSONB), legacyJsonSchema("array")),
-    OBJECT(LeafAirbyteSchemaType.JSONB, legacyJsonSchema("object")),
-    NULL(LeafAirbyteSchemaType.NULL, legacyJsonSchema("null")),
+    ARRAY(
+        ArrayAirbyteSchemaType(LeafAirbyteSchemaType.JSONB),
+        legacyJsonSchema("array"),
+        MongoJsonbValueCodec,
+    ),
+    OBJECT(LeafAirbyteSchemaType.JSONB, legacyJsonSchema("object"), MongoJsonbValueCodec),
+    NULL(LeafAirbyteSchemaType.NULL, legacyJsonSchema("null"), MongoNullValueCodec),
     ;
 
-    /** Values are encoded according to their BSON type rather than the discovered type. */
-    override val jsonEncoder: JsonEncoder<*> = AnyEncoder
+    /** Values are converted by their BSON type; the codec adapts them to each output channel. */
+    override val jsonEncoder: JsonEncoder<*> = valueCodec
 
     /** JSON schema of a field of this type, as emitted in the catalog. Returns a fresh copy. */
     fun jsonSchema(): ObjectNode = jsonSchemaTemplate.deepCopy()

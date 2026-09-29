@@ -101,6 +101,14 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
 - **WASS**: an incremental snapshot that exceeds `maxSnapshotReadDuration`
   (`initial_load_timeout_hours`) yields for the rest of the READ so the next sync's change-stream
   read advances the resume token before the snapshot resumes.
+- **Socket / speed mode (protobuf)**: both readers emit through `OutputMessageRouter`, so records go
+  over STDIO (JSONL) or the socket data channel (JSONL/PROTOBUF) per `airbyte.connector.data-channel`
+  (declared in `metadata.yaml` `connectorIPCOptions.dataChannel`). Because MongoDB is schemaless, each
+  value is wrapped in a per-type codec (`MongoDbRecordCodecs.kt`): the JSONL channel keeps the raw
+  JSON value, while the protobuf channel coerces it to the field's declared `airbyteSchemaType` and
+  nulls a value whose actual BSON type does not match (schema/value mismatch is possible on a
+  schemaless store). The payload carries every schema field (null for absent) so the protobuf
+  consumer's positional encoding is correct.
 
 ### Concurrency
 
@@ -110,17 +118,27 @@ there is no evidence that two parallel range reads beat one ordered scan on a re
 `_id` boundaries cannot be computed without a scan (`$sample`/`splitVector` are approximate). This is
 a later optimization gated on a measured speed-up (SKILL.md Phase 1, "Concurrency"; Stage 5).
 
+### Testing
+
+- Unit + Testcontainers tests cover spec/check/discover, full-refresh and incremental snapshot,
+  mid-collection resume, native CDC (insert/update/delete), WASS, the record conversions, and the
+  protobuf encoding path (`MongoDbProtobufEncodingTest`).
+- `MongoDbSourceAcceptanceTest` is the end-to-end acceptance flow (spec → check → discover → read with
+  a datatype matrix); the Python CAT in `acceptance-test-config.yml` is bypassed (deprecated).
+
 ### Remaining work
 
 - **Debezium-format CDC state:** the native `watch()` reader uses its own resume-token state, so
   existing `source-mongodb-v2` CDC connections cannot resume from their persisted Debezium offset and
-  must be reset. Snapshot state stays v2-compatible. Preserving CDC-offset parity would require the
-  `extract-cdc` (Debezium) toolkit instead of `watch()` — an owner decision.
-- **Protobuf / socket data channel** (speed channel): deferred. MongoDB's dynamic values collide with
-  the schema-driven protobuf encoder (needs per-field coercion + `FieldValueChange`), and the pinned
-  CDK has protobuf-consumer bugs fixed only in 1.1.13 (unpublished). Enable once 1.1.13 is available.
-- **Terabyte-scale validation** (Stage 5): bounded-memory, kill/resume and throughput vs
-  `source-mongodb-v2` on a very large collection — needs infrastructure not available here.
+  must be reset. This is captured as the `3.0.0` breaking change in `metadata.yaml`. Snapshot state
+  stays v2-compatible. Preserving CDC-offset parity would require the `extract-cdc` (Debezium) toolkit
+  instead of `watch()` — an owner decision.
+- **Wire-level socket test:** the protobuf encoding is unit-tested end to end via
+  `NativeRecordPayload.toProtobuf`, and the STDIO path is exercised by every read test through
+  `OutputMessageRouter`; a full Unix-socket sink test (bind sockets, decode `AirbyteMessageProtobuf`
+  frames, compare with STDIO) is still to add. Note the CDK protobuf-consumer fixes land in 1.1.13.
+- **Terabyte-scale validation**: bounded-memory, kill/resume and throughput vs `source-mongodb-v2` on
+  a very large collection — needs infrastructure not available here.
 - **Record/state Docker parity** against `source-mongodb-v2` via `databases/mongodb/parity/`.
 
 > **CDK version:** this branch pins `cdkVersion=local` and bumps

@@ -7,12 +7,31 @@ data:
       - ${connection_string}
   connectorBuildOptions:
     baseImage: docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3
+  connectorIPCOptions:
+    dataChannel:
+      version: "0.0.2"
+      supportedSerialization: ["JSONL", "PROTOBUF"]
+      supportedTransport: ["SOCKET", "STDIO"]
   connectorSubtype: database
   connectorTestSuitesOptions:
     - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-MONGODB-V3__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-MONGODB-V3__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   connectorType: source
   definitionId: 25f274f8-7f58-4544-83e0-f711a49e2e9a
-  dockerImageTag: 0.1.0
+  dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-mongodb-v3
   # Deliberately points at the mongodb-v2 docs: this connector is a Bulk CDK rewrite of
   # source-mongodb-v2 and its `spec` output (which embeds this URL) must match the legacy one.
@@ -23,11 +42,25 @@ data:
   name: MongoDb
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
-      enabled: false
-  releaseStage: alpha
-  supportLevel: community
+      enabled: true
+  releaseStage: generally_available
+  supportLevel: certified
+  releases:
+    breakingChanges:
+      3.0.0:
+        message:
+          "This is a full rewrite of the MongoDB source on the Bulk CDK. Change data
+          capture now reads the replica-set change stream with the native MongoDB
+          driver instead of Debezium, so its persisted CDC position is no longer
+          Debezium-compatible. Existing connections must be reset (a full re-sync)
+          when upgrading; initial-snapshot state and saved configurations are
+          unaffected."
+        upgradeDeadline: "2026-12-31"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["*"]
   tags:
     - language:java
   externalDocumentationUrls:

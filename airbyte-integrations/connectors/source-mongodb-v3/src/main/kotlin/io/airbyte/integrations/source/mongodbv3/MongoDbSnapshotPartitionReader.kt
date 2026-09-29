@@ -4,12 +4,14 @@ package io.airbyte.integrations.source.mongodbv3
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Sorts
+import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.ResourceType
 import io.airbyte.cdk.read.Stream
-import io.airbyte.cdk.read.StreamRecordConsumer
+import io.airbyte.cdk.read.generatePartitionId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
@@ -37,26 +39,45 @@ class MongoDbSnapshotPartitionReader(
 
     private val sharedState: MongoDbSharedState = streamState.sharedState
     private val stream: Stream = streamState.stream
-    private val converter = MongoDbRecordConverter(sharedState.configuration.schemaEnforced)
+    private val converter =
+        MongoDbRecordConverter(sharedState.configuration.schemaEnforced, schemaFieldTypesOf(stream))
 
     private val numRecords = AtomicLong(0L)
     private val lastId = AtomicReference<Any?>(null)
     private val finished = AtomicBoolean(false)
+    private var partitionId: String = generatePartitionId(4)
+    private lateinit var outputMessageRouter: OutputMessageRouter
 
     private val acquiredResources = AtomicReference<Map<ResourceType, ReaderAcquiredResource>>()
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
+        val feedBootstrap = streamState.streamFeedBootstrap
+        val resourceTypes: List<ResourceType> =
+            when (feedBootstrap.dataChannelMedium) {
+                DataChannelMedium.STDIO -> listOf(ResourceType.RESOURCE_DB_CONNECTION)
+                DataChannelMedium.SOCKET ->
+                    listOf(ResourceType.RESOURCE_DB_CONNECTION, ResourceType.RESOURCE_OUTPUT_SOCKET)
+            }
         val resources: Map<ResourceType, ReaderAcquiredResource> =
-            sharedState.tryAcquireResourcesForReader(listOf(ResourceType.RESOURCE_DB_CONNECTION))
+            sharedState.tryAcquireResourcesForReader(resourceTypes)
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
         acquiredResources.set(resources)
+        outputMessageRouter =
+            OutputMessageRouter(
+                feedBootstrap.dataChannelMedium,
+                feedBootstrap.dataChannelFormat,
+                feedBootstrap.outputConsumer,
+                mapOf("partition_id" to partitionId),
+                feedBootstrap,
+                resources.mapNotNull { (type, r) -> r.resource?.let { type to it } }.toMap(),
+            )
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
     override suspend fun run() {
-        val recordConsumer: StreamRecordConsumer =
-            streamState.streamFeedBootstrap.streamRecordConsumers()[stream.id]
-                ?: throw IllegalStateException("No record consumer for stream ${stream.id}")
+        val outputRoute =
+            outputMessageRouter.recordAcceptors[stream.id]
+                ?: throw IllegalStateException("No record acceptor for stream ${stream.id}")
         val startId: Any? = resumeFromId()
         lastId.set(startId)
         val collection: MongoCollection<Document> =
@@ -86,7 +107,7 @@ class MongoDbSnapshotPartitionReader(
                 val document: Document = cursor.next()
                 val (payload: NativeRecordPayload, rawId: Any?) =
                     converter.toPayloadWithId(document)
-                recordConsumer.accept(payload, null)
+                outputRoute(payload, null)
                 lastId.set(rawId)
                 numRecords.incrementAndGet()
             }
@@ -136,6 +157,10 @@ class MongoDbSnapshotPartitionReader(
     }
 
     override fun releaseResources() {
+        if (::outputMessageRouter.isInitialized) {
+            outputMessageRouter.close()
+        }
         acquiredResources.getAndSet(null)?.forEach { it.value.close() }
+        partitionId = generatePartitionId(4)
     }
 }

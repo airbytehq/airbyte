@@ -1,7 +1,6 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mongodbv3
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.mongodb.client.ChangeStreamIterable
 import com.mongodb.client.MongoChangeStreamCursor
 import com.mongodb.client.model.Aggregates
@@ -11,6 +10,8 @@ import com.mongodb.client.model.changestream.FullDocument
 import com.mongodb.client.model.changestream.OperationType
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.CommonMetaField
+import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.Global
@@ -18,8 +19,10 @@ import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.ResourceType
-import io.airbyte.cdk.read.StreamRecordConsumer
+import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.UnlimitedTimePartitionReader
+import io.airbyte.cdk.read.generatePartitionId
+import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
@@ -52,19 +55,41 @@ class MongoDbCdcPartitionReader(
 ) : UnlimitedTimePartitionReader {
 
     private val configuration: MongoDbSourceConfiguration = sharedState.configuration
-    private val converter = MongoDbRecordConverter(configuration.schemaEnforced)
     private val documentCodec = DocumentCodec()
+    /** One converter per stream, each carrying that stream's schema for typed protobuf encoding. */
+    private val convertersByStream: Map<StreamIdentifier, MongoDbRecordConverter> =
+        feedBootstrap.feed.streams.associate { stream: Stream ->
+            stream.id to
+                MongoDbRecordConverter(configuration.schemaEnforced, schemaFieldTypesOf(stream))
+        }
 
     private val numRecords = AtomicLong(0L)
     private val newResumeToken = AtomicReference<BsonDocument?>(null)
+    private var partitionId: String = generatePartitionId(4)
+    private lateinit var outputMessageRouter: OutputMessageRouter
 
     private val acquiredResources = AtomicReference<Map<ResourceType, ReaderAcquiredResource>>()
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
+        val resourceTypes: List<ResourceType> =
+            when (feedBootstrap.dataChannelMedium) {
+                DataChannelMedium.STDIO -> listOf(ResourceType.RESOURCE_DB_CONNECTION)
+                DataChannelMedium.SOCKET ->
+                    listOf(ResourceType.RESOURCE_DB_CONNECTION, ResourceType.RESOURCE_OUTPUT_SOCKET)
+            }
         val resources: Map<ResourceType, ReaderAcquiredResource> =
-            sharedState.tryAcquireResourcesForReader(listOf(ResourceType.RESOURCE_DB_CONNECTION))
+            sharedState.tryAcquireResourcesForReader(resourceTypes)
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
         acquiredResources.set(resources)
+        outputMessageRouter =
+            OutputMessageRouter(
+                feedBootstrap.dataChannelMedium,
+                feedBootstrap.dataChannelFormat,
+                feedBootstrap.outputConsumer,
+                mapOf("partition_id" to partitionId),
+                feedBootstrap,
+                resources.mapNotNull { (type, r) -> r.resource?.let { type to it } }.toMap(),
+            )
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
@@ -92,12 +117,10 @@ class MongoDbCdcPartitionReader(
                 log.info { "CDC cold start; captured resume token." }
                 return
             }
-            val consumers: Map<StreamIdentifier, StreamRecordConsumer> =
-                feedBootstrap.streamRecordConsumers()
             while (true) {
                 currentCoroutineContext().ensureActive()
                 val event: ChangeStreamDocument<Document> = cursor.tryNext() ?: break
-                emit(event, consumers)
+                emit(event)
                 newResumeToken.set(event.resumeToken)
             }
             newResumeToken.compareAndSet(null, cursor.resumeToken)
@@ -105,10 +128,7 @@ class MongoDbCdcPartitionReader(
         }
     }
 
-    private fun emit(
-        event: ChangeStreamDocument<Document>,
-        consumers: Map<StreamIdentifier, StreamRecordConsumer>,
-    ) {
+    private fun emit(event: ChangeStreamDocument<Document>) {
         val namespace = event.namespace ?: return
         val streamID: StreamIdentifier =
             StreamIdentifier.from(
@@ -116,7 +136,8 @@ class MongoDbCdcPartitionReader(
                     .withName(namespace.collectionName)
                     .withNamespace(namespace.databaseName),
             )
-        val consumer: StreamRecordConsumer = consumers[streamID] ?: return
+        val outputRoute = outputMessageRouter.recordAcceptors[streamID] ?: return
+        val converter: MongoDbRecordConverter = convertersByStream[streamID] ?: return
         val updatedAt: String = clusterTime(event)
         val payload: NativeRecordPayload =
             when (event.operationType) {
@@ -131,8 +152,8 @@ class MongoDbCdcPartitionReader(
                 else -> return
             }
         payload[CommonMetaField.CDC_UPDATED_AT.id] =
-            FieldValueEncoder(textNode(updatedAt), MongoDbJsonNodeEncoder)
-        consumer.accept(payload, null)
+            FieldValueEncoder(Jsons.textNode(updatedAt), MongoStringValueCodec)
+        outputRoute(payload, null)
         numRecords.incrementAndGet()
     }
 
@@ -143,8 +164,6 @@ class MongoDbCdcPartitionReader(
     private fun toDocument(bson: BsonDocument?): Document =
         bson?.let { documentCodec.decode(it.asBsonReader(), DecoderContext.builder().build()) }
             ?: Document()
-
-    private fun textNode(value: String): JsonNode = io.airbyte.cdk.util.Jsons.textNode(value)
 
     /** Restrict the change stream to the configured databases and to data-changing operations. */
     private fun pipeline(): List<Bson> =
@@ -168,7 +187,11 @@ class MongoDbCdcPartitionReader(
         )
 
     override fun releaseResources() {
+        if (::outputMessageRouter.isInitialized) {
+            outputMessageRouter.close()
+        }
         acquiredResources.getAndSet(null)?.forEach { it.value.close() }
+        partitionId = generatePartitionId(4)
     }
 
     /** The streams (collections) covered by the change stream: those in the [Global] feed. */

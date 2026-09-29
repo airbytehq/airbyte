@@ -1,0 +1,21 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests.
+#
+# source-mongodb-v3 is a Bulk CDK connector: its acceptance coverage runs as Kotlin tests
+# (MongoDbSourceAcceptanceTest and the spec/check/discover/read suites) against Testcontainers,
+# declared via the `acceptanceTests` suite in metadata.yaml. The Python Connector Acceptance
+# Tests (CAT) below are bypassed, matching source-mongodb-v2 and the platform-wide CAT deprecation.
+connector_image: airbyte/source-mongodb-v3:dev
+acceptance_tests:
+  spec:
+    bypass_reason: "Covered by MongoDbSourceSpecTest; CAT is deprecated."
+  connection:
+    bypass_reason: "Covered by MongoDbSourceCheckTest; CAT is deprecated."
+  discovery:
+    bypass_reason: "Covered by MongoDbSourceDiscoverTest; CAT is deprecated."
+  basic_read:
+    bypass_reason: "Covered by MongoDbSourceAcceptanceTest / MongoDbSourceReadTest; CAT is deprecated."
+  full_refresh:
+    bypass_reason: "Covered by MongoDbSourceReadTest; CAT is deprecated."
+  incremental:
+    bypass_reason: "Covered by MongoDbSourceReadTest (snapshot + CDC); CAT is deprecated."
