@@ -50,7 +50,7 @@ Job logs leave your environment and are stored in Airbyte's control plane. Logs 
 To turn this option on or off, [contact Airbyte support](https://support.airbyte.com/) and tell them the organization you want to change. After Airbyte enables it, run a sync and open its logs in the Airbyte UI to confirm they load. To turn it off, contact support again. Jobs that start after Airbyte turns it off log only to your cluster.
 
 :::note
-Your data plane needs Helm chart version **2.3.0** or later for this option. Upgrade your data plane before you ask Airbyte to enable it.
+Your data plane needs Helm chart version **2.4.0** or later for this option. Upgrade your data plane before you ask Airbyte to enable it.
 :::
 
 ## Keep logs in your own infrastructure {#own-infrastructure}
