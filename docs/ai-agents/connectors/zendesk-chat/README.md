@@ -29,8 +29,26 @@ The connector handles this automatically.
 
 The Zendesk-Chat connector is optimized to handle prompts like these.
 
+- Show me my Zendesk Chat account details
+- List all agents
+- Show me the details of the first agent
+- Show me the agent timeline
 - List all banned visitors
+- Show me the details of the first ban
+- List recent chats
+- Show me the details of the most recent chat
 - List all departments with their settings
+- Show me the details of the first department
+- List all goals
+- Show me the details of the first goal
+- List all roles
+- Show me the details of the first role
+- Show me the account routing settings
+- List all shortcuts
+- Show me the details of the first shortcut
+- List all skills
+- Show me the details of the first skill
+- List all triggers
 - Show me all chats from last week
 - List all agents in the support department
 - What are the most used chat shortcuts?
