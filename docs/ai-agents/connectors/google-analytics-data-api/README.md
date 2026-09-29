@@ -14,14 +14,15 @@ Analytics read-only scope.
 
 The Google-Analytics-Data-Api connector is optimized to handle prompts like these.
 
-- Show me the website overview report
-- List daily active users
-- Show weekly active user trends
-- Get the four-weekly active users report
-- List traffic sources
-- Show me page performance metrics
-- Get device breakdown data
-- List user locations
+- Show me the website overview report for the last 30 days
+- How many total users and sessions did the website have in the last 7 days?
+- List daily active users for the last 30 days
+- Show weekly active user trends for the last 30 days
+- Get the four-weekly active users report for the last 30 days
+- Which traffic sources drove the most sessions in the last 30 days?
+- Which pages had the most page views in the last 30 days?
+- What is the device breakdown of users in the last 30 days?
+- Which countries did the most users come from in the last 30 days?
 - What are the top traffic sources by sessions?
 - Which pages have the highest bounce rate?
 - What devices do most users browse from?

@@ -87,6 +87,8 @@ class ShopifyBulkManager:
     _job_adjust_slice_from_checkpoint: bool = field(init=False, default=False)
     # keeps the last checkpointed cursor value for supported streams
     _job_last_checkpoint_cursor_value: str | None = field(init=False, default=None)
+    # indicates whether or not the checkpoint comes from the partial result of the FAILED job
+    _job_checkpoint_from_failed_job: bool = field(init=False, default=False)
 
     # expand slice factor
     _job_size_expand_factor: int = field(init=False, default=2)
@@ -127,6 +129,7 @@ class ShopifyBulkManager:
             ShopifyBulkJobStatus.TIMEOUT.value: self._on_timeout_job,
             ShopifyBulkJobStatus.FAILED.value: self._on_failed_job,
             ShopifyBulkJobStatus.ACCESS_DENIED.value: self._on_access_denied_job,
+            ShopifyBulkJobStatus.EXPIRED.value: self._on_expired_job,
         }
 
     @property
@@ -225,6 +228,7 @@ class ShopifyBulkManager:
     def _reset_checkpointing(self) -> None:
         # reseting the checkpoint flag, if bulk job has completed normally
         self._job_adjust_slice_from_checkpoint = False
+        self._job_checkpoint_from_failed_job = False
 
     def _set_last_checkpoint_cursor_value(self, checkpointed_cursor: str) -> None:
         """
@@ -366,15 +370,28 @@ class ShopifyBulkManager:
     def _on_completed_job(self, response: Optional[requests.Response] = None) -> None:
         self._job_result_filename = self._job_get_result(response)
 
+    def _raise_job_without_result(self, details: str) -> None:
+        raise ShopifyBulkExceptions.BulkJobFailed(f"The BULK Job: `{self._job_id}` {details}.")
+
     def _on_failed_job(self, response: requests.Response) -> AirbyteTracedException | None:
-        if not self._supports_checkpointing:
-            raise ShopifyBulkExceptions.BulkJobFailed(
-                f"The BULK Job: `{self._job_id}` exited with {self._job_state}, details: {response.text}",
-            )
-        else:
+        error_code = response.json().get("data", {}).get("node", {}).get("errorCode")
+        if error_code == "ACCESS_DENIED":
+            # the missing access scopes can only be granted by the user
+            self._on_access_denied_job()
+        if self._supports_checkpointing:
             # when the Bulk Job fails, usually there is a `partialDataUrl` available,
             # we leverage the checkpointing in this case.
             self._job_get_checkpointed_result(response)
+            if self._job_result_filename:
+                # the next slice resumes from the checkpointed cursor, see `get_adjusted_job_end`
+                self._job_checkpoint_from_failed_job = True
+                return None
+        self._raise_job_without_result(
+            f"exited with {self._job_state} and returned no partial result to resume from, errorCode: `{error_code}`, objectCount: `{self._job_last_rec_count}`"
+        )
+
+    def _on_expired_job(self, **kwargs) -> AirbyteTracedException:
+        self._raise_job_without_result(f"exited with {self._job_state}, the result URL has expired")
 
     def _on_timeout_job(self, **kwargs) -> AirbyteTracedException:
         raise ShopifyBulkExceptions.BulkJobTimout(
@@ -583,8 +600,12 @@ class ShopifyBulkManager:
         filter_checkpointed_cursor: Optional[str] = None,
     ) -> datetime:
         if self._job_adjust_slice_from_checkpoint:
+            checkpoint_from_failed_job = self._job_checkpoint_from_failed_job
             # set the checkpointing to default, before the next slice is emitted, to avoid inf.loop
             self._reset_checkpointing()
+            if checkpoint_from_failed_job and not checkpointed_cursor:
+                # the partial result has no records to resume from, the rest of the slice must not be skipped
+                self._raise_job_without_result("exited with FAILED and its partial result has no records to checkpoint from")
             return self._adjust_slice_end(slice_end, checkpointed_cursor, filter_checkpointed_cursor)
 
         if self._is_long_running_job:

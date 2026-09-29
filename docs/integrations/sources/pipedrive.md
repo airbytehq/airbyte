@@ -170,6 +170,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 3.0.4 | 2026-09-29 | [87265](https://github.com/airbytehq/airbyte/pull/87265) | Update dependencies |
 | 3.0.3 | 2026-09-22 | [86762](https://github.com/airbytehq/airbyte/pull/86762) | Update dependencies |
 | 3.0.2 | 2026-09-15 | [86184](https://github.com/airbytehq/airbyte/pull/86184) | Update dependencies |
 | 3.0.1 | 2026-09-14 | [85919](https://github.com/airbytehq/airbyte/pull/85919) | Test-only release: cover the streams the sandbox cannot populate with mock-server tests and make the 429 retry test deterministic |
