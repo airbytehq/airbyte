@@ -41,6 +41,26 @@ def test_should_retry(requests_mock, stream_name, extra_mocks):
     assert requests_mock.call_count == len(extra_mocks) + 1
 
 
+def test_retries_transient_server_errors(mocker, requests_mock):
+    mocker.patch("time.sleep")
+    requests_mock.get(url=GROUPS_LIST_URL, status_code=200)
+    source = get_source(config=CONFIG)
+    migrated_config = source.configure(config=CONFIG, temp_dir="/not/a/real/path")
+    stream = get_stream_by_name(source=source, stream_name="projects", config=migrated_config)
+    requests_mock.get(
+        url="/api/v4/projects/p_1",
+        response_list=[{"status_code": 500} for _ in range(6)] + [{"status_code": 200, "json": {"id": "p_1"}}],
+    )
+
+    records = [record for partition in stream.generate_partitions() for record in partition.read()]
+
+    assert [dict(record) for record in records] == [{"id": "p_1"}]
+    project_requests = [
+        request for request in requests_mock.request_history if request.url.startswith("https://gitlab.com/api/v4/projects/p_1")
+    ]
+    assert len(project_requests) == 7
+
+
 test_cases = (
     (
         "jobs",
