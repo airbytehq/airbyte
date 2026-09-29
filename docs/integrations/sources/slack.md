@@ -202,6 +202,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.26 | 2026-09-29 | [87330](https://github.com/airbytehq/airbyte/pull/87330) | Update dependencies |
+| 3.2.25 | 2026-09-28 | [86496](https://github.com/airbytehq/airbyte/pull/86496) | Preserve thread parent checkpoints on restart and skip archived channels the bot cannot join |
 | 3.2.24 | 2026-09-22 | [86814](https://github.com/airbytehq/airbyte/pull/86814) | Update dependencies |
 | 3.2.23 | 2026-09-15 | [86208](https://github.com/airbytehq/airbyte/pull/86208) | Update dependencies |
 | 3.2.22 | 2026-09-08 | [85654](https://github.com/airbytehq/airbyte/pull/85654) | Update dependencies |
