@@ -26,7 +26,7 @@ To generate the OAuth credentials, go to **Control Panel > Uptick API** in your 
 
 | Input | Type | Description | Default Value |
 | ------- | ------ | ------------- | --------------- |
-| `base_url` | `string` | Root URL of your Uptick workspace, for example `https://yourcompany.onuptick.com` (https scheme, host only, no trailing slash). It is also used to build the OAuth consent URL. | |
+| `base_url` | `string` | Root URL of your Uptick workspace in the form `https://yourcompany.onuptick.com` (https, host only, no trailing slash). Syncs normalize the value; the OAuth consent URL uses it as typed, with only a trailing slash stripped. | |
 | `credentials.auth_type` | `string` | `oauth2.0` for the OAuth flow, `password` for the legacy username and password method. | |
 | `credentials.client_id` | `string` | OAuth Client ID generated from **Control Panel > Uptick API**. Filled automatically by the OAuth flow on Airbyte Cloud. | |
 | `credentials.client_secret` | `string` | OAuth Client Secret generated from **Control Panel > Uptick API**. Filled automatically by the OAuth flow on Airbyte Cloud. | |

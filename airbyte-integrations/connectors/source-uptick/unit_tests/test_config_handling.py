@@ -101,26 +101,25 @@ def test_spec_declares_oauth_advanced_auth() -> None:
     credentials = spec["connection_specification"]["properties"]["credentials"]
     assert [variant["properties"]["auth_type"]["const"] for variant in credentials["oneOf"]] == ["oauth2.0", "password"]
     assert spec["connection_specification"]["required"] == ["base_url"]
+    assert "pattern" not in spec["connection_specification"]["properties"]["base_url"]
+    oauth_input = spec["advanced_auth"]["oauth_config_specification"]["oauth_connector_input_specification"]
+    assert oauth_input["consent_url"].startswith("{{ base_url | regex_replace('/+$', '') }}/api/oauth2/")
+    assert oauth_input["access_token_url"].startswith("{{ base_url | regex_replace('/+$', '') }}/api/oauth2/")
 
 
 @pytest.mark.parametrize(
-    "base_url, valid",
+    "base_url",
     [
-        pytest.param("https://x.onuptick.com", True, id="canonical_https"),
-        pytest.param("", False, id="empty"),
-        pytest.param("http://x.onuptick.com", False, id="http_scheme"),
-        pytest.param("https://x.onuptick.com/", False, id="trailing_slash"),
+        pytest.param("http://x.onuptick.com", id="http_scheme"),
+        pytest.param("https://x.onuptick.com/", id="trailing_slash"),
+        pytest.param("https://x.onuptick.com", id="canonical_https"),
+        pytest.param(" https://x.onuptick.com/api/v2.15/ ", id="whitespace_and_path"),
     ],
 )
-def test_base_url_spec_pattern(base_url: Any, valid: bool) -> None:
+def test_legacy_base_url_shapes_validate_against_spec(base_url: Any) -> None:
     spec_schema = get_source(base_config()).resolved_manifest["spec"]["connection_specification"]
-    config = base_config(base_url=base_url)
 
-    if valid:
-        validate(instance=config, schema=spec_schema)
-    else:
-        with pytest.raises(ValidationError):
-            validate(instance=config, schema=spec_schema)
+    validate(instance=base_config(base_url=base_url), schema=spec_schema)
 
 
 def test_legacy_top_level_config_validates() -> None:

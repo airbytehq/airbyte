@@ -165,9 +165,7 @@ spec:
     properties:
       base_url:
         type: string
-        description: Root URL of the Uptick workspace, for example https://demo-fire.onuptick.com — https scheme, host only, no trailing slash. It is also used to build the OAuth consent URL.
-        pattern: "^https://[^/\\s]+$"
-        pattern_descriptor: "https://<workspace>.onuptick.com"
+        description: Root URL of the Uptick workspace in the form https://<workspace>.onuptick.com (https, host only, no path or trailing slash). Syncs normalize the value automatically; the OAuth consent URL uses it with only a trailing slash stripped.
         order: 0
         title: Base Url
       credentials:
@@ -277,11 +275,11 @@ spec:
       oauth_connector_input_specification:
         # PKCE (S256) is mandatory; the random `state` doubles as the code_verifier (RFC 7636 section 4.1
         # length). Uptick's scope names are not published, so no {{scopes_param}} is sent.
-        consent_url: "{{base_url}}/api/oauth2/authorize/?response_type=code&{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&code_challenge={{ state_value | codechallengeS256 }}&code_challenge_method=S256"
+        consent_url: "{{ base_url | regex_replace('/+$', '') }}/api/oauth2/authorize/?response_type=code&{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&code_challenge={{ state_value | codechallengeS256 }}&code_challenge_method=S256"
         state:
           min: 43
           max: 128
-        access_token_url: "{{base_url}}/api/oauth2/token/"
+        access_token_url: "{{ base_url | regex_replace('/+$', '') }}/api/oauth2/token/"
         access_token_headers:
           Content-Type: application/x-www-form-urlencoded
         access_token_params:
