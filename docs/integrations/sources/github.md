@@ -59,7 +59,7 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
    - **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
    <!-- /env:oss -->
 
-6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
+6. **GitHub Repositories** - Add one entry per repository, for example `airbytehq/airbyte`. To sync every repository in an organization, enter `airbytehq/*`. To sync the repositories whose names start with a prefix, enter a pattern such as `airbytehq/a*`.
 
    :::caution
    Repositories with the wrong name or repositories that do not exist or have the wrong name format will be skipped with `WARN` message in the logs.
@@ -69,9 +69,11 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 
    - These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `projects_v2`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `repositories`, `review_comments`, `reviews`, `stargazers`, `workflow_jobs`, `workflow_runs`, `workflows`.
 
-   - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `tags`, `teams`, `users`
+   - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `contributor_activity`, `issue_labels`, `issue_timeline_events`, `organizations`, `tags`, `team_members`, `team_memberships`, `teams`, `users`.
 
-8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
+   - `pull_request_commits` syncs every commit of a pull request, but only for the pull requests the `pull_requests` stream reads, which are the ones updated on or after the **Start Date**.
+
+8. **Branches (Optional)** - Add one entry per branch to pull commits from, in the format `owner/repository/branch`, for example `airbytehq/airbyte/master`. If you don't specify a branch for a repository, the connector pulls commits from its default branch.
 9. **API URL (Optional)** - If you use a self-hosted GitHub instance, enter its API URL, for example `https://github.company.org`. Leave empty to use `https://api.github.com/`.
 10. **Max Waiting Time (in minutes) (Optional)** - Maximum time the connector waits when every configured API token is rate-limited before it fails the sync. The default is 120 minutes, which covers GitHub's 60-minute rate limit reset window plus margin. You can set any value between 1 and 240 minutes. If you provide multiple personal access tokens, the connector rotates through them first, and only waits after every token is exhausted.
 
@@ -154,7 +156,7 @@ This connector outputs the following incremental streams:
 
 2. Streams `workflow_runs` and `workflow_jobs` are almost pure incremental:
 
-   - read new records and some portion of old records (in past 30 days) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
+   - GitHub lists workflow runs by creation date and lets you [re-run a workflow up to 30 days after its initial run](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs), which changes its `updated_at`. To pick up these re-runs, each sync reads every run created up to 32 days before the previous sync's cursor, so it re-reads some older runs;
    - the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/en/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
    - output only new records.
 
@@ -167,20 +169,7 @@ This connector outputs the following incremental streams:
 
    Consider this behavior when using these incremental streams, because it may affect your API call limits.
 
-5. Sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
-   **The "Start date" configuration option does not apply to the streams below, because the GitHub API does not include dates which can be used for filtering:**
-
-   - `assignees`
-   - `branches`
-   - `collaborators`
-   - `issue_labels`
-   - `organizations`
-   - `pull_request_commits`
-   - `tags`
-   - `teams`
-   - `users`
-
-6. Adding a repository or organization to a connection that has already synced does not backfill its history. See [Adding repositories or organizations to an existing connection](#adding-repositories-or-organizations-to-an-existing-connection).
+5. Adding a repository or organization to a connection that has already synced does not backfill its history. See [Adding repositories or organizations to an existing connection](#adding-repositories-or-organizations-to-an-existing-connection).
 
 ## IP allow list
 
