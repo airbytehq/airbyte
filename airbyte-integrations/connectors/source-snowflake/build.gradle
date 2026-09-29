@@ -21,7 +21,7 @@ application {
 }
 
 dependencies {
-    implementation 'net.snowflake:snowflake-jdbc:4.0.2'
+    implementation 'net.snowflake:snowflake-jdbc:4.3.4'
     implementation 'org.apache.commons:commons-lang3:3.20.0'
 
     testImplementation platform('org.junit:junit-bom:5.10.0')
@@ -35,6 +35,8 @@ tasks.withType(Test).configureEach {
     jvmArgs(
             '--add-opens=java.base/java.nio=ALL-UNNAMED',
             '--add-opens=jdk.unsupported/sun.misc=ALL-UNNAMED',
-            '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED'
+            '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
+            // in-process live tests may authenticate with an encrypted key pair
+            '-Dnet.snowflake.jdbc.enableBouncyCastle=TRUE'
     )
 }
