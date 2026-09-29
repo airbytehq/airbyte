@@ -2,13 +2,14 @@
 
 import logging
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
 from requests_mock import Mocker
 
 from airbyte_cdk import AirbyteTracedException, ConfiguredAirbyteCatalog, FailureType, YamlDeclarativeSource
+from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
 from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.types import StreamSlice
@@ -62,14 +63,20 @@ def _activity(performed_at: str = "01-01-2022 09:33:38 +0000", ticket_id: int = 
     }
 
 
-def _register_export(requests_mock: Mocker, activities: list[dict]) -> None:
-    requests_mock.get(_EXPORT_URL, json={"export": {"url": _DOWNLOAD_URL}})
+def _register_export(
+    requests_mock: Mocker,
+    activities: list[dict],
+    start_at: str = "01-01-2022 00:00:00 +0000",
+    end_at: str = "01-01-2022 23:59:59 +0000",
+    download_url: str = _DOWNLOAD_URL,
+) -> None:
+    requests_mock.get(_EXPORT_URL, json={"export": {"url": download_url}})
     requests_mock.get(
-        _DOWNLOAD_URL,
+        download_url,
         json={
             "metadata": {
-                "start_at": "01-01-2022 00:00:00 +0000",
-                "end_at": "01-01-2022 23:59:59 +0000",
+                "start_at": start_at,
+                "end_at": end_at,
                 "activities_count": len(activities),
             },
             "activities_data": activities,
@@ -169,24 +176,24 @@ def test_ticket_activities_missing_export_logs_info_not_warning(requests_mock: M
     assert any("No ticket activities export was available" in record.getMessage() for record in caplog.records)
 
 
-def test_ticket_activities_filters_downloaded_records_to_stream_slice(requests_mock: Mocker) -> None:
+def test_ticket_activities_emits_whole_export_for_offset_file_window(requests_mock: Mocker) -> None:
     _register_export(
         requests_mock,
         [
             _activity(performed_at="01-01-2022 09:59:59 +0000", ticket_id=1),
             _activity(performed_at="01-01-2022 10:00:00 +0000", ticket_id=2),
             _activity(performed_at="02-01-2022 00:00:00 +0000", ticket_id=3),
+            _activity(performed_at="02-01-2022 09:59:59 +0000", ticket_id=4),
         ],
+        start_at="01-01-2022 10:00:00 +0000",
+        end_at="02-01-2022 09:59:59 +0000",
     )
 
-    records = list(
-        _retriever().read_records(
-            {},
-            _slice(start_time="2022-01-01T10:00:00Z", end_time="2022-01-01T23:59:59Z"),
-        )
-    )
+    records = list(_retriever().read_records({}, _slice("2022-01-01T13:45:12Z", "2022-01-02T13:45:11Z")))
 
-    assert [record["ticket_id"] for record in records] == [2]
+    assert [record["ticket_id"] for record in records] == [1, 2, 3, 4]
+    assert all(record["export_date"] == "2022-01-01" for record in records)
+    assert requests_mock.request_history[0].qs["created_at"] == ["2022-01-01"]
 
 
 def test_ticket_activities_duplicate_ids_are_unique_and_stable(requests_mock: Mocker) -> None:
@@ -261,6 +268,109 @@ def test_ticket_activities_lookback_is_clamped_to_export_retention() -> None:
     # Freshdesk keeps each daily export file for 30 days; older slices are guaranteed 404s,
     # so the stream clamps any config start_date to the retention window.
     assert 0 < len(slices) <= 32
+
+
+def _ticket_activities_stream(config: dict, state: list | None = None):
+    source = YamlDeclarativeSource(
+        path_to_yaml=str(_YAML_FILE_PATH),
+        catalog=ConfiguredAirbyteCatalog(streams=[]),
+        config=config,
+        state=state,
+    )
+    return next(stream for stream in source.streams(config) if stream.name == "ticket_activities")
+
+
+def _cursor_slices(stream) -> list[dict]:
+    slices = [partition.to_slice() for partition in stream.generate_partitions()]
+    return [slice_.get("cursor_slice", slice_) for slice_ in slices]
+
+
+def _consecutive_dates(start: datetime, end: datetime) -> list[str]:
+    return [(start.date() + timedelta(days=i)).isoformat() for i in range((end.date() - start.date()).days + 1)]
+
+
+def test_ticket_activities_initial_slices_are_midnight_aligned() -> None:
+    now = datetime.now(timezone.utc)
+    start_date = (now - timedelta(days=5)).replace(hour=13, minute=45, second=12, microsecond=0)
+    config = ConfigBuilder().domain(_DOMAIN).start_date(start_date).build()
+
+    slices = _cursor_slices(_ticket_activities_stream(config))
+
+    assert [slice_["start_time"][:10] for slice_ in slices] == _consecutive_dates(start_date, now)
+    assert all(slice_["start_time"].endswith("T00:00:00Z") for slice_ in slices)
+    assert all(slice_["end_time"].endswith("T23:59:59Z") for slice_ in slices[:-1])
+
+
+def test_ticket_activities_incremental_slices_from_mid_day_state_cover_every_day() -> None:
+    now = datetime.now(timezone.utc)
+    state_datetime = (now - timedelta(days=4)).replace(hour=13, minute=45, second=12, microsecond=0)
+    state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="ticket_activities"),
+                stream_state=AirbyteStateBlob(performed_at=state_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")),
+            ),
+        )
+    ]
+    config = ConfigBuilder().domain(_DOMAIN).build()
+
+    slices = _cursor_slices(_ticket_activities_stream(config, state))
+
+    expected_dates = _consecutive_dates(state_datetime, now)
+    assert [slice_["start_time"][:10] for slice_ in slices] == expected_dates
+    retriever = _retriever()
+    assert [retriever._get_export_date(StreamSlice(partition={}, cursor_slice=slice_)) for slice_ in slices] == expected_dates
+
+
+def test_ticket_activities_consecutive_slices_do_not_lose_or_duplicate_records(requests_mock: Mocker) -> None:
+    url_1 = "https://exports.freshdesk.example/2022-01-01-ticket-activities.json"
+    url_2 = "https://exports.freshdesk.example/2022-01-02-ticket-activities.json"
+    exports = {
+        "2022-01-01": {"export": [{"created_at": "1-1-2022", "url": url_1}]},
+        "2022-01-02": {"export": [{"created_at": "2-1-2022", "url": url_2}]},
+    }
+    requests_mock.get(_EXPORT_URL, json=lambda request, context: exports[request.qs["created_at"][0]])
+    requests_mock.get(
+        url_1,
+        json={
+            "metadata": {
+                "start_at": "01-01-2022 10:00:00 +0000",
+                "end_at": "02-01-2022 09:59:59 +0000",
+                "activities_count": 3,
+            },
+            "activities_data": [
+                _activity(performed_at="01-01-2022 10:00:00 +0000", ticket_id=1),
+                _activity(performed_at="01-01-2022 23:59:59 +0000", ticket_id=2),
+                _activity(performed_at="02-01-2022 09:59:59 +0000", ticket_id=3),
+            ],
+        },
+    )
+    requests_mock.get(
+        url_2,
+        json={
+            "metadata": {
+                "start_at": "02-01-2022 10:00:00 +0000",
+                "end_at": "03-01-2022 09:59:59 +0000",
+                "activities_count": 2,
+            },
+            "activities_data": [
+                _activity(performed_at="02-01-2022 10:00:00 +0000", ticket_id=4),
+                _activity(performed_at="03-01-2022 09:59:59 +0000", ticket_id=5),
+            ],
+        },
+    )
+
+    first = list(_retriever().read_records({}, _slice("2022-01-01T13:45:12Z", "2022-01-02T13:45:11Z")))
+    second = list(_retriever().read_records({}, _slice("2022-01-02T13:45:12Z", "2022-01-03T13:45:11Z")))
+
+    assert [record["ticket_id"] for record in first] == [1, 2, 3]
+    assert all(record["export_date"] == "2022-01-01" for record in first)
+    assert [record["ticket_id"] for record in second] == [4, 5]
+    assert all(record["export_date"] == "2022-01-02" for record in second)
+    records = first + second
+    assert len(records) == 5
+    assert len({record["_airbyte_ticket_activity_id"] for record in records}) == 5
 
 
 def test_ticket_activities_stream_is_incremental() -> None:

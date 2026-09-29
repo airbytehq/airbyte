@@ -86,6 +86,11 @@ class TicketActivitiesRetriever(Retriever):
         records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
     ) -> Iterable[StreamData]:
+        """Emit every record in the requested daily export file.
+
+        Freshdesk's file boundaries follow the account's local day, so records
+        are not filtered by the cursor slice window.
+        """
         export_date = self._get_export_date(stream_slice)
         export_payload = self._get_json(
             self._export_endpoint,
@@ -118,7 +123,7 @@ class TicketActivitiesRetriever(Retriever):
                 failure_type=FailureType.system_error,
             )
 
-        for record in self._add_stable_ids(records, export_date, stream_slice):
+        for record in self._add_stable_ids(records, export_date):
             yield record
 
     @property
@@ -188,9 +193,7 @@ class TicketActivitiesRetriever(Retriever):
             return f"list of {len(export)} entries with types {entry_types}"
         return type(export).__name__
 
-    def _add_stable_ids(
-        self, records: Iterable[Mapping[str, Any]], export_date: str, stream_slice: Optional[StreamSlice]
-    ) -> Iterable[Mapping[str, Any]]:
+    def _add_stable_ids(self, records: Iterable[Mapping[str, Any]], export_date: str) -> Iterable[Mapping[str, Any]]:
         seen_record_hashes: dict[str, int] = {}
         for record in records:
             enriched_record = dict(record)
@@ -200,8 +203,6 @@ class TicketActivitiesRetriever(Retriever):
                     failure_type=FailureType.system_error,
                 )
             enriched_record["performed_at"] = self._format_datetime(enriched_record["performed_at"])
-            if not self._is_in_stream_slice(enriched_record["performed_at"], stream_slice):
-                continue
             enriched_record["export_date"] = export_date
 
             base_hash = self._hash_record(enriched_record)
@@ -213,19 +214,6 @@ class TicketActivitiesRetriever(Retriever):
     def _hash_record(record: Mapping[str, Any]) -> str:
         serialized_record = json.dumps(record, sort_keys=True, separators=(",", ":"), default=str)
         return hashlib.sha256(serialized_record.encode("utf-8")).hexdigest()
-
-    @classmethod
-    def _is_in_stream_slice(cls, performed_at: str, stream_slice: Optional[StreamSlice]) -> bool:
-        if stream_slice is None:
-            return True
-        performed_at_datetime = cls._parse_datetime(performed_at)
-        start_time = stream_slice.get("start_time")
-        if start_time and performed_at_datetime < cls._parse_datetime(start_time):
-            return False
-        end_time = stream_slice.get("end_time")
-        if end_time and performed_at_datetime > cls._parse_datetime(end_time):
-            return False
-        return True
 
     @classmethod
     def _format_datetime(cls, value: Any) -> Any:
