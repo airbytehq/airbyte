@@ -675,7 +675,7 @@ fun MsSqlServerJdbcRfrSnapshotPartition.split(
     opaqueStateValues: List<OpaqueStateValue>
 ): List<MsSqlServerJdbcRfrSnapshotPartition> {
     val splitPointValues: List<MsSqlServerJdbcStreamStateValue> =
-        opaqueStateValues.map { MsSqlServerStateMigration.parseStateValue(it) }
+        opaqueStateValues.mapNotNull { MsSqlServerStateMigration.parseStateValue(it) }
 
     val inners: List<List<JsonNode>> =
         splitPointValues.mapNotNull { sv ->
@@ -762,7 +762,7 @@ fun MsSqlServerJdbcSnapshotWithCursorPartition.split(
     opaqueStateValues: List<OpaqueStateValue>
 ): List<MsSqlServerJdbcSplittableSnapshotWithCursorPartition> {
     val splitPointValues: List<MsSqlServerJdbcStreamStateValue> =
-        opaqueStateValues.map { MsSqlServerStateMigration.parseStateValue(it) }
+        opaqueStateValues.mapNotNull { MsSqlServerStateMigration.parseStateValue(it) }
 
     val inners: List<List<JsonNode>> =
         splitPointValues.mapNotNull { sv ->

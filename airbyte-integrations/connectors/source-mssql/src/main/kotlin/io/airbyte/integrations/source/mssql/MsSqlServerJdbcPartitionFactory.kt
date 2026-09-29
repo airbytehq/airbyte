@@ -231,6 +231,15 @@ open class MsSqlServerJdbcPartitionFactory(
         }
 
         val isCursorBased: Boolean = !sharedState.configuration.global
+
+        // Cursor-based mode never checkpoints {} itself, so {} means the state was cleared (e.g.
+        // backfill). In CDC mode the CDK serializes a completed stream's null state as {}, so it
+        // keeps meaning "complete".
+        if (isCursorBased && opaqueStateValue.isEmpty) {
+            log.info { "Empty state for stream ${stream.name}, starting from scratch" }
+            return coldStart(streamState)
+        }
+
         val isView = isView(stream)
         val orderedColumns = getOrderedColumnAsList(stream)
 
@@ -304,6 +313,13 @@ open class MsSqlServerJdbcPartitionFactory(
         } else { // Cursor-based sync
             val sv: MsSqlServerJdbcStreamStateValue =
                 MsSqlServerStateMigration.parseStateValue(opaqueStateValue)
+                    ?: run {
+                        log.warn {
+                            "Unrecognized state for stream ${stream.name}, resetting stream and starting from scratch"
+                        }
+                        streamState.reset()
+                        return coldStart(streamState)
+                    }
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                 val upperBound = findPkUpperBound(stream)
