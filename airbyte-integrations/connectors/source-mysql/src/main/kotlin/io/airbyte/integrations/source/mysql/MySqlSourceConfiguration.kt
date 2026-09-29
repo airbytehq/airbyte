@@ -176,7 +176,12 @@ constructor(
         val checkpointTargetInterval: Duration =
             Duration.ofSeconds(pojo.checkpointTargetIntervalSeconds?.toLong() ?: 0)
         if (!checkpointTargetInterval.isPositive) {
-            throw ConfigErrorException("Checkpoint Target Interval should be positive")
+            throw ConfigErrorException(
+                "Checkpoint Target Interval should be positive, but " +
+                    "checkpoint_target_interval_seconds was " +
+                    "${pojo.checkpointTargetIntervalSeconds}. Set it to the number of " +
+                    "seconds between state checkpoints (default 300) and retry.",
+            )
         }
         val maxConcurrencyLegacy: Int = pojo.concurrency ?: 0
         if ((pojo.concurrency ?: 0) <= 0) {
