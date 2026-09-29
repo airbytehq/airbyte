@@ -158,7 +158,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Market Countries (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/queries/markets) — Shipping configuration of shops using [market-driven shipping](#countries-and-market-driven-shipping). Requires the `read_markets` scope.
 - [Metafields (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Metafield) — Available as separate streams for: Articles, Blogs, Collections, Customers, Draft Orders, Locations, Orders, Pages, Product Images, Products, Product Variants, Shops, and Smart Collections
 - [Order Agreements (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderAgreement)
-- [Orders](https://shopify.dev/api/admin-rest/latest/resources/order#top) — Optional [top-level customer fields](#customer-fields-in-orders) support selecting and hashing individual customer attributes.
+- [Orders](https://shopify.dev/api/admin-rest/latest/resources/order#top) — Includes optional top-level `customer_*` fields. See [Customer fields in Orders](#customer-fields-in-orders).
 - [Order Refunds](https://shopify.dev/api/admin-rest/latest/resources/refund#top)
 - [Order Risks (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderRisk)
 - [Pages](https://shopify.dev/api/admin-rest/latest/resources/page#top)
@@ -177,15 +177,21 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 
 ## Customer fields in Orders
 
-The `Orders` stream includes top-level copies of customer attributes, such as `customer_id`, `customer_email`, and `customer_default_address`. Enable **Populate top-level customer fields in Orders** (`populate_top_level_orders_customer_fields`) in the source configuration to populate them from the nested `customer` object.
+In addition to the nested `customer` object, the `Orders` stream has 26 top-level copies of customer attributes, such as `customer_id`, `customer_email`, and `customer_default_address`. Each one corresponds to an attribute of the nested `customer` object, prefixed with `customer_`. The `customer_locale` field comes directly from the Shopify order and isn't one of these copies.
 
-This setting defaults to `false`. When disabled or omitted, all newly added customer fields contain `null`. When enabled, they contain the corresponding customer values; missing attributes and orders without a customer still produce `null`. The fields appear in the schema and can be selected or deselected in both modes. The existing `customer_locale` field is unaffected by this setting.
+These fields are always in the schema, so you can select or deselect them, but they only contain data if you turn on **Populate top-level customer fields in Orders** (`populate_top_level_orders_customer_fields`) in the source configuration. This setting is off by default.
 
-The original `customer` object is retained in both modes. To sync only selected or hashed customer attributes, deselect `customer`, select the `customer_*` fields you need, and configure hashing on the selected fields. Hashing or deselecting `customer_email` alone does not remove the original value from `customer.email` while `customer` remains selected.
+- **Off or omitted:** All 26 fields are `null`.
+- **On:** Each field contains the value of the matching attribute in `customer`. A field is `null` if the attribute is missing or the order has no customer. Shopify notes that an order [might not have a customer](https://shopify.dev/docs/api/admin-rest/latest/resources/order), for example when it was created through Shopify POS.
 
-If population is disabled and any of the new top-level customer fields are selected, the connector logs a warning once per sync attempt when it reads an order. The warning explains that these fields are redacted to `null` and that the nested `customer` object is not redacted. Enable the setting to populate the selected fields, or deselect them.
+The connector never removes or changes the nested `customer` object. To sync only specific customer attributes, or to hash them, turn the setting on, deselect `customer`, select the `customer_*` fields you need, and configure hashing on those fields. If `customer` stays selected, its original values still reach your destination. For example, hashing or deselecting `customer_email` doesn't remove the unhashed value from `customer.email`.
 
-After enabling population on an existing incremental connection, refresh the `Orders` stream to populate historical orders that would not otherwise be read again. Disabling population applies to subsequently read orders; it does not clear existing destination values by itself.
+If the setting is off and you select any of the 26 fields, the connector logs a warning once per sync attempt. The warning says the selected fields are redacted to `null` and that the nested `customer` object isn't redacted.
+
+Changing the setting only affects orders the connector reads afterward:
+
+- After you turn it on for an existing incremental connection, refresh the `Orders` stream to populate orders that were already synced.
+- Turning it off doesn't clear values already written to your destination.
 
 ## Countries and market-driven shipping
 
@@ -355,11 +361,11 @@ Before version 4.1.1, some failed BULK jobs that returned no usable partial resu
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.2.0 | 2026-09-25 | [87007](https://github.com/airbytehq/airbyte/pull/87007) | Add selectable top-level `customer_*` fields to `orders`, populated by the optional `populate_top_level_orders_customer_fields` setting (default: false); fields remain null when disabled |
+| 4.2.0 | 2026-09-29 | [87007](https://github.com/airbytehq/airbyte/pull/87007) | Add selectable top-level `customer_*` fields to `orders`, populated by the optional `populate_top_level_orders_customer_fields` setting (default: false); fields remain null when disabled |
 | 4.1.1 | 2026-09-28 | [86966](https://github.com/airbytehq/airbyte/pull/86966) | Fail the stream instead of silently skipping the slice when a failed BULK job returns no partial result or no records to resume from; retry failed BULK jobs as system errors (`ACCESS_DENIED` is a config error); show BULK error details to the user |
-| 4.1.0 | 2026-09-21 | [86493](https://github.com/airbytehq/airbyte/pull/86493) | Add `market_countries` stream for shops on market-driven shipping (requires `read_markets`); `countries` logs a warning for such shops since `deliveryProfiles` returns a frozen snapshot; `countries` and `market_countries` retry throttled pages and fail on other Shopify GraphQL `errors` responses instead of completing a partial snapshot |
-| 4.0.3 | 2026-09-16 | [86371](https://github.com/airbytehq/airbyte/pull/86371) | Fix `ValueError: year 0 is out of range` when the lookback window is applied to an empty stream state |
-| 4.0.2 | 2026-09-15 | [83335](https://github.com/airbytehq/airbyte/pull/83335) | Upgrade Shopify API version to 2026-07 |
+| 4.1.0 | 2026-09-24 | [86493](https://github.com/airbytehq/airbyte/pull/86493) | Add `market_countries` stream for shops on market-driven shipping (requires `read_markets`); `countries` logs a warning for such shops since `deliveryProfiles` returns a frozen snapshot; `countries` and `market_countries` retry throttled pages and fail on other Shopify GraphQL `errors` responses instead of completing a partial snapshot |
+| 4.0.3 | 2026-09-17 | [86371](https://github.com/airbytehq/airbyte/pull/86371) | Fix `ValueError: year 0 is out of range` when the lookback window is applied to an empty stream state |
+| 4.0.2 | 2026-09-16 | [83335](https://github.com/airbytehq/airbyte/pull/83335) | Upgrade Shopify API version to 2026-07 |
 | 4.0.1 | 2026-09-14 | [81363](https://github.com/airbytehq/airbyte/pull/81363) | Classify Shopify authentication errors as config errors instead of system errors during bulk job creation |
 | 4.0.0 | 2026-08-11 | [81339](https://github.com/airbytehq/airbyte/pull/81339) | Add missing `format: date-time` annotations to datetime fields in `orders` and `order_refunds`. `orders.processed_at` and `order_refunds.processed_at` change column type in typed destinations and require a schema refresh and resync. See the [migration guide](./shopify-migrations.md#upgrading-to-400). |
 | 3.5.1 | 2026-06-24 | [80787](https://github.com/airbytehq/airbyte/pull/80787) | Validate and normalize the `shop` config value: accept a bare subdomain or full myshopify URL, and reject malformed input with a clear config error. The normalized handle is also written to the `shop_url` record field, so previously-malformed configs now emit a clean value. |
@@ -370,10 +376,10 @@ Before version 4.1.1, some failed BULK jobs that returned no usable partial resu
 | 3.3.2 | 2026-04-24 | [76969](https://github.com/airbytehq/airbyte/pull/76969) | Replace in-memory sort of bulk GraphQL records with a disk-backed external merge sort to fix OOM failures on large metafield syncs |
 | 3.3.1 | 2026-04-22 | [76920](https://github.com/airbytehq/airbyte/pull/76920) | Fix `AttributeError` from null logger in `LimitReducingErrorHandler` when handling non-500 HTTP errors |
 | 3.3.0 | 2026-04-15 | [76327](https://github.com/airbytehq/airbyte/pull/76327) | Upgrade airbyte-cdk dependency from v6 to v7 |
-| 3.2.3 | 2026-03-20 | [75255](https://github.com/airbytehq/airbyte/pull/75255) | Upgrade Shopify API version from 2025-01 to 2025-10 |
+| 3.2.3 | 2026-03-26 | [75255](https://github.com/airbytehq/airbyte/pull/75255) | Upgrade Shopify API version from 2025-01 to 2025-10 |
 | 3.2.2 | 2026-03-09 | [72849](https://github.com/airbytehq/airbyte/pull/72849) | Fix missing fulfillment orders by querying fulfillmentOrders endpoint directly; add configurable `fulfillment_orders_include_closed` option (default: false) |
 | 3.2.1 | 2026-02-04 | [72810](https://github.com/airbytehq/airbyte/pull/72810) | feat(source-shopify): Add id and position fields to product_variants.options schema (AI-Triage PR) |
-| 3.2.0 | 2026-01-20 | [72209](https://github.com/airbytehq/airbyte/pull/72209) | Add `CollectionProducts` stream for all product-collection associations |
+| 3.2.0 | 2026-01-28 | [72209](https://github.com/airbytehq/airbyte/pull/72209) | Add `CollectionProducts` stream for all product-collection associations |
 | 3.1.2 | 2026-01-15 | [71188](https://github.com/airbytehq/airbyte/pull/71188) | Handle CDK exceptions in connection check |
 | 3.1.1 | 2026-01-06 | [71035](https://github.com/airbytehq/airbyte/pull/71035) | Fix IndexError in countries stream when profile_location_groups is empty |
 | 3.1.0 | 2026-01-05 | [71005](https://github.com/airbytehq/airbyte/pull/71005) | Add `deleted_products` stream using GraphQL Events API |
