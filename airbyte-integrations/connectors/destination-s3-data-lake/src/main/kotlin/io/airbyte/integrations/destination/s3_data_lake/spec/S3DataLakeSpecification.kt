@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_data_lake.spec
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
@@ -69,6 +70,32 @@ class S3DataLakeSpecification :
 
     @get:JsonSchemaInject(json = """{"always_show": true,"order":7}""")
     override val catalogType: CatalogType = GlueCatalogSpecification(glueId = "", databaseName = "")
+
+    @get:JsonSchemaTitle("Flush Batch Size (MB)")
+    @get:JsonPropertyDescription(
+        "The approximate size in megabytes of each batch of data written to Iceberg. " +
+            "Smaller values flush more frequently, improving data freshness and reducing data loss on failure, " +
+            "but will create more small files that require compaction. " +
+            "Must be between 1 and 500 MB. Default is 200 MB."
+    )
+    @get:JsonProperty("flush_batch_size_mb", required = false)
+    @get:JsonSchemaInject(
+        json = """{"examples":[200], "default": 200, "order": 8, "airbyte_hidden": true}"""
+    )
+    val flushBatchSizeMb: Long? = null
+
+    @get:JsonSchemaTitle("Normalize Column Names")
+    @get:JsonPropertyDescription(
+        "Lowercases column names and replaces non-alphanumeric characters with underscores " +
+            "before writing to Iceberg (e.g. \"Foo.Bar\" -> \"foo_bar\"). " +
+            "Enable this when downstream query engines cannot handle mixed-case or " +
+            "special-character column names. " +
+            "IMPORTANT: toggling this on existing synced streams requires clearing the " +
+            "stream data and running a full refresh."
+    )
+    @get:JsonProperty("normalize_column_names", required = false)
+    @get:JsonSchemaInject(json = """{"default": false, "order": 9}""")
+    val normalizeColumnNames: Boolean? = null
 }
 
 @Singleton

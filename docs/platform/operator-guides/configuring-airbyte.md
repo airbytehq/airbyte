@@ -5,8 +5,7 @@ products: oss-*
 # Configuring Airbyte
 
 :::important
-You probably don't need to reference this file. This page documents Airbyte's internal configuration API. This is how Airbyte retrieves values. To configure Airbyte, modify the [values.yaml](../deploying-airbyte/values) file.  `values.yaml` has a rich interface and is suitable for all integrations and configurations, especially once you've upgraded to Helm Chart V2.
-<!-- [Helm chart V2](../deploying-airbyte/chart-v2-community). -->
+You probably don't need to reference this file. This page documents Airbyte's internal configuration API. This is how Airbyte retrieves values. To configure Airbyte, modify the [values.yaml](../deploying-airbyte/values) file.  `values.yaml` has a rich interface and is suitable for all integrations and configurations.
 :::
 
 Be careful using variables marked as `alpha`. They aren't meant for public consumption.
@@ -104,14 +103,6 @@ See [State and Logging Storage](../deploying-airbyte/integrations/storage.md) fo
 7. `S3_MINIO_ENDPOINT` - Defines the url Minio is hosted at so Airbyte can use Minio to store logs.
 8. `S3_PATH_STYLE_ACCESS` - Set to `true` if using Minio to store logs. Empty otherwise.
 
-## Monitoring
-
-1. `PUBLISH_METRICS` - Defines whether to publish metrics collected by the Metrics Reporter. Defaults to false.
-2. `METRIC_CLIENT` - Defines which metrics client to use. Only relevant if `PUBLISH_METRICS` is set to true. Accepts either `datadog` or `otel`. Default to none.
-3. `DD_AGENT_HOST` - Defines the ip the Datadog metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `datadog`. Defaults to none.
-4. `DD_AGENT_PORT` - Defines the port the Datadog metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `datadog`. Defaults to none.
-5. `OTEL_COLLECTOR_ENDPOINT` - Defines the ip:port the OTEL metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `otel`. Defaults to none.
-
 ## Worker
 
 1. `MAX_CHECK_WORKERS` - Defines the maximum number of Non-Sync workers each Airbyte Worker container can support. Defaults to 5.
@@ -126,8 +117,3 @@ See [State and Logging Storage](../deploying-airbyte/integrations/storage.md) fo
 ## Data Retention
 
 1. `TEMPORAL_HISTORY_RETENTION_IN_DAYS` - Defines the retention period of the job history in Temporal. Defaults to 30 days.
-
-## Server
-
-1. `AUDIT_LOGGING_ENABLED` - For Self-Managed Enterprise only, defines whether Airbyte enables audit logging. Set to `true` or `false`. If `true`, specify `STORAGE_BUCKET_AUDIT_LOGGING`.
-2. `STORAGE_BUCKET_AUDIT_LOGGING` - For Self-Managed Enterprise only, if `AUDIT_LOGGING_ENABLED` is true, define your audit logging bucket here. You must configure a blob storage solution, like AWS S3, Google Cloud Storage, or Azure Blob Storage.

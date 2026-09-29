@@ -8,23 +8,41 @@ The Tiktok-Marketing connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Advertisers | [List](#advertisers-list), [Search](#advertisers-search) |
-| Campaigns | [List](#campaigns-list), [Search](#campaigns-search) |
-| Ad Groups | [List](#ad-groups-list), [Search](#ad-groups-search) |
-| Ads | [List](#ads-list), [Search](#ads-search) |
-| Audiences | [List](#audiences-list), [Search](#audiences-search) |
-| Creative Assets Images | [List](#creative-assets-images-list), [Search](#creative-assets-images-search) |
-| Creative Assets Videos | [List](#creative-assets-videos-list), [Search](#creative-assets-videos-search) |
-| Advertisers Reports Daily | [List](#advertisers-reports-daily-list), [Search](#advertisers-reports-daily-search) |
-| Campaigns Reports Daily | [List](#campaigns-reports-daily-list), [Search](#campaigns-reports-daily-search) |
-| Ad Groups Reports Daily | [List](#ad-groups-reports-daily-list), [Search](#ad-groups-reports-daily-search) |
-| Ads Reports Daily | [List](#ads-reports-daily-list), [Search](#ads-reports-daily-search) |
+| Advertisers | [List](#advertisers-list), [Context Store Search](#advertisers-context-store-search), [Context Store SQL Query](#advertisers-context-store-sql-query) |
+| Campaigns | [List](#campaigns-list), [Context Store Search](#campaigns-context-store-search), [Context Store SQL Query](#campaigns-context-store-sql-query) |
+| Ad Groups | [List](#ad-groups-list), [Context Store Search](#ad-groups-context-store-search), [Context Store SQL Query](#ad-groups-context-store-sql-query) |
+| Ads | [List](#ads-list), [Context Store Search](#ads-context-store-search), [Context Store SQL Query](#ads-context-store-sql-query), [Semantic Search](#ads-semantic-search) |
+| Audiences | [List](#audiences-list), [Context Store Search](#audiences-context-store-search), [Context Store SQL Query](#audiences-context-store-sql-query) |
+| Creative Assets Images | [List](#creative-assets-images-list), [Context Store Search](#creative-assets-images-context-store-search), [Context Store SQL Query](#creative-assets-images-context-store-sql-query) |
+| Creative Assets Videos | [List](#creative-assets-videos-list), [Context Store Search](#creative-assets-videos-context-store-search), [Context Store SQL Query](#creative-assets-videos-context-store-sql-query) |
+| Spark Ads | [List](#spark-ads-list), [Context Store Search](#spark-ads-context-store-search), [Context Store SQL Query](#spark-ads-context-store-sql-query) |
+| Catalogs | [List](#catalogs-list) |
+| Advertisers Reports Daily | [List](#advertisers-reports-daily-list), [Context Store Search](#advertisers-reports-daily-context-store-search), [Context Store SQL Query](#advertisers-reports-daily-context-store-sql-query) |
+| Campaigns Reports Daily | [List](#campaigns-reports-daily-list), [Context Store Search](#campaigns-reports-daily-context-store-search), [Context Store SQL Query](#campaigns-reports-daily-context-store-sql-query) |
+| Ad Groups Reports Daily | [List](#ad-groups-reports-daily-list), [Context Store Search](#ad-groups-reports-daily-context-store-search), [Context Store SQL Query](#ad-groups-reports-daily-context-store-sql-query) |
+| Ads Reports Daily | [List](#ads-reports-daily-list), [Context Store Search](#ads-reports-daily-context-store-search), [Context Store SQL Query](#ads-reports-daily-context-store-sql-query) |
+| Ads Reports Hourly | [List](#ads-reports-hourly-list), [Context Store Search](#ads-reports-hourly-context-store-search), [Context Store SQL Query](#ads-reports-hourly-context-store-sql-query) |
+| Ads Reports Lifetime | [List](#ads-reports-lifetime-list), [Context Store Search](#ads-reports-lifetime-context-store-search), [Context Store SQL Query](#ads-reports-lifetime-context-store-sql-query) |
 
 ## Advertisers
 
 ### Advertisers List
 
 Get advertiser account information
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "advertisers",
+  "action": "list",
+  "params": {
+    "advertiser_ids": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -97,16 +115,42 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `promotion_center_city` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `page_info` | `object` |  |
+
 </details>
 
-### Advertisers Search
+### Advertisers Context Store Search
 
 Search and filter advertisers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "advertisers",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "address": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.advertisers.search(
+await tiktok_marketing.advertisers.context_store_search(
     query={"filter": {"eq": {"address": "<str>"}}}
 )
 ```
@@ -119,7 +163,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "advertisers",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"address": "<str>"}}}
     }
@@ -130,7 +174,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -213,11 +257,88 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Advertisers Context Store SQL Query
+
+Run a SQL query against advertisers records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "advertisers",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.advertisers.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "advertisers",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Campaigns
 
 ### Campaigns List
 
 Get campaigns for an advertiser
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "campaigns",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -298,14 +419,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Campaigns Search
+### Campaigns Context Store Search
 
 Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "campaigns",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "advertiser_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.campaigns.search(
+await tiktok_marketing.campaigns.context_store_search(
     query={"filter": {"eq": {"advertiser_id": 0}}}
 )
 ```
@@ -318,7 +459,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"advertiser_id": 0}}}
     }
@@ -329,7 +470,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -400,11 +541,88 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Campaigns Context Store SQL Query
+
+Run a SQL query against campaigns records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "campaigns",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.campaigns.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "campaigns",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Ad Groups
 
 ### Ad Groups List
 
 Get ad groups for an advertiser
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ad_groups",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -552,14 +770,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Ad Groups Search
+### Ad Groups Context Store Search
 
 Search and filter ad groups records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ad_groups",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "adgroup_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.ad_groups.search(
+await tiktok_marketing.ad_groups.context_store_search(
     query={"filter": {"eq": {"adgroup_id": 0}}}
 )
 ```
@@ -572,7 +810,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ad_groups",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"adgroup_id": 0}}}
     }
@@ -583,7 +821,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -634,11 +872,88 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Ad Groups Context Store SQL Query
+
+Run a SQL query against ad groups records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ad_groups",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ad_groups.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_groups",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Ads
 
 ### Ads List
 
 Get ads for an advertiser
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -739,14 +1054,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Ads Search
+### Ads Context Store Search
 
 Search and filter ads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_format": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.ads.search(
+await tiktok_marketing.ads.context_store_search(
     query={"filter": {"eq": {"ad_format": "<str>"}}}
 )
 ```
@@ -759,7 +1094,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ads",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ad_format": "<str>"}}}
     }
@@ -770,7 +1105,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -825,11 +1160,183 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Ads Context Store SQL Query
+
+Run a SQL query against ads records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ads.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
+### Ads Semantic Search
+
+Search ads records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "ad_text", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `ads.context_store_search` helper only accepts `query`.
+
+```python
+await tiktok_marketing.execute(
+    "ads",
+    "context_store_search",
+    {"semantic": {"field": "ad_text", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "ad_text", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `ad_text` | 2048 | The text content of the ad |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.ad_id` | `string` | Source record field |
+| `data[].entity.modify_time` | `string` | Source record field |
+| `data[].entity.ad_name` | `string` | Source record field |
+| `data[].entity.ad_format` | `string` | Source record field |
+| `data[].entity.operation_status` | `string` | Source record field |
+| `data[].entity.secondary_status` | `string` | Source record field |
+| `data[].entity.campaign_id` | `string` | Source record field |
+| `data[].entity.campaign_name` | `string` | Source record field |
+| `data[].entity.adgroup_id` | `string` | Source record field |
+| `data[].entity.adgroup_name` | `string` | Source record field |
+| `data[].entity.advertiser_id` | `string` | Source record field |
+| `data[].entity.landing_page_url` | `string` | Source record field |
+| `data[].entity.create_time` | `string` | Source record field |
+| `data[].entity.video_id` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Audiences
 
 ### Audiences List
 
 Get custom audiences for an advertiser
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "audiences",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -892,14 +1399,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Audiences Search
+### Audiences Context Store Search
 
 Search and filter audiences records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "audiences",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "audience_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.audiences.search(
+await tiktok_marketing.audiences.context_store_search(
     query={"filter": {"eq": {"audience_id": "<str>"}}}
 )
 ```
@@ -912,7 +1439,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "audiences",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"audience_id": "<str>"}}}
     }
@@ -923,7 +1450,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -962,11 +1489,88 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Audiences Context Store SQL Query
+
+Run a SQL query against audiences records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "audiences",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.audiences.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "audiences",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Creative Assets Images
 
 ### Creative Assets Images List
 
 Search creative asset images for an advertiser
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "creative_assets_images",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1031,14 +1635,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Creative Assets Images Search
+### Creative Assets Images Context Store Search
 
 Search and filter creative assets images records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "creative_assets_images",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "create_time": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.creative_assets_images.search(
+await tiktok_marketing.creative_assets_images.context_store_search(
     query={"filter": {"eq": {"create_time": "<str>"}}}
 )
 ```
@@ -1051,7 +1675,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "creative_assets_images",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"create_time": "<str>"}}}
     }
@@ -1062,7 +1686,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1105,11 +1729,88 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Creative Assets Images Context Store SQL Query
+
+Run a SQL query against creative assets images records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "creative_assets_images",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.creative_assets_images.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "creative_assets_images",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Creative Assets Videos
 
 ### Creative Assets Videos List
 
 Search creative asset videos for an advertiser
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "creative_assets_videos",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1181,14 +1882,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Creative Assets Videos Search
+### Creative Assets Videos Context Store Search
 
 Search and filter creative assets videos records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "creative_assets_videos",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "create_time": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.creative_assets_videos.search(
+await tiktok_marketing.creative_assets_videos.context_store_search(
     query={"filter": {"eq": {"create_time": "<str>"}}}
 )
 ```
@@ -1201,7 +1922,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "creative_assets_videos",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"create_time": "<str>"}}}
     }
@@ -1212,7 +1933,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1257,11 +1978,395 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Creative Assets Videos Context Store SQL Query
+
+Run a SQL query against creative assets videos records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "creative_assets_videos",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.creative_assets_videos.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "creative_assets_videos",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
+## Spark Ads
+
+### Spark Ads List
+
+Get Spark Ad posts that have been authorized to an ad account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "spark_ads",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.spark_ads.list(
+    advertiser_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "spark_ads",
+    "action": "list",
+    "params": {
+        "advertiser_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `advertiser_id` | `string` | Yes | Advertiser ID |
+| `page` | `integer` | No | Page number |
+| `page_size` | `integer` | No | Number of items per page |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `item_info` | `null \| object` |  |
+| `user_info` | `null \| object` |  |
+| `auth_info` | `null \| object` |  |
+| `video_info` | `null \| object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `page_info` | `object` |  |
+
+</details>
+
+### Spark Ads Context Store Search
+
+Search and filter spark ads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "spark_ads",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "item_info": {}
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.spark_ads.context_store_search(
+    query={"filter": {"eq": {"item_info": {}}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "spark_ads",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"item_info": {}}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `item_info` | `object` | Information about the Spark Ads post including item_id, auth_code, text, status, and item_type. |
+| `user_info` | `object` | Information about the TikTok account including tiktok_name, identity_id, and identity_type. |
+| `auth_info` | `object` | Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status. |
+| `video_info` | `object` | Video post details including duration, preview_url, poster_url, height, width, and size. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].item_info` | `object` | Information about the Spark Ads post including item_id, auth_code, text, status, and item_type. |
+| `data[].user_info` | `object` | Information about the TikTok account including tiktok_name, identity_id, and identity_type. |
+| `data[].auth_info` | `object` | Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status. |
+| `data[].video_info` | `object` | Video post details including duration, preview_url, poster_url, height, width, and size. |
+
+</details>
+
+### Spark Ads Context Store SQL Query
+
+Run a SQL query against spark ads records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "spark_ads",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.spark_ads.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "spark_ads",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
+## Catalogs
+
+### Catalogs List
+
+Get product catalogs for an advertiser
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "catalogs",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.catalogs.list(
+    advertiser_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "catalogs",
+    "action": "list",
+    "params": {
+        "advertiser_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `advertiser_id` | `string` | Yes | Advertiser ID |
+| `bc_id` | `string` | No | Business Center ID. Required by the TikTok API to scope catalog results. |
+| `page` | `integer` | No | Page number |
+| `page_size` | `integer` | No | Number of items per page |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `catalog_id` | `null \| string` |  |
+| `catalog_name` | `null \| string` |  |
+| `advertiser_id` | `null \| string` |  |
+| `catalog_type` | `null \| string` |  |
+| `catalog_status` | `null \| string` |  |
+| `product_count` | `null \| integer` |  |
+| `create_time` | `null \| string` |  |
+| `modify_time` | `null \| string` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `page_info` | `object` |  |
+
+</details>
+
 ## Advertisers Reports Daily
 
 ### Advertisers Reports Daily List
 
 Get daily performance reports at the advertiser level
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "advertisers_reports_daily",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>",
+    "service_type": "<str>",
+    "report_type": "<str>",
+    "data_level": "<str>",
+    "dimensions": "<str>",
+    "metrics": "<str>",
+    "start_date": "<str>",
+    "end_date": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1365,14 +2470,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Advertisers Reports Daily Search
+### Advertisers Reports Daily Context Store Search
 
 Search and filter advertisers reports daily records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "advertisers_reports_daily",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "advertiser_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.advertisers_reports_daily.search(
+await tiktok_marketing.advertisers_reports_daily.context_store_search(
     query={"filter": {"eq": {"advertiser_id": 0}}}
 )
 ```
@@ -1385,7 +2510,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "advertisers_reports_daily",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"advertiser_id": 0}}}
     }
@@ -1396,7 +2521,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1483,11 +2608,95 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Advertisers Reports Daily Context Store SQL Query
+
+Run a SQL query against advertisers reports daily records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "advertisers_reports_daily",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.advertisers_reports_daily.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "advertisers_reports_daily",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Campaigns Reports Daily
 
 ### Campaigns Reports Daily List
 
 Get daily performance reports at the campaign level
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "campaigns_reports_daily",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>",
+    "service_type": "<str>",
+    "report_type": "<str>",
+    "data_level": "<str>",
+    "dimensions": "<str>",
+    "metrics": "<str>",
+    "start_date": "<str>",
+    "end_date": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1590,14 +2799,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Campaigns Reports Daily Search
+### Campaigns Reports Daily Context Store Search
 
 Search and filter campaigns reports daily records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "campaigns_reports_daily",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "campaign_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.campaigns_reports_daily.search(
+await tiktok_marketing.campaigns_reports_daily.context_store_search(
     query={"filter": {"eq": {"campaign_id": 0}}}
 )
 ```
@@ -1610,7 +2839,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns_reports_daily",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"campaign_id": 0}}}
     }
@@ -1621,7 +2850,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1706,11 +2935,95 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Campaigns Reports Daily Context Store SQL Query
+
+Run a SQL query against campaigns reports daily records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "campaigns_reports_daily",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.campaigns_reports_daily.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "campaigns_reports_daily",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Ad Groups Reports Daily
 
 ### Ad Groups Reports Daily List
 
 Get daily performance reports at the ad group level
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ad_groups_reports_daily",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>",
+    "service_type": "<str>",
+    "report_type": "<str>",
+    "data_level": "<str>",
+    "dimensions": "<str>",
+    "metrics": "<str>",
+    "start_date": "<str>",
+    "end_date": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1831,14 +3144,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Ad Groups Reports Daily Search
+### Ad Groups Reports Daily Context Store Search
 
 Search and filter ad groups reports daily records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ad_groups_reports_daily",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "adgroup_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.ad_groups_reports_daily.search(
+await tiktok_marketing.ad_groups_reports_daily.context_store_search(
     query={"filter": {"eq": {"adgroup_id": 0}}}
 )
 ```
@@ -1851,7 +3184,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ad_groups_reports_daily",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"adgroup_id": 0}}}
     }
@@ -1862,7 +3195,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1983,11 +3316,95 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Ad Groups Reports Daily Context Store SQL Query
+
+Run a SQL query against ad groups reports daily records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ad_groups_reports_daily",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ad_groups_reports_daily.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_groups_reports_daily",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Ads Reports Daily
 
 ### Ads Reports Daily List
 
 Get daily performance reports at the ad level
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads_reports_daily",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>",
+    "service_type": "<str>",
+    "report_type": "<str>",
+    "data_level": "<str>",
+    "dimensions": "<str>",
+    "metrics": "<str>",
+    "start_date": "<str>",
+    "end_date": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2111,14 +3528,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Ads Reports Daily Search
+### Ads Reports Daily Context Store Search
 
 Search and filter ads reports daily records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads_reports_daily",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await tiktok_marketing.ads_reports_daily.search(
+await tiktok_marketing.ads_reports_daily.context_store_search(
     query={"filter": {"eq": {"ad_id": 0}}}
 )
 ```
@@ -2131,7 +3568,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ads_reports_daily",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ad_id": 0}}}
     }
@@ -2142,7 +3579,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -2266,6 +3703,846 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].real_time_app_install` | `number` | Real-time app installations. |
 | `data[].real_time_app_install_cost` | `number` | Cost of real-time app installations. |
 | `data[].app_install` | `number` | Number of app installations. |
+
+</details>
+
+### Ads Reports Daily Context Store SQL Query
+
+Run a SQL query against ads reports daily records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads_reports_daily",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ads_reports_daily.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads_reports_daily",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
+## Ads Reports Hourly
+
+### Ads Reports Hourly List
+
+Get hourly performance reports at the ad level
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads_reports_hourly",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>",
+    "service_type": "<str>",
+    "report_type": "<str>",
+    "data_level": "<str>",
+    "dimensions": "<str>",
+    "metrics": "<str>",
+    "start_date": "<str>",
+    "end_date": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ads_reports_hourly.list(
+    advertiser_id="<str>",
+    service_type="<str>",
+    report_type="<str>",
+    data_level="<str>",
+    dimensions="<str>",
+    metrics="<str>",
+    start_date="<str>",
+    end_date="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads_reports_hourly",
+    "action": "list",
+    "params": {
+        "advertiser_id": "<str>",
+        "service_type": "<str>",
+        "report_type": "<str>",
+        "data_level": "<str>",
+        "dimensions": "<str>",
+        "metrics": "<str>",
+        "start_date": "<str>",
+        "end_date": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `advertiser_id` | `string` | Yes | Advertiser ID |
+| `service_type` | `string` | Yes | Service type |
+| `report_type` | `string` | Yes | Report type |
+| `data_level` | `string` | Yes | Data level for the report |
+| `dimensions` | `string` | Yes | Dimensions for the report (JSON array) |
+| `metrics` | `string` | Yes | Metrics to retrieve (JSON array) |
+| `start_date` | `string` | Yes | Report start date (YYYY-MM-DD) |
+| `end_date` | `string` | Yes | Report end date (YYYY-MM-DD) |
+| `page` | `integer` | No | Page number |
+| `page_size` | `integer` | No | Number of items per page |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ad_id` | `null \| integer` |  |
+| `stat_time_hour` | `null \| string` |  |
+| `campaign_name` | `null \| string` |  |
+| `campaign_id` | `null \| integer` |  |
+| `adgroup_name` | `null \| string` |  |
+| `adgroup_id` | `null \| integer` |  |
+| `ad_name` | `null \| string` |  |
+| `ad_text` | `null \| string` |  |
+| `placement_type` | `null \| string` |  |
+| `spend` | `null \| string` |  |
+| `cpc` | `null \| string` |  |
+| `cpm` | `null \| string` |  |
+| `impressions` | `null \| string` |  |
+| `clicks` | `null \| string` |  |
+| `ctr` | `null \| string` |  |
+| `reach` | `null \| string` |  |
+| `cost_per_1000_reached` | `null \| string` |  |
+| `conversion` | `null \| string` |  |
+| `cost_per_conversion` | `null \| string` |  |
+| `conversion_rate` | `null \| string` |  |
+| `real_time_conversion` | `null \| string` |  |
+| `real_time_cost_per_conversion` | `null \| string` |  |
+| `real_time_conversion_rate` | `null \| string` |  |
+| `result` | `null \| string` |  |
+| `cost_per_result` | `null \| string` |  |
+| `result_rate` | `null \| string` |  |
+| `real_time_result` | `null \| string` |  |
+| `real_time_cost_per_result` | `null \| string` |  |
+| `real_time_result_rate` | `null \| string` |  |
+| `secondary_goal_result` | `null \| string` |  |
+| `cost_per_secondary_goal_result` | `null \| string` |  |
+| `secondary_goal_result_rate` | `null \| string` |  |
+| `frequency` | `null \| string` |  |
+| `video_play_actions` | `null \| number` |  |
+| `video_watched_2s` | `null \| number` |  |
+| `video_watched_6s` | `null \| number` |  |
+| `average_video_play` | `null \| number` |  |
+| `average_video_play_per_user` | `null \| number` |  |
+| `video_views_p25` | `null \| number` |  |
+| `video_views_p50` | `null \| number` |  |
+| `video_views_p75` | `null \| number` |  |
+| `video_views_p100` | `null \| number` |  |
+| `profile_visits` | `null \| number` |  |
+| `likes` | `null \| number` |  |
+| `comments` | `null \| number` |  |
+| `shares` | `null \| number` |  |
+| `follows` | `null \| number` |  |
+| `clicks_on_music_disc` | `null \| number` |  |
+| `real_time_app_install` | `null \| number` |  |
+| `real_time_app_install_cost` | `null \| number` |  |
+| `app_install` | `null \| number` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `page_info` | `object` |  |
+
+</details>
+
+### Ads Reports Hourly Context Store Search
+
+Search and filter ads reports hourly records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads_reports_hourly",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ads_reports_hourly.context_store_search(
+    query={"filter": {"eq": {"ad_id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads_reports_hourly",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"ad_id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ad_id` | `integer` | The unique identifier for the ad. |
+| `stat_time_hour` | `string` | The hour for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format). |
+| `campaign_name` | `string` | The name of the marketing campaign. |
+| `campaign_id` | `integer` | The unique identifier for the campaign. |
+| `adgroup_name` | `string` | The name of the ad group. |
+| `adgroup_id` | `integer` | The unique identifier for the ad group. |
+| `ad_name` | `string` | The name of the ad. |
+| `ad_text` | `string` | The text content of the ad. |
+| `placement_type` | `string` | Type of ad placement. |
+| `spend` | `string` | Total amount of money spent. |
+| `cpc` | `string` | Cost per click. |
+| `cpm` | `string` | Cost per thousand impressions. |
+| `impressions` | `string` | Number of times the ad was displayed. |
+| `clicks` | `string` | Number of clicks on the ad. |
+| `ctr` | `string` | Click-through rate. |
+| `reach` | `string` | Total number of unique users reached. |
+| `cost_per_1000_reached` | `string` | Cost per 1000 unique users reached. |
+| `conversion` | `string` | Number of conversions. |
+| `cost_per_conversion` | `string` | Cost per conversion. |
+| `conversion_rate` | `string` | Rate of conversions. |
+| `real_time_conversion` | `string` | Real-time conversions. |
+| `real_time_cost_per_conversion` | `string` | Real-time cost per conversion. |
+| `real_time_conversion_rate` | `string` | Real-time conversion rate. |
+| `result` | `string` | Number of results. |
+| `cost_per_result` | `string` | Cost per result. |
+| `result_rate` | `string` | Rate of results. |
+| `real_time_result` | `string` | Real-time results. |
+| `real_time_cost_per_result` | `string` | Real-time cost per result. |
+| `real_time_result_rate` | `string` | Real-time result rate. |
+| `secondary_goal_result` | `string` | Results for secondary goals. |
+| `cost_per_secondary_goal_result` | `string` | Cost per secondary goal result. |
+| `secondary_goal_result_rate` | `string` | Rate of secondary goal results. |
+| `frequency` | `string` | Average number of times each person saw the ad. |
+| `video_play_actions` | `number` | Number of video play actions. |
+| `video_watched_2s` | `number` | Number of times video was watched for at least 2 seconds. |
+| `video_watched_6s` | `number` | Number of times video was watched for at least 6 seconds. |
+| `average_video_play` | `number` | Average video play duration. |
+| `average_video_play_per_user` | `number` | Average video play duration per user. |
+| `video_views_p25` | `number` | Number of times video was watched to 25%. |
+| `video_views_p50` | `number` | Number of times video was watched to 50%. |
+| `video_views_p75` | `number` | Number of times video was watched to 75%. |
+| `video_views_p100` | `number` | Number of times video was watched to 100%. |
+| `profile_visits` | `number` | Number of profile visits. |
+| `likes` | `number` | Number of likes. |
+| `comments` | `number` | Number of comments. |
+| `shares` | `number` | Number of shares. |
+| `follows` | `number` | Number of follows. |
+| `clicks_on_music_disc` | `number` | Number of clicks on the music disc. |
+| `real_time_app_install` | `number` | Real-time app installations. |
+| `real_time_app_install_cost` | `number` | Cost of real-time app installations. |
+| `app_install` | `number` | Number of app installations. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].ad_id` | `integer` | The unique identifier for the ad. |
+| `data[].stat_time_hour` | `string` | The hour for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format). |
+| `data[].campaign_name` | `string` | The name of the marketing campaign. |
+| `data[].campaign_id` | `integer` | The unique identifier for the campaign. |
+| `data[].adgroup_name` | `string` | The name of the ad group. |
+| `data[].adgroup_id` | `integer` | The unique identifier for the ad group. |
+| `data[].ad_name` | `string` | The name of the ad. |
+| `data[].ad_text` | `string` | The text content of the ad. |
+| `data[].placement_type` | `string` | Type of ad placement. |
+| `data[].spend` | `string` | Total amount of money spent. |
+| `data[].cpc` | `string` | Cost per click. |
+| `data[].cpm` | `string` | Cost per thousand impressions. |
+| `data[].impressions` | `string` | Number of times the ad was displayed. |
+| `data[].clicks` | `string` | Number of clicks on the ad. |
+| `data[].ctr` | `string` | Click-through rate. |
+| `data[].reach` | `string` | Total number of unique users reached. |
+| `data[].cost_per_1000_reached` | `string` | Cost per 1000 unique users reached. |
+| `data[].conversion` | `string` | Number of conversions. |
+| `data[].cost_per_conversion` | `string` | Cost per conversion. |
+| `data[].conversion_rate` | `string` | Rate of conversions. |
+| `data[].real_time_conversion` | `string` | Real-time conversions. |
+| `data[].real_time_cost_per_conversion` | `string` | Real-time cost per conversion. |
+| `data[].real_time_conversion_rate` | `string` | Real-time conversion rate. |
+| `data[].result` | `string` | Number of results. |
+| `data[].cost_per_result` | `string` | Cost per result. |
+| `data[].result_rate` | `string` | Rate of results. |
+| `data[].real_time_result` | `string` | Real-time results. |
+| `data[].real_time_cost_per_result` | `string` | Real-time cost per result. |
+| `data[].real_time_result_rate` | `string` | Real-time result rate. |
+| `data[].secondary_goal_result` | `string` | Results for secondary goals. |
+| `data[].cost_per_secondary_goal_result` | `string` | Cost per secondary goal result. |
+| `data[].secondary_goal_result_rate` | `string` | Rate of secondary goal results. |
+| `data[].frequency` | `string` | Average number of times each person saw the ad. |
+| `data[].video_play_actions` | `number` | Number of video play actions. |
+| `data[].video_watched_2s` | `number` | Number of times video was watched for at least 2 seconds. |
+| `data[].video_watched_6s` | `number` | Number of times video was watched for at least 6 seconds. |
+| `data[].average_video_play` | `number` | Average video play duration. |
+| `data[].average_video_play_per_user` | `number` | Average video play duration per user. |
+| `data[].video_views_p25` | `number` | Number of times video was watched to 25%. |
+| `data[].video_views_p50` | `number` | Number of times video was watched to 50%. |
+| `data[].video_views_p75` | `number` | Number of times video was watched to 75%. |
+| `data[].video_views_p100` | `number` | Number of times video was watched to 100%. |
+| `data[].profile_visits` | `number` | Number of profile visits. |
+| `data[].likes` | `number` | Number of likes. |
+| `data[].comments` | `number` | Number of comments. |
+| `data[].shares` | `number` | Number of shares. |
+| `data[].follows` | `number` | Number of follows. |
+| `data[].clicks_on_music_disc` | `number` | Number of clicks on the music disc. |
+| `data[].real_time_app_install` | `number` | Real-time app installations. |
+| `data[].real_time_app_install_cost` | `number` | Cost of real-time app installations. |
+| `data[].app_install` | `number` | Number of app installations. |
+
+</details>
+
+### Ads Reports Hourly Context Store SQL Query
+
+Run a SQL query against ads reports hourly records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads_reports_hourly",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ads_reports_hourly.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads_reports_hourly",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
+## Ads Reports Lifetime
+
+### Ads Reports Lifetime List
+
+Get lifetime performance reports at the ad level
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads_reports_lifetime",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>",
+    "service_type": "<str>",
+    "report_type": "<str>",
+    "data_level": "<str>",
+    "dimensions": "<str>",
+    "metrics": "<str>",
+    "start_date": "<str>",
+    "end_date": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ads_reports_lifetime.list(
+    advertiser_id="<str>",
+    service_type="<str>",
+    report_type="<str>",
+    data_level="<str>",
+    dimensions="<str>",
+    metrics="<str>",
+    start_date="<str>",
+    end_date="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads_reports_lifetime",
+    "action": "list",
+    "params": {
+        "advertiser_id": "<str>",
+        "service_type": "<str>",
+        "report_type": "<str>",
+        "data_level": "<str>",
+        "dimensions": "<str>",
+        "metrics": "<str>",
+        "start_date": "<str>",
+        "end_date": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `advertiser_id` | `string` | Yes | Advertiser ID |
+| `service_type` | `string` | Yes | Service type |
+| `report_type` | `string` | Yes | Report type |
+| `data_level` | `string` | Yes | Data level for the report |
+| `dimensions` | `string` | Yes | Dimensions for the report (JSON array) |
+| `metrics` | `string` | Yes | Metrics to retrieve (JSON array) |
+| `start_date` | `string` | Yes | Report start date (YYYY-MM-DD) |
+| `end_date` | `string` | Yes | Report end date (YYYY-MM-DD) |
+| `page` | `integer` | No | Page number |
+| `page_size` | `integer` | No | Number of items per page |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ad_id` | `null \| integer` |  |
+| `campaign_name` | `null \| string` |  |
+| `campaign_id` | `null \| integer` |  |
+| `adgroup_name` | `null \| string` |  |
+| `adgroup_id` | `null \| integer` |  |
+| `ad_name` | `null \| string` |  |
+| `ad_text` | `null \| string` |  |
+| `placement_type` | `null \| string` |  |
+| `spend` | `null \| string` |  |
+| `cpc` | `null \| string` |  |
+| `cpm` | `null \| string` |  |
+| `impressions` | `null \| string` |  |
+| `clicks` | `null \| string` |  |
+| `ctr` | `null \| string` |  |
+| `reach` | `null \| string` |  |
+| `cost_per_1000_reached` | `null \| string` |  |
+| `conversion` | `null \| string` |  |
+| `cost_per_conversion` | `null \| string` |  |
+| `conversion_rate` | `null \| string` |  |
+| `real_time_conversion` | `null \| string` |  |
+| `real_time_cost_per_conversion` | `null \| string` |  |
+| `real_time_conversion_rate` | `null \| string` |  |
+| `result` | `null \| string` |  |
+| `cost_per_result` | `null \| string` |  |
+| `result_rate` | `null \| string` |  |
+| `real_time_result` | `null \| string` |  |
+| `real_time_cost_per_result` | `null \| string` |  |
+| `real_time_result_rate` | `null \| string` |  |
+| `secondary_goal_result` | `null \| string` |  |
+| `cost_per_secondary_goal_result` | `null \| string` |  |
+| `secondary_goal_result_rate` | `null \| string` |  |
+| `frequency` | `null \| string` |  |
+| `video_play_actions` | `null \| number` |  |
+| `video_watched_2s` | `null \| number` |  |
+| `video_watched_6s` | `null \| number` |  |
+| `average_video_play` | `null \| number` |  |
+| `average_video_play_per_user` | `null \| number` |  |
+| `video_views_p25` | `null \| number` |  |
+| `video_views_p50` | `null \| number` |  |
+| `video_views_p75` | `null \| number` |  |
+| `video_views_p100` | `null \| number` |  |
+| `profile_visits` | `null \| number` |  |
+| `likes` | `null \| number` |  |
+| `comments` | `null \| number` |  |
+| `shares` | `null \| number` |  |
+| `follows` | `null \| number` |  |
+| `clicks_on_music_disc` | `null \| number` |  |
+| `real_time_app_install` | `null \| number` |  |
+| `real_time_app_install_cost` | `null \| number` |  |
+| `app_install` | `null \| number` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `page_info` | `object` |  |
+
+</details>
+
+### Ads Reports Lifetime Context Store Search
+
+Search and filter ads reports lifetime records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads_reports_lifetime",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ads_reports_lifetime.context_store_search(
+    query={"filter": {"eq": {"ad_id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads_reports_lifetime",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"ad_id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ad_id` | `integer` | The unique identifier for the ad. |
+| `campaign_name` | `string` | The name of the marketing campaign. |
+| `campaign_id` | `integer` | The unique identifier for the campaign. |
+| `adgroup_name` | `string` | The name of the ad group. |
+| `adgroup_id` | `integer` | The unique identifier for the ad group. |
+| `ad_name` | `string` | The name of the ad. |
+| `ad_text` | `string` | The text content of the ad. |
+| `placement_type` | `string` | Type of ad placement. |
+| `spend` | `string` | Total amount of money spent. |
+| `cpc` | `string` | Cost per click. |
+| `cpm` | `string` | Cost per thousand impressions. |
+| `impressions` | `string` | Number of times the ad was displayed. |
+| `clicks` | `string` | Number of clicks on the ad. |
+| `ctr` | `string` | Click-through rate. |
+| `reach` | `string` | Total number of unique users reached. |
+| `cost_per_1000_reached` | `string` | Cost per 1000 unique users reached. |
+| `conversion` | `string` | Number of conversions. |
+| `cost_per_conversion` | `string` | Cost per conversion. |
+| `conversion_rate` | `string` | Rate of conversions. |
+| `real_time_conversion` | `string` | Real-time conversions. |
+| `real_time_cost_per_conversion` | `string` | Real-time cost per conversion. |
+| `real_time_conversion_rate` | `string` | Real-time conversion rate. |
+| `result` | `string` | Number of results. |
+| `cost_per_result` | `string` | Cost per result. |
+| `result_rate` | `string` | Rate of results. |
+| `real_time_result` | `string` | Real-time results. |
+| `real_time_cost_per_result` | `string` | Real-time cost per result. |
+| `real_time_result_rate` | `string` | Real-time result rate. |
+| `secondary_goal_result` | `string` | Results for secondary goals. |
+| `cost_per_secondary_goal_result` | `string` | Cost per secondary goal result. |
+| `secondary_goal_result_rate` | `string` | Rate of secondary goal results. |
+| `frequency` | `string` | Average number of times each person saw the ad. |
+| `video_play_actions` | `number` | Number of video play actions. |
+| `video_watched_2s` | `number` | Number of times video was watched for at least 2 seconds. |
+| `video_watched_6s` | `number` | Number of times video was watched for at least 6 seconds. |
+| `average_video_play` | `number` | Average video play duration. |
+| `average_video_play_per_user` | `number` | Average video play duration per user. |
+| `video_views_p25` | `number` | Number of times video was watched to 25%. |
+| `video_views_p50` | `number` | Number of times video was watched to 50%. |
+| `video_views_p75` | `number` | Number of times video was watched to 75%. |
+| `video_views_p100` | `number` | Number of times video was watched to 100%. |
+| `profile_visits` | `number` | Number of profile visits. |
+| `likes` | `number` | Number of likes. |
+| `comments` | `number` | Number of comments. |
+| `shares` | `number` | Number of shares. |
+| `follows` | `number` | Number of follows. |
+| `clicks_on_music_disc` | `number` | Number of clicks on the music disc. |
+| `real_time_app_install` | `number` | Real-time app installations. |
+| `real_time_app_install_cost` | `number` | Cost of real-time app installations. |
+| `app_install` | `number` | Number of app installations. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].ad_id` | `integer` | The unique identifier for the ad. |
+| `data[].campaign_name` | `string` | The name of the marketing campaign. |
+| `data[].campaign_id` | `integer` | The unique identifier for the campaign. |
+| `data[].adgroup_name` | `string` | The name of the ad group. |
+| `data[].adgroup_id` | `integer` | The unique identifier for the ad group. |
+| `data[].ad_name` | `string` | The name of the ad. |
+| `data[].ad_text` | `string` | The text content of the ad. |
+| `data[].placement_type` | `string` | Type of ad placement. |
+| `data[].spend` | `string` | Total amount of money spent. |
+| `data[].cpc` | `string` | Cost per click. |
+| `data[].cpm` | `string` | Cost per thousand impressions. |
+| `data[].impressions` | `string` | Number of times the ad was displayed. |
+| `data[].clicks` | `string` | Number of clicks on the ad. |
+| `data[].ctr` | `string` | Click-through rate. |
+| `data[].reach` | `string` | Total number of unique users reached. |
+| `data[].cost_per_1000_reached` | `string` | Cost per 1000 unique users reached. |
+| `data[].conversion` | `string` | Number of conversions. |
+| `data[].cost_per_conversion` | `string` | Cost per conversion. |
+| `data[].conversion_rate` | `string` | Rate of conversions. |
+| `data[].real_time_conversion` | `string` | Real-time conversions. |
+| `data[].real_time_cost_per_conversion` | `string` | Real-time cost per conversion. |
+| `data[].real_time_conversion_rate` | `string` | Real-time conversion rate. |
+| `data[].result` | `string` | Number of results. |
+| `data[].cost_per_result` | `string` | Cost per result. |
+| `data[].result_rate` | `string` | Rate of results. |
+| `data[].real_time_result` | `string` | Real-time results. |
+| `data[].real_time_cost_per_result` | `string` | Real-time cost per result. |
+| `data[].real_time_result_rate` | `string` | Real-time result rate. |
+| `data[].secondary_goal_result` | `string` | Results for secondary goals. |
+| `data[].cost_per_secondary_goal_result` | `string` | Cost per secondary goal result. |
+| `data[].secondary_goal_result_rate` | `string` | Rate of secondary goal results. |
+| `data[].frequency` | `string` | Average number of times each person saw the ad. |
+| `data[].video_play_actions` | `number` | Number of video play actions. |
+| `data[].video_watched_2s` | `number` | Number of times video was watched for at least 2 seconds. |
+| `data[].video_watched_6s` | `number` | Number of times video was watched for at least 6 seconds. |
+| `data[].average_video_play` | `number` | Average video play duration. |
+| `data[].average_video_play_per_user` | `number` | Average video play duration per user. |
+| `data[].video_views_p25` | `number` | Number of times video was watched to 25%. |
+| `data[].video_views_p50` | `number` | Number of times video was watched to 50%. |
+| `data[].video_views_p75` | `number` | Number of times video was watched to 75%. |
+| `data[].video_views_p100` | `number` | Number of times video was watched to 100%. |
+| `data[].profile_visits` | `number` | Number of profile visits. |
+| `data[].likes` | `number` | Number of likes. |
+| `data[].comments` | `number` | Number of comments. |
+| `data[].shares` | `number` | Number of shares. |
+| `data[].follows` | `number` | Number of follows. |
+| `data[].clicks_on_music_disc` | `number` | Number of clicks on the music disc. |
+| `data[].real_time_app_install` | `number` | Real-time app installations. |
+| `data[].real_time_app_install_cost` | `number` | Cost of real-time app installations. |
+| `data[].app_install` | `number` | Number of app installations. |
+
+</details>
+
+### Ads Reports Lifetime Context Store SQL Query
+
+Run a SQL query against ads reports lifetime records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads_reports_lifetime",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ads_reports_lifetime.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads_reports_lifetime",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 

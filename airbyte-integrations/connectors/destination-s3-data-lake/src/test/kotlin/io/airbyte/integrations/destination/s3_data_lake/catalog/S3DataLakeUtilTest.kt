@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
+import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
@@ -79,7 +80,7 @@ internal class S3DataLakeUtilTest {
 
     @BeforeEach
     fun setup() {
-        icebergUtil = IcebergUtil(tableIdGenerator)
+        icebergUtil = IcebergUtil(tableIdGenerator, AirbyteValueCoercer())
         s3DataLakeUtil = S3DataLakeUtil(icebergUtil, assumeRoleCredentials = null)
     }
 
@@ -237,6 +238,7 @@ internal class S3DataLakeUtilTest {
                 awsAccessKeyConfiguration = awsAccessKeyConfiguration,
                 icebergCatalogConfiguration = icebergCatalogConfiguration,
                 s3BucketConfiguration = s3BucketConfiguration,
+                flushBatchSizeMb = null,
             )
         val catalogProperties = s3DataLakeUtil.toCatalogProperties(config = configuration)
         Assertions.assertEquals(
@@ -349,6 +351,7 @@ internal class S3DataLakeUtilTest {
                             databaseName = "test_db"
                         )
                 ),
+            flushBatchSizeMb = null,
         )
     }
 

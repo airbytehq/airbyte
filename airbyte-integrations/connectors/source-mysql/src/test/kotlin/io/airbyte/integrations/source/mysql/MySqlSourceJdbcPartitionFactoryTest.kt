@@ -9,9 +9,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
+import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.IntFieldType
@@ -32,6 +33,7 @@ import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.mockk.mockk
+import java.math.BigDecimal
 import java.time.OffsetDateTime
 import java.util.Base64
 import kotlin.test.assertNull
@@ -53,7 +55,7 @@ class MySqlSourceJdbcPartitionFactoryTest {
         val mysqlCdcJdbcPartitionFactory =
             MySqlSourceJdbcPartitionFactory(cdcSharedState, selectQueryGenerator, config)
 
-        val fieldId = Field("id", IntFieldType)
+        val fieldId = EmittedField("id", IntFieldType)
         val stream =
             Stream(
                 id =
@@ -65,7 +67,7 @@ class MySqlSourceJdbcPartitionFactoryTest {
                 configuredPrimaryKey = listOf(fieldId),
                 configuredCursor = fieldId,
             )
-        val timestampFieldId = Field("id2", OffsetDateTimeFieldType)
+        val timestampFieldId = EmittedField("id2", OffsetDateTimeFieldType)
 
         val timestampStream =
             Stream(
@@ -79,7 +81,9 @@ class MySqlSourceJdbcPartitionFactoryTest {
                 configuredCursor = timestampFieldId,
             )
 
-        val binaryFieldId = Field("id3", BinaryStreamFieldType)
+        val bigintUnsignedFieldId = EmittedField("id5", BigIntegerFieldType)
+
+        val binaryFieldId = EmittedField("id3", BinaryStreamFieldType)
 
         val binaryStream =
             Stream(
@@ -93,7 +97,7 @@ class MySqlSourceJdbcPartitionFactoryTest {
                 configuredCursor = binaryFieldId,
             )
 
-        val datetimeFieldId = Field("id4", LocalDateTimeFieldType)
+        val datetimeFieldId = EmittedField("id4", LocalDateTimeFieldType)
 
         val datetimeStream =
             Stream(
@@ -307,6 +311,38 @@ class MySqlSourceJdbcPartitionFactoryTest {
     }
 
     @Test
+    fun testBigintUnsignedBoundaries() {
+        val opaqueStateValues =
+            listOf(
+                Jsons.readTree("""{"pk_val": 10}"""),
+                Jsons.readTree("""{"pk_val": 20}"""),
+                Jsons.readTree("""{"pk_val": 30}"""),
+            )
+
+        val result =
+            mySqlSourceJdbcPartitionFactory.calculateBoundaries(
+                opaqueStateValues,
+                BigDecimal("0"),
+                BigDecimal("18446744073709551615"),
+            )!!
+
+        assertEquals(opaqueStateValues.size, result.size)
+        assertEquals(BigDecimal("0"), result.keys.first())
+        assertEquals(null, result.values.last())
+    }
+
+    @Test
+    fun testBigintUnsignedStateValue() {
+        val result =
+            mySqlSourceJdbcPartitionFactory.stateValueToJsonNode(
+                bigintUnsignedFieldId,
+                "18446744073709551615",
+            )
+
+        assertEquals(BigDecimal("18446744073709551615"), result.decimalValue())
+    }
+
+    @Test
     fun testResumeFromCursorBasedReadInitialRead() {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
@@ -394,5 +430,82 @@ class MySqlSourceJdbcPartitionFactoryTest {
             Jsons.valueToTree<BinaryNode>(Base64.getDecoder().decode("OQAAAAAAAAAAAAAAAAAAAA==")),
             (jdbcPartition as MySqlSourceJdbcCursorIncrementalPartition).cursorLowerBound
         )
+    }
+
+    // Simulates a table where most PKs are GUID but upper bound is a sentinel marker
+    @Test
+    fun testUpperBoundWithSentinelValue() {
+
+        val opaqueStateValues =
+            listOf(
+                Jsons.readTree("""{"pk_val": "550e8400-e29b-41d4-a716-446655440000"}"""),
+                Jsons.readTree("""{"pk_val": "660e8400-e29b-41d4-a716-446655440000"}"""),
+            )
+
+        // Should fall back to unicodeInterpolatedStrings
+        val result =
+            mySqlSourceJdbcPartitionFactory.internalCalculateBoundaries(
+                opaqueStateValues,
+                "00000000-0000-0000-0000-000000000000",
+                "TTTSep24Jnls04",
+            )
+
+        assertEquals(opaqueStateValues.size + 1, result.size)
+    }
+
+    // Simulates a table where the lower bound is not a GUID
+    @Test
+    fun testLowerBoundNonGuid() {
+        val opaqueStateValues =
+            listOf(
+                Jsons.readTree("""{"pk_val": "550e8400-e29b-41d4-a716-446655440000"}"""),
+                Jsons.readTree("""{"pk_val": "660e8400-e29b-41d4-a716-446655440000"}"""),
+            )
+
+        // Should fall back to unicodeInterpolatedStrings
+        val result =
+            mySqlSourceJdbcPartitionFactory.internalCalculateBoundaries(
+                opaqueStateValues,
+                "NOT-A-GUID",
+                "ffffffff-ffff-ffff-ffff-ffffffffffff",
+            )
+
+        assertEquals(opaqueStateValues.size + 1, result.size)
+    }
+
+    // Simulates a table where there are no PK values in the samples
+    @Test
+    fun testEmptyStateValues() {
+        val result =
+            mySqlSourceJdbcPartitionFactory.internalCalculateBoundaries(
+                emptyList(),
+                "00000000-0000-0000-0000-000000000000",
+                "ffffffff-ffff-ffff-ffff-ffffffffffff",
+            )
+
+        assertEquals(1, result.size)
+    }
+
+    // Simulates a table where both lower and upper bound are GUIDs
+    @Test
+    fun testBothBoundsAreGuid() {
+        val opaqueStateValues =
+            listOf(
+                Jsons.readTree("""{"pk_val": "550e8400-e29b-41d4-a716-446655440000"}"""),
+                Jsons.readTree("""{"pk_val": "660e8400-e29b-41d4-a716-446655440000"}"""),
+            )
+
+        val result =
+            mySqlSourceJdbcPartitionFactory.internalCalculateBoundaries(
+                opaqueStateValues,
+                "00000000-0000-0000-0000-000000000000",
+                "ffffffff-ffff-ffff-ffff-ffffffffffff",
+            )
+
+        assertEquals(opaqueStateValues.size + 1, result.size)
+        // All boundary keys should be valid GUIDs
+        result.keys.forEach { key ->
+            assertEquals(36, key.length, "Boundary '$key' should be GUID length")
+        }
     }
 }

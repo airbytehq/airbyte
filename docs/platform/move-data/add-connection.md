@@ -5,6 +5,7 @@ products: all
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import DocCardList from '@theme/DocCardList';
+import CaptureHarFile from '../_partials/_capture-har-file.md';
 
 # Add a connection
 
@@ -16,7 +17,7 @@ You configure all connections in a similar way. However, the exact process is di
 
 - **ELT databases, warehouses, and lakes**: These destinations are more agnostic about schema. You can, for example, create tables with any number of columns and change those column types if you need to. This is typical of data warehouses and data lakes, and allows you more freedom to determine the structure of your data.
 
-- **Data activation**: These destinations have stricter schemas that your connection must adhere to. For example, if you're syncing data to Salesforce, your Salesforce records have pre-existing fields for name, email, company, phone number, revenue, etc. Some of those fields may be optional, some may be required, and all expect data in a certain format. This means you need to map data from your source to your destination to ensure it arrives in the necessary format and structure. Typically, you have less freedom over the structure of data in these destinations.
+- **Data activation**: These destinations have stricter schemas that your connection must adhere to. For example, if you're syncing data to HubSpot, your HubSpot records have pre-existing fields for name, email, company, phone number, etc. Some of those fields may be optional, some may be required, and all expect data in a certain format. This means you need to map data from your source to your destination to ensure it arrives in the necessary format and structure. Typically, you have less freedom over the structure of data in these destinations.
 
 The unique needs of a destination account for why setting up some connections is different than others.
 
@@ -105,3 +106,27 @@ When you're ready to create the connection, click **Set up connection**. Airbyte
 ### Step 4: Review and manage rejected records {#da-rejected-records}
 
 Destinations may reject records. See [Rejected records](rejected-records) to learn more.
+
+## Troubleshooting
+
+If you contact [Airbyte Support](https://support.airbyte.com/) about a problem setting up a connection, including a HAR file and the details of the relevant network request helps Airbyte diagnose your issue and turn around a resolution faster.
+
+### Capture a HAR file
+
+<CaptureHarFile />
+
+### Find the schema discovery request
+
+When you choose a source and destination, Airbyte fetches your source's schema with a `discover_schema` request. If connection setup fails while Airbyte is fetching the schema, this request usually contains the underlying error.
+
+1. Open developer tools and click the **Network** tab, following the steps above to capture requests.
+
+2. In the filter box, type `discover_schema`.
+
+3. Reproduce the problem. For example, select your source and destination so Airbyte fetches the schema.
+
+4. Click the `discover_schema` request.
+
+5. Review the **Response** and **Preview** tabs for error messages, and the **Headers** tab for the request details.
+
+6. Include this request, along with the HAR file, in your support submission.

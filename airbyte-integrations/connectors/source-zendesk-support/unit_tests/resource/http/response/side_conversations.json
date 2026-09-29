@@ -1,0 +1,27 @@
+{
+  "side_conversations": [
+    {
+      "id": "8566255a-ece5-11e8-857d-493066fa7b17",
+      "ticket_id": 35436,
+      "subject": "Help with order",
+      "state": "open",
+      "participants": [
+        {
+          "user_id": 35334,
+          "name": "Johnny Agent",
+          "email": "johnny@example.com"
+        }
+      ],
+      "created_at": "2018-11-20T16:58:36.453+00:00",
+      "updated_at": "2018-11-20T16:58:36.453+00:00",
+      "message_added_at": "2018-11-20T16:58:36.453+00:00",
+      "state_updated_at": "2018-11-20T16:58:36.453+00:00",
+      "external_ids": {},
+      "preview_text": "Can you help with this order?",
+      "url": "https://company.zendesk.com/api/v2/tickets/35436/side_conversations/8566255a-ece5-11e8-857d-493066fa7b17"
+    }
+  ],
+  "next_page": null,
+  "previous_page": null,
+  "count": 1
+}

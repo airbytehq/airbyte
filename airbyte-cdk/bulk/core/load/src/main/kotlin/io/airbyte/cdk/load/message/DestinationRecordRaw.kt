@@ -41,6 +41,7 @@ data class DestinationRecordRaw(
      * [TimestampWithTimezoneValue]).
      */
     fun asEnrichedDestinationRecordAirbyteValue(
+        coercer: AirbyteValueCoercer,
         extractedAtAsTimestampWithTimezone: Boolean = false,
         respectLegacyUnions: Boolean = false,
     ): EnrichedDestinationRecordAirbyteValue {
@@ -64,7 +65,8 @@ data class DestinationRecordRaw(
                     name = fieldName,
                     airbyteMetaField = null,
                 )
-            AirbyteValueCoercer.coerce(
+            coercer
+                .coerce(
                     fieldValue.toAirbyteValue(),
                     fieldType.type,
                     respectLegacyUnions = respectLegacyUnions,

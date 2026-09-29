@@ -5,7 +5,7 @@
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.StreamIdentifier
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.IntFieldType
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
@@ -17,7 +17,7 @@ class StreamStatusManagerTest {
     val streamIncremental =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withName("streamIncremental")),
-            schema = setOf(Field("v", IntFieldType)),
+            schema = setOf(EmittedField("v", IntFieldType)),
             configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
             configuredPrimaryKey = null,
             configuredCursor = null,
@@ -25,7 +25,7 @@ class StreamStatusManagerTest {
     val streamFullRefresh =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withName("streamFullRefresh")),
-            schema = setOf(Field("v", IntFieldType)),
+            schema = setOf(EmittedField("v", IntFieldType)),
             configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
             configuredPrimaryKey = null,
             configuredCursor = null,

@@ -18,19 +18,19 @@ constructor(
     private lateinit var process: Process
 
     @Throws(TestHarnessException::class)
-    override fun run(config: JobGetSpecConfig, jobRoot: Path): ConnectorJobOutput {
+    override fun run(inputType: JobGetSpecConfig, jobRoot: Path): ConnectorJobOutput {
         try {
             val process = integrationLauncher.spec(jobRoot)
             this.process = process
 
             val jobOutput = ConnectorJobOutput().withOutputType(ConnectorJobOutput.OutputType.SPEC)
-            LineGobbler.gobble(process!!.errorStream, { msg: String -> LOGGER.error(msg) })
+            LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error { msg } })
 
             val messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30)
 
             val spec =
                 messagesByType
-                    .getOrDefault(AirbyteMessage.Type.SPEC, ArrayList())!!
+                    .getOrDefault(AirbyteMessage.Type.SPEC, ArrayList())
                     .map { obj: AirbyteMessage -> obj.spec }
                     .firstOrNull()
 
@@ -39,13 +39,11 @@ constructor(
                     ConnectorJobOutput.OutputType.SPEC,
                     messagesByType
                 )
-            failureReason!!.ifPresent { failureReason: FailureReason ->
-                jobOutput.failureReason = failureReason
-            }
+            failureReason.ifPresent { jobOutput.failureReason = it }
 
-            val exitCode = process!!.exitValue()
+            val exitCode = process.exitValue()
             if (exitCode != 0) {
-                LOGGER.warn("Spec job subprocess finished with exit code {}", exitCode)
+                LOGGER.warn { "Spec job subprocess finished with exit code $exitCode" }
             }
 
             if (spec != null) {
@@ -60,7 +58,7 @@ constructor(
             return jobOutput
         } catch (e: Exception) {
             throw TestHarnessException(
-                String.format("Error while getting spec from image %s", config.dockerImage),
+                String.format("Error while getting spec from image %s", inputType.dockerImage),
                 e
             )
         }

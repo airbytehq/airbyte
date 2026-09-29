@@ -32,6 +32,16 @@
     },
     {
       "stream": {
+        "json_schema": {},
+        "name": "ads",
+        "source_defined_primary_key": [["id"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "destination_sync_mode": "overwrite",
+      "sync_mode": "full_refresh"
+    },
+    {
+      "stream": {
         "default_cursor_field": ["date"],
         "json_schema": {},
         "name": "campaigns_report_daily",
@@ -61,6 +71,18 @@
         "name": "keywords_report_daily",
         "source_defined_cursor": true,
         "source_defined_primary_key": [["date"], ["keywordId"]],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "destination_sync_mode": "append",
+      "sync_mode": "incremental"
+    },
+    {
+      "stream": {
+        "default_cursor_field": ["date"],
+        "json_schema": {},
+        "name": "ads_report_daily",
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [["date"], ["adId"]],
         "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "destination_sync_mode": "append",

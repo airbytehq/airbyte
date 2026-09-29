@@ -4,12 +4,12 @@
 
 package io.airbyte.integrations.source.datagen.flavor
 
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 
 interface Flavor {
     val namespace: String
     val tableNames: Set<String>
-    val fields: Map<String, List<Field>>
+    val fields: Map<String, List<EmittedField>>
     val primaryKeys: Map<String, List<List<String>>>
     val dataGenerator: DataGenerator
 }

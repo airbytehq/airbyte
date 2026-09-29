@@ -117,6 +117,73 @@ def test_get_report_record_timestamp_without_aggregation(config, mock_user_query
     assert transformed_record["Date"] == expected_record["Date"]
 
 
+def test_search_query_performance_primary_key_distinguishes_rows_by_all_requested_dimensions(config):
+    stream = find_stream("search_query_performance_report_daily", config)
+    assert stream.primary_key == [
+        "TimePeriod",
+        "CustomerId",
+        "AccountId",
+        "CampaignId",
+        "AdGroupId",
+        "AdId",
+        "AdGroupCriterionId",
+        "KeywordId",
+        "Keyword",
+        "SearchQuery",
+        "AdType",
+        "CampaignType",
+        "Language",
+        "Network",
+        "DeviceType",
+        "DeviceOS",
+        "BidMatchType",
+        "DeliveredMatchType",
+        "TopVsOther",
+        "DestinationUrl",
+        "Goal",
+        "GoalType",
+    ]
+    record = {
+        "TimePeriod": "2025-01-01",
+        "CustomerId": "111111",
+        "AccountId": "222222",
+        "CampaignId": "333333",
+        "AdGroupId": "444444",
+        "AdId": "555555",
+        "AdGroupCriterionId": "666666",
+        "KeywordId": "777777",
+        "Keyword": "airbyte",
+        "SearchQuery": "airbyte cloud",
+        "AdType": "ExpandedText",
+        "CampaignType": "Search",
+        "Language": "English",
+        "Network": "OwnedAndOperatedAndSyndicatedSearch",
+        "DeviceType": "Computer",
+        "DeviceOS": "Windows",
+        "BidMatchType": "Exact",
+        "DeliveredMatchType": "Exact",
+        "TopVsOther": "Top",
+        "DestinationUrl": "https://airbyte.example/landing-a",
+        "Goal": "Signup",
+        "GoalType": "Url",
+    }
+    duplicate_old_key_record = {
+        **record,
+        "CustomerId": "111112",
+        "AdGroupId": "444445",
+        "AdId": "555556",
+        "AdGroupCriterionId": "666667",
+        "KeywordId": "777778",
+        "Network": "Content",
+        "BidMatchType": "Phrase",
+        "DestinationUrl": "https://airbyte.example/landing-b",
+        "Goal": "Trial",
+        "GoalType": "Event",
+    }
+
+    assert tuple(record[field] for field in stream.primary_key) != tuple(duplicate_old_key_record[field] for field in stream.primary_key)
+
+
 @freeze_time("2024-01-01")
 @pytest.mark.parametrize(
     "stream_name",

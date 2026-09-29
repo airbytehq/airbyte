@@ -183,11 +183,9 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
         imageName: DockerImageName,
         containerModifiersWithNames: List<Pair<Consumer<C>, String>>
     ): C {
-        LOGGER.info(
-            "Creating new container based on {} with {}.",
-            imageName,
-            containerModifiersWithNames.map { it.second }
-        )
+        LOGGER.info {
+            "Creating new container based on $imageName with ${containerModifiersWithNames.map { it.second }}."
+        }
         val container = createNewContainer(imageName)
         @Suppress("unchecked_cast")
         val logConsumer: Slf4jLogConsumer =
@@ -205,12 +203,9 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
         }
         container.withLogConsumer(logConsumer)
         for (resolvedNamedContainerModifier in containerModifiersWithNames) {
-            LOGGER.info(
-                "Calling {} in {} on new container based on {}.",
-                resolvedNamedContainerModifier.second,
-                javaClass.name,
-                imageName
-            )
+            LOGGER.info {
+                "Calling ${resolvedNamedContainerModifier.second} in ${javaClass.name} on new container based on $imageName."
+            }
             resolvedNamedContainerModifier.first.accept(container)
         }
         container.start()

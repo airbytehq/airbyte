@@ -24,7 +24,7 @@ Look at the following example.
 | 456 | Emerald          | Sanja     | 234-567-8901 | 456 Fake Street |
 | 789 | Sebastian Argyos |           | 345-678-9012 | 789 Fake Street |
 
-Imagine you want to move this data into your CRM, Salesforce. However, your Salesforce object requires that everyone has a first and last name. In this case, Sebastian Argyos' last name has been combined with his first name. From Salesforce's perspective, he doesn't have a last name. As a result, it rejects this record.
+Imagine you want to move this data into HubSpot. However, HubSpot requires that everyone has a first and last name. In this case, Sebastian Argyos' last name has been combined with his first name. From HubSpot's perspective, he doesn't have a last name. As a result, it rejects this record.
 
 ## Where rejected records go
 
@@ -42,7 +42,7 @@ If you've configured a storage bucket for rejected records, Airbyte links to it 
 
 You can also monitor logs for them.
 
-```json title="snowflake_salesforce_logs_12345_txt.txt"
+```json title="snowflake_hubspot_logs_12345_txt.txt"
 Sync summary: {
   // ...
   "totalStats" : {

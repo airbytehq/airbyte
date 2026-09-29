@@ -14,7 +14,7 @@ interface MetadataQuerier : AutoCloseable {
     fun streamNames(streamNamespace: String?): List<StreamIdentifier>
 
     /** Returns all available fields in the given stream. */
-    fun fields(streamID: StreamIdentifier): List<Field>
+    fun fields(streamID: StreamIdentifier): List<EmittedField>
 
     /** Returns the primary key for the given stream, if it exists; empty list otherwise. */
     fun primaryKey(streamID: StreamIdentifier): List<List<String>>

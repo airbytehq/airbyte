@@ -4,16 +4,104 @@ This page contains the setup guide and reference information for the Greenhouse 
 
 ## Prerequisites
 
-To set up the Greenhouse source connector, you'll need the [Harvest API key](https://developers.greenhouse.io/harvest.html#authentication) with permissions to the resources Airbyte should be able to access.
+The connector reads the Greenhouse Harvest v3 API, which [supports two authentication methods](https://harvestdocs.greenhouse.io/docs/authentication). Choose the one that matches your Airbyte deployment and where your credential comes from.
 
-## Set up the Greenhouse connector in Airbyte
+### OAuth
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
+OAuth (Authorization Code) authenticates through Airbyte's registered Greenhouse partner application. You don't create, request, or register a Greenhouse OAuth application of your own: Greenhouse issues partner credentials only to integration partners, not to Greenhouse customers, and Airbyte supplies the client ID and client secret during the consent flow. Because the consent flow relies on Airbyte's partner credentials, this method is available only in Airbyte Cloud.
+
+To set up the source with OAuth, you need:
+
+- An Airbyte Cloud workspace.
+- A Greenhouse user who is a Site Admin to approve the consent flow.
+
+### Client Credentials
+
+Client Credentials authenticates with a **Harvest V3 (OAuth)** custom integration credential that you create in Greenhouse. Use this method on self-managed Airbyte, or in Airbyte Cloud when you want to connect with your own credential instead of Airbyte's partner application.
+
+To set up the source with Client Credentials, you need:
+
+- Access to **Configure** > **Dev Center** > **API Credential Management** in Greenhouse. Click **Create new API credentials**, select **Harvest V3 (OAuth)**, save the credential, and then grant it the scopes listed below. Greenhouse gives you a client ID and a client secret; copy both into the source.
+- Optionally, the numeric Greenhouse user ID of a Site Admin. Greenhouse creates an integration service user for every custom credential, and by default the connector makes requests as that user, which can read every Harvest v3 list endpoint. Enter a user ID as the **Site Admin user ID** only if you want requests attributed to a specific person instead; Greenhouse denies the list endpoints to any user who isn't a Site Admin.
+
+### Scopes
+
+Both methods need the same scopes. With OAuth, the consent flow requests them; approve all of them. With Client Credentials, grant them to the credential in Greenhouse:
+
+- `harvest:application_stages:list`
+- `harvest:applications:list`
+- `harvest:applied_candidate_tags:list`
+- `harvest:approval_flows:list`
+- `harvest:approver_groups:list`
+- `harvest:approvers:list`
+- `harvest:attachments:list`
+- `harvest:candidate_attribute_types:list`
+- `harvest:candidate_educations:list`
+- `harvest:candidate_employments:list`
+- `harvest:candidate_tags:list`
+- `harvest:candidates:list`
+- `harvest:close_reasons:list`
+- `harvest:custom_field_options:list`
+- `harvest:custom_fields:list`
+- `harvest:demographic_answer_options:list`
+- `harvest:demographic_answers:list`
+- `harvest:demographic_question_sets:list`
+- `harvest:demographic_questions:list`
+- `harvest:departments:list`
+- `harvest:eeoc:list`
+- `harvest:email_templates:list`
+- `harvest:interview_kits:list`
+- `harvest:interviewer_tags:list`
+- `harvest:interviewers:list`
+- `harvest:interviews:list`
+- `harvest:job_hiring_managers:list`
+- `harvest:job_interview_stages:list`
+- `harvest:job_interviews:list`
+- `harvest:job_notes:list`
+- `harvest:job_owners:list`
+- `harvest:job_posts:list`
+- `harvest:jobs:list`
+- `harvest:notes:list`
+- `harvest:offers:list`
+- `harvest:offices:list`
+- `harvest:openings:list`
+- `harvest:prospect_details:list`
+- `harvest:prospect_pool_stages:list`
+- `harvest:prospect_pools:list`
+- `harvest:referrers:list`
+- `harvest:rejection_details:list`
+- `harvest:rejection_reasons:list`
+- `harvest:scorecard_candidate_attributes:list`
+- `harvest:scorecard_questions:list`
+- `harvest:scorecards:list`
+- `harvest:sources:list`
+- `harvest:user_emails:list`
+- `harvest:user_job_permissions:list`
+- `harvest:user_roles:list`
+- `harvest:users:list`
+
+Harvest v3 rejects requests to its list endpoints from any user who isn't a Site Admin or a custom integration's service user, and the connector fails the sync with a configuration error. A missing scope produces the same failure for the streams that depend on it, so grant every scope in the list unless you plan to leave the corresponding streams disabled. Grant `harvest:users:list` in every case: the connection check reads the `users` stream, so the source fails to set up without it even if you never sync that stream.
+
+With OAuth, Greenhouse ties the scopes to the refresh token it issued when you approved the consent flow. Versions 1.2.0 and 1.4.0 each added streams that need new scopes. If you set up the source with OAuth before one of those versions, your token doesn't include the scopes it added, and enabling any of the [streams added in 1.2.0](#streams-added-in-120) or [streams added in 1.4.0](#streams-added-in-140) fails with a `403` error until you open the source settings, click **Authenticate**, and approve the consent flow again. Streams you already sync keep working without re-authenticating. With Client Credentials, grant the new scopes to the credential in Greenhouse instead.
+
+## Setup guide
+
+### Set up the Greenhouse connector in Airbyte
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or open your self-managed Airbyte instance.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Greenhouse** from the Source type dropdown.
 4. Enter the name for the Greenhouse connector.
-5. Enter your [**Harvest API Key**](https://developers.greenhouse.io/harvest.html#authentication) that you obtained from Greenhouse.
-6. Click **Set up source**.
+5. Under **Authentication**, select **OAuth** or **Client Credentials**.
+   - For **OAuth** (Airbyte Cloud only), click **Authenticate**, sign in to Greenhouse as a Site Admin, and approve the requested scopes. Airbyte fills in its partner application's client ID and client secret and stores the resulting refresh token. You don't enter any Greenhouse credentials yourself.
+   - For **Client Credentials**, enter the custom integration credential's **Client ID** and **Client secret**. Leave **Site Admin user ID** blank unless you want the connector to make requests as a specific Site Admin instead of the credential's integration service user.
+6. Optionally enter a **Start date** in UTC using the format `YYYY-MM-DDTHH:MM:SSZ`. Records updated before this date will not be replicated. If omitted, the connector replicates all history.
+7. Optionally change **Number of concurrent threads**. The connector syncs with 2 threads by default and accepts 1 to 8. All threads share one Greenhouse rate limit, so raise this only if your Greenhouse account can absorb more API traffic, and lower it to 1 if syncs fail with rate-limit errors.
+8. Click **Set up source**.
+
+:::warning
+If you use OAuth, sync more often than once a day. Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh, so a connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings. See [Sync fails with a configuration error asking you to re-authenticate](#sync-fails-with-a-configuration-error-asking-you-to-re-authenticate) for the error this produces. Client Credentials has no refresh token, so this doesn't apply to it.
+:::
 
 ## Supported sync modes
 
@@ -24,48 +112,171 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
+**Start date** filters the Greenhouse request, not the sync. Every stream the table below marks as incremental sends `updated_at=gte|<start date>` on each sync, including a sync you configure as Full refresh, so a full refresh of those streams returns only records updated on or after your start date. Leave **Start date** empty to replicate all history.
+
+Incremental streams re-read a one-hour lookback window before the saved cursor on each sync, so records updated shortly before the previous sync finished aren't missed. With Incremental - Append, this can produce duplicate records in your destination; use Incremental - Append + Deduped, if your destination supports it, to keep only the latest version of each record.
+
 ## Supported Streams
 
-- [Activity Feed](https://developers.greenhouse.io/harvest.html#get-retrieve-activity-feed)
-- [Applications](https://developers.greenhouse.io/harvest.html#get-list-applications) \(Incremental\)
-- [Applications Interviews](https://developers.greenhouse.io/harvest.html#get-list-scheduled-interviews-for-application) \(Incremental\)
-- [Applications Demographics Answers](https://developers.greenhouse.io/harvest.html#get-list-demographic-answers-for-application) \(Incremental\)
-- [Demographics Answers](https://developers.greenhouse.io/harvest.html#get-list-demographic-answers) \(Incremental\)
-- [Demographic Answer Options](https://developers.greenhouse.io/harvest.html#get-list-demographic-answer-options)
-- [Demographic Answer Options For Question](https://developers.greenhouse.io/harvest.html#get-list-demographic-answer-options-for-demographic-question)
-- [Demographic Questions](https://developers.greenhouse.io/harvest.html#get-list-demographic-questions)
-- [Demographic Question Set](https://developers.greenhouse.io/harvest.html#get-list-demographic-question-sets)
-- [Demographic Questions For Question Set](https://developers.greenhouse.io/harvest.html#get-list-demographic-questions-for-demographic-question-set)
-- [Approvals](https://developers.greenhouse.io/harvest.html#get-list-approvals-for-job)
-- [Candidates](https://developers.greenhouse.io/harvest.html#get-list-candidates) \(Incremental\)
-- [Close Reasons](https://developers.greenhouse.io/harvest.html#get-list-close-reasons)
-- [Custom Fields](https://developers.greenhouse.io/harvest.html#get-list-custom-fields)
-- [Degrees](https://developers.greenhouse.io/harvest.html#get-list-degrees)
-- [Departments](https://developers.greenhouse.io/harvest.html#get-list-departments)
-- [Disciplines](https://developers.greenhouse.io/harvest.html#get-list-approvals-for-job)
-- [EEOC](https://developers.greenhouse.io/harvest.html#get-list-eeoc) \(Incremental\)
-- [Email Templates](https://developers.greenhouse.io/harvest.html#get-list-email-templates) \(Incremental\)
-- [Interviews](https://developers.greenhouse.io/harvest.html#get-list-scheduled-interviews) \(Incremental\)
-- [Job Posts](https://developers.greenhouse.io/harvest.html#get-list-job-posts) \(Incremental\)
-- [Job Stages](https://developers.greenhouse.io/harvest.html#get-list-job-stages) \(Incremental\)
-- [Jobs](https://developers.greenhouse.io/harvest.html#get-list-jobs) \(Incremental\)
-- [Job Openings](https://developers.greenhouse.io/harvest.html#get-list-job-openings)
-- [Jobs Stages](https://developers.greenhouse.io/harvest.html#get-list-job-stages-for-job) \(Incremental\)
-- [Offers](https://developers.greenhouse.io/harvest.html#get-list-offers) \(Incremental\)
-- [Offices](https://developers.greenhouse.io/harvest.html#get-list-offices)
-- [Prospect Pools](https://developers.greenhouse.io/harvest.html#get-list-prospect-pools)
-- [Rejection Reasons](https://developers.greenhouse.io/harvest.html#get-list-rejection-reasons)
-- [Schools](https://developers.greenhouse.io/harvest.html#get-list-schools)
-- [Scorecards](https://developers.greenhouse.io/harvest.html#get-list-scorecards) \(Incremental\)
-- [Sources](https://developers.greenhouse.io/harvest.html#get-list-sources)
-- [Tags](https://developers.greenhouse.io/harvest.html#get-list-candidate-tags)
-- [Users](https://developers.greenhouse.io/harvest.html#get-list-users) \(Incremental\)
-- [User Permissions](https://developers.greenhouse.io/harvest.html#get-list-job-permissions)
-- [User Roles](https://developers.greenhouse.io/harvest.html#the-user-role-object)
+When you create a new connection, Airbyte enables 10 streams by default: `applications`, `candidates`, `jobs`, `job_posts`, `offers`, `interviews`, `scorecards`, `users`, `departments`, and `offices`. Enable any of the other streams in the connection's stream list.
 
-## Performance considerations
+The table lists the stream names as they appear in Airbyte, with the Harvest v3 endpoint each one reads. **Start date** applies to every stream marked incremental here, in whichever sync mode you select it, and to no others. Only the four demographics question and answer-option streams are full refresh, because Harvest v3 exposes no date filter on `/v3/demographic_questions` or `/v3/demographic_answer_options`; they always read everything the endpoint returns, and the two child streams among them pull parent IDs over your full Greenhouse history, so their coverage doesn't depend on **Start date** either.
 
-The Greenhouse connector should not run into Greenhouse API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+| Stream | Sync mode | Notes |
+| :--- | :--- | :--- |
+| [`activity_feed`](https://harvestdocs.greenhouse.io/reference/get_v3-notes) | Incremental (`updated_at`) | Notes across all candidates |
+| [`application_stages`](https://harvestdocs.greenhouse.io/reference/get_v3-application-stages) | Incremental (`updated_at`) | Stage history per application, with time in stage. One row per application per stage entered |
+| [`applications`](https://harvestdocs.greenhouse.io/reference/get_v3-applications) | Incremental (`updated_at`) | |
+| [`applied_candidate_tags`](https://harvestdocs.greenhouse.io/reference/get_v3-applied-candidate-tags) | Incremental (`updated_at`) | Candidate-to-tag assignments; `tags` on its own is only the dictionary |
+| [`approvals`](https://harvestdocs.greenhouse.io/reference/get_v3-approval-flows) | Incremental (`updated_at`) | |
+| [`approver_groups`](https://harvestdocs.greenhouse.io/reference/get_v3-approver-groups) | Incremental (`updated_at`) | The steps of an approval chain, per approval flow |
+| [`approvers`](https://harvestdocs.greenhouse.io/reference/get_v3-approvers) | Incremental (`updated_at`) | Individual approvers and their status within a group |
+| [`attachments`](https://harvestdocs.greenhouse.io/reference/get_v3-attachments) | Incremental (`updated_at`) | One file per application. `url` is a download link Greenhouse expires after seven days |
+| [`candidate_attribute_types`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-attribute-types) | Incremental (`updated_at`) | The scorecard attribute dictionary, defined per job |
+| [`candidate_educations`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-educations) | Incremental (`updated_at`) | School, degree and discipline history per candidate |
+| [`candidate_employments`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-employments) | Incremental (`updated_at`) | Employer and title history per candidate |
+| [`candidates`](https://harvestdocs.greenhouse.io/reference/get_v3-candidates) | Incremental (`updated_at`) | |
+| [`close_reasons`](https://harvestdocs.greenhouse.io/reference/get_v3-close-reasons) | Incremental (`updated_at`) | |
+| [`custom_field_options`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Incremental (`updated_at`) | Every custom field option in the account |
+| [`custom_fields`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-fields) | Incremental (`updated_at`) | |
+| [`degrees`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Incremental (`updated_at`) | Custom field options for the `degree` field |
+| [`demographics_answer_options`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answer-options) | Full refresh | |
+| [`demographics_answers`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answers) | Incremental (`updated_at`) | |
+| [`demographics_answers_answer_options`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answer-options) | Full refresh | Answer options for each question in `demographics_questions` |
+| [`demographics_question_sets`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-question-sets) | Incremental (`updated_at`) | |
+| [`demographics_question_sets_questions`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-questions) | Full refresh | Questions in each set in `demographics_question_sets` |
+| [`demographics_questions`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-questions) | Full refresh | |
+| [`departments`](https://harvestdocs.greenhouse.io/reference/get_v3-departments) | Incremental (`updated_at`) | |
+| [`disciplines`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Incremental (`updated_at`) | Custom field options for the `discipline` field |
+| [`eeoc`](https://harvestdocs.greenhouse.io/reference/get_v3-eeoc) | Incremental (`submitted_at`) | |
+| [`email_templates`](https://harvestdocs.greenhouse.io/reference/get_v3-email-templates) | Incremental (`updated_at`) | |
+| [`interview_kits`](https://harvestdocs.greenhouse.io/reference/get_v3-interview-kits) | Incremental (`updated_at`) | Kit content per job interview. `exercises` is the live value and may contain HTML |
+| [`interviewer_tags`](https://harvestdocs.greenhouse.io/reference/get_v3-interviewer-tags) | Incremental (`updated_at`) | The interviewer tag dictionary |
+| [`interviewers`](https://harvestdocs.greenhouse.io/reference/get_v3-interviewers) | Incremental (`updated_at`) | One row per panel member on a scheduled interview |
+| [`interviews`](https://harvestdocs.greenhouse.io/reference/get_v3-interviews) | Incremental (`updated_at`) | |
+| [`job_hiring_managers`](https://harvestdocs.greenhouse.io/reference/get_v3-job-hiring-managers) | Incremental (`updated_at`) | One row per hiring manager on a job |
+| [`job_interviews`](https://harvestdocs.greenhouse.io/reference/get_v3-job-interviews) | Incremental (`updated_at`) | The interview plan for each job stage |
+| [`job_notes`](https://harvestdocs.greenhouse.io/reference/get_v3-job-notes) | Incremental (`updated_at`) | Free-text notes on jobs, separate from the candidate notes in `activity_feed` |
+| [`job_owners`](https://harvestdocs.greenhouse.io/reference/get_v3-job-owners) | Incremental (`updated_at`) | Recruiter, sourcer and coordinator per job, with a `responsible` flag |
+| [`job_posts`](https://harvestdocs.greenhouse.io/reference/get_v3-job-posts) | Incremental (`updated_at`) | Includes deleted posts |
+| [`job_stages`](https://harvestdocs.greenhouse.io/reference/get_v3-job-interview-stages) | Incremental (`updated_at`) | |
+| [`jobs`](https://harvestdocs.greenhouse.io/reference/get_v3-jobs) | Incremental (`updated_at`) | |
+| [`jobs_openings`](https://harvestdocs.greenhouse.io/reference/get_v3-openings) | Incremental (`updated_at`) | Openings across all jobs |
+| [`offers`](https://harvestdocs.greenhouse.io/reference/get_v3-offers) | Incremental (`updated_at`) | |
+| [`offices`](https://harvestdocs.greenhouse.io/reference/get_v3-offices) | Incremental (`updated_at`) | |
+| [`prospect_details`](https://harvestdocs.greenhouse.io/reference/get_v3-prospect-details) | Incremental (`updated_at`) | Pool, stage and owner per prospect application |
+| [`prospect_pool_stages`](https://harvestdocs.greenhouse.io/reference/get_v3-prospect-pool-stages) | Incremental (`updated_at`) | The stage dictionary for each prospect pool |
+| [`prospect_pools`](https://harvestdocs.greenhouse.io/reference/get_v3-prospect-pools) | Incremental (`updated_at`) | |
+| [`referrers`](https://harvestdocs.greenhouse.io/reference/get_v3-referrers) | Incremental (`updated_at`) | Referral attribution per candidate |
+| [`rejection_details`](https://harvestdocs.greenhouse.io/reference/get_v3-rejection-details) | Incremental (`updated_at`) | Reason, rejecter and note per rejected application |
+| [`rejection_reasons`](https://harvestdocs.greenhouse.io/reference/get_v3-rejection-reasons) | Incremental (`updated_at`) | Includes the reasons Greenhouse ships with |
+| [`schools`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Incremental (`updated_at`) | Custom field options for the `school_name` field |
+| [`scorecard_candidate_attributes`](https://harvestdocs.greenhouse.io/reference/get_v3-scorecard-candidate-attributes) | Incremental (`updated_at`) | One row per rated attribute on each scorecard |
+| [`scorecard_questions`](https://harvestdocs.greenhouse.io/reference/get_v3-scorecard-questions) | Incremental (`updated_at`) | The question dictionary behind scorecards, defined per interview kit |
+| [`scorecards`](https://harvestdocs.greenhouse.io/reference/get_v3-scorecards) | Incremental (`updated_at`) | |
+| [`sources`](https://harvestdocs.greenhouse.io/reference/get_v3-sources) | Incremental (`updated_at`) | |
+| [`tags`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-tags) | Incremental (`updated_at`) | Candidate tags |
+| [`user_emails`](https://harvestdocs.greenhouse.io/reference/get_v3-user-emails) | Incremental (`updated_at`) | Every email address per user; `users.primary_email` is only one of them |
+| [`user_permissions`](https://harvestdocs.greenhouse.io/reference/get_v3-user-job-permissions) | Incremental (`updated_at`) | Job permissions across all users |
+| [`user_roles`](https://harvestdocs.greenhouse.io/reference/get_v3-user-roles) | Incremental (`updated_at`) | |
+| [`users`](https://harvestdocs.greenhouse.io/reference/get_v3-users) | Incremental (`updated_at`) | Includes integration service users |
+
+### Streams added in 1.4.0
+
+Version 1.4.0 added these 2 streams, both incremental on `updated_at`:
+
+`candidate_attribute_types`, `job_notes`
+
+Both are disabled by default on new and existing connections. Each one needs its own Harvest v3 scope. On an OAuth source you authorized before 1.4.0, re-run the consent flow before enabling either of them. With Client Credentials, grant `harvest:candidate_attribute_types:list` and `harvest:job_notes:list` to the credential in Greenhouse. See [Scopes](#scopes).
+
+### Streams added in 1.2.0
+
+Version 1.2.0 added these 20 streams, all incremental on `updated_at`. They carry the detail that Harvest v1 embedded on its parent records and Harvest v3 serves from separate endpoints:
+
+`application_stages`, `applied_candidate_tags`, `approver_groups`, `approvers`, `attachments`, `candidate_educations`, `candidate_employments`, `interview_kits`, `interviewer_tags`, `interviewers`, `job_hiring_managers`, `job_interviews`, `job_owners`, `prospect_details`, `prospect_pool_stages`, `referrers`, `rejection_details`, `scorecard_candidate_attributes`, `scorecard_questions`, `user_emails`
+
+All 20 are disabled by default on new and existing connections. Each one needs its own Harvest v3 scope. On an OAuth source you authorized before 1.2.0, re-run the consent flow before enabling any of them. With Client Credentials, grant the corresponding scopes to the credential in Greenhouse. See [Scopes](#scopes).
+
+### Streams that became incremental in 1.1.0
+
+These 18 streams were full refresh before 1.1.0 and are now incremental on `updated_at`:
+
+`activity_feed`, `approvals`, `close_reasons`, `custom_field_options`, `custom_fields`, `degrees`, `demographics_question_sets`, `departments`, `disciplines`, `jobs_openings`, `offices`, `prospect_pools`, `rejection_reasons`, `schools`, `sources`, `tags`, `user_permissions`, `user_roles`
+
+This isn't a breaking change. Schemas, primary keys, and your existing sync modes are unchanged, and there was no stream state to migrate, so no action is required and connections keep syncing.
+
+One behavior does change: **Start date** now applies to these 18 streams, in every sync mode. Earlier versions sent no date filter on them and read your full Greenhouse history whatever **Start date** said. If you have a start date set, these streams now return only records updated on or after it - on full refresh as well as incremental, because the filter is part of the Greenhouse request rather than something applied to the sync. On a **Full refresh | Overwrite** connection that also removes the older rows from the destination table, because each sync replaces the table with what it read; on append and append + deduped connections the existing rows stay put and simply stop being refreshed. Clear **Start date** if you want these streams to keep reading full history, then [refresh](https://docs.airbyte.com/operator-guides/refreshes) them.
+
+### Performance considerations
+
+Greenhouse [rate limits](https://harvestdocs.greenhouse.io/docs/api-rate-limiting) Harvest v3 in fixed 30-second windows. Each response reports your remaining allowance in `X-RateLimit-Remaining` and the time the current window resets in `X-RateLimit-Reset`. Greenhouse doesn't publish a fixed request ceiling for Harvest v3, and it applies different allowances to custom and partner integrations, so the connector holds itself to a conservative 50 requests per window, tracks those headers, and waits for the `Retry-After` interval when Greenhouse returns `429`. Because every thread draws on the same window, syncing many streams at a high **Number of concurrent threads** is a common cause of rate-limit errors. Lower that value before [creating an issue](https://github.com/airbytehq/airbyte/issues) about rate limits.
+
+The connector requests 500 records per page, the Harvest v3 maximum, and then follows the cursor links Greenhouse returns, so large accounts still page through many requests per stream.
+
+`application_stages` and `scorecard_candidate_attributes` are high-volume streams: `application_stages` has one row per application per stage entered, and `scorecard_candidate_attributes` has one row per rated attribute on each scorecard. Each holds several times as many rows as its parent stream, so each adds many requests to a sync and draws down the shared rate-limit window. Leave them disabled unless you need that detail.
+
+### Migration from Harvest v1
+
+Version 1.0.0 migrates the 33 streams carried over from 0.8.1 from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream, for 34 streams in total, because Greenhouse has scheduled the end of support for Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication and introduces an optional **Start date** that preserves the previous full-history behavior when omitted. Version 1.3.0 added [Client Credentials](#client-credentials) so that self-managed deployments, which can't use the OAuth consent flow, can authenticate with a credential you create in Greenhouse. We recommend creating a new connection on 1.0.0 rather than refreshing the existing one; see the [upgrade paths](./greenhouse-migrations.md#upgrade-paths) before upgrading.
+
+## Limitations & Troubleshooting
+
+### Limitations
+
+- **`eeoc`** replicates on `submitted_at`. A correction to an EEOC response after submission doesn't change `submitted_at`, so incremental syncs never re-read it. Refresh the stream if you need corrections to land.
+- **`custom_field_options`** reads every custom field option in your account, which makes it a superset of `degrees`, `disciplines`, and `schools`. Those three streams read the same Greenhouse endpoint filtered to one field key and share the same primary keys, so enabling all four writes the same option rows to four destination tables. Enable only the ones you need.
+- **`users`** includes integration service users, which Greenhouse hides by default. Service accounts have no email address, so `primary_email` is empty for those records.
+- **`rejection_reasons`** includes the default reasons Greenhouse ships with, not only the ones your organization added.
+- **`attachments`** returns a `url` for each file that Greenhouse expires after seven days, and it may redirect to a fresh short-lived file URL on each request. A replicated `url` stops working a week after the sync that wrote it; re-sync the stream to get current links.
+- **`application_stages`** has one row per application per stage entered, so it holds several times as many rows as `applications`. Enable it only if you need funnel or time-in-stage analysis.
+- **`candidate_educations`** references schools, degrees and disciplines by custom field option id (`school_name_custom_field_option_id`, `degree_custom_field_option_id`, `discipline_custom_field_option_id`), not by name. Join to `schools`, `degrees`, and `disciplines` to resolve them.
+- **`interviewers`** has one row per panel member per interview, so an interview appears once for each attendee. `user_id` is empty for external attendees who match no Greenhouse user; their address is in `email` instead.
+- **`scorecard_candidate_attributes`** has one row per rated attribute per scorecard, so it holds many more rows than `scorecards`.
+- **`interview_kits.exercises`** carries the live Interview Prep content and may contain HTML. The `summary` and `instructions` fields on `job_interviews` are snapshots taken when the slot was first added and do not track later edits; use `exercises` for the current text.
+- **`user_emails`** lists every address on a user, while `users.primary_email` carries one. Integration service users have no address at all, so they have no rows here.
+- **`approvers.send_auto_reminder_at`** is a date (`YYYY-MM-DD`), not a timestamp, despite the `_at` suffix every other Harvest v3 field uses for timestamps.
+- **The 18 streams that became incremental in 1.1.0** now honor **Start date**, where before they always read full history. See [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110).
+
+### Deletions
+
+Greenhouse Harvest v3 doesn't report deleted records. The connector replicates soft-deletes as a flag on the record:
+
+- `active` on `job_posts`. Harvest v3 leaves deleted posts out by default, so the connector requests both active and deleted posts. Filter on `active` downstream if you only want live posts.
+- `active` on `custom_fields`, `custom_field_options`, `degrees`, `disciplines`, `schools`, `demographics_question_sets`, `demographics_questions`, `demographics_question_sets_questions`, `demographics_answer_options`, `demographics_answers_answer_options`, and `prospect_pools`. Harvest v3 returns both active and inactive records on these streams.
+- `deactivated` on `users`. Deactivated users stay in the stream.
+- `active` on `job_stages`, `job_interviews`, and `scorecard_questions`. `false` means the stage, interview, or question was removed from the job's interview plan or the interview kit; Greenhouse keeps the record so historical data still resolves.
+
+Records that are permanently deleted in Greenhouse stay in your destination until you re-sync the stream in **Full Refresh - Overwrite**.
+
+### Sync fails with a configuration error asking you to re-authenticate
+
+This section covers OAuth. If you use Client Credentials, see [Client Credentials authentication fails](#client-credentials-authentication-fails).
+
+The connector can't renew its access token because Greenhouse rejected the refresh token. Starting with version 1.0.1, the connector reports this as a configuration error instead of a system error. The Greenhouse error code in the sync log tells you what to fix:
+
+- `invalid_grant`: the refresh token expired or was invalidated. This happens when the connection hasn't synced for more than about 24 hours, or when another tool used the same refresh token, which causes Greenhouse to issue a new one that Airbyte never receives. Open the source settings, click **Authenticate**, and complete the consent flow again to store a new refresh token. Run the consent flow separately for each Airbyte source; don't reuse one refresh token across sources or other tools.
+- `invalid_client` or `unauthorized_client`: Greenhouse rejected the partner application credentials Airbyte used for the refresh, or that application isn't allowed to use the refresh token grant. Open the source settings, click **Authenticate**, and complete the consent flow again. If the error persists, contact Airbyte support; there are no credentials for you to correct on your side.
+
+### Client Credentials authentication fails
+
+With Client Credentials the connector requests a new access token from Greenhouse with your client ID and secret, and there's no refresh token to renew. The error message still says the refresh token was rejected and asks you to re-authenticate, because it's shared with OAuth. Use the Greenhouse error code at the end of the message instead:
+
+- `invalid_client`: Greenhouse doesn't recognize the client ID and client secret. Check both values against the credential in **Configure** > **Dev Center** > **API Credential Management**, and make sure the credential hasn't been revoked.
+- `invalid_grant`: the **Site Admin user ID** doesn't match a Greenhouse user. Correct it, or leave it blank to make requests as the credential's integration service user.
+
+### Sync fails with a `403` configuration error on a stream
+
+The authorizing user isn't a Site Admin, or the consent flow didn't include the scope for that stream. This is expected when you enable one of the [streams added in 1.2.0](#streams-added-in-120) or [streams added in 1.4.0](#streams-added-in-140) on a source you authorized before that version. Compare the scopes in [Prerequisites](#prerequisites) with the ones you approved, then open the source settings, click **Authenticate**, and re-run the consent flow as a Site Admin. With Client Credentials, grant the missing scope to the credential in Greenhouse, and check that **Site Admin user ID** is blank or belongs to a Site Admin.
+
+### A stream returns fewer records after upgrading to 1.1.0
+
+1.1.0 made 18 streams incremental on `updated_at`, and **Start date** is applied as a Greenhouse query filter on those streams in every sync mode. If you have a start date set, records last updated before it are no longer returned - on incremental and full refresh alike. If the connection writes in **Full refresh | Overwrite**, those older rows are also deleted from the destination table on the first sync after the upgrade, so the gap shows up in your warehouse even though nothing failed. Earlier versions sent no date filter on these streams and ignored **Start date** for them entirely. [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110) lists them.
+
+To read full history again, clear **Start date** in your source settings, then [refresh](https://docs.airbyte.com/operator-guides/refreshes) the affected streams so the older records are written again.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -74,6 +285,35 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.4.0 | 2026-09-28 | [86478](https://github.com/airbytehq/airbyte/pull/86478) | Add the `candidate_attribute_types` and `job_notes` streams - see [Streams added in 1.4.0](#streams-added-in-140). The consent flow requests two new scopes; enabling either stream on a source authorized before 1.4.0 requires re-running the consent flow |
+| 1.3.0 | 2026-09-24 | [85178](https://github.com/airbytehq/airbyte/pull/85178) | Add client-credentials authentication for Greenhouse custom integrations and self-managed deployments. |
+| 1.2.0 | 2026-09-21 | [86477](https://github.com/airbytehq/airbyte/pull/86477) | Add 20 Harvest v3 detail streams - see [Streams added in 1.2.0](#streams-added-in-120). The consent flow requests 20 new scopes; existing connections keep syncing unchanged, but enabling a new stream on a source authorized before 1.2.0 requires re-running the consent flow |
+| 1.1.0 | 2026-09-17 | [85841](https://github.com/airbytehq/airbyte/pull/85841) | Sync 18 previously full-refresh streams incrementally on `updated_at`. Not breaking, but **Start date** now applies to those 18 streams in every sync mode, including full refresh, where before they always read full history - see [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110). Also read `activity_feed`, `jobs_openings`, and `user_permissions` directly instead of once per 50 parents, and suggest 10 streams for new connections |
+| 1.0.3 | 2026-09-15 | [85507](https://github.com/airbytehq/airbyte/pull/85507) | Update dependencies |
+| 1.0.2 | 2026-09-02 | [85306](https://github.com/airbytehq/airbyte/pull/85306) | Clarify in the spec that OAuth credentials come from Airbyte's Greenhouse partner application and must not be requested from Greenhouse |
+| 1.0.1 | 2026-09-02 | [85300](https://github.com/airbytehq/airbyte/pull/85300) | Surface expired or rotated refresh tokens (`invalid_grant`) as a re-authenticate config error instead of a system error |
+| 1.0.0 | 2026-08-28 | [84846](https://github.com/airbytehq/airbyte/pull/84846) | Breaking migration from Harvest v1 to Harvest v3 with OAuth. See the [migration guide](https://docs.airbyte.com/integrations/sources/greenhouse-migrations). |
+| 0.8.1 | 2026-08-18 | [84641](https://github.com/airbytehq/airbyte/pull/84641) | Update dependencies |
+| 0.8.0 | 2026-08-12 | [83811](https://github.com/airbytehq/airbyte/pull/83811) | Send pagination page-size parameters only on first-page requests and use fully-qualified per-stream URLs in preparation for the Harvest v3 migration. |
+| 0.7.33 | 2026-08-11 | [83956](https://github.com/airbytehq/airbyte/pull/83956) | Update dependencies |
+| 0.7.32 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 0.7.31 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 0.7.29 — 0.7.30 is built on SDM 7.23.7, which breaks bundled custom components |
+| 0.7.30 | 2026-07-28 | [82944](https://github.com/airbytehq/airbyte/pull/82944) | Update dependencies |
+| 0.7.29 | 2026-07-21 | [82444](https://github.com/airbytehq/airbyte/pull/82444) | Update dependencies |
+| 0.7.28 | 2026-07-14 | [81887](https://github.com/airbytehq/airbyte/pull/81887) | Update dependencies |
+| 0.7.27 | 2026-06-30 | [81129](https://github.com/airbytehq/airbyte/pull/81129) | Update dependencies |
+| 0.7.26 | 2026-06-23 | [80487](https://github.com/airbytehq/airbyte/pull/80487) | Update dependencies |
+| 0.7.25 | 2026-06-16 | [79888](https://github.com/airbytehq/airbyte/pull/79888) | Update dependencies |
+| 0.7.24 | 2026-06-09 | [79354](https://github.com/airbytehq/airbyte/pull/79354) | Update dependencies |
+| 0.7.23 | 2026-06-02 | [78766](https://github.com/airbytehq/airbyte/pull/78766) | Update dependencies |
+| 0.7.22 | 2026-05-15 | [78119](https://github.com/airbytehq/airbyte/pull/78119) | Set the default concurrency to 2 and expose the number of concurrent threads as a user-configurable option. |
+| 0.7.22-rc.3 | 2026-05-12 | [78052](https://github.com/airbytehq/airbyte/pull/78052) | Reduce default_concurrency to 3 for concurrency tuning after rate-limit failures at higher settings. |
+| 0.7.22-rc.2 | 2026-05-08 | [78006](https://github.com/airbytehq/airbyte/pull/78006) | Concurrency tuning iteration: bump default_concurrency to 5 |
+| 0.7.22-rc.1 | 2026-05-06 | [77826](https://github.com/airbytehq/airbyte/pull/77826) | Start concurrency tuning at default_concurrency=4 (Path A) and enable progressive rollout |
+| 0.7.21 | 2026-04-28 | [77287](https://github.com/airbytehq/airbyte/pull/77287) | Update dependencies |
+| 0.7.20 | 2026-04-21 | [76637](https://github.com/airbytehq/airbyte/pull/76637) | Update dependencies |
+| 0.7.19 | 2026-03-31 | [75729](https://github.com/airbytehq/airbyte/pull/75729) | Update dependencies |
+| 0.7.18 | 2026-03-17 | [74919](https://github.com/airbytehq/airbyte/pull/74919) | Update dependencies |
 | 0.7.17 | 2026-03-10 | [74688](https://github.com/airbytehq/airbyte/pull/74688) | Update dependencies |
 | 0.7.16 | 2026-03-03 | [74176](https://github.com/airbytehq/airbyte/pull/74176) | Update dependencies |
 | 0.7.15 | 2026-02-10 | [73107](https://github.com/airbytehq/airbyte/pull/73107) | Update dependencies |
@@ -93,57 +333,57 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 | 0.7.1 | 2025-08-26 | [65510](https://github.com/airbytehq/airbyte/pull/65510) | Fix custom migrations to reference DeclarativeStream Pydantic model instead of runtime component |
 | 0.7.0 | 2025-07-07 | [62830](https://github.com/airbytehq/airbyte/pull/62830) | Promoting release candidate 0.7.0-rc.1 to a main version. |
 | 0.7.0-rc.1 | 2025-06-29 | [47283](https://github.com/airbytehq/airbyte/pull/47283) | Migrate to Manifest-only |
-| 0.6.1      | 2025-03-22 | [53800](https://github.com/airbytehq/airbyte/pull/53800) | Update dependencies |
-| 0.6.0      | 2025-03-14 | [55774](https://github.com/airbytehq/airbyte/pull/55774) | Promoting release candidate 0.6.0-rc.1 to a main version. |
-| 0.6.0-rc.1 | 2025-03-14 | [54702](https://github.com/airbytehq/airbyte/pull/54702) | Update to latest airbyte-cdk, remove custom cursors.                                                                                                                   |
-| 0.5.32     | 2025-02-01 | [52724](https://github.com/airbytehq/airbyte/pull/52724) | Update dependencies                                                                                                                                                    |
-| 0.5.31     | 2025-01-25 | [51842](https://github.com/airbytehq/airbyte/pull/51842) | Update dependencies                                                                                                                                                    |
-| 0.5.30     | 2025-01-11 | [51214](https://github.com/airbytehq/airbyte/pull/51214) | Update dependencies                                                                                                                                                    |
-| 0.5.29     | 2024-12-28 | [50632](https://github.com/airbytehq/airbyte/pull/50632) | Update dependencies                                                                                                                                                    |
-| 0.5.28     | 2024-12-21 | [50109](https://github.com/airbytehq/airbyte/pull/50109) | Update dependencies                                                                                                                                                    |
-| 0.5.27     | 2024-12-14 | [49248](https://github.com/airbytehq/airbyte/pull/49248) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
-| 0.5.26     | 2024-12-12 | [48996](https://github.com/airbytehq/airbyte/pull/48996) | Update dependencies                                                                                                                                                    |
-| 0.5.25     | 2024-10-29 | [47110](https://github.com/airbytehq/airbyte/pull/47110) | Update dependencies                                                                                                                                                    |
-| 0.5.24     | 2024-10-23 | [47306](https://github.com/airbytehq/airbyte/pull/47306) | Add 'job_post_id' to applications stream scehma                                                                                                                        |
-| 0.5.23     | 2024-10-12 | [46828](https://github.com/airbytehq/airbyte/pull/46828) | Update dependencies                                                                                                                                                    |
-| 0.5.22     | 2024-10-05 | [46506](https://github.com/airbytehq/airbyte/pull/46506) | Update dependencies                                                                                                                                                    |
-| 0.5.21     | 2024-09-28 | [46159](https://github.com/airbytehq/airbyte/pull/46159) | Update dependencies                                                                                                                                                    |
-| 0.5.20     | 2024-09-21 | [45834](https://github.com/airbytehq/airbyte/pull/45834) | Update dependencies                                                                                                                                                    |
-| 0.5.19     | 2024-09-17 | [45625](https://github.com/airbytehq/airbyte/pull/45625) | Change check stream                                                                                                                                                    |
-| 0.5.18     | 2024-09-14 | [45476](https://github.com/airbytehq/airbyte/pull/45476) | Update dependencies                                                                                                                                                    |
-| 0.5.17     | 2024-09-07 | [45229](https://github.com/airbytehq/airbyte/pull/45229) | Update dependencies                                                                                                                                                    |
-| 0.5.16     | 2024-08-31 | [44755](https://github.com/airbytehq/airbyte/pull/44755) | Update dependencies                                                                                                                                                    |
-| 0.5.15     | 2024-08-17 | [44246](https://github.com/airbytehq/airbyte/pull/44246) | Update dependencies                                                                                                                                                    |
-| 0.5.14     | 2024-08-10 | [43595](https://github.com/airbytehq/airbyte/pull/43595) | Update dependencies                                                                                                                                                    |
-| 0.5.13     | 2024-08-03 | [43160](https://github.com/airbytehq/airbyte/pull/43160) | Update dependencies                                                                                                                                                    |
-| 0.5.12     | 2024-07-27 | [42816](https://github.com/airbytehq/airbyte/pull/42816) | Update dependencies                                                                                                                                                    |
-| 0.5.11     | 2024-07-20 | [42240](https://github.com/airbytehq/airbyte/pull/42240) | Update dependencies                                                                                                                                                    |
-| 0.5.10     | 2024-07-13 | [41787](https://github.com/airbytehq/airbyte/pull/41787) | Update dependencies                                                                                                                                                    |
-| 0.5.9      | 2024-07-10 | [41215](https://github.com/airbytehq/airbyte/pull/41215) | Update dependencies                                                                                                                                                    |
-| 0.5.8      | 2024-07-10 | [39601](https://github.com/airbytehq/airbyte/pull/39601) | Move spec to manifest, fix readme                                                                                                                                      |
-| 0.5.7      | 2024-07-06 | [40882](https://github.com/airbytehq/airbyte/pull/40882) | Update dependencies                                                                                                                                                    |
-| 0.5.6      | 2024-06-25 | [40451](https://github.com/airbytehq/airbyte/pull/40451) | Update dependencies                                                                                                                                                    |
-| 0.5.5      | 2024-06-22 | [39968](https://github.com/airbytehq/airbyte/pull/39968) | Update dependencies                                                                                                                                                    |
-| 0.5.4      | 2024-06-06 | [39247](https://github.com/airbytehq/airbyte/pull/39247) | [autopull] Upgrade base image to v1.2.2                                                                                                                                |
-| 0.5.3      | 2024-04-19 | [36640](https://github.com/airbytehq/airbyte/pull/36640) | Updating to 0.80.0 CDK                                                                                                                                                 |
-| 0.5.2      | 2024-04-12 | [36640](https://github.com/airbytehq/airbyte/pull/36640) | schema descriptions                                                                                                                                                    |
-| 0.5.1      | 2024-03-12 | [35988](https://github.com/airbytehq/airbyte/pull/35988) | Unpin CDK version                                                                                                                                                      |
-| 0.5.0      | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures                                                                                                               |
-| 0.4.5      | 2024-02-09 | [35077](https://github.com/airbytehq/airbyte/pull/35077) | Manage dependencies with Poetry.                                                                                                                                       |
-| 0.4.4      | 2023-11-29 | [32397](https://github.com/airbytehq/airbyte/pull/32397) | Increase test coverage and migrate to base image                                                                                                                       |
-| 0.4.3      | 2023-09-20 | [30648](https://github.com/airbytehq/airbyte/pull/30648) | Update candidates.json                                                                                                                                                 |
-| 0.4.2      | 2023-08-02 | [28969](https://github.com/airbytehq/airbyte/pull/28969) | Update CDK version                                                                                                                                                     |
-| 0.4.1      | 2023-06-28 | [27773](https://github.com/airbytehq/airbyte/pull/27773) | Update following state breaking changes                                                                                                                                |
-| 0.4.0      | 2023-04-26 | [25332](https://github.com/airbytehq/airbyte/pull/25332) | Add new streams: `ActivityFeed`, `Approvals`, `Disciplines`, `Eeoc`, `EmailTemplates`, `Offices`, `ProspectPools`, `Schools`, `Tags`, `UserPermissions`, `UserRoles`   |
-| 0.3.1      | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version                                                                                                                                |
-| 0.3.0      | 2022-10-19 | [18154](https://github.com/airbytehq/airbyte/pull/18154) | Extend `Users` stream schema                                                                                                                                           |
-| 0.2.11     | 2022-09-27 | [17239](https://github.com/airbytehq/airbyte/pull/17239) | Always install the latest version of Airbyte CDK                                                                                                                       |
-| 0.2.10     | 2022-09-05 | [16338](https://github.com/airbytehq/airbyte/pull/16338) | Implement incremental syncs & fix SATs                                                                                                                                 |
-| 0.2.9      | 2022-08-22 | [15800](https://github.com/airbytehq/airbyte/pull/15800) | Bugfix to allow reading sentry.yaml and schemas at runtime                                                                                                             |
-| 0.2.8      | 2022-08-10 | [15344](https://github.com/airbytehq/airbyte/pull/15344) | Migrate connector to config-based framework                                                                                                                            |
-| 0.2.7      | 2022-04-15 | [11941](https://github.com/airbytehq/airbyte/pull/11941) | Correct Schema data type for Applications, Candidates, Scorecards and Users                                                                                            |
-| 0.2.6      | 2021-11-08 | [7607](https://github.com/airbytehq/airbyte/pull/7607)   | Implement demographics streams support. Update SAT for demographics streams                                                                                            |
-| 0.2.5      | 2021-09-22 | [6377](https://github.com/airbytehq/airbyte/pull/6377)   | Refactor the connector to use CDK. Implement additional stream support                                                                                                 |
-| 0.2.4      | 2021-09-15 | [6238](https://github.com/airbytehq/airbyte/pull/6238)   | Add identification of accessible streams for API keys with limited permissions                                                                                         |
+| 0.6.1 | 2025-03-22 | [53800](https://github.com/airbytehq/airbyte/pull/53800) | Update dependencies |
+| 0.6.0 | 2025-03-14 | [55774](https://github.com/airbytehq/airbyte/pull/55774) | Promoting release candidate 0.6.0-rc.1 to a main version. |
+| 0.6.0-rc.1 | 2025-03-14 | [54702](https://github.com/airbytehq/airbyte/pull/54702) | Update to latest airbyte-cdk, remove custom cursors. |
+| 0.5.32 | 2025-02-01 | [52724](https://github.com/airbytehq/airbyte/pull/52724) | Update dependencies |
+| 0.5.31 | 2025-01-25 | [51842](https://github.com/airbytehq/airbyte/pull/51842) | Update dependencies |
+| 0.5.30 | 2025-01-11 | [51214](https://github.com/airbytehq/airbyte/pull/51214) | Update dependencies |
+| 0.5.29 | 2024-12-28 | [50632](https://github.com/airbytehq/airbyte/pull/50632) | Update dependencies |
+| 0.5.28 | 2024-12-21 | [50109](https://github.com/airbytehq/airbyte/pull/50109) | Update dependencies |
+| 0.5.27 | 2024-12-14 | [49248](https://github.com/airbytehq/airbyte/pull/49248) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.5.26 | 2024-12-12 | [48996](https://github.com/airbytehq/airbyte/pull/48996) | Update dependencies |
+| 0.5.25 | 2024-10-29 | [47110](https://github.com/airbytehq/airbyte/pull/47110) | Update dependencies |
+| 0.5.24 | 2024-10-23 | [47306](https://github.com/airbytehq/airbyte/pull/47306) | Add 'job_post_id' to applications stream scehma |
+| 0.5.23 | 2024-10-12 | [46828](https://github.com/airbytehq/airbyte/pull/46828) | Update dependencies |
+| 0.5.22 | 2024-10-05 | [46506](https://github.com/airbytehq/airbyte/pull/46506) | Update dependencies |
+| 0.5.21 | 2024-09-28 | [46159](https://github.com/airbytehq/airbyte/pull/46159) | Update dependencies |
+| 0.5.20 | 2024-09-21 | [45834](https://github.com/airbytehq/airbyte/pull/45834) | Update dependencies |
+| 0.5.19 | 2024-09-17 | [45625](https://github.com/airbytehq/airbyte/pull/45625) | Change check stream |
+| 0.5.18 | 2024-09-14 | [45476](https://github.com/airbytehq/airbyte/pull/45476) | Update dependencies |
+| 0.5.17 | 2024-09-07 | [45229](https://github.com/airbytehq/airbyte/pull/45229) | Update dependencies |
+| 0.5.16 | 2024-08-31 | [44755](https://github.com/airbytehq/airbyte/pull/44755) | Update dependencies |
+| 0.5.15 | 2024-08-17 | [44246](https://github.com/airbytehq/airbyte/pull/44246) | Update dependencies |
+| 0.5.14 | 2024-08-10 | [43595](https://github.com/airbytehq/airbyte/pull/43595) | Update dependencies |
+| 0.5.13 | 2024-08-03 | [43160](https://github.com/airbytehq/airbyte/pull/43160) | Update dependencies |
+| 0.5.12 | 2024-07-27 | [42816](https://github.com/airbytehq/airbyte/pull/42816) | Update dependencies |
+| 0.5.11 | 2024-07-20 | [42240](https://github.com/airbytehq/airbyte/pull/42240) | Update dependencies |
+| 0.5.10 | 2024-07-13 | [41787](https://github.com/airbytehq/airbyte/pull/41787) | Update dependencies |
+| 0.5.9 | 2024-07-10 | [41215](https://github.com/airbytehq/airbyte/pull/41215) | Update dependencies |
+| 0.5.8 | 2024-07-10 | [39601](https://github.com/airbytehq/airbyte/pull/39601) | Move spec to manifest, fix readme |
+| 0.5.7 | 2024-07-06 | [40882](https://github.com/airbytehq/airbyte/pull/40882) | Update dependencies |
+| 0.5.6 | 2024-06-25 | [40451](https://github.com/airbytehq/airbyte/pull/40451) | Update dependencies |
+| 0.5.5 | 2024-06-22 | [39968](https://github.com/airbytehq/airbyte/pull/39968) | Update dependencies |
+| 0.5.4 | 2024-06-06 | [39247](https://github.com/airbytehq/airbyte/pull/39247) | [autopull] Upgrade base image to v1.2.2 |
+| 0.5.3 | 2024-04-19 | [36640](https://github.com/airbytehq/airbyte/pull/36640) | Updating to 0.80.0 CDK |
+| 0.5.2 | 2024-04-12 | [36640](https://github.com/airbytehq/airbyte/pull/36640) | schema descriptions |
+| 0.5.1 | 2024-03-12 | [35988](https://github.com/airbytehq/airbyte/pull/35988) | Unpin CDK version |
+| 0.5.0 | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures |
+| 0.4.5 | 2024-02-09 | [35077](https://github.com/airbytehq/airbyte/pull/35077) | Manage dependencies with Poetry. |
+| 0.4.4 | 2023-11-29 | [32397](https://github.com/airbytehq/airbyte/pull/32397) | Increase test coverage and migrate to base image |
+| 0.4.3 | 2023-09-20 | [30648](https://github.com/airbytehq/airbyte/pull/30648) | Update candidates.json |
+| 0.4.2 | 2023-08-02 | [28969](https://github.com/airbytehq/airbyte/pull/28969) | Update CDK version |
+| 0.4.1 | 2023-06-28 | [27773](https://github.com/airbytehq/airbyte/pull/27773) | Update following state breaking changes |
+| 0.4.0 | 2023-04-26 | [25332](https://github.com/airbytehq/airbyte/pull/25332) | Add new streams: `ActivityFeed`, `Approvals`, `Disciplines`, `Eeoc`, `EmailTemplates`, `Offices`, `ProspectPools`, `Schools`, `Tags`, `UserPermissions`, `UserRoles` |
+| 0.3.1 | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version |
+| 0.3.0 | 2022-10-19 | [18154](https://github.com/airbytehq/airbyte/pull/18154) | Extend `Users` stream schema |
+| 0.2.11 | 2022-09-27 | [17239](https://github.com/airbytehq/airbyte/pull/17239) | Always install the latest version of Airbyte CDK |
+| 0.2.10 | 2022-09-05 | [16338](https://github.com/airbytehq/airbyte/pull/16338) | Implement incremental syncs & fix SATs |
+| 0.2.9 | 2022-08-22 | [15800](https://github.com/airbytehq/airbyte/pull/15800) | Bugfix to allow reading sentry.yaml and schemas at runtime |
+| 0.2.8 | 2022-08-10 | [15344](https://github.com/airbytehq/airbyte/pull/15344) | Migrate connector to config-based framework |
+| 0.2.7 | 2022-04-15 | [11941](https://github.com/airbytehq/airbyte/pull/11941) | Correct Schema data type for Applications, Candidates, Scorecards and Users |
+| 0.2.6 | 2021-11-08 | [7607](https://github.com/airbytehq/airbyte/pull/7607) | Implement demographics streams support. Update SAT for demographics streams |
+| 0.2.5 | 2021-09-22 | [6377](https://github.com/airbytehq/airbyte/pull/6377) | Refactor the connector to use CDK. Implement additional stream support |
+| 0.2.4 | 2021-09-15 | [6238](https://github.com/airbytehq/airbyte/pull/6238) | Add identification of accessible streams for API keys with limited permissions |
 
 </details>

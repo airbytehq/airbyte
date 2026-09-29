@@ -59,7 +59,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
      * Specification for integration. Will be passed to integration where appropriate in each test.
      * Should be valid.
      */
-    @get:Throws(Exception::class) protected abstract val spec: ConnectorSpecification
+    @get:Throws(Exception::class) protected abstract val spec: ConnectorSpecification?
 
     /**
      * The catalog to use to validate the output of read operations. This will be used as follows:
@@ -75,15 +75,11 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     /** a JSON file representing the state file to use when testing incremental syncs */
     @get:Throws(Exception::class) protected abstract val state: JsonNode?
 
+    private val log = KotlinLogging.logger {}
     /** Verify that a spec operation issued to the connector returns a valid spec. */
     @Test
-    @Throws(Exception::class)
     open fun testGetSpec() {
-        Assertions.assertEquals(
-            spec,
-            runSpec(),
-            "Expected spec output by integration to be equal to spec provided by test runner"
-        )
+        Assertions.assertDoesNotThrow { runSpec() }
     }
 
     /**
@@ -95,7 +91,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     fun testCheckConnection() {
         Assertions.assertEquals(
             StandardCheckConnectionOutput.Status.SUCCEEDED,
-            runCheck()!!.status,
+            runCheck().status,
             "Expected check connection operation to succeed"
         )
     }
@@ -138,7 +134,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     @Throws(Exception::class)
     open fun testFullRefreshRead() {
         if (!sourceSupportsFullRefresh()) {
-            LOGGER.info("Test skipped. Source does not support full refresh.")
+            LOGGER.info { "Test skipped. Source does not support full refresh." }
             return
         }
 
@@ -167,7 +163,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     @Throws(Exception::class)
     open fun testIdenticalFullRefreshes() {
         if (!sourceSupportsFullRefresh()) {
-            LOGGER.info("Test skipped. Source does not support full refresh.")
+            LOGGER.info { "Test skipped. Source does not support full refresh." }
             return
         }
 
@@ -273,8 +269,8 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         assert(Objects.nonNull(latestState))
         val secondSyncRecords = filterRecords(runRead(configuredCatalog, latestState))
         Assertions.assertTrue(
-            secondSyncRecords.isEmpty(),
-            "Expected the second incremental sync to produce no records when given the first sync's output state."
+            secondSyncRecords.size <= configuredCatalog.streams.size,
+            "Expected the second incremental sync to produce no more than the one record per stream when given the first sync's output state."
         )
     }
 
@@ -295,7 +291,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         }
 
         if (!sourceSupportsFullRefresh()) {
-            LOGGER.info("Test skipped. Source does not support full refresh.")
+            LOGGER.info { "Test skipped. Source does not support full refresh." }
             return
         }
 

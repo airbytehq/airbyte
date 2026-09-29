@@ -35,6 +35,56 @@ class SomeTestStream(FBMarketingStream):
         yield from []
 
 
+class TestFieldsExceptions:
+    """Tests for FBMarketingStream.fields() method with fields_exceptions filtering."""
+
+    def test_fields_excludes_fields_exceptions(self, api, some_config):
+        """Fields listed in fields_exceptions are excluded from the API request fields."""
+        stream = SomeTestStream(api=api, account_ids=some_config["account_ids"])
+        # Simulate a schema with several properties
+        schema = {
+            "properties": {
+                "id": {"type": "string"},
+                "name": {"type": "string"},
+                "rule": {"type": "object"},
+                "status": {"type": "string"},
+            }
+        }
+        stream.get_json_schema = lambda: schema
+
+        # No exceptions: all fields returned
+        stream.fields_exceptions = []
+        stream._saved_fields = None
+        stream.fields.cache_clear()
+        assert sorted(stream.fields()) == ["id", "name", "rule", "status"]
+
+        # With exceptions: 'rule' excluded (matches CustomAudiences behaviour)
+        stream.fields_exceptions = ["rule"]
+        stream._saved_fields = None
+        stream.fields.cache_clear()
+        result = stream.fields()
+        assert "rule" not in result
+        assert sorted(result) == ["id", "name", "status"]
+
+    def test_fields_excludes_multiple_exceptions(self, api, some_config):
+        """Multiple fields_exceptions are all excluded."""
+        stream = SomeTestStream(api=api, account_ids=some_config["account_ids"])
+        schema = {
+            "properties": {
+                "id": {"type": "string"},
+                "name": {"type": "string"},
+                "rule": {"type": "object"},
+                "extra": {"type": "string"},
+            }
+        }
+        stream.get_json_schema = lambda: schema
+        stream.fields_exceptions = ["rule", "extra"]
+        stream._saved_fields = None
+        stream.fields.cache_clear()
+        result = stream.fields()
+        assert sorted(result) == ["id", "name"]
+
+
 class TestDateTimeValue:
     def test_date_time_value(self):
         record = {

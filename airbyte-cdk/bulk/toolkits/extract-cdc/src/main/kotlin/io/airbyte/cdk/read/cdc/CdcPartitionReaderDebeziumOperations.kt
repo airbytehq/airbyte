@@ -8,7 +8,7 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.Stream
 import org.apache.kafka.connect.source.SourceRecord
 
-interface CdcPartitionReaderDebeziumOperations<T : Comparable<T>> {
+interface CdcPartitionReaderDebeziumOperations<T : PartiallyOrdered<T>> {
 
     /**
      * Transforms a [DebeziumRecordKey] and a [DebeziumRecordValue] into a [DeserializedRecord].

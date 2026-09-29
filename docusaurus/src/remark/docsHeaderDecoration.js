@@ -1,8 +1,9 @@
 const { getFromPaths, toAttributes } = require("../helpers/objects");
 const { isDocsPage, getRegistryEntry } = require("./utils");
+const { parseCDKVersion } = require("../scripts/connector_registry");
 const {
-  parseCDKVersion,
-} = require("../scripts/connector_registry");
+  getDefaultDataWorkersForSource,
+} = require("../scripts/data-worker-consumption");
 const visit = require("unist-util-visit").visit;
 
 /**
@@ -22,7 +23,7 @@ const plugin = () => {
 
     const rawCDKVersion = getFromPaths(
       registryEntry,
-      "packageInfo_[oss|cloud].cdk_version",
+      "packageInfo.cdk_version",
     );
 
     let firstHeading = true;
@@ -33,36 +34,38 @@ const plugin = () => {
 
         const syncSuccessRate = getFromPaths(
           registryEntry,
-          "generated_[oss|cloud].metrics.[all|cloud|oss].sync_success_rate",
+          "generated.metrics.[all|cloud|oss].sync_success_rate",
         );
         const usageRate = getFromPaths(
           registryEntry,
-          "generated_[oss|cloud].metrics.[all|cloud|oss].usage",
+          "generated.metrics.[all|cloud|oss].usage",
         );
+        const defaultDataWorkers =
+          getDefaultDataWorkersForSource(registryEntry);
         const lastUpdated = getFromPaths(
           registryEntry,
-          "generated_[oss|cloud].source_file_info.metadata_last_modified",
+          "generated.source_file_info.metadata_last_modified",
         );
 
-        const { version, isLatest, url } = parseCDKVersion(
-          rawCDKVersion,
-          null,
-        );
+        const { version, isLatest, url } = parseCDKVersion(rawCDKVersion, null);
 
         const attrDict = {
           isOss: registryEntry.is_oss,
           isCloud: registryEntry.is_cloud,
-          supportLevel: registryEntry.supportLevel_oss,
-          dockerImageTag: registryEntry.dockerImageTag_oss,
-          iconUrl: registryEntry.iconUrl_oss,
+          supportLevel: registryEntry.supportLevel,
+          dockerImageTag: registryEntry.dockerImageTag,
+          iconUrl: registryEntry.iconUrl,
           github_url: registryEntry.github_url,
           issue_url: registryEntry.issue_url,
           originalTitle,
           cdkVersion: version,
-          ...(isLatest !== undefined && { isLatestCDKString: boolToBoolString(isLatest) }),
+          ...(isLatest !== undefined && {
+            isLatestCDKString: boolToBoolString(isLatest),
+          }),
           cdkVersionUrl: url,
           syncSuccessRate,
           usageRate,
+          defaultDataWorkers,
           lastUpdated,
           definitionId: registryEntry.definitionId,
         };

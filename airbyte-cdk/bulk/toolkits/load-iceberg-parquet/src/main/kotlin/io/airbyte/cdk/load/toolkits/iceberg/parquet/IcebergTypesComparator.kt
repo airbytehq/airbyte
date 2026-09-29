@@ -227,7 +227,11 @@ class IcebergTypesComparator {
             Type.TypeID.FIXED,
             Type.TypeID.UUID,
             Type.TypeID.MAP,
-            Type.TypeID.TIMESTAMP_NANO -> {
+            Type.TypeID.TIMESTAMP_NANO,
+            Type.TypeID.GEOMETRY,
+            Type.TypeID.GEOGRAPHY,
+            Type.TypeID.VARIANT,
+            Type.TypeID.UNKNOWN, -> {
                 throw IllegalArgumentException(
                     "Unsupported or unmapped Iceberg type: $typeId. Implement handling if needed."
                 )

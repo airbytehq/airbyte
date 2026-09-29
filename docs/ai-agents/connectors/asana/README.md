@@ -7,7 +7,7 @@ projects and tasks. This connector provides access to tasks, projects, workspace
 teams, and users for project tracking, workload analysis, and productivity insights.
 
 
-## Example questions
+## Example prompts
 
 The Asana connector is optimized to handle prompts like these.
 
@@ -16,40 +16,506 @@ The Asana connector is optimized to handle prompts like these.
 - Show me the tasks for a recent project
 - Who are the team members in one of my teams?
 - Show me details of my current workspace and its users
+- Create a new task called 'Review Q3 report' in my project
+- Mark the task 'Submit proposal' as completed
+- Update the due date of task X to next Friday
+- Create a new project called 'Product Launch' in my workspace
+- Add a comment on the task saying 'Looks good, approved!'
+- Assign the task to me and set the due date to tomorrow
+- Delete the project 'Old Campaign'
+- Schedule a new team meeting as a task for next Tuesday
+- Add a new team member to my workspace by email
+- Delete the task 'Outdated draft'
 - Summarize my team's workload and task completion rates
 - Find all tasks related to \{client_name\} across my workspaces
 - Analyze the most active projects in my workspace last month
 - Compare task completion rates between my different teams
 - Identify overdue tasks across all my projects
+- Create a new section called 'In Review' in my project
+- Move a task to the 'Done' section
+- List all tasks in the 'To do' section
+- Rename the 'Backlog' section to 'Icebox'
+- Delete the empty 'Old Section' from the project
+- Create a tag called 'Urgent' in my workspace
+- Tag this task with 'Bug'
+- Remove the 'Low Priority' tag from this task
+- List all tasks tagged 'Release v2'
+- Rename the tag 'WIP' to 'In Progress'
+- Delete the tag 'Deprecated'
 
-## Unsupported questions
+## Unsupported prompts
 
 The Asana connector isn't currently able to handle prompts like these.
 
-- Create a new task for [TeamMember]
-- Update the priority of this task
-- Delete the project [ProjectName]
-- Schedule a new team meeting
-- Add a new team member to [Workspace]
 - Move this task to another project
 
-## Installation
+## Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
+
+| Entity | Actions |
+|--------|---------|
+| Tasks | [List](./REFERENCE.md#tasks-list), [Create](./REFERENCE.md#tasks-create), [Get](./REFERENCE.md#tasks-get), [Update](./REFERENCE.md#tasks-update), [Delete](./REFERENCE.md#tasks-delete), [Context Store Search](./REFERENCE.md#tasks-context-store-search), [Context Store SQL Query](./REFERENCE.md#tasks-context-store-sql-query), [Semantic Search](./REFERENCE.md#tasks-semantic-search) |
+| Project Tasks | [List](./REFERENCE.md#project-tasks-list) |
+| Workspace Task Search | [List](./REFERENCE.md#workspace-task-search-list) |
+| Projects | [List](./REFERENCE.md#projects-list), [Create](./REFERENCE.md#projects-create), [Get](./REFERENCE.md#projects-get), [Update](./REFERENCE.md#projects-update), [Delete](./REFERENCE.md#projects-delete), [Context Store Search](./REFERENCE.md#projects-context-store-search), [Context Store SQL Query](./REFERENCE.md#projects-context-store-sql-query), [Semantic Search](./REFERENCE.md#projects-semantic-search) |
+| Task Projects | [List](./REFERENCE.md#task-projects-list) |
+| Team Projects | [List](./REFERENCE.md#team-projects-list) |
+| Workspace Projects | [List](./REFERENCE.md#workspace-projects-list) |
+| Workspaces | [List](./REFERENCE.md#workspaces-list), [Get](./REFERENCE.md#workspaces-get), [Context Store Search](./REFERENCE.md#workspaces-context-store-search), [Context Store SQL Query](./REFERENCE.md#workspaces-context-store-sql-query) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
+| Workspace Users | [List](./REFERENCE.md#workspace-users-list) |
+| Team Users | [List](./REFERENCE.md#team-users-list) |
+| Teams | [Get](./REFERENCE.md#teams-get), [Context Store Search](./REFERENCE.md#teams-context-store-search), [Context Store SQL Query](./REFERENCE.md#teams-context-store-sql-query), [Semantic Search](./REFERENCE.md#teams-semantic-search) |
+| Workspace Teams | [List](./REFERENCE.md#workspace-teams-list) |
+| User Teams | [List](./REFERENCE.md#user-teams-list) |
+| Attachments | [List](./REFERENCE.md#attachments-list), [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download), [Context Store Search](./REFERENCE.md#attachments-context-store-search), [Context Store SQL Query](./REFERENCE.md#attachments-context-store-sql-query) |
+| Workspace Tags | [List](./REFERENCE.md#workspace-tags-list), [Create](./REFERENCE.md#workspace-tags-create) |
+| Tags | [Get](./REFERENCE.md#tags-get), [Update](./REFERENCE.md#tags-update), [Delete](./REFERENCE.md#tags-delete), [Context Store Search](./REFERENCE.md#tags-context-store-search), [Context Store SQL Query](./REFERENCE.md#tags-context-store-sql-query) |
+| Tag Tasks | [List](./REFERENCE.md#tag-tasks-list) |
+| Project Sections | [List](./REFERENCE.md#project-sections-list), [Create](./REFERENCE.md#project-sections-create) |
+| Sections | [Get](./REFERENCE.md#sections-get), [Update](./REFERENCE.md#sections-update), [Delete](./REFERENCE.md#sections-delete), [Context Store Search](./REFERENCE.md#sections-context-store-search), [Context Store SQL Query](./REFERENCE.md#sections-context-store-sql-query) |
+| Section Tasks | [List](./REFERENCE.md#section-tasks-list), [Create](./REFERENCE.md#section-tasks-create) |
+| Task Subtasks | [List](./REFERENCE.md#task-subtasks-list) |
+| Task Dependencies | [List](./REFERENCE.md#task-dependencies-list) |
+| Task Dependents | [List](./REFERENCE.md#task-dependents-list) |
+| Task Stories | [Create](./REFERENCE.md#task-stories-create) |
+| Task Tags | [Create](./REFERENCE.md#task-tags-create), [Delete](./REFERENCE.md#task-tags-delete) |
+| Workspace Memberships | [Create](./REFERENCE.md#workspace-memberships-create) |
+
+
+## Asana API docs
+
+See the official [Asana API reference](https://developers.asana.com/reference/rest-api-reference).
+
+## Interfaces
+
+Use the Asana connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
 
 ```bash
-uv pip install airbyte-agent-asana
+curl -fsSL https://airbyte.ai/install.sh | bash
 ```
 
-## Usage
+Authenticate with Airbyte:
 
-Connectors can run in open source or hosted mode.
+```bash
+airbyte-agent login
+```
 
-### Open source
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "tasks",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
+
+```bash
+uv pip install airbyte-agent-sdk
+```
+
+#### Usage
+
+Connectors can run in hosted or open source mode.
+
+##### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
+If your Airbyte client can access multiple organizations, also set `organization_id`.
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
+
+The `connect()` factory returns a fully typed `AsanaConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+
+connector = connect("asana", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+
+connector = connect("asana", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+
+connector = connect("asana", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Asana Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+
+connector = connect("asana", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Asana Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `AsanaConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+
+connector = connect("asana", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@AsanaConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="asana_inspect",
+    docs_tool="asana_read_docs",
+)
+async def asana_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@AsanaConnector.agent_tool(framework="pydantic_ai")
+async def asana_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@AsanaConnector.agent_tool(framework="pydantic_ai")
+async def asana_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+
+connector = connect("asana", workspace_name="<your_workspace_name>")
+
+@AsanaConnector.agent_tool(
+    inspect_tool="asana_inspect",
+    docs_tool="asana_read_docs",
+)
+async def asana_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@AsanaConnector.agent_tool()
+async def asana_inspect():
+    return await connector.inspect_connector()
+
+@AsanaConnector.agent_tool()
+async def asana_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (asana_inspect, asana_read_docs, asana_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. The deprecated `AsanaConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `AsanaConnector.agent_tool` above.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+
+connector = connect("asana", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@AsanaConnector.tool_utils
+async def asana_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+
+connector = connect("asana", workspace_name="<your_workspace_name>")
+
+@tool
+@AsanaConnector.tool_utils
+async def asana_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Asana connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+
+connector = connect("asana", workspace_name="<your_workspace_name>")
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@AsanaConnector.tool_utils(framework="openai_agents")
+async def asana_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Asana connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Asana Assistant", tools=[asana_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+
+connector = connect("asana", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Asana Agent")
+
+@mcp.tool
+@AsanaConnector.tool_utils
+async def asana_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Asana connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = AsanaConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = AsanaConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = AsanaConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Asana Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = AsanaConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Asana Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+
+##### Open source
 
 In open source mode, you provide API credentials directly to the connector.
 
-```python
-from airbyte_agent_asana import AsanaConnector
-from airbyte_agent_asana.models import AsanaPersonalAccessTokenAuthConfig
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+from airbyte_agent_sdk.connectors.asana.models import AsanaPersonalAccessTokenAuthConfig
 
 connector = AsanaConnector(
     auth_config=AsanaPersonalAccessTokenAuthConfig(
@@ -57,80 +523,269 @@ connector = AsanaConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
-@AsanaConnector.tool_utils
-async def asana_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
 ```
 
-### Hosted
+**LangChain**
 
-In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
-If your Airbyte client can access multiple organizations, also set `organization_id`.
-
-This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
-
-```python
-from airbyte_agent_asana import AsanaConnector, AirbyteAuthConfig
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+from airbyte_agent_sdk.connectors.asana.models import AsanaPersonalAccessTokenAuthConfig
 
 connector = AsanaConnector(
-    auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
+    auth_config=AsanaPersonalAccessTokenAuthConfig(
+        token="<Your Asana Personal Access Token. Generate one at https://app.asana.com/0/my-apps>"
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+from airbyte_agent_sdk.connectors.asana.models import AsanaPersonalAccessTokenAuthConfig
+
+connector = AsanaConnector(
+    auth_config=AsanaPersonalAccessTokenAuthConfig(
+        token="<Your Asana Personal Access Token. Generate one at https://app.asana.com/0/my-apps>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Asana Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+from airbyte_agent_sdk.connectors.asana.models import AsanaPersonalAccessTokenAuthConfig
+
+connector = AsanaConnector(
+    auth_config=AsanaPersonalAccessTokenAuthConfig(
+        token="<Your Asana Personal Access Token. Generate one at https://app.asana.com/0/my-apps>"
+    )
+)
+
+mcp = FastMCP("Asana Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `AsanaConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+from airbyte_agent_sdk.connectors.asana.models import AsanaPersonalAccessTokenAuthConfig
+
+connector = AsanaConnector(
+    auth_config=AsanaPersonalAccessTokenAuthConfig(
+        token="<Your Asana Personal Access Token. Generate one at https://app.asana.com/0/my-apps>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@AsanaConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="asana_inspect",
+    docs_tool="asana_read_docs",
+)
+async def asana_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@AsanaConnector.agent_tool(framework="pydantic_ai")
+async def asana_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@AsanaConnector.agent_tool(framework="pydantic_ai")
+async def asana_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+from airbyte_agent_sdk.connectors.asana.models import AsanaPersonalAccessTokenAuthConfig
+
+connector = AsanaConnector(
+    auth_config=AsanaPersonalAccessTokenAuthConfig(
+        token="<Your Asana Personal Access Token. Generate one at https://app.asana.com/0/my-apps>"
+    )
+)
+
+@AsanaConnector.agent_tool(
+    inspect_tool="asana_inspect",
+    docs_tool="asana_read_docs",
+)
+async def asana_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@AsanaConnector.agent_tool()
+async def asana_inspect():
+    return await connector.inspect_connector()
+
+@AsanaConnector.agent_tool()
+async def asana_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (asana_inspect, asana_read_docs, asana_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. The deprecated `AsanaConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `AsanaConnector.agent_tool` above.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+from airbyte_agent_sdk.connectors.asana.models import AsanaPersonalAccessTokenAuthConfig
+
+connector = AsanaConnector(
+    auth_config=AsanaPersonalAccessTokenAuthConfig(
+        token="<Your Asana Personal Access Token. Generate one at https://app.asana.com/0/my-apps>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
 @AsanaConnector.tool_utils
 async def asana_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-## Full documentation
+**LangChain**
 
-### Entities and actions
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+from airbyte_agent_sdk.connectors.asana.models import AsanaPersonalAccessTokenAuthConfig
 
-This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
+connector = AsanaConnector(
+    auth_config=AsanaPersonalAccessTokenAuthConfig(
+        token="<Your Asana Personal Access Token. Generate one at https://app.asana.com/0/my-apps>"
+    )
+)
 
-| Entity | Actions |
-|--------|---------|
-| Tasks | [List](./REFERENCE.md#tasks-list), [Get](./REFERENCE.md#tasks-get), [Search](./REFERENCE.md#tasks-search) |
-| Project Tasks | [List](./REFERENCE.md#project-tasks-list) |
-| Workspace Task Search | [List](./REFERENCE.md#workspace-task-search-list) |
-| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get), [Search](./REFERENCE.md#projects-search) |
-| Task Projects | [List](./REFERENCE.md#task-projects-list) |
-| Team Projects | [List](./REFERENCE.md#team-projects-list) |
-| Workspace Projects | [List](./REFERENCE.md#workspace-projects-list) |
-| Workspaces | [List](./REFERENCE.md#workspaces-list), [Get](./REFERENCE.md#workspaces-get), [Search](./REFERENCE.md#workspaces-search) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
-| Workspace Users | [List](./REFERENCE.md#workspace-users-list) |
-| Team Users | [List](./REFERENCE.md#team-users-list) |
-| Teams | [Get](./REFERENCE.md#teams-get), [Search](./REFERENCE.md#teams-search) |
-| Workspace Teams | [List](./REFERENCE.md#workspace-teams-list) |
-| User Teams | [List](./REFERENCE.md#user-teams-list) |
-| Attachments | [List](./REFERENCE.md#attachments-list), [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download), [Search](./REFERENCE.md#attachments-search) |
-| Workspace Tags | [List](./REFERENCE.md#workspace-tags-list) |
-| Tags | [Get](./REFERENCE.md#tags-get), [Search](./REFERENCE.md#tags-search) |
-| Project Sections | [List](./REFERENCE.md#project-sections-list) |
-| Sections | [Get](./REFERENCE.md#sections-get), [Search](./REFERENCE.md#sections-search) |
-| Task Subtasks | [List](./REFERENCE.md#task-subtasks-list) |
-| Task Dependencies | [List](./REFERENCE.md#task-dependencies-list) |
-| Task Dependents | [List](./REFERENCE.md#task-dependents-list) |
+@tool
+@AsanaConnector.tool_utils
+async def asana_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Asana connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+from airbyte_agent_sdk.connectors.asana.models import AsanaPersonalAccessTokenAuthConfig
+
+connector = AsanaConnector(
+    auth_config=AsanaPersonalAccessTokenAuthConfig(
+        token="<Your Asana Personal Access Token. Generate one at https://app.asana.com/0/my-apps>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@AsanaConnector.tool_utils(framework="openai_agents")
+async def asana_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Asana connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Asana Assistant", tools=[asana_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.asana import AsanaConnector
+from airbyte_agent_sdk.connectors.asana.models import AsanaPersonalAccessTokenAuthConfig
+
+connector = AsanaConnector(
+    auth_config=AsanaPersonalAccessTokenAuthConfig(
+        token="<Your Asana Personal Access Token. Generate one at https://app.asana.com/0/my-apps>"
+    )
+)
+
+mcp = FastMCP("Asana Agent")
+
+@mcp.tool
+@AsanaConnector.tool_utils
+async def asana_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Asana connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
 
 
-### Authentication
+## Authentication
 
 For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
-### Asana API docs
+## IP allow list
 
-See the official [Asana API reference](https://developers.asana.com/reference/rest-api-reference).
+If your organization restricts access to specific IPs, add the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist) to your allow list.
 
 ## Version information
 
-- **Package version:** 0.19.120
-- **Connector version:** 0.1.16
-- **Generated with Connector SDK commit SHA:** b541ca65d697dad0915d1b5b8d8c756cd18299a7
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/asana/CHANGELOG.md)
+**Connector version:** 0.1.21

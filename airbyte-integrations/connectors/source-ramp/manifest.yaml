@@ -1,0 +1,598 @@
+version: 7.23.7
+
+type: DeclarativeSource
+
+description: Syncs cards, transactions, and reimbursements from Ramp's developer API.
+
+check:
+  type: CheckStream
+  stream_names:
+    - transactions
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: SessionTokenAuthenticator
+        login_requester:
+          type: HttpRequester
+          url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/token"
+          http_method: POST
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['client_id'] }}"
+            password: "{{ config['client_secret'] }}"
+          request_body:
+            type: RequestBodyUrlEncodedForm
+            value:
+              grant_type: client_credentials
+              scope: transactions:read cards:read reimbursements:read
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 5
+        session_token_path:
+          - access_token
+        expiration_duration: PT240H
+        request_authentication:
+          type: Bearer
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 5
+        backoff_strategies:
+          - type: ExponentialBackoffStrategy
+            factor: 2
+      request_headers:
+        Content-Type: application/json
+    Paginator:
+      type: DefaultPaginator
+      page_size_option:
+        type: RequestOption
+        field_name: page_size
+        inject_into: request_parameter
+      page_token_option:
+        type: RequestOption
+        field_name: start
+        inject_into: request_parameter
+      pagination_strategy:
+        type: CursorPagination
+        cursor_value: "{{ last_record['id'] }}"
+        stop_condition: "{{ not (response.get('page') or {}).get('next') }}"
+        page_size: 50
+
+streams:
+  - type: DeclarativeStream
+    name: cards
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/Paginator"
+      requester:
+        type: HttpRequester
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/cards"
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+        properties:
+          id:
+            type: string
+            description: Ramp card UUID
+          display_name:
+            type:
+              - string
+              - "null"
+            description: Card display name.
+          state:
+            type:
+              - string
+              - "null"
+            description: e.g. ACTIVE
+          is_physical:
+            type:
+              - boolean
+              - "null"
+          cardholder_id:
+            type:
+              - string
+              - "null"
+          cardholder_name:
+            type:
+              - string
+              - "null"
+          card_program_id:
+            type:
+              - string
+              - "null"
+          last_four:
+            type:
+              - string
+              - "null"
+            description: Last four digits of the card number.
+          entity_id:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          expiration:
+            type:
+              - string
+              - "null"
+            description: MMYY format (e.g. "0430")
+          has_program_overridden:
+            type:
+              - boolean
+              - "null"
+          fulfillment:
+            type:
+              - object
+              - "null"
+            description: Nested object - fulfillment_status, shipping_date, etc.
+          spending_restrictions:
+            type:
+              - object
+              - "null"
+            description: Nested object - interval, auto_lock_date, etc.
+    transformations:
+      - type: KeysToSnakeCase
+  - type: DeclarativeStream
+    name: transactions
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/Paginator"
+      requester:
+        type: HttpRequester
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/transactions"
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+        properties:
+          id:
+            type: string
+            description: Ramp transaction UUID
+          amount:
+            type:
+              - number
+              - "null"
+          currency_code:
+            type:
+              - string
+              - "null"
+            description: e.g. USD
+          card_id:
+            type:
+              - string
+              - "null"
+            description: Join key to cards stream
+          card_holder:
+            type:
+              - object
+              - "null"
+            description: Nested - first_name, employee_id, location_name, etc.
+          state:
+            type:
+              - string
+              - "null"
+            description: e.g. PENDING
+          sync_status:
+            type:
+              - string
+              - "null"
+            description: e.g. NOT_SYNC_READY
+          synced_at:
+            type:
+              - string
+              - "null"
+            description: ERP sync time. Null if not yet synced.
+          updated_at:
+            type:
+              - string
+              - "null"
+            description: >-
+              When the transaction was last updated. Used as the incremental
+              cursor.
+          user_transaction_time:
+            type:
+              - string
+              - "null"
+            description: When the transaction occurred.
+          accounting_date:
+            type:
+              - string
+              - "null"
+          merchant_id:
+            type:
+              - string
+              - "null"
+          merchant_name:
+            type:
+              - string
+              - "null"
+          merchant_descriptor:
+            type:
+              - string
+              - "null"
+          merchant_category_code:
+            type:
+              - string
+              - "null"
+          merchant_category_code_description:
+            type:
+              - string
+              - "null"
+          merchant_location:
+            type:
+              - object
+              - "null"
+          sk_category_id:
+            type:
+              - integer
+              - "null"
+          sk_category_name:
+            type:
+              - string
+              - "null"
+          spend_program_id:
+            type:
+              - string
+              - "null"
+          limit_id:
+            type:
+              - string
+              - "null"
+          entity_id:
+            type:
+              - string
+              - "null"
+          original_transaction_amount:
+            type:
+              - object
+              - "null"
+            description: Nested - amount, minor_unit_conversion_rate, currency
+          line_items:
+            type:
+              - array
+              - "null"
+          accounting_categories:
+            type:
+              - array
+              - "null"
+          accounting_field_selections:
+            type:
+              - array
+              - "null"
+          policy_violations:
+            type:
+              - array
+              - "null"
+          receipts:
+            type:
+              - array
+              - "null"
+          disputes:
+            type:
+              - array
+              - "null"
+          memo:
+            type:
+              - string
+              - "null"
+          trip_id:
+            type:
+              - string
+              - "null"
+          trip_name:
+            type:
+              - string
+              - "null"
+          card_present:
+            type:
+              - boolean
+              - "null"
+          network_merchant_id:
+            type:
+              - string
+              - "null"
+          settlement_date:
+            type:
+              - string
+              - "null"
+          minor_unit_conversion_rate:
+            type:
+              - integer
+              - "null"
+    transformations:
+      - type: KeysToSnakeCase
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      is_client_side_incremental: true
+  - type: DeclarativeStream
+    name: reimbursements
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/Paginator"
+      requester:
+        type: HttpRequester
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/reimbursements"
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        type: ListPartitionRouter
+        cursor_field: direction
+        values:
+          - BUSINESS_TO_USER
+          - USER_TO_BUSINESS
+        request_option:
+          type: RequestOption
+          field_name: direction
+          inject_into: request_parameter
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+            description: e.g. OUT_OF_POCKET
+          id:
+            type: string
+            description: Ramp reimbursement UUID
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          direction:
+            type:
+              - string
+              - "null"
+            description: >-
+              BUSINESS_TO_USER (out-of-pocket reimbursement) or USER_TO_BUSINESS
+              (repayment)
+          state:
+            type:
+              - string
+              - "null"
+            description: e.g. PENDING
+          sync_status:
+            type:
+              - string
+              - "null"
+          synced_at:
+            type:
+              - string
+              - "null"
+          submitted_at:
+            type:
+              - string
+              - "null"
+          approved_at:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+            description: >-
+              When the reimbursement was last updated. Used as the incremental
+              cursor.
+          accounting_date:
+            type:
+              - string
+              - "null"
+          transaction_date:
+            type:
+              - string
+              - "null"
+          memo:
+            type:
+              - string
+              - "null"
+            description: Free-text memo on the reimbursement.
+          merchant:
+            type:
+              - string
+              - "null"
+          merchant_id:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          user_email:
+            type:
+              - string
+              - "null"
+          user_full_name:
+            type:
+              - string
+              - "null"
+          entity_id:
+            type:
+              - string
+              - "null"
+          trip_id:
+            type:
+              - string
+              - "null"
+          spend_limit_id:
+            type:
+              - string
+              - "null"
+          accounting_field_selections:
+            type:
+              - array
+              - "null"
+          line_items:
+            type:
+              - array
+              - "null"
+          attendees:
+            type:
+              - array
+              - "null"
+          receipts:
+            type:
+              - array
+              - "null"
+          original_reimbursement_amount:
+            type:
+              - object
+              - "null"
+          payee_amount:
+            type:
+              - object
+              - "null"
+    transformations:
+      - type: KeysToSnakeCase
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: updated_after
+        inject_into: request_parameter
+
+spec:
+  type: Spec
+  documentation_url: https://docs.ramp.com/developer-api
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - start_date
+    properties:
+      client_id:
+        type: string
+        description: Your Ramp API client ID, created in Ramp's developer settings.
+        title: Ramp Client ID
+        airbyte_secret: true
+        order: 0
+      client_secret:
+        type: string
+        description: Your Ramp API client secret.
+        title: Ramp Client Secret
+        airbyte_secret: true
+        order: 1
+      start_date:
+        type: string
+        description: >-
+          Earliest updated_at to pull on the initial sync of the transactions
+          and reimbursements streams. Format ISO 8601 with Z suffix (e.g.
+          2024-01-01T00:00:00Z). Ignored on subsequent incremental syncs.
+        title: Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2024-01-01T00:00:00Z"
+        order: 2
+      api_url:
+        type: string
+        description: >-
+          Ramp API base URL. All production Ramp accounts use the default. Set
+          to https://demo-api.ramp.com only when testing against a Ramp
+          sandbox app.
+        title: API Base URL
+        default: https://api.ramp.com
+        airbyte_hidden: true
+        order: 3
+    additionalProperties: true
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1

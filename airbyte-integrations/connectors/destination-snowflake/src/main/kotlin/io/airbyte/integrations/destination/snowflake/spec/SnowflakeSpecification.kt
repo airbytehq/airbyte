@@ -118,12 +118,21 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8}""")
     val internalTableSchema: String? = null
 
+    @get:JsonSchemaTitle("Trim Whitespace from String Fields")
+    @get:JsonPropertyDescription(
+        """Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Disable this option if your data contains meaningful leading or trailing whitespace in string fields that should be preserved.""",
+    )
+    @get:JsonProperty("trim_space")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 9, "default": true}""")
+    @Suppress("RedundantNullableReturnType")
+    val trimSpace: Boolean? = true
+
     @get:JsonSchemaTitle("JDBC URL Params")
     @get:JsonPropertyDescription(
         """Enter the additional properties to pass to the JDBC URL string when connecting to the database (formatted as key=value pairs separated by the symbol &). Example: key1=value1&key2=value2&key3=value3""",
     )
     @get:JsonProperty("jdbc_url_params")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 9}""")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 10}""")
     val jdbcUrlParams: String? = null
 
     @get:JsonSchemaTitle("Data Retention Period (days)")
@@ -131,9 +140,19 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
         """The number of days of Snowflake Time Travel to enable on the tables. See <a href="https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period">Snowflake's documentation</a> for more information. Setting a nonzero value will incur increased storage costs in your Snowflake instance.""",
     )
     @get:JsonProperty("retention_period_days")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 10}""")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 11}""")
     @Suppress("RedundantNullableReturnType")
     val retentionPeriodDays: Int? = 1
+
+    @get:JsonSchemaTitle("Decimal Data Type")
+    @get:JsonPropertyDescription(
+        """Datatype choice for columns using the Airbyte number type. NUMBER(38,9) (RECOMMENDED): Fixed-point decimal with 9 decimal places. Stores values exactly. Best for financial data, monetary values, numeric IDs, and values that require exact decimal representation. FLOAT: Binary floating-point number. Stores decimal values approximately. Best for scientific calculations, statistical models, probabilities, model scores, very large magnitudes, and calculations where small rounding differences are acceptable.""",
+    )
+    // Default FLOAT for backwards compatibility.
+    // TODO: flip the default to NUMBER(38,9), see https://github.com/airbytehq/oncall/issues/13254
+    @get:JsonProperty("number_data_type", defaultValue = "FLOAT")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 12}""")
+    val numberDataTypeConversion: NumberDataType? = null
 }
 
 @JsonTypeInfo(
@@ -177,11 +196,13 @@ class KeyPairAuthSpecification(
     val privateKeyPassword: String? = null
 ) : CredentialsSpecification(Type.PRIVATE_KEY)
 
-@JsonSchemaTitle("Username and Password")
-@JsonSchemaDescription("Configuration details for the Username and Password Authentication.")
+@JsonSchemaTitle("Username and Password (Deprecated)")
+@JsonSchemaDescription(
+    "Deprecated: Username and password authentication is deprecated as of version 5.0.0 and will be removed in a future release. Snowflake is enforcing strong authentication on a rolling per-account basis between August and October 2026. Switch to key pair authentication instead. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake-migrations\">migration guide</a> for details."
+)
 class UsernamePasswordAuthSpecification(
     @get:JsonSchemaTitle("Password")
-    @get:JsonPropertyDescription("Enter the password associated with the username.")
+    @get:JsonPropertyDescription("Deprecated. Enter the password associated with the username.")
     @get:JsonProperty("password")
     @get:JsonSchemaInject(json = """{"order": 0, "airbyte_secret": true}""")
     val password: String = ""
@@ -190,6 +211,11 @@ class UsernamePasswordAuthSpecification(
 enum class CdcDeletionMode(@Suppress("unused") @get:JsonValue val cdcDeletionMode: String) {
     HARD_DELETE("Hard delete"),
     SOFT_DELETE("Soft delete"),
+}
+
+enum class NumberDataType(@get:JsonValue val numberDataType: String) {
+    NUMBER_38_9("NUMBER(38,9)"),
+    FLOAT("FLOAT")
 }
 
 @Singleton

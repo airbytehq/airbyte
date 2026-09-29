@@ -430,6 +430,17 @@ spec:
       - credentials
     additionalProperties: true
     properties:
+      num_workers:
+        type: integer
+        title: Number of Concurrent Threads
+        description: >-
+          Number of concurrent threads for syncing. Higher values can speed up syncs
+          for spreadsheets with multiple sheets, but may hit rate limits. Google Sheets
+          API limits to 300 read requests per minute (~5 req/sec).
+        default: 2
+        minimum: 1
+        maximum: 10
+        order: 9
       batch_size:
         type: integer
         title: Row Batch Size
@@ -609,6 +620,14 @@ spec:
       - auth_type
     predicate_value: Client
     oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: "https://www.googleapis.com/auth/spreadsheets.readonly"
+          - scope: "https://www.googleapis.com/auth/drive.readonly"
+        consent_url: "https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent"
+        access_token_url: "https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code"
+        extract_output:
+          - refresh_token
       complete_oauth_output_specification:
         type: object
         additionalProperties: false
@@ -642,7 +661,19 @@ spec:
               - client_secret
 
 
+# Rate limits: https://developers.google.com/sheets/api/limits
+# - 300 read requests per minute per project (~5 req/sec)
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 300
+          interval: PT1M
+      matchers: []  # Applies to all endpoints
+  status_codes_for_ratelimit_hit: [429]
+
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 1
-  max_concurrency: 1
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 10

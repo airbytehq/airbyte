@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk
 
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
@@ -19,14 +19,14 @@ abstract class TriggerTableConfig() {
     abstract val cursorFieldType: FieldType
     abstract val cdcEnabled: Boolean
 
-    val CURSOR_FIELD: Field
+    val CURSOR_FIELD: EmittedField
         get() =
-            Field(
+            EmittedField(
                 id = TRIGGER_TABLE_PREFIX + "change_time",
                 type = cursorFieldType,
             )
 
-    val COMMON_FIELDS: List<Field>
+    val COMMON_FIELDS: List<EmittedField>
         get() =
             listOf(
                 CHANGE_ID_FIELD,
@@ -34,12 +34,16 @@ abstract class TriggerTableConfig() {
                 OPERATION_TYPE_FIELD,
             )
 
-    fun getTriggerTableSchemaFromStream(stream: Stream): List<Field> {
-        val result = mutableListOf<Field>()
+    fun getTriggerTableSchemaFromStream(stream: Stream): List<EmittedField> {
+        val result = mutableListOf<EmittedField>()
 
         stream.schema.forEach { field ->
-            result.add(Field(id = TRIGGER_TABLE_PREFIX + field.id + "_before", type = field.type))
-            result.add(Field(id = TRIGGER_TABLE_PREFIX + field.id + "_after", type = field.type))
+            result.add(
+                EmittedField(id = TRIGGER_TABLE_PREFIX + field.id + "_before", type = field.type)
+            )
+            result.add(
+                EmittedField(id = TRIGGER_TABLE_PREFIX + field.id + "_after", type = field.type)
+            )
         }
         return COMMON_FIELDS + result
     }
@@ -48,12 +52,12 @@ abstract class TriggerTableConfig() {
         const val TRIGGER_TABLE_PREFIX = "_ab_trigger_"
         const val TRIGGER_TABLE_NAMESPACE = "_ab_cdc"
         val CHANGE_ID_FIELD =
-            Field(
+            EmittedField(
                 id = TRIGGER_TABLE_PREFIX + "change_id",
                 type = BigIntegerFieldType,
             )
         val OPERATION_TYPE_FIELD =
-            Field(
+            EmittedField(
                 id = TRIGGER_TABLE_PREFIX + "operation_type",
                 type = StringFieldType,
             )

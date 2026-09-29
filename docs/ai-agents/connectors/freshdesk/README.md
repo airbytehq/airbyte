@@ -5,18 +5,26 @@ The Freshdesk agent connector is a Python package that equips AI agents to inter
 Connector for the Freshdesk customer support platform API (v2). Provides read access to helpdesk data including tickets, contacts, agents, groups, companies, roles, satisfaction ratings, surveys, time entries, and ticket fields. Freshdesk is a cloud-based customer support solution that enables companies to manage customer conversations across email, phone, chat, and social media.
 
 
-## Example questions
+## Example prompts
 
 The Freshdesk connector is optimized to handle prompts like these.
 
 - List all open tickets in Freshdesk
+- Show me the details of the most recent ticket
 - Show me all agents in the support team
+- Show me the details of the first agent
 - List all groups configured in Freshdesk
-- Get the details of ticket #26
+- Show me the details of the first group
 - Show me all companies in Freshdesk
+- Show me the details of the first company
+- List all contacts in Freshdesk
+- Show me the details of the first contact
 - List all roles defined in the helpdesk
+- Show me the details of the first role
 - Show me the ticket fields and their options
 - List time entries for tickets
+- Show me recent satisfaction ratings
+- List all surveys configured in Freshdesk
 - What are the high priority tickets from last week?
 - Which tickets have breached their SLA due date?
 - Show me tickets assigned to agent \{agent_name\}
@@ -24,7 +32,7 @@ The Freshdesk connector is optimized to handle prompts like these.
 - How many tickets were created this month by status?
 - What are the satisfaction ratings for resolved tickets?
 
-## Unsupported questions
+## Unsupported prompts
 
 The Freshdesk connector isn't currently able to handle prompts like these.
 
@@ -33,92 +41,736 @@ The Freshdesk connector isn't currently able to handle prompts like these.
 - Delete a contact from Freshdesk
 - Assign a ticket to a different agent
 
-## Installation
+## Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
+
+| Entity | Actions |
+|--------|---------|
+| Tickets | [List](./REFERENCE.md#tickets-list), [Get](./REFERENCE.md#tickets-get), [Context Store Search](./REFERENCE.md#tickets-context-store-search), [Context Store SQL Query](./REFERENCE.md#tickets-context-store-sql-query), [Semantic Search](./REFERENCE.md#tickets-semantic-search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Context Store Search](./REFERENCE.md#contacts-context-store-search), [Context Store SQL Query](./REFERENCE.md#contacts-context-store-sql-query), [Semantic Search](./REFERENCE.md#contacts-semantic-search) |
+| Agents | [List](./REFERENCE.md#agents-list), [Get](./REFERENCE.md#agents-get), [Context Store Search](./REFERENCE.md#agents-context-store-search), [Context Store SQL Query](./REFERENCE.md#agents-context-store-sql-query) |
+| Groups | [List](./REFERENCE.md#groups-list), [Get](./REFERENCE.md#groups-get), [Context Store Search](./REFERENCE.md#groups-context-store-search), [Context Store SQL Query](./REFERENCE.md#groups-context-store-sql-query) |
+| Companies | [List](./REFERENCE.md#companies-list), [Get](./REFERENCE.md#companies-get), [Context Store Search](./REFERENCE.md#companies-context-store-search), [Context Store SQL Query](./REFERENCE.md#companies-context-store-sql-query), [Semantic Search](./REFERENCE.md#companies-semantic-search) |
+| Roles | [List](./REFERENCE.md#roles-list), [Get](./REFERENCE.md#roles-get), [Context Store Search](./REFERENCE.md#roles-context-store-search), [Context Store SQL Query](./REFERENCE.md#roles-context-store-sql-query) |
+| Satisfaction Ratings | [List](./REFERENCE.md#satisfaction-ratings-list), [Context Store Search](./REFERENCE.md#satisfaction-ratings-context-store-search), [Context Store SQL Query](./REFERENCE.md#satisfaction-ratings-context-store-sql-query), [Semantic Search](./REFERENCE.md#satisfaction-ratings-semantic-search) |
+| Surveys | [List](./REFERENCE.md#surveys-list), [Context Store Search](./REFERENCE.md#surveys-context-store-search), [Context Store SQL Query](./REFERENCE.md#surveys-context-store-sql-query) |
+| Time Entries | [List](./REFERENCE.md#time-entries-list), [Context Store Search](./REFERENCE.md#time-entries-context-store-search), [Context Store SQL Query](./REFERENCE.md#time-entries-context-store-sql-query), [Semantic Search](./REFERENCE.md#time-entries-semantic-search) |
+| Ticket Fields | [List](./REFERENCE.md#ticket-fields-list), [Context Store Search](./REFERENCE.md#ticket-fields-context-store-search), [Context Store SQL Query](./REFERENCE.md#ticket-fields-context-store-sql-query) |
+
+
+## Freshdesk API docs
+
+See the official [Freshdesk API reference](https://developers.freshdesk.com/api/).
+
+## Interfaces
+
+Use the Freshdesk connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
 
 ```bash
-uv pip install airbyte-agent-freshdesk
+curl -fsSL https://airbyte.ai/install.sh | bash
 ```
 
-## Usage
+Authenticate with Airbyte:
 
-Connectors can run in open source or hosted mode.
+```bash
+airbyte-agent login
+```
 
-### Open source
+Create the connector. The CLI opens the hosted setup flow:
 
-In open source mode, you provide API credentials directly to the connector.
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk"
+}'
+```
 
-```python
-from airbyte_agent_freshdesk import FreshdeskConnector
-from airbyte_agent_freshdesk.models import FreshdeskAuthConfig
+Describe the connector to see its supported entities and actions:
 
-connector = FreshdeskConnector(
-    auth_config=FreshdeskAuthConfig(
-        api_key="<Your Freshdesk API key (found in Profile Settings)>"
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "tickets",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
+
+```bash
+uv pip install airbyte-agent-sdk
+```
+
+#### Usage
+
+Connectors can run in hosted or open source mode.
+
+##### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
+If your Airbyte client can access multiple organizations, also set `organization_id`.
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
+
+The `connect()` factory returns a fully typed `FreshdeskConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+
+connector = connect("freshdesk", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+
+connector = connect("freshdesk", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
     )
-)
+    for tool in tools.as_list()
+]
+```
 
-@agent.tool_plain # assumes you're using Pydantic AI
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+
+connector = connect("freshdesk", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Freshdesk Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+
+connector = connect("freshdesk", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Freshdesk Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `FreshdeskConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+
+connector = connect("freshdesk", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@FreshdeskConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="freshdesk_inspect",
+    docs_tool="freshdesk_read_docs",
+)
+async def freshdesk_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@FreshdeskConnector.agent_tool(framework="pydantic_ai")
+async def freshdesk_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@FreshdeskConnector.agent_tool(framework="pydantic_ai")
+async def freshdesk_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+
+connector = connect("freshdesk", workspace_name="<your_workspace_name>")
+
+@FreshdeskConnector.agent_tool(
+    inspect_tool="freshdesk_inspect",
+    docs_tool="freshdesk_read_docs",
+)
+async def freshdesk_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@FreshdeskConnector.agent_tool()
+async def freshdesk_inspect():
+    return await connector.inspect_connector()
+
+@FreshdeskConnector.agent_tool()
+async def freshdesk_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (freshdesk_inspect, freshdesk_read_docs, freshdesk_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. The deprecated `FreshdeskConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `FreshdeskConnector.agent_tool` above.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+
+connector = connect("freshdesk", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
 @FreshdeskConnector.tool_utils
 async def freshdesk_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-### Hosted
+**LangChain**
 
-In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
-If your Airbyte client can access multiple organizations, also set `organization_id`.
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
 
-This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+connector = connect("freshdesk", workspace_name="<your_workspace_name>")
 
-```python
-from airbyte_agent_freshdesk import FreshdeskConnector, AirbyteAuthConfig
+@tool
+@FreshdeskConnector.tool_utils
+async def freshdesk_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Freshdesk connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+
+connector = connect("freshdesk", workspace_name="<your_workspace_name>")
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@FreshdeskConnector.tool_utils(framework="openai_agents")
+async def freshdesk_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Freshdesk connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Freshdesk Assistant", tools=[freshdesk_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+
+connector = connect("freshdesk", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Freshdesk Agent")
+
+@mcp.tool
+@FreshdeskConnector.tool_utils
+async def freshdesk_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Freshdesk connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = FreshdeskConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = FreshdeskConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = FreshdeskConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Freshdesk Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = FreshdeskConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Freshdesk Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+
+##### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+from airbyte_agent_sdk.connectors.freshdesk.models import FreshdeskAuthConfig
+
+connector = FreshdeskConnector(
+    auth_config=FreshdeskAuthConfig(
+        api_key="<Your Freshdesk API key (found in Profile Settings)>"
+    ),
+    subdomain="<Your Freshdesk subdomain (e.g., "acme" for acme.freshdesk.com)>"
+)
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+from airbyte_agent_sdk.connectors.freshdesk.models import FreshdeskAuthConfig
+
+connector = FreshdeskConnector(
+    auth_config=FreshdeskAuthConfig(
+        api_key="<Your Freshdesk API key (found in Profile Settings)>"
+    ),
+    subdomain="<Your Freshdesk subdomain (e.g., "acme" for acme.freshdesk.com)>"
+)
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+from airbyte_agent_sdk.connectors.freshdesk.models import FreshdeskAuthConfig
+
+connector = FreshdeskConnector(
+    auth_config=FreshdeskAuthConfig(
+        api_key="<Your Freshdesk API key (found in Profile Settings)>"
+    ),
+    subdomain="<Your Freshdesk subdomain (e.g., "acme" for acme.freshdesk.com)>"
+)
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Freshdesk Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+from airbyte_agent_sdk.connectors.freshdesk.models import FreshdeskAuthConfig
+
+connector = FreshdeskConnector(
+    auth_config=FreshdeskAuthConfig(
+        api_key="<Your Freshdesk API key (found in Profile Settings)>"
+    ),
+    subdomain="<Your Freshdesk subdomain (e.g., "acme" for acme.freshdesk.com)>"
+)
+
+mcp = FastMCP("Freshdesk Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `FreshdeskConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+from airbyte_agent_sdk.connectors.freshdesk.models import FreshdeskAuthConfig
+
+connector = FreshdeskConnector(
+    auth_config=FreshdeskAuthConfig(
+        api_key="<Your Freshdesk API key (found in Profile Settings)>"
+    ),
+    subdomain="<Your Freshdesk subdomain (e.g., "acme" for acme.freshdesk.com)>"
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@FreshdeskConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="freshdesk_inspect",
+    docs_tool="freshdesk_read_docs",
+)
+async def freshdesk_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@FreshdeskConnector.agent_tool(framework="pydantic_ai")
+async def freshdesk_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@FreshdeskConnector.agent_tool(framework="pydantic_ai")
+async def freshdesk_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+from airbyte_agent_sdk.connectors.freshdesk.models import FreshdeskAuthConfig
+
+connector = FreshdeskConnector(
+    auth_config=FreshdeskAuthConfig(
+        api_key="<Your Freshdesk API key (found in Profile Settings)>"
+    ),
+    subdomain="<Your Freshdesk subdomain (e.g., "acme" for acme.freshdesk.com)>"
+)
+
+@FreshdeskConnector.agent_tool(
+    inspect_tool="freshdesk_inspect",
+    docs_tool="freshdesk_read_docs",
+)
+async def freshdesk_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@FreshdeskConnector.agent_tool()
+async def freshdesk_inspect():
+    return await connector.inspect_connector()
+
+@FreshdeskConnector.agent_tool()
+async def freshdesk_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (freshdesk_inspect, freshdesk_read_docs, freshdesk_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. The deprecated `FreshdeskConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `FreshdeskConnector.agent_tool` above.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+from airbyte_agent_sdk.connectors.freshdesk.models import FreshdeskAuthConfig
+
+connector = FreshdeskConnector(
+    auth_config=FreshdeskAuthConfig(
+        api_key="<Your Freshdesk API key (found in Profile Settings)>"
+    ),
+    subdomain="<Your Freshdesk subdomain (e.g., "acme" for acme.freshdesk.com)>"
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
 @FreshdeskConnector.tool_utils
 async def freshdesk_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-## Full documentation
+**LangChain**
 
-### Entities and actions
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+from airbyte_agent_sdk.connectors.freshdesk.models import FreshdeskAuthConfig
 
-This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
+connector = FreshdeskConnector(
+    auth_config=FreshdeskAuthConfig(
+        api_key="<Your Freshdesk API key (found in Profile Settings)>"
+    ),
+    subdomain="<Your Freshdesk subdomain (e.g., "acme" for acme.freshdesk.com)>"
+)
 
-| Entity | Actions |
-|--------|---------|
-| Tickets | [List](./REFERENCE.md#tickets-list), [Get](./REFERENCE.md#tickets-get), [Search](./REFERENCE.md#tickets-search) |
-| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get) |
-| Agents | [List](./REFERENCE.md#agents-list), [Get](./REFERENCE.md#agents-get), [Search](./REFERENCE.md#agents-search) |
-| Groups | [List](./REFERENCE.md#groups-list), [Get](./REFERENCE.md#groups-get), [Search](./REFERENCE.md#groups-search) |
-| Companies | [List](./REFERENCE.md#companies-list), [Get](./REFERENCE.md#companies-get) |
-| Roles | [List](./REFERENCE.md#roles-list), [Get](./REFERENCE.md#roles-get) |
-| Satisfaction Ratings | [List](./REFERENCE.md#satisfaction-ratings-list) |
-| Surveys | [List](./REFERENCE.md#surveys-list) |
-| Time Entries | [List](./REFERENCE.md#time-entries-list) |
-| Ticket Fields | [List](./REFERENCE.md#ticket-fields-list) |
+@tool
+@FreshdeskConnector.tool_utils
+async def freshdesk_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Freshdesk connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+from airbyte_agent_sdk.connectors.freshdesk.models import FreshdeskAuthConfig
+
+connector = FreshdeskConnector(
+    auth_config=FreshdeskAuthConfig(
+        api_key="<Your Freshdesk API key (found in Profile Settings)>"
+    ),
+    subdomain="<Your Freshdesk subdomain (e.g., "acme" for acme.freshdesk.com)>"
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@FreshdeskConnector.tool_utils(framework="openai_agents")
+async def freshdesk_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Freshdesk connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Freshdesk Assistant", tools=[freshdesk_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+from airbyte_agent_sdk.connectors.freshdesk.models import FreshdeskAuthConfig
+
+connector = FreshdeskConnector(
+    auth_config=FreshdeskAuthConfig(
+        api_key="<Your Freshdesk API key (found in Profile Settings)>"
+    ),
+    subdomain="<Your Freshdesk subdomain (e.g., "acme" for acme.freshdesk.com)>"
+)
+
+mcp = FastMCP("Freshdesk Agent")
+
+@mcp.tool
+@FreshdeskConnector.tool_utils
+async def freshdesk_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Freshdesk connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
 
 
-### Authentication
+## Authentication
 
 For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
-### Freshdesk API docs
+## IP allow list
 
-See the official [Freshdesk API reference](https://developers.freshdesk.com/api/).
+If your organization restricts access to specific IPs, add the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist) to your allow list.
 
 ## Version information
 
-- **Package version:** 0.1.14
-- **Connector version:** 1.0.2
-- **Generated with Connector SDK commit SHA:** b541ca65d697dad0915d1b5b8d8c756cd18299a7
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/freshdesk/CHANGELOG.md)
+**Connector version:** 1.0.3

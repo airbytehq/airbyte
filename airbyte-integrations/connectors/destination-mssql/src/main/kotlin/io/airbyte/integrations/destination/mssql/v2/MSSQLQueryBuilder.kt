@@ -21,8 +21,10 @@ import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
@@ -48,6 +50,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToMssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setAsNullValue
+import io.airbyte.integrations.destination.mssql.v2.convert.MSSQLValueCoercer
 import io.airbyte.integrations.destination.mssql.v2.convert.MssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.ResultSetToAirbyteValue.Companion.getAirbyteNamedValue
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -238,12 +241,14 @@ class MSSQLQueryBuilder(
             SoftDelete,
             Update -> throw ConfigErrorException("Unsupported sync mode: ${stream.importType}")
         }
-    private val indexedColumns: Set<String> = uniquenessKey.toSet()
 
-    private val toMssqlType = AirbyteTypeToMssqlType()
+    private val toMssqlType = AirbyteTypeToMssqlType
 
     val finalTableSchema: List<NamedField> = airbyteFinalTableFields + extractFinalTableSchema()
     val hasCdc: Boolean = finalTableSchema.any { it.name == AIRBYTE_CDC_DELETED_AT }
+
+    private val indexedColumns: Set<String> =
+        if (hasCdc) uniquenessKey.toSet() + AIRBYTE_CDC_DELETED_AT else uniquenessKey.toSet()
 
     private fun getExistingSchema(connection: Connection): List<NamedSqlField> {
         val fields = mutableListOf<NamedSqlField>()
@@ -366,6 +371,14 @@ class MSSQLQueryBuilder(
                 return@forEachIndexed
             }
 
+            // Apply shared MSSQL coercion: range validation + complex-type serialisation
+            MSSQLValueCoercer.coerce(value)
+            if (value.abValue is NullValue) {
+                statement.setAsNullValue(statementIndex, field.type.type)
+                return@forEachIndexed
+            }
+
+            // INSERT-specific: set typed JDBC parameters
             when (value.type) {
                 BooleanType ->
                     statement.setBoolean(statementIndex, (value.abValue as BooleanValue).value)
@@ -375,13 +388,12 @@ class MSSQLQueryBuilder(
                         Date.valueOf((value.abValue as DateValue).value)
                     )
                 IntegerType ->
-                    LIMITS.validateInteger(value)?.let {
-                        statement.setLong(statementIndex, it.longValueExact())
-                    }
+                    statement.setLong(
+                        statementIndex,
+                        (value.abValue as IntegerValue).value.longValueExact()
+                    )
                 NumberType ->
-                    LIMITS.validateNumber(value)?.let {
-                        statement.setBigDecimal(statementIndex, it)
-                    }
+                    statement.setBigDecimal(statementIndex, (value.abValue as NumberValue).value)
                 StringType ->
                     statement.setString(statementIndex, (value.abValue as StringValue).value)
                 TimeTypeWithTimezone ->
@@ -405,7 +417,7 @@ class MSSQLQueryBuilder(
                         (value.abValue as TimestampWithoutTimezoneValue).value
                     )
 
-                // Serialize complex types to string
+                // Complex types already serialised to StringValue by MSSQLValueCoercer.coerce()
                 is ArrayType,
                 ArrayTypeWithoutSchema,
                 is ObjectType,
@@ -413,7 +425,7 @@ class MSSQLQueryBuilder(
                 ObjectTypeWithoutSchema,
                 is UnionType,
                 is UnknownType ->
-                    statement.setString(statementIndex, value.abValue.serializeToString())
+                    statement.setString(statementIndex, (value.abValue as StringValue).value)
             }
         }
 

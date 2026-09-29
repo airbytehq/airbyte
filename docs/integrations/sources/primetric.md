@@ -53,6 +53,10 @@ your employees to the right projects.
 - Primetric [client secret](https://app.primetric.com/administrator/integrations)
 - Primetric client id
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

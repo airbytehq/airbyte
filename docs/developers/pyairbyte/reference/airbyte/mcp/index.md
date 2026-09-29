@@ -3,22 +3,22 @@ id: airbyte-mcp-index
 title: airbyte.mcp.index
 ---
 
-Module airbyte.mcp
-==================
-***PyAirbyte MCP Server - Model Context Protocol Integration***
+# Module airbyte.mcp
+
+**_Airbyte Replication MCP Server - Model Context Protocol Integration_**
 
 > **NOTE:**
 > This MCP server implementation is experimental and may change without notice between minor
 > versions of PyAirbyte. The API may be modified or entirely refactored in future versions.
 
-The PyAirbyte MCP (Model Context Protocol) server provides a standardized interface for
-managing Airbyte connectors through MCP-compatible clients. This experimental feature
-allows you to list connectors, validate configurations, and run sync operations using
-the MCP protocol.
+The Airbyte Replication MCP (Model Context Protocol) server provides a standardized interface
+for managing Airbyte connectors through MCP-compatible clients. This PyAirbyte-powered
+experimental feature allows you to list connectors, validate configurations, and run sync
+operations using the MCP protocol.
 
-## Getting Started with PyAirbyte MCP
+## Getting Started with Airbyte Replication MCP
 
-To get started with the PyAirbyte MCP server, follow these steps:
+To get started with the Airbyte Replication MCP server, follow these steps:
 
 1. Create a Dotenv secrets file.
 2. Register the MCP server with your MCP client.
@@ -26,7 +26,7 @@ To get started with the PyAirbyte MCP server, follow these steps:
 
 ### Step 1: Generate a Dotenv Secrets File
 
-To get started with the PyAirbyte MCP server, you will need to create a dotenv
+To get started with the Airbyte Replication MCP server, you will need to create a dotenv
 file containing your Airbyte Cloud credentials, as well as credentials for any
 third-party services you wish to connect to via Airbyte.
 
@@ -57,11 +57,12 @@ AIRBYTE_CLOUD_WORKSPACE_ID=your_workspace_id
 ```
 
 Note:
+
 1. You can add more environment variables to this file as needed for different connectors. To start,
    you only need to create the file and pass it to the MCP server.
 2. Ensure that this file is kept secure, as it contains sensitive information. Your LLM
-   *should never* be given direct access to this file or its contents.
-3. The MCP tools will give your LLM the ability to view *which* variables are available, but it
+   _should never_ be given direct access to this file or its contents.
+3. The MCP tools will give your LLM the ability to view _which_ variables are available, but it
    does not give access to their values.
 4. The `AIRBYTE_PROJECT_DIR` variable specifies a directory where the MCP server can
    store temporary project files. Ensure this directory is writable by the user running
@@ -84,11 +85,7 @@ requirements.
   "mcpServers": {
     "airbyte": {
       "command": "uvx",
-      "args": [
-        "--python=3.11",
-        "--from=airbyte@latest",
-        "airbyte-mcp"
-      ],
+      "args": ["--python=3.11", "--from=airbyte@latest", "airbyte-mcp"],
       "env": {
         "AIRBYTE_MCP_ENV_FILE": "/path/to/my/.mcp/airbyte_mcp.env",
         "AIRBYTE_CLOUD_MCP_SAFE_MODE": "1",
@@ -100,6 +97,7 @@ requirements.
 ```
 
 Note:
+
 - Replace `/path/to/my/.mcp/airbyte_mcp.env` with the absolute path to your dotenv file created in
   Step 1.
 
@@ -118,8 +116,8 @@ Helpful prompts to try:
 
 ## Airbyte Cloud MCP Server Safety
 
-The PyAirbyte MCP server supports environment variables to control safety and access levels for
-Airbyte Cloud operations.
+The Airbyte Replication MCP server supports environment variables to control safety and access
+levels for Airbyte Cloud operations.
 
 **Important:** The below settings only affect Cloud operations; local operations are not affected.
 
@@ -178,6 +176,7 @@ stores connector artifacts, cache files, and temporary data. Ensure this directo
 - Is writable by the user account running the MCP server.
 
 Note:
+
 - In rare cases, your agent may not be able to find `uv` or `uvx` if they are not in the system
   `PATH` or if the agent has a stale `PATH` value. In these cases, you can use `which uvx` from
   your own terminal to discover the full path to the `uvx` binary, and then provide the full path
@@ -197,7 +196,7 @@ This design allows AI assistants to help configure connectors without compromisi
 
 Note: While the MCP server takes steps to secure your credentials, you are responsible for
 ensuring the agent is not given access to your secrets by other means. For example, Claude Code
-may have *full* local disk access when run in certain modes. Consult your agent's documentation
+may have _full_ local disk access when run in certain modes. Consult your agent's documentation
 for details on securing local files.
 
 ## Contributing to the Airbyte MCP Server
@@ -210,13 +209,14 @@ for details on securing local files.
 - [MCP Documentation Home](https://modelcontextprotocol.io/)
 
 For issues and questions:
+
 - [PyAirbyte GitHub Issues](https://github.com/airbytehq/pyairbyte/issues)
 - [PyAirbyte Discussions](https://github.com/airbytehq/pyairbyte/discussions)
 
-Sub-modules
------------
-* airbyte.mcp.cloud
-* airbyte.mcp.local
-* airbyte.mcp.prompts
-* airbyte.mcp.registry
-* airbyte.mcp.server
+## Sub-modules
+
+- airbyte.mcp.cloud
+- airbyte.mcp.local
+- airbyte.mcp.prompts
+- airbyte.mcp.registry
+- airbyte.mcp.server

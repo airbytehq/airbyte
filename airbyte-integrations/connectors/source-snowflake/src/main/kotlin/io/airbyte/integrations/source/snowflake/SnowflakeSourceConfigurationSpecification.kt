@@ -148,16 +148,16 @@ class SnowflakeSourceConfigurationSpecification : ConfigurationSpecification() {
     )
     var checkPrivileges: Boolean? = true
 
-    @JsonIgnore var additionalPropertiesMap = mutableMapOf<String, Any>()
+    @JsonIgnore var additionalPropertiesMap: MutableMap<String, Any>? = mutableMapOf<String, Any>()
 
-    @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any> = additionalPropertiesMap
+    @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any>? = additionalPropertiesMap
 
     @JsonAnySetter
     fun setAdditionalProperty(
         name: String,
         value: Any,
     ) {
-        additionalPropertiesMap[name] = value
+        additionalPropertiesMap?.set(name, value)
     }
 }
 
@@ -171,6 +171,10 @@ class SnowflakeSourceConfigurationSpecification : ConfigurationSpecification() {
     JsonSubTypes.Type(
         value = UsernamePasswordCredentialsSpecification::class,
         name = "username/password"
+    ),
+    JsonSubTypes.Type(
+        value = ProgrammaticAccessTokenCredentialsSpecification::class,
+        name = "Programmatic Access Token"
     )
 )
 @JsonSchemaTitle("Authorization Method")
@@ -201,7 +205,10 @@ data class KeyPairCredentialsSpecification(
     val privateKeyPassword: String? = null
 ) : CredentialsSpecification
 
-@JsonSchemaTitle("Username and Password")
+@JsonSchemaTitle("Username and Password (Deprecated)")
+@JsonSchemaDescription(
+    "Deprecated: Username and password authentication is deprecated as of version 2.0.0 and will be removed in a future release. Snowflake is enforcing strong authentication on a rolling per-account basis between August and October 2026. Switch to key pair authentication or a programmatic access token instead. See the <a href=\"https://docs.airbyte.com/integrations/sources/snowflake-migrations\">migration guide</a> for details."
+)
 @JsonSchemaInject(json = """{"order":2}""")
 data class UsernamePasswordCredentialsSpecification(
     @JsonProperty("auth_type")
@@ -214,9 +221,22 @@ data class UsernamePasswordCredentialsSpecification(
     val username: String,
     @JsonProperty("password")
     @JsonSchemaTitle("Password")
-    @JsonPropertyDescription("The password associated with the username.")
+    @JsonPropertyDescription("Deprecated. The password associated with the username.")
     @JsonSchemaInject(json = """{"order":2,"airbyte_secret":true}""")
     val password: String
+) : CredentialsSpecification
+
+@JsonSchemaTitle("Programmatic Access Token")
+@JsonSchemaInject(json = """{"order":3}""")
+data class ProgrammaticAccessTokenCredentialsSpecification(
+    @JsonProperty("auth_type")
+    @JsonSchemaInject(json = """{"order":0}""")
+    val authType: String = "Programmatic Access Token",
+    @JsonProperty("programmatic_access_token")
+    @JsonSchemaTitle("Programmatic Access Token")
+    @JsonPropertyDescription("The programmatic access token used to authenticate to Snowflake.")
+    @JsonSchemaInject(json = """{"order":1,"airbyte_secret":true}""")
+    val programmaticAccessToken: String
 ) : CredentialsSpecification
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "cursor_method")

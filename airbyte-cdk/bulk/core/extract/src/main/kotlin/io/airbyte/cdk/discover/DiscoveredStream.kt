@@ -8,6 +8,6 @@ import io.airbyte.cdk.StreamIdentifier
 
 data class DiscoveredStream(
     val id: StreamIdentifier,
-    val columns: List<Field>,
+    val columns: List<EmittedField>,
     val primaryKeyColumnIDs: List<List<String>>,
 )

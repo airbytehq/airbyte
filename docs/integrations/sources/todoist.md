@@ -39,6 +39,10 @@ List of available streams:
 - [Tasks](https://developer.todoist.com/rest/v2/#tasks)
 - [Projects](https://developer.todoist.com/rest/v2/#projects)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

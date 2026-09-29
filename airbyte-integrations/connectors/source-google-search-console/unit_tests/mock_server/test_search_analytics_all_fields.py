@@ -14,6 +14,7 @@ import json
 import re
 from typing import Any, Dict, List
 from unittest import TestCase
+from unittest.mock import patch
 
 import requests_mock as rm
 from freezegun import freeze_time
@@ -193,6 +194,112 @@ class TestSearchAnalyticsAllFieldsStream(TestCase):
         # Verify the sync failed with appropriate error handling
         trace_messages = [msg for msg in output.trace_messages if hasattr(msg, "error")]
         assert len(trace_messages) > 0 or len(records) == 0, "Expected failure indication for FAIL handler on 400 response"
+
+    @patch("components._LOAD_QUOTA_BACKOFF_SECONDS", 1.0)
+    @HttpMocker()
+    def test_error_handler_rate_limited_on_load_quota_exceeded(self, http_mocker: HttpMocker) -> None:
+        """Test RATE_LIMITED error handler for 403 'load quota exceeded' errors.
+
+        The Google Search Console API returns a distinct message for load-based quota
+        errors ('Search Analytics load quota exceeded') vs QPS quota errors.
+        Both should be classified as RATE_LIMITED so the CDK retries with backoff
+        instead of failing with config_error.
+
+        The backoff constant is patched to 1s so the test does not sleep 900s.
+        """
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        request_count = {"count": 0}
+
+        def load_quota_then_success_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            """Return 403 load quota error on first request, then succeed."""
+            request_count["count"] += 1
+            if request_count["count"] <= 1:
+                context.status_code = 403
+                return json.dumps(
+                    {
+                        "error": {
+                            "code": 403,
+                            "message": "Search Analytics load quota exceeded. Learn about usage limits: https://developers.google.com/webmaster-tools/limits.",
+                            "errors": [{"domain": "usageLimits", "reason": "quotaExceeded"}],
+                        }
+                    }
+                )
+            context.status_code = 200
+            return json.dumps(
+                _build_search_analytics_response(
+                    [
+                        _build_search_analytics_row(
+                            "2024-01-01", "usa", "DESKTOP", "https://example.com/page1", "query", clicks=10, impressions=100
+                        ),
+                    ]
+                )
+            )
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=load_quota_then_success_callback,
+        )
+
+        output = self._read_stream(config)
+        records = [message for message in output.records if message.record.stream == _STREAM_NAME]
+
+        assert len(records) > 0, (
+            "Expected records after retry — 403 'load quota exceeded' should be classified "
+            "as RATE_LIMITED (retryable), not config_error (fatal)"
+        )
+
+    @HttpMocker()
+    def test_error_handler_rate_limited_on_qps_quota_exceeded(self, http_mocker: HttpMocker) -> None:
+        """Test RATE_LIMITED error handler for 403 'QPS quota exceeded' errors.
+
+        Verifies the existing QPS quota filter also retries correctly.
+        """
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        request_count = {"count": 0}
+
+        def qps_quota_then_success_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            """Return 403 QPS quota error on first request, then succeed."""
+            request_count["count"] += 1
+            if request_count["count"] <= 1:
+                context.status_code = 403
+                return json.dumps(
+                    {
+                        "error": {
+                            "code": 403,
+                            "message": "Search Analytics QPS quota exceeded.",
+                            "errors": [{"domain": "usageLimits", "reason": "rateLimitExceeded"}],
+                        }
+                    }
+                )
+            context.status_code = 200
+            return json.dumps(
+                _build_search_analytics_response(
+                    [
+                        _build_search_analytics_row(
+                            "2024-01-01", "usa", "DESKTOP", "https://example.com/page1", "query", clicks=10, impressions=100
+                        ),
+                    ]
+                )
+            )
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=qps_quota_then_success_callback,
+        )
+
+        output = self._read_stream(config)
+        records = [message for message in output.records if message.record.stream == _STREAM_NAME]
+
+        assert len(records) > 0, (
+            "Expected records after retry — 403 'QPS quota exceeded' should be classified "
+            "as RATE_LIMITED (retryable), not config_error (fatal)"
+        )
 
     @HttpMocker()
     def test_incremental_sync_first_sync_no_state(self, http_mocker: HttpMocker) -> None:

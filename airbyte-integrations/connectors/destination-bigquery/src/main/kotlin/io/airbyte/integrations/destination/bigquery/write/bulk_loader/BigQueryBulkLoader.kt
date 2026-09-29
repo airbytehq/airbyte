@@ -66,7 +66,13 @@ class BigQueryBulkLoader(
                 .setNullMarker(BigQueryConsts.NULL_MARKER)
                 .build()
 
-        val loadJob = bigQueryClient.create(JobInfo.of(configuration))
+        val jobId =
+            JobId.newBuilder()
+                .setProject(bigQueryConfiguration.jobProjectId)
+                .setLocation(bigQueryConfiguration.datasetLocation.region)
+                .setRandomJob()
+                .build()
+        val loadJob = bigQueryClient.create(JobInfo.of(jobId, configuration))
 
         try {
             BigQueryUtils.waitForJobFinish(loadJob)

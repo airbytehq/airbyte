@@ -69,6 +69,10 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 - [Users](https://docs.datadoghq.com/api/latest/users/#list-all-users)
 - [Series](https://docs.datadoghq.com/api/latest/metrics/?code-lang=curl#query-timeseries-data-across-multiple-products)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

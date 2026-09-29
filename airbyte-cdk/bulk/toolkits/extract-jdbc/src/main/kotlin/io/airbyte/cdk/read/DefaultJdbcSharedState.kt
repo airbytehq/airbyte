@@ -73,4 +73,11 @@ class DefaultJdbcSharedState(
             }
             ?.toMap()
     }
+
+    override fun tryAcquireResourcesForCreatorFactory():
+        JdbcPartitionsCreatorFactory.AcquiredResources? {
+        val acquiredThread: ConcurrencyResource.AcquiredThread =
+            concurrencyResource.tryAcquire() ?: return null
+        return JdbcPartitionsCreatorFactory.AcquiredResources { acquiredThread.close() }
+    }
 }

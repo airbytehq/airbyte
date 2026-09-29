@@ -5,11 +5,13 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - "airbyte-cdk/bulk/**"
+      - ".github/workflows/kotlin-bulk-cdk-dokka-publish.yml"
   push:
     branches:
       - master
     paths:
       - "airbyte-cdk/bulk/**"
+      - ".github/workflows/kotlin-bulk-cdk-dokka-publish.yml"
   workflow_dispatch:
 
 # Concurrency group ensures only one deployment runs at a time
@@ -29,7 +31,7 @@ jobs:
 
       - name: Checkout Repository [Push Trigger]
         if: github.event_name == 'push'
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 2
 
@@ -38,11 +40,12 @@ jobs:
         # Push triggers will require the checked-out code.
         id: detect-changes
         if: github.event_name != 'workflow_dispatch'
-        uses: dorny/paths-filter@v3.0.2
+        uses: dorny/paths-filter@v4.0.1
         with:
           filters: |
             bulk-cdk:
               - 'airbyte-cdk/bulk/**'
+              - '.github/workflows/kotlin-bulk-cdk-dokka-publish.yml'
 
     outputs:
       changed: ${{ steps.set-changed.outputs.changed || steps.detect-changes.outputs.bulk-cdk }}
@@ -56,14 +59,14 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 1
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.head_ref || github.ref }}
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           distribution: "zulu"
           java-version: "21"
@@ -111,7 +114,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 1
 
@@ -141,18 +144,18 @@ jobs:
 
       - name: Deploy to Vercel
         id: deploy-vercel
-        uses: amondnet/vercel-action@v41.1.4
+        uses: amondnet/vercel-action@4b810e26f7bb2a331c698af186f890cbf20d5f72 # v42.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
           vercel-project-id: ${{ env.VERCEL_PROJECT_ID }}
-          working-directory: docs-output
+          working-directory: ${{ github.workspace }}/docs-output
           vercel-args: ${{ github.ref == 'refs/heads/master' && '--prod' || '' }}
 
       - name: Authenticate as GitHub App
         if: github.event_name == 'pull_request'
-        uses: actions/create-github-app-token@v2.0.6
+        uses: actions/create-github-app-token@v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"
@@ -162,7 +165,7 @@ jobs:
 
       - name: Post Custom Check with Preview URL
         if: github.event_name == 'pull_request'
-        uses: LouisBrunner/checks-action@v2.0.0
+        uses: LouisBrunner/checks-action@dfcbcf801bff1ea7f1414824fc28f2cd697b35da # v3.0.0
         with:
           name: "Kotlin Bulk CDK Docs Preview"
           status: completed

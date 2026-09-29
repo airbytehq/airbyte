@@ -6,7 +6,7 @@ package io.airbyte.cdk.read.cdc
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.StringFieldType
 import io.airbyte.cdk.discover.TestMetaFieldDecorator
 import io.airbyte.cdk.read.ConcurrencyResource
@@ -18,9 +18,11 @@ import io.airbyte.cdk.read.ResourceAcquirer
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.just
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertThrows
@@ -29,7 +31,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
-typealias CreatorPosition = Long
+data class CreatorPosition(val value: Long) : PartiallyOrdered<CreatorPosition> {
+    override fun compareTo(other: CreatorPosition): Int? = value.compareTo(other.value)
+}
 
 /** These unit tests play out the scenarios possible in [CdcPartitionsCreator.run]. */
 @ExtendWith(MockKExtension::class)
@@ -46,7 +50,8 @@ class CdcPartitionsCreatorTest {
     val stream =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withName("test")),
-            schema = setOf(Field("test", StringFieldType), TestMetaFieldDecorator.GlobalCursor),
+            schema =
+                setOf(EmittedField("test", StringFieldType), TestMetaFieldDecorator.GlobalCursor),
             configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
             configuredPrimaryKey = null,
             configuredCursor = TestMetaFieldDecorator.GlobalCursor,
@@ -79,8 +84,9 @@ class CdcPartitionsCreatorTest {
         every { globalFeedBootstrap.feed } returns global
         every { globalFeedBootstrap.feeds } returns listOf(global, stream)
         every { globalFeedBootstrap.streamRecordConsumers() } returns emptyMap()
-        every { creatorOps.position(syntheticOffset) } returns 123L
-        every { creatorOps.position(incumbentOffset) } returns 123L
+        every { creatorOps.position(syntheticOffset) } returns CreatorPosition(123L)
+        every { creatorOps.position(incumbentOffset) } returns CreatorPosition(123L)
+        every { creatorOps.runStartup(any()) } just Runs
         every { creatorOps.generateColdStartOffset() } returns syntheticOffset
         every { creatorOps.generateColdStartProperties(streams) } returns emptyMap()
         every { creatorOps.generateWarmStartProperties(streams) } returns emptyMap()
@@ -91,13 +97,13 @@ class CdcPartitionsCreatorTest {
         every { globalFeedBootstrap.currentState } returns null
         every { globalFeedBootstrap.currentState(stream) } returns null
         val syntheticOffset = DebeziumOffset(mapOf(Jsons.nullNode() to Jsons.nullNode()))
-        every { creatorOps.position(syntheticOffset) } returns 123L
+        every { creatorOps.position(syntheticOffset) } returns CreatorPosition(123L)
         every { creatorOps.generateColdStartOffset() } returns syntheticOffset
         upperBoundReference.set(null)
         val readers: List<PartitionReader> = runBlocking { creator.run() }
         Assertions.assertEquals(1, readers.size)
         val reader = readers.first() as CdcPartitionReader<*>
-        Assertions.assertEquals(123L, reader.upperBound)
+        Assertions.assertEquals(CreatorPosition(123L), reader.upperBound)
         Assertions.assertEquals(syntheticOffset, reader.startingOffset)
     }
 
@@ -108,11 +114,11 @@ class CdcPartitionsCreatorTest {
         val deserializedState =
             ValidDebeziumWarmStartState(offset = incumbentOffset, schemaHistory = null)
         every { creatorOps.deserializeState(Jsons.objectNode()) } returns deserializedState
-        upperBoundReference.set(1_000_000L)
+        upperBoundReference.set(CreatorPosition(1_000_000L))
         val readers: List<PartitionReader> = runBlocking { creator.run() }
         Assertions.assertEquals(1, readers.size)
         val reader = readers.first() as CdcPartitionReader<*>
-        Assertions.assertEquals(1_000_000L, reader.upperBound)
+        Assertions.assertEquals(CreatorPosition(1_000_000L), reader.upperBound)
         Assertions.assertEquals(deserializedState.offset, reader.startingOffset)
     }
 
@@ -123,7 +129,7 @@ class CdcPartitionsCreatorTest {
         val deserializedState =
             ValidDebeziumWarmStartState(offset = incumbentOffset, schemaHistory = null)
         every { creatorOps.deserializeState(Jsons.objectNode()) } returns deserializedState
-        upperBoundReference.set(1L)
+        upperBoundReference.set(CreatorPosition(1L))
         val readers: List<PartitionReader> = runBlocking { creator.run() }
         Assertions.assertEquals(emptyList<PartitionReader>(), readers)
     }

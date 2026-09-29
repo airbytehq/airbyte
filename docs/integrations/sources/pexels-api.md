@@ -69,6 +69,10 @@ The Pexels-API source connector supports the following [sync modes](https://docs
 
 Pexels-API's [API reference]https://www.pexels.com/api/documentation) has v1 at present and v2 is at development. The connector as default uses v1.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -76,6 +80,8 @@ Pexels-API's [API reference]https://www.pexels.com/api/documentation) has v1 at 
 
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
+| 0.2.43 | 2026-09-29 | [87304](https://github.com/airbytehq/airbyte/pull/87304) | Update dependencies |
+| 0.2.42 | 2026-09-22 | [78868](https://github.com/airbytehq/airbyte/pull/78868) | Update dependencies |
 | 0.2.41 | 2025-11-25 | [69993](https://github.com/airbytehq/airbyte/pull/69993) | Update dependencies |
 | 0.2.40 | 2025-11-18 | [69635](https://github.com/airbytehq/airbyte/pull/69635) | Update dependencies |
 | 0.2.39 | 2025-10-29 | [68954](https://github.com/airbytehq/airbyte/pull/68954) | Update dependencies |

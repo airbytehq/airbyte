@@ -11,7 +11,7 @@ This page contains the setup guide and reference information for the [Google Ads
 - A [Google Ads Account](https://support.google.com/google-ads/answer/6366720) [linked](https://support.google.com/google-ads/answer/7459601) to a Google Ads Manager account
 <!-- env:oss -->
 - (For Airbyte Open Source):
-  - A Developer Token
+  - Google Ads API access (Basic or Standard) granted to the Google Cloud project that owns your OAuth client (see Step 1)
   - OAuth credentials to authenticate your Google account
   <!-- /env:oss -->
 
@@ -21,22 +21,16 @@ This page contains the setup guide and reference information for the [Google Ads
 
 <!-- env:oss -->
 
-#### Step 1: (For Airbyte Open Source) Apply for a developer token
+#### Step 1: (For Airbyte Open Source) Get Google Ads API access for your Google Cloud project
 
-To set up the Google Ads source connector with Airbyte Open Source, you will need to obtain a developer token. This token allows you to access your data from the Google Ads API. Please note that Google is selective about which software and use cases are issued this token. The Airbyte team has worked with the Google Ads team to allowlist Airbyte and ensure you can get a developer token (see [issue 1981](https://github.com/airbytehq/airbyte/issues/1981) for more information on this topic).
+Google Ads API access levels are granted to the Google Cloud project that owns your OAuth client, not to a developer token. Google sunset developer tokens on September 9, 2026: existing tokens still work and can still be entered in Airbyte, but Google ignores them and no longer issues new ones from the Google Ads manager account API Center. See Google's [developer token sunset guide](https://developers.google.com/google-ads/api/docs/api-policy/developer-token).
 
-1. To proceed with obtaining a developer token, you will first need to create a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/). Standard Google Ads accounts cannot generate a developer token.
-
-2. To apply for the developer token, please follow [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token).
-
-3. When you apply for the token, make sure to include the following:
-   - Why you need the token (example: Want to run some internal analytics)
-   - That you will be using the Airbyte Open Source project
-   - That you have full access to the code base (because we're open source)
-   - That you have full access to the server running the code (because you're self-hosting Airbyte)
+1. Create or choose the [Google Cloud project](https://console.cloud.google.com/) that will own the OAuth client you use in Step 2.
+2. Open the **Google Ads API Overview** page for that project in the Google Cloud Console and apply for API access. New Basic and Standard access applications require [brand verification](https://developers.google.com/google-ads/api/docs/api-policy/developer-token) of the project; Basic access is approved automatically within minutes after verification.
+3. Confirm the project shows at least **Basic** access. Projects with only Test access can't read production Google Ads accounts and fail with `ACTION_NOT_PERMITTED` (or `CLOUD_PROJECT_NOT_APPROVED_FOR_PRODUCTION` on newer API versions).
 
 :::note
-You will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token; it has to be at least a basic developer token. The approval process typically takes around 24 hours.
+If you already had an approved developer token, Google transferred its access level to every Google Cloud project that used it in the 90 days before September 9, 2026. If your OAuth client's project did not inherit the access level, apply for access from that project's Google Ads API Overview page. Airbyte still requires a value in the **Developer Token** field; enter your existing token, or any non-empty placeholder string (for example, `placeholder`) if you never had one. Google rejects an empty value with `DEVELOPER_TOKEN_PARAMETER_MISSING`.
 :::
 
 #### Step 2: (For Airbyte Open Source) Obtain your OAuth credentials
@@ -53,7 +47,7 @@ A single access token can grant varying degrees of access to multiple APIs. A va
 
 The scope for the Google Ads API is: https://www.googleapis.com/auth/adwords
 
-Each Google Ads API developer token is assigned an access level and "permissible use". The access level determines whether you can affect production accounts and the number of operations and requests that you can execute daily. Permissible use determines the specific Google Ads API features that the developer token is allowed to use. Read more about it and apply for higher access [here](https://developers.google.com/google-ads/api/docs/access-levels#access_levels_2).
+Each Google Cloud project's OAuth client is assigned an access level and "permissible use". The access level determines whether you can affect production accounts and the number of operations and requests that you can execute daily. Permissible use determines the specific Google Ads API features that the project is allowed to use. Read more in [Google's access levels documentation](https://developers.google.com/google-ads/api/docs/productionize/access-levels), where you can also apply for higher access.
 
 ### Step 3: Set up the Google Ads connector in Airbyte
 
@@ -68,6 +62,35 @@ Each Google Ads API developer token is assigned an access level and "permissible
 3. On the Set up the source page, select Google Ads from the Source type dropdown.
 4. Enter a name for the Google Ads connector.
 5. Click **Sign in with Google** to authenticate your Google Ads account. In the pop-up, select the appropriate Google account and click **Continue** to proceed.
+
+##### Optional: use your own Google OAuth app in Airbyte Cloud
+
+Airbyte Cloud normally uses Airbyte-managed OAuth client credentials for the Google Ads source. If you need to use your own Google OAuth app, create OAuth override credentials.
+
+Create the override first, then click **Sign in with Google**.
+
+Use the Airbyte API to create OAuth override credentials for the workspace or organization. For the workspace endpoint, see [Create OAuth override credentials for a workspace and source type](https://reference.airbyte.com/reference/workspaceoauthcredentials). For the organization endpoint, see [Create OAuth override credentials for an organization and source type](https://reference.airbyte.com/reference/createorupdateorganizationoauthcredentials).
+
+For Google Ads, set `actorType` to `source`, set `name` to `google-ads`, and include your Google OAuth app credentials and Google Ads developer token in `configuration.credentials`.
+
+Google ignores the `developer_token` value since September 9, 2026 (see the [developer token sunset guide](https://developers.google.com/google-ads/api/docs/api-policy/developer-token)); the field is still required by the connector, so pass your existing token or any non-empty placeholder string (an empty string is rejected by Google). API access is granted to the Google Cloud project that owns your OAuth app, so make sure that project has at least Basic access on its Google Ads API Overview page.
+
+```json
+{
+  "actorType": "source",
+  "name": "google-ads",
+  "configuration": {
+    "credentials": {
+      "client_id": "<your-google-oauth-client-id>",
+      "client_secret": "<your-google-oauth-client-secret>",
+      "developer_token": "<your-google-ads-developer-token>"
+    }
+  }
+}
+```
+
+After you create the override, click **Sign in with Google** and authorize the source. The authorization server must issue the refresh token for the same Google OAuth app credentials that Airbyte uses to refresh it. If you change the OAuth app credentials, authorize the source again.
+
 <FieldAnchor field="customer_id">
 6. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field blank will replicate data from all connected accounts.
 
@@ -77,7 +100,7 @@ If you are accessing your account through a Google Ads Manager account, you must
 </FieldAnchor>
 
 <FieldAnchor field="customer_status_filter">
-7. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v20/CustomerStatusEnum.CustomerStatus) for more info.
+7. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v23/CustomerStatusEnum.CustomerStatus) for more info.
 </FieldAnchor>
 
 <FieldAnchor field="start_date">
@@ -105,10 +128,10 @@ If you are accessing your account through a Google Ads Manager account, you must
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Ads** from the list of available sources.
 4. Enter a **Source name** of your choosing.
-5. Enter the **Developer Token** you obtained from Google.
+5. Enter a **Developer Token**. Google ignores this value since September 9, 2026; use your existing token or any non-empty placeholder string.
 6. To authenticate your Google account, enter your Google application's **Client ID**, **Client Secret**, **Refresh Token**, and optionally, the **Access Token**.
 7. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field blank will replicate data from all connected accounts.
-8. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v20/CustomerStatusEnum.CustomerStatus) for more info.
+8. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v23/CustomerStatusEnum.CustomerStatus) for more info.
 9. (Optional) Enter a **Start Date** using the provided datepicker, or by programmatically entering the date in YYYY-MM-DD format. The data added on and after this date will be replicated. (Default start date is 2 years ago)
 10. (Optional) You can use the **Custom GAQL Queries** field to enter a custom query using Google Ads Query Language. Click **Add** and enter your query, as well as the desired name of the table for this data in the destination. Multiple queries can be provided. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
 11. (Required for Manager accounts) If accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Manager account.
@@ -132,9 +155,9 @@ The Google Ads source connector supports the following [sync modes](https://docs
 
 List of streams:
 
-- [ad_group_criterions](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
-- [ad_listing_group_criterions](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
-- [campaign_criterion](https://developers.google.com/google-ads/api/fields/v20/campaign_criterion)
+- [ad_group_criterions](https://developers.google.com/google-ads/api/fields/v23/ad_group_criterion)
+- [ad_listing_group_criterions](https://developers.google.com/google-ads/api/fields/v23/ad_group_criterion)
+- [campaign_criterion](https://developers.google.com/google-ads/api/fields/v23/campaign_criterion)
 
 These streams support incremental updates, including deletions, leveraging the Change Status stream. However, they only capture updates from the most recent three months.
 
@@ -150,56 +173,60 @@ The Google Ads source connector can sync the following tables. It can also sync 
 
 ### Main Tables
 
-- [customer](https://developers.google.com/google-ads/api/fields/v20/customer)
+- [customer](https://developers.google.com/google-ads/api/fields/v23/customer)
 
 Highlights the setup and configurations of a Google Ads account. It encompasses features like call reporting and conversion tracking, giving a clear picture of the account's operational settings and features.
 
-- [customer_label](https://developers.google.com/google-ads/api/fields/v20/customer_label)
-- [campaign_criterion](https://developers.google.com/google-ads/api/fields/v20/campaign_criterion)
+- [customer_label](https://developers.google.com/google-ads/api/fields/v23/customer_label)
+- [campaign_criterion](https://developers.google.com/google-ads/api/fields/v23/campaign_criterion)
 
 Targeting option for a campaign, such as a keyword, placement, or audience.
 
-- [campaign_bidding_strategy](https://developers.google.com/google-ads/api/fields/v20/campaign)
+- [campaign_bidding_strategy](https://developers.google.com/google-ads/api/fields/v23/campaign)
 
 Represents the bidding strategy at the campaign level.
 
-- [campaign_label](https://developers.google.com/google-ads/api/fields/v20/campaign_label)
-- [label](https://developers.google.com/google-ads/api/fields/v20/label)
+- [campaign_label](https://developers.google.com/google-ads/api/fields/v23/campaign_label)
+- [label](https://developers.google.com/google-ads/api/fields/v23/label)
 
 Represents labels that can be attached to different entities such as campaigns or ads.
 
-- [ad_group_ad](https://developers.google.com/google-ads/api/fields/v20/ad_group_ad)
+- [ad_group_ad](https://developers.google.com/google-ads/api/fields/v23/ad_group_ad)
 
 Different attributes of ads from ad groups segmented by date.
 
-- [ad_group_ad_label](https://developers.google.com/google-ads/api/fields/v20/ad_group_ad_label)
-- [ad_group](https://developers.google.com/google-ads/api/fields/v20/ad_group)
+- [ad_performance](https://developers.google.com/google-ads/api/fields/v23/ad_group_ad)
+
+Ad-level performance report built on the `ad_group_ad` resource. Includes ad identity dimensions plus performance metrics (clicks, impressions, cost, conversions, video and active-view metrics) segmented by date, ad network, and device. Available for non-manager accounts only.
+
+- [ad_group_ad_label](https://developers.google.com/google-ads/api/fields/v23/ad_group_ad_label)
+- [ad_group](https://developers.google.com/google-ads/api/fields/v23/ad_group)
 
 Represents an ad group within a campaign. Ad groups contain one or more ads which target a shared set of keywords.
 
-- [ad_group_label](https://developers.google.com/google-ads/api/fields/v20/ad_group_label)
-- [ad_group_bidding_strategy](https://developers.google.com/google-ads/api/fields/v20/ad_group)
+- [ad_group_label](https://developers.google.com/google-ads/api/fields/v23/ad_group_label)
+- [ad_group_bidding_strategy](https://developers.google.com/google-ads/api/fields/v23/ad_group)
 
 Represents the bidding strategy at the ad group level.
 
-- [ad_group_criterion](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
+- [ad_group_criterion](https://developers.google.com/google-ads/api/fields/v23/ad_group_criterion)
 
 Represents criteria in an ad group, such as keywords or placements.
 
-- [ad_listing_group_criterion](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
+- [ad_listing_group_criterion](https://developers.google.com/google-ads/api/fields/v23/ad_group_criterion)
 
 Represents criteria for listing group ads.
 
-- [ad_group_criterion_label](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion_label)
-- [audience](https://developers.google.com/google-ads/api/fields/v20/audience)
+- [ad_group_criterion_label](https://developers.google.com/google-ads/api/fields/v23/ad_group_criterion_label)
+- [audience](https://developers.google.com/google-ads/api/fields/v23/audience)
 
 Represents user lists that are defined by the advertiser to target specific users.
 
-- [user_interest](https://developers.google.com/google-ads/api/fields/v20/user_interest)
+- [user_interest](https://developers.google.com/google-ads/api/fields/v23/user_interest)
 
 A particular interest-based vertical to be targeted.
 
-- [click_view](https://developers.google.com/google-ads/api/reference/rpc/v20/ClickView)
+- [click_view](https://developers.google.com/google-ads/api/reference/rpc/v23/ClickView)
 
 A click view with metrics aggregated at each click level, including both valid and invalid clicks.
 
@@ -207,48 +234,56 @@ Note that `ad_group`, `ad_group_ad`, and `campaign` contain a `labels` field, wh
 
 ### Report Tables
 
-- [account_performance_report](https://developers.google.com/google-ads/api/fields/v20/overview)
+- [account_performance_report](https://developers.google.com/google-ads/api/fields/v23/overview)
 
 Provides in-depth metrics related to ads interactions, including viewability, click-through rates, and conversions. Segments data by various factors, offering a granular look into how ads perform across different contexts.
 
-- [campaign](https://developers.google.com/google-ads/api/fields/v20/campaign)
+- [campaign](https://developers.google.com/google-ads/api/fields/v23/campaign)
 
 Represents a campaign in Google Ads.
 
-- [campaign_budget](https://developers.google.com/google-ads/api/fields/v20/campaign_budget)
+- [campaign_budget](https://developers.google.com/google-ads/api/fields/v23/campaign_budget)
 
 Represents the budget settings of a campaign.
 
-- [geographic_view](https://developers.google.com/google-ads/api/fields/v20/geographic_view)
+- [geographic_view](https://developers.google.com/google-ads/api/fields/v23/geographic_view)
 
-Geographic View includes all metrics aggregated at the country level. It reports metrics at either actual physical location of the user or an area of interest.
+Geographic View provides dimension fields aggregated at the country level, such as country, location type, and ad group. It reports data at either the actual physical location of the user or an area of interest. This stream does not include performance metrics — use `geographic_view_with_metrics` if you need metrics like clicks, impressions, and conversions.
 
-- [user_location_view](https://developers.google.com/google-ads/api/fields/v20/user_location_view)
+- [geographic_view_with_metrics](https://developers.google.com/google-ads/api/fields/v23/geographic_view)
+
+An enhanced version of `geographic_view` that includes performance metrics (clicks, impressions, cost, conversions, CTR, etc.) alongside dimension fields. Use this stream when you need geographic performance data.
+
+- [geo_performance](https://developers.google.com/google-ads/api/fields/v23/geographic_view)
+
+Geographic performance report built on the `geographic_view` resource. Adds finer geo-target breakdown segments (region, metro, city, most specific location) along with device and ad network segments and performance metrics. Available for non-manager accounts only. Resolve the `segments.geo_target_*` resource names against the `geo_target_constant` resource to get human-readable location names.
+
+- [user_location_view](https://developers.google.com/google-ads/api/fields/v23/user_location_view)
 
 User Location View includes all metrics aggregated at the country level. It reports metrics at the actual physical location of the user by targeted or not targeted location.
 
-- [display_keyword_view](https://developers.google.com/google-ads/api/fields/v20/display_keyword_view)
+- [display_keyword_view](https://developers.google.com/google-ads/api/fields/v23/display_keyword_view)
 
 Metrics for display keywords, which are keywords that are targeted in display campaigns.
 
-- [topic_view](https://developers.google.com/google-ads/api/fields/v20/topic_view)
+- [topic_view](https://developers.google.com/google-ads/api/fields/v23/topic_view)
 
 Reporting view that shows metrics aggregated by topic, which are broad categories of interests that users have.
 
-- [shopping_performance_view](https://developers.google.com/google-ads/api/fields/v20/shopping_performance_view)
+- [shopping_performance_view](https://developers.google.com/google-ads/api/fields/v23/shopping_performance_view)
 
 Provides Shopping campaign statistics aggregated at several product dimension levels. Product dimension values from Merchant Center such as brand, category, custom attributes, product condition and product type will reflect the state of each dimension as of the date and time when the corresponding event was recorded.
 
-- [keyword_view](https://developers.google.com/google-ads/api/fields/v20/keyword_view)
+- [keyword_view](https://developers.google.com/google-ads/api/fields/v23/keyword_view)
 
 Provides metrics related to the performance of keywords in the campaign.
 
-- [ad_group_ad_legacy](https://developers.google.com/google-ads/api/fields/v20/ad_group_ad)
+- [ad_group_ad_legacy](https://developers.google.com/google-ads/api/fields/v23/ad_group_ad)
 
 Metrics and attributes of legacy ads from ad groups.
 
 :::note
-Due to Google Ads API constraints, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago. Also, [metrics](https://developers.google.com/google-ads/api/fields/v20/metrics) cannot be requested for a Google Ads Manager account. Report streams are only available when pulling data from a non-manager account.
+Due to Google Ads API constraints, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago. Also, [metrics](https://developers.google.com/google-ads/api/fields/v23/metrics) cannot be requested for a Google Ads Manager account. Report streams are only available when pulling data from a non-manager account.
 :::
 
 :::warning
@@ -257,7 +292,13 @@ If you have this type of campaign Google will remove them from the results for t
 More [info](https://github.com/airbytehq/airbyte/issues/11062) and [Google Discussions](https://groups.google.com/g/adwords-api/c/_mxbgNckaLQ).
 :::
 
-For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v20/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
+:::note
+Streams that include metric fields (e.g., clicks, impressions, cost, conversions) may return fewer rows than dimension-only streams for the same resource. This is because the [Google Ads API omits rows where all metrics are zero](https://developers.google.com/google-ads/api/docs/reporting/zero-impressions) when metrics are included in the query. The omitted rows represent entity/segment combinations with no recorded activity.
+:::
+
+For incremental streams, data is synced up to the previous day using your Google Ads account time zone, because Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v23/ad_group_ad#segments.date) without time. Some reports also can't load data in real time due to [Google Ads limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
+
+Starting in connector version 6.0.0, report streams and custom queries that use `segments.date` are limited to the 37-month granular data retention window enforced by the [Google Ads Data Retention Policy](https://support.google.com/google-ads/answer/15188209). The connector skips data older than 37 months. If your configured `start_date` is more than 37 months ago, the connector uses 37 months ago as the effective start. If both `start_date` and `end_date` fall outside the 37-month window, the connector emits no records for that historical range. If you're upgrading from version 5.x or earlier, see the [migration guide](/integrations/sources/google-ads-migrations) for guidance on preserving historical destination data.
 
 ### Primary Key Selection Method
 
@@ -270,7 +311,7 @@ Primary keys are chosen to uniquely identify records within streams. In this sel
 
 Additional streams for Google Ads can be dynamically created using custom queries.
 
-The Google Ads Query Language queries the Google Ads API. Review the [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview) and the [query builder](https://developers.google.com/google-ads/api/fields/v20/query_validator) to validate your query. You can then add these as custom queries when configuring the Google Ads source.
+The Google Ads Query Language queries the Google Ads API. Review the [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview) and the [query builder](https://developers.google.com/google-ads/api/fields/v23/query_validator) to validate your query. You can then add these as custom queries when configuring the Google Ads source.
 
 Example GAQL Custom Query:
 
@@ -282,7 +323,7 @@ SELECT
 FROM ad_group
 ```
 
-Note that `segments.date` is automatically added to the `WHERE` clause if it is included in the `SELECT` clause. Custom reports including `segments.date` in the `SELECT` clause will be synced by day.
+Note that `segments.date` is automatically added to the `WHERE` clause if it's included in the `SELECT` clause. Custom queries that include `segments.date` are synced one day at a time. Starting in connector version 6.0.0, these custom queries are limited to the same 37-month granular data retention window as built-in report streams; older report slices are skipped. See the [migration guide](/integrations/sources/google-ads-migrations) for upgrade guidance.
 
 Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains metrics fields in the select clause, it will not be executed against manager accounts.
 
@@ -294,6 +335,10 @@ For an existing Google Ads source, when you are updating or removing Custom GAQL
 
 :::note
 Custom queries that use `click_view` as the resource are subject to the same limitations as the built-in `click_view` stream: data can only be retrieved for the past 90 days, and syncs are performed one day at a time.
+:::
+
+:::note
+MESSAGE-type fields selected by a custom GAQL query (for example, `change_event.old_resource` and `change_event.new_resource` on the `change_event` resource) are synced as JSON-encoded strings. Parse these values downstream if you need to read individual nested fields.
 :::
 </FieldAnchor>
 
@@ -312,7 +357,7 @@ You can then monitor ad performance, update campaigns, and manage other account 
 
 While both types of accounts can access a wide range of resources in the API, the difference lies in their scope and purpose. Manager accounts have a broader oversight, while client accounts delve into the specifics of advertising operations.
 
-For detailed information, refer to the [official documentation.](https://developers.google.com/google-ads/api/fields/v20/overview)
+For detailed information, refer to the [official documentation.](https://developers.google.com/google-ads/api/fields/v23/overview)
 
 ## Note on Conversion Windows
 
@@ -324,6 +369,14 @@ The length of the conversion window can vary depending on the goals of the adver
 In essence, the conversion window is a tool for measuring the effectiveness of an advertising campaign. By tracking the actions users take after viewing or interacting with an ad, businesses can gain insight into how well their ads are working and adjust their strategies accordingly.
 
 In the case of configuring the Google Ads source connector, each time a sync is run the connector will retrieve all conversions that were active within the specified conversion window. For example, if you set a conversion window of 30 days, each time a sync is run, the connector will pull all conversions that were active within the past 30 days. Due to this mechanism, it may seem like the same campaigns, ad groups, or ads have different conversion numbers. However, in reality, each data record accurately reflects the number of conversions for that particular resource at the time of extracting the data from the Google Ads API.
+
+</HideInUI>
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+<HideInUI>
 
 ## Performance considerations
 
@@ -339,65 +392,82 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.1 | 2026-08-25 | [85023](https://github.com/airbytehq/airbyte/pull/85023) | Fixed multi-byte UTF-8 characters being corrupted at chunk boundaries in large streamed responses. |
+| 6.1.0 | 2026-07-06 | [80952](https://github.com/airbytehq/airbyte/pull/80952) | Add `ad_performance` and `geo_performance` streams. |
+| 6.0.0 | 2026-05-29 | [78504](https://github.com/airbytehq/airbyte/pull/78504) | Clamp incremental report dates to Google Ads' 37-month granular data retention window. |
+| 5.0.2 | 2026-05-29 | [78514](https://github.com/airbytehq/airbyte/pull/78514) | Remove the Google Ads 400 response filter predicate to avoid buffering large streaming responses. |
+| 5.0.1 | 2026-05-26 | [78419](https://github.com/airbytehq/airbyte/pull/78419) | Classify unrecognized fields in custom GAQL queries as configuration errors. |
+| 5.0.0 | 2026-04-20 | [73722](https://github.com/airbytehq/airbyte/pull/73722) | Upgrade Google Ads API from v20 to v23 (field renames, removals, Performance Max ad network type support) and remove nullable `bidding_strategy.id` from primary keys of `campaign_bidding_strategy` and `ad_group_bidding_strategy` streams |
+| 4.2.6 | 2026-05-13 | [78065](https://github.com/airbytehq/airbyte/pull/78065) | Promoted release candidate to GA |
+| 4.2.6-rc.3 | 2026-05-07 | [77835](https://github.com/airbytehq/airbyte/pull/77835) | Update CDK to pre-release with runtime cap on concurrent partition generators to fix thread pool starvation deadlock |
+| 4.2.6-rc.2 | 2026-05-01 | [77663](https://github.com/airbytehq/airbyte/pull/77663) | Mount `TimeoutHTTPAdapter` on parent-stream sessions (`customer_client`, `customer_client_non_manager`, `accessible_accounts`) so the 5-minute HTTP socket timeout also covers parent-record fetches |
+| 4.2.6-rc.1 | 2026-04-28 | [77514](https://github.com/airbytehq/airbyte/pull/77514) | Update CDK to pre-release with stderr heartbeat diagnostics and concurrent-source deadlock fix |
+| 4.2.5 | 2026-04-27 | [77037](https://github.com/airbytehq/airbyte/pull/77037) | Promoted release candidate to GA |
+| 4.2.5-rc.1 | 2026-04-27 | [76074](https://github.com/airbytehq/airbyte/pull/76074) | Update CDK to pre-release with deadlock fix, add 5-minute HTTP socket timeout, and retry HTTP 500 (transient internal error) responses from the Google Ads API |
+| 4.2.4 | 2026-04-16 | [76331](https://github.com/airbytehq/airbyte/pull/76331) | Improve UNRECOGNIZED_FIELD error message for custom GAQL queries |
+| 4.2.3 | 2026-04-16 | [75451](https://github.com/airbytehq/airbyte/pull/75451) | Fix NULL values for MESSAGE-type fields (e.g., change_event.old_resource, change_event.new_resource) in custom GAQL queries |
+| 4.2.2 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
+| 4.2.1 | 2026-03-25 | [75458](https://github.com/airbytehq/airbyte/pull/75458) | Set maxSecondsBetweenMessages to 4 hours |
+| 4.2.0 | 2026-03-19 | [73321](https://github.com/airbytehq/airbyte/pull/73321) | Add new `geographic_view_with_metrics` stream with metrics and dimension fields (geographic_view remains unchanged) |
 | 4.1.6 | 2026-02-18 | [73636](https://github.com/airbytehq/airbyte/pull/73636) | Promoting release candidate 4.1.6-rc.1 to a main version. |
 | 4.1.6-rc.1 | 2026-02-16 | [72953](https://github.com/airbytehq/airbyte/pull/72953) | Add HTTPAPIBudget and configurable concurrency level |
 | 4.1.5 | 2026-02-16 | [73363](https://github.com/airbytehq/airbyte/pull/73363) | Promoting release candidate 4.1.5-rc.2 to a main version. |
-| 4.1.5-rc.2  | 2026-02-11 | [73269](https://github.com/airbytehq/airbyte/pull/73269) | Fix decoder wiring to prevent OOM when using CustomRetriever |
-| 4.1.5-rc.1  | 2026-02-10 | [72840](https://github.com/airbytehq/airbyte/pull/72840) | Add retry for ChunkedEncodingError in response streaming |
-| 4.1.4       | 2026-01-29 | [72453](https://github.com/airbytehq/airbyte/pull/72453) | Promoting release candidate 4.1.4-rc.1 to a main version. |
-| 4.1.4-rc.1  | 2025-12-17 | [70228](https://github.com/airbytehq/airbyte/pull/70228) | Fix custom queries with tab characters and click_view custom queries                                                                                                   |
-| 4.1.3       | 2025-11-25 | [69844](https://github.com/airbytehq/airbyte/pull/69844) | Fix custom queries regular expression to be case-insensitive                                                                                                           |
-| 4.1.2       | 2025-11-24 | [69837](https://github.com/airbytehq/airbyte/pull/69837) | Fix schema loader for custom queries                                                                                                                                   |
-| 4.1.1       | 2025-11-24 | [69802](https://github.com/airbytehq/airbyte/pull/69802) | Fix custom query regex conditions                                                                                                                                      |
-| 4.1.0       | 2025-11-20 | [69776](https://github.com/airbytehq/airbyte/pull/69776) | Promoting release candidate 4.1.0-rc.8 to a main version.                                                                                                              |
-| 4.1.0-rc.8  | 2025-10-29 | [69084](https://github.com/airbytehq/airbyte/pull/69084) | Fix criterion streams                                                                                                                                                  |
-| 4.1.0-rc.7  | 2025-10-16 | [68030](https://github.com/airbytehq/airbyte/pull/68030) | Fix schema loader for `custom_queries` streams                                                                                                                         |
-| 4.1.0-rc.6  | 2025-09-25 | [66701](https://github.com/airbytehq/airbyte/pull/66701) | Enables progressive rollouts                                                                                                                                           |
-| 4.1.0-rc.5  | 2025-09-25 | [66569](https://github.com/airbytehq/airbyte/pull/66569) | Bumps to CDK v7, adds retry/backoff logic to custom schema loader                                                                                                      |
-| 4.1.0-rc.4  | 2025-09-18 | [66522](https://github.com/airbytehq/airbyte/pull/66522) | Revert to CDK v6.60.12                                                                                                                                                 |
-| 4.1.0-rc.3  | 2025-09-17 | [65535](https://github.com/airbytehq/airbyte/pull/65535) | Update custom query dynamic streams to use regex for conditional incremental sync component mapping                                                                    |
-| 4.1.0-rc.2  | 2025-08-22 | [65149](https://github.com/airbytehq/airbyte/pull/65149) | Update custom query URL to use Google Ads API v20                                                                                                                      |
-| 4.1.0-rc.1  | 2025-08-19 | [63344](https://github.com/airbytehq/airbyte/pull/63344) | Migrate `custom_queries` streams to low-code                                                                                                                           |
-| 4.0.2       | 2025-08-16 | [64987](https://github.com/airbytehq/airbyte/pull/64987) | Update dependencies                                                                                                                                                    |
-| 4.0.1       | 2025-08-09 | [64612](https://github.com/airbytehq/airbyte/pull/64612) | Update dependencies                                                                                                                                                    |
-| 4.0.0       | 2025-08-07 | [64512](https://github.com/airbytehq/airbyte/pull/64512) | Update API version to v20                                                                                                                                              |
-| 3.15.0      | 2025-08-04 | [64495](https://github.com/airbytehq/airbyte/pull/64495) | Promoting release candidate 3.15.0-rc.1 to a main version.                                                                                                             |
-| 3.15.0-rc.1 | 2025-07-20 | [64124](https://github.com/airbytehq/airbyte/pull/64124) | Switch all streams to paginated endpoints for improved reliability                                                                                                     |
-| 3.14.2      | 2025-07-28 | [63753](https://github.com/airbytehq/airbyte/pull/63753) | Switching `click_view` to paginated endpoint for improved reliability                                                                                                  |
-| 3.14.1      | 2025-07-26 | [61472](https://github.com/airbytehq/airbyte/pull/61472) | Update dependencies                                                                                                                                                    |
-| 3.14.0      | 2025-07-23 | [63733](https://github.com/airbytehq/airbyte/pull/63733) | Promoting release candidate 3.14.0-rc.1 to a main version.                                                                                                             |
-| 3.14.0-rc.1 | 2025-07-18 | [63357](https://github.com/airbytehq/airbyte/pull/63357) | Migrate incremental events streams                                                                                                                                     |
-| 3.13.0      | 2025-07-18 | [63369](https://github.com/airbytehq/airbyte/pull/63369) | Promoting release candidate 3.13.0-rc.2 to a main version.                                                                                                             |
-| 3.13.0-rc.2 | 2025-07-16 | [63348](https://github.com/airbytehq/airbyte/pull/63348) | Minor metadata update                                                                                                                                                  |
-| 3.13.0-rc.1 | 2025-07-16 | [62510](https://github.com/airbytehq/airbyte/pull/62510) | Migrate `click_view`, `campaign_bidding_strategy`, and `ad_group_bidding_strategy` streams to low-code                                                                 |
-| 3.12.0      | 2025-07-16 | [63335](https://github.com/airbytehq/airbyte/pull/63335) | Promoting release candidate 3.12.0-rc.2 to a main version.                                                                                                             |
-| 3.12.0-rc.2 | 2025-07-15 | [63323](https://github.com/airbytehq/airbyte/pull/63323) | Fixes erroneous transformation override                                                                                                                                |
-| 3.12.0-rc.1 | 2025-07-15 | [62510](https://github.com/airbytehq/airbyte/pull/62510) | Migrate additional streams to low-code: See PR for more details                                                                                                        |
-| 3.11.0      | 2025-07-15 | [63302](https://github.com/airbytehq/airbyte/pull/63302) | Promoting release candidate 3.11.0-rc.1 to a main version.                                                                                                             |
-| 3.11.0-rc.1 | 2025-07-14 | [62846](https://github.com/airbytehq/airbyte/pull/62846) | Migrate views streams to Low Code                                                                                                                                      |
-| 3.10.0      | 2025-07-14 | [63282](https://github.com/airbytehq/airbyte/pull/63282) | Promoting release candidate 3.10.0-rc.1 to a main version.                                                                                                             |
-| 3.10.0-rc.1 | 2025-07-10 | [62066](https://github.com/airbytehq/airbyte/pull/62066) | Migrate AdGroup stream to Low Code                                                                                                                                     |
-| 3.9.0       | 2025-07-10 | [62900](https://github.com/airbytehq/airbyte/pull/62900) | Promoting release candidate 3.9.0-rc.6 to a main version.                                                                                                              |
-| 3.9.0-rc.6  | 2025-07-08 | [62857](https://github.com/airbytehq/airbyte/pull/62857) | Add per partition state migration                                                                                                                                      |
-| 3.9.0-rc.5  | 2025-07-04 | [62518](https://github.com/airbytehq/airbyte/pull/62518) | Fix state migration for new empty states                                                                                                                               |
-| 3.9.0-rc.4  | 2025-07-03 | [62513](https://github.com/airbytehq/airbyte/pull/62513) | Update rollout flag in metadata                                                                                                                                        |
-| 3.9.0-rc.3  | 2025-07-03 | [62494](https://github.com/airbytehq/airbyte/pull/62494) | Handle ServiceUnavailableErrors and retry on account check                                                                                                             |
-| 3.9.0-rc.2  | 2025-07-03 | [62505](https://github.com/airbytehq/airbyte/pull/62505) | Fix state migration for empty states                                                                                                                                   |
-| 3.9.0-rc.1  | 2025-06-18 | [61674](https://github.com/airbytehq/airbyte/pull/61674) | Migrate Campaign stream to Low Code                                                                                                                                    |
-| 3.8.2       | 2025-05-31 | [51664](https://github.com/airbytehq/airbyte/pull/51664) | Update dependencies                                                                                                                                                    |
-| 3.8.1       | 2025-05-30 | [61002](https://github.com/airbytehq/airbyte/pull/61002) | Fix error during connection check for custom queries.                                                                                                                  |
-| 3.8.0       | 2025-05-30 | [61000](https://github.com/airbytehq/airbyte/pull/61000) | Promoting release candidate 3.8.0-rc.1 to a main version.                                                                                                              |
-| 3.8.0-rc.1  | 2025-05-28 | [60949](https://github.com/airbytehq/airbyte/pull/60949) | Update API version to v18                                                                                                                                              |
-| 3.7.10      | 2025-01-11 | [47090](https://github.com/airbytehq/airbyte/pull/47090) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
-| 3.7.9       | 2024-10-14 | [46893](https://github.com/airbytehq/airbyte/pull/46893) | Update getting customers logic                                                                                                                                         |
-| 3.7.8       | 2024-10-12 | [46120](https://github.com/airbytehq/airbyte/pull/46120) | Update dependencies                                                                                                                                                    |
-| 3.7.7       | 2024-10-07 | [45852](https://github.com/airbytehq/airbyte/pull/45852) | Change to the objects serialization in lists to JSON                                                                                                                   |
-| 3.7.6       | 2024-09-21 | [46543](https://github.com/airbytehq/airbyte/pull/46543) | Raise exception on missing stream                                                                                                                                      |
-| 3.7.5       | 2024-09-21 | [45801](https://github.com/airbytehq/airbyte/pull/45801) | Update dependencies                                                                                                                                                    |
-| 3.7.4       | 2024-09-20 | [44600](https://github.com/airbytehq/airbyte/pull/44600) | Update API documentation URLs                                                                                                                                          |
-| 3.7.3       | 2024-09-14 | [45497](https://github.com/airbytehq/airbyte/pull/45497) | Update dependencies                                                                                                                                                    |
-| 3.7.2       | 2024-09-07 | [45263](https://github.com/airbytehq/airbyte/pull/45263) | Update dependencies                                                                                                                                                    |
-| 3.7.1       | 2024-08-31 | [44326](https://github.com/airbytehq/airbyte/pull/44326) | Update dependencies                                                                                                                                                    |
+| 4.1.5-rc.2 | 2026-02-11 | [73269](https://github.com/airbytehq/airbyte/pull/73269) | Fix decoder wiring to prevent OOM when using CustomRetriever |
+| 4.1.5-rc.1 | 2026-02-10 | [72840](https://github.com/airbytehq/airbyte/pull/72840) | Add retry for ChunkedEncodingError in response streaming |
+| 4.1.4 | 2026-01-29 | [72453](https://github.com/airbytehq/airbyte/pull/72453) | Promoting release candidate 4.1.4-rc.1 to a main version. |
+| 4.1.4-rc.1 | 2025-12-17 | [70228](https://github.com/airbytehq/airbyte/pull/70228) | Fix custom queries with tab characters and click_view custom queries |
+| 4.1.3 | 2025-11-25 | [69844](https://github.com/airbytehq/airbyte/pull/69844) | Fix custom queries regular expression to be case-insensitive |
+| 4.1.2 | 2025-11-24 | [69837](https://github.com/airbytehq/airbyte/pull/69837) | Fix schema loader for custom queries |
+| 4.1.1 | 2025-11-24 | [69802](https://github.com/airbytehq/airbyte/pull/69802) | Fix custom query regex conditions |
+| 4.1.0 | 2025-11-20 | [69776](https://github.com/airbytehq/airbyte/pull/69776) | Promoting release candidate 4.1.0-rc.8 to a main version. |
+| 4.1.0-rc.8 | 2025-10-29 | [69084](https://github.com/airbytehq/airbyte/pull/69084) | Fix criterion streams |
+| 4.1.0-rc.7 | 2025-10-16 | [68030](https://github.com/airbytehq/airbyte/pull/68030) | Fix schema loader for `custom_queries` streams |
+| 4.1.0-rc.6 | 2025-09-25 | [66701](https://github.com/airbytehq/airbyte/pull/66701) | Enables progressive rollouts |
+| 4.1.0-rc.5 | 2025-09-25 | [66569](https://github.com/airbytehq/airbyte/pull/66569) | Bumps to CDK v7, adds retry/backoff logic to custom schema loader |
+| 4.1.0-rc.4 | 2025-09-18 | [66522](https://github.com/airbytehq/airbyte/pull/66522) | Revert to CDK v6.60.12 |
+| 4.1.0-rc.3 | 2025-09-17 | [65535](https://github.com/airbytehq/airbyte/pull/65535) | Update custom query dynamic streams to use regex for conditional incremental sync component mapping |
+| 4.1.0-rc.2 | 2025-08-22 | [65149](https://github.com/airbytehq/airbyte/pull/65149) | Update custom query URL to use Google Ads API v20 |
+| 4.1.0-rc.1 | 2025-08-19 | [63344](https://github.com/airbytehq/airbyte/pull/63344) | Migrate `custom_queries` streams to low-code |
+| 4.0.2 | 2025-08-16 | [64987](https://github.com/airbytehq/airbyte/pull/64987) | Update dependencies |
+| 4.0.1 | 2025-08-09 | [64612](https://github.com/airbytehq/airbyte/pull/64612) | Update dependencies |
+| 4.0.0 | 2025-08-07 | [64512](https://github.com/airbytehq/airbyte/pull/64512) | Update API version to v20 |
+| 3.15.0 | 2025-08-04 | [64495](https://github.com/airbytehq/airbyte/pull/64495) | Promoting release candidate 3.15.0-rc.1 to a main version. |
+| 3.15.0-rc.1 | 2025-07-20 | [64124](https://github.com/airbytehq/airbyte/pull/64124) | Switch all streams to paginated endpoints for improved reliability |
+| 3.14.2 | 2025-07-28 | [63753](https://github.com/airbytehq/airbyte/pull/63753) | Switching `click_view` to paginated endpoint for improved reliability |
+| 3.14.1 | 2025-07-26 | [61472](https://github.com/airbytehq/airbyte/pull/61472) | Update dependencies |
+| 3.14.0 | 2025-07-23 | [63733](https://github.com/airbytehq/airbyte/pull/63733) | Promoting release candidate 3.14.0-rc.1 to a main version. |
+| 3.14.0-rc.1 | 2025-07-18 | [63357](https://github.com/airbytehq/airbyte/pull/63357) | Migrate incremental events streams |
+| 3.13.0 | 2025-07-18 | [63369](https://github.com/airbytehq/airbyte/pull/63369) | Promoting release candidate 3.13.0-rc.2 to a main version. |
+| 3.13.0-rc.2 | 2025-07-16 | [63348](https://github.com/airbytehq/airbyte/pull/63348) | Minor metadata update |
+| 3.13.0-rc.1 | 2025-07-16 | [62510](https://github.com/airbytehq/airbyte/pull/62510) | Migrate `click_view`, `campaign_bidding_strategy`, and `ad_group_bidding_strategy` streams to low-code |
+| 3.12.0 | 2025-07-16 | [63335](https://github.com/airbytehq/airbyte/pull/63335) | Promoting release candidate 3.12.0-rc.2 to a main version. |
+| 3.12.0-rc.2 | 2025-07-15 | [63323](https://github.com/airbytehq/airbyte/pull/63323) | Fixes erroneous transformation override |
+| 3.12.0-rc.1 | 2025-07-15 | [62510](https://github.com/airbytehq/airbyte/pull/62510) | Migrate additional streams to low-code: See PR for more details |
+| 3.11.0 | 2025-07-15 | [63302](https://github.com/airbytehq/airbyte/pull/63302) | Promoting release candidate 3.11.0-rc.1 to a main version. |
+| 3.11.0-rc.1 | 2025-07-14 | [62846](https://github.com/airbytehq/airbyte/pull/62846) | Migrate views streams to Low Code |
+| 3.10.0 | 2025-07-14 | [63282](https://github.com/airbytehq/airbyte/pull/63282) | Promoting release candidate 3.10.0-rc.1 to a main version. |
+| 3.10.0-rc.1 | 2025-07-10 | [62066](https://github.com/airbytehq/airbyte/pull/62066) | Migrate AdGroup stream to Low Code |
+| 3.9.0 | 2025-07-10 | [62900](https://github.com/airbytehq/airbyte/pull/62900) | Promoting release candidate 3.9.0-rc.6 to a main version. |
+| 3.9.0-rc.6 | 2025-07-08 | [62857](https://github.com/airbytehq/airbyte/pull/62857) | Add per partition state migration |
+| 3.9.0-rc.5 | 2025-07-04 | [62518](https://github.com/airbytehq/airbyte/pull/62518) | Fix state migration for new empty states |
+| 3.9.0-rc.4 | 2025-07-03 | [62513](https://github.com/airbytehq/airbyte/pull/62513) | Update rollout flag in metadata |
+| 3.9.0-rc.3 | 2025-07-03 | [62494](https://github.com/airbytehq/airbyte/pull/62494) | Handle ServiceUnavailableErrors and retry on account check |
+| 3.9.0-rc.2 | 2025-07-03 | [62505](https://github.com/airbytehq/airbyte/pull/62505) | Fix state migration for empty states |
+| 3.9.0-rc.1 | 2025-06-18 | [61674](https://github.com/airbytehq/airbyte/pull/61674) | Migrate Campaign stream to Low Code |
+| 3.8.2 | 2025-05-31 | [51664](https://github.com/airbytehq/airbyte/pull/51664) | Update dependencies |
+| 3.8.1 | 2025-05-30 | [61002](https://github.com/airbytehq/airbyte/pull/61002) | Fix error during connection check for custom queries. |
+| 3.8.0 | 2025-05-30 | [61000](https://github.com/airbytehq/airbyte/pull/61000) | Promoting release candidate 3.8.0-rc.1 to a main version. |
+| 3.8.0-rc.1 | 2025-05-28 | [60949](https://github.com/airbytehq/airbyte/pull/60949) | Update API version to v18 |
+| 3.7.10 | 2025-01-11 | [47090](https://github.com/airbytehq/airbyte/pull/47090) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 3.7.9 | 2024-10-14 | [46893](https://github.com/airbytehq/airbyte/pull/46893) | Update getting customers logic |
+| 3.7.8 | 2024-10-12 | [46120](https://github.com/airbytehq/airbyte/pull/46120) | Update dependencies |
+| 3.7.7 | 2024-10-07 | [45852](https://github.com/airbytehq/airbyte/pull/45852) | Change to the objects serialization in lists to JSON |
+| 3.7.6 | 2024-09-21 | [46543](https://github.com/airbytehq/airbyte/pull/46543) | Raise exception on missing stream |
+| 3.7.5 | 2024-09-21 | [45801](https://github.com/airbytehq/airbyte/pull/45801) | Update dependencies |
+| 3.7.4 | 2024-09-20 | [44600](https://github.com/airbytehq/airbyte/pull/44600) | Update API documentation URLs |
+| 3.7.3 | 2024-09-14 | [45497](https://github.com/airbytehq/airbyte/pull/45497) | Update dependencies |
+| 3.7.2 | 2024-09-07 | [45263](https://github.com/airbytehq/airbyte/pull/45263) | Update dependencies |
+| 3.7.1 | 2024-08-31 | [44326](https://github.com/airbytehq/airbyte/pull/44326) | Update dependencies |
 | `3.7.0  `   | 2024-08-15 | [44095](https://github.com/airbytehq/airbyte/pull/44095) | Migrate to google-ads v17                                                                                                                                              |
 | `3.6.5  `   | 2024-08-12 | [43882](https://github.com/airbytehq/airbyte/pull/43882) | Update dependencies                                                                                                                                                    |
 | `3.6.4`     | 2024-08-10 | [43628](https://github.com/airbytehq/airbyte/pull/43628) | Update dependencies                                                                                                                                                    |

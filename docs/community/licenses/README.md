@@ -4,7 +4,7 @@
 
 **Airbyte Protocol** is open sourced and available under the [MIT License](https://opensource.org/license/mit/).
 
-**Airbyte Cloud & Airbyte Enterprise** are both closed source and require a commercial license from Airbyte.
+**Airbyte Cloud, Airbyte Enterprise, and Airbyte Agents** require a commercial license from Airbyte.
 
 ## Questions and examples
 
