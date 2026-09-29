@@ -270,7 +270,8 @@ class PostgresSourceDebeziumOperations(
             } else if (field.type is ArrayFieldType<*>) {
                 // ArrayEncoder needs a List<T>; decode the JSON array using the
                 // element type's decoder before passing to the encoder.
-                val elementDecoder = (field.type as ArrayFieldType<*>).elementFieldType.jsonEncoder
+                val elementDecoder =
+                    (field.type as ArrayFieldType<*>).elementFieldType.jsonEncoder
                         as JsonDecoder<Any?>
                 val arrayDecoder = ArrayDecoder(elementDecoder)
                 var decoded: List<Any?>? = null
