@@ -492,9 +492,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 6.1.0 | 2026-09-24 | [86943](https://github.com/airbytehq/airbyte/pull/86943) | Give `GET_VENDOR_INVENTORY_REPORT` the daily date window and `endDate` cursor its sibling reports already have, making it incremental; hold the cursor back four days for Amazon's publishing lag |
-| 6.0.2 | 2026-09-27 | [86941](https://github.com/airbytehq/airbyte/pull/86941) | Surface Amazon's own explanation when a report fails with `FATAL` instead of a generic async-job error, and fail fast with a config error when the reason points at report options |
-| 6.0.1 | 2026-09-24 | [86940](https://github.com/airbytehq/airbyte/pull/86940) | Send configured `reportOptions` for the vendor sales, inventory, traffic and net pure product margin reports instead of validating and then dropping them |
+| 6.1.0 | 2026-09-29 | [86943](https://github.com/airbytehq/airbyte/pull/86943) | Give `GET_VENDOR_INVENTORY_REPORT` the daily date window and `endDate` cursor its sibling reports already have, making it incremental; hold the cursor back four days for Amazon's publishing lag |
+| 6.0.3 | 2026-09-29 | [86941](https://github.com/airbytehq/airbyte/pull/86941) | Surface Amazon's own explanation when a report fails with `FATAL` instead of a generic async-job error, and fail fast with a config error when the reason points at report options |
+| 6.0.2 | 2026-09-29 | [87083](https://github.com/airbytehq/airbyte/pull/87083) | Update dependencies |
+| 6.0.1 | 2026-09-28 | [86940](https://github.com/airbytehq/airbyte/pull/86940) | Send configured `reportOptions` for the vendor sales, inventory, traffic, and net pure product margin reports instead of validating and then dropping them |
 | 6.0.0 | 2026-09-24 | [85813](https://github.com/airbytehq/airbyte/pull/85813) | Remove primary key from `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` streams; these line-item reports have no proven, reliably unique identifier, so deduplicating on `amazon-order-id` dropped records |
 | 5.10.5 | 2026-09-22 | [86512](https://github.com/airbytehq/airbyte/pull/86512) | Update dependencies |
 | 5.10.4 | 2026-09-21 | [86322](https://github.com/airbytehq/airbyte/pull/86322) | Add `order-item-id` to `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` schemas |
