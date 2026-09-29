@@ -140,15 +140,26 @@ The Campaigns stream retrieves campaigns of all buying types: Auction, TopView (
 
 The `ads` stream uses `modify_time` as its incremental cursor and skips records where TikTok doesn't return this field. TikTok can omit `modify_time` from Smart+ ad records, so those records don't appear in the stream.
 
+### Report aggregation
+
+Reports synced by this connector can use either hourly, daily, or lifetime granularities for aggregating performance data. For example, if you select the daily-aggregation flavor of a report, the report will contain a row for each day for the duration of the report. Each row will indicate the number of impressions recorded on that day.
+
 :::info
 
 The TikTok Reporting API has [data latency](https://ads.tiktok.com/marketing_api/docs?id=1738864894606337) of approximately 11 hours. To ensure that the connector captures updated metrics in existing records, use an attribution window of at least 3 days for incremental syncs.
 
 :::
 
-### Report Aggregation
+### Conversion metrics in daily report streams
 
-Reports synced by this connector can use either hourly, daily, or lifetime granularities for aggregating performance data. For example, if you select the daily-aggregation flavor of a report, the report will contain a row for each day for the duration of the report. Each row will indicate the number of impressions recorded on that day.
+The `ads_reports_daily`, `ad_groups_reports_daily`, and `campaigns_reports_daily` streams include conversion metrics for three channels: your website (from the TikTok Pixel), your app, and TikTok Shop. TikTok reports each channel as a separate metric and doesn't return a combined total. To get a total across channels, add the metrics for each channel together.
+
+| Event        | Website                    | App                           | TikTok Shop            |
+|:-------------|:---------------------------|:------------------------------|:-----------------------|
+| Add to cart  | `web_event_add_to_cart`    | `total_app_event_add_to_cart` | `onsite_on_web_cart`   |
+| Content view | `page_content_view_events` | `total_view_content`          | `onsite_on_web_detail` |
+
+These metrics aren't available in the hourly, lifetime, or audience report streams. TikTok rejects these metrics in audience reports, so the connector doesn't request them there.
 
 ## Performance considerations
 
@@ -180,7 +191,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.2.0 | 2026-09-14 | [85820](https://github.com/airbytehq/airbyte/pull/85820) | Add Website, App and Shop conversion metrics to the daily report streams |
+| 5.2.0 | 2026-09-29 | [85820](https://github.com/airbytehq/airbyte/pull/85820) | Add Website, App and Shop conversion metrics to the daily report streams |
 | 5.1.19 | 2026-09-29 | [87372](https://github.com/airbytehq/airbyte/pull/87372) | Update dependencies |
 | 5.1.18 | 2026-09-22 | [86854](https://github.com/airbytehq/airbyte/pull/86854) | Update dependencies |
 | 5.1.17 | 2026-09-21 | [79183](https://github.com/airbytehq/airbyte/pull/79183) | Classify TikTok API error code 40001 (PERMISSION_ERROR) as config_error instead of system_error |
