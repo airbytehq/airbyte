@@ -125,6 +125,7 @@ class ArrowBatchParquetWriter(
     override fun metrics(): Stream<FieldMetrics<*>> =
         columns.flatMap { it.baseWriter.metrics().toList() }.stream()
 
+    @Suppress("INACCESSIBLE_TYPE")
     private fun baseWriter(descriptor: ColumnDescriptor): ParquetValueWriter<*> {
         return when (descriptor.primitiveType.primitiveTypeName) {
             org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BOOLEAN ->
