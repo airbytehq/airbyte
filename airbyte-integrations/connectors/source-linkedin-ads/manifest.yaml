@@ -580,7 +580,8 @@ definitions:
     # Internal parent stream for `videos`; not exposed in the `streams` list.
     # Resolves each creative's sponsored-content reference (urn:li:share / urn:li:ugcPost)
     # to the underlying post, and keeps only the posts whose media is a video.
-    # Creatives without a `content.reference` (e.g. text ads) produce no partition.
+    # Creatives without a `content.reference` (e.g. text ads), or with a null one,
+    # produce no partition.
     videos_creative_posts:
       type: DeclarativeStream
       name: videos_creative_posts
@@ -610,11 +611,9 @@ definitions:
                 action: IGNORE
                 error_message: "Skipping a creative's post that is deleted or not readable by the authenticated user; the videos it references will not be synced."
               # A creative's `content.reference` can also be an urn:li:adInMailContent
-              # (Message Ads), which is not a post URN - the Posts API rejects it with
-              # 400 INVALID_URN_TYPE - and an explicitly null reference would produce a
-              # request for `posts/None`, also rejected as a malformed URN. Skip both:
-              # neither can reference a video. LinkedIn returns two different envelopes
-              # here: a restli error naming the URN in `message`, and UGC_VALIDATIONS_FAILED
+              # (Message Ads), which is not a post URN and cannot reference a video, so
+              # skip it. LinkedIn documents this rejection as a restli 400 naming the URN
+              # in `message` (INVALID_URN_TYPE), but the API returns UGC_VALIDATIONS_FAILED,
               # whose `message` is generic and whose offending URN appears only under
               # `errorDetails`. Match both. The errorDetails clause matches only an
               # `urn:li:adInMailContent:` URN, the one non-post reference type LinkedIn
@@ -628,7 +627,7 @@ definitions:
                   and ('URN' in ((response.get('message') or '') | upper)
                   or 'URN:LI:ADINMAILCONTENT:' in ((response.get('errorDetails') or {}) | string | upper)) }}
                 action: IGNORE
-                error_message: "Skipping a creative reference that is not a fetchable post URN (e.g. urn:li:adInMailContent from Message Ads); it cannot reference a video. LinkedIn response: {{ response }}"
+                error_message: "Skipping a creative reference that is not a fetchable post URN (e.g. urn:li:adInMailContent from Message Ads); it cannot reference a video."
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -649,8 +648,20 @@ definitions:
             - type: ParentStreamConfig
               parent_key: content/reference
               partition_field: post_urn
+              # The router skips a creative with no `content.reference` key but still
+              # emits a partition for an explicitly null one, which would request the
+              # literal path posts/None (LinkedIn: 400 "Key parameter value 'None' is
+              # invalid"). Drop those creatives before partitioning. The filter applies
+              # only to this parent, not to the exposed `creatives` stream.
               stream:
                 $ref: "#/definitions/streams/creatives"
+                retriever:
+                  $ref: "#/definitions/streams/creatives/retriever"
+                  record_selector:
+                    $ref: "#/definitions/streams/creatives/retriever/record_selector"
+                    record_filter:
+                      type: RecordFilter
+                      condition: "{{ ((record.get('content') or {}).get('reference') or '') != '' }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:

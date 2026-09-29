@@ -63,14 +63,6 @@ _UGC_VALIDATIONS_FAILED_POST_URN_BODY = json.dumps(
         "status": 400,
     }
 )
-# What the Posts API returns when the path key is not a URN at all
-# (e.g. the literal `None` produced by an explicitly null content.reference).
-_MALFORMED_URN_BODY = json.dumps(
-    {
-        "message": "Invalid URN in path key 'postsId': 'None' is not a valid URN",
-        "status": 400,
-    }
-)
 
 
 def _create_account_record(account_id: int, name: str = "Test Account") -> dict:
@@ -408,11 +400,14 @@ class TestVideosStream(TestCase):
     @HttpMocker()
     def test_null_creative_reference_is_skipped_without_failing_the_sync(self, http_mocker: HttpMocker):
         """
-        Given: Two creatives, one carrying an explicitly null content.reference (the partition
-               is still emitted and requests the literal path posts/None, which LinkedIn
-               rejects with 400) and one referencing a live video post
+        Given: Two creatives, one carrying an explicitly null content.reference and one
+               referencing a live video post
         When: Running a full refresh sync
-        Then: The null reference is skipped and the other creative's video still syncs
+        Then: The null reference is dropped before the post lookup and the other creative's
+              video still syncs
+
+        No posts/None request is mocked, so the test fails if the stream sends one: LinkedIn
+        rejects it with 400 "Key parameter value 'None' is invalid", which no skip filter matches.
         """
         config = ConfigBuilder().build()
 
@@ -431,10 +426,6 @@ class TestVideosStream(TestCase):
                     _create_creative_record(2002, 111111111, "urn:li:share:1000002"),
                 ]
             ),
-        )
-        http_mocker.get(
-            LinkedInAdsRequestBuilder.posts_endpoint("None").build(),
-            HttpResponse(body=_MALFORMED_URN_BODY, status_code=400),
         )
         http_mocker.get(
             LinkedInAdsRequestBuilder.posts_endpoint("urn:li:share:1000002").build(),
