@@ -27,7 +27,7 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: "The `extensiveCalls` stream schema has changed: the `media` lacked a data type definition and is now declared as `null` or `object`. Additionally, the subfield `parties.items.properties.context` was changed from `object` or `null` to `array` or `null`. Users syncing the `extensiveCalls` stream must refresh the source schema and reset the stream after upgrading. For more information, see the [Gong migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations)."
+        message: "The `extensiveCalls` stream schema has changed: the `media` lacked a data type definition and is now declared as `null` or `object`. Additionally, the subfield `parties.items.properties.context` was changed from `object` or `null` to `array` or `null`. Both fields are nested, so database, data warehouse, JSONL, and CSV destinations only need a source schema refresh and should not clear the stream. Avro, Parquet, and Iceberg destinations derive a typed nested schema and must refresh the source schema and clear the `extensiveCalls` stream. For more information, see the [Gong migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations)."
         upgradeDeadline: "2026-10-09"
         deadlineAction: "auto_upgrade"
         scopedImpact:
