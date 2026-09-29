@@ -25,15 +25,14 @@ object MongoDbClientFactory {
         if (connectionString.readPreference == null) {
             settings.readPreference(ReadPreference.secondaryPreferred())
         }
-        if (configuration.hasCredentials) {
+        configuration.credential?.let { (username: String, password: String) ->
             // The legacy connector URL-encodes the username before handing it to the driver;
             // kept as-is for parity.
-            val username: String = URLEncoder.encode(configuration.username, StandardCharsets.UTF_8)
             settings.credential(
                 MongoCredential.createCredential(
-                    username,
+                    URLEncoder.encode(username, StandardCharsets.UTF_8),
                     configuration.authSource,
-                    configuration.password!!.toCharArray(),
+                    password.toCharArray(),
                 ),
             )
         }

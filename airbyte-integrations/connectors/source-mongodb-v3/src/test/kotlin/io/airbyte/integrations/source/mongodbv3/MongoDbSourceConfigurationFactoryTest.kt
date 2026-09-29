@@ -48,11 +48,9 @@ class MongoDbSourceConfigurationFactoryTest {
         Assertions.assertEquals(listOf("db1", "db2"), config.databases)
         Assertions.assertEquals("user", config.username)
         Assertions.assertEquals("secret", config.password)
-        Assertions.assertTrue(config.hasCredentials)
+        Assertions.assertEquals("user" to "secret", config.credential)
         Assertions.assertEquals("auth_db", config.authSource)
         Assertions.assertFalse(config.schemaEnforced)
-        Assertions.assertEquals(Duration.ofSeconds(600), config.initialWaitingDuration)
-        Assertions.assertEquals(5000, config.queueSize)
         Assertions.assertEquals(100, config.discoverSampleSize)
         Assertions.assertEquals(Duration.ofSeconds(60), config.discoverTimeout)
         Assertions.assertEquals(
@@ -85,11 +83,9 @@ class MongoDbSourceConfigurationFactoryTest {
         Assertions.assertEquals(MongoDbClusterType.SELF_MANAGED_REPLICA_SET, config.clusterType)
         Assertions.assertNull(config.username)
         Assertions.assertNull(config.password)
-        Assertions.assertFalse(config.hasCredentials)
+        Assertions.assertNull(config.credential)
         Assertions.assertEquals("admin", config.authSource)
         Assertions.assertTrue(config.schemaEnforced)
-        Assertions.assertEquals(Duration.ofSeconds(300), config.initialWaitingDuration)
-        Assertions.assertEquals(10000, config.queueSize)
         Assertions.assertEquals(10000, config.discoverSampleSize)
         Assertions.assertEquals(Duration.ofSeconds(600), config.discoverTimeout)
         Assertions.assertEquals(
@@ -122,12 +118,6 @@ class MongoDbSourceConfigurationFactoryTest {
             "mongodb+srv://cluster0.abcd1.mongodb.net/",
             config.connectionString
         )
-    }
-
-    @Test
-    fun testQueueSizeIsClamped() {
-        Assertions.assertEquals(1000, make(selfManaged("\"queue_size\": 10")).queueSize)
-        Assertions.assertEquals(10000, make(selfManaged("\"queue_size\": 999999")).queueSize)
     }
 
     @Test

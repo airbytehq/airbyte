@@ -2,6 +2,7 @@
 package io.airbyte.integrations.source.mongodbv3
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.output.sockets.ProtobufAwareCustomConnectorJsonCodec
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
@@ -12,8 +13,7 @@ import io.airbyte.cdk.util.Jsons
  */
 fun schemaFieldTypesOf(stream: Stream): Map<String, MongoDbFieldType> =
     stream.schema
-        .asSequence()
-        .filterNot { it.id.startsWith("_ab_") }
+        .filterNot { it.id.startsWith(MetaField.META_PREFIX) }
         .mapNotNull { field -> (field.type as? MongoDbFieldType)?.let { field.id to it } }
         .toMap()
 

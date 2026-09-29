@@ -12,6 +12,7 @@ import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
+import io.airbyte.integrations.source.mongodbv3.MongoDbSourceConfigurationSpecification as Spec
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Value
@@ -24,51 +25,49 @@ enum class MongoDbClusterType {
     SELF_MANAGED_REPLICA_SET,
 }
 
-/** What to do when the persisted change stream resume token is no longer valid. */
-enum class InvalidCdcCursorPositionBehavior(val specValue: String) {
-    FAIL_SYNC("Fail sync"),
-    RESYNC_DATA("Re-sync data");
+/** An enum whose entries are selected in the spec by a human-readable [specValue]. */
+interface SpecEnum {
+    val specValue: String
+}
 
-    companion object {
-        fun fromSpecValue(value: String): InvalidCdcCursorPositionBehavior =
-            entries.firstOrNull { it.specValue == value }
-                ?: throw ConfigErrorException(
-                    "Invalid value '$value' for invalid_cdc_cursor_position_behavior, " +
-                        "expected one of ${entries.map { it.specValue }}.",
-                )
-    }
+/**
+ * Resolves a spec string to an entry of [E], or throws a [ConfigErrorException] naming [property].
+ */
+inline fun <reified E> parseSpecEnum(property: String, value: String): E where
+E : Enum<E>,
+E : SpecEnum =
+    enumValues<E>().firstOrNull { it.specValue == value }
+        ?: throw ConfigErrorException(
+            "Invalid value '$value' for $property, expected one of ${enumValues<E>().map { it.specValue }}.",
+        )
+
+/** What to do when the persisted change stream resume token is no longer valid. */
+enum class InvalidCdcCursorPositionBehavior(override val specValue: String) : SpecEnum {
+    FAIL_SYNC("Fail sync"),
+    RESYNC_DATA("Re-sync data"),
 }
 
 /** How the change stream reports the new value of an updated document. */
-enum class UpdateCaptureMode(val specValue: String) {
+enum class UpdateCaptureMode(override val specValue: String) : SpecEnum {
     LOOKUP("Lookup"),
-    POST_IMAGE("Post Image");
-
-    companion object {
-        fun fromSpecValue(value: String): UpdateCaptureMode =
-            entries.firstOrNull { it.specValue == value }
-                ?: throw ConfigErrorException(
-                    "Invalid value '$value' for update_capture_mode, " +
-                        "expected one of ${entries.map { it.specValue }}.",
-                )
-    }
+    POST_IMAGE("Post Image"),
 }
 
-/** MongoDB-specific implementation of [SourceConfiguration]. */
+/**
+ * MongoDB-specific implementation of [SourceConfiguration].
+ *
+ * The legacy spec's `initial_waiting_seconds` and `queue_size` are Debezium-only knobs; the native
+ * change-stream reader has no use for them, so they are accepted (for spec parity) but not carried.
+ */
 data class MongoDbSourceConfiguration(
     val clusterType: MongoDbClusterType,
-    /**
-     * Sanitized connection string, see [MongoDbSourceConfigurationFactory.sanitizeConnectionString]
-     * .
-     */
+    /** Sanitized, see [MongoDbSourceConfigurationFactory.sanitizeConnectionString]. */
     val connectionString: String,
     val databases: List<String>,
     val username: String?,
     val password: String?,
     val authSource: String,
     val schemaEnforced: Boolean,
-    val initialWaitingDuration: Duration,
-    val queueSize: Int,
     val discoverSampleSize: Int,
     val discoverTimeout: Duration,
     val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior,
@@ -87,15 +86,15 @@ data class MongoDbSourceConfiguration(
         SshConnectionOptions.fromAdditionalProperties(emptyMap()),
 ) : SourceConfiguration {
 
-    val hasCredentials: Boolean
-        get() = username != null && password != null
+    /** `(username, password)` when both are configured, else null (no authentication). */
+    val credential: Pair<String, String>?
+        get() = if (username != null && password != null) username to password else null
 
     /** Keeps the password out of logs. */
     override fun toString(): String =
         "MongoDbSourceConfiguration(clusterType=$clusterType, connectionString=$connectionString, " +
-            "databases=$databases, username=$username, password=${if (password == null) "null" else "*****"}, " +
+            "databases=$databases, username=$username, password=${password?.let { "*****" }}, " +
             "authSource=$authSource, schemaEnforced=$schemaEnforced, " +
-            "initialWaitingDuration=$initialWaitingDuration, queueSize=$queueSize, " +
             "discoverSampleSize=$discoverSampleSize, discoverTimeout=$discoverTimeout, " +
             "invalidCdcCursorPositionBehavior=$invalidCdcCursorPositionBehavior, " +
             "updateCaptureMode=$updateCaptureMode, maxSnapshotReadDuration=$maxSnapshotReadDuration, " +
@@ -106,10 +105,8 @@ data class MongoDbSourceConfiguration(
     private class MicronautFactory {
         @Singleton
         fun mongoDbSourceConfig(
-            factory:
-                SourceConfigurationFactory<
-                    MongoDbSourceConfigurationSpecification, MongoDbSourceConfiguration>,
-            supplier: ConfigurationSpecificationSupplier<MongoDbSourceConfigurationSpecification>,
+            factory: SourceConfigurationFactory<Spec, MongoDbSourceConfiguration>,
+            supplier: ConfigurationSpecificationSupplier<Spec>,
         ): MongoDbSourceConfiguration = factory.make(supplier.get())
     }
 
@@ -127,9 +124,7 @@ constructor(
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String = STDIO.name,
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}")
     val socketPaths: List<String> = emptyList(),
-) :
-    SourceConfigurationFactory<
-        MongoDbSourceConfigurationSpecification, MongoDbSourceConfiguration> {
+) : SourceConfigurationFactory<Spec, MongoDbSourceConfiguration> {
 
     private val log = KotlinLogging.logger {}
 
@@ -138,7 +133,7 @@ constructor(
      * generic "Failed to build ConnectorConfiguration." error, which hides the user-facing messages
      * thrown below (and by the legacy connector). Let those through unchanged.
      */
-    override fun make(spec: MongoDbSourceConfigurationSpecification): MongoDbSourceConfiguration =
+    override fun make(spec: Spec): MongoDbSourceConfiguration =
         try {
             makeWithoutExceptionHandling(spec)
         } catch (e: ConfigErrorException) {
@@ -147,44 +142,23 @@ constructor(
             throw ConfigErrorException("Failed to build ConnectorConfiguration.", e)
         }
 
-    override fun makeWithoutExceptionHandling(
-        pojo: MongoDbSourceConfigurationSpecification,
-    ): MongoDbSourceConfiguration {
+    override fun makeWithoutExceptionHandling(pojo: Spec): MongoDbSourceConfiguration {
         val databaseConfig: DatabaseConfigSpecification =
             pojo.databaseConfigOrNull()
                 ?: throw ConfigErrorException(
                     "Database configuration is missing required 'database_config' property.",
                 )
-        val databases: List<String> = databaseConfig.databases
-        if (databases.isEmpty()) {
+        if (databaseConfig.databases.isEmpty()) {
             throw ConfigErrorException("No databases specified in the configuration.")
         }
         val connectionString: String = sanitizeConnectionString(databaseConfig.connectionString)
-        val parsedConnectionString: ConnectionString =
+        val firstHost: String =
             try {
-                ConnectionString(connectionString)
+                ConnectionString(connectionString).hosts.first()
             } catch (e: IllegalArgumentException) {
                 throw ConfigErrorException("Invalid connection string: ${e.message}", e)
             }
-        val (realHost: String, realPort: Int) =
-            splitHostAndPort(parsedConnectionString.hosts.first())
-
-        val clusterType: MongoDbClusterType =
-            when (databaseConfig) {
-                is AtlasReplicaSetSpecification -> MongoDbClusterType.ATLAS_REPLICA_SET
-                is SelfManagedReplicaSetSpecification -> MongoDbClusterType.SELF_MANAGED_REPLICA_SET
-            }
-
-        val queueSize: Int =
-            (pojo.queueSize ?: MAX_QUEUE_SIZE).let { requested: Int ->
-                val effective: Int = requested.coerceIn(MIN_QUEUE_SIZE, MAX_QUEUE_SIZE)
-                if (effective != requested) {
-                    log.warn {
-                        "Requested queue_size $requested is out of range, using $effective."
-                    }
-                }
-                effective
-            }
+        val (realHost: String, realPort: Int) = splitHostAndPort(firstHost)
 
         val maxConcurrency: Int =
             when (DataChannelMedium.valueOf(dataChannelMedium)) {
@@ -194,46 +168,38 @@ constructor(
         log.info { "Effective concurrency: $maxConcurrency" }
 
         return MongoDbSourceConfiguration(
-            clusterType = clusterType,
+            clusterType =
+                when (databaseConfig) {
+                    is AtlasReplicaSetSpecification -> MongoDbClusterType.ATLAS_REPLICA_SET
+                    is SelfManagedReplicaSetSpecification ->
+                        MongoDbClusterType.SELF_MANAGED_REPLICA_SET
+                },
             connectionString = connectionString,
-            databases = databases,
+            databases = databaseConfig.databases,
             username = databaseConfig.username,
             password = databaseConfig.password,
-            authSource = databaseConfig.authSource
-                    ?: MongoDbSourceConfigurationSpecification.DEFAULT_AUTH_SOURCE,
+            authSource = databaseConfig.authSource ?: Spec.DEFAULT_AUTH_SOURCE,
             schemaEnforced = databaseConfig.schemaEnforced ?: true,
-            initialWaitingDuration =
-                Duration.ofSeconds(
-                    (pojo.initialWaitingSeconds
-                            ?: MongoDbSourceConfigurationSpecification
-                                .DEFAULT_INITIAL_WAITING_SECONDS)
-                        .toLong(),
-                ),
-            queueSize = queueSize,
-            discoverSampleSize = pojo.discoverSampleSize
-                    ?: MongoDbSourceConfigurationSpecification.DEFAULT_DISCOVER_SAMPLE_SIZE,
+            discoverSampleSize = pojo.discoverSampleSize ?: Spec.DEFAULT_DISCOVER_SAMPLE_SIZE,
             discoverTimeout =
                 Duration.ofSeconds(
-                    (pojo.discoverTimeoutSeconds
-                            ?: MongoDbSourceConfigurationSpecification
-                                .DEFAULT_DISCOVER_TIMEOUT_SECONDS)
-                        .toLong(),
+                    (pojo.discoverTimeoutSeconds ?: Spec.DEFAULT_DISCOVER_TIMEOUT_SECONDS).toLong()
                 ),
             invalidCdcCursorPositionBehavior =
-                InvalidCdcCursorPositionBehavior.fromSpecValue(
+                parseSpecEnum(
+                    "invalid_cdc_cursor_position_behavior",
                     pojo.invalidCdcCursorPositionBehavior
                         ?: InvalidCdcCursorPositionBehavior.FAIL_SYNC.specValue,
                 ),
             updateCaptureMode =
-                UpdateCaptureMode.fromSpecValue(
+                parseSpecEnum(
+                    "update_capture_mode",
                     pojo.updateCaptureMode ?: UpdateCaptureMode.LOOKUP.specValue,
                 ),
             maxSnapshotReadDuration =
                 Duration.ofHours(
-                    (pojo.initialLoadTimeoutHours
-                            ?: MongoDbSourceConfigurationSpecification
-                                .DEFAULT_INITIAL_LOAD_TIMEOUT_HOURS)
-                        .toLong(),
+                    (pojo.initialLoadTimeoutHours ?: Spec.DEFAULT_INITIAL_LOAD_TIMEOUT_HOURS)
+                        .toLong()
                 ),
             maxConcurrency = maxConcurrency,
             realHost = realHost,
@@ -244,10 +210,6 @@ constructor(
     companion object {
         /** Placeholder that Atlas puts in copy-pasted connection strings. */
         const val CREDENTIALS_PLACEHOLDER = "<username>:<password>@"
-
-        /** Debezium event queue bounds, as in the legacy connector. */
-        const val MIN_QUEUE_SIZE = 1_000
-        const val MAX_QUEUE_SIZE = 10_000
 
         /**
          * Same normalization as the legacy connector: trims whitespace, drops stray double quotes
