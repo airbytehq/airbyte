@@ -153,3 +153,6 @@ The base images don't need to copy in any files from the host computer. That is 
 
 The build args should be scraped from the connector's `metadata.yml` file.
 
+### Why does a connector image build fail when the base image lacks the `airbyte` user?
+
+Connector Dockerfiles verify that the base image provides the `airbyte` user before setting it as the runtime user. Bump `connectorBuildOptions.baseImage` in the connector's `metadata.yaml` to a current base image.
