@@ -497,7 +497,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 6.0.3 | 2026-09-24 | [86942](https://github.com/airbytehq/airbyte/pull/86942) | Stop requesting vendor retail analytics days Amazon has not published yet by holding the Vendor Sales, Vendor Traffic and Net Pure Product Margin cursors four days back |
+| 6.0.4 | 2026-09-29 | [86942](https://github.com/airbytehq/airbyte/pull/86942) | Stop requesting vendor retail analytics days Amazon has not published yet by holding the Vendor Sales, Vendor Traffic and Net Pure Product Margin cursors four days back |
+| 6.0.2 | 2026-09-29 | [87083](https://github.com/airbytehq/airbyte/pull/87083) | Update dependencies |
 | 6.0.1 | 2026-09-28 | [86940](https://github.com/airbytehq/airbyte/pull/86940) | Send configured `reportOptions` for the vendor sales, inventory, traffic, and net pure product margin reports instead of validating and then dropping them |
 | 6.0.0 | 2026-09-24 | [85813](https://github.com/airbytehq/airbyte/pull/85813) | Remove primary key from `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` streams; these line-item reports have no proven, reliably unique identifier, so deduplicating on `amazon-order-id` dropped records |
 | 5.10.5 | 2026-09-22 | [86512](https://github.com/airbytehq/airbyte/pull/86512) | Update dependencies |
