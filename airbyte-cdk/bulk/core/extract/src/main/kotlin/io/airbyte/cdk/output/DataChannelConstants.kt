@@ -17,4 +17,5 @@ enum class DataChannelMedium {
 enum class DataChannelFormat {
     JSONL,
     PROTOBUF,
+    ARROW,
 }

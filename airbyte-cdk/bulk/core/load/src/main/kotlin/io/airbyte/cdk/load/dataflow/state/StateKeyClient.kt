@@ -18,6 +18,8 @@ import java.util.concurrent.atomic.AtomicLong
 
 interface StateKeyClient {
     fun getPartitionKey(msg: DestinationRecordRaw): PartitionKey
+    fun getPartitionKey(checkpointId: io.airbyte.cdk.load.state.CheckpointId): PartitionKey =
+        throw UnsupportedOperationException("Checkpoint ids are only supported in socket mode")
 
     fun getStateKey(msg: CheckpointMessage): StateKey
 }
@@ -32,6 +34,10 @@ interface StateKeyClient {
 @Singleton
 @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
 class SelfDescribingStateKeyClient : StateKeyClient {
+    override fun getPartitionKey(
+        checkpointId: io.airbyte.cdk.load.state.CheckpointId
+    ): PartitionKey = PartitionKey(checkpointId.value)
+
     override fun getPartitionKey(msg: DestinationRecordRaw): PartitionKey {
         return PartitionKey(msg.checkpointId!!.value)
     }

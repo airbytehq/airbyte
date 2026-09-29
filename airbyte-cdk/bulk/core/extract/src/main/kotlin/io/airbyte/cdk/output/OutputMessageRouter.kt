@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.output
 
+import com.google.protobuf.ByteString
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.EmittedField
@@ -70,7 +71,8 @@ class OutputMessageRouter(
                                 }
                                 .toMap()
                     }
-                    DataChannelFormat.PROTOBUF -> {
+                    DataChannelFormat.PROTOBUF,
+                    DataChannelFormat.ARROW -> {
                         socketProtobufOutputConsumer =
                             SocketProtobufOutputConsumer(
                                 (acquiredResources[ResourceType.RESOURCE_OUTPUT_SOCKET]
@@ -115,13 +117,32 @@ class OutputMessageRouter(
         }
     }
 
+    fun acceptArrowBatch(
+        stream: StreamIdentifier,
+        schemaBytes: ByteString,
+        batchBytes: ByteString,
+        rowCount: Int,
+    ) {
+        check(recordsDataChannelMedium == DataChannelMedium.SOCKET) {
+            "Arrow batches are supported only on socket data channels"
+        }
+        check(recordsDataChannelFormat == DataChannelFormat.ARROW) {
+            "Arrow batches require the ARROW data channel format"
+        }
+        protoStreamRecordOutputConsumers[stream]!!.acceptArrowBatch(
+            schemaBytes,
+            batchBytes,
+            rowCount
+        )
+    }
+
     fun acceptNonRecord(airbyteMessage: AirbyteStateMessage) {
         when (recordsDataChannelMedium) {
             DataChannelMedium.SOCKET -> {
                 when (recordsDataChannelFormat) {
                     DataChannelFormat.JSONL -> socketJsonOutputConsumer.accept(airbyteMessage)
-                    DataChannelFormat.PROTOBUF ->
-                        socketProtobufOutputConsumer.accept(airbyteMessage)
+                    DataChannelFormat.PROTOBUF,
+                    DataChannelFormat.ARROW -> socketProtobufOutputConsumer.accept(airbyteMessage)
                 }
             }
             DataChannelMedium.STDIO -> {
@@ -135,8 +156,8 @@ class OutputMessageRouter(
             DataChannelMedium.SOCKET -> {
                 when (recordsDataChannelFormat) {
                     DataChannelFormat.JSONL -> socketJsonOutputConsumer.accept(airbyteMessage)
-                    DataChannelFormat.PROTOBUF ->
-                        socketProtobufOutputConsumer.accept(airbyteMessage)
+                    DataChannelFormat.PROTOBUF,
+                    DataChannelFormat.ARROW -> socketProtobufOutputConsumer.accept(airbyteMessage)
                 }
             }
             DataChannelMedium.STDIO -> {

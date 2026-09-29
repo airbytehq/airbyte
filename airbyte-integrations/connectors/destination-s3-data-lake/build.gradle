@@ -19,6 +19,10 @@ application {
     //applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0', '--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens', 'java.base/sun.security.action=ALL-UNNAMED', '--add-opens', 'java.base/java.lang=ALL-UNNAMED']
 }
 
+tasks.withType(Test).configureEach {
+    jvmArgs '--add-opens=java.base/java.nio=ALL-UNNAMED'
+}
+
 ext {
     apacheIcebergVersion = '1.11.0'
     awsSdkVersion = '2.46.0'
@@ -39,6 +43,8 @@ dependencies {
     implementation("org.apache.iceberg:iceberg-api:${project.ext.apacheIcebergVersion}")
     implementation("org.apache.iceberg:iceberg-core:${project.ext.apacheIcebergVersion}")
     implementation("org.apache.iceberg:iceberg-data:${project.ext.apacheIcebergVersion}")
+    implementation("org.apache.iceberg:iceberg-parquet:${project.ext.apacheIcebergVersion}")
+    implementation("org.apache.parquet:parquet-column:1.17.1")
     implementation("org.apache.iceberg:iceberg-aws:${project.ext.apacheIcebergVersion}")
     implementation("org.apache.iceberg:iceberg-nessie:${project.ext.apacheIcebergVersion}")
     implementation("org.apache.iceberg:iceberg-orc:${project.ext.apacheIcebergVersion}")

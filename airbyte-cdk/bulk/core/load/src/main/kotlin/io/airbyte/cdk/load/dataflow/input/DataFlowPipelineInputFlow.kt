@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore
 import io.airbyte.cdk.load.dataflow.state.stats.EmittedStatsStore
 import io.airbyte.cdk.load.message.CheckpointMessage
+import io.airbyte.cdk.load.message.DestinationArrowBatch
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
@@ -49,6 +50,19 @@ class DataFlowPipelineInputFlow(
                             partitionKey = stateKeyClient.getPartitionKey(raw),
                         )
                     collector.emit(io)
+                }
+                is DestinationArrowBatch -> {
+                    statsStore.increment(
+                        it.stream.unmappedDescriptor,
+                        it.rowCount.toLong(),
+                        it.serializedSizeBytes,
+                    )
+                    collector.emit(
+                        DataFlowStageIO(
+                            arrowBatch = it,
+                            partitionKey = stateKeyClient.getPartitionKey(it.checkpointId),
+                        )
+                    )
                 }
                 is DestinationRecordStreamComplete -> completionTracker.accept(it)
                 else -> Unit

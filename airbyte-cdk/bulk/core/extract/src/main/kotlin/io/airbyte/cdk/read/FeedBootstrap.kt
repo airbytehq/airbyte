@@ -6,6 +6,7 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.google.protobuf.ByteString
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.EmittedField
@@ -223,6 +224,28 @@ sealed class FeedBootstrap<T : Feed>(
         override val stream: Stream,
         private val socketProtobufOutputConsumer: SocketProtobufOutputConsumer,
     ) : StreamRecordConsumer {
+        fun acceptArrowBatch(schemaBytes: ByteString, batchBytes: ByteString, rowCount: Int) {
+            val batch =
+                io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteArrowBatchProtobuf.newBuilder()
+                    .setStreamName(stream.name)
+                    .setEmittedAtMs(socketProtobufOutputConsumer.recordEmittedAt.toEpochMilli())
+                    .setRowCount(rowCount)
+                    .setArrowSchema(schemaBytes)
+                    .setArrowRecordBatch(batchBytes)
+                    .also { builder ->
+                        stream.namespace?.let(builder::setStreamNamespace)
+                        socketProtobufOutputConsumer.additionalProperties["partition_id"]?.let {
+                            builder.setPartitionId(it)
+                        }
+                    }
+                    .build()
+            synchronized(this) {
+                socketProtobufOutputConsumer.accept(
+                    AirbyteMessageProtobuf.newBuilder().setArrowBatch(batch).build()
+                )
+            }
+        }
+
         override fun close() {
             socketProtobufOutputConsumer.close()
         }

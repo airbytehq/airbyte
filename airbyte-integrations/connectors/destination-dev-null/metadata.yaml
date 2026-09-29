@@ -8,7 +8,7 @@ data:
   connectorIPCOptions:
     dataChannel:
       version: "0.0.2"
-      supportedSerialization: ["JSONL", "PROTOBUF"]
+      supportedSerialization: ["JSONL", "PROTOBUF", "ARROW"]
       supportedTransport: ["STDIO", "SOCKET"]
   connectorSubtype: file
   connectorTestSuitesOptions:

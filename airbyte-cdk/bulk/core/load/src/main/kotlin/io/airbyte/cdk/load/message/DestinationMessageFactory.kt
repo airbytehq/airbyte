@@ -265,6 +265,23 @@ class DestinationMessageFactory(
                 checkpointId = CheckpointId(message.record.partitionId),
                 airbyteRawId = uuidGenerator.v7(),
             )
+        } else if (message.hasArrowBatch()) {
+            val arrowBatch = message.arrowBatch
+            val descriptor =
+                namespaceMapper.map(
+                    namespace =
+                        if (arrowBatch.hasStreamNamespace()) arrowBatch.streamNamespace else null,
+                    name = arrowBatch.streamName,
+                )
+            DestinationArrowBatch(
+                stream = catalog.getStream(descriptor),
+                checkpointId = CheckpointId(arrowBatch.partitionId),
+                rowCount = arrowBatch.rowCount,
+                emittedAtMs = arrowBatch.emittedAtMs,
+                schemaBytes = arrowBatch.arrowSchema,
+                batchBytes = arrowBatch.arrowRecordBatch,
+                serializedSizeBytes = serializedSizeBytes,
+            )
         } else if (message.hasProbe()) {
             ProbeMessage
         } else {

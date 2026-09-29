@@ -16,8 +16,19 @@ message AirbyteMessageProtobuf {
     AirbyteRecordMessageProtobuf record = 1;
     string airbyte_protocol_message = 2;
     AirbyteProbeMessageProtobuf probe = 3;
+    AirbyteArrowBatchProtobuf arrow_batch = 4;
   }
 };
+
+message AirbyteArrowBatchProtobuf {
+  optional string stream_namespace = 1;
+  string stream_name = 2;
+  uint64 emitted_at_ms = 3;
+  string partition_id = 4;
+  uint32 row_count = 5;
+  bytes arrow_schema = 6;
+  bytes arrow_record_batch = 7;
+}
 
 // An empty payload the source might send to check whether the socket is still alive.
 // The destination will treat is as a heartbeat internally but won't rely on it.

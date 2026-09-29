@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
 import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
+import io.airbyte.cdk.load.message.ArrowBatchDTO
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
@@ -80,6 +81,8 @@ class SilentAggregate : Aggregate {
     override fun accept(record: RecordDTO) {
         /* Do nothing - silently discard */
     }
+
+    override fun acceptArrowBatch(batch: ArrowBatchDTO) {}
 
     override suspend fun flush() {
         /* Do nothing - dev-null doesn't persist data */
