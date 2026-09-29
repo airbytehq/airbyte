@@ -107,8 +107,8 @@ def test_legacy_top_level_credentials_use_password_grant(credential_value: str, 
     assert token_bodies[0]["password"] == [wire_value]
     assert token_bodies[0]["client_id"] == [wire_value]
     http_mocker.assert_number_of_calls(check_request, 1)
-    # The legacy shape is migrated once: exactly one CONTROL carries the moved credentials and
-    # drops the legacy top-level fields, with every migrated value kept as a string.
+    # The legacy shape is migrated once: exactly one CONTROL copies the credentials under
+    # `credentials` while keeping the top-level fields (rollback-safe for <=1.3.x).
     assert _control_messages(output) == []
     assert len(migration_controls) == 1
     migrated = migration_controls[0]["control"]["connectorConfig"]["config"]
@@ -120,7 +120,7 @@ def test_legacy_top_level_credentials_use_password_grant(credential_value: str, 
     assert credentials["password"] == credential_value
     for field in ("client_id", "client_secret", "username", "password"):
         assert isinstance(credentials[field], str)
-        assert field not in migrated
+        assert migrated[field] == credentials[field]
     assert migrated["base_url"] == "https://test-tenant.onuptick.com"
 
 
@@ -269,6 +269,39 @@ def test_oauth_config_with_explicit_base_url_uses_it_for_api_requests(tmp_path) 
     assert len(_token_bodies(http_mocker)) == 1
 
 
+def test_config_with_both_credential_shapes_emits_no_control(tmp_path) -> None:
+    # Already-migrated config (top-level fields kept alongside nested credentials): the migration
+    # must not re-fire, so 0 CONTROL messages and the password grant still works.
+    config = ConfigBuilder().with_password_credentials().build()
+    config["client_id"] = "test-client-id"
+    config["client_secret"] = "test-client-secret"
+    config["username"] = "test-user"
+    config["password"] = "test-password"
+    check_request = UptickRequestBuilder.collection(_CHECK_STREAM)
+    source, migration_controls = _source_with_migration_controls(config)
+
+    with HttpMocker() as http_mocker:
+        http_mocker._mocker.post(
+            _TOKEN_URL,
+            json={"access_token": "tok", "expires_in": 3600},
+        )
+        http_mocker.get(check_request, _tasks_page())
+
+        output = _run_command(
+            source,
+            ["check", "--config", make_file(tmp_path / "config.json", config)],
+        )
+
+    statuses = output.connection_status_messages
+    assert len(statuses) == 1
+    assert statuses[0].connectionStatus.status == Status.SUCCEEDED
+    token_bodies = _token_bodies(http_mocker)
+    assert len(token_bodies) == 1
+    assert token_bodies[0]["grant_type"] == ["password"]
+    assert migration_controls == []
+    assert _control_messages(output) == []
+
+
 def test_empty_config_fails_check_without_token_request(tmp_path) -> None:
     config: dict = {}
     source, _ = _source_with_migration_controls(config)
@@ -313,9 +346,11 @@ def test_legacy_top_level_credentials_with_empty_credentials_object(tmp_path) ->
     token_bodies = _token_bodies(http_mocker)
     assert len(token_bodies) == 1
     assert token_bodies[0]["grant_type"] == ["password"]
-    # The empty `credentials` object is filled by the migration, which emits one CONTROL.
-    assert len(migration_controls) == 1
-    assert migration_controls[0]["control"]["connectorConfig"]["config"]["credentials"]["auth_type"] == "password"
+    # The empty `credentials` object is filled in place by the migration (auth_type=password).
+    assert source._config["credentials"]["auth_type"] == "password"
+    # No CONTROL: the CDK's migrate-and-diff compares a shallow `dict(config)` copy, and the nested
+    # object mutated in place is shared with the original, so the change is invisible to the diff.
+    assert migration_controls == []
     assert _control_messages(output) == []
 
 

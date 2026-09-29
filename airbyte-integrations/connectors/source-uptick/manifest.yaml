@@ -357,7 +357,7 @@ spec:
             value: "{{ 'https://' ~ (((config['base_url'] | string | trim).split('://') | last | trim('/')).split('/') | first) }}"
     config_migrations:
       - type: ConfigMigration
-        description: Move legacy top-level credentials under `credentials` (auth_type password).
+        description: Copy legacy top-level credentials under `credentials` (auth_type password); the top-level fields are kept so the config still works on <=1.3.x.
         transformations:
           - type: ConfigAddFields
             # Moves legacy top-level credential fields under `credentials`. The condition is evaluated
@@ -384,16 +384,6 @@ spec:
               - type: AddedFieldDefinition
                 path: ["credentials", "auth_type"]
                 value: "password"
-          - type: ConfigRemoveFields
-            # Runs after ConfigAddFields in the same migration, so it sees the migrated config: only a
-            # config that produced credentials.auth_type=password and still has legacy top-level fields
-            # gets them removed.
-            condition: "{{ config.get('credentials', {}).get('auth_type') == 'password' and config.get('username') is not none }}"
-            field_pointers:
-              - ["client_id"]
-              - ["client_secret"]
-              - ["username"]
-              - ["password"]
 streams:
   - type: DeclarativeStream
     name: tasks
