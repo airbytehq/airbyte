@@ -130,7 +130,7 @@ def test_oauth_credentials_use_refresh_grant_and_emit_control() -> None:
     assert credentials["refresh_token"] == "rotated-refresh-token"
 
 
-def test_base_url_only_config_fails_check_with_auth_method_message(tmp_path) -> None:
+def test_base_url_only_config_fails_check(tmp_path) -> None:
     config = {"base_url": "https://test-tenant.onuptick.com"}
 
     with HttpMocker() as http_mocker:
@@ -148,10 +148,9 @@ def test_base_url_only_config_fails_check_with_auth_method_message(tmp_path) -> 
     assert len(statuses) == 1
     assert statuses[0].connectionStatus.status == Status.FAILED
     message = statuses[0].connectionStatus.message
-    # The spec requires either `credentials` or the legacy top-level fields, so this fails spec
-    # validation as a config_error before any authenticator interpolation runs.
-    assert "is not valid under any of the given schemas" in message
-    assert "has no attribute 'credentials'" not in message
+    # With no `credentials` key, the authenticator's `config["credentials"][...]` interpolations
+    # raise a Jinja UndefinedError before any token request is made.
+    assert "'dict object' has no attribute 'credentials'" in message
     assert _token_bodies(http_mocker) == []
 
 
