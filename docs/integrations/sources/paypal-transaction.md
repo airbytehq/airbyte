@@ -266,9 +266,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                      |
+| Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.6.52 | 2026-09-29 | [86920](https://github.com/airbytehq/airbyte/pull/86920) | feat(source-paypal-transaction): adopt declarative request_window_red… |
 | 2.6.51 | 2026-09-29 | [87311](https://github.com/airbytehq/airbyte/pull/87311) | Update dependencies |
+| 2.6.51 | 2026-09-22 | [86920](https://github.com/airbytehq/airbyte/pull/86920) | Replace the `transactions` stream's custom `DateWindowSplittingRetriever`/`ResultSetTooLargeErrorHandler` components with the CDK's declarative `request_window_splitting` feature; the stream's failure type when a window is rejected even at its smallest split changes from `config_error` to `transient_error` |
 | 2.6.50 | 2026-09-22 | [86765](https://github.com/airbytehq/airbyte/pull/86765) | Update dependencies |
 | 2.6.49 | 2026-09-15 | [86180](https://github.com/airbytehq/airbyte/pull/86180) | Update dependencies |
 | 2.6.48 | 2026-09-08 | [84916](https://github.com/airbytehq/airbyte/pull/84916) | Retry oversized `transactions` date slices as smaller date ranges instead of failing the sync on the first `RESULTSET_TOO_LARGE` response |
