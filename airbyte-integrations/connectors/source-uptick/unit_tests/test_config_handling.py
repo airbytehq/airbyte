@@ -91,3 +91,39 @@ def test_max_requests_per_minute_spec_validation() -> None:
     for invalid in (0, "60", 2.5, 601):
         with pytest.raises(ValidationError):
             validate(instance=_config(invalid), schema=spec_schema)
+
+
+def test_spec_declares_oauth_advanced_auth() -> None:
+    spec = get_source(base_config()).resolved_manifest["spec"]
+
+    assert spec["advanced_auth"]["predicate_key"] == ["credentials", "auth_type"]
+    assert spec["advanced_auth"]["predicate_value"] == "oauth2.0"
+    credentials = spec["connection_specification"]["properties"]["credentials"]
+    assert [variant["properties"]["auth_type"]["const"] for variant in credentials["oneOf"]] == ["oauth2.0", "password"]
+    assert spec["connection_specification"]["required"] == ["base_url"]
+
+
+@pytest.mark.parametrize(
+    "base_url, valid",
+    [
+        pytest.param("https://x.onuptick.com", True, id="canonical_https"),
+        pytest.param("", False, id="empty"),
+        pytest.param("http://x.onuptick.com", False, id="http_scheme"),
+        pytest.param("https://x.onuptick.com/", False, id="trailing_slash"),
+    ],
+)
+def test_base_url_spec_pattern(base_url: Any, valid: bool) -> None:
+    spec_schema = get_source(base_config()).resolved_manifest["spec"]["connection_specification"]
+    config = base_config(base_url=base_url)
+
+    if valid:
+        validate(instance=config, schema=spec_schema)
+    else:
+        with pytest.raises(ValidationError):
+            validate(instance=config, schema=spec_schema)
+
+
+def test_legacy_top_level_config_validates() -> None:
+    spec_schema = get_source(base_config()).resolved_manifest["spec"]["connection_specification"]
+
+    validate(instance=base_config(), schema=spec_schema)

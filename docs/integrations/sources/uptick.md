@@ -4,23 +4,35 @@ Extract data from Uptick, a field service management platform designed for the f
 
 ## Prerequisites
 
+- Your Uptick instance URL, for example `https://yourcompany.onuptick.com`.
+- Credentials for one of the two authentication methods below. OAuth 2.0 is recommended; the username and password method remains available for existing connections.
+
+### OAuth 2.0 (recommended)
+
+On Airbyte Cloud, choose **OAuth 2.0 (Authenticate with Uptick)** under Authentication, click **Authenticate**, and approve the consent page that Uptick shows. The connector stores the resulting tokens in your connection's `credentials` block.
+
+On self-hosted Airbyte (OSS), first create an OAuth application in Uptick under **Control Panel > Uptick API > Create Application** with your Airbyte instance's redirect URI `https://<airbyte-host>/auth_flow`, using the authorization-code grant with PKCE (S256). Then choose **OAuth 2.0 (Authenticate with Uptick)**, enter the application's Client ID and Client Secret, and complete the flow.
+
+### Username & password (legacy)
+
 The connector authenticates with the Uptick API using OAuth 2.0 with the password grant, so you need both an OAuth application and an Uptick user account:
 
-- Your Uptick instance URL, for example `https://yourcompany.onuptick.com`.
 - An OAuth Client ID and Client Secret generated from your Uptick instance.
 - The email address and password of an Uptick user account. The connector signs in as this user, so the account must have permission to view every resource you want to sync.
 
-To generate the OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance, select **Create Application**, provide a name, and save. Uptick generates the Client ID and Client Secret for you. For step-by-step instructions, see [Uptick API - Getting started](https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started).
+To generate the OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance, select **Create Application**, provide a name, and save. Uptick generates the Client ID and Client Secret for you. For step-by-step instructions, see [Uptick API - Getting started](https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started). Existing connections that use the top-level `client_id`, `client_secret`, `username`, and `password` fields continue to work; the connector maps them to this method automatically.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 | ------- | ------ | ------------- | --------------- |
-| `base_url` | `string` | Root URL of your Uptick workspace, for example `https://yourcompany.onuptick.com`. The connector keeps only the host and always connects over HTTPS, so any scheme, path, or trailing slash you enter is ignored. | |
-| `client_id` | `string` | OAuth Client ID generated from **Control Panel > Uptick API**. | |
-| `client_secret` | `string` | OAuth Client Secret generated from **Control Panel > Uptick API**. | |
-| `username` | `string` | Email address for an Uptick user account with API access. Synced data is limited to what this user can see in Uptick. | |
-| `password` | `string` | Password for the Uptick user account. | |
+| `base_url` | `string` | Root URL of your Uptick workspace, for example `https://yourcompany.onuptick.com` (https scheme, host only, no trailing slash). It is also used to build the OAuth consent URL. | |
+| `credentials.auth_type` | `string` | `oauth2.0` for the OAuth flow, `password` for the legacy username and password method. | |
+| `credentials.client_id` | `string` | OAuth Client ID generated from **Control Panel > Uptick API**. Filled automatically by the OAuth flow on Airbyte Cloud. | |
+| `credentials.client_secret` | `string` | OAuth Client Secret generated from **Control Panel > Uptick API**. Filled automatically by the OAuth flow on Airbyte Cloud. | |
+| `credentials.refresh_token` | `string` | Refresh token obtained by authenticating with Uptick. Required for `oauth2.0`; filled automatically by the OAuth flow. | |
+| `credentials.username` | `string` | Email address for an Uptick user account with API access. Required for `password`. Synced data is limited to what this user can see in Uptick. | |
+| `credentials.password` | `string` | Password for the Uptick user account. Required for `password`. | |
 | `num_workers` | `integer` | Number of concurrent requests. Higher values speed up syncs but increase the chance of Uptick rate limiting. Allowed range 1–10. | `3` |
 | `max_requests_per_minute` | `integer` | Global request budget shared by all streams and threads. Uptick publishes no numeric limit; 60 is a conservative default. Allowed range 1–600. | `60` |
 
@@ -224,6 +236,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
+| 1.4.0 | 2026-09-28 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add OAuth 2.0 authorization-code (PKCE) "Authenticate with Uptick" flow; move credentials under `credentials` (legacy top-level fields still accepted) |
 | 1.3.1 | 2026-09-29 | [87373](https://github.com/airbytehq/airbyte/pull/87373) | Update dependencies |
 | 1.3.0 | 2026-09-28 | [86356](https://github.com/airbytehq/airbyte/pull/86356) | Add configurable max_requests_per_minute budget (default 60/min), refresh expired tokens mid-sync, and normalize base_url. The default `max_requests_per_minute` (60) is conservative; large tenants (millions of records) may see slower syncs than 1.2.1 — raise the value if Uptick tolerates it |
 | 1.2.1 | 2026-09-22 | [86843](https://github.com/airbytehq/airbyte/pull/86843) | Update dependencies |
