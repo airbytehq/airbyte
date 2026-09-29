@@ -36,7 +36,7 @@ Airbyte offers a few options for how it should detect and propagate schema chang
 
 | Connection Setting    | Definition  |
 | --------------------- | ----------- |
-| Propagate field changes only              | Only column changes will be propagated. New or removed streams will be ignored.            |
+| Propagate field changes only              | Column changes and stream removals will be propagated. New streams will be ignored.            |
 | Propagate all field and stream changes | All new streams and column changes from the source will automatically be propagated and reflected in the destination. This includes stream changes (additions or deletions), column changes (additions or deletions) and data type changes |
 | Approve all changes myself         | This allows you to detect and manually approve changes. Schema changes will be detected, but not propagated. Syncs will continue running with the schema you've set up. To propagate the detected schema changes, you will need to approve the changes manually                                    |
 | Stop future syncs         | Connections will be automatically paused as soon as any schema changes are detected             |
@@ -44,7 +44,7 @@ Airbyte offers a few options for how it should detect and propagate schema chang
 ### Automatic propagation of detected schema changes
 If your connection setting is set to `Propagate field changes only` or `Propagate all field and stream changes`, schema changes except for breaking changes are automatically applied to the ensuing sync and the data in the destination will automatically shift as schema changes are applied. 
 
-When `Propagate field changes only` is selected, only field changes will be propagated. New or removed streams will be ignored. 
+When `Propagate field changes only` is selected, field changes and stream removals will be propagated. New streams will be ignored. 
 
 When `Propagate all field and stream changes` is selected, both field and stream changes will be automatically propagated.
 
