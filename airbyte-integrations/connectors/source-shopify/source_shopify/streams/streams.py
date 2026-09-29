@@ -104,6 +104,7 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
         )
         super().__init__(config)
         self._customer_fields = tuple(self.get_json_schema()["properties"]["customer"]["properties"])
+        self._customer_redaction_warning_logged = False
 
     def request_params(self, stream_state=None, next_page_token=None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
@@ -116,8 +117,17 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
         return self._error_handler
 
     def flatten_customer(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        populate_customer_fields = self.config.get("populate_top_level_orders_customer_fields", False)
+        if not populate_customer_fields and not self._customer_redaction_warning_logged:
+            selected_properties = (self.configured_json_schema or {}).get("properties", {})
+            if any(f"{self.customer_prefix}{field}" in selected_properties for field in self._customer_fields):
+                self.logger.warning(
+                    'Orders: selected top-level customer fields are redacted to null because "Populate top-level customer fields in Orders" '
+                    "is off. Enable it in source settings to populate these fields, or deselect them. The nested customer object is not redacted."
+                )
+                self._customer_redaction_warning_logged = True
         customer = record.get("customer")
-        if not self.config.get("populate_top_level_orders_customer_fields", False) or not isinstance(customer, Mapping):
+        if not populate_customer_fields or not isinstance(customer, Mapping):
             customer = {}
         for field in self._customer_fields:
             record[f"{self.customer_prefix}{field}"] = customer.get(field)

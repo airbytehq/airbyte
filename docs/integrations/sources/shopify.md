@@ -183,6 +183,8 @@ This setting defaults to `false`. When disabled or omitted, all newly added cust
 
 The original `customer` object is retained in both modes. To sync only selected or hashed customer attributes, deselect `customer`, select the `customer_*` fields you need, and configure hashing on the selected fields. Hashing or deselecting `customer_email` alone does not remove the original value from `customer.email` while `customer` remains selected.
 
+If population is disabled and any of the new top-level customer fields are selected, the connector logs a warning once per sync attempt when it reads an order. The warning explains that these fields are redacted to `null` and that the nested `customer` object is not redacted. Enable the setting to populate the selected fields, or deselect them.
+
 After enabling population on an existing incremental connection, refresh the `Orders` stream to populate historical orders that would not otherwise be read again. Disabling population applies to subsequently read orders; it does not clear existing destination values by itself.
 
 ## Countries and market-driven shipping

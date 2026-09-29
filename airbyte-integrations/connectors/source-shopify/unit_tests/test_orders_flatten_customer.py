@@ -7,8 +7,13 @@ import logging
 from typing import Any
 
 import pytest
+from requests_mock import Mocker
 from source_shopify.source import SourceShopify
 from source_shopify.streams.streams import Orders
+
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
+from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
 
 
 @pytest.fixture
@@ -114,3 +119,66 @@ def test_customer_population_config_is_optional_and_defaults_to_false(logger: lo
     assert field["type"] == "boolean"
     assert field["default"] is False
     assert "populate_top_level_orders_customer_fields" not in spec.get("required", [])
+
+
+@pytest.mark.parametrize("enabled", [None, False, True], ids=["omitted", "disabled", "enabled"])
+@pytest.mark.parametrize("selection", ["all", "customer_email", "customer", "customer_locale", "id"])
+def test_read_warns_once_only_for_selected_redacted_customer_fields(
+    auth_config: dict[str, Any], requests_mock: Mocker, caplog: pytest.LogCaptureFixture, enabled: bool | None, selection: str
+) -> None:
+    config = auth_config if enabled is None else auth_config | {"populate_top_level_orders_customer_fields": enabled}
+    stream = Orders(config)
+    schema = stream.get_json_schema()
+    if selection != "all":
+        schema = {**schema, "properties": {field: schema["properties"][field] for field in {"id", "updated_at", selection}}}
+    configured_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name="orders", json_schema=schema, supported_sync_modes=[SyncMode.full_refresh]),
+        sync_mode=SyncMode.full_refresh,
+        destination_sync_mode=DestinationSyncMode.overwrite,
+    )
+    customer = {"id": 7, "email": "test@example.invalid"}
+    requests_mock.get(
+        f"{stream.url_base}orders.json",
+        [
+            {
+                "json": {"orders": [{"id": 1, "updated_at": "2026-09-29T00:00:00Z", "customer": customer}]},
+                "headers": {"Link": f'<{stream.url_base}orders.json?page_info=second>; rel="next"'},
+            },
+            {"json": {"orders": [{"id": 2, "updated_at": "2026-09-29T00:00:00Z", "customer": customer}]}},
+        ],
+    )
+    requests_mock.get(f"{stream.url_base}events.json", json={"events": []})
+
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        records = list(stream.read(configured_stream, logging.getLogger("airbyte"), DebugSliceLogger(), {}, None, InternalConfig()))
+
+    assert [record["id"] for record in records if isinstance(record, dict)] == [1, 2]
+    warnings = [record for record in caplog.records if "redacted to null" in record.getMessage()]
+    should_warn = not enabled and selection in {"all", "customer_email"}
+    assert len(warnings) == int(should_warn)
+    if should_warn:
+        assert warnings[0].levelno == logging.WARNING
+        assert '"Populate top-level customer fields in Orders" is off.' in warnings[0].getMessage()
+        assert "The nested customer object is not redacted." in warnings[0].getMessage()
+        assert "test@example.invalid" not in warnings[0].getMessage()
+
+
+def test_internal_order_reads_without_a_configured_catalog_do_not_warn(
+    auth_config: dict[str, Any], caplog: pytest.LogCaptureFixture
+) -> None:
+    stream = Orders(auth_config)
+
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        list(stream.produce_records([{"id": 1, "customer": {"id": 7}}]))
+
+    assert not caplog.records
+
+
+def test_empty_order_results_do_not_warn(auth_config: dict[str, Any], caplog: pytest.LogCaptureFixture) -> None:
+    stream = Orders(auth_config)
+    stream.configured_json_schema = stream.get_json_schema()
+
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        assert list(stream.produce_records([])) == []
+
+    assert not caplog.records
