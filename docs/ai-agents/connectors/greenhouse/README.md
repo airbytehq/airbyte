@@ -42,16 +42,16 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Applications | [List](./REFERENCE.md#applications-list), [Context Store Search](./REFERENCE.md#applications-context-store-search) |
-| Candidates | [List](./REFERENCE.md#candidates-list), [Context Store Search](./REFERENCE.md#candidates-context-store-search) |
-| Departments | [List](./REFERENCE.md#departments-list), [Context Store Search](./REFERENCE.md#departments-context-store-search) |
+| Applications | [List](./REFERENCE.md#applications-list), [Context Store Search](./REFERENCE.md#applications-context-store-search), [Context Store SQL Query](./REFERENCE.md#applications-context-store-sql-query) |
+| Candidates | [List](./REFERENCE.md#candidates-list), [Context Store Search](./REFERENCE.md#candidates-context-store-search), [Context Store SQL Query](./REFERENCE.md#candidates-context-store-sql-query) |
+| Departments | [List](./REFERENCE.md#departments-list), [Context Store Search](./REFERENCE.md#departments-context-store-search), [Context Store SQL Query](./REFERENCE.md#departments-context-store-sql-query) |
 | Interviews | [List](./REFERENCE.md#interviews-list) |
-| Job Posts | [List](./REFERENCE.md#job-posts-list), [Context Store Search](./REFERENCE.md#job-posts-context-store-search), [Semantic Search](./REFERENCE.md#job-posts-semantic-search) |
-| Jobs | [List](./REFERENCE.md#jobs-list), [Context Store Search](./REFERENCE.md#jobs-context-store-search), [Semantic Search](./REFERENCE.md#jobs-semantic-search) |
-| Offers | [List](./REFERENCE.md#offers-list), [Context Store Search](./REFERENCE.md#offers-context-store-search) |
-| Offices | [List](./REFERENCE.md#offices-list), [Context Store Search](./REFERENCE.md#offices-context-store-search) |
-| Sources | [List](./REFERENCE.md#sources-list), [Context Store Search](./REFERENCE.md#sources-context-store-search) |
-| Users | [List](./REFERENCE.md#users-list), [Context Store Search](./REFERENCE.md#users-context-store-search) |
+| Job Posts | [List](./REFERENCE.md#job-posts-list), [Context Store Search](./REFERENCE.md#job-posts-context-store-search), [Context Store SQL Query](./REFERENCE.md#job-posts-context-store-sql-query), [Semantic Search](./REFERENCE.md#job-posts-semantic-search) |
+| Jobs | [List](./REFERENCE.md#jobs-list), [Context Store Search](./REFERENCE.md#jobs-context-store-search), [Context Store SQL Query](./REFERENCE.md#jobs-context-store-sql-query), [Semantic Search](./REFERENCE.md#jobs-semantic-search) |
+| Offers | [List](./REFERENCE.md#offers-list), [Context Store Search](./REFERENCE.md#offers-context-store-search), [Context Store SQL Query](./REFERENCE.md#offers-context-store-sql-query) |
+| Offices | [List](./REFERENCE.md#offices-list), [Context Store Search](./REFERENCE.md#offices-context-store-search), [Context Store SQL Query](./REFERENCE.md#offices-context-store-sql-query) |
+| Sources | [List](./REFERENCE.md#sources-list), [Context Store Search](./REFERENCE.md#sources-context-store-search), [Context Store SQL Query](./REFERENCE.md#sources-context-store-sql-query) |
+| Users | [List](./REFERENCE.md#users-list), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
 | Attachments | [List](./REFERENCE.md#attachments-list), [Download](./REFERENCE.md#attachments-download) |
 
 
@@ -134,6 +134,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -201,9 +205,91 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `GreenhouseConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
+
+connector = connect("greenhouse", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@GreenhouseConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="greenhouse_inspect",
+    docs_tool="greenhouse_read_docs",
+)
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@GreenhouseConnector.agent_tool(framework="pydantic_ai")
+async def greenhouse_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@GreenhouseConnector.agent_tool(framework="pydantic_ai")
+async def greenhouse_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
+
+connector = connect("greenhouse", workspace_name="<your_workspace_name>")
+
+@GreenhouseConnector.agent_tool(
+    inspect_tool="greenhouse_inspect",
+    docs_tool="greenhouse_read_docs",
+)
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@GreenhouseConnector.agent_tool()
+async def greenhouse_inspect():
+    return await connector.inspect_connector()
+
+@GreenhouseConnector.agent_tool()
+async def greenhouse_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (greenhouse_inspect, greenhouse_read_docs, greenhouse_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `GreenhouseConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `GreenhouseConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `GreenhouseConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -390,6 +476,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -485,9 +575,105 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `GreenhouseConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
+from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
+
+connector = GreenhouseConnector(
+    auth_config=GreenhouseAuthConfig(
+        client_id="<Client ID from the Greenhouse OAuth application>",
+        client_secret="<Client secret from the Greenhouse OAuth application>",
+        refresh_token="<Refresh token generated through the Greenhouse OAuth consent flow>",
+        access_token="<Access token generated through the Greenhouse OAuth consent flow (optional if refresh_token is provided)>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@GreenhouseConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="greenhouse_inspect",
+    docs_tool="greenhouse_read_docs",
+)
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@GreenhouseConnector.agent_tool(framework="pydantic_ai")
+async def greenhouse_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@GreenhouseConnector.agent_tool(framework="pydantic_ai")
+async def greenhouse_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
+from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
+
+connector = GreenhouseConnector(
+    auth_config=GreenhouseAuthConfig(
+        client_id="<Client ID from the Greenhouse OAuth application>",
+        client_secret="<Client secret from the Greenhouse OAuth application>",
+        refresh_token="<Refresh token generated through the Greenhouse OAuth consent flow>",
+        access_token="<Access token generated through the Greenhouse OAuth consent flow (optional if refresh_token is provided)>"
+    )
+)
+
+@GreenhouseConnector.agent_tool(
+    inspect_tool="greenhouse_inspect",
+    docs_tool="greenhouse_read_docs",
+)
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@GreenhouseConnector.agent_tool()
+async def greenhouse_inspect():
+    return await connector.inspect_connector()
+
+@GreenhouseConnector.agent_tool()
+async def greenhouse_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (greenhouse_inspect, greenhouse_read_docs, greenhouse_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `GreenhouseConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `GreenhouseConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `GreenhouseConnector.agent_tool` above.
 
 **Pydantic AI**
 
