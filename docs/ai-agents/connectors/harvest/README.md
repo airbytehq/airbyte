@@ -42,24 +42,24 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Clients | [List](./REFERENCE.md#clients-list), [Get](./REFERENCE.md#clients-get), [Context Store Search](./REFERENCE.md#clients-context-store-search) |
-| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
-| Company | [Get](./REFERENCE.md#company-get), [Context Store Search](./REFERENCE.md#company-context-store-search) |
-| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get), [Context Store Search](./REFERENCE.md#projects-context-store-search) |
-| Tasks | [List](./REFERENCE.md#tasks-list), [Get](./REFERENCE.md#tasks-get), [Context Store Search](./REFERENCE.md#tasks-context-store-search) |
-| Time Entries | [List](./REFERENCE.md#time-entries-list), [Get](./REFERENCE.md#time-entries-get), [Context Store Search](./REFERENCE.md#time-entries-context-store-search) |
-| Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [Context Store Search](./REFERENCE.md#invoices-context-store-search) |
-| Invoice Item Categories | [List](./REFERENCE.md#invoice-item-categories-list), [Get](./REFERENCE.md#invoice-item-categories-get), [Context Store Search](./REFERENCE.md#invoice-item-categories-context-store-search) |
-| Estimates | [List](./REFERENCE.md#estimates-list), [Get](./REFERENCE.md#estimates-get), [Context Store Search](./REFERENCE.md#estimates-context-store-search) |
-| Estimate Item Categories | [List](./REFERENCE.md#estimate-item-categories-list), [Get](./REFERENCE.md#estimate-item-categories-get), [Context Store Search](./REFERENCE.md#estimate-item-categories-context-store-search) |
-| Expenses | [List](./REFERENCE.md#expenses-list), [Get](./REFERENCE.md#expenses-get), [Context Store Search](./REFERENCE.md#expenses-context-store-search) |
-| Expense Categories | [List](./REFERENCE.md#expense-categories-list), [Get](./REFERENCE.md#expense-categories-get), [Context Store Search](./REFERENCE.md#expense-categories-context-store-search) |
-| Roles | [List](./REFERENCE.md#roles-list), [Get](./REFERENCE.md#roles-get), [Context Store Search](./REFERENCE.md#roles-context-store-search) |
-| User Assignments | [List](./REFERENCE.md#user-assignments-list), [Context Store Search](./REFERENCE.md#user-assignments-context-store-search) |
-| Task Assignments | [List](./REFERENCE.md#task-assignments-list), [Context Store Search](./REFERENCE.md#task-assignments-context-store-search) |
-| Time Projects | [List](./REFERENCE.md#time-projects-list), [Context Store Search](./REFERENCE.md#time-projects-context-store-search) |
-| Time Tasks | [List](./REFERENCE.md#time-tasks-list), [Context Store Search](./REFERENCE.md#time-tasks-context-store-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
+| Clients | [List](./REFERENCE.md#clients-list), [Get](./REFERENCE.md#clients-get), [Context Store Search](./REFERENCE.md#clients-context-store-search), [Context Store SQL Query](./REFERENCE.md#clients-context-store-sql-query) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Context Store Search](./REFERENCE.md#contacts-context-store-search), [Context Store SQL Query](./REFERENCE.md#contacts-context-store-sql-query) |
+| Company | [Get](./REFERENCE.md#company-get), [Context Store Search](./REFERENCE.md#company-context-store-search), [Context Store SQL Query](./REFERENCE.md#company-context-store-sql-query) |
+| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get), [Context Store Search](./REFERENCE.md#projects-context-store-search), [Context Store SQL Query](./REFERENCE.md#projects-context-store-sql-query) |
+| Tasks | [List](./REFERENCE.md#tasks-list), [Get](./REFERENCE.md#tasks-get), [Context Store Search](./REFERENCE.md#tasks-context-store-search), [Context Store SQL Query](./REFERENCE.md#tasks-context-store-sql-query) |
+| Time Entries | [List](./REFERENCE.md#time-entries-list), [Get](./REFERENCE.md#time-entries-get), [Context Store Search](./REFERENCE.md#time-entries-context-store-search), [Context Store SQL Query](./REFERENCE.md#time-entries-context-store-sql-query) |
+| Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [Context Store Search](./REFERENCE.md#invoices-context-store-search), [Context Store SQL Query](./REFERENCE.md#invoices-context-store-sql-query) |
+| Invoice Item Categories | [List](./REFERENCE.md#invoice-item-categories-list), [Get](./REFERENCE.md#invoice-item-categories-get), [Context Store Search](./REFERENCE.md#invoice-item-categories-context-store-search), [Context Store SQL Query](./REFERENCE.md#invoice-item-categories-context-store-sql-query) |
+| Estimates | [List](./REFERENCE.md#estimates-list), [Get](./REFERENCE.md#estimates-get), [Context Store Search](./REFERENCE.md#estimates-context-store-search), [Context Store SQL Query](./REFERENCE.md#estimates-context-store-sql-query) |
+| Estimate Item Categories | [List](./REFERENCE.md#estimate-item-categories-list), [Get](./REFERENCE.md#estimate-item-categories-get), [Context Store Search](./REFERENCE.md#estimate-item-categories-context-store-search), [Context Store SQL Query](./REFERENCE.md#estimate-item-categories-context-store-sql-query) |
+| Expenses | [List](./REFERENCE.md#expenses-list), [Get](./REFERENCE.md#expenses-get), [Context Store Search](./REFERENCE.md#expenses-context-store-search), [Context Store SQL Query](./REFERENCE.md#expenses-context-store-sql-query) |
+| Expense Categories | [List](./REFERENCE.md#expense-categories-list), [Get](./REFERENCE.md#expense-categories-get), [Context Store Search](./REFERENCE.md#expense-categories-context-store-search), [Context Store SQL Query](./REFERENCE.md#expense-categories-context-store-sql-query) |
+| Roles | [List](./REFERENCE.md#roles-list), [Get](./REFERENCE.md#roles-get), [Context Store Search](./REFERENCE.md#roles-context-store-search), [Context Store SQL Query](./REFERENCE.md#roles-context-store-sql-query) |
+| User Assignments | [List](./REFERENCE.md#user-assignments-list), [Context Store Search](./REFERENCE.md#user-assignments-context-store-search), [Context Store SQL Query](./REFERENCE.md#user-assignments-context-store-sql-query) |
+| Task Assignments | [List](./REFERENCE.md#task-assignments-list), [Context Store Search](./REFERENCE.md#task-assignments-context-store-search), [Context Store SQL Query](./REFERENCE.md#task-assignments-context-store-sql-query) |
+| Time Projects | [List](./REFERENCE.md#time-projects-list), [Context Store Search](./REFERENCE.md#time-projects-context-store-search), [Context Store SQL Query](./REFERENCE.md#time-projects-context-store-sql-query) |
+| Time Tasks | [List](./REFERENCE.md#time-tasks-list), [Context Store Search](./REFERENCE.md#time-tasks-context-store-search), [Context Store SQL Query](./REFERENCE.md#time-tasks-context-store-sql-query) |
 
 
 ## Harvest API docs
@@ -141,6 +141,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -208,9 +212,91 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `HarvestConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+
+connector = connect("harvest", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@HarvestConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="harvest_inspect",
+    docs_tool="harvest_read_docs",
+)
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@HarvestConnector.agent_tool(framework="pydantic_ai")
+async def harvest_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@HarvestConnector.agent_tool(framework="pydantic_ai")
+async def harvest_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+
+connector = connect("harvest", workspace_name="<your_workspace_name>")
+
+@HarvestConnector.agent_tool(
+    inspect_tool="harvest_inspect",
+    docs_tool="harvest_read_docs",
+)
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@HarvestConnector.agent_tool()
+async def harvest_inspect():
+    return await connector.inspect_connector()
+
+@HarvestConnector.agent_tool()
+async def harvest_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (harvest_inspect, harvest_read_docs, harvest_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `HarvestConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `HarvestConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `HarvestConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -397,6 +483,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
 
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -484,9 +574,101 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `HarvestConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+from airbyte_agent_sdk.connectors.harvest.models import HarvestPersonalAccessTokenAuthConfig
+
+connector = HarvestConnector(
+    auth_config=HarvestPersonalAccessTokenAuthConfig(
+        token="<Your Harvest personal access token>",
+        account_id="<Your Harvest account ID>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@HarvestConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="harvest_inspect",
+    docs_tool="harvest_read_docs",
+)
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@HarvestConnector.agent_tool(framework="pydantic_ai")
+async def harvest_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@HarvestConnector.agent_tool(framework="pydantic_ai")
+async def harvest_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+from airbyte_agent_sdk.connectors.harvest.models import HarvestPersonalAccessTokenAuthConfig
+
+connector = HarvestConnector(
+    auth_config=HarvestPersonalAccessTokenAuthConfig(
+        token="<Your Harvest personal access token>",
+        account_id="<Your Harvest account ID>"
+    )
+)
+
+@HarvestConnector.agent_tool(
+    inspect_tool="harvest_inspect",
+    docs_tool="harvest_read_docs",
+)
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@HarvestConnector.agent_tool()
+async def harvest_inspect():
+    return await connector.inspect_connector()
+
+@HarvestConnector.agent_tool()
+async def harvest_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (harvest_inspect, harvest_read_docs, harvest_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 ###### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `HarvestConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `HarvestConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `HarvestConnector.agent_tool` above.
 
 **Pydantic AI**
 
