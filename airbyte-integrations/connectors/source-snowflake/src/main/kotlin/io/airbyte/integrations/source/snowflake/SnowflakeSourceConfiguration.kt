@@ -12,6 +12,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Path
 import java.time.Duration
 
 private val log = KotlinLogging.logger {}
@@ -56,10 +58,6 @@ class SnowflakeSourceConfigurationFactory :
         SnowflakeSourceConfiguration,
     > {
 
-    companion object {
-        private const val PRIVATE_KEY_FILE_NAME = "rsa_key.p8"
-    }
-
     override fun makeWithoutExceptionHandling(
         pojo: SnowflakeSourceConfigurationSpecification,
     ): SnowflakeSourceConfiguration {
@@ -74,8 +72,7 @@ class SnowflakeSourceConfigurationFactory :
             }
             is KeyPairCredentialsSpecification -> {
                 jdbcProperties["user"] = credentials.username
-                createPrivateKeyFile(credentials.privateKey)
-                jdbcProperties["private_key_file"] = PRIVATE_KEY_FILE_NAME
+                jdbcProperties["private_key_file"] = createPrivateKeyFile(credentials.privateKey)
                 credentials.privateKeyPassword?.let { jdbcProperties["private_key_file_pwd"] = it }
             }
             is ProgrammaticAccessTokenCredentialsSpecification -> {
@@ -93,8 +90,14 @@ class SnowflakeSourceConfigurationFactory :
         jdbcProperties["db"] = pojo.database
         jdbcProperties["warehouse"] = pojo.warehouse
 
-        // Disable Apache Arrow for now as it is causing issue in jdbc
-        jdbcProperties["enableArrow"] = "false"
+        // Fail at login when the configured warehouse, database or schema does not exist or is not
+        // authorized. Without this the session opens anyway and CHECK passes, because SHOW commands
+        // and LIMIT 0 probes run without a warehouse; the first real query then fails.
+        jdbcProperties["validateDefaultParameters"] = "true"
+        // The driver probes the AWS, Azure and GCP instance-metadata endpoints on every new
+        // connection (telemetry only; no supported auth method needs it) and waits up to 1 s per
+        // probe. The CDK opens a connection per query, so this saves ~2 s each.
+        jdbcProperties["disablePlatformDetection"] = "true"
 
         pojo.schema?.let { jdbcProperties["schema"] = it }
         pojo.role.let { jdbcProperties["role"] = it }
@@ -144,9 +147,16 @@ class SnowflakeSourceConfigurationFactory :
         )
     }
 
-    private fun createPrivateKeyFile(fileValue: String) {
+    /**
+     * Writes the private key to an owner-only temporary file (the driver only accepts a file path)
+     * and returns its absolute path. The file is removed when the JVM exits.
+     */
+    private fun createPrivateKeyFile(fileValue: String): String {
         try {
-            java.io.File(PRIVATE_KEY_FILE_NAME).writeText(fileValue, StandardCharsets.UTF_8)
+            val path: Path = Files.createTempFile("snowflake-rsa-key", ".p8")
+            path.toFile().deleteOnExit()
+            Files.writeString(path, fileValue, StandardCharsets.UTF_8)
+            return path.toAbsolutePath().toString()
         } catch (e: Exception) {
             throw RuntimeException("Failed to create file for private key", e)
         }
