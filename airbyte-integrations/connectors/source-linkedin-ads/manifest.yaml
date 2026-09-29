@@ -616,16 +616,19 @@ definitions:
               # neither can reference a video. LinkedIn returns two different envelopes
               # here: a restli error naming the URN in `message`, and UGC_VALIDATIONS_FAILED
               # whose `message` is generic and whose offending URN appears only under
-              # `errorDetails`. Match both. The errorDetails clause looks for the
-              # `urn:li:` token rather than a bare "URN", which would also match prose
-              # such as "returned"; a 400 with no URN signal still fails loudly.
+              # `errorDetails`. Match both. The errorDetails clause matches only an
+              # `urn:li:adInMailContent:` URN, the one non-post reference type LinkedIn
+              # documents for creatives, so a UGC_VALIDATIONS_FAILED 400 that echoes a
+              # share or ugcPost URN for any other reason still fails the stream.
+              # The `message` clause keeps its original bare "URN" substring test, which
+              # means a 400 whose message merely contains "returned" is skipped as well.
               - type: HttpResponseFilter
                 predicate: >-
                   {{ response.get('status') == 400
                   and ('URN' in ((response.get('message') or '') | upper)
-                  or 'URN:LI:' in ((response.get('errorDetails') or {}) | string | upper)) }}
+                  or 'URN:LI:ADINMAILCONTENT:' in ((response.get('errorDetails') or {}) | string | upper)) }}
                 action: IGNORE
-                error_message: "Skipping a creative reference that is not a fetchable post URN (e.g. urn:li:adInMailContent from Message Ads); it cannot reference a video."
+                error_message: "Skipping a creative reference that is not a fetchable post URN (e.g. urn:li:adInMailContent from Message Ads); it cannot reference a video. LinkedIn response: {{ response }}"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5

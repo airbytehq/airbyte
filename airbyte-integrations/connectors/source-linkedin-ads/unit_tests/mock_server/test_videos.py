@@ -10,6 +10,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.models import ExpectedOutcome
 from unit_tests.conftest import get_source
 
 from .config import ConfigBuilder
@@ -47,6 +48,18 @@ _UGC_VALIDATIONS_FAILED_BODY = json.dumps(
         "errorDetailType": "com.linkedin.common.error.BadRequest",
         "message": "Validations failed on the UGC entity. Please see errorDetails for more information.",
         "errorDetails": {"inputErrors": [{"description": "urn:li:adInMailContent:2825243 is not a valid urn type"}]},
+        "status": 400,
+    }
+)
+# Synthetic (not captured from the API): a UGC validation failure on a genuine post, whose
+# errorDetails name the share URN rather than an InMail URN. It must fail the stream rather
+# than be skipped.
+_UGC_VALIDATIONS_FAILED_POST_URN_BODY = json.dumps(
+    {
+        "code": "UGC_VALIDATIONS_FAILED",
+        "errorDetailType": "com.linkedin.common.error.BadRequest",
+        "message": "Validations failed on the UGC entity. Please see errorDetails for more information.",
+        "errorDetails": {"inputErrors": [{"description": "urn:li:share:1000001 has an unsupported lifecycleState"}]},
         "status": 400,
     }
 )
@@ -358,6 +371,39 @@ class TestVideosStream(TestCase):
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == "urn:li:video:CCC333"
         assert not output.errors
+
+    @HttpMocker()
+    def test_ugc_validations_failed_naming_a_post_urn_fails_the_stream(self, http_mocker: HttpMocker):
+        """
+        Given: A creative referencing a genuine post that the Posts API rejects with a 400
+               UGC_VALIDATIONS_FAILED body whose errorDetails name that share URN
+        When: Running a full refresh sync
+        Then: The stream fails instead of silently skipping the post
+        """
+        config = ConfigBuilder().build()
+
+        http_mocker.get(
+            _accounts_request(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
+        )
+        http_mocker.get(
+            _creatives_request(111111111),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_creative_record(2001, 111111111, "urn:li:share:1000001")]),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.posts_endpoint("urn:li:share:1000001").build(),
+            HttpResponse(body=_UGC_VALIDATIONS_FAILED_POST_URN_BODY, status_code=400),
+        )
+
+        output = read(
+            get_source(config=config),
+            config=config,
+            catalog=CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build(),
+            expected_outcome=ExpectedOutcome.EXPECT_EXCEPTION,
+        )
+
+        assert len(output.records) == 0
+        assert output.errors
 
     @HttpMocker()
     def test_null_creative_reference_is_skipped_without_failing_the_sync(self, http_mocker: HttpMocker):
