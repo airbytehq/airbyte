@@ -98,10 +98,14 @@ This needs no compensation in the manifest and none is present. Because `gte` is
 | job_interviews | top-level | updated_at | updated_at | incremental |
 | scorecard_candidate_attributes | top-level | updated_at | updated_at | incremental |
 | scorecard_questions | top-level | updated_at | updated_at | incremental |
+| scorecard_question_answers | top-level | updated_at | updated_at | incremental |
+| scorecard_question_options | top-level | updated_at | updated_at | incremental |
+| scorecard_question_answer_options | top-level | updated_at | updated_at | incremental |
 | approver_groups | top-level | updated_at | updated_at | incremental |
 | approvers | top-level | updated_at | updated_at | incremental |
 | job_hiring_managers | top-level | updated_at | updated_at | incremental |
 | job_notes | top-level | updated_at | updated_at | incremental |
 | job_owners | top-level | updated_at | updated_at | incremental |
+| job_post_locations | top-level | updated_at | updated_at | incremental |
 | prospect_pool_stages | top-level | updated_at | updated_at | incremental |
 | user_emails | top-level | updated_at | updated_at | incremental |

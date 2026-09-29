@@ -1928,6 +1928,117 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/scorecard_questions"
+    scorecard_question_answers:
+      type: DeclarativeStream
+      name: scorecard_question_answers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/scorecard_question_answers
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/scorecard_question_answers"
+    scorecard_question_options:
+      type: DeclarativeStream
+      name: scorecard_question_options
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/scorecard_question_options
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/scorecard_question_options"
+    scorecard_question_answer_options:
+      type: DeclarativeStream
+      name: scorecard_question_answer_options
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/scorecard_question_answer_options
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/scorecard_question_answer_options"
     approver_groups:
       type: DeclarativeStream
       name: approver_groups
@@ -2113,6 +2224,43 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/job_owners"
+    job_post_locations:
+      type: DeclarativeStream
+      name: job_post_locations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/job_post_locations
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/job_post_locations"
     prospect_pool_stages:
       type: DeclarativeStream
       name: prospect_pool_stages
@@ -2294,6 +2442,7 @@ streams:
   - $ref: "#/definitions/streams/job_hiring_managers"
   - $ref: "#/definitions/streams/job_notes"
   - $ref: "#/definitions/streams/job_owners"
+  - $ref: "#/definitions/streams/job_post_locations"
   - $ref: "#/definitions/streams/prospect_pool_stages"
   - $ref: "#/definitions/streams/user_emails"
   - $ref: "#/definitions/streams/interview_kits"
@@ -2302,6 +2451,9 @@ streams:
   - $ref: "#/definitions/streams/job_interviews"
   - $ref: "#/definitions/streams/scorecard_candidate_attributes"
   - $ref: "#/definitions/streams/scorecard_questions"
+  - $ref: "#/definitions/streams/scorecard_question_answers"
+  - $ref: "#/definitions/streams/scorecard_question_options"
+  - $ref: "#/definitions/streams/scorecard_question_answer_options"
   - $ref: "#/definitions/streams/application_stages"
   - $ref: "#/definitions/streams/applied_candidate_tags"
   - $ref: "#/definitions/streams/attachments"
@@ -2466,7 +2618,7 @@ spec:
         consent_url: >-
           https://auth.greenhouse.io/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&response_type=code&state={{state_value}}&{{scopes_param}}
         scope: >-
-          harvest:application_stages:list harvest:applications:list harvest:applied_candidate_tags:list harvest:approval_flows:list harvest:approver_groups:list harvest:approvers:list harvest:attachments:list harvest:candidate_attribute_types:list harvest:candidate_educations:list harvest:candidate_employments:list harvest:candidate_tags:list harvest:candidates:list harvest:close_reasons:list harvest:custom_field_options:list harvest:custom_fields:list harvest:demographic_answer_options:list harvest:demographic_answers:list harvest:demographic_question_sets:list harvest:demographic_questions:list harvest:departments:list harvest:eeoc:list harvest:email_templates:list harvest:interview_kits:list harvest:interviewer_tags:list harvest:interviewers:list harvest:interviews:list harvest:job_hiring_managers:list harvest:job_interview_stages:list harvest:job_interviews:list harvest:job_notes:list harvest:job_owners:list harvest:job_posts:list harvest:jobs:list harvest:notes:list harvest:offers:list harvest:offices:list harvest:openings:list harvest:prospect_details:list harvest:prospect_pool_stages:list harvest:prospect_pools:list harvest:referrers:list harvest:rejection_details:list harvest:rejection_reasons:list harvest:scorecard_candidate_attributes:list harvest:scorecard_questions:list harvest:scorecards:list harvest:sources:list harvest:user_emails:list harvest:user_job_permissions:list harvest:user_roles:list harvest:users:list
+          harvest:application_stages:list harvest:applications:list harvest:applied_candidate_tags:list harvest:approval_flows:list harvest:approver_groups:list harvest:approvers:list harvest:attachments:list harvest:candidate_attribute_types:list harvest:candidate_educations:list harvest:candidate_employments:list harvest:candidate_tags:list harvest:candidates:list harvest:close_reasons:list harvest:custom_field_options:list harvest:custom_fields:list harvest:demographic_answer_options:list harvest:demographic_answers:list harvest:demographic_question_sets:list harvest:demographic_questions:list harvest:departments:list harvest:eeoc:list harvest:email_templates:list harvest:interview_kits:list harvest:interviewer_tags:list harvest:interviewers:list harvest:interviews:list harvest:job_hiring_managers:list harvest:job_interview_stages:list harvest:job_interviews:list harvest:job_notes:list harvest:job_owners:list harvest:job_post_locations:list harvest:job_posts:list harvest:jobs:list harvest:notes:list harvest:offers:list harvest:offices:list harvest:openings:list harvest:prospect_details:list harvest:prospect_pool_stages:list harvest:prospect_pools:list harvest:referrers:list harvest:rejection_details:list harvest:rejection_reasons:list harvest:scorecard_candidate_attributes:list harvest:scorecard_question_answer_options:list harvest:scorecard_question_answers:list harvest:scorecard_question_options:list harvest:scorecard_questions:list harvest:scorecards:list harvest:sources:list harvest:user_emails:list harvest:user_job_permissions:list harvest:user_roles:list harvest:users:list
         access_token_url: https://auth.greenhouse.io/token
         access_token_headers:
           Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
@@ -2575,11 +2727,15 @@ metadata:
     job_interviews: false
     scorecard_candidate_attributes: false
     scorecard_questions: false
+    scorecard_question_answers: false
+    scorecard_question_options: false
+    scorecard_question_answer_options: false
     approver_groups: false
     approvers: false
     job_hiring_managers: false
     job_notes: false
     job_owners: false
+    job_post_locations: false
     prospect_pool_stages: false
     user_emails: false
   testedStreams:
@@ -5864,6 +6020,133 @@ schemas:
         - 'null'
         - string
         format: date-time
+  scorecard_question_answers:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      answer:
+        description: Free-text response for `text` questions, as plain text with HTML and `@`-mention markup stripped. `null` or empty for `yes_no`, `single_select` and `multi_select` questions, or when the interviewer left the question blank.
+        type:
+        - 'null'
+        - string
+      answer_with_tags:
+        description: HTML version of `answer` that keeps rich-text formatting and `@`-mentions as user tags (e.g. `@[User Name](user:123)`). `null` when it would be identical to `answer`.
+        type:
+        - 'null'
+        - string
+      boolean_value:
+        description: "Response for `yes_no` questions: `true` for yes, `false` for no. `null` for other answer types or when the question was left blank."
+        type:
+        - 'null'
+        - boolean
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      scorecard_id:
+        description: Id of the scorecard this answer belongs to. Each scorecard is one interviewer's submission on one application.
+        type:
+        - 'null'
+        - integer
+      scorecard_question_id:
+        description: "Id of the `scorecard_question` this answer responds to. The question's `answer_type` decides which field is populated: `answer` for `text`, `boolean_value` for `yes_no`, and `scorecard_question_answer_options` rows for `single_select` and `multi_select`."
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      value:
+        description: 'The answer in the same shape the scorecard write API accepts, keyed on the question''s `answer_type`: a string for `text`, a boolean for `yes_no`, the selected option id for `single_select`, and an array of selected option ids for `multi_select`. `null` when unanswered.'
+        type:
+        - 'null'
+        - string
+        - boolean
+        - integer
+        - array
+        items: {}
+  scorecard_question_options:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      active:
+        description: "`true` while the option can be picked on new scorecards; `false` after it has been removed. Past answers that picked the option keep pointing at it, so historical scorecards still resolve to the original label."
+        type:
+        - 'null'
+        - boolean
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      name:
+        description: Label shown to interviewers for this choice (e.g. `Strong Hire`, `No Hire`).
+        type:
+        - 'null'
+        - string
+      scorecard_question_id:
+        description: Id of the `scorecard_question` this option belongs to. Only `single_select` and `multi_select` questions have options.
+        type:
+        - 'null'
+        - integer
+      sort_order:
+        description: Position of the option within the question's choice list. Lower values render first.
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  scorecard_question_answer_options:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      id:
+        type:
+        - 'null'
+        - integer
+      scorecard_question_answer_id:
+        description: Id of the `scorecard_question_answers` row this selection belongs to.
+        type:
+        - 'null'
+        - integer
+      scorecard_question_option_id:
+        description: Id of the selected `scorecard_question_options` row. A `multi_select` answer has one row here per option picked.
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
   approver_groups:
     type:
     - 'null'
@@ -6119,6 +6402,52 @@ schemas:
         type:
         - 'null'
         - integer
+  job_post_locations:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      custom_location_id:
+        description: Id of the board-scoped custom location this row resolves to. Populated when `type` is `custom_list`, `null` otherwise.
+        type:
+        - 'null'
+        - integer
+      id:
+        type:
+        - 'null'
+        - integer
+      job_post_id:
+        description: Id of the `job_post` this location is attached to. A post published in several locations has one row per location.
+        type:
+        - 'null'
+        - integer
+      office_id:
+        description: Id of the office this location resolves to (see the `offices` stream). Populated when `type` is `office`, `null` otherwise.
+        type:
+        - 'null'
+        - integer
+      plain_text_location:
+        description: Free-text location shown on the job post (e.g. `New York, NY`, `Remote (US)`). Populated when `type` is `free_text`, `null` otherwise.
+        type:
+        - 'null'
+        - string
+      type:
+        description: How the location is sourced. `free_text` uses `plain_text_location`, `office` uses `office_id`, and `custom_list` uses `custom_location_id`.
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
   prospect_pool_stages:
     type:
     - 'null'

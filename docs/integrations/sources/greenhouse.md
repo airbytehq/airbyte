@@ -59,6 +59,7 @@ Both methods need the same scopes. With OAuth, the consent flow requests them; a
 - `harvest:job_interviews:list`
 - `harvest:job_notes:list`
 - `harvest:job_owners:list`
+- `harvest:job_post_locations:list`
 - `harvest:job_posts:list`
 - `harvest:jobs:list`
 - `harvest:notes:list`
@@ -72,6 +73,9 @@ Both methods need the same scopes. With OAuth, the consent flow requests them; a
 - `harvest:rejection_details:list`
 - `harvest:rejection_reasons:list`
 - `harvest:scorecard_candidate_attributes:list`
+- `harvest:scorecard_question_answer_options:list`
+- `harvest:scorecard_question_answers:list`
+- `harvest:scorecard_question_options:list`
 - `harvest:scorecard_questions:list`
 - `harvest:scorecards:list`
 - `harvest:sources:list`
@@ -158,6 +162,7 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | [`job_interviews`](https://harvestdocs.greenhouse.io/reference/get_v3-job-interviews) | Incremental (`updated_at`) | The interview plan for each job stage |
 | [`job_notes`](https://harvestdocs.greenhouse.io/reference/get_v3-job-notes) | Incremental (`updated_at`) | Free-text notes on jobs, separate from the candidate notes in `activity_feed` |
 | [`job_owners`](https://harvestdocs.greenhouse.io/reference/get_v3-job-owners) | Incremental (`updated_at`) | Recruiter, sourcer and coordinator per job, with a `responsible` flag |
+| [`job_post_locations`](https://harvestdocs.greenhouse.io/reference/get_v3-job-post-locations) | Incremental (`updated_at`) | One row per location a job post is published in, resolved to an office, a custom location or free text |
 | [`job_posts`](https://harvestdocs.greenhouse.io/reference/get_v3-job-posts) | Incremental (`updated_at`) | Includes deleted posts |
 | [`job_stages`](https://harvestdocs.greenhouse.io/reference/get_v3-job-interview-stages) | Incremental (`updated_at`) | |
 | [`jobs`](https://harvestdocs.greenhouse.io/reference/get_v3-jobs) | Incremental (`updated_at`) | |
@@ -172,6 +177,9 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | [`rejection_reasons`](https://harvestdocs.greenhouse.io/reference/get_v3-rejection-reasons) | Incremental (`updated_at`) | Includes the reasons Greenhouse ships with |
 | [`schools`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Incremental (`updated_at`) | Custom field options for the `school_name` field |
 | [`scorecard_candidate_attributes`](https://harvestdocs.greenhouse.io/reference/get_v3-scorecard-candidate-attributes) | Incremental (`updated_at`) | One row per rated attribute on each scorecard |
+| [`scorecard_question_answer_options`](https://harvestdocs.greenhouse.io/reference/get_v3-scorecard-question-answer-options) | Incremental (`updated_at`) | The options picked on each `single_select` or `multi_select` answer |
+| [`scorecard_question_answers`](https://harvestdocs.greenhouse.io/reference/get_v3-scorecard-question-answers) | Incremental (`updated_at`) | Interviewers' answers to scorecard questions. One row per answered question on each scorecard |
+| [`scorecard_question_options`](https://harvestdocs.greenhouse.io/reference/get_v3-scorecard-question-options) | Incremental (`updated_at`) | The choices for `single_select` and `multi_select` scorecard questions |
 | [`scorecard_questions`](https://harvestdocs.greenhouse.io/reference/get_v3-scorecard-questions) | Incremental (`updated_at`) | The question dictionary behind scorecards, defined per interview kit |
 | [`scorecards`](https://harvestdocs.greenhouse.io/reference/get_v3-scorecards) | Incremental (`updated_at`) | |
 | [`sources`](https://harvestdocs.greenhouse.io/reference/get_v3-sources) | Incremental (`updated_at`) | |
@@ -180,6 +188,14 @@ The table lists the stream names as they appear in Airbyte, with the Harvest v3 
 | [`user_permissions`](https://harvestdocs.greenhouse.io/reference/get_v3-user-job-permissions) | Incremental (`updated_at`) | Job permissions across all users |
 | [`user_roles`](https://harvestdocs.greenhouse.io/reference/get_v3-user-roles) | Incremental (`updated_at`) | |
 | [`users`](https://harvestdocs.greenhouse.io/reference/get_v3-users) | Incremental (`updated_at`) | Includes integration service users |
+
+### Streams added in 1.5.0
+
+Version 1.5.0 added these 4 streams, all incremental on `updated_at`. Together with `scorecard_questions`, they carry the content of each scorecard, not only its overall recommendation:
+
+`job_post_locations`, `scorecard_question_answer_options`, `scorecard_question_answers`, `scorecard_question_options`
+
+All 4 are disabled by default on new and existing connections. Each one needs its own Harvest v3 scope. On an OAuth source you authorized before 1.5.0, re-run the consent flow before enabling any of them. With Client Credentials, grant `harvest:job_post_locations:list`, `harvest:scorecard_question_answer_options:list`, `harvest:scorecard_question_answers:list`, and `harvest:scorecard_question_options:list` to the credential in Greenhouse. See [Scopes](#scopes).
 
 ### Streams added in 1.4.0
 
@@ -213,7 +229,7 @@ Greenhouse [rate limits](https://harvestdocs.greenhouse.io/docs/api-rate-limitin
 
 The connector requests 500 records per page, the Harvest v3 maximum, and then follows the cursor links Greenhouse returns, so large accounts still page through many requests per stream.
 
-`application_stages` and `scorecard_candidate_attributes` are high-volume streams: `application_stages` has one row per application per stage entered, and `scorecard_candidate_attributes` has one row per rated attribute on each scorecard. Each holds several times as many rows as its parent stream, so each adds many requests to a sync and draws down the shared rate-limit window. Leave them disabled unless you need that detail.
+`application_stages`, `scorecard_candidate_attributes`, and `scorecard_question_answers` are high-volume streams: `application_stages` has one row per application per stage entered, `scorecard_candidate_attributes` has one row per rated attribute on each scorecard, and `scorecard_question_answers` has one row per answered question on each scorecard. Each holds several times as many rows as its parent stream, so each adds many requests to a sync and draws down the shared rate-limit window. Leave them disabled unless you need that detail.
 
 ### Migration from Harvest v1
 
@@ -232,6 +248,7 @@ Version 1.0.0 migrates the 33 streams carried over from 0.8.1 from Harvest v1 to
 - **`candidate_educations`** references schools, degrees and disciplines by custom field option id (`school_name_custom_field_option_id`, `degree_custom_field_option_id`, `discipline_custom_field_option_id`), not by name. Join to `schools`, `degrees`, and `disciplines` to resolve them.
 - **`interviewers`** has one row per panel member per interview, so an interview appears once for each attendee. `user_id` is empty for external attendees who match no Greenhouse user; their address is in `email` instead.
 - **`scorecard_candidate_attributes`** has one row per rated attribute per scorecard, so it holds many more rows than `scorecards`.
+- **`scorecard_question_answers`** has one row per answered question per scorecard, so it also holds many more rows than `scorecards`. Which field carries the answer depends on the question's `answer_type`: `answer` for `text`, `boolean_value` for `yes_no`, and `scorecard_question_answer_options` for `single_select` and `multi_select`. `value` carries all four shapes in one field, so its type varies from row to row.
 - **`interview_kits.exercises`** carries the live Interview Prep content and may contain HTML. The `summary` and `instructions` fields on `job_interviews` are snapshots taken when the slot was first added and do not track later edits; use `exercises` for the current text.
 - **`user_emails`** lists every address on a user, while `users.primary_email` carries one. Integration service users have no address at all, so they have no rows here.
 - **`approvers.send_auto_reminder_at`** is a date (`YYYY-MM-DD`), not a timestamp, despite the `_at` suffix every other Harvest v3 field uses for timestamps.
@@ -242,7 +259,7 @@ Version 1.0.0 migrates the 33 streams carried over from 0.8.1 from Harvest v1 to
 Greenhouse Harvest v3 doesn't report deleted records. The connector replicates soft-deletes as a flag on the record:
 
 - `active` on `job_posts`. Harvest v3 leaves deleted posts out by default, so the connector requests both active and deleted posts. Filter on `active` downstream if you only want live posts.
-- `active` on `custom_fields`, `custom_field_options`, `degrees`, `disciplines`, `schools`, `demographics_question_sets`, `demographics_questions`, `demographics_question_sets_questions`, `demographics_answer_options`, `demographics_answers_answer_options`, and `prospect_pools`. Harvest v3 returns both active and inactive records on these streams.
+- `active` on `custom_fields`, `custom_field_options`, `degrees`, `disciplines`, `schools`, `demographics_question_sets`, `demographics_questions`, `demographics_question_sets_questions`, `demographics_answer_options`, `demographics_answers_answer_options`, `prospect_pools`, and `scorecard_question_options`. Harvest v3 returns both active and inactive records on these streams.
 - `deactivated` on `users`. Deactivated users stay in the stream.
 - `active` on `job_stages`, `job_interviews`, and `scorecard_questions`. `false` means the stage, interview, or question was removed from the job's interview plan or the interview kit; Greenhouse keeps the record so historical data still resolves.
 
@@ -266,7 +283,7 @@ With Client Credentials the connector requests a new access token from Greenhous
 
 ### Sync fails with a `403` configuration error on a stream
 
-The authorizing user isn't a Site Admin, or the consent flow didn't include the scope for that stream. This is expected when you enable one of the [streams added in 1.2.0](#streams-added-in-120) or [streams added in 1.4.0](#streams-added-in-140) on a source you authorized before that version. Compare the scopes in [Prerequisites](#prerequisites) with the ones you approved, then open the source settings, click **Authenticate**, and re-run the consent flow as a Site Admin. With Client Credentials, grant the missing scope to the credential in Greenhouse, and check that **Site Admin user ID** is blank or belongs to a Site Admin.
+The authorizing user isn't a Site Admin, or the consent flow didn't include the scope for that stream. This is expected when you enable one of the [streams added in 1.2.0](#streams-added-in-120) [streams added in 1.4.0](#streams-added-in-140), or [streams added in 1.5.0](#streams-added-in-150) on a source you authorized before that version. Compare the scopes in [Prerequisites](#prerequisites) with the ones you approved, then open the source settings, click **Authenticate**, and re-run the consent flow as a Site Admin. With Client Credentials, grant the missing scope to the credential in Greenhouse, and check that **Site Admin user ID** is blank or belongs to a Site Admin.
 
 ### A stream returns fewer records after upgrading to 1.1.0
 
@@ -285,6 +302,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.5.0 | 2026-09-29 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add the `scorecard_question_answers`, `scorecard_question_options`, `scorecard_question_answer_options`, and `job_post_locations` streams - see [Streams added in 1.5.0](#streams-added-in-150). The consent flow requests four new scopes; enabling any of them on a source authorized before 1.5.0 requires re-running the consent flow |
 | 1.4.0 | 2026-09-28 | [86478](https://github.com/airbytehq/airbyte/pull/86478) | Add the `candidate_attribute_types` and `job_notes` streams - see [Streams added in 1.4.0](#streams-added-in-140). The consent flow requests two new scopes; enabling either stream on a source authorized before 1.4.0 requires re-running the consent flow |
 | 1.3.0 | 2026-09-24 | [85178](https://github.com/airbytehq/airbyte/pull/85178) | Add client-credentials authentication for Greenhouse custom integrations and self-managed deployments. |
 | 1.2.0 | 2026-09-21 | [86477](https://github.com/airbytehq/airbyte/pull/86477) | Add 20 Harvest v3 detail streams - see [Streams added in 1.2.0](#streams-added-in-120). The consent flow requests 20 new scopes; existing connections keep syncing unchanged, but enabling a new stream on a source authorized before 1.2.0 requires re-running the consent flow |

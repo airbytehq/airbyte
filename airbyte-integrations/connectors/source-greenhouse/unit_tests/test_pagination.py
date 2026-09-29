@@ -963,6 +963,43 @@ DOCUMENTED_V3_EXAMPLES = {
         "type": "NOTE",
         "application_id": None,
     },
+    "scorecard_question_answers": {
+        "id": 1,
+        "scorecard_id": 1,
+        "scorecard_question_id": 1,
+        "answer": "This is my answer",
+        "answer_with_tags": None,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "boolean_value": None,
+        "value": "This is my answer",
+    },
+    "scorecard_question_options": {
+        "id": 1,
+        "scorecard_question_id": 1,
+        "name": "Option",
+        "active": True,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "sort_order": 5,
+    },
+    "scorecard_question_answer_options": {
+        "id": 1,
+        "scorecard_question_option_id": 1,
+        "scorecard_question_answer_id": 1,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+    },
+    "job_post_locations": {
+        "id": 1,
+        "plain_text_location": "New York, NY",
+        "office_id": None,
+        "created_at": "1998-12-15T12:30:30.000Z",
+        "updated_at": "1998-12-15T12:30:30.000Z",
+        "job_post_id": 1,
+        "custom_location_id": None,
+        "type": "free_text",
+    },
 }
 
 
@@ -1377,6 +1414,10 @@ PARITY_STREAM_ENDPOINTS = {
     "prospect_details": "https://harvest.greenhouse.io/v3/prospect_details",
     "referrers": "https://harvest.greenhouse.io/v3/referrers",
     "rejection_details": "https://harvest.greenhouse.io/v3/rejection_details",
+    "scorecard_question_answers": "https://harvest.greenhouse.io/v3/scorecard_question_answers",
+    "scorecard_question_options": "https://harvest.greenhouse.io/v3/scorecard_question_options",
+    "scorecard_question_answer_options": "https://harvest.greenhouse.io/v3/scorecard_question_answer_options",
+    "job_post_locations": "https://harvest.greenhouse.io/v3/job_post_locations",
 }
 
 
