@@ -110,7 +110,8 @@ public class MongoDbCdcInitializer {
       JsonNode savedCdcState = stateManager.getCdcState().state();
       String correctlyNormalizedServerId = MongoDbDebeziumPropertiesManager.normalizeToDebeziumFormat(serverId);
 
-      List<Map.Entry<String, JsonNode>> savedStateEntries = new ArrayList<>(savedCdcState.properties());
+      List<Map.Entry<String, JsonNode>> savedStateEntries = new ArrayList<>();
+      savedCdcState.fields().forEachRemaining(savedStateEntries::add);
       // Check for either corrupted state (multiple partitions) OR migration needed (old database name
       // format)
       boolean needsCleaning = hasOldFormatState(savedStateEntries, correctlyNormalizedServerId);

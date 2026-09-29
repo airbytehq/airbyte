@@ -17,7 +17,6 @@ import com.mongodb.client.internal.MongoClientImpl;
 import io.airbyte.commons.json.Jsons;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class MongoConnectionUtilsTest {
@@ -41,8 +40,7 @@ class MongoConnectionUtilsTest {
 
     assertNotNull(mongoClient);
     assertEquals(List.of(new ServerAddress(host, port)), ((MongoClientImpl) mongoClient).getSettings().getClusterSettings().getHosts());
-    assertEquals(Set.of("sync", MongoConstants.DRIVER_NAME),
-        Set.copyOf(((MongoClientImpl) mongoClient).getMongoDriverInformation().getDriverNames()));
+    assertEquals(List.of("sync", MongoConstants.DRIVER_NAME), ((MongoClientImpl) mongoClient).getMongoDriverInformation().getDriverNames());
     assertEquals(username, ((MongoClientImpl) mongoClient).getSettings().getCredential().getUserName());
     assertEquals(password, new String(((MongoClientImpl) mongoClient).getSettings().getCredential().getPassword()));
     assertEquals(authSource, ((MongoClientImpl) mongoClient).getSettings().getCredential().getSource());
@@ -69,8 +67,7 @@ class MongoConnectionUtilsTest {
 
     assertNotNull(mongoClient);
     assertEquals(List.of(new ServerAddress(host, port)), ((MongoClientImpl) mongoClient).getSettings().getClusterSettings().getHosts());
-    assertEquals(Set.of("sync", MongoConstants.DRIVER_NAME),
-        Set.copyOf(((MongoClientImpl) mongoClient).getMongoDriverInformation().getDriverNames()));
+    assertEquals(List.of("sync", MongoConstants.DRIVER_NAME), ((MongoClientImpl) mongoClient).getMongoDriverInformation().getDriverNames());
     assertEquals(username, ((MongoClientImpl) mongoClient).getSettings().getCredential().getUserName());
     assertEquals(password, new String(((MongoClientImpl) mongoClient).getSettings().getCredential().getPassword()));
     assertEquals(authSource, ((MongoClientImpl) mongoClient).getSettings().getCredential().getSource());
@@ -96,8 +93,7 @@ class MongoConnectionUtilsTest {
 
     assertNotNull(mongoClient);
     assertEquals(List.of(new ServerAddress(host, port)), ((MongoClientImpl) mongoClient).getSettings().getClusterSettings().getHosts());
-    assertEquals(Set.of("sync", MongoConstants.DRIVER_NAME),
-        Set.copyOf(((MongoClientImpl) mongoClient).getMongoDriverInformation().getDriverNames()));
+    assertEquals(List.of("sync", MongoConstants.DRIVER_NAME), ((MongoClientImpl) mongoClient).getMongoDriverInformation().getDriverNames());
     assertEquals(username, ((MongoClientImpl) mongoClient).getSettings().getCredential().getUserName());
     assertEquals(password, new String(((MongoClientImpl) mongoClient).getSettings().getCredential().getPassword()));
     assertEquals(authSource, ((MongoClientImpl) mongoClient).getSettings().getCredential().getSource());
@@ -115,8 +111,7 @@ class MongoConnectionUtilsTest {
 
     assertNotNull(mongoClient);
     assertEquals(List.of(new ServerAddress(host, port)), ((MongoClientImpl) mongoClient).getSettings().getClusterSettings().getHosts());
-    assertEquals(Set.of("sync", MongoConstants.DRIVER_NAME),
-        Set.copyOf(((MongoClientImpl) mongoClient).getMongoDriverInformation().getDriverNames()));
+    assertEquals(List.of("sync", MongoConstants.DRIVER_NAME), ((MongoClientImpl) mongoClient).getMongoDriverInformation().getDriverNames());
     assertNull(((MongoClientImpl) mongoClient).getSettings().getCredential());
   }
 
@@ -139,8 +134,7 @@ class MongoConnectionUtilsTest {
 
     assertNotNull(mongoClient);
     assertEquals(List.of(new ServerAddress(host, port)), ((MongoClientImpl) mongoClient).getSettings().getClusterSettings().getHosts());
-    assertEquals(Set.of("sync", MongoConstants.DRIVER_NAME),
-        Set.copyOf(((MongoClientImpl) mongoClient).getMongoDriverInformation().getDriverNames()));
+    assertEquals(List.of("sync", MongoConstants.DRIVER_NAME), ((MongoClientImpl) mongoClient).getMongoDriverInformation().getDriverNames());
     assertEquals(username, ((MongoClientImpl) mongoClient).getSettings().getCredential().getUserName());
     assertEquals(password, new String(((MongoClientImpl) mongoClient).getSettings().getCredential().getPassword()));
     assertEquals(authSource, ((MongoClientImpl) mongoClient).getSettings().getCredential().getSource());
