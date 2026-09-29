@@ -262,47 +262,40 @@ class PostgresSourceDebeziumOperations(
                 }
             }
 
-            when (mappedValue) {
+            if (mappedValue == null || mappedValue is NullNode) {
                 // `null` means the column key was absent from the image, or that mapValue()
                 // failed. `NullNode` means SQL NULL. Both must be written into resultRow,
                 // never skipped, for the reason given above.
-                null,
-                is NullNode -> {
-                    resultRow[field.id] = FieldValueEncoder(null, NullCodec)
+                resultRow[field.id] = FieldValueEncoder(null, NullCodec)
+            } else if (field.type is ArrayFieldType<*>) {
+                // ArrayEncoder needs a List<T>; decode the JSON array using the
+                // element type's decoder before passing to the encoder.
+                val elementDecoder = (field.type as ArrayFieldType<*>).elementFieldType.jsonEncoder
+                        as JsonDecoder<Any?>
+                val arrayDecoder = ArrayDecoder(elementDecoder)
+                var decoded: List<Any?>? = null
+                try {
+                    decoded = arrayDecoder.decode(mappedValue)
+                } catch (_: Exception) {
+                    changes[EmittedField(field.id, field.type)] =
+                        FieldValueChange.DESERIALIZATION_FAILURE_TOTAL
                 }
-                else -> {
-                    if (field.type is ArrayFieldType<*>) {
-                        // ArrayEncoder needs a List<T>; decode the JSON array using the
-                        // element type's decoder before passing to the encoder.
-                        val elementDecoder =
-                            (field.type as ArrayFieldType<*>).elementFieldType.jsonEncoder
-                                as JsonDecoder<Any?>
-                        val arrayDecoder = ArrayDecoder(elementDecoder)
-                        var decoded: List<Any?>? = null
-                        try {
-                            decoded = arrayDecoder.decode(mappedValue)
-                        } catch (_: Exception) {
-                            changes[EmittedField(field.id, field.type)] =
-                                FieldValueChange.DESERIALIZATION_FAILURE_TOTAL
-                        }
-                        resultRow[field.id] =
-                            FieldValueEncoder(decoded, field.type.jsonEncoder as JsonEncoder<Any?>)
-                    } else {
-                        val decoder = field.type.jsonEncoder as JsonDecoder<Any?>
-                        var decoded: Any? = null
-                        try {
-                            decoded = decoder.decode(mappedValue)
-                        } catch (_: Exception) {
-                            changes[EmittedField(field.id, field.type)] =
-                                FieldValueChange.DESERIALIZATION_FAILURE_TOTAL
-                        }
-                        resultRow[field.id] =
-                            FieldValueEncoder(
-                                decoded,
-                                decoder as JsonEncoder<Any?>,
-                            )
-                    }
+                resultRow[field.id] =
+                    FieldValueEncoder(decoded, field.type.jsonEncoder as JsonEncoder<Any?>)
+            } else {
+                val decoder = field.type.jsonEncoder as JsonDecoder<Any?>
+                var decoded: Any? = null
+                try {
+                    decoded = decoder.decode(mappedValue)
+                } catch (_: Exception) {
+                    changes[EmittedField(field.id, field.type)] =
+                        FieldValueChange.DESERIALIZATION_FAILURE_TOTAL
                 }
+                resultRow[field.id] =
+                    FieldValueEncoder(
+                        decoded,
+                        decoder as JsonEncoder<Any?>,
+                    )
             }
         }
 
