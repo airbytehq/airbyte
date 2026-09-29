@@ -10,7 +10,7 @@ import urllib3
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import create_chunks, create_stream_identifier, format_exception
-from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalog, DestinationSyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, DestinationSyncMode
 from destination_astra.astra_client import AstraClient
 from destination_astra.config import AstraIndexingModel
 

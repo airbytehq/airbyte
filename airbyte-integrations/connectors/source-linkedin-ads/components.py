@@ -149,8 +149,10 @@ class LinkedInAdsRecordExtractor(RecordExtractor):
         Converts 'lastModified' and 'created' fields in the record to RFC3339 format.
         """
         for item in ["lastModified", "created"]:
-            if record.get(item) is not None:
-                record[item] = ab_datetime_parse(record[item]).to_datetime().isoformat()
+            value = record.get(item)
+            # Rest.li audit stamps ({"actor": urn, "time": epoch_ms}, e.g. on /organizationAcls) are kept as-is.
+            if value is not None and not isinstance(value, Mapping):
+                record[item] = ab_datetime_parse(value).to_datetime().isoformat()
         return record
 
     def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:

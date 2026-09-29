@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 from unittest import TestCase
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteStreamStatus, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 
@@ -108,6 +108,57 @@ class TestProductAttributeTermsFullRefresh(TestCase):
         assert "Blue" in names
         assert "Small" in names
         assert "Large" in names
+
+    @HttpMocker()
+    def test_read_records_skips_attribute_with_invalid_taxonomy(self, http_mocker: HttpMocker) -> None:
+        """Test reading skips an attribute whose taxonomy no longer exists."""
+        attributes_response = _get_attributes_response_template()
+        valid_terms = _get_response_template()
+        invalid_taxonomy_response = {
+            "code": "woocommerce_rest_taxonomy_invalid",
+            "message": "Taxonomy does not exist.",
+            "data": {"status": 404},
+        }
+
+        http_mocker.get(
+            WooCommerceRequestBuilder.product_attributes_endpoint().with_default_params().build(),
+            HttpResponse(body=json.dumps(attributes_response), status_code=200),
+        )
+        http_mocker.get(
+            WooCommerceRequestBuilder.product_attribute_terms_endpoint(1).with_default_params().build(),
+            HttpResponse(body=json.dumps(valid_terms), status_code=200),
+        )
+        http_mocker.get(
+            WooCommerceRequestBuilder.product_attribute_terms_endpoint(2).with_default_params().build(),
+            HttpResponse(body=json.dumps(invalid_taxonomy_response), status_code=404),
+        )
+
+        output = self._read(config_=config())
+        assert not output.errors
+        assert [record.record.data["id"] for record in output.records] == [term["id"] for term in valid_terms]
+        assert output.get_stream_statuses(_STREAM_NAME)[-1] == AirbyteStreamStatus.COMPLETE
+
+    @HttpMocker()
+    def test_read_records_fails_on_unrelated_404(self, http_mocker: HttpMocker) -> None:
+        """Test reading fails when a 404 is not a taxonomy-invalid response."""
+        attributes_response = [_get_attributes_response_template()[0]]
+        unrelated_404_response = {
+            "code": "woocommerce_rest_no_route",
+            "message": "No route was found matching the URL and request method.",
+            "data": {"status": 404},
+        }
+
+        http_mocker.get(
+            WooCommerceRequestBuilder.product_attributes_endpoint().with_default_params().build(),
+            HttpResponse(body=json.dumps(attributes_response), status_code=200),
+        )
+        http_mocker.get(
+            WooCommerceRequestBuilder.product_attribute_terms_endpoint(1).with_default_params().build(),
+            HttpResponse(body=json.dumps(unrelated_404_response), status_code=404),
+        )
+
+        output = self._read(config_=config(), expecting_exception=True)
+        assert output.errors
 
     @HttpMocker()
     def test_read_records_empty_parent(self, http_mocker: HttpMocker) -> None:

@@ -483,6 +483,9 @@ class MySqlSourceDebeziumOperations(
                     configuration.debeziumKeepAliveInterval.toMillis().toString(),
                 )
                 .withDatabase(configuration.jdbcProperties)
+                // Fully-qualified Debezium SSL properties; the binlog client ignores the JDBC
+                // driver's ssl properties.
+                .with(configuration.debeziumSslProperties)
                 .withDatabase("hostname", tunnelSession.address.hostName)
                 .withDatabase("port", tunnelSession.address.port.toString())
                 .withDatabase("dbname", databaseName)

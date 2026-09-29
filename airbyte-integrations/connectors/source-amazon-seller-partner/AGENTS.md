@@ -96,6 +96,56 @@ The following streams have known failures when running against test/sandbox cred
 |--------|---------------|
 | GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE | `RequestedFromDate 2023-09-30T00:00:00.000Z is more than 90 days old` (400 InvalidInput) |
 
+## 7. Report Streams Must Declare Their Own `dataStartTime`/`dataEndTime`
+
+Every report stream's `creation_requester` pulls in the shared requester with `$ref`, but a sibling
+`request_body_json` **replaces** the referenced one wholesale — the manifest reference resolver merges
+one level deep, not recursively. So a stream that writes its own `request_body_json` to set
+`reportType` drops the shared `dataStartTime`/`dataEndTime` entirely, and `createReport` is called
+with no date range while the record is still labelled with the slice's date.
+
+Daily (`step: P1D`) report streams must additionally anchor that window to the slice's calendar day:
+
+```yaml
+dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
+dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
+```
+
+Raw slice bounds drift off midnight as soon as a sync ends mid-day (the cursor's `end_datetime` is
+`now_utc()`), and Amazon rounds an off-midnight window outward to every calendar day it spans and
+sums them. The `AddFields` transformation that emits the cursor value (`endDate` / `endTime` /
+`queryEndDate`) needs the same day-aligned expression so destination deduplication compares stable
+per-day values.
+
+**Why this matters:** adding a report stream by copying an existing one is the common path, and the
+missing window is invisible — the sync succeeds and returns records, they are just labelled with a
+date the report did not cover. Two deliberate exceptions: streams whose window is multi-day or
+monthly (for example `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`) set the window explicitly but not
+day-aligned, and the full-refresh snapshot and forecast streams (`GET_VENDOR_INVENTORY_REPORT`,
+`GET_VENDOR_FORECASTING_FRESH_REPORT`, `GET_VENDOR_FORECASTING_RETAIL_REPORT`) have no cursor and
+intentionally send no window at all.
+
+## 8. Vendor retail analytics reports forward report options but supply no defaults
+
+Amazon documents `reportPeriod`, `distributorView`, and `sellingProgram` as required for the vendor sales and
+inventory reports, and `reportPeriod` for traffic and net pure product margin. Real-time inventory has no
+documented options.
+
+Because each of these streams declares its own `request_body_json`, which replaces rather than merges with
+the shared requester's body, configured options used to be validated and then silently dropped
+(issue #77617). Each stream's `request_body_json` now references the single `report_options_from_config`
+Jinja block that `creation_requester_with_report_options` also references, so the option matching rules
+exist in exactly one place. Each stream supplies only its `report_type` via `$parameters`.
+
+Do not add default values for these options. The right values are account-specific (`distributorView` is
+`MANUFACTURING` or `SOURCING` depending on how the vendor sells to Amazon; `sellingProgram` is `RETAIL`, `FRESH`
+or, for some reports, `BUSINESS`), so a hardcoded guess can return the wrong numbers with no error and no schema change to signal it.
+A missing option fails loudly instead: Amazon can reject a request that omits them, and on a live Vendor
+connection every vendor sales, inventory and traffic report went `FATAL` with "This report type requires the
+reportPeriod, distributorView, sellingProgram reportOption to be specified" until the user configured them. The
+block ends in `{{ opts if opts else None }}` so an unconfigured connection sends no `reportOptions` key at all and
+its request body is byte-identical to previous versions.
+
 ## Incremental Stream Considerations
 
 The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 8 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.
