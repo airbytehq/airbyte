@@ -72,7 +72,7 @@ If the specified collection doesn't exist, the connector will create it for you 
 If you want to change any of these settings, create a new collection in your Milvus instance yourself. Make sure that
 
 - The primary key field is set to [auto_id](https://milvus.io/docs/create_collection.md). Collections without `auto_id` are not supported.
-- There is a float vector field with the dimensionality your embedding configuration produces, and [a configured index](https://milvus.io/docs/build_index.md) on it. Set the **Vector Field** option to its name if it isn't `vector`.
+- There is a float vector field with the dimensionality your embedding configuration produces, and [a configured index](https://milvus.io/docs/build_index.md) on it. Set the **Vector Field** option to its name if it isn't `vector`. The connector writes each chunk's text to the field named in the **Text Field** option, `text` by default.
 - Dynamic fields are enabled, so the connector can write chunk text and metadata fields that aren't part of the schema.
 
 If the record contains a field with the same name as the primary key, it will be prefixed with an underscore so Milvus can control the primary key internally.
@@ -126,13 +126,13 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                             |
 |:--------| :--------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.0.62 | 2026-09-28 | [87038](https://github.com/airbytehq/airbyte/pull/87038) | Pin setuptools below 82, since pymilvus 2.3.0 imports `pkg_resources` at module load |
+| 0.0.62 | 2026-09-29 | [87038](https://github.com/airbytehq/airbyte/pull/87038) | Pin setuptools below 82, since pymilvus 2.3.0 imports `pkg_resources` at module load |
 | 0.0.61 | 2026-08-13 | [84362](https://github.com/airbytehq/airbyte/pull/84362) | Update the CDK to remediate CVE-2025-68664 in the langchain dependency |
 | 0.0.60 | 2026-07-02 | [81383](https://github.com/airbytehq/airbyte/pull/81383) | Upgrade pillow from 11.x to 12.3.0 to resolve security vulnerabilities GHSA-cfh3-3jmp-rvhc, GHSA-pwv6-vv43-88gr, GHSA-whj4-6x5x-4v2j, GHSA-xg8h-j46f-w952 |
 | 0.0.59 | 2026-07-02 | [81394](https://github.com/airbytehq/airbyte/pull/81394) | Bump aiohttp to >= 3.13.3 to resolve GHSA-6mq8-rvhq-8wgg |
 | 0.0.58 | 2026-03-31 | [75645](https://github.com/airbytehq/airbyte/pull/75645) | Bump version to force registry update for supportLevel change to community |
 | 0.0.57 | 2025-10-21 | [68333](https://github.com/airbytehq/airbyte/pull/68333) | Update dependencies |
-| 0.0.56 | 2025-10-14 | [61075](https://github.com/airbytehq/airbyte/pull/61075) | Update dependencies |
+| 0.0.56 | 2025-10-16 | [61075](https://github.com/airbytehq/airbyte/pull/61075) | Update dependencies |
 | 0.0.55 | 2025-05-17 | [57175](https://github.com/airbytehq/airbyte/pull/57175) | Update dependencies |
 | 0.0.54 | 2025-03-29 | [56587](https://github.com/airbytehq/airbyte/pull/56587) | Update dependencies |
 | 0.0.53 | 2025-03-22 | [56136](https://github.com/airbytehq/airbyte/pull/56136) | Update dependencies |
@@ -174,14 +174,14 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 | 0.0.17 | 2024-06-25 | [40446](https://github.com/airbytehq/airbyte/pull/40446) | Update dependencies |
 | 0.0.16 | 2024-06-22 | [40161](https://github.com/airbytehq/airbyte/pull/40161) | Update dependencies |
 | 0.0.15 | 2024-05-20 | [38276](https://github.com/airbytehq/airbyte/pull/38276) | Replace AirbyteLogger with logging.Logger |
-| 0.0.14  | 2024-3-22  | [#37333](https://github.com/airbytehq/airbyte/pull/37333) | Update CDK & pytest version to fix security vulnerabilities                                                                                         |
-| 0.0.13  | 2024-3-22  | [#35911](https://github.com/airbytehq/airbyte/pull/35911) | Move to poetry; Fix tests                                                                                                                           |
+| 0.0.14  | 2024-04-16 | [#37333](https://github.com/airbytehq/airbyte/pull/37333) | Update CDK & pytest version to fix security vulnerabilities                                                                                         |
+| 0.0.13  | 2024-03-26 | [#35911](https://github.com/airbytehq/airbyte/pull/35911) | Move to poetry; Fix tests                                                                                                                           |
 | 0.0.12  | 2023-12-11 | [#33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens                                                                                                               |
 | 0.0.11  | 2023-12-01 | [#32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text                                                                                                                             |
 | 0.0.10  | 2023-11-16 | [#32608](https://github.com/airbytehq/airbyte/pull/32608) | Support deleting records for CDC sources                                                                                                            |
 | 0.0.9   | 2023-11-13 | [#32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema                                                                                                                                 |
-| 0.0.8   | 2023-11-08 | [#31563](https://github.com/airbytehq/airbyte/pull/32262) | Auto-create collection if it doesn't exist                                                                                                          |
-| 0.0.7   | 2023-10-23 | [#31563](https://github.com/airbytehq/airbyte/pull/31563) | Add field mapping option                                                                                                                            |
+| 0.0.8   | 2023-11-09 | [#32262](https://github.com/airbytehq/airbyte/pull/32262) | Auto-create collection if it doesn't exist                                                                                                          |
+| 0.0.7   | 2023-10-27 | [#31563](https://github.com/airbytehq/airbyte/pull/31563) | Add field mapping option                                                                                                                            |
 | 0.0.6   | 2023-10-19 | [#31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                                                     |
 | 0.0.5   | 2023-10-15 | [#31329](https://github.com/airbytehq/airbyte/pull/31329) | Add OpenAI-compatible embedder option                                                                                                               |
 | 0.0.4   | 2023-10-04 | [#31075](https://github.com/airbytehq/airbyte/pull/31075) | Fix OpenAI embedder batch size                                                                                                                      |
