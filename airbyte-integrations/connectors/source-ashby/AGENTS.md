@@ -6,12 +6,12 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Incremental Stream Considerations
 
-The Ashby API uses `.list` endpoints with cursor-based pagination. The `applications` and `interview_schedules` endpoints support `createdAfter` filtering, but since these resources are mutable (status changes, updates), `created_at`-only filtering is insufficient for true incremental sync. The Ashby API may support `updatedAfter` on some endpoints — this needs live API verification. All other `.list` endpoints (candidates, jobs, offers, etc.) do not document date-based filtering.
+The Ashby API uses `.list` endpoints with cursor-based pagination. The `applications` and `interview_schedules` endpoints support `createdAfter` filtering, but since these resources are mutable (status changes, updates), `created_at`-only filtering is insufficient for true incremental sync. `application.list` documents an `updatedAfter` body field, but live probing (2026-09-30) showed Ashby ignores it: a request with `updatedAfter` set to the current time still returned applications last updated in 2022, while `createdAfter` filtered as documented. All other `.list` endpoints (candidates, jobs, offers, etc.) do not document date-based filtering.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|
-| applications | large | top-level parent | none | created_at_only | deferred_no_api_support | Has `createdAfter` in body; mutable resource (status changes). Verify if `updatedAfter` is supported. |
-| application_history | large | substream of applications | none | none | full_refresh_only | No date filter or `syncToken`; one request per application; ~23 hours for ~108,100 applications at ~1.31 req/s. |
+| applications | large | top-level parent | updatedAt | none (client-side) | incremental_client_side | `updatedAfter` is ignored by the API, so the `updatedAt` cursor filters client-side; every sync still pages the full list. Ashby bumps `updatedAt` on stage changes, which `application_history` depends on. |
+| application_history | large | substream of applications | application_updated_at | via parent | incremental_dependency | No date filter or `syncToken` on `application.listHistory`; the parent is read with its `updatedAt` state (`incremental_dependency`), so incremental syncs request history only for changed applications. A full sync is still ~23 hours for ~108,100 applications at ~1.31 req/s. |
 | application_feedback | medium | top-level parent | none | created_at_and_sync_token | full_refresh_only | Has `createdAfter` and `syncToken` in body (`applicationFeedback.list`, added in Ashby API 2026-01-01). `syncToken` incremental is a follow-up; not expressible without persisting the opaque token. |
 | archive_reasons | small | top-level parent | none | none | deferred_no_api_support | Config-style lookup |
 | candidate_tags | small | top-level parent | none | none | deferred_no_api_support | Config-style lookup |
@@ -30,7 +30,7 @@ The Ashby API uses `.list` endpoints with cursor-based pagination. The `applicat
 ### Future incremental stream candidates
 
 - **No API date filter (12 streams):** `archive_reasons`, `candidate_tags`, `candidates`, `custom_fields`, `departments`, `feedback_form_definitions`, `job_postings`, `jobs`, `locations`, `offers`, `sources`, `users` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
-- **Created-at only (2 streams):** `applications`, `interview_schedules` — these endpoints support `created` filtering but the resources are mutable, making `created_at`-only filtering insufficient for true incremental sync. Verify whether `updatedAfter` is supported.
+- **Created-at only (1 stream):** `interview_schedules` — supports `created` filtering but the resource is mutable, making `created_at`-only filtering insufficient for true incremental sync. Verify whether `updatedAfter` is honored (it is ignored on `application.list`).
 - **syncToken available (1 stream):** `application_feedback` — `applicationFeedback.list` returns a `syncToken` that can be replayed for incremental sync; deferred to a follow-up.
 
 ## Authentication, Rate Limits, and Sync Tokens
