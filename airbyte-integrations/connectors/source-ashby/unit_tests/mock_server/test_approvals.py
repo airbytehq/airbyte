@@ -49,7 +49,7 @@ def _record(record_id: str, **overrides) -> Dict[str, Any]:
         "approvalDefinitionId": "approval-definition-1",
         "entityId": "job-1",
         "entityType": "Job",
-        "status": "Completed",
+        "status": "approved",
         "createdAt": "2024-01-01T00:00:00.000Z",
         "submittedAt": "2024-01-02T00:00:00.000Z",
         "completedAt": "2024-01-03T00:00:00.000Z",
@@ -62,7 +62,7 @@ def _record(record_id: str, **overrides) -> Dict[str, Any]:
                     {
                         "id": "approver-1",
                         "userId": "user-1",
-                        "decision": "Approved",
+                        "decision": "approve",
                         "decidedAt": "2024-01-03T00:00:00.000Z",
                         "requestedAt": "2024-01-02T00:00:00.000Z",
                     }
