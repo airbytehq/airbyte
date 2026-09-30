@@ -347,3 +347,57 @@ summarizer that keeps `(pk, sk, sha1 of the record)` per record.
   80 pages (apache5 = the 2.54.20 default, apache 4 = the legacy default, url-connection, and the
   legacy image's own SDK 2.18.1) gave 26-34 s each with no consistent ranking, so the HTTP client
   is not a factor and the default stays.
+
+## Scale validation on a 10 GB table (2026-09-30)
+
+Table `abv2_10gb` in the same account (`us-east-2`, on-demand): 10,000,000 deterministic items of
+~1 KB (10,000 partition keys x 1,000 sort keys, same attributes and cursors as `abv2_1gb`; seeded
+with `seed-aws-1gb.uv --table abv2_10gb --partitions 10000 --per-partition 1000`), 10.15 GB per
+`DescribeTable`, so the connector scans it in 128 segments. Same harness as above (`installDist`
+binary, `concurrency: 16`, `checkpoint_target_interval_seconds: 30`, stdout through a summarizer
+keeping `(pk, sk, sha1)` per record), from a laptop; with gzip responses the synthetic items
+(24x compressible) arrive at ~85,000 records/s, so the link is no longer the limit. Every full
+read below produced the same 10,000,000-record `(pk, sk, sha1)` multiset; no throttling occurred.
+
+| Run | Wall | Result |
+|---|---|---|
+| Full refresh | 125 s | 10,000,000 records, 128 states, `{"scan_complete": true}`, peak RSS 813 MB (`-Xmx1g`) |
+| Full refresh, `kill -9` at 50 s, resume | 50 s + 77 s | 4,123,842 + 6,063,458 records; union 10,000,000 distinct keys, 0 missing, 187,300 duplicates (see below) |
+| Incremental `updated_at`, cold start, `-Xmx384m` | 120 s | 10,000,000 records, cursor `2024-04-25T17:46:39Z` count 1, peak RSS 597 MB |
+| Incremental cold start, `kill -9` at 50 s, resume | 50 s + 71 s | 4,224,544 + 5,831,343 records; union 10,000,000 distinct, 0 missing, 55,887 duplicates = exactly the records after the last STATE line; same terminal cursor |
+| Delta sync from the terminal state, no new items | 85 s | 0 records, state unchanged (the filtered scan visits every item, 59-65 pages per segment) |
+| Delta sync after writing 5 items with `updated_at` `2024-05-01T00:00:0{0,1,2,3,3}Z` | 82 s | exactly the 5 items, cursor `2024-05-01T00:00:03Z` count 2 |
+| Delta sync again from that state | 81 s | 0 records, cursor and count unchanged |
+| Incremental integer cursor `seq`, cold start | 124 s | 10,000,000 records, cursor `9999999` count 1 |
+| Legacy `DbStreamState` (`stream_name`, `stream_namespace`, cursor `2024-04-25T17:46:39Z`) | 81 s | 0 records, state re-emitted in the compatible shape |
+| Legacy `DbStreamState` with a mid-table cursor `2024-03-01T00:00:00Z` | 94 s | exactly the 4,815,999 items with a later `updated_at` (`>`: the item equal to the cursor is excluded), cursor `2024-04-25T17:46:39Z` count 1 |
+| Incremental on the bare-date cursor `day`, cold start | 120 s | 10,000,000 records, cursor `2024-04-25` count 64,000 |
+| Delta on `day` from that state | 80 s | the 64,000 items of the last day again (`>=` for a bare date), count 64,000 |
+| Full refresh, `kill -9` at 50 s at concurrency 16, resume at concurrency 4 | 50 + 228 s | "83 of 128 segment(s) left", union 10,000,000 distinct, 0 missing, 428,656 duplicates |
+| Full refresh at concurrency 8 / 4 / 1 | 196 s / 384 s / 1,335 s | 10,000,000 records each; concurrency 16 into a plain line counter instead of the summarizer: 99 s |
+| Legacy `source-dynamodb:0.3.11` full refresh (Docker, one `Scan`, no gzip) | 3,659 s | 10,000,000 records, identical `(pk, sk, sha1)` multiset |
+| Legacy 0.3.11 incremental from the new connector's terminal state | 895 s | 0 records, state re-emitted with `stream_name` added |
+
+- **Concurrency on 10 GB:** 1,335 s at concurrency 1 (128 segments one after the other), 384 s
+  at 4, 196 s at 8 and 99-125 s at 16 (the summarizer that hashes every record costs ~20 % at
+  16; with a plain counter the connector alone takes 99 s), so each doubling still halves the
+  time and 16 segments read 13.5x faster than one. The legacy connector's single scan of the
+  same table took 3,659 s (the new one at concurrency 1: 1,335 s, gzip responses being the
+  difference); both ran at the same time, each latency-bound on its own `Scan`.
+- **Duplicates after the full refresh kill:** 138,124 records were printed after the last STATE
+  line, and another 49,176 came from the checkpoint-freshness rule described in
+  `DynamoDbPartitionReader`: the round's checkpoints are applied in partition order, and the
+  last one of the round (45 segments complete) was an older snapshot than one printed just
+  before it (47 complete), because the last partition reached its deadline while waiting for
+  the others. A resume from it re-reads more, never less; the incremental kill had no such gap.
+- **Stdout interleaving when running the bare `installDist` binary.** The first full read
+  arrived as 9,999,977 records: 23 RECORD lines were spliced into the middle of LOG lines longer
+  than 8 KiB (the Bulk CDK's periodic "coroutine state" dump lists every partition; with 128
+  segments it is up to 13 KB and printed about twice a second). Log4j's `ConsoleAppender` writes
+  through an 8 KiB buffer (`log4j.encoder.byteBufferSize`), so a longer event takes two `write`
+  calls and a record `println` from another thread can land between them; a line-oriented reader
+  then sees one unparseable line and the record is lost. The connector image is not affected:
+  the base image's `/airbyte/javabase.sh` starts the JVM with
+  `-Dlog4j.encoder.byteBufferSize=32768` (airbytehq/airbyte#30806). Pass the same flag when
+  running `build/install/source-dynamodb/bin/source-dynamodb` directly; with it the same read
+  delivered all 10,000,000 records and none of its 82 long LOG lines was split.
