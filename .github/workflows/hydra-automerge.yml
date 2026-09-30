@@ -42,6 +42,9 @@ on:
 run-name: "Auto-merge eval for PR #${{ inputs.pr }}"
 
 # All repo operations use GitHub App tokens, not GITHUB_TOKEN.
+env:
+  SENTRY_ENVIRONMENT: gitops-prod
+
 permissions: {}
 
 jobs:
@@ -326,7 +329,7 @@ jobs:
           && steps.validate-paths.outputs.auto_merge_eligible == 'true'
           && steps.verify-checks.outputs.ready == 'true'
         id: devin
-        uses: aaronsteers/devin-action@main
+        uses: airbytehq/devin-action@main
         with:
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-hoard-token.outputs.token }}
