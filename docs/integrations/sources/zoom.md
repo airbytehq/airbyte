@@ -75,7 +75,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 1.3.0 | 2026-09-30 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Replace the custom Server-to-Server OAuth authenticator with the declarative OAuth authenticator and report invalid credentials as configuration errors |
+| 1.3.0 | 2026-09-30 | [87561](https://github.com/airbytehq/airbyte/pull/87561) | Replace the custom Server-to-Server OAuth authenticator with the declarative OAuth authenticator and report invalid credentials as configuration errors |
 | 1.2.65 | 2026-09-29 | [87422](https://github.com/airbytehq/airbyte/pull/87422) | Update dependencies |
 | 1.2.64 | 2026-09-22 | [86858](https://github.com/airbytehq/airbyte/pull/86858) | Update dependencies |
 | 1.2.63 | 2026-09-15 | [86307](https://github.com/airbytehq/airbyte/pull/86307) | Update dependencies |
