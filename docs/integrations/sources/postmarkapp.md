@@ -64,7 +64,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.3.0 | 2026-09-30 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix pagination that re-read the same page of records indefinitely; add incremental sync and an optional start date for the messages and bounces streams |
+| 0.3.0 | 2026-09-30 | [87518](https://github.com/airbytehq/airbyte/pull/87518) | Fix pagination that re-read the same page of records indefinitely; add incremental sync and an optional start date for the messages and bounces streams |
 | 0.2.10 | 2025-02-15 | [53947](https://github.com/airbytehq/airbyte/pull/53947) | Update dependencies |
 | 0.2.9 | 2025-02-08 | [53462](https://github.com/airbytehq/airbyte/pull/53462) | Update dependencies |
 | 0.2.8 | 2025-02-01 | [52967](https://github.com/airbytehq/airbyte/pull/52967) | Update dependencies |
