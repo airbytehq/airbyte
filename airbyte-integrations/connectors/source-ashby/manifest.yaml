@@ -2842,6 +2842,8 @@ streams:
         http_method: POST
         error_handler:
           $ref: "#/definitions/error_handler"
+        request_headers:
+          Content-Type: application/json
       record_selector:
         type: RecordSelector
         extractor:

@@ -3,7 +3,8 @@
 """
 Mock server tests for the `interview_stage_groups` stream on `source-ashby`.
 
-`POST /interviewStageGroup.list` has no request fields and no pagination.
+`POST /interviewStageGroup.list` has no request fields and no pagination, but Ashby
+rejects requests that are not `Content-Type: application/json`.
 """
 
 import json
@@ -50,14 +51,15 @@ def _record(record_id: str, **overrides) -> Dict[str, Any]:
 
 
 def _request() -> HttpRequest:
-    # `interviewStageGroup.list` takes no request fields and is not paginated, so no JSON body is sent.
-    return AshbyRequestBuilder.endpoint(_PATH).with_api_key("test-api-key").build_without_body()
+    # `interviewStageGroup.list` takes no request fields and is not paginated, but Ashby rejects
+    # POSTs without `Content-Type: application/json`, so the header is sent even with no body.
+    return AshbyRequestBuilder.endpoint(_PATH).with_api_key("test-api-key").build_json_request_without_body()
 
 
 class TestInterviewStageGroups(TestCase):
     @HttpMocker()
-    def test_reads_all_records_in_one_request_without_body(self, http_mocker: HttpMocker):
-        """A single bodyless POST returns every stage group; the connector does not paginate."""
+    def test_reads_all_records_in_one_json_request_without_body(self, http_mocker: HttpMocker):
+        """A single bodyless `application/json` POST returns every stage group; the connector does not paginate."""
         request = _request()
         http_mocker.post(request, _page([_record("group-1"), _record("group-2", order=1, stageType="Offer")]))
 
