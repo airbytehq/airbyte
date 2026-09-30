@@ -9,11 +9,11 @@ Extract data from Uptick, a field service management platform designed for the f
 
 ### OAuth 2.0 (recommended)
 
-On Airbyte Cloud, choose **OAuth 2.0 (Authenticate with Uptick)** under Authentication, enter only the subdomain of your Uptick URL (for `https://acme.onuptick.com` enter `acme`), click **Authenticate**, and approve the consent page that Uptick shows. The connector stores the resulting tokens in your connection's `credentials` block.
+On Airbyte Cloud, choose **Authenticate with Uptick** under Authentication, enter only the subdomain of your Uptick URL (for `https://acme.onuptick.com` enter `acme`), click **Authenticate**, and approve the consent page that Uptick shows. The connector stores the resulting tokens in your connection's `credentials` block.
 
-On self-hosted Airbyte (OSS), first create an OAuth application in Uptick under **Control Panel > Uptick API > Create Application** with your Airbyte instance's redirect URI `https://<airbyte-host>/auth_flow`, using the authorization-code grant with PKCE (S256). Then choose **OAuth 2.0 (Authenticate with Uptick)**, enter your Uptick workspace plus the application's Client ID and Client Secret, and complete the flow.
+On self-hosted Airbyte (OSS), first create an OAuth application in Uptick under **Control Panel > Uptick API > Create Application** with your Airbyte instance's redirect URI `https://<airbyte-host>/auth_flow`, using the authorization-code grant with PKCE (S256). Then choose **Authenticate with Uptick**, enter your Uptick workspace plus the application's Client ID and Client Secret, and complete the flow.
 
-### Username & password (legacy)
+### Username & password
 
 The connector authenticates with the Uptick API using OAuth 2.0 with the password grant, so you need both an OAuth application and an Uptick user account:
 

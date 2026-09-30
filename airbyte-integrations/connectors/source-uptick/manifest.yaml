@@ -210,7 +210,7 @@ spec:
           required: [base_url, client_id, client_secret, username, password]
         oneOf:
           - type: object
-            title: OAuth 2.0 (Authenticate with Uptick)
+            title: Authenticate with Uptick
             required:
               - auth_type
               - workspace
@@ -256,7 +256,7 @@ spec:
                 format: date-time
                 airbyte_hidden: true
           - type: object
-            title: Username & password (legacy)
+            title: Username & password
             required:
               - auth_type
               - base_url
