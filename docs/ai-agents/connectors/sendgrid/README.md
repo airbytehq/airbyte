@@ -12,12 +12,23 @@ The Sendgrid connector is optimized to handle prompts like these.
 - List all marketing contacts
 - Get the details of a specific contact
 - Show me all marketing lists
+- Show me the details of the first marketing list
+- List all marketing segments
+- Show me the details of the first segment
+- List all marketing campaigns
 - List all transactional templates
+- Show me the details of the first template
 - Show all single sends
+- Show me the details of the first single send
+- Show me the stats for my single sends
 - List all bounced emails
 - Show all blocked email addresses
 - List all spam reports
+- Show all global suppressions (unsubscribes)
+- List all invalid email addresses
 - Show all suppression groups
+- Show me the details of the first suppression group
+- List all members of my suppression groups
 - How many contacts are in each marketing list?
 - Which single sends were scheduled in the last month?
 - What are the most common bounce reasons?
