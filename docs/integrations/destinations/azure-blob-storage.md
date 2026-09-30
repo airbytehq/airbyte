@@ -127,7 +127,9 @@ With root level flattening, the output JSONL is:
     - See [this](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) on how to create an account.
   - **Authentication** - you must use exactly one of these:
     - **Shared Access Signature** (recommended)
-      - See [this](https://learn.microsoft.com/en-us/azure/ai-services/translator/document-translation/how-to-guides/create-sas-tokens?tabs=Containers#create-sas-tokens-in-the-azure-portal) for how to create an SAS.
+      - See [this](https://learn.microsoft.com/en-us/azure/ai-services/translator/document-translation/how-to-guides/create-sas-tokens?tabs=Containers#create-sas-tokens-in-the-azure-portal) for how to create a container SAS.
+      - See [this](https://learn.microsoft.com/en-us/rest/api/storageservices/create-account-sas) for how to create a storage account SAS. In the Azure portal, go to your storage account, then **Security + networking** > **Shared access signature**. Select the **Blob** service, the **Service**, **Container**, and **Object** resource types, and the **Read**, **Write**, **Delete**, **List**, **Add**, and **Create** permissions.
+      - Use a storage account SAS if any stream uses the **Full Refresh | Overwrite** sync mode. At the end of each overwrite sync, the connector deletes the previous sync's files with a batch request to the storage account. A container SAS can't authorize that request, so the first sync succeeds and later syncs fail with `403 AuthenticationFailed: The specified signed resource is not allowed for this resource level`.
     - **Azure Entra ID (Service Principal)**
       - Azure Tenant ID, Azure Client ID, and Azure Client Secret from an Azure service principal with appropriate permissions.
       - See [this](https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal) for how to create a service principal.
