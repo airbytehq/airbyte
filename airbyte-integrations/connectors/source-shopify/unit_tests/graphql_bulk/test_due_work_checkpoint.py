@@ -20,7 +20,7 @@ from due_work_harness.contract import (  # noqa: E402
     due_work_contract_suite,
 )
 from due_work_harness.crash_histories import Findings  # noqa: E402
-from due_work_harness.integrations.airbyte_shopify import bulk_checkpoint_history  # noqa: E402
+from due_work_harness.integrations.airbyte_shopify import MISSING_RESULT_URL, bulk_checkpoint_history  # noqa: E402
 
 
 CONFIG = {
@@ -60,7 +60,7 @@ SHOPIFY_BULK_CHECKPOINT = DueWorkContract(
             later_record={"__typename": "Product", "id": "gid://shopify/Product/2", "updatedAt": "2023-01-02T06:00:00Z"},
             findings=Findings(
                 delivered=((1, 2), "2023-01-02T06:00:00+00:00"),
-                outcomes={"canceled without partial result URL": ((2,), "2023-01-02T06:00:00+00:00")},
+                outcomes={MISSING_RESULT_URL: ((2,), "2023-01-02T06:00:00+00:00")},
             ),
         ),
     ),
