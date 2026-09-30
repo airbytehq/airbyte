@@ -842,3 +842,63 @@ def test_hubspot_error_handler_401_by_auth_type(
         assert resolution.failure_type == expected_failure_type
     if expected_error_message is not None:
         assert resolution.error_message == expected_error_message
+
+
+def test_configurable_properties_from_endpoint_with_config(components_module):
+    from unittest.mock import Mock
+
+    retriever_mock = Mock()
+    retriever_mock.read_records.return_value = [{"name": "should_not_be_called"}]
+
+    component = components_module.ConfigurablePropertiesFromEndpoint(
+        property_field_path=["name"],
+        retriever=retriever_mock,
+        config={"properties_with_history": ["dealstage"]},
+        parameters={},
+    )
+
+    result = component.get_properties_from_endpoint()
+
+    assert result == ["dealstage"]
+    retriever_mock.read_records.assert_not_called()
+
+
+def test_configurable_properties_from_endpoint_without_config(components_module):
+    from unittest.mock import Mock
+
+    retriever_mock = Mock()
+    retriever_mock.read_records.return_value = [
+        {"name": "dealstage"},
+        {"name": "amount"},
+    ]
+
+    component = components_module.ConfigurablePropertiesFromEndpoint(
+        property_field_path=["name"], retriever=retriever_mock, config={}, parameters={}
+    )
+
+    result = component.get_properties_from_endpoint()
+
+    assert result == ["dealstage", "amount"]
+    retriever_mock.read_records.assert_called_once()
+
+
+def test_configurable_properties_from_endpoint_with_empty_config(components_module):
+    from unittest.mock import Mock
+
+    retriever_mock = Mock()
+    retriever_mock.read_records.return_value = [
+        {"name": "dealstage"},
+        {"name": "amount"},
+    ]
+
+    component = components_module.ConfigurablePropertiesFromEndpoint(
+        property_field_path=["name"],
+        retriever=retriever_mock,
+        config={"properties_with_history": []},
+        parameters={},
+    )
+
+    result = component.get_properties_from_endpoint()
+
+    assert result == ["dealstage", "amount"]
+    retriever_mock.read_records.assert_called_once()
