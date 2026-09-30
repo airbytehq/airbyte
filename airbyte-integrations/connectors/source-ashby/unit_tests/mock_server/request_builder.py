@@ -64,3 +64,6 @@ class AshbyRequestBuilder:
 
     def build(self) -> HttpRequest:
         return HttpRequest(url=f"{self.BASE_URL}{self._path}", headers=self._headers, body=dict(self._body))
+
+    def build_without_body(self) -> HttpRequest:
+        return HttpRequest(url=f"{self.BASE_URL}{self._path}", headers=self._headers, body=None)
