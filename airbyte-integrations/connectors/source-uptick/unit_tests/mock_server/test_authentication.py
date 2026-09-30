@@ -15,6 +15,7 @@ All values are test fixtures; no real credentials appear anywhere.
 """
 
 import json
+import socket
 from contextlib import redirect_stdout
 from io import StringIO
 from urllib.parse import parse_qs
@@ -242,45 +243,60 @@ def test_oauth_trailing_slash_base_url_uses_normalized_host(tmp_path) -> None:
     http_mocker.assert_number_of_calls(check_request, 1)
 
 
-def test_oauth_non_onuptick_base_url_fails_check_without_requests(tmp_path) -> None:
+def _check_with_network_blocked(source, config, tmp_path, monkeypatch) -> tuple[EntrypointOutput, list]:
+    # No requests_mock here: it intercepts adapter resolution, which would change the prod
+    # failure path. Block the real socket layer instead so any outbound attempt fails loudly.
+    socket_calls: list = []
+
+    def _blocked_socket(*args, **kwargs):
+        socket_calls.append((args, kwargs))
+        raise RuntimeError("socket creation blocked by test")
+
+    def _blocked_getaddrinfo(*args, **kwargs):
+        socket_calls.append(("getaddrinfo", args))
+        raise RuntimeError("getaddrinfo blocked by test")
+
+    monkeypatch.setattr(socket, "socket", _blocked_socket)
+    monkeypatch.setattr(socket, "getaddrinfo", _blocked_getaddrinfo)
+
+    output = _run_command(
+        source,
+        ["check", "--config", make_file(tmp_path / "config.json", config)],
+    )
+    return output, socket_calls
+
+
+def test_oauth_non_onuptick_base_url_fails_check_without_requests(tmp_path, monkeypatch) -> None:
     # A post-creation edit of base_url to another host must not redirect the OAuth
     # client_secret + refresh_token there: oauth_token_url is only derived when the
     # base_url host matches *.onuptick.com, so the authenticator fails before any request.
     config = ConfigBuilder().with_base_url("https://evil.example.com").with_oauth_credentials().build()
     source, _ = _source_with_migration_controls(config)
 
-    with HttpMocker() as http_mocker:
-        output = _run_command(
-            source,
-            ["check", "--config", make_file(tmp_path / "config.json", config)],
-        )
+    output, socket_calls = _check_with_network_blocked(source, config, tmp_path, monkeypatch)
 
     statuses = output.connection_status_messages
     assert len(statuses) == 1
     assert statuses[0].connectionStatus.status == Status.FAILED
-    # The sentinel's unsupported scheme makes requests raise InvalidSchema during adapter
-    # resolution — the only recorded attempt is the sentinel itself (nothing reaches a real
-    # host); the CDK wraps the failure into the generic refresh-failure message.
-    assert statuses[0].connectionStatus.message == "'Stream tasks is not available: OAuth access token refresh request failed.'"
-    assert all(request.url.startswith("unsupported-oauth-host://") for request in http_mocker._mocker.request_history)
+    # Prod path: requests raises InvalidSchema at adapter resolution ("No connection
+    # adapters"), a RequestException that propagates unwrapped, so the sentinel's hint
+    # reaches the check message.
+    assert "base_url-must-be-https-workspace.onuptick.com" in statuses[0].connectionStatus.message
+    assert socket_calls == []
 
 
-def test_oauth_uppercase_host_base_url_fails_check_without_requests(tmp_path) -> None:
+def test_oauth_uppercase_host_base_url_fails_check_without_requests(tmp_path, monkeypatch) -> None:
     # The host match is case-sensitive, consistent with the advanced_auth pattern.
     config = ConfigBuilder().with_base_url("https://Test-Tenant.onuptick.com").with_oauth_credentials().build()
     source, _ = _source_with_migration_controls(config)
 
-    with HttpMocker() as http_mocker:
-        output = _run_command(
-            source,
-            ["check", "--config", make_file(tmp_path / "config.json", config)],
-        )
+    output, socket_calls = _check_with_network_blocked(source, config, tmp_path, monkeypatch)
 
     statuses = output.connection_status_messages
     assert len(statuses) == 1
     assert statuses[0].connectionStatus.status == Status.FAILED
-    assert statuses[0].connectionStatus.message == "'Stream tasks is not available: OAuth access token refresh request failed.'"
-    assert all(request.url.startswith("unsupported-oauth-host://") for request in http_mocker._mocker.request_history)
+    assert "base_url-must-be-https-workspace.onuptick.com" in statuses[0].connectionStatus.message
+    assert socket_calls == []
 
 
 def test_password_credentials_non_onuptick_base_url_checks_ok(tmp_path) -> None:
