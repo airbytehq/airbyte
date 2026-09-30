@@ -185,21 +185,17 @@ def test_password_credentials_with_nested_base_url_only(tmp_path) -> None:
     http_mocker.assert_number_of_calls(check_request, 1)
 
 
-def test_password_explicit_top_level_base_url_wins(tmp_path) -> None:
+def test_password_nested_base_url_wins_over_stale_top_level(tmp_path) -> None:
     config = ConfigBuilder().with_password_credentials().build()
-    config["base_url"] = "https://top.onuptick.com"
-    config["credentials"]["base_url"] = "https://nested.onuptick.com"
-
-    class _TopHostRequestBuilder(UptickRequestBuilder):
-        BASE_URL = "https://top.onuptick.com"
-
-    check_request = _TopHostRequestBuilder.collection(_CHECK_STREAM)
+    config["base_url"] = "https://stale.onuptick.com"
+    config["credentials"]["base_url"] = "https://test-tenant.onuptick.com"
+    check_request = UptickRequestBuilder.collection(_CHECK_STREAM)
     source, _ = _source_with_migration_controls(config)
-    assert source._config["base_url"] == "https://top.onuptick.com"
+    assert source._config["base_url"] == "https://test-tenant.onuptick.com"
 
     with HttpMocker() as http_mocker:
         http_mocker._mocker.post(
-            _TopHostRequestBuilder.token_endpoint(),
+            _TOKEN_URL,
             json={"access_token": "tok", "expires_in": 3600},
         )
         http_mocker.get(check_request, _tasks_page())
@@ -212,9 +208,41 @@ def test_password_explicit_top_level_base_url_wins(tmp_path) -> None:
     statuses = output.connection_status_messages
     assert len(statuses) == 1
     assert statuses[0].connectionStatus.status == Status.SUCCEEDED
-    # An explicit top-level base_url wins over credentials.base_url for API requests.
+    # credentials.base_url wins over a stale top-level base_url for token and API requests.
+    token_bodies = _token_bodies(http_mocker)
+    assert len(token_bodies) == 1
+    assert token_bodies[0]["grant_type"] == ["password"]
     http_mocker.assert_number_of_calls(check_request, 1)
-    assert [request.url for request in http_mocker._mocker.request_history if request.url == _TopHostRequestBuilder.token_endpoint()]
+
+
+def test_oauth_workspace_wins_over_stale_top_level_base_url(tmp_path) -> None:
+    config = ConfigBuilder().with_oauth_credentials().build()
+    config["base_url"] = "https://stale.onuptick.com"
+    check_request = UptickRequestBuilder.collection(_CHECK_STREAM)
+    source, _ = _source_with_migration_controls(config)
+    assert source._config["base_url"] == "https://test-tenant.onuptick.com"
+
+    with HttpMocker() as http_mocker:
+        http_mocker._mocker.post(
+            _TOKEN_URL,
+            json={"access_token": "tok", "expires_in": 3600},
+        )
+        http_mocker.get(check_request, _tasks_page())
+
+        output = _run_command(
+            source,
+            ["check", "--config", make_file(tmp_path / "config.json", config)],
+        )
+
+    statuses = output.connection_status_messages
+    assert len(statuses) == 1
+    assert statuses[0].connectionStatus.status == Status.SUCCEEDED
+    # The OAuth workspace wins over a stale top-level base_url for API requests; the token refresh
+    # already goes to the workspace host.
+    http_mocker.assert_number_of_calls(check_request, 1)
+    token_bodies = _token_bodies(http_mocker)
+    assert len(token_bodies) == 1
+    assert token_bodies[0]["grant_type"] == ["refresh_token"]
 
 
 def test_password_credentials_without_any_base_url_fails_check(tmp_path) -> None:
@@ -332,37 +360,6 @@ def test_oauth_config_without_base_url_derives_it_from_workspace(tmp_path) -> No
     assert len(token_bodies) == 1
     assert token_bodies[0]["grant_type"] == ["refresh_token"]
     http_mocker.assert_number_of_calls(check_request, 1)
-
-
-def test_oauth_config_with_explicit_base_url_uses_it_for_api_requests(tmp_path) -> None:
-    config = ConfigBuilder().with_oauth_credentials().build()
-    config["base_url"] = "https://other-host.onuptick.com"
-
-    class _OtherHostRequestBuilder(UptickRequestBuilder):
-        BASE_URL = "https://other-host.onuptick.com"
-
-    check_request = _OtherHostRequestBuilder.collection(_CHECK_STREAM)
-    source, _ = _source_with_migration_controls(config)
-    assert source._config["base_url"] == "https://other-host.onuptick.com"
-
-    with HttpMocker() as http_mocker:
-        http_mocker._mocker.post(
-            _TOKEN_URL,
-            json={"access_token": "tok", "expires_in": 3600},
-        )
-        http_mocker.get(check_request, _tasks_page())
-
-        output = _run_command(
-            source,
-            ["check", "--config", make_file(tmp_path / "config.json", config)],
-        )
-
-    statuses = output.connection_status_messages
-    assert len(statuses) == 1
-    assert statuses[0].connectionStatus.status == Status.SUCCEEDED
-    # API requests go to the explicit base_url; the token refresh still goes to the workspace host.
-    http_mocker.assert_number_of_calls(check_request, 1)
-    assert len(_token_bodies(http_mocker)) == 1
 
 
 def test_config_with_both_credential_shapes_copies_base_url_only(tmp_path) -> None:

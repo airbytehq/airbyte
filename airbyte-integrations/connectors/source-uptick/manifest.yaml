@@ -377,13 +377,14 @@ spec:
   config_normalization_rules:
     type: ConfigNormalizationRules
     transformations:
-      # Derives the top-level base_url (what requesters and authenticators read) when the user
-      # left it empty: a nested credentials.base_url wins, then the OAuth workspace. Runs before the
-      # https normalization below so the derived value is normalized like a typed one; a user-set
-      # base_url always wins (no mismatch check). The value expression must stay .get-safe because
-      # ConfigAddFields evaluates it before the condition.
+      # Top-level base_url is what requesters and authenticators read. Derive it whenever the nested
+      # config carries the source of truth: credentials.base_url wins, then the OAuth workspace —
+      # overwriting any stale top-level value (dpath.new overwrites). A config with only a legacy
+      # top-level base_url keeps it. Runs before the https normalization below so the derived value
+      # is normalized like a typed one; the value stays .get-safe because ConfigAddFields evaluates
+      # it before the condition.
       - type: ConfigAddFields
-        condition: "{{ not (config.get('base_url') or '').strip() and ((config.get('credentials', {}).get('base_url') or '').strip() or config.get('credentials', {}).get('workspace')) }}"
+        condition: "{{ (config.get('credentials', {}).get('base_url') or '').strip() or config.get('credentials', {}).get('workspace') }}"
         fields:
           - type: AddedFieldDefinition
             path: ["base_url"]
