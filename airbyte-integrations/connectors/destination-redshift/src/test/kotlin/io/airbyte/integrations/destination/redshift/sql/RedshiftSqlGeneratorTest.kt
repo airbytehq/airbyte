@@ -26,6 +26,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 internal class RedshiftSqlGeneratorTest {
 
@@ -49,6 +51,24 @@ internal class RedshiftSqlGeneratorTest {
 
     private fun dropWhitespace(text: String) =
         text.lines().map { it.trim() }.filter { it.isNotEmpty() }.joinToString("\n") { it.trim() }
+
+    private fun typeChangeSql(
+        oldType: String,
+        newType: String,
+        columnName: String = "col"
+    ): String =
+        sqlGenerator.matchSchemas(
+            TableName(namespace = "ns", name = "tbl"),
+            columnsToAdd = emptyMap(),
+            columnsToModify =
+                mapOf(
+                    columnName to
+                        ColumnTypeChange(
+                            originalType = ColumnType(oldType, true),
+                            newType = ColumnType(newType, true),
+                        )
+                ),
+        )
 
     private fun mockStream(
         finalSchema: Map<String, ColumnType>,
@@ -717,6 +737,54 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains(""""_airbyte_tmp_num_col" IS NULL"""))
         assertTrue(sql.contains("""DROP COLUMN "num_col";"""))
         assertTrue(sql.contains("""RENAME COLUMN "_airbyte_tmp_num_col" TO "num_col";"""))
+    }
+
+    @Test
+    fun `matchSchemas bigint to timestamptz does not CAST`() {
+        val sql = typeChangeSql("bigint", "timestamptz", "publishdate")
+
+        assertTrue(sql.contains("""ADD COLUMN "_airbyte_tmp_publishdate" timestamptz;"""))
+        assertFalse(sql.contains("CAST("))
+        assertFalse(sql.contains("""SET "_airbyte_tmp_publishdate" ="""))
+        assertTrue(sql.contains("DESTINATION_TYPECAST_ERROR"))
+        assertTrue(sql.contains(""""publishdate" IS NOT NULL"""))
+        assertTrue(sql.contains(""""_airbyte_tmp_publishdate" IS NULL"""))
+        assertTrue(sql.contains("""DROP COLUMN "publishdate";"""))
+        assertTrue(sql.contains("""RENAME COLUMN "_airbyte_tmp_publishdate" TO "publishdate";"""))
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "integer, timestamp",
+        "smallint, date",
+        "'decimal(38,9)', timestamptz",
+        "'double precision', time",
+        "boolean, timestamptz",
+        "timestamptz, bigint",
+        "date, 'decimal(38,9)'",
+        "timestamp, boolean",
+    )
+    fun `matchSchemas does not CAST between numeric or boolean and date or time`(
+        oldType: String,
+        newType: String,
+    ) {
+        val sql = typeChangeSql(oldType, newType)
+
+        assertFalse(sql.contains("CAST("))
+        assertFalse(sql.contains("""SET "_airbyte_tmp_"""))
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "'varchar(65535)', timestamptz",
+        "timestamp, timestamptz",
+        "bigint, boolean",
+        "bigint, 'varchar(65535)'",
+    )
+    fun `matchSchemas still CASTs supported type changes`(oldType: String, newType: String) {
+        val sql = typeChangeSql(oldType, newType)
+
+        assertTrue(sql.contains("""CAST("col" AS $newType)"""))
     }
 
     // ================================================================
