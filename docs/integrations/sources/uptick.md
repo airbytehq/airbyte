@@ -4,13 +4,23 @@ Extract data from Uptick, a field service management platform designed for the f
 
 ## Prerequisites
 
+- Your Uptick instance URL, for example `https://yourcompany.onuptick.com`.
+- Credentials for one of the two authentication methods below. OAuth 2.0 is recommended; the username and password method remains available for existing connections.
+
+### OAuth 2.0 (recommended)
+
+On Airbyte Cloud, choose **OAuth 2.0 (Authenticate with Uptick)** under Authentication, enter only the subdomain of your Uptick URL (for `https://acme.onuptick.com` enter `acme`), click **Authenticate**, and approve the consent page that Uptick shows. The connector stores the resulting tokens in your connection's `credentials` block.
+
+On self-hosted Airbyte (OSS), first create an OAuth application in Uptick under **Control Panel > Uptick API > Create Application** with your Airbyte instance's redirect URI `https://<airbyte-host>/auth_flow`, using the authorization-code grant with PKCE (S256). Then choose **OAuth 2.0 (Authenticate with Uptick)**, enter your Uptick workspace plus the application's Client ID and Client Secret, and complete the flow.
+
+### Username & password (legacy)
+
 The connector authenticates with the Uptick API using OAuth 2.0 with the password grant, so you need both an OAuth application and an Uptick user account:
 
-- Your Uptick instance URL, for example `https://yourcompany.onuptick.com`.
 - An OAuth Client ID and Client Secret generated from your Uptick instance.
 - The email address and password of an Uptick user account. The connector signs in as this user, so the account must have permission to view every resource you want to sync.
 
-To generate the OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance, select **Create Application**, provide a name, and save. Uptick generates the Client ID and Client Secret for you. For step-by-step instructions, see [Uptick API - Getting started](https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started).
+To generate the OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance, select **Create Application**, provide a name, and save. Uptick generates the Client ID and Client Secret for you. For step-by-step instructions, see [Uptick API - Getting started](https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started). Existing connections that use the top-level `client_id`, `client_secret`, `username`, and `password` fields continue to work; on the first run after upgrading to 1.4.0, the connector copies them under Authentication (`credentials`) and saves the migrated config — the original fields are kept, so pinning back to 1.3.x keeps working.
 
 The Uptick user account needs read access to each module you want to sync; in practice `task_profitability` has required the Intelligence reports permission.
 
@@ -20,16 +30,19 @@ The Uptick user account needs read access to each module you want to sync; in pr
 
 1. In Airbyte, go to **Sources** and select **+ New source**.
 2. Search for and select **Uptick** as the source type.
-3. Fill in the fields from the configuration table below. Consider creating a dedicated Uptick service user for the connector: the API token inherits that user's permissions, so a service user keeps access scoped to exactly what you sync.
+3. Choose an **Authentication** method and fill in the fields from the configuration table below. For **OAuth 2.0 (Authenticate with Uptick)**, enter only the subdomain of your Uptick URL (for `https://acme.onuptick.com` enter `acme`) and click **Authenticate**; for **Username & password**, fill in `client_id`, `client_secret`, `username`, and `password`. Consider creating a dedicated Uptick service user for the connector: the API token inherits that user's permissions, so a service user keeps access scoped to exactly what you sync.
 4. Select **Set up source** to test the connection.
 
 | Input | Type | Description | Default Value |
 | ------- | ------ | ------------- | --------------- |
-| `base_url` | `string` | Root URL of your Uptick workspace, for example `https://yourcompany.onuptick.com`. The connector keeps only the host and always connects over HTTPS, so any scheme, path, or trailing slash you enter is ignored. | |
-| `client_id` | `string` | OAuth Client ID generated from **Control Panel > Uptick API**. | |
-| `client_secret` | `string` | OAuth Client Secret generated from **Control Panel > Uptick API**. | |
-| `username` | `string` | Email address for an Uptick user account with API access. Synced data is limited to what this user can see in Uptick. | |
-| `password` | `string` | Password for the Uptick user account. | |
+| `base_url` | `string` | API URL in the form `https://yourcompany.onuptick.com` (https, host only, no trailing slash). Required for username/password; optional for OAuth, where it is derived from the Uptick workspace. Syncs normalize the value automatically. | |
+| `credentials.auth_type` | `string` | `oauth2.0` for the OAuth flow, `password` for the legacy username and password method. | |
+| `credentials.workspace` | `string` | The `<workspace>` part of `https://<workspace>.onuptick.com` (lowercase letters, digits, hyphens). Required for `oauth2.0`; the OAuth consent and token URLs are built from it, and the Base Url is derived from it when left empty. | |
+| `credentials.client_id` | `string` | OAuth Client ID generated from **Control Panel > Uptick API**. Filled automatically by the OAuth flow on Airbyte Cloud. | |
+| `credentials.client_secret` | `string` | OAuth Client Secret generated from **Control Panel > Uptick API**. Filled automatically by the OAuth flow on Airbyte Cloud. | |
+| `credentials.refresh_token` | `string` | Refresh token obtained by authenticating with Uptick. Required for `oauth2.0`; filled automatically by the OAuth flow. | |
+| `credentials.username` | `string` | Email address for an Uptick user account with API access. Required for `password`. Synced data is limited to what this user can see in Uptick. | |
+| `credentials.password` | `string` | Password for the Uptick user account. Required for `password`. | |
 | `num_workers` | `integer` | Number of concurrent requests. Higher values speed up syncs but increase the chance of Uptick rate limiting. Allowed range 1–10. | `3` |
 | `max_requests_per_minute` | `integer` | Global request budget shared by all streams and threads. Uptick publishes no numeric limit; 60 is a conservative default. Allowed range 1–600. | `60` |
 
@@ -232,9 +245,11 @@ Avoid incremental sync for the streams marked `❌ (no soft delete)`: their Upti
 
 If the Uptick user account lacks permission for an endpoint, the sync fails with `HTTP 403: Uptick user lacks permission for the requested endpoint.` Uptick doesn't publish a per-endpoint permission list; in production this has been seen on `task_profitability` (resolved by granting the Intelligence reports permission) and on `billingcontractlineitems`. The connector fails with a configuration error instead of retrying. Grant the missing module permission in Uptick or deselect the stream.
 
+**`403 Access denied … required licenses (FIELD, DESK, CONTRACTOR)` after logging in during "Authenticate with Uptick".** The Uptick user you signed in with has no licence in that workspace. Ask your Uptick administrator to grant one (for example, DESK), or use username/password authentication instead.
+
 ### Authentication errors (401)
 
-Uptick rejects a wrong username or password with `invalid_grant`, and a wrong client ID or client secret with `invalid_client`. The connector reports these as a configuration error without retrying: `Refresh token was rejected by the OAuth provider (invalid, expired, or already used). Re-authenticate this source's credentials in its connection settings.` Check the four credential fields in the source configuration, and confirm that the OAuth application still exists under **Control Panel > Uptick API**.
+Uptick rejects a wrong username or password with `invalid_grant`, and a wrong client ID or client secret with `invalid_client`. The connector reports these as a configuration error without retrying: `Refresh token was rejected by the OAuth provider (invalid, expired, or already used). Re-authenticate this source's credentials in its connection settings.` For `oauth2.0` connections, re-authenticate with Uptick so the stored credentials are refreshed. For `password` connections, check the four credential fields in the source configuration, and confirm that the OAuth application still exists under **Control Panel > Uptick API**.
 
 Uptick access tokens can also expire or be revoked during a long sync. If a stream request returns 401 mid-sync, the connector refreshes the token once and retries the request; if the refresh is rejected (for example because the password changed during the sync) the sync fails with the same configuration error, and if the retried request is still 401 it fails with `HTTP 401: Uptick rejected the access token.` Update the credentials and run the sync again.
 
