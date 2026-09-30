@@ -45,7 +45,9 @@ The Granola API connector has 3 streams: `notes` (incremental with `updated_at` 
 
 ### Cursor is `updated_at` with a single slice
 
-`GET /v1/notes` exposes `updated_after` but no `updated_before`, so the cursor sends one unbounded slice — there is no `step` or `end_time_option`, because stepped windows without an upper bound would return overlapping data. A note edited after a sync is re-emitted on the next incremental sync, and `detailed_notes` and `note_transcripts` inherit this through their `SubstreamPartitionRouter` partitions.
+`GET /v1/notes` exposes `updated_after` but no `updated_before`, so the cursor sends one unbounded slice — there is no `step` or `end_time_option`, because stepped windows without an upper bound would return overlapping data. A note edited after a sync is re-emitted on the next incremental sync. `detailed_notes` and `note_transcripts` have no `incremental_dependency`, so their parent `notes` read is a full re-read from `start_date` on every sync; they already picked up edited notes before 1.0.0.
+
+The single slice means the `notes` read does not checkpoint mid-stream: a failure restarts from the stored cursor, or from `start_date` on the first sync after upgrading from pre-1.0.0 state. This was accepted because a full read of a production workspace took about 30s over 10 pages, and the child streams, which dominate sync time, have never checkpointed mid-stream.
 
 ### Keep the start bound second-granular
 

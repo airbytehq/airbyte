@@ -53,10 +53,10 @@ data:
       1.0.0:
         message: >-
           The `notes` stream now syncs incrementally on `updated_at` instead of `created_at` so edited notes are replicated.
-          Existing connections must reset the `notes`, `detailed_notes`, and `note_transcripts` streams after upgrading.
+          Existing connections must reset the `notes` stream after upgrading.
           See the migration guide for details.
         upgradeDeadline: "2026-11-02"
         scopedImpact:
           - scopeType: stream
-            impactedScopes: ["notes", "detailed_notes", "note_transcripts"]
+            impactedScopes: ["notes"]
 metadataSpecVersion: "1.0"

@@ -14,6 +14,10 @@ concurrency_level:
 # https://docs.granola.ai/api-reference/changelog
 # Burst: 25 requests per 5-second window
 # Sustained: 5 requests/second (300/minute)
+# The budget has no matchers, so it is shared by every request the connector
+# makes: notes, each child stream's own read of the notes list, and the
+# per-note calls. Uneven list-page timing in logs is usually this budget
+# waiting for its window, not Granola throttling (which would log 429s).
 api_budget:
   type: HTTPAPIBudget
   policies:

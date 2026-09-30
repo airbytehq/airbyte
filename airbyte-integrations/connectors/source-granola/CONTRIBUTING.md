@@ -41,7 +41,7 @@ The Granola API connector has 3 streams: `notes` (incremental with `updated_at` 
 | detailed_notes | medium | child | none | none | deferred_child |  |
 | note_transcripts | medium | child | none | none | deferred_child |  |
 
-The `notes` cursor is `updated_at` with a single slice: the API exposes `updated_after` but no `updated_before`, so there is no `step` or end bound. A note edited after a sync is re-emitted on the next incremental sync, and the child streams inherit this through their parent partitions. The bound stays second-granular (`%Y-%m-%dT%H:%M:%SZ`) because Granola has treated date-only bounds as excluding the named day, and `cursor_datetime_formats` retains `%Y-%m-%d` so date-only state from earlier versions still parses.
+The `notes` cursor is `updated_at` with a single slice: the API exposes `updated_after` but no `updated_before`, so there is no `step` or end bound. A note edited after a sync is re-emitted on the next incremental sync. The child streams have no `incremental_dependency`, so the parent is fully re-read from `start_date` on every sync; they already picked up edited notes before 1.0.0. The bound stays second-granular (`%Y-%m-%dT%H:%M:%SZ`) because Granola has treated date-only bounds as excluding the named day, and `cursor_datetime_formats` retains `%Y-%m-%d` so date-only state from earlier versions still parses.
 
 ### Future incremental stream candidates
 
