@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## September 29, 2026
+
+Connectors
+
+- The Monday.com connector now uses Monday.com's new sign-in method, which Monday.com requires starting October 1, 2026. When you connect it with your Monday.com account, your agents can now renew access automatically instead of relying on a token that never changes. In the SDK, the Monday.com authentication settings now accept an optional refresh token.
+
 ## September 22, 2026
 
 Connectors
