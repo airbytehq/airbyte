@@ -98,6 +98,14 @@ class ApiTypeEnum(enum.Enum):
         return [api_type.value for api_type in ApiTypeEnum]
 
 
+GRAPHQL_THROTTLE_ERROR_CODES: Final[set] = {"THROTTLED", "MAX_COST_EXCEEDED"}
+
+
+def is_throttled_graphql_error(errors: List[Mapping[str, Any]]) -> bool:
+    """Shopify GraphQL reports throttling as HTTP 200 with `errors[].extensions.code` in GRAPHQL_THROTTLE_ERROR_CODES."""
+    return any((error.get("extensions") or {}).get("code") in GRAPHQL_THROTTLE_ERROR_CODES for error in errors)
+
+
 class ShopifyRateLimiter:
     """
     Define timings for RateLimits. Adjust timings if needed.
@@ -359,5 +367,27 @@ class LimitReducingErrorHandler(HttpStatusErrorHandler):
                     response_action=ResponseAction.FAIL,
                     failure_type=FailureType.transient_error,
                     error_message="Persistent 500 error after reducing limit to 1",
+                )
+        return super().interpret_response(response_or_exception)
+
+
+class ShopifyGraphQlErrorHandler(HttpStatusErrorHandler):
+    """
+    Shopify GraphQL reports throttling as HTTP 200 with `errors[].extensions.code` THROTTLED / MAX_COST_EXCEEDED
+    (https://shopify.dev/docs/api/admin-graphql/2026-07#status-and-error-codes). Retry such pages instead of
+    treating the 200 as a success: the cost bucket refills at the shop's restore rate within seconds.
+    """
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
+        if isinstance(response_or_exception, requests.Response) and response_or_exception.ok:
+            try:
+                body = response_or_exception.json()
+            except requests.exceptions.RequestException:
+                body = {}
+            if is_throttled_graphql_error(body.get("errors") or [] if isinstance(body, dict) else []):
+                return ErrorResolution(
+                    response_action=ResponseAction.RETRY,
+                    failure_type=FailureType.transient_error,
+                    error_message="Shopify GraphQL request throttled, retrying.",
                 )
         return super().interpret_response(response_or_exception)
