@@ -6,7 +6,7 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Incremental Stream Considerations
 
-Every stream except `channels` is incremental as of 2.0.0. The YouTube Data API v3 has no date filters, but every endpoint the connector reads lists newest first, so the streams share a `DatetimeBasedCursor` with `is_data_feed: true` (`definitions.published_at_cursor`): pagination stops at the first page containing a record older than the stored cursor, and records older than the cursor on that page are filtered out (the boundary record itself is re-emitted, which is idempotent on the primary key). `start_datetime` is pinned to 2005-04-23 (YouTube's first upload) so there is effectively no lower bound and no `start_date` config knob.
+Every stream except `channels` is incremental as of 1.1.0. The YouTube Data API v3 has no date filters, but every endpoint the connector reads lists newest first, so the streams share a `DatetimeBasedCursor` with `is_data_feed: true` (`definitions.published_at_cursor`): pagination stops at the first page containing a record older than the stored cursor, and records older than the cursor on that page are filtered out (the boundary record itself is re-emitted, which is idempotent on the primary key). `start_datetime` is pinned to 2005-04-23 (YouTube's first upload) so there is effectively no lower bound and no `start_date` config knob.
 
 | Stream           | Volume Tier | Relationship                                                                                                                       | Cursor Field                                                       | Mechanism                      | Notes                                                                                                                                                                                                                                                                                                                                                                                                                |
 | ---------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -42,7 +42,7 @@ All five streams share the error handler defined on `definitions.base_requester`
 
 ## Quota model
 
-The YouTube Data API v3 grants a default quota of 10,000 units per day per Google Cloud project. Every endpoint this connector reads (`playlistItems.list`, `channels.list`, `videos.list`, `commentThreads.list`) costs 1 unit per call. `search.list` costs 100 units and was dropped in 2.0.0: it was public-only, capped at 500 results per channel, and enumerating 5,000 videos consumed the whole daily quota. Exhausting the daily quota is the documented failure mode for this API: Google returns HTTP 403 with reason `quotaExceeded`, and the quota resets at midnight Pacific.
+The YouTube Data API v3 grants a default quota of 10,000 units per day per Google Cloud project. Every endpoint this connector reads (`playlistItems.list`, `channels.list`, `videos.list`, `commentThreads.list`) costs 1 unit per call. `search.list` costs 100 units and was dropped in 1.1.0: it was public-only, capped at 500 results per channel, and enumerating 5,000 videos consumed the whole daily quota. Exhausting the daily quota is the documented failure mode for this API: Google returns HTTP 403 with reason `quotaExceeded`, and the quota resets at midnight Pacific.
 
 Request counts per sync for V videos: `videos` V/50 on a first or full-refresh sync, ~1 per channel incrementally; `video` V/50 first sync, then only new videos; `video_engagement` V/50 every sync; `comments` ~1 per video incrementally; `channel_comments` ~1–2 per channel incrementally. Levers if a user still hits the quota: reduce sync frequency for `video_engagement`, and disable `comments` in favor of `channel_comments`.
 
@@ -71,14 +71,16 @@ Fivetran's YouTube coverage is [YouTube Analytics](https://fivetran.com/docs/con
 
 Users needing the Analytics report tables should use the separate [YouTube Analytics connector](https://docs.airbyte.com/integrations/sources/youtube-analytics), which reads the Analytics API.
 
-## Breaking-change assessment (2.0.0)
+## Compatibility assessment (1.1.0)
 
-Declared in `metadata.yaml` `releases.breakingChanges` with a migration-guide section:
+1.1.0 was deliberately shaped as a minor release. Everything is additive on the wire:
 
-- **`videos` record shape changed** — `kind` removed; `publishedAt`, `privacyStatus`, `channelId`, `title` added. Destinations with strict schemas need a schema refresh.
-- **`videos` result set changed** — uploads playlist instead of search: unlisted/private uploads appear for OAuth owners, and the 500-video cap is gone. Downstream `video` and `comments` inherit both.
-- **Incremental semantics introduced** — `video` in incremental mode stops refreshing statistics (moved to `video_engagement`). Full Refresh is unchanged, so this is behavioral rather than schema-breaking, but it is called out in the migration guide.
-- Additive, non-breaking: top-level `publishedAt` on the comment streams, the `video_engagement` stream, and the daily-quota FAIL filter.
+- **`videos` keeps its 1.0.0 shape as a subset.** `kind` is still emitted (as the constant `youtube#video`, since playlist items report `youtube#playlistItem`) and `videoId` keeps its nullable typing; `publishedAt`, `privacyStatus`, `channelId`, `title` are new nullable fields.
+- **New records, not changed records.** Unlisted/private uploads for OAuth owners and videos past the old 500-result cap appear as additional rows in `videos`, `video`, and `comments`; existing rows are unchanged.
+- **Incremental is opt-in.** Every stream still supports Full Refresh with identical behavior, including `video` re-reading statistics. Only a connection switched to Incremental sees `video` stop refreshing counters, and that is the user's choice, documented next to `video_engagement`.
+- **Additive elsewhere:** top-level nullable `publishedAt` on the comment streams, the `video_engagement` stream, and the daily-quota FAIL filter (a sync that would previously have failed after exhausting retries now fails at once).
+
+If a future change removes `kind`, tightens nullability, or changes a cursor field, that is the breaking-change trigger.
 
 ## Breaking-change assessment (1.0.0)
 

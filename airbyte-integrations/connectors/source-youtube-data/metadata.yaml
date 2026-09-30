@@ -26,7 +26,7 @@ data:
   maxSecondsBetweenMessages: 5400
   connectorType: source
   definitionId: 743a2a44-fd13-4109-a8fe-fb0e68f467f5
-  dockerImageTag: 2.0.0
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/source-youtube-data
   githubIssueLabel: source-youtube-data
   icon: icon.svg
@@ -41,17 +41,6 @@ data:
         strategy: fast
       enableProgressiveRollout: true
     breakingChanges:
-      2.0.0:
-        message: "Version 2.0.0 discovers videos from each channel's uploads playlist instead of YouTube search, so `videos` records change shape (the `kind` field is removed; `publishedAt`, `privacyStatus`, `channelId`, and `title` are added) and the stream now includes unlisted and private uploads when authenticated as the channel owner. `videos`, `video`, `comments`, and `channel_comments` gain a `publishedAt` cursor and support incremental sync; the new `video_engagement` stream carries the per-sync view/like/comment counters, and `video` in incremental mode only fetches newly published videos. After upgrading, refresh the source schema. Full Refresh connections keep working unchanged. For more information, see the [migration guide](https://docs.airbyte.com/integrations/sources/youtube-data-migrations)."
-        upgradeDeadline: "2026-11-30"
-        deadlineAction: "auto_upgrade"
-        scopedImpact:
-          - scopeType: stream
-            impactedScopes:
-              - "videos"
-              - "video"
-              - "comments"
-              - "channel_comments"
       1.0.0:
         message: "Version 1.0.0 declares primary keys on the `comments`, `videos`, and `channel_comments` streams, adds `date-time` formats to nine timestamp fields, and restricts the `videos` stream to actual video results (it previously also returned channel and playlist id records). After upgrading, refresh the source schema. Resetting streams is only needed for Full Refresh | Overwrite connections or destinations that cannot retype columns in place; see the migration guide before clearing Full Refresh | Append streams. For more information, see the [migration guide](https://docs.airbyte.com/integrations/sources/youtube-data-migrations)."
         upgradeDeadline: "2026-10-31"

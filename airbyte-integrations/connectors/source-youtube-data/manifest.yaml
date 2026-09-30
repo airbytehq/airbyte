@@ -249,9 +249,12 @@ definitions:
             - path:
                 - privacyStatus
               value: "{{ record.get('status', {}).get('privacyStatus') }}"
+            - path:
+                # Kept for compatibility with the pre-1.1.0 search.list record shape.
+                - kind
+              value: "youtube#video"
         - type: RemoveFields
           field_pointers:
-            - ["kind"]
             - ["etag"]
             - ["id"]
             - ["snippet"]
@@ -1461,8 +1464,14 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      kind:
+        type:
+          - string
+          - "null"
       videoId:
-        type: string
+        type:
+          - string
+          - "null"
       channelId:
         type:
           - string
@@ -1472,15 +1481,14 @@ schemas:
           - string
           - "null"
       publishedAt:
-        type: string
+        type:
+          - string
+          - "null"
         format: date-time
       privacyStatus:
         type:
           - string
           - "null"
-    required:
-      - videoId
-      - publishedAt
   video_engagement:
     type: object
     $schema: http://json-schema.org/schema#

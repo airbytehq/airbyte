@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
-"""Guards for the 2.0.0 quota rework.
+"""Guards for the 1.1.0 quota rework.
 
 `videos` enumerates a channel's uploads playlist (`playlistItems.list`, 1 quota
 unit, returns unlisted/private uploads to the owner) instead of `search.list`
@@ -76,6 +76,7 @@ class TestVideosStream(TestCase):
         assert [r["videoId"] for r in records] == ["pub", "unl", "prv"]
         assert [r["privacyStatus"] for r in records] == ["public", "unlisted", "private"]
         assert records[0] == {
+            "kind": "youtube#video",
             "videoId": "pub",
             "channelId": _CHANNEL,
             "title": "Title pub",

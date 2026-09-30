@@ -2,38 +2,6 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # Youtube Data Migration Guide
 
-## Upgrading to 2.0.0
-
-:::note
-This change affects `videos`, `video`, `comments`, and `channel_comments`. `channels` is unchanged. The new `video_engagement` stream is opt-in.
-:::
-
-Version 2.0.0 replaces YouTube search with each channel's uploads playlist as the source of video IDs, and makes the connector incremental:
-
-- **`videos` records change shape.** The `kind` field is removed; `publishedAt`, `privacyStatus`, `channelId`, and `title` are added. `videoId` remains the primary key.
-- **Unlisted and private uploads are included** in `videos`, `video`, and `comments` when the source authenticates with OAuth 2.0 as the channel owner. Previously only public videos were returned, regardless of authentication. Channels with more than 500 videos are no longer truncated.
-- **Incremental sync is available** on `videos`, `video`, `comments`, and `channel_comments` (cursor `publishedAt`) and on the new `video_engagement` stream (cursor `datetime`, the fetch time). Comment records gain a top-level `publishedAt` field copied from `topLevelComment.snippet.publishedAt`.
-- **`video` in incremental mode fetches only newly published videos**, so its statistics are not refreshed. Use `video_engagement` for view, like, and comment counts that update every sync. Full Refresh syncs of `video` behave as before.
-- **Daily quota exhaustion fails the sync immediately** instead of retrying; the next scheduled sync resumes from the checkpoint.
-
-Existing connections keep their sync mode. Full Refresh connections continue to work; the only visible change is the `videos` record shape and the additional unlisted/private videos for OAuth owners. To move a stream to incremental, change its sync mode after refreshing the schema.
-
-### Migration Steps
-
-1. Select **Connections** in the main nav bar.
-   1. Select the connection affected by the update.
-1. Select the **Schema** tab.
-   1. Select **Refresh source schema**.
-   1. Select **OK**.
-1. Optionally change the sync mode of `videos`, `video`, `comments`, `channel_comments`, or `video_engagement` to **Incremental - Append** or **Incremental - Append + Deduped**.
-1. Select **Save changes** at the top right of the page.
-   1. If `videos` uses **Full Refresh | Overwrite**, or your destination fails to drop the `kind` column in place, check **Reset affected streams**. Otherwise leave it unchecked.
-1. Select **Save connection**.
-
-:::note
-If you switch `video` to incremental, its first incremental sync re-reads every video (the cursor starts empty). Later syncs only fetch new videos.
-:::
-
 ## Upgrading to 1.0.0
 
 :::note
