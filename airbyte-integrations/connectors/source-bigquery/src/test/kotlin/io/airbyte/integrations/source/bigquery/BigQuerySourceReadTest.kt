@@ -3,6 +3,7 @@ package io.airbyte.integrations.source.bigquery
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.CliRunner
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteCatalog
@@ -170,9 +171,10 @@ class BigQuerySourceReadTest {
     }
 
     /**
-     * `max_db_connections` above 1 lets the toolkit read several streams at once (in `sequential`
-     * mode each stream is still one partition), and a `job_project_id` (the emulator's only
-     * project) exercises the fully qualified table references; the output must not change.
+     * On Airbyte Cloud, `max_db_connections` above 1 lets the toolkit read several streams at once
+     * (in `sequential` mode each stream is still one partition; elsewhere it is pinned to 1), and a
+     * `job_project_id` (the emulator's only project) exercises the fully qualified table
+     * references; the output must not change.
      */
     @Test
     fun testFullRefreshWithConcurrentQueriesAndJobProject() {
@@ -192,7 +194,15 @@ class BigQuerySourceReadTest {
                         configured(catalog.stream("all_types_view"), SyncMode.FULL_REFRESH),
                     )
                 )
-        val output: BufferingOutputConsumer = CliRunner.source("read", concurrent, configured).run()
+        val output: BufferingOutputConsumer =
+            CliRunner.source(
+                    "read",
+                    concurrent,
+                    configured,
+                    null,
+                    FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT,
+                )
+                .run()
 
         Assertions.assertEquals(
             mapOf("all_types" to 2, "with_pk" to 3, "all_types_view" to 2),

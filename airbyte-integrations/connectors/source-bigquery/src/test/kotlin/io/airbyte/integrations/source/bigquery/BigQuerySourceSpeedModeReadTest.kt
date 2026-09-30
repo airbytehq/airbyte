@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.output.DataChannelFormat
 import io.airbyte.cdk.output.sockets.FORMAT_PROPERTY
@@ -132,7 +133,11 @@ class BigQuerySourceSpeedModeReadTest {
                 .withStreams(
                     streams.map { configured(catalog.streams.first { s -> s.name == it }) }
                 )
-        val stdio: BufferingOutputConsumer = CliRunner.source("read", config, configured).run()
+        // Speed mode is an Airbyte Cloud feature: the Cloud flag keeps one query per socket
+        // (elsewhere the connector reads one stream at a time).
+        val stdio: BufferingOutputConsumer =
+            CliRunner.source("read", config, configured, null, FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
+                .run()
 
         // Unix domain socket paths are limited to about 100 bytes; /tmp keeps them short.
         val socketDir: Path =
@@ -150,7 +155,8 @@ class BigQuerySourceSpeedModeReadTest {
                 FORMAT_PROPERTY to format.name,
                 SOCKET_PATHS_PROPERTY to socketPaths.joinToString(",") { it.toString() },
             )
-        val cli: CliRunnable = CliRunner.source("read", config, configured)
+        val cli: CliRunnable =
+            CliRunner.source("read", config, configured, null, FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
         val failure = AtomicReference<Throwable?>()
         val connector =
             Thread(

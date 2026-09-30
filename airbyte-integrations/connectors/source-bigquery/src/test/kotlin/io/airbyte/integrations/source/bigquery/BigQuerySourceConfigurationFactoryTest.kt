@@ -2,6 +2,7 @@
 package io.airbyte.integrations.source.bigquery
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.bigquery.readapi.BigQueryReadApiAvailability
 import java.security.KeyPairGenerator
@@ -20,8 +21,15 @@ class BigQuerySourceConfigurationFactoryTest {
     private fun parse(json: String): BigQuerySourceConfigurationSpecification =
         Jsons.readValue(json, BigQuerySourceConfigurationSpecification::class.java)
 
+    /**
+     * Most assertions describe the Airbyte Cloud edition, the one with every feature; see
+     * [testCloudOnlySettingsAreForcedOffOutsideAirbyteCloud] for the other deployments.
+     */
+    private val cloud: Set<FeatureFlag> = setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
+
     private fun make(json: String): BigQuerySourceConfiguration =
-        BigQuerySourceConfigurationFactory().makeWithoutExceptionHandling(parse(json))
+        BigQuerySourceConfigurationFactory(featureFlags = cloud)
+            .makeWithoutExceptionHandling(parse(json))
 
     private fun configJson(
         projectId: String? = "my-project",
@@ -79,12 +87,14 @@ class BigQuerySourceConfigurationFactoryTest {
         val spec: BigQuerySourceConfigurationSpecification = parse(configJson())
         val stdio =
             BigQuerySourceConfigurationFactory(
+                featureFlags = cloud,
                 dataChannelMedium = "STDIO",
                 socketPaths = emptyList()
             )
         Assertions.assertEquals(1, stdio.makeWithoutExceptionHandling(spec).maxConcurrency)
         val sockets =
             BigQuerySourceConfigurationFactory(
+                featureFlags = cloud,
                 dataChannelMedium = "SOCKET",
                 socketPaths = listOf("/tmp/s1.sock", "/tmp/s2.sock", "/tmp/s3.sock"),
             )
@@ -92,6 +102,7 @@ class BigQuerySourceConfigurationFactoryTest {
         // A socket medium without any path still yields a usable configuration.
         val noSockets =
             BigQuerySourceConfigurationFactory(
+                featureFlags = cloud,
                 dataChannelMedium = "SOCKET",
                 socketPaths = emptyList()
             )
@@ -102,6 +113,7 @@ class BigQuerySourceConfigurationFactoryTest {
     fun testMaxDbConnectionsOverridesTheDefaultConcurrency() {
         val stdio =
             BigQuerySourceConfigurationFactory(
+                featureFlags = cloud,
                 dataChannelMedium = "STDIO",
                 socketPaths = emptyList()
             )
@@ -113,6 +125,7 @@ class BigQuerySourceConfigurationFactoryTest {
         )
         val sockets =
             BigQuerySourceConfigurationFactory(
+                featureFlags = cloud,
                 dataChannelMedium = "SOCKET",
                 socketPaths = listOf("/tmp/s1.sock", "/tmp/s2.sock", "/tmp/s3.sock"),
             )
@@ -144,6 +157,53 @@ class BigQuerySourceConfigurationFactoryTest {
         }
     }
 
+    /**
+     * Outside Airbyte Cloud the Storage Read API and concurrent reads are not offered: whatever the
+     * configuration says, every table is read through the query API and one stream at a time. The
+     * spec hides both properties there ([BigQuerySourceSpecificationExtender]).
+     */
+    @Test
+    fun testCloudOnlySettingsAreForcedOffOutsideAirbyteCloud() {
+        val selfManaged = BigQuerySourceConfigurationFactory(featureFlags = emptySet())
+        val asked: BigQuerySourceConfiguration =
+            selfManaged.makeWithoutExceptionHandling(
+                parse(configJson(maxDbConnections = 4, useStorageReadApi = true))
+            )
+        Assertions.assertFalse(asked.useStorageReadApi)
+        Assertions.assertFalse(asked.jdbcProperties.containsKey("EnableHighThroughputAPI"))
+        Assertions.assertEquals(1, asked.maxConcurrency)
+
+        val defaults: BigQuerySourceConfiguration =
+            selfManaged.makeWithoutExceptionHandling(parse(configJson()))
+        Assertions.assertFalse(defaults.useStorageReadApi)
+        Assertions.assertFalse(defaults.jdbcProperties.containsKey("EnableHighThroughputAPI"))
+        Assertions.assertEquals(1, defaults.maxConcurrency)
+
+        // Not even speed mode's one query per socket.
+        val sockets =
+            BigQuerySourceConfigurationFactory(
+                featureFlags = emptySet(),
+                dataChannelMedium = "SOCKET",
+                socketPaths = listOf("/tmp/s1.sock", "/tmp/s2.sock", "/tmp/s3.sock"),
+            )
+        Assertions.assertEquals(
+            1,
+            sockets
+                .makeWithoutExceptionHandling(parse(configJson(maxDbConnections = 5)))
+                .maxConcurrency,
+        )
+
+        // The value is still validated: an impossible one is a configuration error anywhere.
+        val e =
+            Assertions.assertThrows(ConfigErrorException::class.java) {
+                selfManaged.makeWithoutExceptionHandling(parse(configJson(maxDbConnections = 0)))
+            }
+        Assertions.assertEquals(
+            "'max_db_connections' must be a positive integer, got 0.",
+            e.message
+        )
+    }
+
     @Test
     fun testStorageReadApiIsOnByDefaultAndTogglesTheDriverProperty() {
         val off: BigQuerySourceConfiguration = make(configJson(useStorageReadApi = false))
@@ -166,7 +226,11 @@ class BigQuerySourceConfigurationFactoryTest {
     @Test
     fun testStorageReadApiUnavailabilityRemovesTheDriverPropertyAtAccessTime() {
         val availability = BigQueryReadApiAvailability()
-        val factory = BigQuerySourceConfigurationFactory(readApiAvailability = availability)
+        val factory =
+            BigQuerySourceConfigurationFactory(
+                featureFlags = cloud,
+                readApiAvailability = availability
+            )
         val config: BigQuerySourceConfiguration =
             factory.make(
                 Jsons.readValue(

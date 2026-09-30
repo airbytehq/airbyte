@@ -17,8 +17,10 @@ import jakarta.inject.Singleton
  * `credentials_json`) and its `required` list are kept so that saved configurations keep
  * deserializing. Titles, descriptions and the `connection`/`advanced` groups follow
  * `destination-bigquery` (minus its destination-only properties); `max_db_connections` is the
- * performance property shared by the other Bulk CDK sources. Use [BigQuerySourceConfiguration]
- * instead wherever possible.
+ * performance property shared by the other Bulk CDK sources. Outside Airbyte Cloud the emitted spec
+ * marks `max_db_connections` and `use_storage_read_api` read-only, see
+ * [BigQuerySourceSpecificationExtender]. Use [BigQuerySourceConfiguration] instead wherever
+ * possible.
  */
 @JsonSchemaTitle("BigQuery Source Spec")
 @JsonSchemaInject(

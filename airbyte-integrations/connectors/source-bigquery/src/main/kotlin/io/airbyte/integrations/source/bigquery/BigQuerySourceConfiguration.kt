@@ -3,6 +3,7 @@ package io.airbyte.integrations.source.bigquery
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.output.DataChannelMedium
@@ -49,9 +50,11 @@ data class BigQuerySourceConfiguration(
      * default): base tables through the connector's own Read API partitions and the results of the
      * remaining queries through the JDBC driver's `EnableHighThroughputAPI`. Both need the BigQuery
      * Read Session User role; when the READ finds it missing ([readApiAvailability]) the connector
-     * falls back to the standard query API for everything. Always false against the emulator, whose
-     * Storage Read API implementation is too partial to serve the connector (goccy 0.8.1: one read
-     * stream per session, non-standard batch layout, offsets ignored, crashes on REPEATED columns).
+     * falls back to the standard query API for everything. Only ever true on Airbyte Cloud: the
+     * Read API path is not offered on other deployments ([BigQuerySourceSpecificationExtender]).
+     * Always false against the emulator, whose Storage Read API implementation is too partial to
+     * serve the connector (goccy 0.8.1: one read stream per session, non-standard batch layout,
+     * offsets ignored, crashes on REPEATED columns).
      */
     val useStorageReadApi: Boolean,
     /**
@@ -125,6 +128,12 @@ data class BigQuerySourceConfiguration(
 class BigQuerySourceConfigurationFactory
 @Inject
 constructor(
+    /**
+     * The active CDK feature flags. [FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT]
+     * (`AIRBYTE_EDITION=CLOUD`) unlocks the Cloud-only settings, see
+     * [BigQuerySourceSpecificationExtender].
+     */
+    val featureFlags: Set<FeatureFlag> = emptySet(),
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String = STDIO.name,
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}")
     val socketPaths: List<String> = emptyList(),
@@ -170,33 +179,64 @@ constructor(
                 "'max_db_connections' must be a positive integer, got $maxDbConnections."
             )
         }
-        // 'max_db_connections' always wins. Otherwise one query at a time on STDIO, and one query
-        // per socket in speed mode, like the other Bulk CDK sources.
+        val cloud: Boolean = FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT in featureFlags
+        // On Airbyte Cloud 'max_db_connections' always wins; otherwise one query at a time on
+        // STDIO, and one query per socket in speed mode, like the other Bulk CDK sources.
+        // Concurrent reads are not offered on other deployments: streams are read one at a time
+        // whatever the configuration says (the spec shows the property disabled there, see
+        // BigQuerySourceSpecificationExtender).
         val maxConcurrency: Int =
-            when (DataChannelMedium.valueOf(dataChannelMedium)) {
-                STDIO -> maxDbConnections ?: 1
-                SOCKET -> maxDbConnections ?: socketPaths.size.coerceAtLeast(1)
+            if (!cloud) {
+                BigQuerySourceSpecificationExtender.SELF_MANAGED_MAX_DB_CONNECTIONS
+            } else {
+                when (DataChannelMedium.valueOf(dataChannelMedium)) {
+                    STDIO -> maxDbConnections ?: 1
+                    SOCKET -> maxDbConnections ?: socketPaths.size.coerceAtLeast(1)
+                }
             }
+        if (!cloud && maxDbConnections != null && maxDbConnections != maxConcurrency) {
+            log.warn {
+                "'max_db_connections' ($maxDbConnections) is ignored: concurrent reads are only " +
+                    "available on Airbyte Cloud."
+            }
+        }
         log.info {
             "Effective concurrency: $maxConcurrency (max_db_connections: $maxDbConnections, " +
-                "data channel: $dataChannelMedium, sockets: ${socketPaths.size})"
+                "data channel: $dataChannelMedium, sockets: ${socketPaths.size}, " +
+                "Airbyte Cloud: $cloud)"
         }
 
         // The URL is logged by the CDK; secrets go into the JDBC properties instead. The driver's
         // ProjectId is the project that runs (and is billed for) the query jobs; the data project
         // only appears in the fully qualified table references of the generated SQL.
-        // The Storage Read API is on by default: base tables are read through the connector's own
-        // Read API partitions, and the JDBC driver fetches the results of the remaining queries
-        // through it too (EnableHighThroughputAPI, added to the properties on every connection by
-        // BigQuerySourceConfiguration.jdbcProperties while the API is available). Never against the
-        // emulator (test-only), whose Storage Read API is too partial. Apache Arrow needs the JVM
-        // started with '--add-opens=java.base/java.nio=ALL-UNNAMED' (baked into the image's JVM
-        // args).
+        // On Airbyte Cloud the Storage Read API is on by default: base tables are read through the
+        // connector's own Read API partitions, and the JDBC driver fetches the results of the
+        // remaining queries through it too (EnableHighThroughputAPI, added to the properties on
+        // every connection by BigQuerySourceConfiguration.jdbcProperties while the API is
+        // available). Never on other deployments, where the property is shown disabled (see
+        // BigQuerySourceSpecificationExtender), and never against the emulator (test-only), whose
+        // Storage Read API is too partial. Apache Arrow needs the JVM started with
+        // '--add-opens=java.base/java.nio=ALL-UNNAMED' (baked into the image's JVM args).
         val useStorageReadApi: Boolean =
-            (pojo.useStorageReadApi ?: true) && serviceAccountKey != null
+            if (cloud) {
+                (pojo.useStorageReadApi ?: true) && serviceAccountKey != null
+            } else {
+                BigQuerySourceSpecificationExtender.SELF_MANAGED_USE_STORAGE_READ_API
+            }
+        if (!cloud && pojo.useStorageReadApi == true) {
+            log.warn {
+                "'use_storage_read_api' is ignored: the Storage Read API is only available on " +
+                    "Airbyte Cloud."
+            }
+        }
 
         val jdbcProperties: MutableMap<String, String> = mutableMapOf("ProjectId" to jobProjectId)
-        val readApiState: String = if (useStorageReadApi) "ENABLED" else "disabled"
+        val readApiState: String =
+            when {
+                useStorageReadApi -> "ENABLED"
+                !cloud -> "disabled (Airbyte Cloud only)"
+                else -> "disabled"
+            }
         log.info {
             "BigQuery Storage Read API (high-throughput reads): $readApiState " +
                 "(use_storage_read_api=${pojo.useStorageReadApi})"
