@@ -59,7 +59,6 @@ internal class SnowflakeBeanFactoryTest {
             val dataSource =
                 factory.snowflakeDataSource(
                     snowflakeConfiguration = snowflakeConfiguration,
-                    snowflakePrivateKeyFileName = privateKeyFile.path,
                     airbyteEdition = "OSS",
                 )
 
@@ -76,8 +75,6 @@ internal class SnowflakeBeanFactoryTest {
     @ParameterizedTest
     @CsvSource(value = ["OSS", "CLOUD", "ENTERPRISE"])
     fun testCreateSnowflakeDataSourcePrivateKeyAuth(airbyteEdition: String) {
-        val privateKeyFile = File.createTempFile("snowflake-private-key", ".p8")
-        privateKeyFile.deleteOnExit()
         val privateKey = "test-private-key"
         val privateKeyPassword = "test-private-key-password"
         val authType =
@@ -112,7 +109,6 @@ internal class SnowflakeBeanFactoryTest {
         val dataSource =
             factory.snowflakeDataSource(
                 snowflakeConfiguration = snowflakeConfiguration,
-                snowflakePrivateKeyFileName = privateKeyFile.path,
                 airbyteEdition = airbyteEdition,
             )
         try {
@@ -141,11 +137,16 @@ internal class SnowflakeBeanFactoryTest {
                 "jdbc:snowflake://${snowflakeConfiguration.host}/?${snowflakeConfiguration.jdbcUrlParams}",
                 (dataSource as HikariConfig).jdbcUrl
             )
-            assertEquals(
-                privateKeyFile.path,
+            val privateKeyFilePath =
                 (dataSource as HikariConfig)
                     .dataSourceProperties[DATA_SOURCE_PROPERTY_PRIVATE_KEY_FILE]
-            )
+                    as String
+            assert(privateKeyFilePath.endsWith(".p8")) {
+                "Expected private key file path to end with .p8, but was: $privateKeyFilePath"
+            }
+            assert(File(privateKeyFilePath).exists()) {
+                "Expected private key file to exist at: $privateKeyFilePath"
+            }
             assertEquals(
                 privateKeyPassword,
                 (dataSource as HikariConfig)

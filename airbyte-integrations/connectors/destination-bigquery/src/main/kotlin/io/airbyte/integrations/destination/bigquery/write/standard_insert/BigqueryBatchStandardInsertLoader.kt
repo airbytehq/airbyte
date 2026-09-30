@@ -35,7 +35,6 @@ import io.airbyte.integrations.destination.bigquery.toPrettyString
 import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoaderFactory.Companion.CONFIG_ERROR_MSG
 import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoaderFactory.Companion.HTTP_STATUS_CODE_FORBIDDEN
 import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoaderFactory.Companion.HTTP_STATUS_CODE_NOT_FOUND
-import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTableId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.condition.Condition
@@ -143,7 +142,7 @@ class BigqueryConfiguredForBatchStandardInserts : Condition {
 @Singleton
 class BigqueryBatchStandardInsertsLoaderFactory(
     private val catalog: DestinationCatalog,
-    private val bigquery: BigQuery,
+    @Named("jobProjectBigquery") private val jobProjectBigquery: BigQuery,
     private val config: BigqueryConfiguration,
     private val tableCatalog: TableCatalogByDescriptor,
     private val typingDedupingStreamStateStore: StreamStateStore<TypingDedupingExecutionConfig>?,
@@ -162,12 +161,22 @@ class BigqueryBatchStandardInsertsLoaderFactory(
             // Wait for the state store to be populated by the coordinating StreamLoader
             val rawTableSuffix =
                 waitForStateStore(typingDedupingStreamStateStore!!, streamDescriptor).rawTableSuffix
-            tableId = TableId.of(rawTableName.namespace, rawTableName.name + rawTableSuffix)
+            tableId =
+                TableId.of(
+                    config.projectId,
+                    rawTableName.namespace,
+                    rawTableName.name + rawTableSuffix,
+                )
             schema = BigQueryRecordFormatter.SCHEMA_V2
         } else {
             // Wait for the state store to be populated by the coordinating StreamLoader
             val executionConfig = waitForStateStore(directLoadStreamStateStore!!, streamDescriptor)
-            tableId = executionConfig.tableName.toTableId()
+            tableId =
+                TableId.of(
+                    config.projectId,
+                    executionConfig.tableName.namespace,
+                    executionConfig.tableName.name,
+                )
             schema =
                 BigQueryRecordFormatter.getDirectLoadSchema(
                     catalog.getStream(streamDescriptor),
@@ -186,7 +195,7 @@ class BigqueryBatchStandardInsertsLoaderFactory(
             JobId.newBuilder()
                 .setRandomJob()
                 .setLocation(config.datasetLocation.region)
-                .setProject(bigquery.options.projectId)
+                .setProject(config.jobProjectId)
                 .build()
 
         val formatter: RecordFormatter =
@@ -208,7 +217,7 @@ class BigqueryBatchStandardInsertsLoaderFactory(
             }
 
         return BigqueryBatchStandardInsertsLoader(
-            bigquery,
+            jobProjectBigquery,
             writeChannelConfiguration,
             jobId,
             formatter,

@@ -204,6 +204,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.1.30 | 2026-09-15 | [86332](https://github.com/airbytehq/airbyte/pull/86332) | Version bump to republish the Cloud-specific connector spec. |
 | 2.1.29     | 2026-08-25 | [85033](https://github.com/airbytehq/airbyte/pull/85033)   | Support self-managed clusters: optional replicated table engines and ON CLUSTER DDL |
 | 2.1.28     | 2026-08-24 | [84983](https://github.com/airbytehq/airbyte/pull/84983)   | Upgrade to Bulk CDK 1.0.25. |
 | 2.1.27     | 2026-08-05 | [83747](https://github.com/airbytehq/airbyte/pull/83747)   | Upgrade CDK to 1.0.20; document column drop behavior during schema evolution |

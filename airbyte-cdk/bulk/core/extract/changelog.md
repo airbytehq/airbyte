@@ -7,6 +7,14 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.12 — 2026-09-17
+
+[#86412](https://github.com/airbytehq/airbyte/pull/86412) — Return null instead of NPE when JDBC getTimestamp/getDate return null for a non-null string value (MySQL zero dates with zeroDateTimeBehavior=convertToNull).
+
+### 1.1.11 — 2026-09-02
+
+[#85313](https://github.com/airbytehq/airbyte/pull/85313) — Tolerate empty STREAM-typed input state in global (CDC) mode instead of failing.
+
 ### 1.1.10 — 2026-08-08
 
 [#80949](https://github.com/airbytehq/airbyte/pull/80949) — Field decoration for full refresh CDC streams with no primary key.

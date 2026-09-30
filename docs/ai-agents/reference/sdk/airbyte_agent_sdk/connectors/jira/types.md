@@ -917,38 +917,6 @@ Classes
     `untranslated_name: Any`
     :   The untranslated name of the field
 
-<a id="IssueFieldsApiSearchParams"></a>
-
-`IssueFieldsApiSearchParams(*args, **kwargs)`
-:   Parameters for issue_fields.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `expand: str`
-    :   The type of the None singleton.
-
-    `id: list[str]`
-    :   The type of the None singleton.
-
-    `max_results: int`
-    :   The type of the None singleton.
-
-    `order_by: str`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
-    `start_at: int`
-    :   The type of the None singleton.
-
-    `type: list[str]`
-    :   The type of the None singleton.
-
 <a id="IssueFieldsArrayContainsCondition"></a>
 
 `IssueFieldsArrayContainsCondition(*args, **kwargs)`
@@ -1265,6 +1233,38 @@ Classes
 
     `untranslated_name: str | None`
     :   The untranslated name of the field
+
+<a id="IssueFieldsSearchParams"></a>
+
+`IssueFieldsSearchParams(*args, **kwargs)`
+:   Parameters for issue_fields.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `expand: str`
+    :   The type of the None singleton.
+
+    `id: list[str]`
+    :   The type of the None singleton.
+
+    `max_results: int`
+    :   The type of the None singleton.
+
+    `order_by: str`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
+
+    `start_at: int`
+    :   The type of the None singleton.
+
+    `type: list[str]`
+    :   The type of the None singleton.
 
 <a id="IssueFieldsSearchQuery"></a>
 
@@ -2416,41 +2416,6 @@ Classes
     `versioned_representations: Any`
     :   The versions of each field on the issue
 
-<a id="IssuesApiSearchParams"></a>
-
-`IssuesApiSearchParams(*args, **kwargs)`
-:   Parameters for issues.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `expand: str`
-    :   The type of the None singleton.
-
-    `fail_fast: bool`
-    :   The type of the None singleton.
-
-    `fields: str`
-    :   The type of the None singleton.
-
-    `fields_by_keys: bool`
-    :   The type of the None singleton.
-
-    `jql: str`
-    :   The type of the None singleton.
-
-    `max_results: int`
-    :   The type of the None singleton.
-
-    `next_page_token: str`
-    :   The type of the None singleton.
-
-    `properties: str`
-    :   The type of the None singleton.
-
 <a id="IssuesArrayContainsCondition"></a>
 
 `IssuesArrayContainsCondition(*args, **kwargs)`
@@ -3066,6 +3031,41 @@ Classes
     `versioned_representations: dict[str, typing.Any]`
     :   The versions of each field on the issue
 
+<a id="IssuesSearchParams"></a>
+
+`IssuesSearchParams(*args, **kwargs)`
+:   Parameters for issues.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `expand: str`
+    :   The type of the None singleton.
+
+    `fail_fast: bool`
+    :   The type of the None singleton.
+
+    `fields: str`
+    :   The type of the None singleton.
+
+    `fields_by_keys: bool`
+    :   The type of the None singleton.
+
+    `jql: str`
+    :   The type of the None singleton.
+
+    `max_results: int`
+    :   The type of the None singleton.
+
+    `next_page_token: str`
+    :   The type of the None singleton.
+
+    `properties: str`
+    :   The type of the None singleton.
+
 <a id="IssuesSearchQuery"></a>
 
 `IssuesSearchQuery(*args, **kwargs)`
@@ -3558,52 +3558,6 @@ Classes
     `versions: Any`
     :   The versions defined in the project
 
-<a id="ProjectsApiSearchParams"></a>
-
-`ProjectsApiSearchParams(*args, **kwargs)`
-:   Parameters for projects.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `action: str`
-    :   The type of the None singleton.
-
-    `category_id: int`
-    :   The type of the None singleton.
-
-    `expand: str`
-    :   The type of the None singleton.
-
-    `id: list[int]`
-    :   The type of the None singleton.
-
-    `max_results: int`
-    :   The type of the None singleton.
-
-    `order_by: str`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
-    `start_at: int`
-    :   The type of the None singleton.
-
-    `status: list[str]`
-    :   The type of the None singleton.
-
-    `type_key: str`
-    :   The type of the None singleton.
-
-    ### Methods
-
-    `keys(self, /) ‑> list[str]`
-    :   Return a set-like object providing a view on the dict's keys.
-
 <a id="ProjectsArrayContainsCondition"></a>
 
 `ProjectsArrayContainsCondition(*args, **kwargs)`
@@ -4070,6 +4024,52 @@ Classes
     `versions: list[typing.Any]`
     :   The versions defined in the project
 
+<a id="ProjectsSearchParams"></a>
+
+`ProjectsSearchParams(*args, **kwargs)`
+:   Parameters for projects.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `action: str`
+    :   The type of the None singleton.
+
+    `category_id: int`
+    :   The type of the None singleton.
+
+    `expand: str`
+    :   The type of the None singleton.
+
+    `id: list[int]`
+    :   The type of the None singleton.
+
+    `max_results: int`
+    :   The type of the None singleton.
+
+    `order_by: str`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
+
+    `start_at: int`
+    :   The type of the None singleton.
+
+    `status: list[str]`
+    :   The type of the None singleton.
+
+    `type_key: str`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `keys(self, /) ‑> list[str]`
+    :   Return a set-like object providing a view on the dict's keys.
+
 <a id="ProjectsSearchQuery"></a>
 
 `ProjectsSearchQuery(*args, **kwargs)`
@@ -4423,32 +4423,6 @@ Classes
 
     `time_zone: Any`
     :   The time zone specified in the user's profile
-
-<a id="UsersApiSearchParams"></a>
-
-`UsersApiSearchParams(*args, **kwargs)`
-:   Parameters for users.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `account_id: str`
-    :   The type of the None singleton.
-
-    `max_results: int`
-    :   The type of the None singleton.
-
-    `property: str`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
-    `start_at: int`
-    :   The type of the None singleton.
 
 <a id="UsersArrayContainsCondition"></a>
 
@@ -4809,6 +4783,32 @@ Classes
 
     `time_zone: str | None`
     :   The time zone specified in the user's profile
+
+<a id="UsersSearchParams"></a>
+
+`UsersSearchParams(*args, **kwargs)`
+:   Parameters for users.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `account_id: str`
+    :   The type of the None singleton.
+
+    `max_results: int`
+    :   The type of the None singleton.
+
+    `property: str`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
+
+    `start_at: int`
+    :   The type of the None singleton.
 
 <a id="UsersSearchQuery"></a>
 
