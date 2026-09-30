@@ -15,24 +15,17 @@ The Airbyte Replication MCP (Model Context Protocol) server provides a standardi
 
 Use it to manage Airbyte replication workflows. It is not the primary interface agents should use to work with data. The [Agent MCP](/ai-agents/interfaces/mcp/) is the primary way agents use Airbyte to work with data.
 
-You can use the Replication MCP server in two ways:
-
-- **Hosted by Airbyte Cloud** at `https://mcp.airbyte.com/mcp`. There's nothing to install. You sign in with your Airbyte Cloud account, and the server works with the workspaces you can access.
-- **Run locally** with `uvx`. Use this to run connectors on your own machine or to manage Airbyte Cloud with API credentials from a dotenv file.
-
 ## Connect to the hosted server
 
-Airbyte hosts the Replication MCP server for Airbyte Cloud users at the following streamable-HTTP endpoint:
+Give this URL to your agent or MCP client:
 
 ```text
 https://mcp.airbyte.com/mcp
 ```
 
-This URL is an MCP endpoint, not a web page. Add it to an MCP client rather than opening it in a browser.
+When prompted, sign in with your [Airbyte Cloud](https://cloud.airbyte.com) account.
 
-The first time your client connects, it opens your browser so you can sign in to [Airbyte Cloud](https://cloud.airbyte.com) and grant access. If your organization uses SSO, choose the SSO option on the sign-in page and enter your company identifier.
-
-Choose one method to connect.
+If your client needs a specific setup method, use one of the following.
 
 <Tabs>
 <TabItem value="url" label="Paste a URL" default>
