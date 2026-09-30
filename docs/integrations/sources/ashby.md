@@ -104,7 +104,7 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 
 | Version | Date | Pull Request | Subject |
 | :-------- | :--------- | :------------------------------------------------------- | :-------------------------------------------- |
-| 1.5.0 | 2026-09-30 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Add interview plans, interview stage groups, interviewer pools, survey form definitions, and source tracking links streams |
+| 1.5.0 | 2026-09-30 | [87587](https://github.com/airbytehq/airbyte/pull/87587) | Add interview plans, interview stage groups, interviewer pools, survey form definitions, and source tracking links streams |
 | 1.4.0 | 2026-09-29 | [87051](https://github.com/airbytehq/airbyte/pull/87051) | Fix error handling and broken streams |
 | 1.3.4 | 2026-09-29 | [87080](https://github.com/airbytehq/airbyte/pull/87080) | Update dependencies |
 | 1.3.3 | 2026-09-22 | [86515](https://github.com/airbytehq/airbyte/pull/86515) | Update dependencies |
