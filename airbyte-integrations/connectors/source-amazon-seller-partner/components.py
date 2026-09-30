@@ -890,6 +890,12 @@ REQUIRED_REPORT_OPTIONS: Mapping[str, Tuple[str, ...]] = {
     "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT": ("reportPeriod",),
 }
 
+# Report types whose createReport body carries the user's Report Options. Only these can fix a
+# report-options FATAL from the source settings; every other stream keeps the retry path.
+_REPORT_TYPES_SENDING_USER_REPORT_OPTIONS = frozenset(
+    {*REQUIRED_REPORT_OPTIONS, "GET_LEDGER_DETAIL_VIEW_DATA", "GET_LEDGER_SUMMARY_VIEW_DATA"}
+)
+
 # Lower-cased substrings in Amazon's FATAL error document that identify a reportOptions problem.
 # Amazon's wording is not stable, so this is a best-effort match: a miss only means the sync fails
 # with Amazon's message logged rather than as a config error.
@@ -940,7 +946,10 @@ class ReportPollingRequester(HttpRequester):
     This requester fetches the error document on FATAL and:
       - always logs Amazon's reason at ERROR, so it appears in the sync logs; and
       - raises a `config_error` when the reason points at reportOptions, naming the options Amazon
-        documents as required for that report type. `AsyncJobOrchestrator._is_breaking_exception`
+        documents as required for that report type. This only applies to report types that send
+        the user's Report Options (`_REPORT_TYPES_SENDING_USER_REPORT_OPTIONS`); on every other
+        stream the options are hardcoded or absent, so a report-options FATAL is a connector bug
+        and keeps the retry path. `AsyncJobOrchestrator._is_breaking_exception`
         treats a `config_error` as breaking, so the sync aborts immediately with that message
         instead of burning through `failed_retry_wait_time_in_seconds` (default 1800s) retries.
 
@@ -1015,7 +1024,7 @@ class ReportPollingRequester(HttpRequester):
 
         logger.error(f"Amazon returned processingStatus FATAL for {report_type} (reportId {report_id}): {reason}")
 
-        if self._is_report_options_error(reason):
+        if self._is_actionable_report_options_error(report_type, reason):
             raise AirbyteTracedException(
                 internal_message=f"FATAL report {report_id} ({report_type}): {reason}",
                 message=self._report_options_error_message(report_type, reason),
@@ -1111,6 +1120,10 @@ class ReportPollingRequester(HttpRequester):
     def _is_report_options_error(reason: str) -> bool:
         lowered = reason.lower()
         return any(marker in lowered for marker in _REPORT_OPTIONS_ERROR_MARKERS)
+
+    @staticmethod
+    def _is_actionable_report_options_error(report_type: str, reason: str) -> bool:
+        return report_type in _REPORT_TYPES_SENDING_USER_REPORT_OPTIONS and ReportPollingRequester._is_report_options_error(reason)
 
     @staticmethod
     def _is_missing_report_option_error(reason: str) -> bool:

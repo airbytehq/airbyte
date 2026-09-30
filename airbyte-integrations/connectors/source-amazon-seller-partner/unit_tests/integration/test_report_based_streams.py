@@ -1576,6 +1576,68 @@ class TestFatalReportErrorSurfacing:
         assert_message_in_log_output("without an error document explaining why", output, log_level=Level.ERROR)
         assert output.errors
 
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
+    def test_given_fatal_report_options_error_on_stream_with_hardcoded_options_when_read_then_not_config_error(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """
+        GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT hardcodes reportOptions (reportPeriod: WEEK), so a
+        report-options FATAL there is a connector bug, not a user config problem: the reason is
+        logged and the report keeps the retry path, ending in a system_error like any other FATAL.
+        """
+        stream_name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
+        attempts = 3
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().without_amz_date().build(), [_get_reports_response()] * attempts)
+        # NOW is 2024-06-01, a Saturday, so the stream's WEEK window resolves to the prior Sun-Sat.
+        create_body = json.dumps(
+            {
+                "reportType": stream_name,
+                "marketplaceIds": [MARKETPLACE_ID],
+                "dataStartTime": "2024-05-19T00:00:00Z",
+                "dataEndTime": "2024-05-25T23:59:59Z",
+                "reportOptions": {"reportPeriod": "WEEK"},
+            }
+        )
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_body).without_amz_date().build(),
+            [_create_report_response(_REPORT_ID)] * attempts,
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).without_amz_date().build(),
+            [
+                _check_report_status_response(
+                    stream_name,
+                    processing_status=ReportProcessingStatus.FATAL,
+                    report_document_id=self._ERROR_DOCUMENT_ID,
+                )
+            ]
+            * attempts,
+        )
+        http_mocker.get(
+            _get_document_download_url_request(self._ERROR_DOCUMENT_ID).without_amz_date().build(),
+            [_get_document_download_url_response(self._ERROR_DOCUMENT_URL, self._ERROR_DOCUMENT_ID)] * attempts,
+        )
+        http_mocker.get(
+            _download_document_request(self._ERROR_DOCUMENT_URL).build(),
+            [HttpResponse(body=json.dumps({"errorDetails": self._AMAZON_REPORT_OPTIONS_REASON}), status_code=HTTPStatus.OK)] * attempts,
+        )
+
+        output = self._read(stream_name, config().with_failed_retry_wait_time_in_seconds(1))
+
+        assert_message_in_log_output(self._AMAZON_REPORT_OPTIONS_REASON, output, log_level=Level.ERROR)
+        # Same assertion as the unrelated-reason test: the stream fails through the CDK's
+        # retry-exhausted path, typed system_error, not through the report-options config_error.
+        retry_exhausted = [
+            error
+            for error in output.errors
+            if error.trace.error.message == "One or more async jobs failed after exhausting all retry attempts."
+        ]
+        assert retry_exhausted and all(error.trace.error.failure_type == FailureType.system_error for error in retry_exhausted)
+        assert not any(error.trace.error.message.startswith("Amazon rejected") for error in output.errors)
+
 
 @freezegun.freeze_time(NOW.isoformat())
 class TestVendorReportOptionsForwarding:
