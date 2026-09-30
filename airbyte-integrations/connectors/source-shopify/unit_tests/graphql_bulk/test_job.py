@@ -62,7 +62,13 @@ def test_failed_bulk_result_download_removes_partial_file(mocker, monkeypatch, t
 
     chunks.side_effect = lambda chunk_size: iter([b'{"id":"gid://shopify/Order/1"}\n'])
     assert stream.job_manager._job_get_result(status_response) == "bulk-interrupted.jsonl"
-    assert (tmp_path / "bulk-interrupted.jsonl").read_bytes() == b'{"id":"gid://shopify/Order/1"}\n<end_of_file>'
+    complete_result = (tmp_path / "bulk-interrupted.jsonl").read_bytes()
+    assert complete_result == b'{"id":"gid://shopify/Order/1"}\n<end_of_file>'
+
+    chunks.side_effect = interrupted_chunks
+    with pytest.raises(ChunkedEncodingError, match="download interrupted"):
+        stream.job_manager._job_get_result(status_response)
+    assert (tmp_path / "bulk-interrupted.jsonl").read_bytes() == complete_result
     assert [path.name for path in tmp_path.iterdir()] == ["bulk-interrupted.jsonl"]
 
 
