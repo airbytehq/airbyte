@@ -153,6 +153,10 @@ report, and the reason lives in a separate document referenced by `reportDocumen
 it retries and then fails with "Async job failed after exhausting all retry attempts.", which tells the user
 nothing. `ReportPollingRequester` (wired as the `basic_async_retriever.polling_requester`) fetches that document,
 logs Amazon's reason at ERROR, and raises a `config_error` when the reason points at report options.
+The fail-fast applies only to `_REPORT_TYPES_SENDING_USER_REPORT_OPTIONS` - the four vendor retail
+analytics reports and the two ledger reports - because only those send the user's Report Options;
+every other stream keeps the retry path, since a report-options FATAL there is a connector bug,
+not a config error.
 
 The `config_error` message only tells the user to add options when Amazon says one is missing
 (`_MISSING_REPORT_OPTION_MARKERS`). A reason that merely mentions an option, such as a rejected value or a `WEEK`

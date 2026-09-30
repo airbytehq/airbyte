@@ -73,3 +73,17 @@ def test_given_missing_option_when_building_message_then_add_advice() -> None:
     assert "Add the options under Report Options" in message
     assert "Amazon documents reportPeriod, distributorView, sellingProgram as required" in message
     assert "Check the values set" not in message
+
+
+@pytest.mark.parametrize(
+    ("report_type", "expected"),
+    [
+        pytest.param("GET_VENDOR_SALES_REPORT", True, id="vendor_sales_sends_report_options"),
+        pytest.param("GET_LEDGER_SUMMARY_VIEW_DATA", True, id="ledger_sends_report_options"),
+        pytest.param("GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT", False, id="brand_analytics_hardcodes_report_period"),
+        pytest.param("GET_VENDOR_FORECASTING_REPORT", False, id="forecasting_hardcodes_selling_program"),
+    ],
+)
+def test_report_options_error_is_actionable_only_for_report_types_that_send_report_options(report_type: str, expected: bool) -> None:
+    reason = "Invalid reportPeriod WEEK: dataStartTime must fall on a Sunday."
+    assert ReportPollingRequester._is_actionable_report_options_error(report_type, reason) is expected
