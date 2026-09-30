@@ -47,7 +47,7 @@ If your organization uses [single sign-on](../../platform/access-management/sso.
 </TabItem>
 <TabItem value="vscode" label="VS Code">
 
-[Click to install in VS Code](https://vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522airbyte%2522%252C%2522type%2522%253A%2522http%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fmcp.airbyte.com%252Fmcp%2522%257D) or [VS Code Insiders](https://insiders.vscode.dev/redirect?url=vscode-insiders%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522airbyte%2522%252C%2522type%2522%253A%2522http%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fmcp.airbyte.com%252Fmcp%2522%257D), or add this to `.vscode/mcp.json`:
+[Click to install in VS Code](https://vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522airbyte%2522%252C%2522type%2522%253A%2522http%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fmcp.airbyte.com%252Fmcp%2522%257D) or [click to install in VS Code Insiders](https://insiders.vscode.dev/redirect?url=vscode-insiders%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522airbyte%2522%252C%2522type%2522%253A%2522http%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fmcp.airbyte.com%252Fmcp%2522%257D), or add this to `.vscode/mcp.json`:
 
 ```json
 {
