@@ -70,7 +70,7 @@ The Granola source connector supports the following streams:
 
 ### Notes
 
-The `notes` stream retrieves meeting notes from your Granola workspace using the [`GET /v1/notes`](https://docs.granola.ai/api-reference/list-notes) endpoint. Each record includes the note ID, title, object type, owner name and email, and creation timestamp. The API may return additional fields beyond those listed here, and the connector captures them automatically.
+The `notes` stream retrieves meeting notes from your Granola workspace using the [`GET /v1/notes`](https://docs.granola.ai/api-reference/list-notes) endpoint. Each record includes the note ID, title, object type, owner name and email, and creation and last-update timestamps. The API may return additional fields beyond those listed here, and the connector captures them automatically.
 
 For incremental syncs, the connector uses `updated_at` as the cursor field and requests all notes updated since the stored cursor in a single `updated_after` query parameter — the API exposes no upper-bound filter, so the request is one unbounded window rather than stepped slices. A note edited after a sync is emitted again on the next incremental sync. Each record includes `created_at` and `updated_at` timestamps.
 
@@ -132,7 +132,7 @@ When Granola returns `401` or `403`, the connector fails the sync immediately as
 
 Versions up to 0.2.13 sent each 30-day window's bounds as dates rather than timestamps. The Granola API excludes the entire day named by `created_before`, so those syncs skipped every note created on a window boundary date, in both the `notes` and `detailed_notes` streams. Version 0.2.14 sends second-level timestamps, so new syncs cover the full range.
 
-Existing connections don't backfill the skipped notes on their own. After upgrading to 0.2.14 or later, [refresh](/platform/operator-guides/refreshes) the `notes` stream once to recover them. You don't need to do anything for `detailed_notes`, which reads from `notes` and picks up the recovered notes with it.
+Existing connections don't backfill the skipped notes on their own. After upgrading to 0.2.14 or later, [refresh](/platform/operator-guides/refreshes) the `notes` stream once to recover them. If you're upgrading straight to 1.0.0 or later, you don't need a separate refresh: the first sync after that upgrade re-reads every note updated since your start date. You don't need to do anything for `detailed_notes`, which reads from `notes` and picks up the recovered notes with it.
 
 ### Notes are missing from `detailed_notes`
 

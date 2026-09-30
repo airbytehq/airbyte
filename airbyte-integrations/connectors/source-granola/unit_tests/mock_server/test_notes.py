@@ -95,14 +95,17 @@ class TestNotesIncrementalUpdatedAtCursor(TestCase):
     @HttpMocker()
     def test_legacy_created_at_state_restarts_from_start_date(self, http_mocker: HttpMocker):
         """State written by versions before 1.0.0 is keyed on `created_at`, so the
-        `updated_at` cursor finds no value and restarts from start_date."""
+        `updated_at` cursor finds no value, restarts from start_date, and writes
+        `updated_at` state."""
         request = _notes_request("2025-10-12T00:00:00Z")
-        http_mocker.get(request, _notes_response([]))
+        note = {"id": "note-1", "created_at": "2025-11-01T10:00:00Z", "updated_at": "2026-01-03T08:00:00Z"}
+        http_mocker.get(request, _notes_response([note]))
 
         output = _read_notes(StateBuilder().with_stream_state(_STREAM_NAME, {"created_at": "2025-12-20T00:00:00Z"}).build())
 
         assert output.errors == []
         http_mocker.assert_number_of_calls(request, 1)
+        assert output.most_recent_state.stream_state.__dict__["updated_at"] == "2026-01-03T08:00:00Z"
 
 
 @freezegun.freeze_time(_NOW)
