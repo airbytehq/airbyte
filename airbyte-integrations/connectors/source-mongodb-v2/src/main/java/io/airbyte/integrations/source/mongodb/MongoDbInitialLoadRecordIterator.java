@@ -94,9 +94,8 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
         currentIterator.close();
         currentIterator = buildNewQueryIterator();
       } catch (final Exception e) {
-        LOGGER.error("Failed to start subquery number {} for collection {} at id {}", numSubqueries,
-            collection.getNamespace(), currentId, e);
-        throw e;
+        throw new RuntimeException(String.format("Failed to start subquery number %d for collection %s at id %s",
+            numSubqueries, collection.getNamespace(), currentId), e);
       }
       if (!currentIterator.hasNext()) {
         return endOfData();
