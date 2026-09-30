@@ -52,7 +52,7 @@ The Amplitude source connector supports the following [sync modes](https://docs.
 
 The connector automatically handles Amplitude's [API rate limits](https://amplitude.com/docs/apis/analytics/dashboard-rest#rate-limits). The Dashboard REST API enforces cost-based rate limits with a budget of 108,000 cost per hour and 1,000 cost per 5-minute burst window, plus a maximum of 5 concurrent requests. The connector tracks per-request costs and throttles automatically to stay within these limits.
 
-The Export API (used by the Events stream) limits each export to 4 GB and returns an error when a request exceeds that limit. Large exports can also time out. In either case, reduce the **Request Time Range** in the connector configuration so each request covers a shorter interval. For very large data volumes, Amplitude recommends its [Amazon S3 destination](https://amplitude.com/docs/data/destination-catalog/amazon-s3) instead of the Export API.
+The Export API (used by the Events stream) limits each export to 4 GB and returns an error when a request exceeds that limit. Large exports can also time out. In either case, the connector automatically splits the time window in half and retries each half, down to a one-hour window, so no configuration change is needed. The export fails before any records are read, so splitting does not produce duplicate records. If the Events stream still fails after splitting, reduce the **Request Time Range** in the connector configuration. For very large data volumes, Amplitude recommends its [Amazon S3 destination](https://amplitude.com/docs/data/destination-catalog/amazon-s3) instead of the Export API.
 
 If you encounter rate limit issues that are not automatically retried, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
@@ -67,6 +67,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.39 | 2026-09-30 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Automatically split Events export windows that exceed Amplitude's 4 GB or timeout limits instead of failing the sync; upgrade to CDK 7.32.0 |
 | 0.7.38 | 2026-08-18 | [84470](https://github.com/airbytehq/airbyte/pull/84470) | Update dependencies |
 | 0.7.37 | 2026-08-11 | [83823](https://github.com/airbytehq/airbyte/pull/83823) | Update dependencies |
 | 0.7.36 | 2026-07-28 | [82323](https://github.com/airbytehq/airbyte/pull/82323) | Update dependencies |
