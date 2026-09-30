@@ -30,7 +30,7 @@ requests-mock = "^1.11.0"
 pytest-mock = "^3.12.0"
 pytest = "^8.0.0"
 freezegun = "^1.4.0"
-due-work-harness = {git = "https://github.com/gigaverse-app/due-work-harness.git", rev = "d33ab84bf127c21d8bfc3ba77e82329378154c77", python = ">=3.11,<3.12"}
+due-work-harness = {git = "https://github.com/gigaverse-app/due-work-harness.git", rev = "106f7b428107cf5fb58931f39aad3ff7094c6549", python = ">=3.11,<3.12"}
 
 [tool.poe]
 include = [

@@ -533,7 +533,7 @@ files = [
 
 [[package]]
 name = "due-work-harness"
-version = "0.6.1.dev7"
+version = "0.6.1.dev8"
 description = "Conformance proofs for background work that must survive lost messages, dead workers and uncertain external calls."
 optional = false
 python-versions = ">=3.11"
@@ -558,8 +558,8 @@ rq = ["redis (>=5.0)", "rq (>=2.6)", "time-machine (>=2.10)"]
 [package.source]
 type = "git"
 url = "https://github.com/gigaverse-app/due-work-harness.git"
-reference = "d33ab84bf127c21d8bfc3ba77e82329378154c77"
-resolved_reference = "d33ab84bf127c21d8bfc3ba77e82329378154c77"
+reference = "106f7b428107cf5fb58931f39aad3ff7094c6549"
+resolved_reference = "106f7b428107cf5fb58931f39aad3ff7094c6549"
 
 [[package]]
 name = "dunamai"
@@ -2787,4 +2787,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.12"
-content-hash = "cc83381e45af759e0d412219909a28e015f4d3c8cafb255dda3d1f390f507462"
+content-hash = "24bcfd76aee7ecad9bebc364c621c68f2fdeac294ecb7eb6b902dbaae229208d"
