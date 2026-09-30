@@ -199,6 +199,15 @@ spec:
         type: object
         title: Authentication
         order: 5
+        # Names the missing field (e.g. "'base_url' is a required property") when a password config
+        # fails validation; without it jsonschema's best_match reports the OAuth branch's const error.
+        if:
+          properties:
+            auth_type:
+              const: password
+          required: [auth_type]
+        then:
+          required: [base_url, client_id, client_secret, username, password]
         oneOf:
           - type: object
             title: OAuth 2.0 (Authenticate with Uptick)

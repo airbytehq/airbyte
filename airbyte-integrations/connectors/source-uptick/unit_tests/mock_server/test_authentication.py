@@ -267,10 +267,9 @@ def test_password_credentials_without_any_base_url_fails_check(tmp_path) -> None
     statuses = output.connection_status_messages
     assert len(statuses) == 1
     assert statuses[0].connectionStatus.status == Status.FAILED
-    # The nested-password oneOf requires base_url, so entrypoint spec validation fails the check
-    # before any token request. jsonschema reports the oneOf mismatch via the first (OAuth)
-    # variant's const, which is the message users see today.
-    assert statuses[0].connectionStatus.message == "Config validation error: 'oauth2.0' was expected"
+    # The nested-password oneOf requires base_url, and the credentials `if`/`then` schema names the
+    # missing field, so entrypoint spec validation fails the check before any token request.
+    assert statuses[0].connectionStatus.message == "Config validation error: 'base_url' is a required property"
     assert _token_bodies(http_mocker) == []
 
 
