@@ -134,3 +134,18 @@ class TestInterviewerPools(TestCase):
 
         assert stream.source_defined_primary_key == [["id"]]
         assert stream.supported_sync_modes == [SyncMode.full_refresh]
+
+    def test_discover_nests_user_fields_under_training_stage_approvers(self):
+        """Approver user fields are declared on `approvers[]` items, not on the parent `trainingStages[]` items."""
+        config = ConfigBuilder().build()
+        catalog = get_source(config=config).discover(logging.getLogger("airbyte"), config)
+        stream = next(stream for stream in catalog.streams if stream.name == _STREAM_NAME)
+
+        training_stage = stream.json_schema["properties"]["trainingPath"]["properties"]["trainingStages"]["items"]
+        approver = training_stage["properties"]["approvers"]["items"]
+
+        assert {"id", "firstName", "lastName", "email", "globalRole", "isEnabled", "updatedAt", "managerId", "customFields"} <= set(
+            approver["properties"]
+        )
+        assert approver["properties"]["updatedAt"]["format"] == "date-time"
+        assert not {"firstName", "lastName", "email", "globalRole", "managerId", "customFields"} & set(training_stage["properties"])

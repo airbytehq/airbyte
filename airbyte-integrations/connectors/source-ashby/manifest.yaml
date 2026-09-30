@@ -2989,70 +2989,71 @@ streams:
                           - object
                         additionalProperties: true
                         properties:
-                    id:
-                      type:
-                        - "null"
-                        - string
-                    firstName:
-                      type:
-                        - "null"
-                        - string
-                    lastName:
-                      type:
-                        - "null"
-                        - string
-                    email:
-                      type:
-                        - "null"
-                        - string
-                    globalRole:
-                      type:
-                        - "null"
-                        - string
-                    isEnabled:
-                      type:
-                        - "null"
-                        - boolean
-                    updatedAt:
-                      type:
-                        - "null"
-                        - string
-                    managerId:
-                      type:
-                        - "null"
-                        - string
-                    customFields:
-                      type:
-                        - "null"
-                        - array
-                      items:
-                        type:
-                          - "null"
-                          - object
-                        additionalProperties: true
-                        properties:
                           id:
                             type:
                               - "null"
                               - string
-                          referenceIdentifier:
+                          firstName:
                             type:
                               - "null"
                               - string
-                          isPrivate:
+                          lastName:
+                            type:
+                              - "null"
+                              - string
+                          email:
+                            type:
+                              - "null"
+                              - string
+                          globalRole:
+                            type:
+                              - "null"
+                              - string
+                          isEnabled:
                             type:
                               - "null"
                               - boolean
-                          title:
+                          updatedAt:
                             type:
                               - "null"
                               - string
-                          value: {}
-                          valueLabel:
+                            format: date-time
+                          managerId:
                             type:
                               - "null"
                               - string
+                          customFields:
+                            type:
+                              - "null"
                               - array
+                            items:
+                              type:
+                                - "null"
+                                - object
+                              additionalProperties: true
+                              properties:
+                                id:
+                                  type:
+                                    - "null"
+                                    - string
+                                referenceIdentifier:
+                                  type:
+                                    - "null"
+                                    - string
+                                isPrivate:
+                                  type:
+                                    - "null"
+                                    - boolean
+                                title:
+                                  type:
+                                    - "null"
+                                    - string
+                                value: {}
+                                valueLabel:
+                                  type:
+                                    - "null"
+                                    - string
+                                    - array
   - type: DeclarativeStream
     name: survey_form_definitions
     primary_key:
