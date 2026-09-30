@@ -29,7 +29,7 @@ def bulk_retry_on_exception(more_exceptions: Optional[Tuple[Type[Exception], ...
             while True:
                 try:
                     return func(self, *args, **kwargs)
-                except BULK_RETRY_ERRORS + (more_exceptions or ()) as ex:
+                except BULK_RETRY_ERRORS or more_exceptions as ex:
                     current_retries += 1
                     if current_retries > self._job_max_retries:
                         LOGGER.error("Exceeded retry limit. Giving up.")
