@@ -166,7 +166,12 @@ class TestBatchedVideoStreams(TestCase):
                 body=json.dumps(
                     {
                         "items": [
-                            {"kind": "youtube#video", "etag": "e", "id": v, "statistics": {"viewCount": str(n), "likeCount": "2", "commentCount": "0"}}
+                            {
+                                "kind": "youtube#video",
+                                "etag": "e",
+                                "id": v,
+                                "statistics": {"viewCount": str(n), "likeCount": "2", "commentCount": "0"},
+                            }
                             for v, n in (("a", 10), ("b", 20), ("c", 30))
                         ]
                     }
@@ -208,7 +213,10 @@ class TestCommentStreams(TestCase):
                                 "snippet": {
                                     "channelId": _CHANNEL,
                                     "totalReplyCount": 0,
-                                    "topLevelComment": {"id": "t1", "snippet": {"publishedAt": "2026-04-04T00:00:00Z", "textDisplay": "hi"}},
+                                    "topLevelComment": {
+                                        "id": "t1",
+                                        "snippet": {"publishedAt": "2026-04-04T00:00:00Z", "textDisplay": "hi"},
+                                    },
                                 }
                             }
                         ]
@@ -233,7 +241,9 @@ class TestDailyQuota(TestCase):
         http_mocker.get(
             uploads,
             HttpResponse(
-                body=json.dumps({"error": {"code": 403, "message": "quota", "errors": [{"reason": "quotaExceeded", "domain": "youtube.quota"}]}}),
+                body=json.dumps(
+                    {"error": {"code": 403, "message": "quota", "errors": [{"reason": "quotaExceeded", "domain": "youtube.quota"}]}}
+                ),
                 status_code=403,
             ),
         )
