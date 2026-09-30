@@ -197,7 +197,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.2.0 | 2026-09-22 | [85316](https://github.com/airbytehq/airbyte/pull/85316) | Add GMV Max streams: `gmv_max_stores`, `gmv_max_campaigns`, `gmv_max_product_campaign_reports_daily`, `gmv_max_live_campaign_reports_daily`, `gmv_max_advertiser_reports_daily` |
+| 5.3.0 | 2026-09-30 | [85316](https://github.com/airbytehq/airbyte/pull/85316) | Add GMV Max streams: `gmv_max_stores`, `gmv_max_campaigns`, `gmv_max_product_campaign_reports_daily`, `gmv_max_live_campaign_reports_daily`, `gmv_max_advertiser_reports_daily` |
+| 5.2.0 | 2026-09-14 | [85820](https://github.com/airbytehq/airbyte/pull/85820) | Add Website, App and Shop conversion metrics to the daily report streams |
 | 5.1.19 | 2026-09-29 | [87372](https://github.com/airbytehq/airbyte/pull/87372) | Update dependencies |
 | 5.1.18 | 2026-09-22 | [86854](https://github.com/airbytehq/airbyte/pull/86854) | Update dependencies |
 | 5.1.17 | 2026-09-21 | [79183](https://github.com/airbytehq/airbyte/pull/79183) | Classify TikTok API error code 40001 (PERMISSION_ERROR) as config_error instead of system_error |
