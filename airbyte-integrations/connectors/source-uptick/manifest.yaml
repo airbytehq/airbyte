@@ -369,7 +369,7 @@ spec:
             value: "{{ 'https://' ~ (((config['base_url'] | string | trim).split('://') | last | trim('/')).split('/') | first) }}"
     config_migrations:
       - type: ConfigMigration
-        description: Copy legacy top-level credentials and base_url under `credentials` (auth_type password); the top-level fields are kept so the config still works on <=1.3.x.
+        description: Copy legacy top-level credentials under `credentials` (auth_type password); the top-level fields are kept so the config still works on <=1.3.x. Also derives base_url for preview-era OAuth configs that stored a workspace.
         transformations:
           - type: ConfigAddFields
             # Moves legacy top-level credential fields under `credentials`. The condition is evaluated
