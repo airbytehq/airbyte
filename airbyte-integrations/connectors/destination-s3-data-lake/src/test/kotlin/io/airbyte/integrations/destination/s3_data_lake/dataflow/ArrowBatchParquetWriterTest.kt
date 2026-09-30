@@ -57,6 +57,8 @@ import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.data.IcebergGenerics
 import org.apache.iceberg.hadoop.HadoopTables
+import org.apache.parquet.hadoop.ParquetFileReader
+import org.apache.parquet.hadoop.util.HadoopInputFile
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -269,6 +271,111 @@ internal class ArrowBatchParquetWriterTest {
                     .forEach { assertNull(nullRecord.getField(it)) }
                 assertNotNull(nullRecord.getField(Meta.COLUMN_NAME_AB_RAW_ID))
             }
+        }
+    }
+
+    @Test
+    fun `caps row groups and reads all rows back`() {
+        val rowCount = 20_000
+        val payloads = List(rowCount) { row -> "row-$row-${"0123456789abcdef".repeat(16)}" }
+        val inputSchema =
+            ObjectType(linkedMapOf("payload" to FieldType(StringType, nullable = true)))
+        val stream =
+            DestinationStream(
+                unmappedNamespace = "test_namespace",
+                unmappedName = "row_group_stream",
+                generationId = 73,
+                minimumGenerationId = 0,
+                syncId = 92,
+                namespaceMapper =
+                    NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
+                tableSchema =
+                    StreamTableSchema(
+                        tableNames =
+                            TableNames(
+                                finalTableName = TableName("test_namespace", "row_group_stream")
+                            ),
+                        columnSchema =
+                            ColumnSchema(
+                                inputSchema = inputSchema.properties,
+                                inputToFinalColumnNames = mapOf("payload" to "payload"),
+                                finalSchema = emptyMap(),
+                            ),
+                        importType = Append,
+                    ),
+            )
+        val icebergSchema = inputSchema.withAirbyteMeta(flatten = true).toIcebergSchema(emptyList())
+        val table =
+            HadoopTables(Configuration())
+                .create(
+                    icebergSchema,
+                    PartitionSpec.unpartitioned(),
+                    SortOrder.unsorted(),
+                    emptyMap(),
+                    tempDir.resolve("row-groups-table").toUri().toString(),
+                )
+
+        RootAllocator(Long.MAX_VALUE).use { allocator ->
+            VectorSchemaRoot.create(
+                    ArrowSchema(listOf(field("payload", ArrowType.Utf8()))),
+                    allocator,
+                )
+                .use { root ->
+                    root.allocateNew()
+                    (root.getVector("payload") as VarCharVector).apply {
+                        payloads.forEachIndexed { row, payload ->
+                            setSafe(row, payload.toByteArray(StandardCharsets.UTF_8))
+                        }
+                    }
+                    root.rowCount = rowCount
+
+                    val generationIdSuffix = "ab-generation-id-${stream.generationId}-e"
+                    val dataFiles =
+                        ArrowBatchFileWriter(
+                                table,
+                                stream,
+                                generationIdSuffix,
+                                maxRowGroupSizeBytes = 64L * 1024,
+                            )
+                            .use { writer ->
+                                writer.write(
+                                    ArrowBatchDTO(
+                                        root = root,
+                                        partitionKey =
+                                            io.airbyte.cdk.load.dataflow.state.PartitionKey(
+                                                "partition"
+                                            ),
+                                        rowCount = rowCount,
+                                        sizeBytes = 0,
+                                        emittedAtMs = 1_720_000_000_123L,
+                                    ),
+                                )
+                                writer.complete()
+                            }
+                    val dataFile = dataFiles.single()
+                    val rowGroupCount =
+                        ParquetFileReader.open(
+                                HadoopInputFile.fromPath(
+                                    org.apache.hadoop.fs.Path(dataFile.location()),
+                                    Configuration(),
+                                ),
+                            )
+                            .use { it.footer.blocks.size }
+                    assertTrue(
+                        rowGroupCount > 1,
+                        "Expected multiple row groups, got $rowGroupCount"
+                    )
+
+                    table.newAppend().appendFile(dataFile).commit()
+                    IcebergGenerics.read(table).build().use { records ->
+                        val readBack = records.toList()
+                        assertEquals(rowCount, readBack.size)
+                        assertEquals(
+                            payloads.toSet(),
+                            readBack.map { it.getField("payload") as String }.toSet(),
+                        )
+                    }
+                }
         }
     }
 

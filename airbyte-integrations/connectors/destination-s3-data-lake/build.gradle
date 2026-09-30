@@ -62,6 +62,7 @@ dependencies {
     implementation("io.micronaut:micronaut-inject:4.6.1")
     implementation("com.kjetland:mbknor-jackson-jsonschema_2.13:1.0.39")
 
+    testImplementation("org.apache.parquet:parquet-hadoop:1.17.1")
     testImplementation("io.mockk:mockk:1.13.13")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${project.ext.junitVersion}")
     testImplementation("org.junit.jupiter:junit-jupiter-params:${project.ext.junitVersion}")

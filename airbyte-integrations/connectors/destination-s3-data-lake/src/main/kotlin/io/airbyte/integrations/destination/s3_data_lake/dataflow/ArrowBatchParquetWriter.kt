@@ -28,6 +28,7 @@ import org.apache.iceberg.DataFiles
 import org.apache.iceberg.FieldMetrics
 import org.apache.iceberg.FileFormat
 import org.apache.iceberg.Table
+import org.apache.iceberg.TableProperties
 import org.apache.iceberg.TableProperties.WRITE_TARGET_FILE_SIZE_BYTES
 import org.apache.iceberg.TableProperties.WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT
 import org.apache.iceberg.io.FileAppender
@@ -439,10 +440,14 @@ class ArrowBatchParquetWriter(
     }
 }
 
+/** Bounds bytes buffered in memory by each open Arrow writer. */
+internal const val ARROW_MAX_ROW_GROUP_SIZE_BYTES = 32L * 1024 * 1024
+
 class ArrowBatchFileWriter(
     private val table: Table,
     private val stream: DestinationStream,
     private val generationIdSuffix: String,
+    private val maxRowGroupSizeBytes: Long = ARROW_MAX_ROW_GROUP_SIZE_BYTES,
     private val uuidGenerator: UUIDGenerator = UUIDGenerator(),
 ) : AutoCloseable {
     private val outputFileFactory =
@@ -457,6 +462,15 @@ class ArrowBatchFileWriter(
             table.properties(),
             WRITE_TARGET_FILE_SIZE_BYTES,
             WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT,
+        )
+    private val rowGroupSizeBytes =
+        minOf(
+            PropertyUtil.propertyAsLong(
+                table.properties(),
+                TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES,
+                TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES_DEFAULT.toLong(),
+            ),
+            maxRowGroupSizeBytes,
         )
     private val completedFiles = mutableListOf<DataFile>()
     private var currentAppender: FileAppender<Int>? = null
@@ -510,6 +524,10 @@ class ArrowBatchFileWriter(
         currentAppender =
             Parquet.write(outputFile)
                 .forTable(table)
+                .set(
+                    TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES,
+                    rowGroupSizeBytes.toString(),
+                )
                 .createWriterFunc { messageType ->
                     ArrowBatchParquetWriter(messageType, stream, table.schema(), uuidGenerator)
                         .also { writer = it }
