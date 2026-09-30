@@ -10,6 +10,9 @@ ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 ARG CONNECTOR_NAME
 
+# Base images up to 2.0.1 end with `USER airbyte`, and a non-root user cannot chown to group 0.
+USER root
+
 # Set permissions for downloaded files.
 # OpenShift runs containers as an arbitrary UID that is not the airbyte user but is always a
 # member of group 0. Group 0 owns the files and gets the owner's permissions (g=u) so that UID
