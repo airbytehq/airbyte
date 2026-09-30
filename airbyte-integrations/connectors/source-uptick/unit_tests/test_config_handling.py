@@ -101,28 +101,30 @@ def test_spec_declares_oauth_advanced_auth() -> None:
     credentials = spec["connection_specification"]["properties"]["credentials"]
     assert [variant["properties"]["auth_type"]["const"] for variant in credentials["oneOf"]] == ["oauth2.0", "password"]
     oauth_variant = credentials["oneOf"][0]
-    assert "workspace" in oauth_variant["required"]
-    assert oauth_variant["properties"]["workspace"]["pattern"] == "^[a-z0-9-]+$"
-    assert oauth_variant["properties"]["workspace"]["pattern_descriptor"] == "acme"
+    assert "workspace" not in oauth_variant["required"]
+    assert "workspace" not in oauth_variant["properties"]
     assert "base_url" not in oauth_variant["properties"]
     password_variant = credentials["oneOf"][1]
-    assert "base_url" in password_variant["required"]
-    assert "base_url" in password_variant["properties"]
-    assert password_variant["properties"]["base_url"]["minLength"] == 1
+    assert "base_url" not in password_variant["required"]
+    assert "base_url" not in password_variant["properties"]
+    assert "if" not in credentials
     properties = spec["connection_specification"]["properties"]
-    # The legacy top-level fields stay in the schema (copy-only migration keeps writing them) but
-    # are hidden in the UI; base_url is derived from credentials at runtime.
-    for field in ("base_url", "client_id", "client_secret", "username", "password"):
+    # The legacy top-level credential fields stay in the schema (copy-only migration keeps writing
+    # them) but are hidden in the UI; base_url is the single visible required field.
+    for field in ("client_id", "client_secret", "username", "password"):
         assert properties[field]["airbyte_hidden"] is True
-    assert spec["connection_specification"]["required"] == []
+    assert "airbyte_hidden" not in properties["base_url"]
+    assert spec["connection_specification"]["required"] == ["base_url"]
     assert "pattern" not in spec["connection_specification"]["properties"]["base_url"]
+    assert "minLength" not in spec["connection_specification"]["properties"]["base_url"]
     user_input = spec["advanced_auth"]["oauth_config_specification"]["oauth_user_input_from_connector_config_specification"]
-    assert user_input["properties"]["workspace"]["path_in_connector_config"] == ["credentials", "workspace"]
+    assert user_input["required"] == ["base_url"]
+    assert user_input["properties"]["base_url"]["path_in_connector_config"] == ["base_url"]
+    assert user_input["properties"]["base_url"]["pattern"] == "^https://[a-z0-9-]+\\.onuptick\\.com/?$"
+    assert "workspace" not in user_input["properties"]
     oauth_input = spec["advanced_auth"]["oauth_config_specification"]["oauth_connector_input_specification"]
-    assert oauth_input["consent_url"].startswith("https://{{ workspace | urlencode }}.onuptick.com/api/oauth2/")
-    assert oauth_input["access_token_url"].startswith("https://{{ workspace | urlencode }}.onuptick.com/api/oauth2/")
-    assert "regex_replace" not in oauth_input["consent_url"]
-    assert "regex_replace" not in oauth_input["access_token_url"]
+    assert oauth_input["consent_url"].startswith("{{ base_url | regex_replace('/+$', '') }}/api/oauth2/")
+    assert oauth_input["access_token_url"].startswith("{{ base_url | regex_replace('/+$', '') }}/api/oauth2/")
 
 
 @pytest.mark.parametrize(
@@ -158,52 +160,73 @@ def test_migrated_legacy_config_validates_against_spec(credential_value: str) ->
     validate(instance=migrated, schema=spec_schema)
     credentials = migrated["credentials"]
     assert credentials["auth_type"] == "password"
-    for field in ("base_url", "client_id", "client_secret", "username", "password"):
+    for field in ("client_id", "client_secret", "username", "password"):
         assert isinstance(credentials[field], str)
         # Copy-only migration: the top-level fields are kept so the config works on <=1.3.x.
         assert migrated[field] == credentials[field]
 
 
-def test_oauth_config_without_base_url_validates_against_spec() -> None:
+def test_oauth_config_validates_against_spec() -> None:
     spec_schema = get_source(base_config()).resolved_manifest["spec"]["connection_specification"]
     config = {
+        "base_url": "https://test-tenant.onuptick.com",
         "credentials": {
             "auth_type": "oauth2.0",
-            "workspace": "test-tenant",
             "client_id": "test-client-id",
             "client_secret": "test-client-secret",
             "refresh_token": "test-refresh-token",
-        }
+        },
     }
 
     validate(instance=config, schema=spec_schema)
-    # The connector derives base_url from the workspace at construction.
-    assert get_source(config)._config["base_url"] == "https://test-tenant.onuptick.com"
 
 
-def test_password_config_with_nested_base_url_validates_against_spec() -> None:
+def test_password_config_with_top_level_base_url_validates_against_spec() -> None:
     spec_schema = get_source(base_config()).resolved_manifest["spec"]["connection_specification"]
     config = {
+        "base_url": "https://test-tenant.onuptick.com",
         "credentials": {
             "auth_type": "password",
-            "base_url": "https://test-tenant.onuptick.com",
             "client_id": "test-client-id",
             "client_secret": "test-client-secret",
             "username": "test-user",
             "password": "test-password",
-        }
+        },
     }
 
     validate(instance=config, schema=spec_schema)
-    # The connector derives the top-level base_url (what requesters read) from credentials.base_url.
-    assert get_source(config)._config["base_url"] == "https://test-tenant.onuptick.com"
 
 
-@pytest.mark.parametrize("workspace", ["evil.com/", "UPPER", "bad host", "tenant.example.org"])
-def test_oauth_workspace_rejects_non_workspace_values(workspace: str) -> None:
+@pytest.mark.parametrize(
+    "base_url",
+    [
+        pytest.param("https://demo-fire.onuptick.com", id="canonical"),
+        pytest.param("https://demo-fire.onuptick.com/", id="trailing_slash"),
+    ],
+)
+def test_oauth_user_input_base_url_accepts_onuptick_hosts(base_url: str) -> None:
+    oauth_user_input_schema = get_source(base_config()).resolved_manifest["spec"]["advanced_auth"]["oauth_config_specification"][
+        "oauth_user_input_from_connector_config_specification"
+    ]
+
+    validate(instance={"base_url": base_url}, schema=oauth_user_input_schema)
+
+
+@pytest.mark.parametrize(
+    "base_url",
+    [
+        pytest.param("https://evil.example.com", id="other_host"),
+        pytest.param("https://cleavingly-harbourless-brantley.ngrok-free.dev", id="ngrok"),
+        pytest.param("http://demo.onuptick.com", id="http_scheme"),
+        pytest.param("https://demo.onuptick.com/foo", id="path_suffix"),
+        pytest.param("demo.onuptick.com", id="bare_host"),
+        pytest.param("", id="empty"),
+    ],
+)
+def test_oauth_user_input_base_url_rejects_non_onuptick_values(base_url: str) -> None:
     oauth_user_input_schema = get_source(base_config()).resolved_manifest["spec"]["advanced_auth"]["oauth_config_specification"][
         "oauth_user_input_from_connector_config_specification"
     ]
 
     with pytest.raises(ValidationError):
-        validate(instance={"workspace": workspace}, schema=oauth_user_input_schema)
+        validate(instance={"base_url": base_url}, schema=oauth_user_input_schema)
