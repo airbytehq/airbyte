@@ -41,7 +41,6 @@ from .streams.streams import (
     InventoryItems,
     InventoryLevels,
     Locations,
-    MarketCountries,
     MetafieldArticles,
     MetafieldBlogs,
     MetafieldCollections,
@@ -272,7 +271,6 @@ class SourceShopify(AbstractSource):
             self.select_transactions_stream(config),
             CustomerAddress(config),
             Countries(config=config, parent=ProfileLocationGroups(config)),
-            MarketCountries(config),
         ]
 
         return [
