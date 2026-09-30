@@ -258,13 +258,11 @@ def test_oauth_non_onuptick_base_url_fails_check_without_requests(tmp_path) -> N
     statuses = output.connection_status_messages
     assert len(statuses) == 1
     assert statuses[0].connectionStatus.status == Status.FAILED
-    # The unset oauth_token_url interpolates to "", and requests raises MissingSchema before
-    # any wire call.
-    assert statuses[0].connectionStatus.message == (
-        '"Encountered an error while checking availability of stream tasks. '
-        "Error: Invalid URL '': No scheme supplied. Perhaps you meant https://?\""
-    )
-    assert http_mocker._mocker.request_history == []
+    # The sentinel's unsupported scheme makes requests raise InvalidSchema during adapter
+    # resolution — the only recorded attempt is the sentinel itself (nothing reaches a real
+    # host); the CDK wraps the failure into the generic refresh-failure message.
+    assert statuses[0].connectionStatus.message == "'Stream tasks is not available: OAuth access token refresh request failed.'"
+    assert all(request.url.startswith("unsupported-oauth-host://") for request in http_mocker._mocker.request_history)
 
 
 def test_oauth_uppercase_host_base_url_fails_check_without_requests(tmp_path) -> None:
@@ -281,7 +279,8 @@ def test_oauth_uppercase_host_base_url_fails_check_without_requests(tmp_path) ->
     statuses = output.connection_status_messages
     assert len(statuses) == 1
     assert statuses[0].connectionStatus.status == Status.FAILED
-    assert http_mocker._mocker.request_history == []
+    assert statuses[0].connectionStatus.message == "'Stream tasks is not available: OAuth access token refresh request failed.'"
+    assert all(request.url.startswith("unsupported-oauth-host://") for request in http_mocker._mocker.request_history)
 
 
 def test_password_credentials_non_onuptick_base_url_checks_ok(tmp_path) -> None:

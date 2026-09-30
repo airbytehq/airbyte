@@ -372,13 +372,24 @@ spec:
             value: "{{ 'https://' ~ (((config['base_url'] | string | trim).split('://') | last | trim('/')).split('/') | first) }}"
       - type: ConfigAddFields
         # Pins the OAuth token endpoint to the *.onuptick.com host. A post-creation edit of
-        # base_url to another host must not redirect the client_secret + refresh_token there;
-        # on mismatch oauth_token_url stays unset and the authenticator fails before any request.
+        # base_url to another host must not redirect the client_secret + refresh_token there.
         condition: "{{ (config.get('base_url') | default('') | string | trim | regex_search('^(https://[a-z0-9-]+\\.onuptick\\.com)/?$')) | length > 0 }}"
         fields:
           - type: AddedFieldDefinition
             path: ["oauth_token_url"]
             value: "{{ (config.get('base_url') | default('') | string | trim | regex_search('^(https://[a-z0-9-]+\\.onuptick\\.com)/?$')) ~ '/api/oauth2/token/' }}"
+            value_type: string
+      - type: ConfigAddFields
+        # On host-pattern mismatch (including a missing/blank base_url), sets a sentinel
+        # unsupported-scheme URL so the OAuth authenticator fails before any request; the
+        # sentinel embeds the hint 'base_url-must-be-https-workspace.onuptick.com' (surfaced
+        # in the internal error message). The password authenticator never reads
+        # oauth_token_url, so the sentinel is harmless there.
+        condition: "{{ (config.get('base_url') | default('') | string | trim | regex_search('^(https://[a-z0-9-]+\\.onuptick\\.com)/?$')) | length == 0 }}"
+        fields:
+          - type: AddedFieldDefinition
+            path: ["oauth_token_url"]
+            value: "unsupported-oauth-host://base_url-must-be-https-workspace.onuptick.com"
             value_type: string
     config_migrations:
       - type: ConfigMigration
