@@ -62,6 +62,7 @@ import org.apache.parquet.hadoop.util.HadoopInputFile
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -330,6 +331,15 @@ internal class ArrowBatchParquetWriterTest {
                     root.rowCount = rowCount
 
                     val generationIdSuffix = "ab-generation-id-${stream.generationId}-e"
+                    val batch =
+                        ArrowBatchDTO(
+                            root = root,
+                            partitionKey =
+                                io.airbyte.cdk.load.dataflow.state.PartitionKey("partition"),
+                            rowCount = rowCount,
+                            sizeBytes = 0,
+                            emittedAtMs = 1_720_000_000_123L,
+                        )
                     val dataFiles =
                         ArrowBatchFileWriter(
                                 table,
@@ -338,19 +348,17 @@ internal class ArrowBatchParquetWriterTest {
                                 maxRowGroupSizeBytes = 64L * 1024,
                             )
                             .use { writer ->
-                                writer.write(
-                                    ArrowBatchDTO(
-                                        root = root,
-                                        partitionKey =
-                                            io.airbyte.cdk.load.dataflow.state.PartitionKey(
-                                                "partition"
-                                            ),
-                                        rowCount = rowCount,
-                                        sizeBytes = 0,
-                                        emittedAtMs = 1_720_000_000_123L,
-                                    ),
+                                writer.write(batch)
+                                val completedFiles = writer.complete()
+                                val repeatedFiles = writer.complete()
+                                assertEquals(
+                                    completedFiles.map { it.location() to it.recordCount() },
+                                    repeatedFiles.map { it.location() to it.recordCount() },
                                 )
-                                writer.complete()
+                                assertThrows(IllegalStateException::class.java) {
+                                    writer.write(batch)
+                                }
+                                completedFiles
                             }
                     val dataFile = dataFiles.single()
                     val rowGroupCount =

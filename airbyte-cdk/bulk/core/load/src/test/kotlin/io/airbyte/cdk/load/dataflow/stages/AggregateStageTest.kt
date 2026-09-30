@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.FlowCollector
@@ -45,6 +46,7 @@ class AggregateStageTest {
         val input = DataFlowStageIO(raw = rawMock, munged = recordDto)
 
         val mockAggregate = mockk<Aggregate>()
+        every { mockAggregate.onPublish() } returns Unit
         val mockCountsHistogram = mockk<PartitionHistogram>()
         val mockBytesHistogram = mockk<PartitionHistogram>()
         val aggregateEntry =
@@ -124,6 +126,7 @@ class AggregateStageTest {
         val input = DataFlowStageIO(raw = rawMock, munged = recordDto)
 
         val mockAggregate1 = mockk<Aggregate>()
+        every { mockAggregate1.onPublish() } returns Unit
         val mockCounts1 = mockk<PartitionHistogram>()
         val mockBytes1 = mockk<PartitionHistogram>()
         val aggregateEntry1 =
@@ -135,6 +138,7 @@ class AggregateStageTest {
             }
 
         val mockAggregate2 = mockk<Aggregate>()
+        every { mockAggregate2.onPublish() } returns Unit
         val mockCounts2 = mockk<PartitionHistogram>()
         val mockBytes2 = mockk<PartitionHistogram>()
         val aggregateEntry2 =
@@ -168,6 +172,28 @@ class AggregateStageTest {
             )
         }
         coVerify(exactly = 1) {
+            outputFlow.emit(
+                DataFlowStageIO(
+                    aggregate = mockAggregate2,
+                    partitionCountsHistogram = mockCounts2,
+                    partitionBytesHistogram = mockBytes2,
+                    mappedDesc = streamDescriptor,
+                )
+            )
+        }
+        coVerify(exactly = 1) { mockAggregate1.onPublish() }
+        coVerify(exactly = 1) { mockAggregate2.onPublish() }
+        coVerifyOrder {
+            mockAggregate1.onPublish()
+            outputFlow.emit(
+                DataFlowStageIO(
+                    aggregate = mockAggregate1,
+                    partitionCountsHistogram = mockCounts1,
+                    partitionBytesHistogram = mockBytes1,
+                    mappedDesc = streamDescriptor,
+                )
+            )
+            mockAggregate2.onPublish()
             outputFlow.emit(
                 DataFlowStageIO(
                     aggregate = mockAggregate2,

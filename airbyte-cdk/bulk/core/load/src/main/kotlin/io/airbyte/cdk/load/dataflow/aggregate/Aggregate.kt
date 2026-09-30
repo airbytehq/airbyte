@@ -35,6 +35,9 @@ interface Aggregate {
         )
     }
 
+    /** Called when this aggregate is published for flushing, before it is queued for [flush]. */
+    fun onPublish() {}
+
     /**
      * Finalizes this aggregate and loads it into the destination.
      *

@@ -75,6 +75,10 @@ class S3DataLakeAggregate(
         arrowBatchWriter.write(batch)
     }
 
+    override fun onPublish() {
+        arrowWriter?.complete()
+    }
+
     override suspend fun flush() {
         logger.info {
             "Flushing aggregate to staging branch $stagingBranchName for stream ${stream.mappedDescriptor}"

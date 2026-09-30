@@ -29,6 +29,7 @@ class AggregateStage(
         var next = store.removeNextComplete(emittedAtMs)
 
         while (next != null) {
+            next.value.onPublish()
             outputFlow.emit(
                 DataFlowStageIO(
                     aggregate = next.value,
