@@ -13,12 +13,13 @@ from requests.auth import HTTPBasicAuth
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.streams.call_rate import APIBudget
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
-from airbyte_cdk.sources.types import Config, StreamSlice
+from airbyte_cdk.sources.types import Config, Record, StreamSlice
 
 
 logger = logging.getLogger("airbyte")
@@ -53,6 +54,7 @@ class TicketActivitiesRetriever(Retriever):
     request_timeout: int = 300
     backoff_strategy: Optional[BackoffStrategy] = field(default=None)
     api_budget: Optional[APIBudget] = field(default=None)
+    cursor: Optional[Cursor] = field(default=None)
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         error_mapping = {
@@ -86,10 +88,8 @@ class TicketActivitiesRetriever(Retriever):
         records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
     ) -> Iterable[StreamData]:
-        """Emit every record in the requested daily export file.
-
-        Freshdesk's file boundaries follow the account's local day, so records
-        are not filtered by the cursor slice window.
+        """Read the daily export file whole (files follow the account's local day) and skip only
+        records before the sync start: already synced, or before the start day.
         """
         export_date = self._get_export_date(stream_slice)
         export_payload = self._get_json(
@@ -106,13 +106,12 @@ class TicketActivitiesRetriever(Retriever):
             download_url = self._extract_download_url(export_payload)
             if not download_url:
                 if export_payload.get("export"):
-                    logger.warning(
-                        "Freshdesk ticket activities export response for %s had an unrecognized shape and no download URL could be extracted: %s",
-                        export_date,
-                        self._describe_export_shape(export_payload["export"]),
+                    raise AirbyteTracedException(
+                        message="Freshdesk ticket activities export response did not contain a download URL.",
+                        internal_message=f"Export shape for {export_date}: {self._describe_export_shape(export_payload['export'])}",
+                        failure_type=FailureType.system_error,
                     )
-                else:
-                    logger.info("No ticket activities export was available for %s", export_date)
+                logger.info("No ticket activities export was available for %s", export_date)
                 return
             export_data = self._get_json(download_url, allow_missing=True) or {}
 
@@ -124,7 +123,10 @@ class TicketActivitiesRetriever(Retriever):
             )
 
         for record in self._add_stable_ids(records, export_date):
-            yield record
+            if self.cursor is None or self.cursor.should_be_synced(
+                Record(data=record, stream_name="ticket_activities", associated_slice=stream_slice)
+            ):
+                yield record
 
     @property
     def _export_endpoint(self) -> str:

@@ -8,11 +8,13 @@ from pathlib import Path
 import pytest
 from requests_mock import Mocker
 
-from airbyte_cdk import AirbyteTracedException, ConfiguredAirbyteCatalog, FailureType, YamlDeclarativeSource
+from airbyte_cdk import AirbyteTracedException, ConfiguredAirbyteCatalog, FailureType, SyncMode, YamlDeclarativeSource
 from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
 from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.types import StreamSlice
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
 
 
 def _get_manifest_path() -> Path:
@@ -39,6 +41,7 @@ class _FastBackoffStrategy(BackoffStrategy):
 _DOMAIN = "a-domain.freshdesk.com"
 _EXPORT_URL = f"https://{_DOMAIN}/api/v2/export/ticket_activities"
 _DOWNLOAD_URL = "https://exports.freshdesk.example/2022-01-01-ticket-activities.json"
+_SIGNED_URL = "https://activities-export-production.s3.amazonaws.com/x.json?X-Amz-Signature=SECRETSIG"
 
 
 def _retriever() -> TicketActivitiesRetriever:
@@ -138,36 +141,44 @@ def test_ticket_activities_list_export_extracts_downloaded_records(requests_mock
     assert requests_mock.call_count == 2
 
 
-@pytest.mark.parametrize(
-    "export_response_json",
-    [
-        {"export": []},
-        {"export": [{}]},
-        {"export": ["not-a-dict", 42]},
-        {"export": [{"created_at": "1-1-2022"}]},
-    ],
-)
-def test_ticket_activities_list_export_without_url_returns_no_records(requests_mock: Mocker, export_response_json: dict) -> None:
-    requests_mock.get(_EXPORT_URL, json=export_response_json)
+def test_ticket_activities_list_export_without_url_returns_no_records(requests_mock: Mocker) -> None:
+    requests_mock.get(_EXPORT_URL, json={"export": []})
     requests_mock.get(_DOWNLOAD_URL, json={"activities_data": [_activity(ticket_id=600)]})
 
     assert list(_retriever().read_records({}, _slice())) == []
     assert requests_mock.call_count == 1
 
 
-def test_ticket_activities_unrecognized_export_shape_logs_warning(requests_mock: Mocker, caplog: pytest.LogCaptureFixture) -> None:
-    requests_mock.get(_EXPORT_URL, json={"export": [{"created_at": "1-1-2022", "url": None}]})
+@pytest.mark.parametrize(
+    "export_response_json",
+    [
+        {"export": [{}]},
+        {"export": ["not-a-dict", 42]},
+        {"export": [{"created_at": "1-1-2022"}]},
+        {"export": [{"created_at": "1-1-2022", "download_url": _SIGNED_URL}]},
+        {"export": [{"created_at": "1-1-2022", "url": {"href": _SIGNED_URL}}]},
+        {"export": {"created_at": "1-1-2022", "link": _SIGNED_URL}},
+    ],
+)
+def test_ticket_activities_unrecognized_export_shape_raises_without_leaking_url(
+    requests_mock: Mocker, caplog: pytest.LogCaptureFixture, export_response_json: dict
+) -> None:
+    requests_mock.get(_EXPORT_URL, json=export_response_json)
 
-    with caplog.at_level(logging.WARNING, logger="airbyte"):
-        assert list(_retriever().read_records({}, _slice())) == []
+    with caplog.at_level(logging.DEBUG, logger="airbyte"), pytest.raises(AirbyteTracedException) as exc_info:
+        list(_retriever().read_records({}, _slice()))
 
-    warning_messages = [record.getMessage() for record in caplog.records if record.levelno == logging.WARNING]
-    assert any("unrecognized shape" in message for message in warning_messages)
-    assert all(_DOWNLOAD_URL not in message for message in warning_messages)
+    assert exc_info.value.failure_type == FailureType.system_error
+    assert "SECRETSIG" not in exc_info.value.message
+    assert "SECRETSIG" not in exc_info.value.internal_message
+    assert all("SECRETSIG" not in record.getMessage() for record in caplog.records)
 
 
-def test_ticket_activities_missing_export_logs_info_not_warning(requests_mock: Mocker, caplog: pytest.LogCaptureFixture) -> None:
-    requests_mock.get(_EXPORT_URL, json={"export": {}})
+@pytest.mark.parametrize("export_response_json", [{"export": {}}, {"export": []}])
+def test_ticket_activities_missing_export_logs_info_not_warning(
+    requests_mock: Mocker, caplog: pytest.LogCaptureFixture, export_response_json: dict
+) -> None:
+    requests_mock.get(_EXPORT_URL, json=export_response_json)
 
     with caplog.at_level(logging.INFO, logger="airbyte"):
         assert list(_retriever().read_records({}, _slice())) == []
@@ -255,6 +266,7 @@ def test_ticket_activities_honors_injected_api_budget() -> None:
 
 def test_ticket_activities_lookback_is_clamped_to_export_retention() -> None:
     config = ConfigBuilder().domain(_DOMAIN).start_date(datetime(2017, 1, 1)).build()
+    before = datetime.now(timezone.utc)
     source = YamlDeclarativeSource(
         path_to_yaml=str(_YAML_FILE_PATH),
         catalog=ConfiguredAirbyteCatalog(streams=[]),
@@ -264,10 +276,12 @@ def test_ticket_activities_lookback_is_clamped_to_export_retention() -> None:
 
     stream = next(s for s in source.streams(config) if s.name == "ticket_activities")
     slices = [partition.to_slice() for partition in stream.generate_partitions()]
+    after = datetime.now(timezone.utc)
 
     # Freshdesk keeps each daily export file for 30 days; older slices are guaranteed 404s,
     # so the stream clamps any config start_date to the retention window.
     assert 0 < len(slices) <= 32
+    assert slices[0]["start_time"] in {(now - timedelta(days=30)).strftime("%Y-%m-%dT00:00:00Z") for now in (before, after)}
 
 
 def _ticket_activities_stream(config: dict, state: list | None = None):
@@ -280,9 +294,8 @@ def _ticket_activities_stream(config: dict, state: list | None = None):
     return next(stream for stream in source.streams(config) if stream.name == "ticket_activities")
 
 
-def _cursor_slices(stream) -> list[dict]:
-    slices = [partition.to_slice() for partition in stream.generate_partitions()]
-    return [slice_.get("cursor_slice", slice_) for slice_ in slices]
+def _cursor_slices(stream) -> list[StreamSlice]:
+    return [partition.to_slice() for partition in stream.generate_partitions()]
 
 
 def _consecutive_dates(start: datetime, end: datetime) -> list[str]:
@@ -317,7 +330,7 @@ def test_ticket_activities_incremental_slices_from_mid_day_state_cover_every_day
 
     slices = _cursor_slices(_ticket_activities_stream(config, state))
 
-    expected_dates = _consecutive_dates(state_datetime, now)
+    expected_dates = [(state_datetime + timedelta(days=i)).date().isoformat() for i in range((now - state_datetime).days + 1)]
     assert [slice_["start_time"][:10] for slice_ in slices] == expected_dates
     retriever = _retriever()
     assert [retriever._get_export_date(StreamSlice(partition={}, cursor_slice=slice_)) for slice_ in slices] == expected_dates
@@ -371,6 +384,39 @@ def test_ticket_activities_consecutive_slices_do_not_lose_or_duplicate_records(r
     records = first + second
     assert len(records) == 5
     assert len({record["_airbyte_ticket_activity_id"] for record in records}) == 5
+
+
+def test_ticket_activities_next_sync_does_not_reemit_synced_records(requests_mock: Mocker) -> None:
+    day = (datetime.now(timezone.utc) - timedelta(days=2)).date()
+
+    def export(request, context):
+        if request.qs["created_at"] != [day.isoformat()]:
+            context.status_code = 404
+            return {}
+        return {"export": [{"created_at": f"{day.day}-{day.month}-{day.year}", "url": _DOWNLOAD_URL}]}
+
+    requests_mock.get(_EXPORT_URL, json=export)
+    activities = [_activity(performed_at=f"{day:%d-%m-%Y} {hour:02d}:00:00 +0000", ticket_id=hour) for hour in (1, 12, 20)]
+    requests_mock.get(_DOWNLOAD_URL, json={"activities_data": activities})
+    config = ConfigBuilder().domain(_DOMAIN).start_date(datetime(day.year, day.month, day.day)).build()
+    catalog = CatalogBuilder().with_stream("ticket_activities", SyncMode.incremental).build()
+
+    def sync(state):
+        source = YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
+        return entrypoint_read(source, config, catalog, state)
+
+    first_sync = sync(None)
+    first_sync_state = first_sync.state_messages[-1].state
+    assert [record.record.data["ticket_id"] for record in first_sync.records] == [1, 12, 20]
+    assert first_sync_state.stream.stream_state.performed_at == f"{day.isoformat()}T20:00:00Z"
+
+    second_sync_start = len(requests_mock.request_history)
+    second_sync = sync([first_sync_state])
+    export_dates = [
+        request.qs["created_at"][0] for request in requests_mock.request_history[second_sync_start:] if "created_at" in request.qs
+    ]
+    assert [record.record.data["ticket_id"] for record in second_sync.records] == [20]
+    assert min(export_dates) == day.isoformat()
 
 
 def test_ticket_activities_stream_is_incremental() -> None:
