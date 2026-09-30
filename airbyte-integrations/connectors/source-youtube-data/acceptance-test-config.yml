@@ -22,7 +22,7 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         timeout_seconds: 1200
   incremental:
-    bypass_reason: "Connector doesn't support Incremental sync for any stream"
+    bypass_reason: "Incremental streams use per-partition state keyed by the channel ids in the CI secret, which the abnormal-state fixture cannot reference; covered by unit_tests/test_incremental.py"
   full_refresh:
     tests:
       - config_path: "secrets/config_oauth.json"

@@ -96,10 +96,9 @@ def test_api_budget_windows_bounded_below_token_lifetime():
             for matcher in policy["matchers"]:
                 rate_by_pattern[matcher["url_path_pattern"]] = (rate["limit"], rate["interval"])
 
-    # Both cost tiers from the quota model must be covered at the documented
-    # per-minute rates: the 100-unit search.list and the 1-unit list endpoints.
-    assert rate_by_pattern["/search"] == (3, "PT1M")
-    assert rate_by_pattern["/(channels|videos|commentThreads)"] == (100, "PT1M")
+    # Every endpoint the connector reads costs 1 unit and shares the documented
+    # per-minute burst guard. search.list (100 units) is no longer used.
+    assert rate_by_pattern == {"/(channels|videos|commentThreads|playlistItems)": (100, "PT1M")}
 
 
 def test_401_filter_uses_refresh_token_then_retry():
