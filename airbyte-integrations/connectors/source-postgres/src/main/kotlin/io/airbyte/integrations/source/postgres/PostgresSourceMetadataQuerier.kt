@@ -30,12 +30,14 @@ class PostgresSourceMetadataQuerier(
     override fun extraChecks() {
         base.extraChecks()
         validateSslConfiguration()
-        if (postgresSourceConfig.incrementalConfiguration is XminIncrementalConfiguration) {
-            base.conn.use { conn ->
-                if (dbNumWraparound(conn) > 0) {
-                    throw ConfigErrorException(xminWraparoundError)
-                }
+        val isXmin = postgresSourceConfig.incrementalConfiguration is XminIncrementalConfiguration
+        val isCdc = postgresSourceConfig.cdc != null
+        if (!isXmin && !isCdc) return
+        base.conn.use { conn ->
+            if (isXmin && dbNumWraparound(conn) > 0) {
+                throw ConfigErrorException(xminWraparoundError)
             }
+            if (isCdc) validateNoEmptyEnumTypes(conn)
         }
     }
 
@@ -67,6 +69,21 @@ class PostgresSourceMetadataQuerier(
                 "which makes this sync option inefficient and can lead to higher credit consumption. " +
                 "Please change the replication method to CDC or cursor based."
 
+        const val EMPTY_ENUM_TYPES_QUERY: String =
+            """
+            SELECT n.nspname AS schema_name, t.typname AS type_name
+            FROM pg_catalog.pg_type t
+            JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+            LEFT JOIN (SELECT enumtypid AS id, array_agg(enumlabel) AS vals
+                       FROM pg_catalog.pg_enum GROUP BY enumtypid) ev ON t.oid = ev.id
+            WHERE n.nspname <> 'pg_toast' AND t.typcategory = 'E' AND ev.vals IS NULL
+            ORDER BY schema_name, type_name
+            """
+
+        fun emptyEnumTypesError(types: List<String>): String =
+            "Database contains enum type(s) with no labels (${types.joinToString(", ")}). " +
+                "CDC cannot initialize on such types, even if no synced table uses them."
+
         public fun dbNumWraparound(conn: Connection): Long {
             log.info { "Querying server xmin wraparound status" }
             val query =
@@ -82,6 +99,26 @@ class PostgresSourceMetadataQuerier(
                 }
             }
             return 0
+        }
+
+        fun findEmptyEnumTypes(conn: Connection): List<String> {
+            log.info { "Querying PostgreSQL enum types with no labels" }
+            conn.createStatement().use { stmt ->
+                stmt.executeQuery(EMPTY_ENUM_TYPES_QUERY).use { rs ->
+                    return buildList {
+                        while (rs.next()) {
+                            add("${rs.getString("schema_name")}.${rs.getString("type_name")}")
+                        }
+                    }
+                }
+            }
+        }
+
+        fun validateNoEmptyEnumTypes(conn: Connection) {
+            val types = findEmptyEnumTypes(conn)
+            if (types.isNotEmpty()) {
+                throw ConfigErrorException(emptyEnumTypesError(types))
+            }
         }
     }
 }
