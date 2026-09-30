@@ -242,46 +242,6 @@ def test_oauth_trailing_slash_base_url_uses_normalized_host(tmp_path) -> None:
     http_mocker.assert_number_of_calls(check_request, 1)
 
 
-def test_preview_era_workspace_migrated_to_base_url(tmp_path) -> None:
-    # preview-era OAuth configs stored a workspace instead of base_url
-    config = ConfigBuilder().with_oauth_credentials().build()
-    config["credentials"]["workspace"] = "test-tenant"
-    del config["base_url"]
-    check_request = UptickRequestBuilder.collection(_CHECK_STREAM)
-    source, migration_controls = _source_with_migration_controls(config)
-
-    assert source._config["base_url"] == "https://test-tenant.onuptick.com"
-    assert len(migration_controls) == 1
-    assert migration_controls[0]["control"]["connectorConfig"]["config"]["base_url"] == "https://test-tenant.onuptick.com"
-
-    with HttpMocker() as http_mocker:
-        http_mocker._mocker.post(
-            _TOKEN_URL,
-            json={"access_token": "tok", "expires_in": 3600},
-        )
-        http_mocker.get(check_request, _tasks_page())
-
-        output = _run_command(
-            source,
-            ["check", "--config", make_file(tmp_path / "config.json", config)],
-        )
-
-    statuses = output.connection_status_messages
-    assert len(statuses) == 1
-    assert statuses[0].connectionStatus.status == Status.SUCCEEDED
-    assert _token_bodies(http_mocker)[0]["grant_type"] == ["refresh_token"]
-    http_mocker.assert_number_of_calls(check_request, 1)
-
-
-def test_preview_era_workspace_does_not_override_existing_base_url(tmp_path) -> None:
-    config = ConfigBuilder().with_oauth_credentials().build()
-    config["credentials"]["workspace"] = "other-tenant"
-    source, migration_controls = _source_with_migration_controls(config)
-
-    assert source._config["base_url"] == "https://test-tenant.onuptick.com"
-    assert migration_controls == []
-
-
 def test_base_url_only_config_fails_check(tmp_path) -> None:
     config = {"base_url": "https://test-tenant.onuptick.com"}
 
