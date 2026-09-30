@@ -245,6 +245,33 @@ def test_oauth_workspace_wins_over_stale_top_level_base_url(tmp_path) -> None:
     assert token_bodies[0]["grant_type"] == ["refresh_token"]
 
 
+def test_password_empty_nested_base_url_fails_check(tmp_path) -> None:
+    # `credentials.base_url` must be non-empty (minLength 1), so spec validation fails the check
+    # before any token request even though a stale top-level base_url exists. jsonschema's
+    # best_match reports the OAuth branch's const error here (same-depth path tie-break: 'auth_type'
+    # < 'base_url'), so the message does not name base_url for the empty-string case.
+    config = ConfigBuilder().with_password_credentials().build()
+    config["credentials"]["base_url"] = ""
+    source, _ = _source_with_migration_controls(config)
+
+    with HttpMocker() as http_mocker:
+        http_mocker._mocker.post(
+            _TOKEN_URL,
+            json={"access_token": "tok", "expires_in": 3600},
+        )
+
+        output = _run_command(
+            source,
+            ["check", "--config", make_file(tmp_path / "config.json", config)],
+        )
+
+    statuses = output.connection_status_messages
+    assert len(statuses) == 1
+    assert statuses[0].connectionStatus.status == Status.FAILED
+    assert statuses[0].connectionStatus.message == "Config validation error: 'oauth2.0' was expected"
+    assert _token_bodies(http_mocker) == []
+
+
 def test_password_credentials_without_any_base_url_fails_check(tmp_path) -> None:
     config = ConfigBuilder().with_password_credentials().build()
     del config["base_url"]
@@ -271,6 +298,19 @@ def test_password_credentials_without_any_base_url_fails_check(tmp_path) -> None
     # missing field, so entrypoint spec validation fails the check before any token request.
     assert statuses[0].connectionStatus.message == "Config validation error: 'base_url' is a required property"
     assert _token_bodies(http_mocker) == []
+
+
+def test_empty_nested_base_url_is_not_refilled_by_migration() -> None:
+    # The migration only copies the top-level base_url when credentials.base_url is ABSENT — a
+    # present-but-empty value is left alone (spec validation then rejects it, minLength 1).
+    config = ConfigBuilder().with_password_credentials().build()
+    config["credentials"]["base_url"] = ""
+
+    source, migration_controls = _source_with_migration_controls(config)
+
+    assert source._config["credentials"]["base_url"] == ""
+    # Filled into the pre-existing nested dict in place: invisible to the migration diff, no CONTROL.
+    assert migration_controls == []
 
 
 def test_oauth_credentials_use_refresh_grant_and_emit_control() -> None:

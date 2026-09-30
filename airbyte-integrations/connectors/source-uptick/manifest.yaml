@@ -273,6 +273,7 @@ spec:
                 type: string
                 title: Base Url
                 description: Root URL of the Uptick workspace, for example https://demo-fire.onuptick.com. Only the host is used; the scheme and trailing slash are normalized.
+                minLength: 1
                 order: 1
               client_id:
                 type: string
@@ -438,7 +439,7 @@ spec:
             # Copies the top-level base_url under `credentials` for password configs (it lives in the
             # password oneOf branch now). Runs after the credential copy above, so auth_type is already
             # "password" for migrated legacy configs; OAuth configs are untouched.
-            condition: "{{ config.get('base_url') is string and (config['base_url'] | trim | length) > 0 and config.get('credentials', {}).get('auth_type') == 'password' and not config.get('credentials', {}).get('base_url') }}"
+            condition: "{{ config.get('base_url') is string and (config['base_url'] | trim | length) > 0 and config.get('credentials', {}).get('auth_type') == 'password' and 'base_url' not in config.get('credentials', {}) }}"
             fields:
               - type: AddedFieldDefinition
                 path: ["credentials", "base_url"]

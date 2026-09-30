@@ -108,6 +108,7 @@ def test_spec_declares_oauth_advanced_auth() -> None:
     password_variant = credentials["oneOf"][1]
     assert "base_url" in password_variant["required"]
     assert "base_url" in password_variant["properties"]
+    assert password_variant["properties"]["base_url"]["minLength"] == 1
     properties = spec["connection_specification"]["properties"]
     # The legacy top-level fields stay in the schema (copy-only migration keeps writing them) but
     # are hidden in the UI; base_url is derived from credentials at runtime.
