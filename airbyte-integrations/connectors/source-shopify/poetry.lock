@@ -532,6 +532,36 @@ files = [
 ]
 
 [[package]]
+name = "due-work-harness"
+version = "1.dev5"
+description = "Conformance proofs for background work that must survive lost messages, dead workers and uncertain external calls."
+optional = false
+python-versions = ">=3.11"
+files = []
+develop = false
+
+[package.dependencies]
+pydantic = ">=2.9"
+pytest = ">=8"
+
+[package.extras]
+aiokafka = ["aiokafka (>=0.12,<0.15)"]
+celery = ["celery (>=5.3)"]
+dbos = ["dbos (>=2.0)"]
+django = ["django (>=4.2)", "psycopg[binary] (>=3.1)", "pytest-django (>=4.8)", "time-machine (>=2.10)"]
+mongodb = ["motor (>=3.7,<4)", "pymongo (>=4.9,<4.18)"]
+prefect = ["prefect (>=3.7,<3.8)"]
+procrastinate = ["procrastinate (>=3.0)"]
+redis = ["redis (>=5.0)", "time-machine (>=2.10)"]
+rq = ["redis (>=5.0)", "rq (>=2.6)", "time-machine (>=2.10)"]
+
+[package.source]
+type = "git"
+url = "https://github.com/gigaverse-app/due-work-harness.git"
+reference = "31e480c859f263ee6c719e13923076838397262e"
+resolved_reference = "31e480c859f263ee6c719e13923076838397262e"
+
+[[package]]
 name = "dunamai"
 version = "1.25.0"
 description = "Dynamic version generation"
@@ -2757,4 +2787,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.12"
-content-hash = "8463690da4a4df95e8e5c6d55cdbeab09ca0d394ee6e748a15ee4be2e79e708b"
+content-hash = "346c957f3a436a2c714c4f129603858dd7be206aaec344c43cbdd0278692734b"
