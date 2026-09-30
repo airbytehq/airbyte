@@ -5,6 +5,8 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from os import replace, unlink
+from tempfile import NamedTemporaryFile
 from time import sleep, time
 from typing import Any, Final, Iterable, List, Mapping, Optional, Tuple
 
@@ -306,11 +308,19 @@ class ShopifyBulkManager:
             filename = self._tools.filename_from_url(job_result_url)
             _, response = self.http_client.send_request(http_method="GET", url=job_result_url, request_kwargs={"stream": True})
             response.raise_for_status()
-            with open(filename, "wb") as file:
-                for chunk in response.iter_content(chunk_size=self._retrieve_chunk_size):
-                    file.write(chunk)
-                # add `<end_of_file>` line to the bottom  of the saved data for easy parsing
-                file.write(END_OF_FILE.encode())
+            temporary_filename = None
+            try:
+                with NamedTemporaryFile(mode="wb", prefix=f".{filename}.", suffix=".part", dir=".", delete=False) as file:
+                    temporary_filename = file.name
+                    for chunk in response.iter_content(chunk_size=self._retrieve_chunk_size):
+                        file.write(chunk)
+                    # add `<end_of_file>` only after the whole response arrives
+                    file.write(END_OF_FILE.encode())
+                replace(temporary_filename, filename)
+                temporary_filename = None
+            finally:
+                if temporary_filename:
+                    unlink(temporary_filename)
             return filename
 
     def _job_get_checkpointed_result(self, response: Optional[requests.Response]) -> None:
