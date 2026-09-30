@@ -250,15 +250,8 @@ class MarketoExportBase(IncrementalMarketoStream):
                 self.start_export(stream_slice)
 
             elif status in ["Cancelled", "Failed"]:
-                raise AirbyteTracedException(
-                    message=f'Marketo bulk export job for stream "{self.name}" {status.lower()}.',
-                    internal_message=(
-                        f'Export job {stream_slice.get("id")} for stream "{self.name}" '
-                        f"(date range {stream_slice.get('startAt')} to {stream_slice.get('endAt')}) "
-                        f"entered terminal status: {status}."
-                    ),
-                    failure_type=FailureType.transient_error,
-                )
+                # Cancelled and failed exports fail the current sync.
+                raise Exception(status)
 
             elif status == "Completed":
                 return True
