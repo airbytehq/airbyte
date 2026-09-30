@@ -12,26 +12,30 @@ and reporting purposes.
 
 The Facebook-Marketing connector is optimized to handle prompts like these.
 
+- List all my ad accounts
+- Show me the details of my first ad account
+- Show me my own Facebook user profile
 - List all active campaigns in my ad account
-- What ads are currently running in a recent campaign?
-- List all ad creatives in my account
 - What is the status of my campaigns?
+- Show me the details of my most recent campaign
+- What ads are currently running in a recent campaign?
+- Show me the details of the first ad in my account
+- List all ad sets in my ad account
+- Show me the details of my most recent ad set
+- List all ad creatives in my account
+- Show me the performance insights for my ad account
 - List all custom conversion events in my account
 - Show me all ad images in my account
 - What videos are available in my ad account?
+- List all pixels in my ad account
+- Show me the details of my first pixel
+- Show me the event stats for my pixel
+- What events is my Facebook pixel tracking?
 - Create a new campaign called 'Summer Sale 2026' with traffic objective
 - Pause my most recent campaign
 - Create a new ad set with a $50 daily budget in my latest campaign
 - Update the daily budget of my top performing ad set to $100
 - Rename my most recent ad set to 'Holiday Promo'
-- Create a new ad in my latest ad set
-- Pause all ads in my most recent ad set
-- List all pixels in my ad account
-- Show me the event stats for my pixel
-- What events is my Facebook pixel tracking?
-- Search the Ad Library for political ads in the US
-- Find ads about climate change in the Ad Library
-- Show me Ad Library ads from a specific Facebook page
 - Show me the ad sets with the highest daily budget
 - Show me the performance insights for the last 7 days
 - Which campaigns have the most spend this month?
