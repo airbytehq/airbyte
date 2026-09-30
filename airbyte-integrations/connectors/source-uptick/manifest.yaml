@@ -164,7 +164,7 @@ spec:
     properties:
       base_url:
         type: string
-        description: API URL, e.g. https://<workspace>.onuptick.com. Required for username/password; leave empty for OAuth (derived from the workspace).
+        description: Legacy field, migrated into credentials.base_url; leave empty.
         order: 0
         title: Base Url
         airbyte_hidden: true
