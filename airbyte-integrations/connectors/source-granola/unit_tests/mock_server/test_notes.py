@@ -103,3 +103,58 @@ class TestNotesIncrementalUpdatedAtCursor(TestCase):
 
         assert output.errors == []
         http_mocker.assert_number_of_calls(request, 1)
+
+
+@freezegun.freeze_time(_NOW)
+class TestNotesPagination(TestCase):
+    _UPDATED_AFTER = "2025-10-12T00:00:00Z"
+
+    def _page(self, note_id: str, cursor: Optional[str], has_more: bool) -> HttpResponse:
+        body = {
+            "notes": [{"id": note_id, "created_at": "2026-01-12T09:00:00Z", "updated_at": "2026-01-12T09:00:00Z"}],
+            "hasMore": has_more,
+            "cursor": cursor,
+        }
+        return HttpResponse(body=json.dumps(body), status_code=200)
+
+    @HttpMocker()
+    def test_follows_the_cursor_while_has_more_is_true(self, http_mocker: HttpMocker):
+        builder = GranolaRequestBuilder.notes_endpoint().with_updated_after(self._UPDATED_AFTER)
+        first_page = builder.build()
+        second_page = builder.with_cursor("cursor-2").build()
+        http_mocker.get(first_page, self._page("note-page-1", cursor="cursor-2", has_more=True))
+        http_mocker.get(second_page, self._page("note-page-2", cursor=None, has_more=False))
+
+        output = _read_notes()
+
+        assert output.errors == []
+        assert [message.record.data["id"] for message in output.records] == ["note-page-1", "note-page-2"]
+        http_mocker.assert_number_of_calls(first_page, 1)
+        http_mocker.assert_number_of_calls(second_page, 1)
+
+    @HttpMocker()
+    def test_stops_when_has_more_is_false_even_if_a_cursor_is_returned(self, http_mocker: HttpMocker):
+        request = _notes_request(self._UPDATED_AFTER)
+        http_mocker.get(request, self._page("note-only", cursor="stale-cursor", has_more=False))
+
+        output = _read_notes()
+
+        assert output.errors == []
+        assert [message.record.data["id"] for message in output.records] == ["note-only"]
+        http_mocker.assert_number_of_calls(request, 1)
+
+
+@freezegun.freeze_time(_NOW)
+class TestNotesDefaultStartDate(TestCase):
+    @HttpMocker()
+    def test_without_start_date_reads_the_last_730_days(self, http_mocker: HttpMocker):
+        """The spec leaves `start_date` optional; the single slice then starts 730 days before now."""
+        request = _notes_request("2024-01-16T00:00:00Z")
+        http_mocker.get(request, _notes_response([]))
+
+        config = ConfigBuilder().build()
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(get_source(config=config), config=config, catalog=catalog, state=StateBuilder().build())
+
+        assert output.errors == []
+        http_mocker.assert_number_of_calls(request, 1)

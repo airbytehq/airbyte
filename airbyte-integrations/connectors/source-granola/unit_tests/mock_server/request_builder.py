@@ -23,6 +23,7 @@ class GranolaRequestBuilder:
     def __init__(self, path: str) -> None:
         self._path = path
         self._query_params: Dict[str, str] = {}
+        self._headers: Dict[str, str] = {}
 
     @classmethod
     def notes_endpoint(cls) -> "GranolaRequestBuilder":
@@ -58,5 +59,9 @@ class GranolaRequestBuilder:
         self._query_params[key] = value
         return self
 
+    def with_header(self, key: str, value: str) -> "GranolaRequestBuilder":
+        self._headers[key] = value
+        return self
+
     def build(self) -> HttpRequest:
-        return HttpRequest(url=f"{self.BASE_URL}{self._path}", query_params=dict(self._query_params))
+        return HttpRequest(url=f"{self.BASE_URL}{self._path}", query_params=dict(self._query_params), headers=dict(self._headers))
