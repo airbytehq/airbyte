@@ -308,8 +308,9 @@ def test_ticket_activities_initial_slices_are_midnight_aligned() -> None:
     config = ConfigBuilder().domain(_DOMAIN).start_date(start_date).build()
 
     slices = _cursor_slices(_ticket_activities_stream(config))
+    after = datetime.now(timezone.utc)
 
-    assert [slice_["start_time"][:10] for slice_ in slices] == _consecutive_dates(start_date, now)
+    assert [slice_["start_time"][:10] for slice_ in slices] in (_consecutive_dates(start_date, now), _consecutive_dates(start_date, after))
     assert all(slice_["start_time"].endswith("T00:00:00Z") for slice_ in slices)
     assert all(slice_["end_time"].endswith("T23:59:59Z") for slice_ in slices[:-1])
 
@@ -329,11 +330,14 @@ def test_ticket_activities_incremental_slices_from_mid_day_state_cover_every_day
     config = ConfigBuilder().domain(_DOMAIN).build()
 
     slices = _cursor_slices(_ticket_activities_stream(config, state))
+    after = datetime.now(timezone.utc)
 
-    expected_dates = [(state_datetime + timedelta(days=i)).date().isoformat() for i in range((now - state_datetime).days + 1)]
-    assert [slice_["start_time"][:10] for slice_ in slices] == expected_dates
+    slice_dates = [slice_["start_time"][:10] for slice_ in slices]
+    assert slice_dates in [
+        [(state_datetime + timedelta(days=i)).date().isoformat() for i in range((end - state_datetime).days + 1)] for end in (now, after)
+    ]
     retriever = _retriever()
-    assert [retriever._get_export_date(StreamSlice(partition={}, cursor_slice=slice_)) for slice_ in slices] == expected_dates
+    assert [retriever._get_export_date(StreamSlice(partition={}, cursor_slice=slice_)) for slice_ in slices] == slice_dates
 
 
 def test_ticket_activities_consecutive_slices_do_not_lose_or_duplicate_records(requests_mock: Mocker) -> None:
@@ -388,16 +392,22 @@ def test_ticket_activities_consecutive_slices_do_not_lose_or_duplicate_records(r
 
 def test_ticket_activities_next_sync_does_not_reemit_synced_records(requests_mock: Mocker) -> None:
     day = (datetime.now(timezone.utc) - timedelta(days=2)).date()
+    next_day = day + timedelta(days=1)
+    next_day_url = "https://exports.freshdesk.example/next-day-ticket-activities.json"
+    # UTC+2 account: the next_day file starts at day 22:00Z, before the next_day slice starts.
+    download_urls = {day.isoformat(): _DOWNLOAD_URL, next_day.isoformat(): next_day_url}
 
     def export(request, context):
-        if request.qs["created_at"] != [day.isoformat()]:
+        url = download_urls.get(request.qs["created_at"][0])
+        if url is None:
             context.status_code = 404
             return {}
-        return {"export": [{"created_at": f"{day.day}-{day.month}-{day.year}", "url": _DOWNLOAD_URL}]}
+        return {"export": [{"url": url}]}
 
     requests_mock.get(_EXPORT_URL, json=export)
     activities = [_activity(performed_at=f"{day:%d-%m-%Y} {hour:02d}:00:00 +0000", ticket_id=hour) for hour in (1, 12, 20)]
     requests_mock.get(_DOWNLOAD_URL, json={"activities_data": activities})
+    requests_mock.get(next_day_url, json={"activities_data": [_activity(performed_at=f"{day:%d-%m-%Y} 22:00:00 +0000", ticket_id=22)]})
     config = ConfigBuilder().domain(_DOMAIN).start_date(datetime(day.year, day.month, day.day)).build()
     catalog = CatalogBuilder().with_stream("ticket_activities", SyncMode.incremental).build()
 
@@ -407,15 +417,15 @@ def test_ticket_activities_next_sync_does_not_reemit_synced_records(requests_moc
 
     first_sync = sync(None)
     first_sync_state = first_sync.state_messages[-1].state
-    assert [record.record.data["ticket_id"] for record in first_sync.records] == [1, 12, 20]
-    assert first_sync_state.stream.stream_state.performed_at == f"{day.isoformat()}T20:00:00Z"
+    assert sorted(record.record.data["ticket_id"] for record in first_sync.records) == [1, 12, 20, 22]
+    assert first_sync_state.stream.stream_state.performed_at == f"{day.isoformat()}T22:00:00Z"
 
     second_sync_start = len(requests_mock.request_history)
     second_sync = sync([first_sync_state])
     export_dates = [
         request.qs["created_at"][0] for request in requests_mock.request_history[second_sync_start:] if "created_at" in request.qs
     ]
-    assert [record.record.data["ticket_id"] for record in second_sync.records] == [20]
+    assert [record.record.data["ticket_id"] for record in second_sync.records] == [22]
     assert min(export_dates) == day.isoformat()
 
 
