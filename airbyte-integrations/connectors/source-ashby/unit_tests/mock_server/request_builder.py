@@ -49,6 +49,10 @@ class AshbyRequestBuilder:
         self._headers["Authorization"] = f"Basic {token}"
         return self
 
+    def with_header(self, key: str, value: str) -> "AshbyRequestBuilder":
+        self._headers[key] = value
+        return self
+
     def with_limit(self, limit: int) -> "AshbyRequestBuilder":
         self._body["limit"] = limit
         return self

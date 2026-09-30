@@ -120,6 +120,7 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 
 | Version | Date | Pull Request | Subject |
 | :-------- | :--------- | :------------------------------------------------------- | :-------------------------------------------- |
+| 1.6.0 | 2026-09-30 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add openings, job templates, job boards, approvals, and projects streams |
 | 1.5.0 | 2026-09-30 | [87587](https://github.com/airbytehq/airbyte/pull/87587) | Add interview plans, interview stage groups, interviewer pools, survey form definitions, and source tracking links streams |
 | 1.4.0 | 2026-09-30 | [87051](https://github.com/airbytehq/airbyte/pull/87051) | Fail syncs on Ashby `success: false` errors, sync `interview_stages` per interview plan, paginate `application_criteria_evaluations`, and include archived and deactivated records in lookup streams |
 | 1.3.4 | 2026-09-29 | [87080](https://github.com/airbytehq/airbyte/pull/87080) | Update dependencies |
