@@ -1076,7 +1076,11 @@ class ReportPollingRequester(HttpRequester):
 
     @staticmethod
     def _decode_document(response: requests.Response, compression_algorithm: Optional[str]) -> str:
-        """Decode the error document, tolerating a compressionAlgorithm that does not match the payload."""
+        """
+        Decode the error document. When compressionAlgorithm says GZIP but the payload is not gzip, fall
+        back to plain text. A gzip payload without a declared compressionAlgorithm is not detected: it
+        decodes to unreadable text, matches no marker, and so falls through to the existing retry path.
+        """
         if (compression_algorithm or "").upper() == "GZIP":
             try:
                 return gzip.decompress(response.content).decode("utf-8", errors="replace")

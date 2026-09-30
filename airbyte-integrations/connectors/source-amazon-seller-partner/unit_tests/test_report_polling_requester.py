@@ -87,3 +87,12 @@ def test_given_missing_option_when_building_message_then_add_advice() -> None:
 def test_report_options_error_is_actionable_only_for_report_types_that_send_report_options(report_type: str, expected: bool) -> None:
     reason = "Invalid reportPeriod WEEK: dataStartTime must fall on a Sunday."
     assert ReportPollingRequester._is_actionable_report_options_error(report_type, reason) is expected
+
+
+# Known limitation, pinned so any change is deliberate: the markers include bare option names, so a
+# reason that names an option for a reason unrelated to its value is still treated as a config error
+# and stops the whole stream instead of retrying the slice. Illustrative wording: not captured from Amazon.
+def test_given_date_availability_reason_naming_an_option_then_treated_as_report_options_error() -> None:
+    reason = "The report data for the requested reportPeriod is not yet available."
+    assert ReportPollingRequester._is_actionable_report_options_error("GET_VENDOR_SALES_REPORT", reason) is True
+    assert ReportPollingRequester._is_missing_report_option_error(reason) is False

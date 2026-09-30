@@ -1462,9 +1462,11 @@ class TestFatalReportErrorSurfacing:
 
         # Assert on our own message alone: output.errors also carries the CDK's combined
         # "streams did not sync successfully" error, which re-embeds the same reason.
-        message = next(error.trace.error.message for error in output.errors if error.trace.error.message.startswith("Amazon rejected"))
+        error = next(error.trace.error for error in output.errors if error.trace.error.message.startswith("Amazon rejected"))
+        message = error.message
         assert self._AMAZON_REPORT_OPTIONS_REASON in message
-        assert any(error.trace.error.failure_type == FailureType.config_error for error in output.errors)
+        # Asserted on our own error: the CDK's trailing summary is config_error regardless.
+        assert error.failure_type == FailureType.config_error
         # Point the user at where to set the options, and past Amazon's retired GitHub reference.
         assert "Report Options" in message
         assert self._DOC_URL in message
@@ -1484,13 +1486,15 @@ class TestFatalReportErrorSurfacing:
 
         output = self._read(self._STREAM_NAME, config().with_failed_retry_wait_time_in_seconds(1))
 
-        error_messages = " ".join(error.trace.error.message for error in output.errors)
-        assert amazon_reason in error_messages
-        assert any(error.trace.error.failure_type == FailureType.config_error for error in output.errors)
-        assert "Amazon documents reportPeriod, distributorView, sellingProgram as required" in error_messages
+        error = next(error.trace.error for error in output.errors if error.trace.error.message.startswith("Amazon rejected"))
+        message = error.message
+        assert amazon_reason in message
+        # Asserted on our own error: the CDK's trailing summary is config_error regardless.
+        assert error.failure_type == FailureType.config_error
+        assert "Amazon documents reportPeriod, distributorView, sellingProgram as required" in message
         # Amazon said nothing about GitHub here, so the archival note must not appear.
-        assert "archived in 2024" not in error_messages
-        assert self._DOC_URL in error_messages
+        assert "archived in 2024" not in message
+        assert self._DOC_URL in message
 
     # Amazon's verbatim wordings for FATAL reasons that are not report-options problems.
     @pytest.mark.parametrize(
