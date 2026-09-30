@@ -50,12 +50,7 @@ def _record(record_id: str, **overrides) -> Dict[str, Any]:
 
 
 def _request() -> HttpRequest:
-    return (
-        AshbyRequestBuilder.endpoint(_PATH)
-        .with_api_key("test-api-key")
-        .with_header("Content-Type", "application/json")
-        .build_without_body()
-    )
+    return AshbyRequestBuilder.endpoint(_PATH).with_api_key("test-api-key").build_json_request_without_body()
 
 
 class TestJobBoards(TestCase):
