@@ -395,6 +395,10 @@ On the CDC path, an `interval` column that is declared `NOT NULL` with a `DEFAUL
 
 Versions 3.8.0 through 3.8.4 failed CDC syncs of any table with an `interval` column that had a default, with `java.lang.ClassCastException: class java.lang.Long cannot be cast to class org.postgresql.util.PGInterval`. Upgrade to 3.8.5 or later.
 
+### Array columns
+
+A `NULL` array column is emitted as `null`. Versions before 3.8.6 could instead emit the previous record's value for a `NULL` array column, or for any column missing from the change event, on CDC syncs that use the socket/protobuf data path. Syncs over the standard output path were unaffected. Upgrade to 3.8.6 or later, then refresh the affected streams to replace the stale values.
+
 </HideInUI>
 
 ## IP allow list
