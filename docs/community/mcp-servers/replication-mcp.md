@@ -25,7 +25,7 @@ https://mcp.airbyte.com/mcp
 
 When prompted, sign in with your [Airbyte Cloud](https://cloud.airbyte.com) account.
 
-If your organization uses [single sign-on](../../platform/access-management/sso.md), select **Sign in with SSO** on the sign-in page and enter your **Company identifier**. This is the same identifier you enter after you select **Continue with SSO** on the Airbyte Cloud login page. If you don't know it, ask your Airbyte organization admin.
+If your organization uses [single sign-on](/platform/access-management/sso), select **Sign in with SSO** on the sign-in page and enter your **Company identifier**. This is the same identifier you enter after you select **Continue with SSO** on the Airbyte Cloud login page. If you don't know it, ask your Airbyte organization admin.
 
 ### One-click install and JSON config
 
