@@ -114,6 +114,7 @@ def test_legacy_top_level_credentials_use_password_grant(credential_value: str, 
     migrated = migration_controls[0]["control"]["connectorConfig"]["config"]
     credentials = migrated["credentials"]
     assert credentials["auth_type"] == "password"
+    assert credentials["base_url"] == migrated["base_url"]
     assert credentials["client_id"] == credential_value
     assert credentials["client_secret"] == "test-client-secret"
     assert credentials["username"] == "test-user"
@@ -145,9 +146,104 @@ def test_password_credentials_use_password_grant() -> None:
     assert len(token_bodies) == 1
     assert token_bodies[0]["grant_type"] == ["password"]
     assert token_bodies[0]["username"] == ["test-user"]
-    # Nested credentials need no migration, so no CONTROL is emitted either way.
+    # The migration adds credentials.base_url in place to the pre-existing nested dict, which the
+    # CDK's shallow `dict(config)` copy makes invisible to the migration diff — so 0 CONTROL, and
+    # the stored config file keeps its top-level base_url only (harmless: syncs read top-level).
+    assert source._config["credentials"]["base_url"] == "https://test-tenant.onuptick.com"
     assert migration_controls == []
     assert _control_messages(output) == []
+
+
+def test_password_credentials_with_nested_base_url_only(tmp_path) -> None:
+    config = ConfigBuilder().with_password_credentials().build()
+    config["credentials"]["base_url"] = config.pop("base_url")
+    check_request = UptickRequestBuilder.collection(_CHECK_STREAM)
+    source, migration_controls = _source_with_migration_controls(config)
+
+    # Normalization derives the top-level base_url requesters read from credentials.base_url.
+    assert source._config["base_url"] == "https://test-tenant.onuptick.com"
+    assert migration_controls == []
+
+    with HttpMocker() as http_mocker:
+        http_mocker._mocker.post(
+            _TOKEN_URL,
+            json={"access_token": "tok", "expires_in": 3600},
+        )
+        http_mocker.get(check_request, _tasks_page())
+
+        output = _run_command(
+            source,
+            ["check", "--config", make_file(tmp_path / "config.json", config)],
+        )
+
+    statuses = output.connection_status_messages
+    assert len(statuses) == 1
+    assert statuses[0].connectionStatus.status == Status.SUCCEEDED
+    token_bodies = _token_bodies(http_mocker)
+    assert len(token_bodies) == 1
+    assert token_bodies[0]["grant_type"] == ["password"]
+    http_mocker.assert_number_of_calls(check_request, 1)
+
+
+def test_password_explicit_top_level_base_url_wins(tmp_path) -> None:
+    config = ConfigBuilder().with_password_credentials().build()
+    config["base_url"] = "https://top.onuptick.com"
+    config["credentials"]["base_url"] = "https://nested.onuptick.com"
+
+    class _TopHostRequestBuilder(UptickRequestBuilder):
+        BASE_URL = "https://top.onuptick.com"
+
+    check_request = _TopHostRequestBuilder.collection(_CHECK_STREAM)
+    source, _ = _source_with_migration_controls(config)
+    assert source._config["base_url"] == "https://top.onuptick.com"
+
+    with HttpMocker() as http_mocker:
+        http_mocker._mocker.post(
+            _TopHostRequestBuilder.token_endpoint(),
+            json={"access_token": "tok", "expires_in": 3600},
+        )
+        http_mocker.get(check_request, _tasks_page())
+
+        output = _run_command(
+            source,
+            ["check", "--config", make_file(tmp_path / "config.json", config)],
+        )
+
+    statuses = output.connection_status_messages
+    assert len(statuses) == 1
+    assert statuses[0].connectionStatus.status == Status.SUCCEEDED
+    # An explicit top-level base_url wins over credentials.base_url for API requests.
+    http_mocker.assert_number_of_calls(check_request, 1)
+    assert [request.url for request in http_mocker._mocker.request_history if request.url == _TopHostRequestBuilder.token_endpoint()]
+
+
+def test_password_credentials_without_any_base_url_fails_check(tmp_path) -> None:
+    config = ConfigBuilder().with_password_credentials().build()
+    del config["base_url"]
+    source, migration_controls = _source_with_migration_controls(config)
+
+    assert migration_controls == []
+    assert "base_url" not in source._config
+
+    with HttpMocker() as http_mocker:
+        http_mocker._mocker.post(
+            _TOKEN_URL,
+            json={"access_token": "tok", "expires_in": 3600},
+        )
+
+        output = _run_command(
+            source,
+            ["check", "--config", make_file(tmp_path / "config.json", config)],
+        )
+
+    statuses = output.connection_status_messages
+    assert len(statuses) == 1
+    assert statuses[0].connectionStatus.status == Status.FAILED
+    # The nested-password oneOf requires base_url, so entrypoint spec validation fails the check
+    # before any token request. jsonschema reports the oneOf mismatch via the first (OAuth)
+    # variant's const, which is the message users see today.
+    assert statuses[0].connectionStatus.message == "Config validation error: 'oauth2.0' was expected"
+    assert _token_bodies(http_mocker) == []
 
 
 def test_oauth_credentials_use_refresh_grant_and_emit_control() -> None:
@@ -269,9 +365,11 @@ def test_oauth_config_with_explicit_base_url_uses_it_for_api_requests(tmp_path) 
     assert len(_token_bodies(http_mocker)) == 1
 
 
-def test_config_with_both_credential_shapes_emits_no_control(tmp_path) -> None:
-    # Already-migrated config (top-level fields kept alongside nested credentials): the migration
-    # must not re-fire, so 0 CONTROL messages and the password grant still works.
+def test_config_with_both_credential_shapes_copies_base_url_only(tmp_path) -> None:
+    # Already-migrated config (top-level fields kept alongside nested credentials): the credential
+    # copy must not re-fire. The base_url copy does run — it fills credentials.base_url in place,
+    # which the shallow `dict(config)` diff can't see, so still 0 CONTROL — and the password grant
+    # still works.
     config = ConfigBuilder().with_password_credentials().build()
     config["client_id"] = "test-client-id"
     config["client_secret"] = "test-client-secret"
@@ -279,6 +377,8 @@ def test_config_with_both_credential_shapes_emits_no_control(tmp_path) -> None:
     config["password"] = "test-password"
     check_request = UptickRequestBuilder.collection(_CHECK_STREAM)
     source, migration_controls = _source_with_migration_controls(config)
+
+    assert source._config["credentials"]["base_url"] == "https://test-tenant.onuptick.com"
 
     with HttpMocker() as http_mocker:
         http_mocker._mocker.post(
@@ -348,6 +448,7 @@ def test_legacy_top_level_credentials_with_empty_credentials_object(tmp_path) ->
     assert token_bodies[0]["grant_type"] == ["password"]
     # The empty `credentials` object is filled in place by the migration (auth_type=password).
     assert source._config["credentials"]["auth_type"] == "password"
+    assert source._config["credentials"]["base_url"] == "https://test-tenant.onuptick.com"
     # No CONTROL: the CDK's migrate-and-diff compares a shallow `dict(config)` copy, and the nested
     # object mutated in place is shared with the original, so the change is invisible to the diff.
     assert migration_controls == []

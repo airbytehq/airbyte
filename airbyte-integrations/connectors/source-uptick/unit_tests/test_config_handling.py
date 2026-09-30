@@ -104,6 +104,15 @@ def test_spec_declares_oauth_advanced_auth() -> None:
     assert "workspace" in oauth_variant["required"]
     assert oauth_variant["properties"]["workspace"]["pattern"] == "^[a-z0-9-]+$"
     assert oauth_variant["properties"]["workspace"]["pattern_descriptor"] == "acme"
+    assert "base_url" not in oauth_variant["properties"]
+    password_variant = credentials["oneOf"][1]
+    assert "base_url" in password_variant["required"]
+    assert "base_url" in password_variant["properties"]
+    properties = spec["connection_specification"]["properties"]
+    # The legacy top-level fields stay in the schema (copy-only migration keeps writing them) but
+    # are hidden in the UI; base_url is derived from credentials at runtime.
+    for field in ("base_url", "client_id", "client_secret", "username", "password"):
+        assert properties[field]["airbyte_hidden"] is True
     assert spec["connection_specification"]["required"] == []
     assert "pattern" not in spec["connection_specification"]["properties"]["base_url"]
     user_input = spec["advanced_auth"]["oauth_config_specification"]["oauth_user_input_from_connector_config_specification"]
@@ -148,7 +157,7 @@ def test_migrated_legacy_config_validates_against_spec(credential_value: str) ->
     validate(instance=migrated, schema=spec_schema)
     credentials = migrated["credentials"]
     assert credentials["auth_type"] == "password"
-    for field in ("client_id", "client_secret", "username", "password"):
+    for field in ("base_url", "client_id", "client_secret", "username", "password"):
         assert isinstance(credentials[field], str)
         # Copy-only migration: the top-level fields are kept so the config works on <=1.3.x.
         assert migrated[field] == credentials[field]
@@ -168,6 +177,24 @@ def test_oauth_config_without_base_url_validates_against_spec() -> None:
 
     validate(instance=config, schema=spec_schema)
     # The connector derives base_url from the workspace at construction.
+    assert get_source(config)._config["base_url"] == "https://test-tenant.onuptick.com"
+
+
+def test_password_config_with_nested_base_url_validates_against_spec() -> None:
+    spec_schema = get_source(base_config()).resolved_manifest["spec"]["connection_specification"]
+    config = {
+        "credentials": {
+            "auth_type": "password",
+            "base_url": "https://test-tenant.onuptick.com",
+            "client_id": "test-client-id",
+            "client_secret": "test-client-secret",
+            "username": "test-user",
+            "password": "test-password",
+        }
+    }
+
+    validate(instance=config, schema=spec_schema)
+    # The connector derives the top-level base_url (what requesters read) from credentials.base_url.
     assert get_source(config)._config["base_url"] == "https://test-tenant.onuptick.com"
 
 

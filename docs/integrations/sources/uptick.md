@@ -26,9 +26,10 @@ To generate the OAuth credentials, go to **Control Panel > Uptick API** in your 
 
 | Input | Type | Description | Default Value |
 | ------- | ------ | ------------- | --------------- |
-| `base_url` | `string` | API URL in the form `https://yourcompany.onuptick.com` (https, host only, no trailing slash). Required for username/password; optional for OAuth, where it is derived from the Uptick workspace. Syncs normalize the value automatically. | |
+| `base_url` | `string` | Legacy field, hidden in the UI. The API URL is derived automatically — from `credentials.base_url` for username/password, or from the workspace for OAuth. | |
 | `credentials.auth_type` | `string` | `oauth2.0` for the OAuth flow, `password` for the legacy username and password method. | |
-| `credentials.workspace` | `string` | The `<workspace>` part of `https://<workspace>.onuptick.com` (lowercase letters, digits, hyphens). Required for `oauth2.0`; the OAuth consent and token URLs are built from it, and the Base Url is derived from it when left empty. | |
+| `credentials.base_url` | `string` | Root URL of your Uptick workspace, for example `https://yourcompany.onuptick.com` (https, host only, no trailing slash). Required for username/password. Syncs normalize the value automatically. | |
+| `credentials.workspace` | `string` | The `<workspace>` part of `https://<workspace>.onuptick.com` (lowercase letters, digits, hyphens). Required for `oauth2.0`; the OAuth consent and token URLs are built from it, and the API URL is derived from it when left empty. | |
 | `credentials.client_id` | `string` | OAuth Client ID generated from **Control Panel > Uptick API**. Filled automatically by the OAuth flow on Airbyte Cloud. | |
 | `credentials.client_secret` | `string` | OAuth Client Secret generated from **Control Panel > Uptick API**. Filled automatically by the OAuth flow on Airbyte Cloud. | |
 | `credentials.refresh_token` | `string` | Refresh token obtained by authenticating with Uptick. Required for `oauth2.0`; filled automatically by the OAuth flow. | |
@@ -238,7 +239,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
-| 1.4.0 | 2026-09-28 | [87436](https://github.com/airbytehq/airbyte/pull/87436) | Add OAuth 2.0 authorization-code (PKCE) authentication (base URL derived from workspace); copy legacy credentials under `credentials` |
+| 1.4.0 | 2026-09-28 | [87436](https://github.com/airbytehq/airbyte/pull/87436) | Add OAuth 2.0 authorization-code (PKCE) authentication (base URL derived from workspace); copy legacy credentials under `credentials`; move `base_url` under the username/password option (legacy top-level fields kept) |
 | 1.3.1 | 2026-09-29 | [87373](https://github.com/airbytehq/airbyte/pull/87373) | Update dependencies |
 | 1.3.0 | 2026-09-28 | [86356](https://github.com/airbytehq/airbyte/pull/86356) | Add configurable max_requests_per_minute budget (default 60/min), refresh expired tokens mid-sync, and normalize base_url. The default `max_requests_per_minute` (60) is conservative; large tenants (millions of records) may see slower syncs than 1.2.1 — raise the value if Uptick tolerates it |
 | 1.2.1 | 2026-09-22 | [86843](https://github.com/airbytehq/airbyte/pull/86843) | Update dependencies |

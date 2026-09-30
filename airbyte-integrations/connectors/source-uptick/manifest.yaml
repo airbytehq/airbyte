@@ -167,10 +167,38 @@ spec:
         description: API URL, e.g. https://<workspace>.onuptick.com. Required for username/password; leave empty for OAuth (derived from the workspace).
         order: 0
         title: Base Url
+        airbyte_hidden: true
+      client_id:
+        type: string
+        description: Client ID of the OAuth application created in Uptick under Control Panel > Uptick API > Create Application.
+        order: 1
+        title: OAuth Client ID
+        airbyte_secret: true
+        airbyte_hidden: true
+      client_secret:
+        type: string
+        description: Client secret of that Uptick OAuth application.
+        order: 2
+        title: OAuth Client Secret
+        airbyte_secret: true
+        airbyte_hidden: true
+      username:
+        type: string
+        description: Email address of the Uptick user the connector signs in as. Synced data is limited to what this user can see in Uptick.
+        order: 3
+        title: Uptick API Account Email
+        airbyte_hidden: true
+      password:
+        type: string
+        description: Password of that Uptick user.
+        order: 4
+        title: Uptick API Account Password
+        airbyte_secret: true
+        airbyte_hidden: true
       credentials:
         type: object
         title: Authentication
-        order: 1
+        order: 5
         oneOf:
           - type: object
             title: OAuth 2.0 (Authenticate with Uptick)
@@ -222,6 +250,7 @@ spec:
             title: Username & password (legacy)
             required:
               - auth_type
+              - base_url
               - client_id
               - client_secret
               - username
@@ -231,25 +260,34 @@ spec:
                 type: string
                 const: password
                 order: 0
+              base_url:
+                type: string
+                title: Base Url
+                description: Root URL of the Uptick workspace, for example https://demo-fire.onuptick.com. Only the host is used; the scheme and trailing slash are normalized.
+                order: 1
               client_id:
                 type: string
                 description: Client ID of the OAuth application created in Uptick under Control Panel > Uptick API > Create Application.
                 title: OAuth Client ID
                 airbyte_secret: true
+                order: 2
               client_secret:
                 type: string
                 description: Client secret of that Uptick OAuth application.
                 title: OAuth Client Secret
                 airbyte_secret: true
+                order: 3
               username:
                 type: string
                 description: Email address of the Uptick user the connector signs in as. Synced data is limited to what this user can see in Uptick.
                 title: Uptick API Account Email
+                order: 4
               password:
                 type: string
                 description: Password of that Uptick user.
                 title: Uptick API Account Password
                 airbyte_secret: true
+                order: 5
       num_workers:
         type: integer
         title: Number of Concurrent Threads
@@ -257,7 +295,7 @@ spec:
         default: 3
         minimum: 1
         maximum: 10
-        order: 2
+        order: 6
       max_requests_per_minute:
         type: integer
         title: Maximum Requests Per Minute
@@ -265,7 +303,7 @@ spec:
         default: 60
         minimum: 1
         maximum: 600
-        order: 3
+        order: 7
     additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0
@@ -339,15 +377,17 @@ spec:
   config_normalization_rules:
     type: ConfigNormalizationRules
     transformations:
-      # For OAuth configs saved without a Base Url, derive it from the workspace. Runs before the
+      # Derives the top-level base_url (what requesters and authenticators read) when the user
+      # left it empty: a nested credentials.base_url wins, then the OAuth workspace. Runs before the
       # https normalization below so the derived value is normalized like a typed one; a user-set
-      # base_url always wins (no mismatch check).
+      # base_url always wins (no mismatch check). The value expression must stay .get-safe because
+      # ConfigAddFields evaluates it before the condition.
       - type: ConfigAddFields
-        condition: "{{ config.get('credentials', {}).get('workspace') and not (config.get('base_url') or '').strip() }}"
+        condition: "{{ not (config.get('base_url') or '').strip() and ((config.get('credentials', {}).get('base_url') or '').strip() or config.get('credentials', {}).get('workspace')) }}"
         fields:
           - type: AddedFieldDefinition
             path: ["base_url"]
-            value: "{{ 'https://' ~ config.get('credentials', {}).get('workspace') ~ '.onuptick.com' }}"
+            value: "{{ (config.get('credentials', {}).get('base_url') or '').strip() or ('https://' ~ config.get('credentials', {}).get('workspace') ~ '.onuptick.com') }}"
             value_type: string
       - type: ConfigAddFields
         condition: "{{ config.get('base_url') is string and (config['base_url'] | trim | length) > 0 }}"
@@ -357,7 +397,7 @@ spec:
             value: "{{ 'https://' ~ (((config['base_url'] | string | trim).split('://') | last | trim('/')).split('/') | first) }}"
     config_migrations:
       - type: ConfigMigration
-        description: Copy legacy top-level credentials under `credentials` (auth_type password); the top-level fields are kept so the config still works on <=1.3.x.
+        description: Copy legacy top-level credentials and base_url under `credentials` (auth_type password); the top-level fields are kept so the config still works on <=1.3.x.
         transformations:
           - type: ConfigAddFields
             # Moves legacy top-level credential fields under `credentials`. The condition is evaluated
@@ -384,6 +424,16 @@ spec:
               - type: AddedFieldDefinition
                 path: ["credentials", "auth_type"]
                 value: "password"
+          - type: ConfigAddFields
+            # Copies the top-level base_url under `credentials` for password configs (it lives in the
+            # password oneOf branch now). Runs after the credential copy above, so auth_type is already
+            # "password" for migrated legacy configs; OAuth configs are untouched.
+            condition: "{{ config.get('base_url') is string and (config['base_url'] | trim | length) > 0 and config.get('credentials', {}).get('auth_type') == 'password' and not config.get('credentials', {}).get('base_url') }}"
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "base_url"]
+                value: "{{ config['base_url'] }}"
+                value_type: string
 streams:
   - type: DeclarativeStream
     name: tasks
