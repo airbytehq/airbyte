@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Generated due-work checks for Shopify bulk checkpoint continuation.
 
 Run on Python 3.11 with due-work-harness installed. The connector also supports
