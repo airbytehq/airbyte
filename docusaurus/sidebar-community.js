@@ -50,6 +50,7 @@ const mcpServers = {
     },
     "mcp-servers/airbyte-knowledge-mcp",
     "mcp-servers/replication-mcp",
+    "mcp-servers/replication-mcp-local",
   ],
 };
 

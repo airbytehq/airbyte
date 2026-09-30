@@ -25,25 +25,68 @@ https://mcp.airbyte.com/mcp
 
 When prompted, sign in with your [Airbyte Cloud](https://cloud.airbyte.com) account.
 
-If your client needs a specific setup method, use one of the following.
+### Client setup
 
 <Tabs>
-<TabItem value="url" label="Paste a URL" default>
+<TabItem value="claude" label="Claude" default>
 
-Use this method with Claude, Claude Desktop, ChatGPT, or any client that has a URL field for remote MCP servers.
-
-1. Open your client's MCP or connector settings. In Claude and Claude Desktop, go to **Settings** > **Connectors** > **Add custom connector**.
-
-2. Paste the server URL: `https://mcp.airbyte.com/mcp`
-
-3. Save, then connect. Your browser opens so you can sign in to Airbyte Cloud and grant access.
+In Claude or Claude Desktop, go to **Settings** > **Connectors** > **Add custom connector**, paste `https://mcp.airbyte.com/mcp`, and connect.
 
 </TabItem>
-<TabItem value="json" label="JSON config file">
+<TabItem value="claude-code" label="Claude Code">
 
-Use this method with VS Code, Cursor, or Windsurf. Add an entry to your client's MCP config file. Key names vary by client, so check your client's documentation if the examples below don't match.
+```bash
+claude mcp add --transport http airbyte https://mcp.airbyte.com/mcp
+```
 
-**VS Code** (`.vscode/mcp.json`):
+Then run `claude`, type `/mcp`, select **airbyte**, and select **Authenticate**.
+
+</TabItem>
+<TabItem value="cursor" label="Cursor">
+
+[Install in Cursor](cursor://anysphere.cursor-deeplink/mcp/install?name=airbyte&config=eyJ1cmwiOiJodHRwczovL21jcC5haXJieXRlLmNvbS9tY3AifQ%3D%3D)
+
+Or add the [JSON config](#json-config) to `.cursor/mcp.json`.
+
+</TabItem>
+<TabItem value="vscode" label="VS Code">
+
+[Install in VS Code](https://vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522airbyte%2522%252C%2522type%2522%253A%2522http%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fmcp.airbyte.com%252Fmcp%2522%257D) or [Install in VS Code Insiders](https://insiders.vscode.dev/redirect?url=vscode-insiders%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522airbyte%2522%252C%2522type%2522%253A%2522http%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fmcp.airbyte.com%252Fmcp%2522%257D)
+
+Or run:
+
+```bash
+code --add-mcp '{"name":"airbyte","type":"http","url":"https://mcp.airbyte.com/mcp"}'
+```
+
+</TabItem>
+<TabItem value="chatgpt" label="ChatGPT">
+
+Add `https://mcp.airbyte.com/mcp` as a custom connector in ChatGPT's connector settings.
+
+</TabItem>
+<TabItem value="other" label="Other clients">
+
+Paste `https://mcp.airbyte.com/mcp` into your client's remote MCP server settings, or add the [JSON config](#json-config) to its MCP config file. For Windsurf, use `~/.codeium/windsurf/mcp_config.json`.
+
+</TabItem>
+</Tabs>
+
+### JSON config
+
+Most clients, including Cursor and Windsurf, use this format:
+
+```json
+{
+  "mcpServers": {
+    "airbyte": {
+      "url": "https://mcp.airbyte.com/mcp"
+    }
+  }
+}
+```
+
+VS Code (`.vscode/mcp.json`) uses a `servers` key instead:
 
 ```json
 {
@@ -56,73 +99,16 @@ Use this method with VS Code, Cursor, or Windsurf. Add an entry to your client's
 }
 ```
 
-**Cursor** (`.cursor/mcp.json`) or **Windsurf** (`~/.codeium/windsurf/mcp_config.json`):
+## Helpful prompts
 
-```json
-{
-  "mcpServers": {
-    "airbyte": {
-      "url": "https://mcp.airbyte.com/mcp"
-    }
-  }
-}
-```
-
-Save the file. Your client detects that the server requires OAuth and prompts you to sign in to Airbyte Cloud.
-
-</TabItem>
-<TabItem value="cli" label="CLI command">
-
-Use this method with Claude Code or VS Code. Run a one-line command in your terminal, and it writes the config for you.
-
-**Claude Code:**
-
-```bash
-claude mcp add --transport http airbyte https://mcp.airbyte.com/mcp
-```
-
-Then run `claude`, type `/mcp`, select **airbyte**, and select **Authenticate** to sign in to Airbyte Cloud.
-
-**VS Code:**
-
-```bash
-code --add-mcp '{"name":"airbyte","type":"http","url":"https://mcp.airbyte.com/mcp"}'
-```
-
-</TabItem>
-<TabItem value="one-click" label="One-click install">
-
-Use this method with Cursor or VS Code. Click a link that opens the client and pre-fills the config.
-
-- [Install in Cursor](cursor://anysphere.cursor-deeplink/mcp/install?name=airbyte&config=eyJ1cmwiOiJodHRwczovL21jcC5haXJieXRlLmNvbS9tY3AifQ%3D%3D)
-- [Install in VS Code](https://vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522airbyte%2522%252C%2522type%2522%253A%2522http%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fmcp.airbyte.com%252Fmcp%2522%257D)
-- [Install in VS Code (Insiders edition)](https://insiders.vscode.dev/redirect?url=vscode-insiders%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522airbyte%2522%252C%2522type%2522%253A%2522http%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fmcp.airbyte.com%252Fmcp%2522%257D)
-
-After the client opens, confirm the install and sign in to Airbyte Cloud when prompted.
-
-</TabItem>
-</Tabs>
-
-## Run the server locally
-
-To run the Airbyte Replication MCP server on your own machine:
-
-1. Install `uv`: `brew install uv`
-2. Create a dotenv secrets file with your Airbyte Cloud credentials and connector configurations
-3. Register the MCP server with your MCP client using `uvx --python=3.11 --from=airbyte@latest airbyte-mcp`
-4. Test the connection using your MCP client
-
-For complete setup instructions, environment configuration, the security model, and troubleshooting, see the [Airbyte Replication MCP Server documentation](https://airbytehq.github.io/PyAirbyte/airbyte/mcp.html).
-
-## Helpful Prompts
-
-Here are some things you can do with the Airbyte Replication MCP server, across local and Airbyte Cloud use cases:
+Here are some things you can ask your agent to do with the Airbyte Replication MCP server:
 
 1. "Use your MCP tools to list all available Airbyte connectors."
 2. "Use your MCP tools to get information about the Airbyte Stripe connector."
-3. "Use your MCP tools to list all variables you have access to in the dotenv secrets file."
-4. "Use your MCP tools to check your connection to your Airbyte Cloud workspace."
-5. "Use your MCP tools to list all available destinations in my Airbyte Cloud workspace."
+3. "Use your MCP tools to check your connection to your Airbyte Cloud workspace."
+4. "Use your MCP tools to list all available destinations in my Airbyte Cloud workspace."
+
+To run the server on your own machine instead, see [Run the Replication MCP server locally](replication-mcp-local.md).
 
 ## Contributing to the Airbyte MCP Server
 
