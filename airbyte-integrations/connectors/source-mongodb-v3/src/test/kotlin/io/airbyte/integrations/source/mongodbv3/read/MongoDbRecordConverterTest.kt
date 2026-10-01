@@ -237,6 +237,28 @@ class MongoDbRecordConverterTest {
     }
 
     @Test
+    fun testDocumentIdRoundTripsAsExtendedJson() {
+        // v2 2.1.0: an `_id` that is itself a document is stored as extended JSON (lossless BSON
+        // types) and parsed back for the `_id > lastSeen` resume filter.
+        val id = Document("tenant", "acme").append("seq", 9007199254740993L)
+        val state = MongoDbStreamStateValue.fromLastId(id, MongoDbSnapshotStatus.IN_PROGRESS)
+        Assertions.assertEquals(MongoDbIdType.OBJECT, state.idType)
+        Assertions.assertTrue(state.id!!.contains("\"\$numberLong\""), state.id)
+
+        val resumed = MongoDbStreamStateValue.fromOpaqueStateValue(state.toOpaqueStateValue())
+        val value = resumed.resumeIdValue() as org.bson.BsonDocument
+        Assertions.assertEquals("acme", value.getString("tenant").value)
+        Assertions.assertEquals(9007199254740993L, value.getInt64("seq").value)
+    }
+
+    @Test
+    fun testUnsupportedIdTypeIsAConfigError() {
+        Assertions.assertThrows(io.airbyte.cdk.ConfigErrorException::class.java) {
+            MongoDbStreamStateValue.fromLastId(1.5, MongoDbSnapshotStatus.IN_PROGRESS)
+        }
+    }
+
+    @Test
     fun testStateValueRoundTrip() {
         val value =
             MongoDbStreamStateValue("abc", MongoDbSnapshotStatus.IN_PROGRESS, MongoDbIdType.STRING)

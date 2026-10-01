@@ -312,13 +312,18 @@ class MongoDbSourceMetadataQuerier(
     override fun primaryKey(streamID: StreamIdentifier): List<List<String>> =
         listOf(listOf(ID_FIELD))
 
+    /**
+     * Change streams need an oplog, which a replica set provides and a **sharded cluster** reached
+     * through `mongos` (cluster type `SHARDED`) provides too. So, like v2 since 2.1.0, a
+     * non-replica-set cluster type is a warning rather than a failure; a standalone `mongod` still
+     * fails, at read time, when the change stream is opened.
+     */
     override fun extraChecks() {
         val clusterType: ClusterType = client.clusterDescription.type
         if (clusterType != ClusterType.REPLICA_SET) {
-            log.error {
-                "Target MongoDB instance is not a replica set cluster (type=$clusterType)."
+            log.warn {
+                "MongoDB instance is not a replica set cluster (cluster type: $clusterType)."
             }
-            throw ConfigErrorException("Target MongoDB instance is not a replica set cluster.")
         }
     }
 

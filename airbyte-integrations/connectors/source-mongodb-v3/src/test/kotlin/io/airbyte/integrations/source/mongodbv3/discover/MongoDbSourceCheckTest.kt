@@ -46,12 +46,14 @@ class MongoDbSourceCheckTest {
         )
     }
 
+    /**
+     * Since v2 2.1.0 a non-replica-set cluster type only warns: sharded clusters reached through
+     * `mongos` report `SHARDED`, yet support change streams. (A standalone `mongod` therefore
+     * passes `check` too and fails later, when the change stream is opened.)
+     */
     @Test
-    fun testCheckFailsAgainstStandaloneInstance() {
-        SyncsTestFixture.testCheck(
-            config(standaloneConnectionString(), listOf(DATABASE)),
-            expectedFailure = "Target MongoDB instance is not a replica set cluster",
-        )
+    fun testCheckWarnsButSucceedsAgainstNonReplicaSetCluster() {
+        SyncsTestFixture.testCheck(config(standaloneConnectionString(), listOf(DATABASE)))
     }
 
     @Test

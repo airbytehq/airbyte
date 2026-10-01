@@ -189,6 +189,44 @@ class MongoDbSourceReadTest {
     }
 
     @Test
+    fun testDocumentIdCollectionResumesMidSnapshot() {
+        // v2 2.1.0: `_id` values that are embedded documents are supported. Force a checkpoint
+        // after
+        // 2 of 3 documents so the resume filter `_id > <document>` runs against the server.
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            val coll = client.getDatabase(TEST_DB).getCollection(DOC_ID)
+            coll.drop()
+            coll.insertMany(
+                (1..3).map { n ->
+                    Document("_id", Document("tenant", "acme").append("seq", n.toLong()))
+                        .append("v", n)
+                },
+            )
+        }
+        System.setProperty(MAX_RECORDS_PROPERTY, "2")
+        val result: BufferingOutputConsumer =
+            try {
+                read(
+                    configuredCatalog(
+                        SyncMode.FULL_REFRESH,
+                        DestinationSyncMode.OVERWRITE,
+                        setOf(DOC_ID),
+                        includeEmpty = false,
+                    ),
+                )
+            } finally {
+                System.clearProperty(MAX_RECORDS_PROPERTY)
+            }
+        val records = result.records().filter { it.stream == DOC_ID }
+        Assertions.assertEquals(3, records.size)
+        Assertions.assertEquals(listOf(1, 2, 3), records.map { it.data["v"].asInt() })
+        Assertions.assertEquals(listOf(1L, 2L, 3L), records.map { it.data["_id"]["seq"].asLong() })
+        val state: MongoDbStreamStateValue = lastStreamStateFor(result, DOC_ID)
+        Assertions.assertEquals(MongoDbIdType.OBJECT, state.idType)
+        Assertions.assertTrue(state.id!!.contains("\"seq\""), state.id)
+    }
+
+    @Test
     fun testResumesFromLegacyV2DebeziumStateWithoutReset() {
         MongoClients.create(replicaSet.connectionString).use { client ->
             val coll = client.getDatabase(TEST_DB).getCollection(LEGACY_CDC)
@@ -524,6 +562,7 @@ class MongoDbSourceReadTest {
         const val EMPTY = "empty_coll"
         const val CDC = "cdc_coll"
         const val LEGACY_CDC = "legacy_cdc_coll"
+        const val DOC_ID = "doc_id_coll"
         /**
          * A `_data` the server rejects (`FailedToParse`, not a hex string). Note that any
          * *well-formed* token is accepted and resumed from the oplog start, so a rejected token is

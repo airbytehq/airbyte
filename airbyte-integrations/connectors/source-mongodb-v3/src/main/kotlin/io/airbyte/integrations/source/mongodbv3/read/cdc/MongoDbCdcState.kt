@@ -6,7 +6,10 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.util.Jsons
+import java.util.Base64
 import org.bson.BsonDocument
+import org.bson.BsonString
+import org.bson.RawBsonDocument
 
 /**
  * State of the `Global` (change-stream) feed: the change-stream resume token and the
@@ -17,8 +20,9 @@ import org.bson.BsonDocument
  * - **Native (v3 writes this):** `{"resumeToken": {"_data": "<hex>"}, "schemaEnforced": true}`.
  * - **Legacy (v2 / Debezium):** `{"state": <Debezium offset map>, "schema_enforced": true}`, where
  * the offset map has one entry whose value is a JSON string `{"sec": ..., "ord": ...,
- * "resume_token": "<hex>"}`. Debezium stores the server's own resume token verbatim, so
- * `resume_token` is exactly the `_data` v3 hands to `resumeAfter()`.
+ * "resume_token": "<token>"}`. Debezium stores the server's own resume token, either as its hex
+ * `_data` string (Debezium 2.x, v2 ≤ 2.0.x) or as the base64-encoded BSON of the whole token
+ * document (Debezium 3.x, v2 ≥ 2.1.0); both decode to the document v3 hands to `resumeAfter()`.
  */
 data class MongoDbCdcState(
     @JsonProperty("resumeToken") val resumeToken: JsonNode?,
@@ -74,10 +78,21 @@ data class MongoDbCdcState(
                         "The saved CDC state is a legacy source-mongodb-v2 Debezium offset without " +
                             "a resume token and cannot be resumed from. Please reset the connection.",
                     )
-            return MongoDbCdcState(
-                resumeToken = Jsons.objectNode().put("_data", resumeTokenData),
-                schemaEnforced = schemaEnforced,
-            )
+            return of(resumeTokenFromOffsetValue(resumeTokenData), schemaEnforced)
         }
+
+        /**
+         * The resume token Debezium stored in its offset. Debezium 2.x (v2 up to 2.0.x) stored the
+         * token's hex `_data` string; Debezium 3.x (v2 2.1.0+) stores the base64-encoded BSON of
+         * the whole token document. Accept both, as v2 does.
+         */
+        private fun resumeTokenFromOffsetValue(value: String): BsonDocument =
+            if (HEX_RESUME_TOKEN_DATA.matches(value)) {
+                BsonDocument("_data", BsonString(value))
+            } else {
+                RawBsonDocument(Base64.getDecoder().decode(value))
+            }
+
+        private val HEX_RESUME_TOKEN_DATA = Regex("^[0-9A-Fa-f]+$")
     }
 }

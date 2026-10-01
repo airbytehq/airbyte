@@ -2,9 +2,14 @@
 package io.airbyte.integrations.source.mongodbv3.read.snapshot
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.util.Jsons
 import java.util.Base64
+import org.bson.BsonDocument
+import org.bson.Document
+import org.bson.json.JsonMode
+import org.bson.json.JsonWriterSettings
 import org.bson.types.Binary
 import org.bson.types.ObjectId
 
@@ -20,6 +25,8 @@ enum class MongoDbSnapshotStatus {
 
 /**
  * BSON type of a collection's `_id`, matching the legacy connector's `MongoDbStreamState.idType`.
+ * [OBJECT] (an `_id` that is itself a document) was added by v2 2.1.0; any other BSON type is
+ * rejected up front rather than mis-serialized.
  */
 enum class MongoDbIdType {
     OBJECT_ID,
@@ -27,6 +34,7 @@ enum class MongoDbIdType {
     INT,
     LONG,
     BINARY,
+    OBJECT,
 }
 
 /**
@@ -59,6 +67,7 @@ data class MongoDbStreamStateValue(
                 MongoDbIdType.LONG -> it.toLong()
                 MongoDbIdType.STRING -> it
                 MongoDbIdType.BINARY -> reconstructBinary(it, binarySubType)
+                MongoDbIdType.OBJECT -> BsonDocument.parse(it)
             }
         }
 
@@ -71,12 +80,17 @@ data class MongoDbStreamStateValue(
             state?.let { runCatching { fromOpaqueStateValue(it) }.getOrNull() }
 
         /**
-         * Builds a checkpoint from the last `_id` value emitted for a collection (null if none).
+         * Builds a checkpoint from the last `_id` value emitted for a collection (null if none). A
+         * document `_id` is stored as extended JSON so it round-trips through [resumeIdValue] with
+         * its BSON types intact. Any other `_id` type cannot be checkpointed faithfully (v2 rejects
+         * it too), so fail clearly rather than persist a lossy `toString()`.
          */
         fun fromLastId(lastId: Any?, status: MongoDbSnapshotStatus): MongoDbStreamStateValue =
             when (lastId) {
+                null -> MongoDbStreamStateValue(null, status, MongoDbIdType.STRING)
                 is ObjectId ->
                     MongoDbStreamStateValue(lastId.toHexString(), status, MongoDbIdType.OBJECT_ID)
+                is String -> MongoDbStreamStateValue(lastId, status, MongoDbIdType.STRING)
                 is Int -> MongoDbStreamStateValue(lastId.toString(), status, MongoDbIdType.INT)
                 is Long -> MongoDbStreamStateValue(lastId.toString(), status, MongoDbIdType.LONG)
                 is Binary ->
@@ -86,8 +100,28 @@ data class MongoDbStreamStateValue(
                         idType = MongoDbIdType.BINARY,
                         binarySubType = lastId.type.toInt(),
                     )
-                else -> MongoDbStreamStateValue(lastId?.toString(), status, MongoDbIdType.STRING)
+                is Document ->
+                    MongoDbStreamStateValue(
+                        lastId.toBsonDocument().toJson(EXTENDED_JSON),
+                        status,
+                        MongoDbIdType.OBJECT,
+                    )
+                is BsonDocument ->
+                    MongoDbStreamStateValue(
+                        lastId.toJson(EXTENDED_JSON),
+                        status,
+                        MongoDbIdType.OBJECT
+                    )
+                else ->
+                    throw ConfigErrorException(
+                        "Unsupported _id type ${lastId::class.simpleName}: only ObjectId, string, " +
+                            "int, long, binary and document _id values are supported.",
+                    )
             }
+
+        /** Lossless `_id` document serialization (`{"$numberLong": ...}`, `{"$oid": ...}`, ...). */
+        private val EXTENDED_JSON: JsonWriterSettings =
+            JsonWriterSettings.builder().outputMode(JsonMode.EXTENDED).build()
 
         /** Inverse of [binaryIdToString]: rebuilds a [Binary] `_id` from its stored text form. */
         private fun reconstructBinary(id: String, subType: Int): Binary =

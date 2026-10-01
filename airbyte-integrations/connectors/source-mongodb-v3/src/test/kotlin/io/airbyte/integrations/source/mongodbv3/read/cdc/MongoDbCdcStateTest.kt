@@ -43,6 +43,35 @@ class MongoDbCdcStateTest {
     }
 
     @Test
+    fun testLegacyDebezium3Base64TokenYieldsTheSameResumeToken() {
+        // v2 2.1.0 (Debezium 3.x) stores the base64-encoded BSON of the whole token document in
+        // `resume_token` instead of the hex `_data` string. Both must decode to the same token.
+        val tokenDocument = BsonDocument.parse("""{"_data": "$TOKEN"}""")
+        val base64 =
+            java.util.Base64.getEncoder()
+                .encodeToString(
+                    org.bson
+                        .RawBsonDocument(tokenDocument, org.bson.codecs.BsonDocumentCodec())
+                        .byteBuffer
+                        .array()
+                )
+        val legacy =
+            Jsons.readTree(
+                """
+                {
+                  "state": {
+                    "[\"source-mongodb-v2\",{\"server_id\":\"x\"}]":
+                      "{\"sec\":1727740800,\"ord\":1,\"resume_token\":\"$base64\"}"
+                  },
+                  "schema_enforced": true
+                }
+                """,
+            )
+        val parsed = MongoDbCdcState.fromOpaqueStateValue(legacy)!!
+        Assertions.assertEquals(TOKEN, parsed.resumeTokenBson()!!.getString("_data").value)
+    }
+
+    @Test
     fun testLegacyNullStateIsAColdStart() {
         // v2 persisted {"state": null, ...} after a full-refresh-only sync.
         val parsed =

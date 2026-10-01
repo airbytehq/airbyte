@@ -15,7 +15,10 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 21 2>/dev/null || echo /opt/homebre
 ```
 
 Unit tests start `mongo:7.0` containers through Testcontainers as a single-node replica set;
-change streams and the `check` replica-set probe do not work against a standalone `mongod`.
+change streams do not work against a standalone `mongod`. Like v2 since 2.1.0, `check` only
+**warns** when the cluster type is not `REPLICA_SET`, because a sharded cluster reached through
+`mongos` reports `SHARDED` yet supports change streams; a standalone instance therefore passes
+`check` and fails when the change stream is opened.
 
 ## Running the connector locally
 
@@ -104,7 +107,10 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
   `checkpointTargetInterval` timeout, and completes via `MongoDbSharedState.completedSnapshots`. The
   per-collection checkpoint is the legacy `MongoDbStreamStateValue` shape
   (`{id, status, idType, binarySubType}`): `COMPLETE` for an incremental stream once its snapshot
-  finishes, `FULL_REFRESH` for a full-refresh stream. At READ time the metadata querier serves
+  finishes, `FULL_REFRESH` for a full-refresh stream. Supported `_id` types are ObjectId, string,
+  int, long, binary and — since v2 2.1.0 — a **document** (`idType: OBJECT`, stored as extended
+  JSON and parsed back with `BsonDocument.parse` for the resume filter); any other `_id` type is a
+  config error rather than a lossy `toString()`. At READ time the metadata querier serves
   `fields()` from the configured catalog rather than re-sampling.
 - **CDC** (`MongoDbCdcPartitionReader`, the `Global` feed): reads the replica-set change stream with
   the native driver `watch()` — **not Debezium**. Cold start captures a resume token before the
@@ -112,10 +118,11 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
   `_ab_cdc_deleted_at`) and checkpoints the new token in `MongoDbCdcState`. `update_capture_mode`
   selects `UPDATE_LOOKUP` vs `REQUIRED` (post-image, MongoDB 6.0+). **Legacy v2 state is read
   as-is:** `MongoDbCdcState.fromOpaqueStateValue` also understands v2's Debezium offset map
-  (`{"state": {<key>: "{\"sec\":..,\"ord\":..,\"resume_token\":\"<hex>\"}"}, "schema_enforced": ..}`)
-  and extracts `resume_token`, which is the server's own `_data` that Debezium stored verbatim — so
-  an upgraded connection resumes from where v2 left off with no reset or migration. v3 writes its
-  native shape going forward. A saved token the server rejects
+  (`{"state": {<key>: "{\"sec\":..,\"ord\":..,\"resume_token\":\"<token>\"}"}, "schema_enforced": ..}`)
+  and extracts `resume_token`: Debezium stores the server's own token, as the hex `_data` string
+  (Debezium 2.x, v2 ≤ 2.0.x) or as the base64-encoded BSON of the token document (Debezium 3.x,
+  v2 ≥ 2.1.0) — both are accepted — so an upgraded connection resumes from where v2 left off with
+  no reset or migration. v3 writes its native shape going forward. A saved token the server rejects
   (oplog rolled past it — `ChangeStreamHistoryLost` — or unparseable) honours
   `invalid_cdc_cursor_position_behavior`: `Fail sync` raises the legacy "Saved offset is not valid…"
   config error; `Re-sync data` resets the CDC and snapshot state and re-snapshots. Note the server
