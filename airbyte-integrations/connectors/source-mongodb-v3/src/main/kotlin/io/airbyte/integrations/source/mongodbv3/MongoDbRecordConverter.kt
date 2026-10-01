@@ -81,12 +81,26 @@ class MongoDbRecordConverter(
                 for ((name: String, type: MongoDbFieldType) in schemaFieldTypes) {
                     val node: JsonNode? =
                         if (document.containsKey(name)) toJsonNode(document[name]) else null
-                    payload[name] = FieldValueEncoder(node, type.valueCodec)
+                    payload[name] = FieldValueEncoder(coerceToSchema(node, type), type.valueCodec)
                 }
             }
         }
         return payload to rawId
     }
+
+    /**
+     * MongoDB types are dynamic, so a value's shape may not match the field's discovered type.
+     * Destinations coerce primitives themselves, but a structural mismatch — a non-array value in a
+     * field the catalog declares as `array` — would become `null` downstream. Like v2, wrap such a
+     * value in a one-element array instead. Other mismatches are left to the destination (and, on
+     * the protobuf channel, to the per-type codec).
+     */
+    private fun coerceToSchema(node: JsonNode?, type: MongoDbFieldType): JsonNode? =
+        if (type == MongoDbFieldType.ARRAY && node != null && !node.isNull && !node.isArray) {
+            Jsons.arrayNode().add(node)
+        } else {
+            node
+        }
 
     private fun documentToObject(document: Document): ObjectNode {
         val node: ObjectNode = Jsons.objectNode()
@@ -115,7 +129,12 @@ class MongoDbRecordConverter(
             is org.bson.BsonTimestamp -> Jsons.textNode(formatBsonTimestamp(value))
             is Binary -> Jsons.textNode(Base64.getEncoder().encodeToString(value.data))
             is ByteArray -> Jsons.textNode(Base64.getEncoder().encodeToString(value))
-            is BsonRegularExpression -> Jsons.textNode("(${value.options})${value.pattern}")
+            // `(options)pattern`, or just the pattern when there are no options, as in v2.
+            is BsonRegularExpression ->
+                Jsons.textNode(
+                    if (value.options.isNullOrBlank()) value.pattern
+                    else "(${value.options})${value.pattern}"
+                )
             is CodeWithScope ->
                 Jsons.objectNode().apply {
                     put("code", value.code)

@@ -81,6 +81,36 @@ class MongoDbRecordConverterTest {
     }
 
     @Test
+    fun testRegexWithoutOptionsIsTheBarePattern() {
+        // v2: "(options)pattern" only when options are present, otherwise just the pattern.
+        val node = json(Document("_id", 1).append("re", BsonRegularExpression("abc")))
+        Assertions.assertEquals("abc", node["re"].asText())
+    }
+
+    @Test
+    fun testNonArrayValueInArrayFieldIsWrapped() {
+        // Schema says `tags` is an array, but this document holds a scalar: wrap it (as v2 did) so
+        // the destination does not null the structural mismatch.
+        val converter =
+            MongoDbRecordConverter(
+                schemaEnforced = true,
+                schemaFieldTypes =
+                    mapOf("_id" to MongoDbFieldType.NUMBER, "tags" to MongoDbFieldType.ARRAY),
+            )
+        val node =
+            converter.toPayloadWithId(Document("_id", 1).append("tags", "solo")).first.toJson()
+        Assertions.assertTrue(node["tags"].isArray)
+        Assertions.assertEquals(listOf("solo"), node["tags"].map { it.asText() })
+
+        // A real array and an absent field are left alone.
+        val real =
+            converter.toPayloadWithId(Document("_id", 1).append("tags", listOf("a"))).first.toJson()
+        Assertions.assertEquals(listOf("a"), real["tags"].map { it.asText() })
+        val absent = converter.toPayloadWithId(Document("_id", 1)).first.toJson()
+        Assertions.assertTrue(absent["tags"].isNull)
+    }
+
+    @Test
     fun testMinAndMaxKeyAreOmitted() {
         val node = json(Document("_id", 1).append("lo", MinKey()).append("hi", MaxKey()))
         Assertions.assertFalse(node.has("lo"))
