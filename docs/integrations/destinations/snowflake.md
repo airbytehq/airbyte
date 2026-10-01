@@ -180,9 +180,13 @@ in [Step 1](#step-1-set-up-key-pair-authentication) to authenticate.
 
 ## Output schema
 
-Airbyte outputs each stream into its own raw table in `airbyte_internal` schema by default (you can
-override this with the **Airbyte Internal Table Dataset Name** setting) and a final table with typed columns. Contents in the raw table are _not_
-deduplicated.
+By default, Airbyte writes each stream directly into its own final table with typed columns. See
+[Final Table schema](#final-table-schema).
+
+If you enable **Legacy raw tables**, Airbyte instead writes each stream into a raw table in the
+`airbyte_internal` schema (you can override this with the **Airbyte Internal Table Dataset Name**
+setting) and doesn't create a final table. Contents in the raw table are _not_ deduplicated. See
+[Raw Table schema](#raw-table-schema).
 
 :::info
 By default, Airbyte creates permanent tables. If you prefer transient tables, create a dedicated
@@ -207,8 +211,8 @@ The raw table contains these fields:
 - `_airbyte_meta`
 - `_airbyte_data`
 
-`_airbyte_data` is a JSON blob with the event data. See [here](/platform/understanding-airbyte/airbyte-metadata-fields)
-for more information about the other fields.
+`_airbyte_data` is a JSON blob with the record data. For more information about the other fields, see
+[Airbyte metadata fields](/platform/understanding-airbyte/airbyte-metadata-fields).
 
 :::info
 Although the contents of the `_airbyte_data` are fairly stable, the schema of the raw table could
@@ -222,10 +226,9 @@ The final table contains these fields, in addition to the columns declared in yo
 - `_AIRBYTE_RAW_ID`
 - `_AIRBYTE_GENERATION_ID`
 - `_AIRBYTE_EXTRACTED_AT`
-- `_AIRBYTE_LOADED_AT`
 - `_AIRBYTE_META`
 
-Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
+For more information about these fields, see [Airbyte metadata fields](/platform/understanding-airbyte/airbyte-metadata-fields).
 
 ### Table and column naming
 
