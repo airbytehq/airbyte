@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## September 30, 2026
+
+Platform
+
+- If your organization is on the Standard plan or a trial, you now have until October 21 to upgrade to a Plus plan and receive free overage credits. This limited-time offer, announced on September 15, previously ended on September 29. Conditions apply, and the number of free overage credits depends on the Plus plan you select, as shown on the Plans page in Organization settings.
+
 ## September 25, 2026
 
 Connections
