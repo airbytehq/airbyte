@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption.APPEND
 import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
@@ -131,7 +132,7 @@ class BigqueryS3CopyTest {
             archive.complete(fixture.stream)
             assertEquals(
                 listOf("schema.json", "stream_complete.json"),
-                fixture.uploader.objects.map { it.key.substringAfterLast('/') }
+                fixture.uploader.objects.map { it.key.substringAfterLast('/') },
             )
             val marker = fixture.uploader.objects.last()
             assertEquals("fusion/test-run/batches/stream_complete.json", marker.key)
@@ -161,7 +162,7 @@ class BigqueryS3CopyTest {
                 com.fasterxml.jackson.databind
                     .ObjectMapper()
                     .readValue(String(marker.bytes), Map::class.java)
-                    .mapValues { (_, v) -> (v as Number).toLong() }
+                    .mapValues { (_, v) -> (v as Number).toLong() },
             )
             assertEquals(2, fixture.uploader.objects.size)
         }
@@ -169,19 +170,27 @@ class BigqueryS3CopyTest {
     }
 
     @Test
-    fun `invalid strategy fails before database setup or AWS`() = runBlocking {
-        val fixture = Fixture()
-        fixture.archive.use { archive ->
-            every { fixture.configuration.loadingMethod } returns BatchedStandardInsertConfiguration
-            val delegate = mockk<DestinationWriter>(relaxed = true)
-            val result = runCatching {
+    fun `standard inserts prepare normally while duplicate original descriptors fail before AWS`() =
+        runBlocking {
+            val fixture = Fixture()
+            fixture.archive.use { archive ->
+                every { fixture.configuration.loadingMethod } returns
+                    BatchedStandardInsertConfiguration
+                val delegate = mockk<DestinationWriter>(relaxed = true)
                 BigqueryCopyWriter(delegate, fixture.catalog, archive, mockk()).setup()
+                assertTrue(archive.metadataReady())
+                coVerify(exactly = 1) { delegate.setup() }
+                assertEquals(1, fixture.uploader.credentialsChecks)
             }
-            assertInstanceOf(SystemErrorException::class.java, result.exceptionOrNull())
-            coVerify(exactly = 0) { delegate.setup() }
-            assertEquals(0, fixture.uploader.credentialsChecks)
+            val other = Fixture()
+            other.archive.use { archive ->
+                val duplicate = other.stream.copy()
+                assertThrows(io.airbyte.cdk.ConfigErrorException::class.java) {
+                    archive.validate(DestinationCatalog(listOf(other.stream, duplicate)))
+                }
+                assertEquals(0, other.uploader.credentialsChecks)
+            }
         }
-    }
 
     @Test
     fun `metadata failure never publishes a run context and closes uploader`() = runBlocking {
@@ -237,11 +246,11 @@ class BigqueryS3CopyTest {
                 assertEquals("1", copied.metadata["loaded-record-count"])
                 assertEquals(
                     fixture.config.organizationId.toString(),
-                    copied.metadata["organization-id"]
+                    copied.metadata["organization-id"],
                 )
                 assertEquals(
                     fixture.config.destinationId.toString(),
-                    copied.metadata["destination-id"]
+                    copied.metadata["destination-id"],
                 )
                 assertEquals("1750000000", copied.metadata["epoch-seconds"])
                 assertEquals(fixture.config.sourceId.toString(), copied.metadata["source-id"])
@@ -470,6 +479,274 @@ class BigqueryS3CopyTest {
         coVerify(exactly = 1) { delegate.teardown(failure) }
     }
 
+    @Test
+    fun `standard inserts preserve exact bytes and omit unavailable counts from streaming metadata`() =
+        runBlocking {
+            val fixture = Fixture()
+            every { fixture.configuration.loadingMethod } returns BatchedStandardInsertConfiguration
+            fixture.archive.use { archive ->
+                archive.prepare(fixture.catalog)
+                val batch = archive.startStandardInsertBatch(archive.context(fixture.stream))
+                val first =
+                    "{\"text\":\"snowman ☃, newline\\nquote\\\"\"}\n".toByteArray(Charsets.UTF_8)
+                val second = "{\"text\":null}\n".toByteArray(Charsets.UTF_8)
+                batch.append(first)
+                batch.append(second)
+                assertEquals(
+                    1,
+                    fixture.uploader.objects.size,
+                    "Only schema before BigQuery completion",
+                )
+                batch.seal()
+                assertEquals(1, fixture.uploader.sessions.single().seals)
+                batch.complete(2)
+                batch.complete(2)
+                batch.close()
+                val copied = fixture.uploader.objects.last()
+                assertArrayEquals(first + second, copied.bytes)
+                assertEquals("application/x-ndjson", copied.contentType)
+                assertTrue(copied.key.endsWith(".jsonl"))
+                assertEquals(
+                    fixture.config.organizationId.toString(),
+                    copied.metadata["organization-id"],
+                )
+                assertEquals(
+                    fixture.config.destinationId.toString(),
+                    copied.metadata["destination-id"],
+                )
+                assertEquals("1750000000", copied.metadata["epoch-seconds"])
+                assertFalse(copied.metadata.containsKey("input-record-count"))
+                assertFalse(copied.metadata.containsKey("loaded-record-count"))
+                assertEquals(fixture.runId.toString(), copied.metadata["run-id"])
+                assertEquals(fixture.config.sourceId.toString(), copied.metadata["source-id"])
+                assertEquals("schema-hash", copied.metadata["schema-id"])
+            }
+            assertEmptyDirectory()
+        }
+
+    @Test
+    fun `interleaved streaming sessions accept and seal before any batch completes`() =
+        runBlocking {
+            withTimeout(10_000) {
+                val fixture = Fixture()
+                every { fixture.configuration.loadingMethod } returns
+                    BatchedStandardInsertConfiguration
+                fixture.archive.use { archive ->
+                    archive.prepare(fixture.catalog)
+                    val batches =
+                        (1..6).map {
+                            archive.startStandardInsertBatch(archive.context(fixture.stream))
+                        }
+                    batches.forEach { it.append("{}\n".toByteArray()) }
+                    val release = CompletableDeferred<Unit>()
+                    val entered = CompletableDeferred<Unit>()
+                    val paths = CopyOnWriteArrayList<Path>()
+                    fixture.uploader.beforeStreamingFinish = { path ->
+                        paths.add(path)
+                        if (paths.size == 6) entered.complete(Unit)
+                        release.await()
+                    }
+                    batches.forEach { it.seal() }
+                    assertEquals(6, fixture.uploader.sessions.size)
+                    assertTrue(fixture.uploader.sessions.all { it.seals == 1 })
+                    val tasks = batches.map { async { it.complete(1) } }
+                    entered.await()
+                    delay(50)
+                    assertEquals(6, paths.size)
+                    assertEquals(6L, Files.list(directory).use { it.count() })
+                    release.complete(Unit)
+                    tasks.awaitAll()
+                    assertEquals(6, paths.size)
+                    assertEquals(
+                        6,
+                        fixture.uploader.objects.count { it.contentType == "application/x-ndjson" },
+                    )
+                }
+            }
+            assertEmptyDirectory()
+        }
+
+    @Test
+    fun `empty standard refresh writes completion with cutoff after close without a data batch`() =
+        runBlocking {
+            val fixture = Fixture(minimumGeneration = 5)
+            every { fixture.configuration.loadingMethod } returns BatchedStandardInsertConfiguration
+            fixture.archive.use { archive ->
+                archive.prepare(fixture.catalog)
+                archive.startStandardInsertBatch(archive.context(fixture.stream)).use {
+                    it.seal()
+                    it.complete(0)
+                }
+                assertEquals(
+                    listOf("schema.json"),
+                    fixture.uploader.objects.map { it.key.substringAfterLast('/') },
+                )
+                archive.complete(fixture.stream)
+                assertEquals(
+                    listOf("schema.json", "stream_complete.json"),
+                    fixture.uploader.objects.map { it.key.substringAfterLast('/') },
+                )
+                assertTrue(archive.metadataReady())
+            }
+            assertEmptyDirectory()
+        }
+
+    @Test
+    fun `streaming failure propagates and closing the batch releases uploader owned spool`() =
+        runBlocking {
+            val fixture = Fixture()
+            every { fixture.configuration.loadingMethod } returns BatchedStandardInsertConfiguration
+            fixture.archive.use { archive ->
+                archive.prepare(fixture.catalog)
+                val batch = archive.startStandardInsertBatch(archive.context(fixture.stream))
+                batch.append("{}\n".toByteArray())
+                fixture.uploader.beforeStreamingFinish = { error("S3 upload refused") }
+                batch.seal()
+                val result = runCatching { batch.complete(1) }
+                assertInstanceOf(SystemErrorException::class.java, result.exceptionOrNull())
+                assertEquals(1, fixture.uploader.objects.size)
+                batch.close()
+            }
+            assertEmptyDirectory()
+        }
+
+    @Test
+    fun `unsafe streaming reader retains uploader owned spool and poisons further archive work`() =
+        runBlocking {
+            val fixture = Fixture()
+            every { fixture.configuration.loadingMethod } returns BatchedStandardInsertConfiguration
+            fixture.archive.use { archive ->
+                archive.prepare(fixture.catalog)
+                val batch = archive.startStandardInsertBatch(archive.context(fixture.stream))
+                batch.append("{}\n".toByteArray())
+                fixture.uploader.beforeStreamingFinish = { path ->
+                    throw ArchiveReaderStillActiveException(
+                        path,
+                        IllegalStateException("reader stuck"),
+                    )
+                }
+                batch.seal()
+                assertTrue(runCatching { batch.complete(1) }.isFailure)
+                batch.close()
+                assertThrows(IllegalStateException::class.java) { archive.context(fixture.stream) }
+            }
+            assertEquals(1L, Files.list(directory).use { it.count() })
+        }
+
+    @Test
+    fun `parent close propagates uploader session deletion failure and suppressed cleanup failure`() =
+        runBlocking {
+            val fixture = Fixture()
+            every { fixture.configuration.loadingMethod } returns BatchedStandardInsertConfiguration
+            fixture.archive.prepare(fixture.catalog)
+            val batch =
+                fixture.archive.startStandardInsertBatch(fixture.archive.context(fixture.stream))
+            batch.append("{}\n".toByteArray())
+            val path = Files.list(directory).use { it.findFirst().orElseThrow() }
+            Files.delete(path)
+            Files.createDirectory(path)
+            Files.writeString(path.resolve("prevent-delete"), "test")
+            val uploadCloseFailure = IllegalStateException("uploader cleanup failed")
+            fixture.uploader.closeFailure = uploadCloseFailure
+            val failure =
+                assertThrows(java.nio.file.DirectoryNotEmptyException::class.java) {
+                    fixture.archive.close()
+                }
+            assertTrue(fixture.uploader.closed)
+            assertSame(uploadCloseFailure, failure.suppressed.single())
+            assertFalse(fixture.archive.metadataReady())
+            assertTrue(Files.exists(path))
+            fixture.archive.close()
+            batch.close()
+        }
+
+    @Test
+    fun `sealed stream still waits for uploader completion before reporting batch success`() =
+        runBlocking {
+            val fixture = Fixture()
+            every { fixture.configuration.loadingMethod } returns BatchedStandardInsertConfiguration
+            fixture.archive.use { archive ->
+                archive.prepare(fixture.catalog)
+                val batch = archive.startStandardInsertBatch(archive.context(fixture.stream))
+                batch.append("{}\n".toByteArray())
+                batch.seal()
+                val entered = CompletableDeferred<Unit>()
+                val release = CompletableDeferred<Unit>()
+                fixture.uploader.beforeStreamingFinish = {
+                    entered.complete(Unit)
+                    release.await()
+                }
+                val completion = async { batch.complete(1) }
+                try {
+                    entered.await()
+                    assertEquals(1, fixture.uploader.sessions.single().seals)
+                    assertFalse(completion.isCompleted)
+                    assertEquals(1, fixture.uploader.objects.size, "Only schema is durable")
+                    release.complete(Unit)
+                    completion.await()
+                    assertEquals(2, fixture.uploader.objects.size)
+                } finally {
+                    completion.cancelAndJoin()
+                    batch.close()
+                }
+            }
+            assertEmptyDirectory()
+        }
+
+    @Test
+    fun `mismatched loaded count fails before streaming ACK and poisons the service`() =
+        runBlocking {
+            for (loaded in listOf(-1L, 0L, 2L)) {
+                val fixture = Fixture()
+                every { fixture.configuration.loadingMethod } returns
+                    BatchedStandardInsertConfiguration
+                fixture.archive.use { archive ->
+                    archive.prepare(fixture.catalog)
+                    val batch = archive.startStandardInsertBatch(archive.context(fixture.stream))
+                    batch.append("{}\n".toByteArray())
+                    batch.seal()
+                    assertInstanceOf(
+                        SystemErrorException::class.java,
+                        runCatching { batch.complete(loaded) }.exceptionOrNull(),
+                    )
+                    assertEquals(0, fixture.uploader.sessions.single().finishes)
+                    assertFalse(archive.metadataReady())
+                    assertThrows(IllegalStateException::class.java) {
+                        archive.context(fixture.stream)
+                    }
+                    batch.close()
+                }
+                assertEmptyDirectory()
+            }
+        }
+
+    @Test
+    fun `streaming append or seal failure prevents later completion and closes the session`() =
+        runBlocking {
+            for (onAppend in listOf(false, true)) {
+                val fixture = Fixture()
+                every { fixture.configuration.loadingMethod } returns
+                    BatchedStandardInsertConfiguration
+                fixture.archive.use { archive ->
+                    archive.prepare(fixture.catalog)
+                    val batch = archive.startStandardInsertBatch(archive.context(fixture.stream))
+                    val failure = IllegalStateException("streaming failed")
+                    if (onAppend) fixture.uploader.beforeStreamingAppend = { throw failure }
+                    else fixture.uploader.beforeStreamingSeal = { throw failure }
+                    val result = runCatching {
+                        batch.append("{}\n".toByteArray())
+                        batch.seal()
+                    }
+                    assertSame(failure, result.exceptionOrNull()?.cause)
+                    assertFalse(archive.metadataReady())
+                    assertTrue(runCatching { batch.complete(1) }.isFailure)
+                    batch.close()
+                    assertTrue(fixture.uploader.sessions.single().closed)
+                }
+                assertEmptyDirectory()
+            }
+        }
+
     private fun assertEmptyDirectory() = assertEquals(0L, Files.list(directory).use { it.count() })
 
     private inner class Fixture(minimumGeneration: Long = 0) {
@@ -478,9 +755,9 @@ class BigqueryS3CopyTest {
                 bucket = "archive",
                 region = "us-east-2",
                 roleArn = "arn:aws:iam::123456789012:role/archive",
+                connectionId = UUID.randomUUID(),
                 workspaceId = UUID.randomUUID(),
                 sourceId = UUID.randomUUID(),
-                connectionId = UUID.randomUUID(),
                 organizationId = UUID.randomUUID(),
                 destinationId = UUID.randomUUID(),
                 prefix = "fusion",
@@ -548,7 +825,12 @@ class BigqueryS3CopyTest {
     private class CapturingUploader : ArchiveUploader {
         var credentialsChecks = 0
         var closed = false
+        var closeFailure: Throwable? = null
         var beforeUpload: suspend (Path) -> Unit = {}
+        var beforeStreamingFinish: suspend (Path) -> Unit = {}
+        var beforeStreamingAppend: () -> Unit = {}
+        var beforeStreamingSeal: () -> Unit = {}
+        val sessions = CopyOnWriteArrayList<Session>()
         val objects = CopyOnWriteArrayList<Uploaded>()
 
         override suspend fun validateCredentials() {
@@ -565,8 +847,80 @@ class BigqueryS3CopyTest {
             objects.add(Uploaded(key, Files.readAllBytes(path), contentType, metadata))
         }
 
+        override fun startStreaming(
+            key: String,
+            contentType: String,
+            metadata: Map<String, String>,
+            directory: Path?,
+        ): StreamingArchiveUpload =
+            Session(key, contentType, metadata, requireNotNull(directory)).also { sessions.add(it) }
+
+        // Models only the ownership boundary. Real part scheduling/draining belongs to uploader
+        // tests.
+        inner class Session(
+            private val key: String,
+            private val contentType: String,
+            private val metadata: Map<String, String>,
+            private val directory: Path,
+        ) : StreamingArchiveUpload {
+            private var path: Path? = null
+            private var retained = false
+            var closed = false
+            var seals = 0
+            var finishes = 0
+
+            override fun append(bytes: ByteArray) {
+                check(!closed && seals == 0)
+                beforeStreamingAppend()
+                val target =
+                    path
+                        ?: Files.createTempFile(directory, "fake-owned-", ".jsonl").also {
+                            path = it
+                        }
+                Files.write(target, bytes, APPEND)
+            }
+
+            override fun seal() {
+                check(!closed)
+                seals++
+                beforeStreamingSeal()
+            }
+
+            override suspend fun finish() {
+                check(!closed && seals == 1)
+                finishes++
+                val target = path ?: return
+                try {
+                    beforeStreamingFinish(target)
+                    objects.add(Uploaded(key, Files.readAllBytes(target), contentType, metadata))
+                } catch (failure: Throwable) {
+                    retained = failure is ArchiveReaderStillActiveException
+                    throw failure
+                }
+            }
+
+            override fun close() {
+                if (closed) return
+                closed = true
+                if (!retained) path?.let { Files.deleteIfExists(it) }
+            }
+        }
+
         override fun close() {
+            if (closed) return
             closed = true
+            var failure: Throwable? = null
+            sessions.forEach { session ->
+                try {
+                    session.close()
+                } catch (error: Throwable) {
+                    if (failure == null) failure = error else failure!!.addSuppressed(error)
+                }
+            }
+            closeFailure?.let { error ->
+                if (failure == null) failure = error else failure!!.addSuppressed(error)
+            }
+            failure?.let { throw it }
         }
     }
 
