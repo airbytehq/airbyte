@@ -235,22 +235,7 @@ Classes
 
     ### Methods
 
-    `api_search(self, filter_groups: list[CompaniesApiSearchParamsFiltergroupsItem] | None = None, properties: list[str] | None = None, limit: int | None = None, after: str | None = None, sorts: list[CompaniesApiSearchParamsSortsItem] | None = None, query: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Company], CompaniesApiSearchResultMeta]`
-    :   Search for companies by filtering on properties, searching through associations, and sorting results.
-        
-        Args:
-            filter_groups: Up to 6 groups of filters defining additional query criteria.
-            properties: A list of property names to include in the response.
-            limit: Maximum number of results to return
-            after: A paging cursor token for retrieving subsequent pages.
-            sorts: Sort criteria
-            query: The search query string, up to 3000 characters.
-            **kwargs: Additional parameters
-        
-        Returns:
-            CompaniesApiSearchResult
-
-    `context_store_search(self, query: CompaniesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[CompaniesSearchData]`
+    `context_store_search(self, query: CompaniesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Company], CompaniesSearchResultMeta]`
     :   Search companies records from Airbyte cache.
         
         This operation searches cached data from Airbyte syncs.
@@ -340,6 +325,21 @@ Classes
         Returns:
             CompaniesListResult
 
+    `search(self, filter_groups: list[CompaniesSearchParamsFiltergroupsItem] | None = None, properties: list[str] | None = None, limit: int | None = None, after: str | None = None, sorts: list[CompaniesSearchParamsSortsItem] | None = None, query: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Company], CompaniesSearchResultMeta]`
+    :   Search for companies by filtering on properties, searching through associations, and sorting results.
+        
+        Args:
+            filter_groups: Up to 6 groups of filters defining additional query criteria.
+            properties: A list of property names to include in the response.
+            limit: Maximum number of results to return
+            after: A paging cursor token for retrieving subsequent pages.
+            sorts: Sort criteria
+            query: The search query string, up to 3000 characters.
+            **kwargs: Additional parameters
+        
+        Returns:
+            CompaniesSearchResult
+
     `update(self, properties: CompaniesUpdateParamsProperties, company_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Company`
     :   Update an existing company's properties by ID. Only the specified properties will be updated.
         
@@ -360,22 +360,7 @@ Classes
 
     ### Methods
 
-    `api_search(self, filter_groups: list[ContactsApiSearchParamsFiltergroupsItem] | None = None, properties: list[str] | None = None, limit: int | None = None, after: str | None = None, sorts: list[ContactsApiSearchParamsSortsItem] | None = None, query: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Contact], ContactsApiSearchResultMeta]`
-    :   Search for contacts by filtering on properties, searching through associations, and sorting results.
-        
-        Args:
-            filter_groups: Up to 6 groups of filters defining additional query criteria.
-            properties: A list of property names to include in the response.
-            limit: Maximum number of results to return
-            after: A paging cursor token for retrieving subsequent pages.
-            sorts: Sort criteria
-            query: The search query string, up to 3000 characters.
-            **kwargs: Additional parameters
-        
-        Returns:
-            ContactsApiSearchResult
-
-    `context_store_search(self, query: ContactsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[ContactsSearchData]`
+    `context_store_search(self, query: ContactsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Contact], ContactsSearchResultMeta]`
     :   Search contacts records from Airbyte cache.
         
         This operation searches cached data from Airbyte syncs.
@@ -467,6 +452,21 @@ Classes
         Returns:
             ContactsListResult
 
+    `search(self, filter_groups: list[ContactsSearchParamsFiltergroupsItem] | None = None, properties: list[str] | None = None, limit: int | None = None, after: str | None = None, sorts: list[ContactsSearchParamsSortsItem] | None = None, query: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Contact], ContactsSearchResultMeta]`
+    :   Search for contacts by filtering on properties, searching through associations, and sorting results.
+        
+        Args:
+            filter_groups: Up to 6 groups of filters defining additional query criteria.
+            properties: A list of property names to include in the response.
+            limit: Maximum number of results to return
+            after: A paging cursor token for retrieving subsequent pages.
+            sorts: Sort criteria
+            query: The search query string, up to 3000 characters.
+            **kwargs: Additional parameters
+        
+        Returns:
+            ContactsSearchResult
+
     `update(self, properties: ContactsUpdateParamsProperties, contact_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Contact`
     :   Update an existing contact's properties by ID. Only the specified properties will be updated.
         
@@ -487,22 +487,7 @@ Classes
 
     ### Methods
 
-    `api_search(self, filter_groups: list[DealsApiSearchParamsFiltergroupsItem] | None = None, properties: list[str] | None = None, limit: int | None = None, after: str | None = None, sorts: list[DealsApiSearchParamsSortsItem] | None = None, query: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Deal], DealsApiSearchResultMeta]`
-    :   Search deals with filters and sorting
-        
-        Args:
-            filter_groups: Up to 6 groups of filters defining additional query criteria.
-            properties: A list of property names to include in the response.
-            limit: Maximum number of results to return
-            after: A paging cursor token for retrieving subsequent pages.
-            sorts: Sort criteria
-            query: The search query string, up to 3000 characters.
-            **kwargs: Additional parameters
-        
-        Returns:
-            DealsApiSearchResult
-
-    `context_store_search(self, query: DealsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[DealsSearchData]`
+    `context_store_search(self, query: DealsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Deal], DealsSearchResultMeta]`
     :   Search deals records from Airbyte cache.
         
         This operation searches cached data from Airbyte syncs.
@@ -596,6 +581,21 @@ Classes
         
         Returns:
             DealsListResult
+
+    `search(self, filter_groups: list[DealsSearchParamsFiltergroupsItem] | None = None, properties: list[str] | None = None, limit: int | None = None, after: str | None = None, sorts: list[DealsSearchParamsSortsItem] | None = None, query: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Deal], DealsSearchResultMeta]`
+    :   Search deals with filters and sorting
+        
+        Args:
+            filter_groups: Up to 6 groups of filters defining additional query criteria.
+            properties: A list of property names to include in the response.
+            limit: Maximum number of results to return
+            after: A paging cursor token for retrieving subsequent pages.
+            sorts: Sort criteria
+            query: The search query string, up to 3000 characters.
+            **kwargs: Additional parameters
+        
+        Returns:
+            DealsSearchResult
 
     `update(self, properties: DealsUpdateParamsProperties, deal_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Deal`
     :   Update an existing deal's properties by ID. Only the specified properties will be updated.
@@ -976,7 +976,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'api_search', 'delete', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'search', 'delete', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -1505,22 +1505,7 @@ Classes
 
     ### Methods
 
-    `api_search(self, filter_groups: list[TicketsApiSearchParamsFiltergroupsItem] | None = None, properties: list[str] | None = None, limit: int | None = None, after: str | None = None, sorts: list[TicketsApiSearchParamsSortsItem] | None = None, query: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Ticket], TicketsApiSearchResultMeta]`
-    :   Search for tickets by filtering on properties, searching through associations, and sorting results.
-        
-        Args:
-            filter_groups: Up to 6 groups of filters defining additional query criteria.
-            properties: A list of property names to include in the response.
-            limit: Maximum number of results to return
-            after: A paging cursor token for retrieving subsequent pages.
-            sorts: Sort criteria
-            query: The search query string, up to 3000 characters.
-            **kwargs: Additional parameters
-        
-        Returns:
-            TicketsApiSearchResult
-
-    `context_store_search(self, query: TicketsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[TicketsSearchData]`
+    `context_store_search(self, query: TicketsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Ticket], TicketsSearchResultMeta]`
     :   Search tickets records from Airbyte cache.
         
         This operation searches cached data from Airbyte syncs.
@@ -1613,6 +1598,21 @@ Classes
         
         Returns:
             TicketsListResult
+
+    `search(self, filter_groups: list[TicketsSearchParamsFiltergroupsItem] | None = None, properties: list[str] | None = None, limit: int | None = None, after: str | None = None, sorts: list[TicketsSearchParamsSortsItem] | None = None, query: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Ticket], TicketsSearchResultMeta]`
+    :   Search for tickets by filtering on properties, searching through associations, and sorting results.
+        
+        Args:
+            filter_groups: Up to 6 groups of filters defining additional query criteria.
+            properties: A list of property names to include in the response.
+            limit: Maximum number of results to return
+            after: A paging cursor token for retrieving subsequent pages.
+            sorts: Sort criteria
+            query: The search query string, up to 3000 characters.
+            **kwargs: Additional parameters
+        
+        Returns:
+            TicketsSearchResult
 
     `update(self, properties: TicketsUpdateParamsProperties, ticket_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Ticket`
     :   Update an existing ticket's properties by ID. Only the specified properties will be updated.

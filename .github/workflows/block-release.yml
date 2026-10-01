@@ -39,6 +39,9 @@ on:
 
 run-name: "${{ github.event.inputs.action }} release of ${{ github.event.inputs.connector-name }}"
 
+env:
+  SENTRY_ENVIRONMENT: production
+
 permissions:
   contents: write
   pull-requests: write

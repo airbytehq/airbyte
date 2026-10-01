@@ -43,6 +43,7 @@ Sub-modules
 * [airbyte_agent_sdk.connectors.orb](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/orb)
 * [airbyte_agent_sdk.connectors.pinterest](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/pinterest)
 * [airbyte_agent_sdk.connectors.pylon](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/pylon)
+* [airbyte_agent_sdk.connectors.reddit_ads](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/reddit_ads)
 * [airbyte_agent_sdk.connectors.salesforce](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/salesforce)
 * [airbyte_agent_sdk.connectors.sendgrid](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/sendgrid)
 * [airbyte_agent_sdk.connectors.sentry](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/sentry)
@@ -57,3 +58,4 @@ Sub-modules
 * [airbyte_agent_sdk.connectors.zendesk_chat](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zendesk_chat)
 * [airbyte_agent_sdk.connectors.zendesk_support](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zendesk_support)
 * [airbyte_agent_sdk.connectors.zendesk_talk](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zendesk_talk)
+* [airbyte_agent_sdk.connectors.zoho_crm](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zoho_crm)

@@ -1,6 +1,6 @@
 ---
 sidebar_label: Okta
-products: cloud
+products: cloud-plus
 ---
 
 # Set up single sign on using Okta
