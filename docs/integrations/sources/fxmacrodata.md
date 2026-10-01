@@ -73,6 +73,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
-| 0.0.1 | 2026-10-01 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Initial release |
+| 0.0.1 | 2026-10-01 | [87603](https://github.com/airbytehq/airbyte/pull/87603) | Initial release |
 
 </details>
