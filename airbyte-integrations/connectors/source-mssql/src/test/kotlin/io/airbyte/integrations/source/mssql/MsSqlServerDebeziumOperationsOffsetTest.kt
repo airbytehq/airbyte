@@ -4,10 +4,7 @@
 
 package io.airbyte.integrations.source.mssql
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.databind.node.TextNode
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.cdc.DebeziumOffset
 import io.airbyte.cdk.util.Jsons
@@ -15,176 +12,132 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 
 class MsSqlServerDebeziumOperationsOffsetTest {
 
-    private val offsetKey =
-        Jsons.readTree("""["CdcTest",{"server":"CdcTest","database":"CdcTest"}]""")
+    private val operations = operations()
 
-    @Test
-    fun `serializeState replaces textual NULL change_lsn with commit_lsn`() {
-        val operations = operations()
-
-        val serialized =
-            serializedOffset(
-                operations,
-                offset("00033e76:0000cd58:0008", TextNode.valueOf("NULL"), 0)
-            )
-
-        assertEquals("00033e76:0000cd58:0008", serialized["change_lsn"].asText())
-        assertEquals(0, serialized["event_serial_no"].asInt())
-    }
-
-    @Test
-    fun `serializeState replaces JSON null change_lsn with commit_lsn`() {
-        val operations = operations()
-
-        val serialized =
-            serializedOffset(operations, offset("00033e76:0000cd58:0008", NullNode.instance, 0))
-
-        assertEquals("00033e76:0000cd58:0008", serialized["change_lsn"].asText())
-    }
-
-    @Test
-    fun `serializeState leaves a real change_lsn untouched`() {
-        val operations = operations()
-
-        val serialized =
-            serializedOffset(
-                operations,
-                offset("00033e7b:0001f308:0034", TextNode.valueOf("00033e7b:0001f308:0007"), 2)
-            )
-
-        assertEquals("00033e7b:0001f308:0007", serialized["change_lsn"].asText())
-        assertEquals(2, serialized["event_serial_no"].asInt())
-    }
-
-    @Test
-    fun `heartbeat regression with unchanged commit_lsn restores starting values`() {
-        val operations = operations()
-        val startingOffset =
-            offset("00033e76:0000cd58:0008", TextNode.valueOf("00033e76:0000cd58:0003"), 2)
-        setLastLoadedOffset(operations, startingOffset)
-
-        val serialized =
-            serializedOffset(
-                operations,
-                offset("00033e76:0000cd58:0008", TextNode.valueOf("NULL"), 0)
-            )
-
-        assertEquals("00033e76:0000cd58:0003", serialized["change_lsn"].asText())
-        assertEquals(2, serialized["event_serial_no"].asInt())
-    }
-
-    @Test
-    fun `heartbeat that advanced commit_lsn gets change_lsn equal to commit_lsn`() {
-        val operations = operations()
-        val startingOffset =
-            offset("00033e76:0000cd58:0008", TextNode.valueOf("00033e76:0000cd58:0003"), 2)
-        setLastLoadedOffset(operations, startingOffset)
-
-        val serialized =
-            serializedOffset(
-                operations,
-                offset("00033e76:0000cd60:0001", TextNode.valueOf("NULL"), 0)
-            )
-
-        assertEquals("00033e76:0000cd60:0001", serialized["change_lsn"].asText())
-        assertEquals(0, serialized["event_serial_no"].asInt())
-    }
-
-    @Test
-    fun `normalizeHeartbeatChangeLsn leaves offsets without change_lsn key alone`() {
-        val operations = operations()
-        val snapshotOffset =
-            DebeziumOffset(
-                mapOf(
-                    offsetKey to
-                        snapshotValue("00033e76:0000cd58:0008").apply {
-                            put("snapshot", true)
-                            put("snapshot_completed", true)
-                        }
-                )
-            )
-
-        assertSame(
-            snapshotOffset.wrapped,
-            operations.normalizeHeartbeatChangeLsn(snapshotOffset).wrapped
-        )
-    }
-
-    @Test
-    fun `normalizeHeartbeatChangeLsn leaves multi-key offsets alone`() {
-        val operations = operations()
-        val secondKey = Jsons.readTree("""["CdcTest2",{"server":"CdcTest","database":"CdcTest"}]""")
-        val firstValue = offsetValue("00033e76:0000cd58:0008", TextNode.valueOf("NULL"), 0)
-        val secondValue = offsetValue("00033e76:0000cd60:0001", NullNode.instance, 0)
-        val multiKeyOffset =
-            DebeziumOffset(mapOf(offsetKey to firstValue, secondKey to secondValue))
-
-        assertSame(
-            multiKeyOffset.wrapped,
-            operations.normalizeHeartbeatChangeLsn(multiKeyOffset).wrapped
-        )
-    }
-
-    private fun operations(): MsSqlServerDebeziumOperations {
-        val spec =
-            MsSqlServerSourceConfigurationSpecification().apply {
-                host = "localhost"
-                port = 1433
-                database = "CdcTest"
-                username = "sa"
-                password = "Password123!"
-                setIncrementalValue(Cdc())
-            }
-        val config = MsSqlServerSourceConfigurationFactory().make(spec)
-        return MsSqlServerDebeziumOperations(mockk<JdbcConnectionFactory>(relaxed = true), config)
-    }
-
-    private fun offset(
-        commitLsn: String,
-        changeLsn: JsonNode?,
-        eventSerialNo: Int
-    ): DebeziumOffset {
-        return DebeziumOffset(mapOf(offsetKey to offsetValue(commitLsn, changeLsn, eventSerialNo)))
-    }
-
-    private fun offsetValue(
-        commitLsn: String,
-        changeLsn: JsonNode?,
-        eventSerialNo: Int
-    ): ObjectNode {
-        val value = snapshotValue(commitLsn)
-        value.put("event_serial_no", eventSerialNo)
-        if (changeLsn != null) {
-            value.set<JsonNode>("change_lsn", changeLsn)
-        }
-        return value
-    }
-
-    private fun snapshotValue(commitLsn: String): ObjectNode =
-        Jsons.objectNode().apply { put("commit_lsn", commitLsn) }
-
-    private fun serializedOffset(
-        operations: MsSqlServerDebeziumOperations,
-        offset: DebeziumOffset,
-    ): JsonNode {
-        val serialized = operations.serializeState(offset, null)
-        val state = serialized[MsSqlServerDebeziumOperations.MSSQL_STATE]
-        val offsetNode = state[MsSqlServerDebeziumOperations.MSSQL_CDC_OFFSET]
-        val encodedValue = offsetNode.elements().next().asText()
-        return Jsons.readTree(encodedValue)
-    }
-
-    private fun setLastLoadedOffset(
-        operations: MsSqlServerDebeziumOperations,
-        offset: DebeziumOffset,
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("normalizedCases")
+    fun `normalizeHeartbeatChangeLsn sets change_lsn to commit_lsn`(
+        @Suppress("UNUSED_PARAMETER") name: String,
+        value: String,
     ) {
-        MsSqlServerDebeziumOperations::class
-            .java
-            .getDeclaredField("lastLoadedOffset")
-            .apply { isAccessible = true }
-            .set(operations, offset.wrapped)
+        val input = offset(value)
+        val expected = Jsons.readTree(value) as ObjectNode
+        expected.put("change_lsn", expected["commit_lsn"].asText())
+
+        val normalized = operations.normalizeHeartbeatChangeLsn(input)
+
+        assertEquals(mapOf(KEY to expected), normalized.wrapped)
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("unchangedCases")
+    fun `normalizeHeartbeatChangeLsn leaves offset untouched`(
+        @Suppress("UNUSED_PARAMETER") name: String,
+        values: List<String>,
+    ) {
+        val input = offset(*values.toTypedArray())
+        assertSame(input.wrapped, operations.normalizeHeartbeatChangeLsn(input).wrapped)
+    }
+
+    @Test
+    fun `serializeState writes the normalized offset`() {
+        val serialized =
+            operations.serializeState(
+                offset("""{"commit_lsn":"$COMMIT","change_lsn":"NULL","event_serial_no":0}"""),
+                null,
+            )
+
+        val encodedOffset =
+            serialized[MsSqlServerDebeziumOperations.MSSQL_STATE][
+                    MsSqlServerDebeziumOperations.MSSQL_CDC_OFFSET]
+                .elements()
+                .next()
+        assertEquals(COMMIT, Jsons.readTree(encodedOffset.asText())["change_lsn"].asText())
+    }
+
+    companion object {
+        private const val COMMIT = "00033e76:0000cd58:0008"
+        private val KEY =
+            Jsons.readTree("""["CdcTest",{"server":"CdcTest","database":"CdcTest"}]""")
+
+        private fun offset(vararg values: String): DebeziumOffset =
+            DebeziumOffset(
+                values
+                    .mapIndexed { i, v ->
+                        val key = if (i == 0) KEY else Jsons.readTree("""["CdcTest$i"]""")
+                        key to Jsons.readTree(v)
+                    }
+                    .toMap()
+            )
+
+        @JvmStatic
+        fun normalizedCases(): List<Arguments> =
+            listOf(
+                Arguments.of(
+                    "heartbeat with textual NULL",
+                    """{"commit_lsn":"$COMMIT","change_lsn":"NULL","event_serial_no":0}""",
+                ),
+                Arguments.of(
+                    "heartbeat with JSON null",
+                    """{"commit_lsn":"$COMMIT","change_lsn":null,"event_serial_no":0}""",
+                ),
+                // Debezium 3.4.3 always writes change_lsn, including for snapshot offsets.
+                Arguments.of(
+                    "Debezium snapshot offset",
+                    """{"snapshot":"INITIAL","snapshot_completed":true,"commit_lsn":"$COMMIT","change_lsn":"NULL","event_serial_no":1}""",
+                ),
+            )
+
+        @JvmStatic
+        fun unchangedCases(): List<Arguments> =
+            listOf(
+                Arguments.of(
+                    "real change_lsn",
+                    listOf(
+                        """{"commit_lsn":"$COMMIT","change_lsn":"00033e76:0000cd58:0003","event_serial_no":2}"""
+                    ),
+                ),
+                // Shape built by generateColdStartOffset().
+                Arguments.of(
+                    "cold start offset without change_lsn",
+                    listOf(
+                        """{"commit_lsn":"$COMMIT","snapshot":true,"snapshot_completed":true}"""
+                    ),
+                ),
+                Arguments.of(
+                    "NULL commit_lsn",
+                    listOf("""{"commit_lsn":"NULL","change_lsn":"NULL","event_serial_no":0}"""),
+                ),
+                Arguments.of(
+                    "multiple offset keys",
+                    listOf(
+                        """{"commit_lsn":"$COMMIT","change_lsn":"NULL"}""",
+                        """{"commit_lsn":"$COMMIT","change_lsn":null}""",
+                    ),
+                ),
+            )
+
+        private fun operations(): MsSqlServerDebeziumOperations {
+            val spec =
+                MsSqlServerSourceConfigurationSpecification().apply {
+                    host = "localhost"
+                    port = 1433
+                    database = "CdcTest"
+                    username = "sa"
+                    password = "Password123!"
+                    setIncrementalValue(Cdc())
+                }
+            val config = MsSqlServerSourceConfigurationFactory().make(spec)
+            return MsSqlServerDebeziumOperations(
+                mockk<JdbcConnectionFactory>(relaxed = true),
+                config
+            )
+        }
     }
 }
