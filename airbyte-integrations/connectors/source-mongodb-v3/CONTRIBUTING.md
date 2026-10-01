@@ -60,8 +60,9 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
 
   Success output is identical. On failure the Bulk CDK adds an error `TRACE` message and wraps the
   message in "Could not connect with provided configuration. Error: ..."; the wrapped message
-  matches the legacy one except for "no authorized collections", where the CDK reports
-  "Discovered zero tables.".
+  matches the legacy one for every case, including "no authorized collections": the querier
+  throws v2's message naming the unreadable databases from the last `streamNames()` call during
+  `check`, before the CDK would fall back to its generic "Discovered zero tables.".
 - `discover` parity: `src/test/resources/expected-catalog-*.json` are the `CATALOG` objects the
   legacy image produced for the seed data of `MongoDbSourceDiscoverTest` (every BSON type, `_id` of
   ObjectId/int/string, an empty collection, a view, a `system.*` collection, two databases), and the

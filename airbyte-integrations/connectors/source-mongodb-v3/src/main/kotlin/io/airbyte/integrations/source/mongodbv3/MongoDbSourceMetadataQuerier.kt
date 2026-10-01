@@ -50,10 +50,17 @@ class MongoDbSourceMetadataQuerier(
      */
     private val skipFieldDiscovery: Boolean = false,
     /**
-     * When set, [fields] is served from this configured catalog instead of by sampling. At READ
-     * time the CDK re-validates the catalog by calling [fields]; re-sampling would be slow and
-     * could drop or re-type fields whose values vary between documents, so we echo the configured
-     * schema.
+     * When set (READ only), [fields] is served from this configured catalog instead of by sampling.
+     *
+     * This is required, not an optimization. At READ start the CDK's
+     * `StateManagerFactory.toStream()` derives each stream's expected field types from the
+     * configured catalog's `json_schema`, then calls [fields] and, for **every** catalog property,
+     * drops the whole stream — `FieldNotFound` if [fields] lacks it, `FieldTypeMismatch` if the
+     * type differs. With `global = true` a dropped stream aborts the entire READ. MongoDB's schema
+     * is inferred from a random sample, so a fresh sample can legitimately miss a rare field or
+     * type a mixed-type field differently; serving the catalog back is the only way the validation
+     * is guaranteed to pass (and it avoids re-sampling every collection on every sync). The legacy
+     * connector never re-derived fields at read time.
      */
     private val readModeCatalog: ConfiguredAirbyteCatalog? = null,
 ) : MetadataQuerier {
@@ -66,13 +73,38 @@ class MongoDbSourceMetadataQuerier(
     private val fieldsByStream = ConcurrentHashMap<StreamIdentifier, Future<List<EmittedField>>>()
     private val prefetchedNamespaces: MutableSet<String> = ConcurrentHashMap.newKeySet()
 
+    /** Configured databases in which the credentials can read no collection (see [streamNames]). */
+    private val databasesWithoutPermission: MutableList<String> = mutableListOf()
+
     override fun streamNamespaces(): List<String> = configuration.databases
 
+    /**
+     * The collections of [streamNamespace], sorted. During `check`, once the **last** configured
+     * database has also turned out empty, this throws the legacy connector's message naming the
+     * databases the user cannot read — before the CDK falls back to its generic "Discovered zero
+     * tables." (`CheckOperation` visits the namespaces in order and stops at the first readable
+     * stream, so reaching the last one with nothing found means none had any.) `discover` and
+     * `read` keep their own semantics: an empty catalog, and `StreamNotFound` respectively.
+     */
     override fun streamNames(streamNamespace: String?): List<StreamIdentifier> {
         if (streamNamespace == null) {
             return emptyList()
         }
-        return authorizedCollections(streamNamespace).sorted().map { collectionName: String ->
+        val collections: Set<String> = authorizedCollections(streamNamespace)
+        if (collections.isEmpty()) {
+            databasesWithoutPermission += streamNamespace
+            val allDatabasesEmpty: Boolean =
+                skipFieldDiscovery &&
+                    streamNamespace == configuration.databases.last() &&
+                    databasesWithoutPermission.containsAll(configuration.databases)
+            if (allDatabasesEmpty) {
+                throw ConfigErrorException(
+                    "Target MongoDB databases do not contain any authorized collections. " +
+                        "Databases without permissions: ${databasesWithoutPermission.joinToString(", ")}",
+                )
+            }
+        }
+        return collections.sorted().map { collectionName: String ->
             StreamIdentifier.from(
                 StreamDescriptor().withName(collectionName).withNamespace(streamNamespace),
             )

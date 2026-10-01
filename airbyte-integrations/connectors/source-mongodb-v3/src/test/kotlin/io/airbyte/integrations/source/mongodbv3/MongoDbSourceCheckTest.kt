@@ -29,9 +29,20 @@ class MongoDbSourceCheckTest {
 
     @Test
     fun testCheckFailsWithoutAuthorizedCollections() {
+        // Same actionable message as source-mongodb-v2, naming the unreadable database.
         SyncsTestFixture.testCheck(
             config(replicaSet.connectionString, listOf("does_not_exist")),
-            expectedFailure = "Discovered zero tables",
+            expectedFailure =
+                "Target MongoDB databases do not contain any authorized collections. " +
+                    "Databases without permissions: does_not_exist",
+        )
+    }
+
+    @Test
+    fun testCheckNamesEveryDatabaseWithoutAuthorizedCollections() {
+        SyncsTestFixture.testCheck(
+            config(replicaSet.connectionString, listOf("nope_one", "nope_two")),
+            expectedFailure = "Databases without permissions: nope_one, nope_two",
         )
     }
 
