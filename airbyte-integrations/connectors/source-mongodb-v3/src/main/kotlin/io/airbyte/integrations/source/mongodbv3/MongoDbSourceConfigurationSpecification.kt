@@ -111,7 +111,7 @@ class MongoDbSourceConfigurationSpecification : ConfigurationSpecification() {
 /**
  * The `database_config` oneOf. Both variants carry the same connection properties; the Atlas
  * variant additionally requires credentials. The `cluster_type` discriminator is synthesized by
- * Jackson; [MongoDbSpecificationExtender] renders it as `const` like the legacy spec does.
+ * Jackson from the `@JsonSubTypes` names (rendered as a single-value `enum` with a `default`).
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = DatabaseConfigSpecification.CLUSTER_TYPE)
 @JsonSubTypes(

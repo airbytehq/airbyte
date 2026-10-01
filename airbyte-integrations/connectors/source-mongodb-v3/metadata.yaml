@@ -33,8 +33,8 @@ data:
   definitionId: 25f274f8-7f58-4544-83e0-f711a49e2e9a
   dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-mongodb-v3
-  # Deliberately points at the mongodb-v2 docs: this connector is a Bulk CDK rewrite of
-  # source-mongodb-v2 and its `spec` output (which embeds this URL) must match the legacy one.
+  # Points at the mongodb-v2 docs until a mongodb-v3 docs page exists: this connector is the
+  # Bulk CDK successor to source-mongodb-v2 and the v2 page is the current user documentation.
   documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
   githubIssueLabel: source-mongodb-v3
   icon: icon.svg

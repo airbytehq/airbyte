@@ -11,11 +11,13 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 /**
- * `expected-spec.json` is the `spec` output of the published legacy `airbyte/source-mongodb-v2`
- * image, minus the two Debezium-only properties v3 deliberately drops (`initial_waiting_seconds`,
- * `queue_size`; see the `3.0.0` breaking change in `metadata.yaml`). Everything else — property
- * names, titles, descriptions, defaults, ordering, the `database_config` oneOf — stays identical so
- * saved configurations keep loading.
+ * `expected-spec.json` is a snapshot of this connector's generated `spec`. It carries the legacy
+ * `source-mongodb-v2` property names, titles, descriptions, defaults and `database_config` oneOf
+ * (so saved v2 configurations keep loading), minus the two Debezium-only properties v3 drops
+ * (`initial_waiting_seconds`, `queue_size`; see the `3.0.0` breaking change in `metadata.yaml`).
+ * Rendering follows the Bulk CDK schema generator like every other Bulk CDK source (`"type":
+ * "object"` on oneOf variants, discriminators as a single-value `enum` + `default`, no
+ * `changelogUrl`) rather than v2's hand-written `spec.json`.
  */
 class MongoDbSourceSpecTest {
 

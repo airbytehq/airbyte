@@ -42,11 +42,13 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
 
 ## Parity with source-mongodb-v2
 
-- `src/test/resources/expected-spec.json` is the `spec` output of the published
-  `airbyte/source-mongodb-v2` image; `MongoDbSourceSpecTest` fails if the generated spec drifts.
-- `MongoDbSpecificationExtender` post-processes the generated JSON schema so that it renders
-  exactly like the hand-written legacy `spec.json` (`changelogUrl`, `const` discriminators, no
-  `type: object` on `oneOf` variants). Remove it once byte-for-byte parity is no longer required.
+- `src/test/resources/expected-spec.json` is a snapshot of this connector's generated `spec`;
+  `MongoDbSourceSpecTest` fails if it drifts. It keeps v2's property names, titles, descriptions,
+  defaults and `database_config` oneOf so saved v2 configurations load unchanged, minus the two
+  dropped Debezium-only properties. Rendering follows the Bulk CDK generator like every other Bulk
+  CDK source (`"type": "object"` on oneOf variants, discriminators as a single-value `enum` +
+  `default`, no `changelogUrl`) — byte-for-byte parity with v2's hand-written `spec.json` is not a
+  goal, so there is no spec post-processing.
 - To compare `check` against the legacy image, start an auth-enabled single-node replica set on a
   Docker network (recipe in the `new-database-source-connector` skill, `databases/mongodb/README.md`)
   and run both images on that network with the same `--config` files:
