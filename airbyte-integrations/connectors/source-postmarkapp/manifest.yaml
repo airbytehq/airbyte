@@ -47,7 +47,7 @@ definitions:
       type: MinMaxDatetime
       datetime: "{{ (now_utc() - duration('PT5M')).strftime('%Y-%m-%dT%H:%M:%S%z') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    step: "PT{{ config.get('slice_window_minutes') or 60 }}M"
+    step: "PT{{ config.get('slice_window_minutes') or 1440 }}M"
     cursor_granularity: PT1S
   windowed_request_parameters:
     # Postmark filters use US Eastern wall time; this conversion is DST-aware.
@@ -57,6 +57,10 @@ definitions:
       {% set d = str_to_datetime(stream_interval.end_time) + duration('PT1S') %}{% set m = d.replace(month=3, day=1, hour=7, minute=0, second=0, microsecond=0) %}{% set s = m + duration('P' ~ ((6 - m.weekday()) % 7 + 7) ~ 'D') %}{% set n = d.replace(month=11, day=1, hour=6, minute=0, second=0, microsecond=0) %}{% set e = n + duration('P' ~ ((6 - n.weekday()) % 7) ~ 'D') %}{{ format_datetime(d - duration('PT4H' if s <= d < e else 'PT5H'), '%Y-%m-%dT%H:%M:%S') }}
   error_handler:
     type: DefaultErrorHandler
+    max_retries: 10
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: 5
     response_filters:
       - type: HttpResponseFilter
         action: FAIL
@@ -67,6 +71,10 @@ definitions:
         action: FAIL
         http_codes: [422]
         error_message: "Postmark rejected the request: {{ response.Message }}"
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes: [429]
+        error_message: "Postmark rate limit exceeded."
   streams:
     deliverystats:
       type: DeclarativeStream
@@ -285,10 +293,10 @@ spec:
       slice_window_minutes:
         type: integer
         title: Slice Window (Minutes)
-        description: Length in minutes of each time window requested for the messages and bounces streams. Postmark returns at most 10,000 records per window, so lower this value if a sync fails because a window exceeded that limit. Defaults to 60.
+        description: Length in minutes of each time window requested for the messages and bounces streams. Postmark returns at most 10,000 records per window, so lower this value if a sync fails because a window exceeded that limit. Defaults to 1440 (one day).
         minimum: 1
         maximum: 1440
-        examples: [60, 15]
+        examples: [1440, 60]
         order: 3
     additionalProperties: true
 

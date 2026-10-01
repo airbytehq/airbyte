@@ -79,7 +79,7 @@ class TestPostmarkStreams(TestCase):
 
     @HttpMocker()
     def test_messages_and_bounces_use_hourly_est_windows(self, http_mocker):
-        config = ConfigBuilder().with_start_date("2025-01-02T00:00:00Z").build()
+        config = ConfigBuilder().with_start_date("2025-01-02T00:00:00Z").with_slice_window_minutes(60).build()
         expected_windows = [
             ("2025-01-01T19:00:00", "2025-01-01T20:00:00"),
             ("2025-01-01T20:00:00", "2025-01-01T21:00:01"),
@@ -105,7 +105,7 @@ class TestPostmarkStreams(TestCase):
 
     @HttpMocker()
     def test_messages_and_bounces_use_hourly_edt_windows(self, http_mocker):
-        config = ConfigBuilder().with_start_date("2025-08-02T00:00:00Z").build()
+        config = ConfigBuilder().with_start_date("2025-08-02T00:00:00Z").with_slice_window_minutes(60).build()
         expected_windows = [
             ("2025-08-01T20:00:00", "2025-08-01T21:00:00"),
             ("2025-08-01T21:00:00", "2025-08-01T22:00:01"),
@@ -128,6 +128,26 @@ class TestPostmarkStreams(TestCase):
         for stream_requests in requests:
             for request in stream_requests:
                 http_mocker.assert_number_of_calls(request, 1)
+
+    @HttpMocker()
+    def test_messages_use_default_daily_windows(self, http_mocker):
+        config = ConfigBuilder().with_start_date("2025-01-01T00:00:00Z").build()
+        expected_windows = [
+            ("2024-12-31T19:00:00", "2025-01-01T19:00:00"),
+            ("2025-01-01T19:00:00", "2025-01-02T06:55:01"),
+        ]
+        requests = []
+        for fromdate, todate in expected_windows:
+            request = _message_request(fromdate, todate)
+            http_mocker.get(request, _page("Messages", [], total_count=0))
+            requests.append(request)
+
+        output = _read_stream(_MESSAGES, SyncMode.incremental, config)
+
+        assert output.errors == []
+        assert output.records == []
+        for request in requests:
+            http_mocker.assert_number_of_calls(request, 1)
 
     @HttpMocker()
     def test_slice_window_minutes_configures_thirty_minute_windows(self, http_mocker):
@@ -189,7 +209,7 @@ class TestPostmarkStreams(TestCase):
             http_mocker.get(request, _page("Bounces", records, total_count=len(records)))
             start = next_start
 
-        config = ConfigBuilder().with_slice_window_minutes(1440).build()
+        config = ConfigBuilder().build()
         output = _read_stream(_BOUNCES, SyncMode.incremental, config)
 
         assert output.errors == []
@@ -244,6 +264,7 @@ class TestPostmarkStreams(TestCase):
             request,
             [
                 HttpResponse(body=json.dumps({"Message": "Rate limit exceeded."}), status_code=429),
+                HttpResponse(body=json.dumps({"Message": "Rate limit exceeded."}), status_code=429),
                 _page("Messages", _messages("retried", 1, "2025-01-02T06:30:00.1234567-05:00"), total_count=1),
             ],
         )
@@ -254,7 +275,7 @@ class TestPostmarkStreams(TestCase):
         assert output.errors == []
         assert len(output.records) == 1
         assert output.records[0].record.data["MessageID"] == "retried-0"
-        http_mocker.assert_number_of_calls(request, 2)
+        http_mocker.assert_number_of_calls(request, 3)
 
     @HttpMocker()
     def test_messages_stops_after_empty_second_page(self, http_mocker):

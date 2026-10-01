@@ -43,7 +43,7 @@ Account-API
 
 ### Optional configuration
 
-`Slice Window (Minutes)` controls the time-window size for the `messages` and `bounces` streams. It defaults to 60 minutes; lower it if a window exceeds Postmark's 10,000-record limit.
+`Slice Window (Minutes)` controls the time-window size for the `messages` and `bounces` streams. It defaults to 1440 minutes (one day); if a sync fails because a window exceeded Postmark's 10,000-record limit, lower it (for example, to 60).
 
 ## Supported sync modes
 
