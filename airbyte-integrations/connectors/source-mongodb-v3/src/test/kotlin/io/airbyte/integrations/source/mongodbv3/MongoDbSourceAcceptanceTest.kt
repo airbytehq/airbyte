@@ -6,6 +6,9 @@ import com.mongodb.client.MongoClients
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.command.SyncsTestFixture
 import io.airbyte.cdk.output.BufferingOutputConsumer
+import io.airbyte.integrations.source.mongodbv3.config.MongoDbSourceConfigurationSpecification
+import io.airbyte.integrations.source.mongodbv3.read.snapshot.MongoDbSnapshotStatus
+import io.airbyte.integrations.source.mongodbv3.read.snapshot.MongoDbStreamStateValue
 import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
@@ -111,7 +114,7 @@ class MongoDbSourceAcceptanceTest {
         lateinit var replicaSet: MongoDBContainer
 
         fun config(): MongoDbSourceConfigurationSpecification =
-            MongoDbSourceCheckTest.config(replicaSet.connectionString, listOf(DATABASE))
+            MongoDbTestConfigs.config(replicaSet.connectionString, listOf(DATABASE))
 
         @JvmStatic
         @BeforeAll
