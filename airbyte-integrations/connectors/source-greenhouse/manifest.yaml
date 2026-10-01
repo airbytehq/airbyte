@@ -6341,7 +6341,7 @@ schemas:
         - 'null'
         - boolean
       candidate_attribute_type_id:
-        description: "Id of the `candidate_attribute_types` row this attribute is an instance of. Each pairing of job and attribute type has at most one row."
+        description: "Id of the `candidate_attribute_types` row this attribute is grouped under (for example `Skills` or `Details`). A job can have many attributes in the same category."
         type:
         - 'null'
         - integer
@@ -6360,7 +6360,7 @@ schemas:
         - 'null'
         - integer
       name:
-        description: "Display name of the attribute on this job (e.g. `JavaScript`, `Leadership`). Copied from the attribute type when the attribute is added, and editable per job."
+        description: "Display name of the attribute on this job (e.g. `JavaScript`, `Leadership`)."
         type:
         - 'null'
         - string
@@ -6509,7 +6509,7 @@ schemas:
         - 'null'
         - integer
       job_post_id:
-        description: Id of the `job_post` this location is attached to. A post published in several locations has one row per location.
+        description: Id of the `job_post` this location is attached to. A post with several locations has one row per location, whether or not the post is published.
         type:
         - 'null'
         - integer
