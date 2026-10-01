@@ -1,5 +1,5 @@
 # Ramp
-Syncs cards, transactions, and reimbursements from Ramp&#39;s developer API.
+Syncs cards, transactions and reimbursements, plus Ramp&#39;s organisation, spend-control, accounts-payable and procurement data, from Ramp&#39;s developer API.
 
 ## Configuration
 
@@ -15,12 +15,31 @@ Syncs cards, transactions, and reimbursements from Ramp&#39;s developer API.
 | cards | id | DefaultPaginator | ✅ |  ❌  |
 | transactions | id | DefaultPaginator | ✅ |  ✅  |
 | reimbursements | id | DefaultPaginator | ✅ |  ✅  |
+| users | id | DefaultPaginator | ✅ |  ❌  |
+| departments | id | DefaultPaginator | ✅ |  ❌  |
+| locations | id | DefaultPaginator | ✅ |  ❌  |
+| entities | id | DefaultPaginator | ✅ |  ❌  |
+| business | id | No pagination | ✅ |  ❌  |
+| business_balance |  | No pagination | ✅ |  ❌  |
+| funds | id | DefaultPaginator | ✅ |  ❌  |
+| spend_programs | id | DefaultPaginator | ✅ |  ❌  |
+| bills | id | DefaultPaginator | ✅ |  ❌  |
+| vendors | id | DefaultPaginator | ✅ |  ❌  |
+| vendor_contacts | vendor_id, id | DefaultPaginator | ✅ |  ❌  |
+| vendor_agreements | id | DefaultPaginator | ✅ |  ❌  |
+| receipts | id | DefaultPaginator | ✅ |  ✅  |
+| merchants | id | DefaultPaginator | ✅ |  ❌  |
+| purchase_orders | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Limitations & troubleshooting
 
 - The transactions stream syncs every transaction state, including declined transactions. Declined transactions have `state: DECLINED`; filter them out of spend totals. To backfill declined transactions from before version 0.1.0, refresh the `transactions` stream.
 - The cards stream does not include terminated cards.
 - The reimbursements stream syncs both directions: out-of-pocket reimbursements (BUSINESS_TO_USER) and repayments (USER_TO_BUSINESS).
+- Every stream added in version 0.2.0 needs its own read scope on your Ramp app: `users:read`, `departments:read`, `locations:read`, `entities:read`, `business:read` (business and business_balance), `funds:read`, `spend_programs:read`, `bills:read`, `vendors:read` (vendors, vendor_contacts and vendor_agreements), `receipts:read`, `merchants:read` and `purchase_orders:read`. A stream whose scope is missing fails with a message naming the scope; the cards, transactions and reimbursements streams are not affected.
+- The purchase_orders stream needs Ramp Plus. On other plans, deselect it.
+- The users stream includes suspended and draft users, the funds stream includes terminated funds, the bills stream includes archived (deleted) bills, and the purchase_orders and vendor_agreements streams include archived records.
+- The business_balance stream has no primary key: each sync emits one snapshot of the current balances.
 
 ## IP allow list
 
@@ -33,6 +52,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.2.0 | 2026-10-01 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add 15 streams for Ramp's organisation, spend-control, accounts-payable and procurement resources |
 | 0.1.0 | 2026-09-30 | [86957](https://github.com/airbytehq/airbyte/pull/86957) | Map Ramp auth and scope errors to config errors, add a rate-limit budget, filter `transactions` server-side, sync declined transactions, declare missing fields, and make `start_date` optional |
 | 0.0.8 | 2026-09-29 | [87331](https://github.com/airbytehq/airbyte/pull/87331) | Update dependencies |
 | 0.0.7 | 2026-09-22 | [86778](https://github.com/airbytehq/airbyte/pull/86778) | Update dependencies |
