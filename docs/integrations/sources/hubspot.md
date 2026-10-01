@@ -475,7 +475,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.10.0 | 2026-10-01 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add `deals_property_history_properties`, `contacts_property_history_properties`, and `companies_property_history_properties` config options to limit property history streams to a configured list of properties |
+| 6.10.0 | 2026-10-01 | [87604](https://github.com/airbytehq/airbyte/pull/87604) | Add `deals_property_history_properties`, `contacts_property_history_properties`, and `companies_property_history_properties` config options to limit property history streams to a configured list of properties |
 | 6.9.3 | 2026-09-22 | [86682](https://github.com/airbytehq/airbyte/pull/86682) | Update dependencies |
 | 6.9.2 | 2026-09-16 | [86350](https://github.com/airbytehq/airbyte/pull/86350) | Report an invalid `from_object`/`to_object` identifier in `custom_object_association_streams` as a configuration error instead of a generic credentials error |
 | 6.9.1 | 2026-09-15 | [86075](https://github.com/airbytehq/airbyte/pull/86075) | Update dependencies |
