@@ -102,12 +102,57 @@ class MongoDbRecordConverterTest {
         Assertions.assertTrue(node["tags"].isArray)
         Assertions.assertEquals(listOf("solo"), node["tags"].map { it.asText() })
 
-        // A real array and an absent field are left alone.
+        // A real array is left alone; an absent field stays null (there is nothing to wrap)...
         val real =
             converter.toPayloadWithId(Document("_id", 1).append("tags", listOf("a"))).first.toJson()
         Assertions.assertEquals(listOf("a"), real["tags"].map { it.asText() })
         val absent = converter.toPayloadWithId(Document("_id", 1)).first.toJson()
         Assertions.assertTrue(absent["tags"].isNull)
+        // ...but a field *present* with a BSON null is a value, and v2 wrapped it too: [null].
+        val presentNull =
+            converter.toPayloadWithId(Document("_id", 1).append("tags", null)).first.toJson()
+        Assertions.assertTrue(presentNull["tags"].isArray)
+        Assertions.assertEquals(1, presentNull["tags"].size())
+        Assertions.assertTrue(presentNull["tags"][0].isNull)
+    }
+
+    @Test
+    fun testAibyteTransformSuffixStringifiesTheField() {
+        // v2's escape hatch: a user adds `<field>_aibyte_transform` (string) to the catalog and the
+        // field's value is emitted JSON-stringified under it, with the original field nulled.
+        val converter =
+            MongoDbRecordConverter(
+                schemaEnforced = true,
+                schemaFieldTypes =
+                    mapOf(
+                        "_id" to MongoDbFieldType.NUMBER,
+                        "addr" to MongoDbFieldType.OBJECT,
+                        "addr_aibyte_transform" to MongoDbFieldType.STRING,
+                        "name" to MongoDbFieldType.STRING,
+                        "name_aibyte_transform" to MongoDbFieldType.STRING,
+                    ),
+            )
+        val node =
+            converter
+                .toPayloadWithId(
+                    Document("_id", 1)
+                        .append("addr", Document("city", "Paris").append("zip", 75001))
+                        .append("name", "alice"),
+                )
+                .first
+                .toJson()
+        // Objects become compact JSON; strings are emitted as-is (asText, not re-quoted).
+        Assertions.assertEquals(
+            """{"city":"Paris","zip":75001}""",
+            node["addr_aibyte_transform"].asText(),
+        )
+        Assertions.assertEquals("alice", node["name_aibyte_transform"].asText())
+        Assertions.assertTrue(node["addr"].isNull)
+        Assertions.assertTrue(node["name"].isNull)
+
+        // An absent source field yields a null transform.
+        val absent = converter.toPayloadWithId(Document("_id", 1)).first.toJson()
+        Assertions.assertTrue(absent["addr_aibyte_transform"].isNull)
     }
 
     @Test

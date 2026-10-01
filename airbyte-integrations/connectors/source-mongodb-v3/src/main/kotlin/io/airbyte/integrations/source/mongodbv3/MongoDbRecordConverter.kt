@@ -79,9 +79,25 @@ class MongoDbRecordConverter(
             else -> {
                 // READ path: emit every schema field (null when absent) with its typed codec.
                 for ((name: String, type: MongoDbFieldType) in schemaFieldTypes) {
-                    val node: JsonNode? =
-                        if (document.containsKey(name)) toJsonNode(document[name]) else null
-                    payload[name] = FieldValueEncoder(coerceToSchema(node, type), type.valueCodec)
+                    val base: String? = transformSourceField(name)
+                    if (base != null) {
+                        // `<field>_aibyte_transform`: the stringified value of `<field>`, which
+                        // itself is nulled (v2's transformToStringIfMarked removed it).
+                        val value: JsonNode? =
+                            if (document.containsKey(base)) toJsonNode(document[base]) else null
+                        payload[name] =
+                            FieldValueEncoder(value?.let(::stringify), MongoStringValueCodec)
+                        if (base in schemaFieldTypes) {
+                            payload[base] =
+                                FieldValueEncoder(null, schemaFieldTypes[base]!!.valueCodec)
+                        }
+                        continue
+                    }
+                    if (name in payload) continue // nulled by a transform above
+                    val present: Boolean = document.containsKey(name)
+                    val node: JsonNode? = if (present) toJsonNode(document[name]) else null
+                    payload[name] =
+                        FieldValueEncoder(coerceToSchema(node, present, type), type.valueCodec)
                 }
             }
         }
@@ -91,16 +107,35 @@ class MongoDbRecordConverter(
     /**
      * MongoDB types are dynamic, so a value's shape may not match the field's discovered type.
      * Destinations coerce primitives themselves, but a structural mismatch — a non-array value in a
-     * field the catalog declares as `array` — would become `null` downstream. Like v2, wrap such a
-     * value in a one-element array instead. Other mismatches are left to the destination (and, on
-     * the protobuf channel, to the per-type codec).
+     * field the catalog declares as `array` — would become `null` downstream. Like v2, wrap any
+     * value **present** in the document (a BSON `null` included, giving `[null]`) in a one-element
+     * array; a field absent from the document stays `null`. Other mismatches are left to the
+     * destination (and, on the protobuf channel, to the per-type codec).
      */
-    private fun coerceToSchema(node: JsonNode?, type: MongoDbFieldType): JsonNode? =
-        if (type == MongoDbFieldType.ARRAY && node != null && !node.isNull && !node.isArray) {
+    private fun coerceToSchema(
+        node: JsonNode?,
+        present: Boolean,
+        type: MongoDbFieldType
+    ): JsonNode? =
+        if (type == MongoDbFieldType.ARRAY && present && node != null && !node.isArray) {
             Jsons.arrayNode().add(node)
         } else {
             node
         }
+
+    /**
+     * The field a `<field>_aibyte_transform` catalog property derives from, or null if [name] is
+     * not such a property. v2's escape hatch for destinations that cannot take a field's native
+     * type: a user adds the suffixed property (type `string`) to the catalog and the connector
+     * emits the field's value JSON-stringified under it. Discovery never emits these; they are
+     * user-added.
+     */
+    private fun transformSourceField(name: String): String? =
+        name.removeSuffix(TRANSFORM_SUFFIX).takeIf { it != name && it.isNotEmpty() }
+
+    /** v2: `asText()` for a text value, compact JSON for anything else. */
+    private fun stringify(node: JsonNode): JsonNode =
+        Jsons.textNode(if (node.isTextual) node.asText() else node.toString())
 
     private fun documentToObject(document: Document): ObjectNode {
         val node: ObjectNode = Jsons.objectNode()
@@ -168,4 +203,9 @@ class MongoDbRecordConverter(
      */
     private fun formatBsonTimestamp(timestamp: org.bson.BsonTimestamp): String =
         Instant.ofEpochMilli(timestamp.value).toString()
+
+    companion object {
+        /** v2's catalog marker for "emit this field JSON-stringified" (sic: `aibyte`). */
+        const val TRANSFORM_SUFFIX = "_aibyte_transform"
+    }
 }

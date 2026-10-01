@@ -88,8 +88,18 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
   see "Concurrency" below); the `Global` feed gets one `MongoDbCdcPartitionsCreator`.
 - **Snapshot** (`MongoDbSnapshotPartitionReader`): reads a collection ordered by `_id` and emits
   every document. `MongoDbRecordConverter` reproduces the legacy record shape (ObjectId hex, `Date`
-  always with milliseconds, `Binary` as Base64, `BsonRegularExpression` as `(options)pattern`,
-  `CodeWithScope` as an object, `MinKey`/`MaxKey` omitted, the `BsonTimestamp` epoch-millis quirk).
+  always with milliseconds, `Binary` as Base64, `BsonRegularExpression` as `(options)pattern` or
+  the bare pattern when there are no options, `CodeWithScope` as an object, `MinKey`/`MaxKey`
+  omitted, the `BsonTimestamp` epoch-millis quirk). Two v2 behaviours tied to the configured
+  catalog are kept as well: a non-array value in a field declared `array` is wrapped in a
+  one-element array (a present BSON `null` included → `[null]`) so the structural mismatch does
+  not become `null` downstream; and a user-added `<field>_aibyte_transform` (string) catalog
+  property receives the field's value JSON-stringified, with the original field nulled.
+
+  Two conversions **intentionally differ** from v2 — keep them: `Decimal128` is emitted as the exact
+  decimal (v2 went through `doubleValue()` and lost precision), and `Date` is always formatted in
+  UTC (v2 used a `SimpleDateFormat` in the JVM default zone with a literal `Z`, only correct
+  because the image runs in UTC).
   It **resumes** from the checkpointed `_id` (`_id > lastSeen`), respects the
   `checkpointTargetInterval` timeout, and completes via `MongoDbSharedState.completedSnapshots`. The
   per-collection checkpoint is the legacy `MongoDbStreamStateValue` shape
