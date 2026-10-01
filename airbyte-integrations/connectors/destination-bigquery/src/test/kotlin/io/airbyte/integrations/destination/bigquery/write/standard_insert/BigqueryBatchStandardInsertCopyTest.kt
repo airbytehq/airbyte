@@ -13,6 +13,7 @@ import com.google.cloud.bigquery.TableDataWriteChannel
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.WriteChannelConfiguration
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
+import io.airbyte.cdk.fusion.FusionConfiguration
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -169,7 +170,7 @@ class BigqueryBatchStandardInsertCopyTest {
                 fixture.job
             }
         val config =
-            S3CopyConfiguration(
+            FusionConfiguration(
                 bucket = "archive",
                 region = "us-east-2",
                 roleArn = "arn:aws:iam::123456789012:role/archive",

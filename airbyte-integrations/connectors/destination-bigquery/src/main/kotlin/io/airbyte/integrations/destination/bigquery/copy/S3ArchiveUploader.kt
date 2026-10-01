@@ -4,6 +4,7 @@
 package io.airbyte.integrations.destination.bigquery.copy
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.fusion.FusionConfiguration
 import java.io.FilterInputStream
 import java.io.InputStream
 import java.nio.ByteBuffer
@@ -109,7 +110,7 @@ internal constructor(
     installShutdownHook: Boolean = false,
 ) : ArchiveUploader {
     private constructor(
-        config: S3CopyConfiguration,
+        config: FusionConfiguration,
         clients: Clients,
     ) : this(
         config.bucket,
@@ -120,7 +121,7 @@ internal constructor(
     )
 
     constructor(
-        configuration: S3CopyConfiguration
+        configuration: FusionConfiguration
     ) : this(configuration, createClients(configuration))
 
     private val lock = Any()
@@ -338,15 +339,13 @@ internal constructor(
                 .apiCallTimeout(Duration.ofMinutes(7))
                 .build()
 
-        private fun createClients(config: S3CopyConfiguration): Clients {
+        private fun createClients(config: FusionConfiguration): Clients {
             val resources = mutableListOf<AutoCloseable>()
             try {
-                val accessKeyId = config.accessKeyId
-                val secretAccessKey = config.secretAccessKey
                 val base =
-                    if (accessKeyId != null && secretAccessKey != null) {
+                    if (config.accessKeyId != null && config.secretAccessKey != null) {
                         StaticCredentialsProvider.create(
-                            AwsBasicCredentials.create(accessKeyId, secretAccessKey)
+                            AwsBasicCredentials.create(config.accessKeyId, config.secretAccessKey)
                         )
                     } else {
                         DefaultCredentialsProvider.builder().build().also { resources.add(it) }

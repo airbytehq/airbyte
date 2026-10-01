@@ -239,6 +239,7 @@ class S3ArchiveUploaderMultipartTest {
             S3ArchiveUploader.s3ClientBuilder()
                 .region(Region.US_EAST_1)
                 .credentialsProvider(credentials)
+                // Loopback-only fixture; localhost is explicitly allowed by the HTTPS QA check.
                 .endpointOverride(URI.create("http://localhost:${server.port}"))
                 .forcePathStyle(true)
                 .build()

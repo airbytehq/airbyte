@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.bigquery.copy
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.cloud.bigquery.Field
+import io.airbyte.cdk.fusion.FusionConfiguration
 import io.airbyte.cdk.fusion.FusionMetadata
 import io.airbyte.cdk.fusion.FusionPaths
 import io.airbyte.cdk.fusion.FusionSchema
@@ -31,7 +32,7 @@ import java.util.UUID
 
 /** Metadata for completed load inputs, independent of temporary execution tables and GCS keys. */
 class BigqueryCopyMetadata(
-    private val config: S3CopyConfiguration,
+    private val config: FusionConfiguration,
     private val bigqueryConfiguration: BigqueryConfiguration,
     private val names: TableCatalogByDescriptor,
     private val runId: UUID,
@@ -145,12 +146,10 @@ class BigqueryCopyMetadata(
                     it.stream.name == stream.unmappedName
             }
                 ?: stream.asProtocolObject()
-        val configuredTree = mapper.valueToTree<JsonNode>(configured)
-        (configuredTree["stream"] as com.fasterxml.jackson.databind.node.ObjectNode).set<JsonNode>(
-            "json_schema",
-            configured.stream.jsonSchema ?: AirbyteTypeToJsonSchema().convert(stream.schema),
-        )
-        val sourceMetadata = FusionSchema.fromConfiguredStream(configuredTree)
+        if (configured.stream.jsonSchema == null) {
+            configured.stream.jsonSchema = AirbyteTypeToJsonSchema().convert(stream.schema)
+        }
+        val sourceDescriptor = FusionSchema.fromConfiguredStream(mapper.valueToTree(configured))
         val primaryKey = configured.primaryKey.orEmpty()
         val cursor = configured.cursorField.orEmpty()
         val layout =
@@ -166,7 +165,7 @@ class BigqueryCopyMetadata(
                 (if (gcs) "csv" to csvDescriptor() else "ndjson" to ndjsonDescriptor()),
                 "columns" to columns,
                 // Keep annotations and constraints from the original input catalog.
-                "source_schema" to sourceMetadata.getValue("source_schema"),
+                "source_schema" to sourceDescriptor.getValue("source_schema"),
                 "import_type" to configured.destinationSyncMode.name,
                 "primary_key" to primaryKey,
                 "primary_key_mapping" to primaryKey.map(::pathMapping),
@@ -226,6 +225,9 @@ class BigqueryCopyMetadata(
                             "dataset" to table.namespace,
                             "table" to table.name,
                         ),
+                    "source_schema" to layout.getValue("source_schema"),
+                    "primary_key" to primaryKey,
+                    "cursor" to cursor,
                     "layout" to layout,
                     "scope" to "load inputs; not final table publication or a final table snapshot",
                     "loaded_record_count_meaning" to "BigQuery load job outputRows",
@@ -237,10 +239,10 @@ class BigqueryCopyMetadata(
                             "Successful formatter-byte appends to the standard insert archive batch"
                     )
         return sharedMetadata.schema(
-            result + sourceMetadata,
+            result + sourceDescriptor,
             schemaId(result),
             stream.generationId,
-            stream.syncId,
+            stream.syncId
         )
     }
 
@@ -251,10 +253,7 @@ class BigqueryCopyMetadata(
     /** Use this for archive JSON as well as hashing so null fields survive serialization. */
     fun serialize(value: Any): ByteArray = mapper.writeValueAsBytes(value)
 
-    /**
-     * Original namespace and name identify the stream, including distinct null and empty
-     * namespaces.
-     */
+    /** The identity includes the original nullable namespace and stays stable across runs. */
     fun streamKey(stream: DestinationStream): String =
         hash(
                 listOf(
@@ -276,7 +275,7 @@ class BigqueryCopyMetadata(
                 stream.unmappedNamespace,
                 stream.unmappedName,
                 runId,
-                epochSeconds,
+                epochSeconds
             )
             .removeSuffix("/")
     }
@@ -289,11 +288,6 @@ class BigqueryCopyMetadata(
 
     private fun identity(stream: DestinationStream): Map<String, Any?> =
         mapOf(
-            "organization_id" to config.organizationId.toString(),
-            "workspace_id" to config.workspaceId.toString(),
-            "source_id" to config.sourceId.toString(),
-            "connection_id" to config.connectionId.toString(),
-            "destination_id" to config.destinationId.toString(),
             "stream_key" to streamKey(stream),
             "original_stream" to
                 mapOf("namespace" to stream.unmappedNamespace, "name" to stream.unmappedName),
@@ -302,10 +296,6 @@ class BigqueryCopyMetadata(
                     "namespace" to stream.mappedDescriptor.namespace,
                     "name" to stream.mappedDescriptor.name,
                 ),
-            "run_id" to runId.toString(),
-            "epoch_seconds" to epochSeconds,
-            "sync_id" to stream.syncId,
-            "generation_id" to stream.generationId,
             "minimum_generation_id" to stream.minimumGenerationId,
         )
 

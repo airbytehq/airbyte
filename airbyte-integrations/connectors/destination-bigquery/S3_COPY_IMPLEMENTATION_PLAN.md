@@ -1,16 +1,13 @@
 # BigQuery load-input copies for Fusion
 
-Status: GCS staging and batched standard inserts are implemented on
-`johnny/bigquery-fusion-batched-inserts`. Copying is controlled by the platform environment;
-customer configuration contains no Fusion routing fields. The sections below describe the
-implementation contract and rollout requirements.
+Status: GCS staging is implemented on `johnny/bigquery-fusion-sync-copy`, and batched standard
+inserts on `johnny/bigquery-fusion-batched-inserts`. Copying defaults off and is enabled only by the platform's
+`AIRBYTE_FUSION_ENABLED=true` environment variable. Routing and credentials come from the environment;
+there are no connector configuration overrides. The sections below describe the implementation contract
+and rollout requirements.
 Reviewed September 25, 2026 against the merged Fusion load CDK baseline.
 The connector uses load CDK `1.1.1`, `core = 'load'`, and `useLegacyTaskLoader = true`, with
 `legacy-task-load-gcs`, `legacy-task-load-db`, `legacy-task-load-s3`, and `load-fusion` toolkits.
-Shared configuration, paths, source-schema extraction, and schema/completion metadata are used
-directly. BigQuery retains its bounded multipart uploader because its cancellation contract proves
-file readers have stopped before releasing or deleting a spool; the common asynchronous uploader
-does not currently expose that guarantee. Both use the same platform assume-role configuration.
 
 ## 1. Load strategies
 
@@ -42,8 +39,8 @@ changing paths, payload bytes, or the completion contract.
 For an enabled write, every record covered by an emitted destination checkpoint must have its
 existing BigQuery load representation durably archived in S3: gzip CSV for GCS staging, or
 uncompressed NDJSON for batched standard inserts. Before ingestion,
-the run must also have a durable schema descriptor. Successful stream finalization publishes
-a completion marker carrying the platform job ID and any requested generation cutoff.
+the run must also have a durable schema descriptor. Successful stream finalization must publish
+a durable completion marker carrying the platform job ID and any requested generation cutoff.
 
 This is an at-least-once archive of load inputs. It is not a transaction across BigQuery and S3,
 nor evidence of final table publication. BigQuery may load data before S3 fails. Replays can
@@ -52,8 +49,9 @@ Retain successful archive objects and completion markers across errors, retries,
 deletes. Do not parse CDC rows into S3 deletions or delete a failed run's prefix.
 
 Do not change customer BigQuery configuration, ingestion thresholds, or formatter semantics.
-Do not migrate BigQuery to the new dataflow engine as part of this work. Common Fusion routing,
-configuration, and metadata are being integrated with the shared CDK toolkit.
+Do not migrate BigQuery to the new dataflow engine as part of this work. Common archive configuration,
+paths, and schema/metadata helpers come from the shared Fusion CDK toolkit. The connector retains
+its hardened uploader to prove all file readers have stopped before deleting local spool files.
 
 Enabled writes support both loading strategies. Silently skipping the archive would violate opt-in.
 `spec`, `check`, and disabled writes must continue to work with either strategy and no AWS configuration.
@@ -64,7 +62,7 @@ Use the agreed Fusion contract:
 
 ```text
 fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<source_uuid>/
-  connections/<connection_uuid>/destinations/<destination_uuid>/syncs/streams/<escaped_original_namespace>/<escaped_stream_name>/
+  connections/<connection_uuid>/destinations/<destination_uuid>/syncs/streams/<escaped_namespace>/<escaped_stream_name>/
     runs/<run_uuid>/<epoch_seconds>/
       schema.json
       batches/<batch_uuid>.csv.gz  # GCS staging
@@ -72,8 +70,8 @@ fusion/organizations/<organization_uuid>/workspaces/<workspace_uuid>/sources/<so
       batches/stream_complete.json
 ```
 
-The prefix defaults to `fusion`. Routing uses only standard `AIRBYTE_*_ID` environment values.
-No connector config fields override platform routing or enablement.
+The prefix defaults to `fusion`. Routing uses only the standard `AIRBYTE_*_ID` environment values.
+All five identity UUIDs are required when copying is enabled.
 Values must be canonical UUIDs; uppercase input is normalized. A process captures one Unix epoch
 in seconds and generates one run UUID, shared across all streams;
 each completed GCS object or standard-insert loader batch gets one batch UUID reused throughout that archive transfer's retries.
@@ -86,11 +84,10 @@ An SDK may additionally URL-encode the resulting key for transport; consumers mu
 S3 notification encoding from the archive's component encoding. Do not lowercase or apply
 BigQuery name munging. Record original/mapped namespace and name in JSON.
 
-Original namespace and name are separate encoded path components. Null namespace uses `~null`,
-empty namespace uses `~empty`, and literal tildes in nonempty namespaces are encoded as `%7E`.
-Same-named streams in different namespaces have separate schemas, batches, completion markers,
-and stream keys. Stream keys hash the original namespace (retaining JSON null versus empty string)
-and name along with platform identity. Reject duplicate original namespace/name pairs at setup.
+Original namespaces are separate escaped path components: null uses `~null`, empty uses
+`~empty`, and literal tildes in nonempty namespaces are percent-encoded. Same-name streams
+in different original namespaces have distinct schema, batch, and completion keys. Stream
+identity hashes include the nullable original namespace as well as the original name.
 
 Write `schema.json` once per stream/run before setup returns. After the stream's final batch
 archive is durable and successful destination finalization returns, write
@@ -101,8 +98,7 @@ archive is durable and successful destination finalization returns, write
 ```
 
 The catalog stream's `syncId` is populated from the platform job ID. It is distinct from the random
-run UUID and job attempt ID. Include `min_generation_id` when supplied by the catalog, including zero;
-zero indicates no positive refresh cutoff. No `generation-cutoff.json` or `truncate_refresh.json`
+run UUID and job attempt ID. Retain `min_generation_id`, including zero when no refresh cutoff applies. No `generation-cutoff.json` or `truncate_refresh.json`
 is written. Failed/incomplete streams and failed destination finalization produce no completion
 marker. Failed marker uploads fail stream close; retries keep the same key and content.
 
@@ -123,21 +119,28 @@ job's `outputRows`, explicitly documenting its meaning. Require zero bad records
 If an exact formatter-input count is later required, carry it through per-object accounting;
 never count CSV lines, since quoted records can contain newlines.
 
+The schema also exposes top-level `source_schema`, `primary_key`, `cursor`, and `generation_id`,
+matching the Snowflake consumer contract. Source JSON Schema is preserved verbatim. BigQuery-specific
+CSV layout and mappings remain under `layout`; the schema ID hashes that layout independently of routing.
+
 ## 4. Internal configuration and credentials
 
 | Environment variable | Enabled-write requirement |
 | --- | --- |
-| `AIRBYTE_FUSION_ENABLED` | Defaults false; case-insensitive `true` enables it; other values disable it |
+| `AIRBYTE_FUSION_ENABLED` | Enabled only by case-insensitive `true`; otherwise disabled |
 | `AIRBYTE_FUSION_S3_BUCKET` | Required archive bucket |
 | `AIRBYTE_FUSION_S3_REGION` | Required S3/STS region |
 | `AIRBYTE_FUSION_S3_ROLE_ARN` | Required target role |
-| `AIRBYTE_ORGANIZATION_ID` | Required canonical UUID from the platform environment |
-| `AIRBYTE_WORKSPACE_ID` | Required canonical UUID from the platform environment |
-| `AIRBYTE_SOURCE_ID` | Required canonical UUID from the platform environment |
-| `AIRBYTE_CONNECTION_ID` | Required canonical UUID from the platform environment |
-| `AIRBYTE_DESTINATION_ID` | Required canonical UUID from the platform environment |
+| `AIRBYTE_ORGANIZATION_ID` | Required canonical UUID |
+| `AIRBYTE_WORKSPACE_ID` | Required canonical UUID |
+| `AIRBYTE_SOURCE_ID` | Required canonical UUID |
+| `AIRBYTE_CONNECTION_ID` | Required canonical UUID |
+| `AIRBYTE_DESTINATION_ID` | Required canonical UUID |
 | `AIRBYTE_FUSION_S3_PREFIX` | Default `fusion`; trim surrounding slashes; reject empty |
 | `AWS_ASSUME_ROLE_EXTERNAL_ID` | Optional STS external ID |
+| `AWS_ASSUME_ROLE_ACCESS_KEY_ID` / `AWS_ASSUME_ROLE_SECRET_ACCESS_KEY` | Paired STS bootstrap credentials; otherwise use the ambient AWS credential chain |
+
+Enablement, bucket, region, role, prefix, and routing IDs are never forced by the connector.
 
 Check operation and enablement before binding enabled-only fields or constructing AWS clients.
 Latch the configuration for the process. Validate all routing, supported generation combinations,
@@ -145,8 +148,7 @@ and supported strategy before records are consumed. A malformed enabled configur
 write as an internal destination failure, not invalid customer Google credentials.
 
 Use a dedicated Java AWS SDK v2 client with a pinned BOM starting at `2.46.0`, regional STS,
-paired `AWS_ASSUME_ROLE_ACCESS_KEY_ID` / `AWS_ASSUME_ROLE_SECRET_ACCESS_KEY` when supplied
-(or the default AWS credentials chain when absent), and a refreshing assume-role provider. Set
+`DefaultCredentialsProvider.builder().build()`, and a refreshing assume-role provider. Set
 asynchronous credential refresh, explicit Netty S3 and URL-connection STS transports, finite
 standard retries (three total attempts), and explicit timeouts. Choose modern retry APIs; verify
 with warnings treated as errors locally via an opt-in command, without changing repository-wide
@@ -278,8 +280,7 @@ Local HTTP tests exercise the real SDK/Netty multipart protocol, including parti
 
 ## 6. Schema descriptor
 
-Always include top-level `source_schema`, `primary_key`, `cursor`, and `generation_id`.
-Retain `layout.source_schema` for the load-layout hash, for raw and typed tables and every input format. Preserve
+Always include `layout.source_schema`, for raw and typed tables and every input format. Preserve
 the matching configured stream's original JSON Schema, including nested types, annotations, and
 constraints. Only reconstruct it from the CDK source type when no configured schema is available.
 The source schema participates in `schema_id` independently of the physical batch column layout.
@@ -301,15 +302,6 @@ Raw mode's CSV order is `_airbyte_raw_id`, `_airbyte_extracted_at`, `_airbyte_me
 `_airbyte_generation_id`, `_airbyte_data`. It omits `_airbyte_loaded_at`, even though that field
 exists in `SCHEMA_V2`. Do not use the final raw-table schema as the CSV descriptor.
 
-Configured keys and cursors may reference deselected fields in valid append/overwrite catalogs,
-even when `source_schema` contains only the selected fields. Preserve those configured paths.
-Each unavailable typed-output mapping retains `source_path` and serializes explicit JSON null for
-`target_column`, `path_within_column`, and `target_path`, plus `csv_ordinal`/`csv_header` for GCS
-or `json_field` for standard inserts. Never emit ordinal `-1` or infer a nonexistent target.
-Selected and composite mappings remain unchanged. Raw mappings continue to reference the existing
-`_airbyte_data` container and original path; this does not promise every row contains that path.
-Typed dedupe still rejects missing output fields required by its existing key/cursor semantics.
-
 Include `import_type`, configured `primary_key` paths, and configured `cursor` path. Preserve
 original paths and their target-column mapping for direct mode. In raw mode identify those as
 paths inside `_airbyte_data`, not nonexistent top-level CSV columns. Empty arrays indicate no
@@ -319,6 +311,13 @@ missing from the current Snowflake preview descriptor.
 
 The legacy CDK drops configured keys/cursors from its `DestinationStream` for append streams.
 Read these fields from the original `ConfiguredAirbyteCatalog` and match by original stream identity.
+Field selection can remove a configured key/cursor from typed CSV output even when the configured
+schema itself contains only selected fields. Preserve the full configured `primary_key`/`cursor`.
+For an unavailable output column, retain `source_path` and serialize explicit nulls for
+`target_column`, `path_within_column`, and `target_path`, plus `csv_ordinal`/`csv_header` for GCS
+or `json_field` for standard inserts; never invent an ordinal or target. Preserve available members of composite mappings. Raw `_airbyte_data` and selected JSON
+columns retain valid paths inside their opaque JSON payloads, even for fields absent from the
+selected schema. This is metadata only and does not relax destination deduplication validation.
 Descriptor serialization preserves explicit nulls with the same Jackson mapper used for hashing;
 the CDK's default null-omitting serialization would change the published layout's hash.
 
@@ -385,12 +384,12 @@ Deterministic connector tests must cover:
 3. Request identity: SDK retries keep key/metadata/file; distinct objects/runs have distinct UUIDs.
    A failed download leaves no partial file eligible for upload. Assert the spool byte cap.
 4. Setup: schema before batches, completion after close, minimum zero omits cutoff, metadata
-   failure blocks ingestion, duplicate original namespace/name routing rejected, unsupported hybrids preserve
+   failure blocks ingestion, same-name streams isolated by original namespace, unsupported hybrids preserve
    existing behavior, and zero-row refreshes still get metadata.
 5. Descriptors: real header ordinals versus mapped fields, raw CSV versus final raw schema,
    source/target primary key and cursor mapping, null namespace, escaped names, schema hash
    stability across runs, and layout changes changing the hash.
-6. Disabled/spec/check: no AWS construction, no extra GCS GET/spool, no Fusion config ID fields.
+6. Disabled/spec/check: no AWS construction, no extra GCS GET/spool, no preview config ID fields.
    Include checker-internal write operations and both enabled load strategies.
 7. Lifetime and pressure: four copies max across socket partitions, metadata concurrency bounded,
    cancellation before/while reading, a cancelled future with an active reader, drained readers
@@ -500,13 +499,3 @@ metadata, and the current completion contract; it does not carry legacy preview 
 Focused tests additionally exercise the real loader, archive service, and streaming uploader with
 each destination pending or failing, and actual preparation of same-named streams across namespaces
 for both standard inserts and GCS. This parity is not a production throughput or memory benchmark.
-
-## 11. Later CDK extraction
-
-Keep this phase connector-local and retain CDK `1.0.25`. Once both load strategies are established,
-extract reusable archive lifecycle, bounded spool ownership, closed-file S3 upload, routing and
-control-object serialization into the CDK as a separate change. Keep BigQuery-specific format/layout
-construction, Google write-channel and load-job handling, and loader/checkpoint adapters in the
-connector. The later extraction must preserve bytes, object paths, descriptor semantics, ownership
-and cancellation guarantees, and disabled behavior; it should not require a consumer migration.
-Do not combine that extraction or a loader-framework migration with this implementation.
