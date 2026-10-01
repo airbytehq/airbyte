@@ -236,7 +236,8 @@ class MsSqlServerDebeziumOperations(
         offset: DebeziumOffset,
         schemaHistory: DebeziumSchemaHistory?
     ): JsonNode {
-        // Sanitize offset before saving to state to fix heartbeat corruption
+        // Fix heartbeat corruption before saving. sanitizeOffset must run first: normalizing a
+        // mid-transaction offset would skip the rest of that transaction on resume.
         val sanitizedOffset = normalizeHeartbeatChangeLsn(sanitizeOffset(offset))
 
         val stateNode: ObjectNode = Jsons.objectNode()
@@ -494,7 +495,7 @@ class MsSqlServerDebeziumOperations(
         val changeLsnIsNull =
             changeLsn.isNull || (changeLsn.isTextual && changeLsn.asText() == "NULL")
         if (!changeLsnIsNull) return offset
-        log.info {
+        log.debug {
             "Heartbeat offset has change_lsn=NULL at commit_lsn=${commitLsn.asText()}; " +
                 "using commit_lsn as change_lsn."
         }
