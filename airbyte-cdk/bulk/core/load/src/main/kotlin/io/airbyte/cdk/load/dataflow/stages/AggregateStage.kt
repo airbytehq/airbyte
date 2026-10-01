@@ -15,14 +15,21 @@ class AggregateStage(
         input: DataFlowStageIO,
         outputFlow: FlowCollector<DataFlowStageIO>,
     ) {
-        val key = input.raw!!.stream.mappedDescriptor
-        val rec = input.munged!!
+        val emittedAtMs =
+            if (input.parsedArrowBatch != null) {
+                val batch = input.parsedArrowBatch!!
+                store.acceptFor(input.arrowBatch!!.stream.mappedDescriptor, batch)
+                batch.emittedAtMs
+            } else {
+                val record = input.munged!!
+                store.acceptFor(input.raw!!.stream.mappedDescriptor, record)
+                record.emittedAtMs
+            }
 
-        store.acceptFor(key, rec)
-
-        var next = store.removeNextComplete(rec.emittedAtMs)
+        var next = store.removeNextComplete(emittedAtMs)
 
         while (next != null) {
+            next.value.onPublish()
             outputFlow.emit(
                 DataFlowStageIO(
                     aggregate = next.value,
@@ -31,7 +38,7 @@ class AggregateStage(
                     mappedDesc = next.key,
                 )
             )
-            next = store.removeNextComplete(rec.emittedAtMs)
+            next = store.removeNextComplete(emittedAtMs)
         }
     }
 }

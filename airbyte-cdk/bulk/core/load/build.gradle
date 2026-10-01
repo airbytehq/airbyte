@@ -12,10 +12,14 @@ kotlin {
 }
 
 dependencies {
+    api("org.apache.arrow:arrow-vector:17.0.0")
+    implementation("org.apache.arrow:arrow-memory-unsafe:17.0.0")
+    implementation("org.apache.arrow:arrow-compression:17.0.0")
+
     api("com.github.f4b6a3:uuid-creator:6.1.1")
     implementation 'commons-codec:commons-codec:1.16.0'
 
-    api "io.airbyte.bulk-cdk:bulk-cdk-core-base:1.0.3"
+    api project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation 'org.apache.commons:commons-lang3:3.17.0'
     implementation 'com.ethlo.time:itu:1.14.0'
 
@@ -71,6 +75,7 @@ project.tasks.matching {
 
 test {
     systemProperties(["mockk.junit.extension.requireParallelTesting":"true"])
+    jvmArgs '--add-opens=java.base/java.nio=ALL-UNNAMED'
 }
 
 configurations {

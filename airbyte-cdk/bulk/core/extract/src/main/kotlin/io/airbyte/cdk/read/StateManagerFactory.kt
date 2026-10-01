@@ -21,6 +21,7 @@ import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.output.CatalogValidationFailureHandler
 import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelFormat.ARROW
 import io.airbyte.cdk.output.DataChannelFormat.JSONL
 import io.airbyte.cdk.output.DataChannelFormat.PROTOBUF
 import io.airbyte.cdk.output.DataChannelMedium
@@ -144,12 +145,13 @@ class StateManagerFactory(
                             DataChannelMedium.valueOf(dataChannelMedium) to
                                 DataChannelFormat.valueOf(dataChannelFormat)
                         ) {
-                            // Socket protobuf protobuf mode is using a sorted list of fields
-                            // Without including field id's.
+                            // Socket protobuf and Arrow modes use a sorted list of fields without
+                            // including field id's.
                             // We need to always match the full in catlog schema to maintain
                             // sorting.
                             // Output here needs to match Discover's JdbcAirbyteStreamFactory
-                            SOCKET to PROTOBUF ->
+                            SOCKET to PROTOBUF,
+                            SOCKET to ARROW ->
                                 if (
                                     metadataQuerier.primaryKey(stream.id).isNotEmpty() &&
                                         stream.configuredPrimaryKey?.isNotEmpty() == true

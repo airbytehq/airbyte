@@ -169,7 +169,7 @@ private class ProbePacketFactory() {
     fun simpleProbePacket(): ProbePacket = byteArrayOf('\n'.code.toByte())
 
     @Singleton
-    @Requires(property = FORMAT_PROPERTY, value = "PROTOBUF")
+    @Requires(property = FORMAT_PROPERTY, pattern = "PROTOBUF|ARROW")
     fun protoProbePacket(): ProbePacket {
         val baos = ByteArrayOutputStream()
         protoProbePacket.writeDelimitedTo(baos)

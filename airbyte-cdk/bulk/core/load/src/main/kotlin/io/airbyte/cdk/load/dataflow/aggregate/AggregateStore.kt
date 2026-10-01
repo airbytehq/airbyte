@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
+import io.airbyte.cdk.load.message.ArrowBatchDTO
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.ConcurrentHashMap
 
@@ -34,6 +35,21 @@ class AggregateStore(
         countTrigger.increment(1)
         bytesTrigger.increment(record.sizeBytes)
         timeTrigger.update(record.emittedAtMs)
+    }
+
+    fun acceptFor(key: StoreKey, batch: ArrowBatchDTO) {
+        val (_, agg, counts, bytes, timeTrigger, countTrigger, bytesTrigger) = getOrCreate(key)
+
+        try {
+            agg.acceptArrowBatch(batch)
+        } finally {
+            batch.root.close()
+        }
+        counts.increment(batch.partitionKey, batch.rowCount.toDouble())
+        bytes.increment(batch.partitionKey, batch.sizeBytes.toDouble())
+        countTrigger.increment(batch.rowCount.toLong())
+        bytesTrigger.increment(batch.sizeBytes)
+        timeTrigger.update(batch.emittedAtMs)
     }
 
     fun removeNextComplete(timestampMs: Long): AggregateEntry? {

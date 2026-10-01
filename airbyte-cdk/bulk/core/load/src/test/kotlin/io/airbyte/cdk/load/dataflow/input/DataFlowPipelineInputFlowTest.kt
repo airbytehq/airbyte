@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.dataflow.state.stats.EmittedStatsStore
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationRecordSource
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.Undefined
@@ -79,7 +80,7 @@ class DataFlowPipelineInputFlowTest {
         val completionTracker = mockk<StreamCompletionTracker>()
         val statsStore = mockk<EmittedStatsStore>(relaxed = true)
         val partitionKey = PartitionKey("partitionKey")
-        every { stateKeyClient.getPartitionKey(any()) } returns partitionKey
+        every { stateKeyClient.getPartitionKey(any<DestinationRecordRaw>()) } returns partitionKey
         val dataFlowPipelineInputFlow =
             DataFlowPipelineInputFlow(
                 inputFlow,
@@ -122,7 +123,7 @@ class DataFlowPipelineInputFlowTest {
         val completionTracker = mockk<StreamCompletionTracker>(relaxed = true)
         val statsStore = mockk<EmittedStatsStore>(relaxed = true)
         val partitionKey = PartitionKey("partitionKey")
-        every { stateKeyClient.getPartitionKey(any()) } returns partitionKey
+        every { stateKeyClient.getPartitionKey(any<DestinationRecordRaw>()) } returns partitionKey
         val dataFlowPipelineInputFlow =
             DataFlowPipelineInputFlow(
                 inputFlow,

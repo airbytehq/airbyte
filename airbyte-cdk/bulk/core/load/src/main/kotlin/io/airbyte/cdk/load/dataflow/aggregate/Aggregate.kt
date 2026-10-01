@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.dataflow.aggregate
 
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
+import io.airbyte.cdk.load.message.ArrowBatchDTO
 
 /**
  * Represents a batch or aggregation of records to be loaded via bulk operations.
@@ -27,6 +28,15 @@ interface Aggregate {
      * @param record The record to add to this aggregate
      */
     fun accept(record: RecordDTO)
+
+    fun acceptArrowBatch(batch: ArrowBatchDTO) {
+        throw UnsupportedOperationException(
+            "${this::class.simpleName} does not support ARROW batches"
+        )
+    }
+
+    /** Called when this aggregate is published for flushing, before it is queued for [flush]. */
+    fun onPublish() {}
 
     /**
      * Finalizes this aggregate and loads it into the destination.

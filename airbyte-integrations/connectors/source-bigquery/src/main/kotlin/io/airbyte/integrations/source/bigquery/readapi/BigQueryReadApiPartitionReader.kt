@@ -10,9 +10,11 @@ import com.google.api.gax.rpc.PermissionDeniedException
 import com.google.api.gax.rpc.ServerStream
 import com.google.cloud.bigquery.storage.v1.ReadRowsRequest
 import com.google.cloud.bigquery.storage.v1.ReadRowsResponse
+import com.google.protobuf.ByteString
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.discover.EmittedField
+import io.airbyte.cdk.output.DataChannelFormat
 import io.airbyte.cdk.output.DataChannelMedium.SOCKET
 import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.OutputMessageRouter
@@ -103,7 +105,11 @@ class BigQueryReadApiPartitionReader(
         val request: ReadRowsRequest =
             ReadRowsRequest.newBuilder().setReadStream(work.name).setOffset(startOffset).build()
         val allocator = RootAllocator()
+        val emitArrowBatches =
+            table.streamFeedBootstrap.dataChannelMedium == SOCKET &&
+                table.streamFeedBootstrap.dataChannelFormat == DataChannelFormat.ARROW
         var root: VectorSchemaRoot? = null
+        var schemaBytes: ByteString? = null
         var responses: ServerStream<ReadRowsResponse>? = null
         try {
             responses = table.client.readRowsCallable().call(request, callContext(table.constants))
@@ -113,46 +119,72 @@ class BigQueryReadApiPartitionReader(
             val changes: MutableMap<EmittedField, FieldValueChange> = mutableMapOf()
             var rowsRead = 0L
             for (response: ReadRowsResponse in responses) {
-                if (root == null) {
-                    val schemaBytes: ByteArray =
+                if (schemaBytes == null) {
+                    val serializedSchema: ByteString =
                         if (response.hasArrowSchema()) {
-                            response.arrowSchema.serializedSchema.toByteArray()
+                            response.arrowSchema.serializedSchema
                         } else {
-                            table.progress.session.arrowSchema
-                                ?: throw IllegalStateException(
-                                    "The first ReadRows response of ${work.name} carries no Arrow " +
-                                        "schema and the session was created by another process."
-                                )
+                            ByteString.copyFrom(
+                                table.progress.session.arrowSchema
+                                    ?: throw IllegalStateException(
+                                        "The first ReadRows response of ${work.name} carries no Arrow " +
+                                            "schema and the session was created by another process."
+                                    )
+                            )
                         }
-                    val schema: Schema =
-                        MessageSerializer.deserializeSchema(
-                            ReadChannel(ByteArrayReadableSeekableByteChannel(schemaBytes))
-                        )
-                    val created: VectorSchemaRoot = VectorSchemaRoot.create(schema, allocator)
-                    root = created
-                    loader = VectorLoader(created, CommonsCompressionFactory.INSTANCE)
-                    decoder = BigQueryArrowRecordDecoder(created, table.stream.fields)
-                }
-                val loadedRoot: VectorSchemaRoot = root
-                if (response.hasArrowRecordBatch()) {
-                    val batch: ArrowRecordBatch =
-                        MessageSerializer.deserializeRecordBatch(
-                            ReadChannel(
-                                ByteArrayReadableSeekableByteChannel(
-                                    response.arrowRecordBatch.serializedRecordBatch.toByteArray()
+                    schemaBytes = serializedSchema
+                    if (!emitArrowBatches) {
+                        val schema: Schema =
+                            MessageSerializer.deserializeSchema(
+                                ReadChannel(
+                                    ByteArrayReadableSeekableByteChannel(
+                                        serializedSchema.toByteArray()
+                                    )
                                 )
-                            ),
-                            allocator,
-                        )
-                    try {
-                        loader!!.load(batch)
-                    } finally {
-                        batch.close()
+                            )
+                        val created: VectorSchemaRoot = VectorSchemaRoot.create(schema, allocator)
+                        root = created
+                        loader = VectorLoader(created, CommonsCompressionFactory.INSTANCE)
+                        decoder = BigQueryArrowRecordDecoder(created, table.stream.fields)
                     }
-                    val rowCount: Int = loadedRoot.rowCount
-                    for (row in 0 until rowCount) {
-                        decoder!!.decode(row, payload, changes)
-                        outputRoute(payload, changes.ifEmpty { null })
+                }
+                if (response.hasArrowRecordBatch()) {
+                    check(response.rowCount <= Int.MAX_VALUE) {
+                        "ReadRows batch row count exceeds the Arrow channel limit: ${response.rowCount}"
+                    }
+                    val rowCount = response.rowCount.toInt()
+                    if (emitArrowBatches) {
+                        checkNotNull(outputMessageRouter)
+                            .acceptArrowBatch(
+                                table.stream.id,
+                                checkNotNull(schemaBytes),
+                                response.arrowRecordBatch.serializedRecordBatch,
+                                rowCount,
+                            )
+                    } else {
+                        val loadedRoot: VectorSchemaRoot = checkNotNull(root)
+                        val batch: ArrowRecordBatch =
+                            MessageSerializer.deserializeRecordBatch(
+                                ReadChannel(
+                                    ByteArrayReadableSeekableByteChannel(
+                                        response.arrowRecordBatch.serializedRecordBatch
+                                            .toByteArray()
+                                    )
+                                ),
+                                allocator,
+                            )
+                        try {
+                            loader!!.load(batch)
+                        } finally {
+                            batch.close()
+                        }
+                        check(rowCount == loadedRoot.rowCount) {
+                            "ReadRows reported $rowCount rows but Arrow decoded ${loadedRoot.rowCount}"
+                        }
+                        for (row in 0 until rowCount) {
+                            decoder!!.decode(row, payload, changes)
+                            outputRoute(payload, changes.ifEmpty { null })
+                        }
                     }
                     numRecords.addAndGet(rowCount.toLong())
                     rowsRead += rowCount

@@ -107,7 +107,8 @@ class InputBeanFactory {
                         deserializer = deserializer,
                     )
                 }
-            DataChannelFormat.PROTOBUF -> {
+            DataChannelFormat.PROTOBUF,
+            DataChannelFormat.ARROW -> {
                 val protobufDataChannelReader = ProtobufDataChannelReader(destinationMessageFactory)
                 inputStreams.map {
                     ProtobufDestinationMessageInputFlow(

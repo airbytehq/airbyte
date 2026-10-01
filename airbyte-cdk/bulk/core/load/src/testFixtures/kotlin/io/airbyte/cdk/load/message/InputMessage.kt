@@ -54,7 +54,8 @@ sealed interface InputMessage {
                     outputStream.write(it)
                     outputStream.write('\n'.code)
                 }
-            DataChannelFormat.PROTOBUF -> asProtobuf().writeDelimitedTo(outputStream)
+            DataChannelFormat.PROTOBUF,
+            DataChannelFormat.ARROW -> asProtobuf().writeDelimitedTo(outputStream)
         }
         outputStream.flush()
     }

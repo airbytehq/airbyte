@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.message
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.google.protobuf.ByteString
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
@@ -23,6 +24,7 @@ import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.util.*
 import kotlin.collections.LinkedHashMap
+import org.apache.arrow.vector.VectorSchemaRoot
 
 /**
  * Internal representation of destination messages. These are intended to be specialized for
@@ -78,6 +80,29 @@ data class DestinationRecord(
         )
     }
 }
+
+data class DestinationArrowBatch(
+    val stream: DestinationStream,
+    val checkpointId: CheckpointId,
+    val rowCount: Int,
+    val emittedAtMs: Long,
+    val schemaBytes: ByteString,
+    val batchBytes: ByteString,
+    val serializedSizeBytes: Long,
+) : DestinationMessage {
+    override fun asProtocolMessage(): AirbyteMessage =
+        throw UnsupportedOperationException(
+            "Arrow batches cannot be converted to protocol messages"
+        )
+}
+
+data class ArrowBatchDTO(
+    val root: VectorSchemaRoot,
+    val partitionKey: io.airbyte.cdk.load.dataflow.state.PartitionKey,
+    val rowCount: Int,
+    val sizeBytes: Long,
+    val emittedAtMs: Long,
+)
 
 data class EnrichedDestinationRecordAirbyteValue(
     val stream: DestinationStream,

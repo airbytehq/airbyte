@@ -96,6 +96,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 
+private fun DataChannelFormat.usesProtobufWireEncoding(): Boolean =
+    this == DataChannelFormat.PROTOBUF || this == DataChannelFormat.ARROW
+
 // TODO kill Untyped, rename StronglyTyped -> AllTypes, and use the
 //  SimpleTypeBehavior enum for all types.
 //  https://github.com/airbytehq/airbyte-internal-issues/issues/12715
@@ -393,7 +396,7 @@ abstract class BasicFunctionalityIntegrationTest(
     open fun testOutOfOrderStateMessages() {
         if (
             dataChannelMedium != DataChannelMedium.SOCKET ||
-                dataChannelFormat != DataChannelFormat.PROTOBUF
+                !dataChannelFormat.usesProtobufWireEncoding()
         ) {
             return
         }
@@ -504,7 +507,7 @@ abstract class BasicFunctionalityIntegrationTest(
     open fun testStateMessageBeforeRecords() {
         if (
             dataChannelMedium != DataChannelMedium.SOCKET ||
-                dataChannelFormat != DataChannelFormat.PROTOBUF
+                !dataChannelFormat.usesProtobufWireEncoding()
         ) {
             return
         }
@@ -679,7 +682,7 @@ abstract class BasicFunctionalityIntegrationTest(
     open fun testStreamStateTypes() {
         if (
             dataChannelMedium != DataChannelMedium.SOCKET ||
-                dataChannelFormat != DataChannelFormat.PROTOBUF
+                !dataChannelFormat.usesProtobufWireEncoding()
         ) {
             return
         }
@@ -1034,7 +1037,7 @@ abstract class BasicFunctionalityIntegrationTest(
     open fun testCDCStateTypes() {
         if (
             dataChannelMedium != DataChannelMedium.SOCKET ||
-                dataChannelFormat != DataChannelFormat.PROTOBUF
+                !dataChannelFormat.usesProtobufWireEncoding()
         ) {
             return
         }
@@ -3845,7 +3848,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         "string" to
                             if (
                                 allTypesBehavior.convertAllValuesToString &&
-                                    dataChannelFormat != DataChannelFormat.PROTOBUF
+                                    !dataChannelFormat.usesProtobufWireEncoding()
                             ) {
                                 "{}"
                             } else {
@@ -3870,33 +3873,27 @@ abstract class BasicFunctionalityIntegrationTest(
                         // id and struct don't have a bad value case here
                         // (id would make the test unusable; struct is tested in testContainerTypes)
                         .filter { it != "id" && it != "struct" }
-                        .filter {
-                            it != "boolean" || dataChannelFormat != DataChannelFormat.PROTOBUF
-                        }
-                        .filter {
-                            it != "integer" || dataChannelFormat != DataChannelFormat.PROTOBUF
-                        }
-                        .filter {
-                            it != "number" || dataChannelFormat != DataChannelFormat.PROTOBUF
-                        }
+                        .filter { it != "boolean" || !dataChannelFormat.usesProtobufWireEncoding() }
+                        .filter { it != "integer" || !dataChannelFormat.usesProtobufWireEncoding() }
+                        .filter { it != "number" || !dataChannelFormat.usesProtobufWireEncoding() }
                         // With protobuf, temporal types are encoded as proper types (not strings),
                         // so it's impossible to send invalid values like "foo"
-                        .filter { it != "date" || dataChannelFormat != DataChannelFormat.PROTOBUF }
+                        .filter { it != "date" || !dataChannelFormat.usesProtobufWireEncoding() }
                         .filter {
                             it != "time_with_timezone" ||
-                                dataChannelFormat != DataChannelFormat.PROTOBUF
+                                !dataChannelFormat.usesProtobufWireEncoding()
                         }
                         .filter {
                             it != "time_without_timezone" ||
-                                dataChannelFormat != DataChannelFormat.PROTOBUF
+                                !dataChannelFormat.usesProtobufWireEncoding()
                         }
                         .filter {
                             it != "timestamp_with_timezone" ||
-                                dataChannelFormat != DataChannelFormat.PROTOBUF
+                                !dataChannelFormat.usesProtobufWireEncoding()
                         }
                         .filter {
                             it != "timestamp_without_timezone" ||
-                                dataChannelFormat != DataChannelFormat.PROTOBUF
+                                !dataChannelFormat.usesProtobufWireEncoding()
                         }
                         .map { key ->
                             val change =
@@ -3933,7 +3930,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     // note that the values have different types than what's declared in the schema
                     // With protobuf, temporal types can't be sent as strings, so exclude them
                     (mapOf("id" to 5) +
-                        if (dataChannelFormat != DataChannelFormat.PROTOBUF) {
+                        if (!dataChannelFormat.usesProtobufWireEncoding()) {
                             mapOf(
                                 "timestamp_with_timezone" to "foo",
                                 "timestamp_without_timezone" to "foo",
@@ -5200,7 +5197,8 @@ abstract class BasicFunctionalityIntegrationTest(
             DataChannelMedium.SOCKET ->
                 when (dataChannelFormat) {
                     DataChannelFormat.JSONL -> bytesForSocketJsonl
-                    DataChannelFormat.PROTOBUF -> bytesForSocketProtobuf
+                    DataChannelFormat.PROTOBUF,
+                    DataChannelFormat.ARROW -> bytesForSocketProtobuf
                 }
         }
     }

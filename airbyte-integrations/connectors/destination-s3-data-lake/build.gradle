@@ -13,10 +13,14 @@ airbyteBulkConnector {
 application {
     mainClass = 'io.airbyte.integrations.destination.s3_data_lake.S3DataLakeDestination'
 
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0', '--add-opens=java.base/java.nio=ALL-UNNAMED']
 
     // Uncomment and replace to run locally
     //applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0', '--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens', 'java.base/sun.security.action=ALL-UNNAMED', '--add-opens', 'java.base/java.lang=ALL-UNNAMED']
+}
+
+tasks.withType(Test).configureEach {
+    jvmArgs '--add-opens=java.base/java.nio=ALL-UNNAMED'
 }
 
 ext {
@@ -39,6 +43,8 @@ dependencies {
     implementation("org.apache.iceberg:iceberg-api:${project.ext.apacheIcebergVersion}")
     implementation("org.apache.iceberg:iceberg-core:${project.ext.apacheIcebergVersion}")
     implementation("org.apache.iceberg:iceberg-data:${project.ext.apacheIcebergVersion}")
+    implementation("org.apache.iceberg:iceberg-parquet:${project.ext.apacheIcebergVersion}")
+    implementation("org.apache.parquet:parquet-column:1.17.1")
     implementation("org.apache.iceberg:iceberg-aws:${project.ext.apacheIcebergVersion}")
     implementation("org.apache.iceberg:iceberg-nessie:${project.ext.apacheIcebergVersion}")
     implementation("org.apache.iceberg:iceberg-orc:${project.ext.apacheIcebergVersion}")
@@ -56,6 +62,7 @@ dependencies {
     implementation("io.micronaut:micronaut-inject:4.6.1")
     implementation("com.kjetland:mbknor-jackson-jsonschema_2.13:1.0.39")
 
+    testImplementation("org.apache.parquet:parquet-hadoop:1.17.1")
     testImplementation("io.mockk:mockk:1.13.13")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${project.ext.junitVersion}")
     testImplementation("org.junit.jupiter:junit-jupiter-params:${project.ext.junitVersion}")
