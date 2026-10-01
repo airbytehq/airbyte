@@ -33,6 +33,11 @@ import org.testcontainers.containers.MSSQLServerContainer
  * airbytehq/oncall#13544: a sync that resumes from a heartbeat offset (change_lsn = NULL) must
  * still replay the schema-history records of columns added via ALTER TABLE. A heartbeat offset is
  * simulated by rewriting the saved state, which keeps the test deterministic.
+ *
+ * The unit tests cover the offset logic in isolation; this is the only test of the full path from
+ * saved state through Debezium's schema recovery to emitted records. Three syncs are the minimum:
+ * the ALTER must be streamed rather than snapshotted to produce a history record with a real
+ * change_lsn.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MsSqlServerCdcHeartbeatSchemaChangeIntegrationTest {
@@ -94,6 +99,8 @@ class MsSqlServerCdcHeartbeatSchemaChangeIntegrationTest {
         assertEquals("erin", nickname(resumedRecords, "erin@example.com"))
     }
 
+    // The resume test also goes through deserializeState; this one pinpoints a failure to the
+    // offset handed to Debezium.
     @Test
     fun `deserializeState normalizes heartbeat offset`() {
         val warmStart = operations().deserializeState(sharedState(heartbeatState))
@@ -186,6 +193,7 @@ class MsSqlServerCdcHeartbeatSchemaChangeIntegrationTest {
     }
 
     companion object {
+        // Arbitrary: it only has to differ from commit_lsn to tell restoring from normalizing.
         private const val MID_TX_CHANGE_LSN = "00000000:00000001:0001"
     }
 }
