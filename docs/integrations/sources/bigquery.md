@@ -112,7 +112,7 @@ The following column types are supported as cursors:
 
 The connector emits state while it reads, not only at the end of a sync. For a table read through the Storage Read API the state names the read session, the last read stream that completed in order and the row offset of every read stream still in progress, and a sync that fails or is cancelled resumes exactly there. The first sync of an incremental stream also records its snapshot time and the cursor maximum at that time, so a resumed sync keeps the same table version and the same checkpoint. A read session is valid for six hours after it opens. A full refresh that resumes later than that reads the table again from the start; an incremental first sync reopens a session at its recorded snapshot time, which BigQuery serves for the table's time travel window of two to seven days, and only takes a new snapshot beyond that. On the query path the state holds the last completed key range of a full refresh, or the last cursor value of an incremental sync. Resetting the connection's state makes the next sync start from the beginning.
 
-The connector also reads the state saved by versions before 1.0.0. A stream with such state resumes after its saved cursor value instead of reading the table again.
+The connector also reads the state saved by versions before 1.0.0. A stream with such state resumes after its saved cursor value instead of reading the table again, and its next state is written in the new format. If the configured cursor column differs from the one in the saved state, or the saved value cannot be interpreted as the column's type, the stream is read again in full.
 
 ### Read throughput
 
@@ -125,7 +125,7 @@ The Storage Read API delivers table data as compressed Arrow batches over many r
 | Storage Read API, four read streams | at least 480 MB/s of table data | well under an hour, depending on the worker's resources |
 | Query API, four queries at a time   | about 3.7 MB/s per query        | about ten hours                                         |
 
-When the connector has the Storage Read API permissions, query results also stream through it, so views and incremental syncs benefit as well: on a 5.2 million row, 1.3 GB test table one query took about 15 minutes through the REST API and under a minute through the Storage Read API. The rows and values are identical on every path. The permissions are listed under [Permissions for high-speed reads](#permissions-for-high-speed-reads).
+On Airbyte Cloud, when the connector has the Storage Read API permissions, query results also stream through it, so views and incremental syncs benefit as well: on a 5.2 million row, 1.3 GB test table one query took about 15 minutes through the REST API and under a minute through the Storage Read API. The rows and values are identical on every path. The permissions are listed under [Permissions for high-speed reads](#permissions-for-high-speed-reads).
 
 ### Bytes billed
 
@@ -157,7 +157,7 @@ BigQuery column types are mapped to the following Airbyte types. The values ever
 
 ## Upgrading from versions before 1.0.0
 
-Version 1.0.0 keeps the configuration properties and understands the incremental state of earlier versions, but it types date, time, JSON and bytes columns, carries the nested schema of `STRUCT` and `ARRAY` columns, reports primary keys, restricts the incremental cursor to supported column types and requires a service account key. These are schema changes for existing connections. The [migration guide](bigquery-migrations.md) lists every change and what to do after upgrading.
+Version 1.0.0 keeps the configuration properties and understands the incremental state of earlier versions, but it types date, time, JSON and bytes columns, carries the nested schema of `STRUCT` and `ARRAY` columns, reports primary keys, restricts the incremental cursor to supported column types and requires a service account key. These are schema changes for existing connections, so every connection must refresh its source schema after upgrading. The [migration guide](bigquery-migrations.md) lists every change, what to do after upgrading and the downstream impact.
 
 ## Limitations and troubleshooting
 

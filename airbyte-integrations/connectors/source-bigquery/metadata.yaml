@@ -36,20 +36,25 @@ data:
     breakingChanges:
       1.0.0:
         message:
-          "**The BigQuery source has been rebuilt on Airbyte's Bulk CDK.** It reads tables through the
-          BigQuery Storage Read API, checkpoints full refresh syncs so that large tables resume after an
-          interruption, discovers nested `STRUCT` and `ARRAY` schemas and primary key constraints, and
-          supports speed mode. Saved configurations and incremental sync state keep working.
+          "**Version 1.0.0 rebuilds the BigQuery source on Airbyte's Bulk CDK and changes the schema of
+          most streams, so every connection must refresh its source schema before its first sync on
+          1.0.0.**
 
-          **What changed:** `DATE`, `DATETIME`, `TIME` and `TIMESTAMP` columns are now typed as Airbyte
-          date and time types instead of strings, `JSON` columns as JSON, and `BYTES` columns declare their
+          **What changed:** `DATE`, `DATETIME`, `TIME` and `TIMESTAMP` columns are typed as Airbyte date
+          and time types instead of strings, `JSON` columns as JSON, and `BYTES` columns declare their
           base64 encoding; `STRUCT` and `ARRAY` columns carry their nested schema; `PRIMARY KEY`
           constraints become source-defined primary keys; only columns of a supported cursor type can be
-          chosen as the incremental cursor; and the credentials must be a service account key.
+          chosen as the incremental cursor; `DATE` and `DATETIME` values change format; and the
+          credentials must be a service account key. Saved configurations and incremental cursor state
+          carry over. On Airbyte Cloud the connector reads tables through the BigQuery Storage Read API,
+          and full refresh syncs now resume after an interruption.
 
-          **What to do:** after upgrading, refresh the source schema of your connections. If a sync fails
-          after the type change, refresh the affected streams. Connections whose cursor column is a `BOOL`,
-          `BYTES`, `JSON`, `STRUCT` or `ARRAY` column must choose a new cursor. See the
+          **What to do:** refresh the source schema of every connection before its next sync; until
+          then, streams with a changed column type fail with an error that asks for the refresh. If a
+          sync then fails because of the type change, refresh the affected incremental append or dedup
+          streams with **Refresh and retain records**. Connections whose cursor is a `BOOL`, `BYTES`,
+          `JSON`, `STRUCT` or `ARRAY` column must choose a new cursor, and sources without a service
+          account key must add one. See the
           [migration guide](https://docs.airbyte.com/integrations/sources/bigquery-migrations).
           "
         upgradeDeadline: "2026-12-01"

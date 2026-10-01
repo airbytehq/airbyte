@@ -310,6 +310,72 @@ class BigQuerySourceReadTest {
     }
 
     @Test
+    fun testLegacyStateWithAnotherCursorFieldIsReadInFull() {
+        // Migration guide step 3: the connection picked a new cursor column after the upgrade. The
+        // saved cursor value belongs to the old column, so the stream is reset and read from the
+        // start, as the extract-jdbc toolkit does for its own state.
+        val output: BufferingOutputConsumer =
+            readWithPkFromLegacyState(
+                """{"stream_name":"with_pk","stream_namespace":"${BigQueryEmulatorTestFixture.DATASET}",
+                   "cursor_field":["line"],"cursor":"2","cursor_record_count":1}"""
+            )
+        assertFullReadAfterLegacyState(output)
+    }
+
+    @Test
+    fun testLegacyStateWithUnreadableCursorIsReadInFull() {
+        val output: BufferingOutputConsumer =
+            readWithPkFromLegacyState(
+                """{"stream_name":"with_pk","stream_namespace":"${BigQueryEmulatorTestFixture.DATASET}",
+                   "cursor_field":["updated_at"],"cursor":"not a timestamp","cursor_record_count":1}"""
+            )
+        assertFullReadAfterLegacyState(output)
+    }
+
+    private fun readWithPkFromLegacyState(legacyState: String): BufferingOutputConsumer {
+        val catalog: AirbyteCatalog = discover()
+        val configured =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        configured(
+                            catalog.stream("with_pk"),
+                            SyncMode.INCREMENTAL,
+                            cursor = listOf("updated_at")
+                        )
+                    )
+                )
+        return read(configured, listOf(streamState("with_pk", Jsons.readTree(legacyState))))
+    }
+
+    /** Every row of `with_pk` is read and the state is rewritten in the 1.0.0 format. */
+    private fun assertFullReadAfterLegacyState(output: BufferingOutputConsumer) {
+        val records: List<AirbyteRecordMessage> = output.recordsByStream()["with_pk"].orEmpty()
+        Assertions.assertEquals(
+            listOf(1L to 1L, 1L to 2L, 2L to 1L),
+            records
+                .map { it.data["order_id"].asLong() to it.data["line"].asLong() }
+                .sortedWith(compareBy({ it.first }, { it.second })),
+            output.dump(),
+        )
+        Assertions.assertEquals(
+            listOf(
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE,
+            ),
+            output.statuses("with_pk"),
+            output.dump(),
+        )
+        val state: JsonNode = output.lastState("with_pk")!!
+        Assertions.assertTrue(state["primary_key"].isEmpty, state.toString())
+        Assertions.assertEquals(
+            "2024-01-03T00:00:00.000000Z",
+            state["cursors"]["updated_at"].asText(),
+            state.toString()
+        )
+    }
+
+    @Test
     fun testMissingStreamIsSkipped() {
         val catalog: AirbyteCatalog = discover()
         val missing: AirbyteStream =
