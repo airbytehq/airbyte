@@ -41,6 +41,10 @@ Account-API
 2. Set the name for your source (Postmarkapp).
 3. Click **Set up source**.
 
+### Optional configuration
+
+`Slice Window (Minutes)` controls the time-window size for the `messages` and `bounces` streams. It defaults to 60 minutes; lower it if a window exceeds Postmark's 10,000-record limit.
+
 ## Supported sync modes
 
 The Postmarkapp source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
@@ -64,7 +68,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.3.0 | 2026-09-30 | [87518](https://github.com/airbytehq/airbyte/pull/87518) | Fix pagination that re-read the same page of records indefinitely; add incremental sync and an optional start date for the messages and bounces streams |
+| 0.3.0 | 2026-10-01 | [87518](https://github.com/airbytehq/airbyte/pull/87518) | Fix pagination that re-read the same page of records indefinitely; add incremental sync, an optional start date, and a configurable time window for the messages and bounces streams |
 | 0.2.10 | 2025-02-15 | [53947](https://github.com/airbytehq/airbyte/pull/53947) | Update dependencies |
 | 0.2.9 | 2025-02-08 | [53462](https://github.com/airbytehq/airbyte/pull/53462) | Update dependencies |
 | 0.2.8 | 2025-02-01 | [52967](https://github.com/airbytehq/airbyte/pull/52967) | Update dependencies |

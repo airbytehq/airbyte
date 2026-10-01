@@ -45,11 +45,28 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     end_datetime:
       type: MinMaxDatetime
-      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+      datetime: "{{ (now_utc() - duration('PT5M')).strftime('%Y-%m-%dT%H:%M:%S%z') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    step: P1D
+    step: "PT{{ config.get('slice_window_minutes') or 60 }}M"
     cursor_granularity: PT1S
-    lookback_window: PT1H
+  windowed_request_parameters:
+    # Postmark filters use US Eastern wall time; this conversion is DST-aware.
+    fromdate: >-
+      {% set d = str_to_datetime(stream_interval.start_time) %}{% set m = d.replace(month=3, day=1, hour=7, minute=0, second=0, microsecond=0) %}{% set s = m + duration('P' ~ ((6 - m.weekday()) % 7 + 7) ~ 'D') %}{% set n = d.replace(month=11, day=1, hour=6, minute=0, second=0, microsecond=0) %}{% set e = n + duration('P' ~ ((6 - n.weekday()) % 7) ~ 'D') %}{{ format_datetime(d - duration('PT4H' if s <= d < e else 'PT5H'), '%Y-%m-%dT%H:%M:%S') }}
+    todate: >-
+      {% set d = str_to_datetime(stream_interval.end_time) + duration('PT1S') %}{% set m = d.replace(month=3, day=1, hour=7, minute=0, second=0, microsecond=0) %}{% set s = m + duration('P' ~ ((6 - m.weekday()) % 7 + 7) ~ 'D') %}{% set n = d.replace(month=11, day=1, hour=6, minute=0, second=0, microsecond=0) %}{% set e = n + duration('P' ~ ((6 - n.weekday()) % 7) ~ 'D') %}{{ format_datetime(d - duration('PT4H' if s <= d < e else 'PT5H'), '%Y-%m-%dT%H:%M:%S') }}
+  error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        predicate: "{{ response.ErrorCode == 700 }}"
+        error_message: Postmark returned more than 10,000 records for a single time window, which exceeds its API limit (ErrorCode 700). Lower the Slice Window (Minutes) setting and retry the sync.
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes: [422]
+        error_message: "Postmark rejected the request: {{ response.Message }}"
   streams:
     deliverystats:
       type: DeclarativeStream
@@ -135,9 +152,7 @@ definitions:
           path: /messages/outbound
           http_method: GET
           request_parameters:
-            # Postmark's filters use Eastern wall time; subtract five hours from UTC slices.
-            fromdate: "{{ format_datetime(str_to_datetime(stream_interval.start_time) - duration('PT5H'), '%Y-%m-%dT%H:%M:%S') }}"
-            todate: "{{ format_datetime(str_to_datetime(stream_interval.end_time) + duration('PT1S') - duration('PT5H'), '%Y-%m-%dT%H:%M:%S') }}"
+            $ref: "#/definitions/windowed_request_parameters"
         record_selector:
           type: RecordSelector
           extractor:
@@ -165,9 +180,7 @@ definitions:
           path: /bounces
           http_method: GET
           request_parameters:
-            # Postmark's filters use Eastern wall time; subtract five hours from UTC slices.
-            fromdate: "{{ format_datetime(str_to_datetime(stream_interval.start_time) - duration('PT5H'), '%Y-%m-%dT%H:%M:%S') }}"
-            todate: "{{ format_datetime(str_to_datetime(stream_interval.end_time) + duration('PT1S') - duration('PT5H'), '%Y-%m-%dT%H:%M:%S') }}"
+            $ref: "#/definitions/windowed_request_parameters"
         record_selector:
           type: RecordSelector
           extractor:
@@ -206,6 +219,8 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.postmarkapp.com
+    error_handler:
+      $ref: "#/definitions/error_handler"
     request_headers:
       Accept: application/json
     authenticator:
@@ -218,6 +233,8 @@ definitions:
   account_base_requester:
     type: HttpRequester
     url_base: https://api.postmarkapp.com
+    error_handler:
+      $ref: "#/definitions/error_handler"
     request_headers:
       Accept: application/json
     authenticator:
@@ -265,6 +282,14 @@ spec:
         examples: ["2025-01-01T00:00:00Z"]
         format: date-time
         order: 2
+      slice_window_minutes:
+        type: integer
+        title: Slice Window (Minutes)
+        description: Length in minutes of each time window requested for the messages and bounces streams. Postmark returns at most 10,000 records per window, so lower this value if a sync fails because a window exceeded that limit. Defaults to 60.
+        minimum: 1
+        maximum: 1440
+        examples: [60, 15]
+        order: 3
     additionalProperties: true
 
 metadata:
