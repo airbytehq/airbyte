@@ -21,6 +21,7 @@ import pytest
 import requests_mock
 from _helpers import (
     ACCESS_TOKEN,
+    ALL_SCOPES,
     CARDS_URL,
     CONFIG,
     REIMBURSEMENTS_URL,
@@ -44,7 +45,6 @@ CARDS_PATH = "/developer/v1/cards"
 TRANSACTIONS_PATH = "/developer/v1/transactions"
 REIMBURSEMENTS_PATH = "/developer/v1/reimbursements"
 
-EXPECTED_SCOPE = "transactions:read cards:read reimbursements:read"
 
 
 def _card(card_id: str) -> dict:
@@ -97,7 +97,7 @@ def test_token_request():
 
     form_body = parse_qs(login.text)
     assert form_body["grant_type"] == ["client_credentials"]
-    assert form_body["scope"] == [EXPECTED_SCOPE], f"login must request the three read scopes, got {form_body.get('scope')}"
+    assert form_body["scope"] == [ALL_SCOPES], f"login must request every read scope, got {form_body.get('scope')}"
 
     data_requests = requests_to(mocker.request_history, TRANSACTIONS_PATH)
     assert len(data_requests) == 1
@@ -208,7 +208,7 @@ def test_start_date_sent_as_updated_after(stream_name, url, path, start_date, ex
         pytest.param(403, "DEVELOPER_7100", "grant the missing read scope", id="missing_scope"),
         pytest.param(404, "DEVELOPER_7002", "no longer accepts this connector's access token", id="revoked_token"),
         pytest.param(401, "DEVELOPER_7000", "Re-enter the client ID and client secret", id="generic_unauthorized"),
-        pytest.param(403, "DEVELOPER_7999", "transactions:read, cards:read and reimbursements:read", id="generic_forbidden"),
+        pytest.param(403, "DEVELOPER_7999", "transactions:read scope", id="generic_forbidden"),
     ],
 )
 def test_data_request_auth_errors_are_config_errors(status_code, error_code, expected_message):

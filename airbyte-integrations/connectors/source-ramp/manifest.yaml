@@ -28,9 +28,12 @@ definitions:
             type: RequestBodyUrlEncodedForm
             value:
               grant_type: client_credentials
-              # Streams added after 0.1.0 each request a token for their own scope only (`token_scope` in
-              # their `$parameters`), so a Ramp app without that scope cannot break the original three streams.
-              scope: "{{ parameters.get('token_scope') or 'transactions:read cards:read reimbursements:read' }}"
+              # One token for every stream's scope. Ramp grants the subset the app has and silently drops the
+              # rest, so a missing scope only fails its own stream (403 DEVELOPER_7100), never the login.
+              scope: >-
+                transactions:read cards:read reimbursements:read users:read departments:read locations:read
+                entities:read business:read funds:read spend_programs:read bills:read vendors:read
+                receipts:read merchants:read purchase_orders:read
           error_handler:
             type: DefaultErrorHandler
             max_retries: 5
@@ -92,8 +95,7 @@ definitions:
             failure_type: config_error
             error_message: >-
               Ramp denied access to this data. In Ramp, open Company > Developer > your app and check it has the
-              {{ (parameters.get('token_scope') ~ ' scope') if parameters.get('token_scope')
-              else 'transactions:read, cards:read and reimbursements:read scopes' }}, then re-test the
+              {{ parameters.get('required_scope', 'required read') }} scope, then re-test the
               source.{{ parameters.get('access_note', '') }}
       request_headers:
         Content-Type: application/json
@@ -153,7 +155,7 @@ definitions:
       type: DeclarativeStream
       name: vendors
       $parameters:
-        token_scope: vendors:read
+        required_scope: vendors:read
       primary_key:
         - id
       retriever:
@@ -322,6 +324,8 @@ definitions:
 streams:
   - type: DeclarativeStream
     name: cards
+    $parameters:
+      required_scope: cards:read
     retriever:
       type: SimpleRetriever
       paginator:
@@ -418,6 +422,8 @@ streams:
       - type: KeysToSnakeCase
   - type: DeclarativeStream
     name: transactions
+    $parameters:
+      required_scope: transactions:read
     retriever:
       type: SimpleRetriever
       paginator:
@@ -659,6 +665,8 @@ streams:
         inject_into: request_parameter
   - type: DeclarativeStream
     name: reimbursements
+    $parameters:
+      required_scope: reimbursements:read
     retriever:
       type: SimpleRetriever
       paginator:
@@ -875,7 +883,7 @@ streams:
   - type: DeclarativeStream
     name: users
     $parameters:
-      token_scope: users:read
+      required_scope: users:read
     primary_key:
       - id
     retriever:
@@ -992,7 +1000,7 @@ streams:
   - type: DeclarativeStream
     name: departments
     $parameters:
-      token_scope: departments:read
+      required_scope: departments:read
     primary_key:
       - id
     retriever:
@@ -1020,7 +1028,7 @@ streams:
   - type: DeclarativeStream
     name: locations
     $parameters:
-      token_scope: locations:read
+      required_scope: locations:read
     primary_key:
       - id
     retriever:
@@ -1053,7 +1061,7 @@ streams:
   - type: DeclarativeStream
     name: entities
     $parameters:
-      token_scope: entities:read
+      required_scope: entities:read
     primary_key:
       - id
     retriever:
@@ -1121,7 +1129,7 @@ streams:
   - type: DeclarativeStream
     name: business
     $parameters:
-      token_scope: business:read
+      required_scope: business:read
     primary_key:
       - id
     retriever:
@@ -1215,7 +1223,7 @@ streams:
   - type: DeclarativeStream
     name: business_balance
     $parameters:
-      token_scope: business:read
+      required_scope: business:read
     retriever:
       type: SimpleRetriever
       requester:
@@ -1361,7 +1369,7 @@ streams:
   - type: DeclarativeStream
     name: funds
     $parameters:
-      token_scope: funds:read
+      required_scope: funds:read
     primary_key:
       - id
     retriever:
@@ -1466,7 +1474,7 @@ streams:
   - type: DeclarativeStream
     name: spend_programs
     $parameters:
-      token_scope: spend_programs:read
+      required_scope: spend_programs:read
     primary_key:
       - id
     retriever:
@@ -1524,7 +1532,7 @@ streams:
   - type: DeclarativeStream
     name: bills
     $parameters:
-      token_scope: bills:read
+      required_scope: bills:read
     primary_key:
       - id
     retriever:
@@ -1743,7 +1751,7 @@ streams:
   - type: DeclarativeStream
     name: vendor_contacts
     $parameters:
-      token_scope: vendors:read
+      required_scope: vendors:read
     primary_key:
       - vendor_id
       - id
@@ -1807,7 +1815,7 @@ streams:
   - type: DeclarativeStream
     name: vendor_agreements
     $parameters:
-      token_scope: vendors:read
+      required_scope: vendors:read
     primary_key:
       - id
     retriever:
@@ -1956,7 +1964,7 @@ streams:
   - type: DeclarativeStream
     name: receipts
     $parameters:
-      token_scope: receipts:read
+      required_scope: receipts:read
     primary_key:
       - id
     retriever:
@@ -2027,7 +2035,7 @@ streams:
   - type: DeclarativeStream
     name: merchants
     $parameters:
-      token_scope: merchants:read
+      required_scope: merchants:read
     primary_key:
       - id
     retriever:
@@ -2065,7 +2073,7 @@ streams:
   - type: DeclarativeStream
     name: purchase_orders
     $parameters:
-      token_scope: purchase_orders:read
+      required_scope: purchase_orders:read
       access_note: ' Purchase orders are only available on Ramp Plus; deselect this stream if your plan does not include it.'
     primary_key:
       - id

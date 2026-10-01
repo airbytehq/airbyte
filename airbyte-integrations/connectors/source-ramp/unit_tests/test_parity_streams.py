@@ -2,8 +2,7 @@
 
 """Unit tests for the streams added for market parity:
 
-- every new stream logs in with a token for its own scope only, so the original three streams keep
-  requesting exactly `transactions:read cards:read reimbursements:read`
+- every stream logs in once with the shared token request for all read scopes, even across partitions
 - list streams paginate with `start`/`page_size`, and the partitioned ones read every partition
 - `business` and `business_balance` read Ramp's single-object responses
 - `vendor_contacts` is read per vendor and carries `vendor_id`
@@ -18,6 +17,7 @@ from urllib.parse import parse_qs
 import pytest
 import requests_mock
 from _helpers import (
+    ALL_SCOPES,
     BASE_URL,
     CONFIG,
     START_DATE,
@@ -105,7 +105,7 @@ def test_list_stream_reads_with_its_own_scope(stream_name, path, scope, partitio
 
     assert not output.errors, f"expected a clean read, got {[error.trace.error.message for error in output.errors]}"
     assert len(record_ids(output)) == 2 * len(partitions)
-    assert set(_token_scopes(mocker.request_history)) == {scope}
+    assert _token_scopes(mocker.request_history) == [ALL_SCOPES], "expected one login for every partition"
 
     data_requests = requests_to(mocker.request_history, f"/developer/v1/{path}")
     assert len(data_requests) == 2 * len(partitions)
@@ -143,7 +143,7 @@ def test_single_object_streams(stream_name, path, record):
         output = read_stream(stream_name)
 
     assert [message.record.data for message in output.records] == [record]
-    assert _token_scopes(mocker.request_history) == ["business:read"]
+    assert _token_scopes(mocker.request_history) == [ALL_SCOPES]
     assert len(requests_to(mocker.request_history, f"/developer/v1/{path}")) == 1
 
 
@@ -158,7 +158,8 @@ def test_vendor_contacts_are_read_per_vendor_and_carry_vendor_id():
 
     records = sorted((message.record.data["vendor_id"], message.record.data["id"]) for message in output.records)
     assert records == [("v-1", "c-1"), ("v-2", "c-1")]
-    assert set(_token_scopes(mocker.request_history)) == {"vendors:read"}
+    # The parent `vendors` read builds its own authenticator, so the substream logs in twice.
+    assert _token_scopes(mocker.request_history) == [ALL_SCOPES, ALL_SCOPES]
 
 
 def test_vendor_agreements_paginate_in_the_json_body():
@@ -176,7 +177,7 @@ def test_vendor_agreements_paginate_in_the_json_body():
         output = read_stream("vendor_agreements")
 
     assert record_ids(output) == ["agr-1", "agr-2"]
-    assert _token_scopes(mocker.request_history) == ["vendors:read"]
+    assert _token_scopes(mocker.request_history) == [ALL_SCOPES]
     bodies = [json.loads(request.text) for request in requests_to(mocker.request_history, "/developer/v1/vendors/agreements")]
     assert bodies == [
         {"include_archived": True, "page_size": 50},
