@@ -17,16 +17,29 @@ class MongoDbSourceConfigurationSpecificationTest {
     lateinit var supplier:
         ConfigurationSpecificationSupplier<MongoDbSourceConfigurationSpecification>
 
+    /**
+     * With no config JSON at all the supplier falls back to a default instance (the CDK parses
+     * without schema validation); the factory is what rejects the absent `database_config`.
+     */
     @Test
-    fun testSchemaViolation() {
-        Assertions.assertThrows(ConfigErrorException::class.java, supplier::get)
+    fun testNoConfigIsRejectedByTheFactory() {
+        val pojo: MongoDbSourceConfigurationSpecification = supplier.get()
+        Assertions.assertNull(pojo.databaseConfig)
+        val exception: ConfigErrorException =
+            Assertions.assertThrows(ConfigErrorException::class.java) {
+                MongoDbSourceConfigurationFactory().makeWithoutExceptionHandling(pojo)
+            }
+        Assertions.assertEquals(
+            "Database configuration is missing required 'database_config' property.",
+            exception.message,
+        )
     }
 
     @Test
     @Property(name = "airbyte.connector.config.json", value = ATLAS_CONFIG_JSON)
     fun testAtlasConfig() {
         val pojo: MongoDbSourceConfigurationSpecification = supplier.get()
-        val databaseConfig: DatabaseConfigSpecification = pojo.databaseConfig
+        val databaseConfig: DatabaseConfigSpecification = checkNotNull(pojo.databaseConfig)
         Assertions.assertTrue(
             databaseConfig is AtlasReplicaSetSpecification,
             databaseConfig::class.toString(),
@@ -41,8 +54,8 @@ class MongoDbSourceConfigurationSpecificationTest {
         Assertions.assertEquals("admin", databaseConfig.authSource)
         Assertions.assertEquals(false, databaseConfig.schemaEnforced)
 
-        Assertions.assertEquals(600, pojo.initialWaitingSeconds)
-        Assertions.assertEquals(5000, pojo.queueSize)
+        // The fixture still carries the dropped legacy `initial_waiting_seconds`/`queue_size`;
+        // they are ignored, proving saved v2 configurations keep deserializing.
         Assertions.assertEquals(100, pojo.discoverSampleSize)
         Assertions.assertEquals(60, pojo.discoverTimeoutSeconds)
         Assertions.assertEquals("Re-sync data", pojo.invalidCdcCursorPositionBehavior)
@@ -54,7 +67,7 @@ class MongoDbSourceConfigurationSpecificationTest {
     @Property(name = "airbyte.connector.config.json", value = SELF_MANAGED_MINIMAL_CONFIG_JSON)
     fun testSelfManagedMinimalConfigDefaults() {
         val pojo: MongoDbSourceConfigurationSpecification = supplier.get()
-        val databaseConfig: DatabaseConfigSpecification = pojo.databaseConfig
+        val databaseConfig: DatabaseConfigSpecification = checkNotNull(pojo.databaseConfig)
         Assertions.assertTrue(
             databaseConfig is SelfManagedReplicaSetSpecification,
             databaseConfig::class.toString(),
@@ -66,8 +79,6 @@ class MongoDbSourceConfigurationSpecificationTest {
         // Defaults advertised by the spec.
         Assertions.assertEquals("admin", databaseConfig.authSource)
         Assertions.assertEquals(true, databaseConfig.schemaEnforced)
-        Assertions.assertEquals(300, pojo.initialWaitingSeconds)
-        Assertions.assertEquals(10000, pojo.queueSize)
         Assertions.assertEquals(10000, pojo.discoverSampleSize)
         Assertions.assertEquals(600, pojo.discoverTimeoutSeconds)
         Assertions.assertEquals("Fail sync", pojo.invalidCdcCursorPositionBehavior)
@@ -79,7 +90,7 @@ class MongoDbSourceConfigurationSpecificationTest {
     @Property(name = "airbyte.connector.config.json", value = MISSING_DATABASE_CONFIG_JSON)
     fun testMissingDatabaseConfig() {
         val pojo: MongoDbSourceConfigurationSpecification = supplier.get()
-        Assertions.assertNull(pojo.databaseConfigOrNull())
+        Assertions.assertNull(pojo.databaseConfig)
         val exception: ConfigErrorException =
             Assertions.assertThrows(ConfigErrorException::class.java) {
                 MongoDbSourceConfigurationFactory().makeWithoutExceptionHandling(pojo)

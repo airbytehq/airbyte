@@ -12,18 +12,21 @@ import org.junit.jupiter.api.Test
 
 /**
  * `expected-spec.json` is the `spec` output of the published legacy `airbyte/source-mongodb-v2`
- * image. The two connectors must keep advertising the same spec.
+ * image, minus the two Debezium-only properties v3 deliberately drops (`initial_waiting_seconds`,
+ * `queue_size`; see the `3.0.0` breaking change in `metadata.yaml`). Everything else — property
+ * names, titles, descriptions, defaults, ordering, the `database_config` oneOf — stays identical so
+ * saved configurations keep loading.
  */
 class MongoDbSourceSpecTest {
 
     @Test
-    fun testSpecMatchesLegacyConnector() {
+    fun testSpecMatchesExpected() {
         SyncsTestFixture.testSpec(EXPECTED_SPEC_RESOURCE)
     }
 
     /** Stricter than [SyncsTestFixture.testSpec]: whole-tree equality, including array order. */
     @Test
-    fun testSpecIsIdenticalToLegacyConnector() {
+    fun testSpecIsIdenticalToExpected() {
         val expected: JsonNode = Jsons.readTree(ResourceUtils.readResource(EXPECTED_SPEC_RESOURCE))
         val actualSpec: ConnectorSpecification = CliRunner.source("spec").run().specs().last()
         val actual: JsonNode = Jsons.valueToTree(actualSpec)

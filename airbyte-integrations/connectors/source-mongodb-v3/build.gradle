@@ -14,7 +14,7 @@ airbyteBulkConnector {
 }
 
 dependencies {
-    implementation 'org.mongodb:mongodb-driver-sync:5.5.1'
+    implementation 'org.mongodb:mongodb-driver-sync:5.13.0'
 
     testFixturesImplementation 'org.testcontainers:mongodb:1.21.4'
     testImplementation 'org.testcontainers:mongodb:1.21.4'

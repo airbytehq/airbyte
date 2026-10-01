@@ -15,20 +15,22 @@ import jakarta.inject.Singleton
 /**
  * The object which is mapped to the MongoDB source configuration JSON.
  *
- * Property names, titles, descriptions, defaults and ordering deliberately mirror the legacy
- * `source-mongodb-v2` `spec.json`, so that saved configurations keep deserializing and the `spec`
- * output stays identical. Use [MongoDbSourceConfiguration] instead wherever possible.
+ * Property names, titles, descriptions, defaults and ordering mirror the legacy `source-mongodb-v2`
+ * `spec.json` so that saved configurations keep deserializing. Two legacy properties are dropped
+ * because they only tuned the Debezium engine the native change-stream reader replaced:
+ * `initial_waiting_seconds` and `queue_size`. Saved configurations that still carry them are
+ * accepted (unknown properties are ignored). Use [MongoDbSourceConfiguration] instead wherever
+ * possible.
  */
 @JsonSchemaTitle("MongoDb Source Spec")
 @JsonSchemaInject(
-    json = """{"groups":[{"id":"connection"},{"id":"advanced","title":"Advanced"}]}""",
+    json =
+        """{"required":["database_config"],"groups":[{"id":"connection"},{"id":"advanced","title":"Advanced"}]}""",
 )
 @JsonPropertyOrder(
     value =
         [
             "database_config",
-            "initial_waiting_seconds",
-            "queue_size",
             "discover_sample_size",
             "discover_timeout_seconds",
             "invalid_cdc_cursor_position_behavior",
@@ -40,35 +42,12 @@ import jakarta.inject.Singleton
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class MongoDbSourceConfigurationSpecification : ConfigurationSpecification() {
 
+    /** Required by the schema (injected above); null here only when absent from the config JSON. */
     @JsonProperty("database_config")
     @JsonSchemaTitle("Cluster Type")
     @JsonSchemaDescription("Configures the MongoDB cluster type.")
     @JsonSchemaInject(json = """{"order":1,"group":"connection","display_type":"radio"}""")
-    lateinit var databaseConfig: DatabaseConfigSpecification
-
-    /** Null when the (required) `database_config` property is absent from the config JSON. */
-    fun databaseConfigOrNull(): DatabaseConfigSpecification? =
-        if (this::databaseConfig.isInitialized) databaseConfig else null
-
-    @JsonProperty("initial_waiting_seconds")
-    @JsonSchemaTitle("Initial Waiting Time in Seconds (Advanced)")
-    @JsonSchemaDescription(
-        "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds.",
-    )
-    @JsonSchemaInject(
-        json = """{"default":300,"order":8,"min":120,"max":1200,"group":"advanced"}"""
-    )
-    var initialWaitingSeconds: Int? = DEFAULT_INITIAL_WAITING_SECONDS
-
-    @JsonProperty("queue_size")
-    @JsonSchemaTitle("Size of the queue (Advanced)")
-    @JsonSchemaDescription(
-        "The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.",
-    )
-    @JsonSchemaInject(
-        json = """{"default":10000,"order":9,"min":1000,"max":10000,"group":"advanced"}""",
-    )
-    var queueSize: Int? = DEFAULT_QUEUE_SIZE
+    var databaseConfig: DatabaseConfigSpecification? = null
 
     @JsonProperty("discover_sample_size")
     @JsonSchemaTitle("Document discovery sample size (Advanced)")
@@ -122,8 +101,6 @@ class MongoDbSourceConfigurationSpecification : ConfigurationSpecification() {
     var initialLoadTimeoutHours: Int? = DEFAULT_INITIAL_LOAD_TIMEOUT_HOURS
 
     companion object {
-        const val DEFAULT_INITIAL_WAITING_SECONDS = 300
-        const val DEFAULT_QUEUE_SIZE = 10_000
         const val DEFAULT_DISCOVER_SAMPLE_SIZE = 10_000
         const val DEFAULT_DISCOVER_TIMEOUT_SECONDS = 600
         const val DEFAULT_INITIAL_LOAD_TIMEOUT_HOURS = 8

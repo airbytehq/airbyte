@@ -56,7 +56,9 @@ data:
           driver instead of Debezium, so its persisted CDC position is no longer
           Debezium-compatible. Existing connections must be reset (a full re-sync)
           when upgrading; initial-snapshot state and saved configurations are
-          unaffected."
+          unaffected. The Debezium-only settings 'initial_waiting_seconds' and
+          'queue_size' are removed from the spec (saved configurations that still
+          carry them are accepted and the values ignored)."
         upgradeDeadline: "2026-12-31"
         scopedImpact:
           - scopeType: stream

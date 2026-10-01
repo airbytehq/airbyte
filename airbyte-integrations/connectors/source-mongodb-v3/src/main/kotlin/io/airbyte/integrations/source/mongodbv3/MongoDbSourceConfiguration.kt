@@ -144,7 +144,7 @@ constructor(
 
     override fun makeWithoutExceptionHandling(pojo: Spec): MongoDbSourceConfiguration {
         val databaseConfig: DatabaseConfigSpecification =
-            pojo.databaseConfigOrNull()
+            pojo.databaseConfig
                 ?: throw ConfigErrorException(
                     "Database configuration is missing required 'database_config' property.",
                 )
