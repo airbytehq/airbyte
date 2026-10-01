@@ -13,6 +13,8 @@ import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstant
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.USERNAME_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.COLLECTION_INCLUDE_LIST_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.DATABASE_INCLUDE_LIST_KEY;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.FILTERS_MATCH_MODE_KEY;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.FILTERS_MATCH_MODE_VALUE;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.MONGODB_AUTHSOURCE_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.MONGODB_CONNECTION_MODE_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.MONGODB_CONNECTION_MODE_VALUE;
@@ -228,6 +230,28 @@ class MongoDbDebeziumPropertiesManagerTest {
   }
 
   @Test
+  void testDebeziumPropertiesLiteralCollectionFilter() {
+    final AirbyteFileOffsetBackingStore offsetManager = mock(AirbyteFileOffsetBackingStore.class);
+    final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
+    final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
+    final List<ConfiguredAirbyteStream> streams = List.of(
+        createStream("events", SyncMode.INCREMENTAL),
+        createStream("system.buckets.metrics+v2", SyncMode.INCREMENTAL),
+        createStream("snapshot_only", SyncMode.FULL_REFRESH));
+
+    when(catalog.getStreams()).thenReturn(streams);
+
+    final var debeziumPropertiesManager =
+        new MongoDbDebeziumPropertiesManager(new Properties(), config, catalog, createCdcStreamList(catalog));
+
+    final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
+    assertEquals(FILTERS_MATCH_MODE_VALUE, debeziumProperties.get(FILTERS_MATCH_MODE_KEY));
+    assertEquals(DATABASE_NAME + ".events," + DATABASE_NAME + ".system.buckets.metrics+v2",
+        debeziumProperties.get(COLLECTION_INCLUDE_LIST_KEY));
+    assertEquals(DATABASE_NAME, debeziumProperties.get(DATABASE_INCLUDE_LIST_KEY));
+  }
+
+  @Test
   void testNormalizeName() {
     final String nameWithUnderscore = "name_with_underscore";
     final String nameWithoutUnderscore = "nameWithout-Underscore";
@@ -295,6 +319,12 @@ class MongoDbDebeziumPropertiesManagerTest {
       streams.add(new ConfiguredAirbyteStream().withStream(stream));
     }
     return streams;
+  }
+
+  private ConfiguredAirbyteStream createStream(final String name, final SyncMode syncMode) {
+    return new ConfiguredAirbyteStream()
+        .withStream(new AirbyteStream().withNamespace(DATABASE_NAME).withName(name))
+        .withSyncMode(syncMode);
   }
 
   private List<String> createCdcStreamList(final ConfiguredAirbyteCatalog catalog) {
